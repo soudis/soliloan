@@ -13,3 +13,15 @@ export function hashPassword(password: string) {
 export function verifyPassword(password: string, hashedPassword: string) {
   return hashPassword(password) === hashedPassword;
 }
+
+/**
+ * Formats a number as a currency string using German locale and EUR currency
+ * @param amount The amount to format
+ * @returns A formatted currency string (e.g. "1.234,56 €")
+ */
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR'
+  }).format(amount)
+}

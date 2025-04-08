@@ -19,10 +19,50 @@ export async function GET(
       where: {
         id: params.lenderId,
       },
+      include: {
+        loans: {
+          orderBy: {
+            loanNumber: 'desc'
+          },
+          include: {
+            lender: {
+              select: {
+                id: true,
+                lenderNumber: true,
+                firstName: true,
+                lastName: true,
+                organisationName: true
+              }
+            },
+            transactions: {
+              orderBy: {
+                date: 'desc'
+              }
+            }
+          }
+        },
+        project: {
+          include: {
+            managers: true
+          }
+        }
+      }
     })
 
     if (!lender) {
       return NextResponse.json({ error: 'Lender not found' }, { status: 404 })
+    }
+
+    // Check if the user has access to the project
+    const hasAccess = lender.project.managers.some(
+      (manager) => manager.id === session.user.id
+    )
+
+    if (!hasAccess) {
+      return NextResponse.json(
+        { error: 'You do not have access to this project' },
+        { status: 403 }
+      )
     }
 
     return NextResponse.json(lender)

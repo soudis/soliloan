@@ -6,7 +6,7 @@ import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { useRouter } from '@/i18n/navigation'
 import { useProject } from '@/store/project-context'
 import { ColumnDef } from '@tanstack/react-table'
-import { Pencil, Plus } from 'lucide-react'
+import { Eye, Pencil, Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 
@@ -376,6 +376,10 @@ export default function LendersPage() {
         showFilter={true}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
+            <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/lenders/${row.id}`)}>
+              <Eye className="h-4 w-4" />
+              <span className="sr-only">View</span>
+            </Button>
             <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/lenders/${row.id}/edit`)}>
               <Pencil className="h-4 w-4" />
               <span className="sr-only">Edit</span>

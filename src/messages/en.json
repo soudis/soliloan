@@ -64,8 +64,8 @@
       "table": {
         "lenderNumber": "Number",
         "type": "Type",
-        "typePerson": "Person",
-        "typeOrganisation": "Organization",
+        "typePERSON": "Person",
+        "typeORGANISATION": "Organization",
         "name": "Full Name",
         "email": "Email",
         "telNo": "Phone",
@@ -90,6 +90,18 @@
         "noResults": "No lenders found",
         "previous": "Previous",
         "next": "Next"
+      },
+      "details": {
+        "edit": "Edit Lender",
+        "newLoan": "New Loan",
+        "contactInfo": "Contact Information",
+        "address": "Address",
+        "banking": "Banking",
+        "loans": "Loans",
+        "error": "Error loading lender data",
+        "noContactInfo": "No contact information available",
+        "noAddress": "No address information available",
+        "noBankingInfo": "No banking information available"
       },
       "new": {
         "title": "Create New Lender",
@@ -170,6 +182,44 @@
       "description": "Manage your loans and their information",
       "details": "Add, update, and manage loan information, interest rates, and payment schedules.",
       "viewLoans": "View Loans",
+      "transactions": {
+        "title": "Transactions",
+        "success": "Transaction created successfully",
+        "error": "Failed to create transaction",
+        "deleteSuccess": "Transaction deleted successfully",
+        "deleteError": "Failed to delete transaction",
+        "noTransactions": "No transactions yet",
+        "type": {
+          "INTEREST": "Interest",
+          "DEPOSIT": "Deposit",
+          "WITHDRAWAL": "Withdrawal",
+          "TERMINATION": "Termination",
+          "INTERESTPAYMENT": "Interest Payment",
+          "NOTRECLAIMEDPARTIAL": "Not Reclaimed (Partial)",
+          "NOTRECLAIMED": "Not Reclaimed"
+        },
+        "paymentType": {
+          "BANK": "Bank Transfer",
+          "CASH": "Cash",
+          "OTHER": "Other"
+        },
+        "new": {
+          "title": "New Transaction",
+          "description": "Add a new transaction to this loan",
+          "type": "Type",
+          "typePlaceholder": "Select transaction type",
+          "date": "Date",
+          "datePlaceholder": "Select date",
+          "amount": "Amount",
+          "amountPlaceholder": "Enter amount",
+          "paymentType": "Payment Type",
+          "paymentTypePlaceholder": "Select payment type",
+          "note": "Note",
+          "notePlaceholder": "Enter optional note",
+          "submit": "Add Transaction",
+          "cancel": "Cancel"
+        }
+      },
       "table": {
         "loanNumber": "Number",
         "lenderName": "Lender",

@@ -29,6 +29,9 @@ globs: **/*.tsx, **/*.ts, src/**/*.ts, src/**/*.tsx
 - Place utilities and helpers in `lib` directory
 - Use lowercase with dashes for directories and components (e.g., `components/auth-wizard/wizard-form.tsx`)
 
+## Types
+- use types from prisma client if possible or base types on them
+
 ## Components
 - Use Server Components by default
 - Mark client components explicitly with 'use client'

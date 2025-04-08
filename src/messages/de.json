@@ -64,9 +64,9 @@
       "table": {
         "lenderNumber": "Nummer",
         "type": "Typ",
-        "typePerson": "Person",
-        "typeOrganisation": "Organisation",
-        "name": "Vollständiger Name",
+        "typePERSON": "Person",
+        "typeORGANISATION": "Organisation",
+        "name": "Name",
         "email": "E-Mail",
         "telNo": "Telefon",
         "address": "Adresse",
@@ -84,12 +84,24 @@
         "salutationPERSONAL": "Persönlich",
         "salutationFORMAL": "Formell",
         "actions": "Aktionen",
-        "filterByName": "Nach Namen filtern...",
+        "filterByName": "Nach Name filtern...",
         "columns": "Spalten",
         "filters": "Filter",
         "noResults": "Keine Kreditgeber*innen gefunden",
         "previous": "Zurück",
         "next": "Weiter"
+      },
+      "details": {
+        "edit": "Kreditgeber*in bearbeiten",
+        "newLoan": "Neuer Kredit",
+        "contactInfo": "Kontaktinformationen",
+        "address": "Adresse",
+        "banking": "Bankverbindung",
+        "loans": "Kredite",
+        "error": "Fehler beim Laden der Kreditgeber*in",
+        "noContactInfo": "Keine Kontaktinformationen vorhanden",
+        "noAddress": "Keine Adressinformationen vorhanden",
+        "noBankingInfo": "Keine Bankverbindungsinformationen vorhanden"
       },
       "new": {
         "title": "Neue*n Kreditgeber*in erstellen",
@@ -170,6 +182,44 @@
       "description": "Verwalten Sie Ihre Kredite und deren Informationen",
       "details": "Fügen Sie Kredite hinzu, aktualisieren und verwalten Sie Kreditinformationen, Zinssätze und Zahlungspläne.",
       "viewLoans": "Kredite anzeigen",
+      "transactions": {
+        "title": "Zahlungen",
+        "success": "Zahlung erfolgreich erstellt",
+        "error": "Fehler beim Erstellen der Zahlung",
+        "deleteSuccess": "Zahlung erfolgreich gelöscht",
+        "deleteError": "Fehler beim Löschen der Zahlung",
+        "noTransactions": "Noch keine Zahlungen",
+        "type": {
+          "INTEREST": "Zinsen",
+          "DEPOSIT": "Einzahlung",
+          "WITHDRAWAL": "Auszahlung",
+          "TERMINATION": "Kündigung",
+          "INTERESTPAYMENT": "Zinszahlung",
+          "NOTRECLAIMEDPARTIAL": "Nicht zurückgefordert (Teilweise)",
+          "NOTRECLAIMED": "Nicht zurückgefordert"
+        },
+        "paymentType": {
+          "BANK": "Banküberweisung",
+          "CASH": "Bar",
+          "OTHER": "Sonstiges"
+        },
+        "new": {
+          "title": "Neue Zahlung",
+          "description": "Fügen Sie eine neue Zahlung zu diesem Kredit hinzu",
+          "type": "Typ",
+          "typePlaceholder": "Zahlungstyp auswählen",
+          "date": "Datum",
+          "datePlaceholder": "Datum auswählen",
+          "amount": "Betrag",
+          "amountPlaceholder": "Betrag eingeben",
+          "paymentType": "Zahlungsart",
+          "paymentTypePlaceholder": "Zahlungsart auswählen",
+          "note": "Notiz",
+          "notePlaceholder": "Optionale Notiz eingeben",
+          "submit": "Zahlung hinzufügen",
+          "cancel": "Abbrechen"
+        }
+      },
       "table": {
         "loanNumber": "Nummer",
         "lenderName": "Kreditgeber*in",
@@ -245,7 +295,7 @@
         "contractStatus": "Vertragsstatus",
         "contractStatusPENDING": "Ausstehend",
         "contractStatusCOMPLETED": "Abgeschlossen",
-        "terminationModalities": "Kündigungsmodalitäten"
+        "terminationModalities": "Kündigungsart"
       },
       "new": {
         "title": "Neuen Kredit erstellen",
