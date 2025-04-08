@@ -1,4 +1,11 @@
 import { z } from 'zod'
+import {
+  contractStatusEnum,
+  interestMethodEnum,
+  interestPaymentTypeEnum,
+  interestPayoutTypeEnum,
+  periodTypeEnum
+} from './common'
 
 // Define the loan form schema based on the Prisma model
 export const loanFormSchema = z.discriminatedUnion('terminationType', [
@@ -15,24 +22,15 @@ export const loanFormSchema = z.discriminatedUnion('terminationType', [
     endDate: z.coerce.date({ required_error: 'End date is required' }),
     terminationDate: z.coerce.date().nullable().optional(),
     terminationPeriod: z.number().nullable().optional(),
-    terminationPeriodType: z.enum(['MONTHS', 'YEARS']).nullable().optional(),
+    terminationPeriodType: periodTypeEnum.nullable().optional(),
     duration: z.number().nullable().optional(),
-    durationType: z.enum(['MONTHS', 'YEARS']).nullable().optional(),
+    durationType: periodTypeEnum.nullable().optional(),
 
     // Additional Information
-    interestPaymentType: z.enum(['YEARLY', 'END']),
-    interestPayoutType: z.enum(['MONEY', 'COUPON']),
-    altInterestMethod: z.enum([
-      'ACT_365_NOCOMPOUND',
-      'E30_360_NOCOMPOUND',
-      'ACT_360_NOCOMPOUND',
-      'ACT_ACT_NOCOMPOUND',
-      'ACT_365_COMPOUND',
-      'E30_360_COMPOUND',
-      'ACT_360_COMPOUND',
-      'ACT_ACT_COMPOUND'
-    ]).nullable().optional(),
-    contractStatus: z.enum(['PENDING', 'COMPLETED']).default('PENDING'),
+    interestPaymentType: interestPaymentTypeEnum,
+    interestPayoutType: interestPayoutTypeEnum,
+    altInterestMethod: interestMethodEnum.nullable().optional(),
+    contractStatus: contractStatusEnum.default('PENDING'),
   }),
 
   // TERMINATION termination type
@@ -48,24 +46,15 @@ export const loanFormSchema = z.discriminatedUnion('terminationType', [
     endDate: z.coerce.date().nullable().optional(),
     terminationDate: z.coerce.date().nullable().optional(),
     terminationPeriod: z.number().min(1, { message: 'Termination period is required' }),
-    terminationPeriodType: z.enum(['MONTHS', 'YEARS']).default('MONTHS'),
+    terminationPeriodType: periodTypeEnum.default('MONTHS'),
     duration: z.number().nullable().optional(),
-    durationType: z.enum(['MONTHS', 'YEARS']).nullable().optional(),
+    durationType: periodTypeEnum.nullable().optional(),
 
     // Additional Information
-    interestPaymentType: z.enum(['YEARLY', 'END']),
-    interestPayoutType: z.enum(['MONEY', 'COUPON']),
-    altInterestMethod: z.enum([
-      'ACT_365_NOCOMPOUND',
-      'E30_360_NOCOMPOUND',
-      'ACT_360_NOCOMPOUND',
-      'ACT_ACT_NOCOMPOUND',
-      'ACT_365_COMPOUND',
-      'E30_360_COMPOUND',
-      'ACT_360_COMPOUND',
-      'ACT_ACT_COMPOUND'
-    ]).nullable().optional(),
-    contractStatus: z.enum(['PENDING', 'COMPLETED']).default('PENDING'),
+    interestPaymentType: interestPaymentTypeEnum,
+    interestPayoutType: interestPayoutTypeEnum,
+    altInterestMethod: interestMethodEnum.nullable().optional(),
+    contractStatus: contractStatusEnum.default('PENDING'),
   }),
 
   // DURATION termination type
@@ -81,24 +70,15 @@ export const loanFormSchema = z.discriminatedUnion('terminationType', [
     endDate: z.coerce.date().nullable().optional(),
     terminationDate: z.coerce.date().nullable().optional(),
     terminationPeriod: z.number().nullable().optional(),
-    terminationPeriodType: z.enum(['MONTHS', 'YEARS']).nullable().optional(),
+    terminationPeriodType: periodTypeEnum.nullable().optional(),
     duration: z.number().min(1, { message: 'Duration is required' }),
-    durationType: z.enum(['MONTHS', 'YEARS']),
+    durationType: periodTypeEnum,
 
     // Additional Information
-    interestPaymentType: z.enum(['YEARLY', 'END']),
-    interestPayoutType: z.enum(['MONEY', 'COUPON']),
-    altInterestMethod: z.enum([
-      'ACT_365_NOCOMPOUND',
-      'E30_360_NOCOMPOUND',
-      'ACT_360_NOCOMPOUND',
-      'ACT_ACT_NOCOMPOUND',
-      'ACT_365_COMPOUND',
-      'E30_360_COMPOUND',
-      'ACT_360_COMPOUND',
-      'ACT_ACT_COMPOUND'
-    ]).nullable().optional(),
-    contractStatus: z.enum(['PENDING', 'COMPLETED']).default('PENDING'),
+    interestPaymentType: interestPaymentTypeEnum,
+    interestPayoutType: interestPayoutTypeEnum,
+    altInterestMethod: interestMethodEnum.nullable().optional(),
+    contractStatus: contractStatusEnum.default('PENDING'),
   })
 ])
 
