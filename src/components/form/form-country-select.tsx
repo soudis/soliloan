@@ -1,4 +1,4 @@
-import { FormSelect } from '@/components/form/FormSelect'
+import { FormSelect } from '@/components/form/form-select'
 import { SelectItem, SelectSeparator } from '@/components/ui/select'
 import { useTranslations } from 'next-intl'
 import { UseFormReturn } from 'react-hook-form'

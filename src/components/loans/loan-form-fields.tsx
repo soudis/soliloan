@@ -1,9 +1,9 @@
 'use client'
 
-import { FormDatePicker } from '@/components/form/FormDatePicker'
-import { FormNumberInput } from '@/components/form/FormNumberInput'
-import { FormSelect } from '@/components/form/FormSelect'
-import { LenderCombobox } from '@/components/loans/LenderCombobox'
+import { FormDatePicker } from '@/components/form/form-date-picker'
+import { FormNumberInput } from '@/components/form/form-number-input'
+import { FormSelect } from '@/components/form/form-select'
+import { LenderCombobox } from '@/components/loans/lender-combobox'
 import type { LoanFormData } from '@/lib/schemas/loan'
 import { useTranslations } from 'next-intl'
 import { UseFormReturn } from 'react-hook-form'

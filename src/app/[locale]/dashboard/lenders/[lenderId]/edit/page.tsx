@@ -1,6 +1,6 @@
 'use client'
 
-import { LenderForm } from '@/components/lenders/LenderForm'
+import { LenderForm } from '@/components/lenders/lender-form'
 import { useRouter } from '@/i18n/navigation'
 import type { LenderFormData } from '@/lib/schemas/lender'
 import { useProject } from '@/store/project-context'

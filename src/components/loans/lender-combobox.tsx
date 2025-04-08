@@ -1,6 +1,6 @@
 'use client'
 
-import { FormCombobox } from '@/components/form/FormCombobox'
+import { FormCombobox } from '@/components/form/form-combobox'
 import { useProject } from '@/store/project-context'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'

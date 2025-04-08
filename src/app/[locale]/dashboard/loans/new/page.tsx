@@ -1,6 +1,6 @@
 'use client'
 
-import { LoanForm } from '@/components/loans/LoanForm'
+import { LoanForm } from '@/components/loans/loan-form'
 import { useRouter } from '@/i18n/navigation'
 import type { LoanFormData } from '@/lib/schemas/loan'
 import { useProject } from '@/store/project-context'

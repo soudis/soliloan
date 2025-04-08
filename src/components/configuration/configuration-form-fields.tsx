@@ -1,9 +1,9 @@
 'use client'
 
-import { FormCountrySelect } from '@/components/form/FormCountrySelect'
-import { FormField } from '@/components/form/FormField'
-import { FormIbanInput } from '@/components/form/FormIbanInput'
-import { FormSelect } from '@/components/form/FormSelect'
+import { FormCountrySelect } from '@/components/form/form-country-select'
+import { FormField } from '@/components/form/form-field'
+import { FormIbanInput } from '@/components/form/form-iban-input'
+import { FormSelect } from '@/components/form/form-select'
 import type { ConfigurationFormData } from '@/lib/schemas/configuration'
 import { useTranslations } from 'next-intl'
 import { UseFormReturn } from 'react-hook-form'

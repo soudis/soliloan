@@ -1,6 +1,6 @@
 'use client'
 
-import { ConfigurationForm } from '@/components/configuration/ConfigurationForm'
+import { ConfigurationForm } from '@/components/configuration/configuration-form'
 import { useRouter } from '@/i18n/navigation'
 import type { ConfigurationFormData } from '@/lib/schemas/configuration'
 import { useProject } from '@/store/project-context'
