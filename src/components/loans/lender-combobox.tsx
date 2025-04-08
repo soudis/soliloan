@@ -30,7 +30,7 @@ export function LenderCombobox({
   label,
   placeholder,
 }: LenderComboboxProps) {
-  const t = useTranslations('loans')
+  const t = useTranslations('dashboard.loans')
   const { selectedProject } = useProject()
   const [lenders, setLenders] = useState<Lender[]>([])
   const [isLoading, setIsLoading] = useState(false)

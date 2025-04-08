@@ -1,4 +1,4 @@
-import DashboardNavigation from '@/components/dashboard/DashboardNavigation'
+import DashboardNavigation from '@/components/dashboard/dashboard-navigation'
 import { auth } from '@/lib/auth'
 
 export default async function DashboardLayout({

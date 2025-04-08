@@ -7,7 +7,7 @@ import { useProject } from '@/store/project-context'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
-import { LoanFormFields } from './LoanFormFields'
+import { LoanFormFields } from './loan-form-fields'
 
 interface LoanFormProps {
   title: string
@@ -47,18 +47,18 @@ export function LoanForm({
     interestPaymentType: initialData?.interestPaymentType || 'YEARLY',
     interestPayoutType: initialData?.interestPayoutType || 'MONEY',
     contractStatus: initialData?.contractStatus ?? 'PENDING',
-    lenderId: initialData?.lenderId || undefined,
-    signDate: initialData?.signDate || undefined,
-    amount: initialData?.amount || undefined,
-    interestRate: initialData?.interestRate || undefined,
-    altInterestMethod: initialData?.altInterestMethod || undefined,
+    lenderId: initialData?.lenderId || null,
+    signDate: initialData?.signDate || null,
+    amount: initialData?.amount || null,
+    interestRate: initialData?.interestRate || null,
+    altInterestMethod: initialData?.altInterestMethod || null,
     // Initialize all optional fields to null to prevent uncontrolled to controlled warnings
-    endDate: initialData?.endDate || undefined,
-    terminationDate: initialData?.terminationDate || undefined,
-    terminationPeriod: initialData?.terminationPeriod || undefined,
-    terminationPeriodType: initialData?.terminationPeriodType || undefined,
-    duration: initialData?.duration || undefined,
-    durationType: initialData?.durationType || undefined,
+    endDate: initialData?.endDate || null,
+    terminationDate: initialData?.terminationDate || null,
+    terminationPeriod: initialData?.terminationPeriod || null,
+    terminationPeriodType: initialData?.terminationPeriodType || null,
+    duration: initialData?.duration || null,
+    durationType: initialData?.durationType || null,
   }
 
   // Add termination type specific defaults

@@ -252,6 +252,7 @@
         "formTitle": "Loan Information",
         "formDescription": "Enter the details for the new loan",
         "form": {
+          "loadingLenders": "Loading lenders...",
           "generalInfo": "General Information",
           "lender": "Lender",
           "lenderPlaceholder": "Select lender",
@@ -405,7 +406,8 @@
     "lenders": "Lenders",
     "loans": "Loans",
     "signOut": "Sign out",
-    "selectProject": "Select a project"
+    "selectProject": "Select a project",
+    "configuration": "Configuration"
   },
   "dataTable": {
     "columns": "Columns",

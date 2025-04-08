@@ -10,6 +10,18 @@ globs: **/*.tsx, **/*.ts, src/**/*.ts, src/**/*.tsx
 
 # Next.js Best Practices
 
+## PNPM
+- ALWAYS use pnpm (not npm or yarn)
+
+## Forms / UI / react-hook-form
+- Use existing components 
+- If there is no existing form component create one using shadcn/ui
+- Always create a form component and a form-fields components
+- Use react-hook-form
+- Look at existing forms for reference
+- Always default every form field in defaultValues with null explicitly to prevent changes from uncontrolled to controlled
+- If possible use the same form component for forms to create or to edit something
+
 ## Project Structure
 - Use the App Router directory structure
 - Place components in `components` directory
@@ -34,6 +46,7 @@ globs: **/*.tsx, **/*.ts, src/**/*.ts, src/**/*.tsx
 ## API endpoints
 - Always make sure to look at existing endpoints and be consistent with their style
 - Make sure to use translation keys for error codes and translate them in the frontend
+- Make sure to add security checks. E.g. a user is only allowed to manipulate or see data from their projects
 
 ## Data Fetching
 - Use Server Components for data fetching when possible

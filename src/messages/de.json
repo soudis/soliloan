@@ -252,6 +252,7 @@
         "formTitle": "Kreditinformationen",
         "formDescription": "Geben Sie die Details für den neuen Kredit ein",
         "form": {
+          "loadingLenders": "Kreditgeber*innen werden geladen...",
           "generalInfo": "Allgemeine Informationen",
           "lender": "Kreditgeber*in",
           "lenderPlaceholder": "Kreditgeber*in auswählen",
@@ -405,7 +406,8 @@
     "lenders": "Kreditgeber*innen",
     "loans": "Kredite",
     "signOut": "Abmelden",
-    "selectProject": "Projekt auswählen"
+    "selectProject": "Projekt auswählen",
+    "configuration": "Konfiguration"
   },
   "dataTable": {
     "columns": "Spalten",

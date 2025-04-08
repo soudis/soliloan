@@ -10,7 +10,7 @@ import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import ProjectSelector from './ProjectSelector'
+import ProjectSelector from './project-selector'
 
 export default function DashboardNavigation({
   children,

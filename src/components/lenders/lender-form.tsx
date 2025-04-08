@@ -7,7 +7,7 @@ import { useProject } from '@/store/project-context'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
-import { LenderFormFields } from './LenderFormFields'
+import { LenderFormFields } from './lender-form-fields'
 
 interface LenderFormProps {
   title: string
@@ -46,14 +46,37 @@ export function LenderForm({
     notificationType: initialData?.notificationType || 'ONLINE',
     membershipStatus: initialData?.membershipStatus || 'UNKNOWN',
     projectId: selectedProject.id,
+    // Contact Information
+    email: initialData?.email || undefined,
+    telNo: initialData?.telNo || undefined,
+    // Address Information
+    street: initialData?.street || undefined,
+    addon: initialData?.addon || undefined,
+    zip: initialData?.zip || undefined,
+    place: initialData?.place || undefined,
+    country: initialData?.country || undefined,
+    // Banking Information
+    iban: initialData?.iban || undefined,
+    bic: initialData?.bic || undefined,
+    // Additional Information
+    tag: initialData?.tag || undefined,
+    // Person-specific fields
     ...(initialType === 'PERSON'
       ? {
         firstName: initialData?.firstName || '',
         lastName: initialData?.lastName || '',
+        titlePrefix: initialData?.titlePrefix || undefined,
+        titleSuffix: initialData?.titleSuffix || undefined,
+        organisationName: undefined,
       }
       : {
         organisationName: initialData?.organisationName || '',
+        firstName: undefined,
+        lastName: undefined,
+        titlePrefix: undefined,
+        titleSuffix: undefined,
       }),
+    // Include any other fields from initialData that might not be explicitly handled
     ...initialData,
   }
 

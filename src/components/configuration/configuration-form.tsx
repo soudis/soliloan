@@ -7,7 +7,7 @@ import { useProject } from '@/store/project-context'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
-import { ConfigurationFormFields } from './ConfigurationFormFields'
+import { ConfigurationFormFields } from './configuration-form-fields'
 
 interface ConfigurationFormProps {
   title: string
@@ -39,25 +39,25 @@ export function ConfigurationForm({
 
   const defaultValues = {
     name: initialData?.name || '',
-    logo: initialData?.logo || null,
-    email: initialData?.email || null,
-    telNo: initialData?.telNo || null,
-    website: initialData?.website || null,
-    street: initialData?.street || null,
-    addon: initialData?.addon || null,
-    zip: initialData?.zip || null,
-    place: initialData?.place || null,
-    country: initialData?.country || null,
-    iban: initialData?.iban || null,
-    bic: initialData?.bic || null,
-    userLanguage: initialData?.userLanguage || null,
-    userTheme: initialData?.userTheme || null,
-    lenderSalutation: initialData?.lenderSalutation || null,
-    lenderCountry: initialData?.lenderCountry || null,
-    lenderNotificationType: initialData?.lenderNotificationType || null,
-    lenderMembershipStatus: initialData?.lenderMembershipStatus || null,
+    logo: initialData?.logo || undefined,
+    email: initialData?.email || undefined,
+    telNo: initialData?.telNo || undefined,
+    website: initialData?.website || undefined,
+    street: initialData?.street || undefined,
+    addon: initialData?.addon || undefined,
+    zip: initialData?.zip || undefined,
+    place: initialData?.place || undefined,
+    country: initialData?.country || undefined,
+    iban: initialData?.iban || undefined,
+    bic: initialData?.bic || undefined,
+    userLanguage: initialData?.userLanguage || undefined,
+    userTheme: initialData?.userTheme || undefined,
+    lenderSalutation: initialData?.lenderSalutation || undefined,
+    lenderCountry: initialData?.lenderCountry || undefined,
+    lenderNotificationType: initialData?.lenderNotificationType || undefined,
+    lenderMembershipStatus: initialData?.lenderMembershipStatus || undefined,
     lenderTags: initialData?.lenderTags || [],
-    interestMethod: initialData?.interestMethod || null,
+    interestMethod: initialData?.interestMethod || undefined,
     altInterestMethods: initialData?.altInterestMethods || [],
     customLoans: initialData?.customLoans || false,
   }
