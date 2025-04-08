@@ -1,14 +1,16 @@
 'use client'
 
+import { getLendersByProjectId } from '@/app/actions/lenders'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { useRouter } from '@/i18n/navigation'
 import { useProject } from '@/store/project-context'
+import { useQuery } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
 import { Eye, Pencil, Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 // Define the custom filter function for compound text fields
 const compoundTextFilter = (row: any, columnId: string, filterValue: any) => {
@@ -53,9 +55,20 @@ export default function LendersPage() {
   const router = useRouter()
   const { selectedProject } = useProject()
   const t = useTranslations('dashboard.lenders')
-  const [lenders, setLenders] = useState<Lender[]>([])
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const { data: lenders = [], isLoading: loading } = useQuery({
+    queryKey: ['lenders', selectedProject?.id],
+    queryFn: async () => {
+      if (!selectedProject) return []
+      const result = await getLendersByProjectId(selectedProject.id)
+      if (result.error) {
+        throw new Error(result.error)
+      }
+      return result.lenders
+    },
+    enabled: !!selectedProject
+  })
 
   const columns: ColumnDef<Lender>[] = [
     {
@@ -321,28 +334,6 @@ export default function LendersPage() {
     tag: true,
     salutation: false,
   }
-
-  useEffect(() => {
-    const fetchLenders = async () => {
-      if (!selectedProject) return
-
-      try {
-        setLoading(true)
-        const response = await fetch(`/api/lenders?projectId=${selectedProject.id}`)
-        if (!response.ok) {
-          throw new Error('Failed to fetch lenders')
-        }
-        const data = await response.json()
-        setLenders(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchLenders()
-  }, [selectedProject])
 
   if (!selectedProject) {
     return null

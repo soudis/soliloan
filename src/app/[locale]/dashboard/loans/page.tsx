@@ -1,15 +1,17 @@
 'use client'
 
+import { getLoansByProjectId } from '@/app/actions/loans'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { useRouter } from '@/i18n/navigation'
 import { useProject } from '@/store/project-context'
+import { useQuery } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
 import { Pencil, Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 // Define the custom filter function for compound text fields
 const compoundTextFilter = (row: any, columnId: string, filterValue: any) => {
@@ -61,12 +63,23 @@ interface Loan {
 }
 
 export default function LoansPage() {
+  const t = useTranslations('Loans')
   const router = useRouter()
   const { selectedProject } = useProject()
-  const t = useTranslations('dashboard.loans')
-  const [loans, setLoans] = useState<Loan[]>([])
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const { data: loans = [], isLoading: loading } = useQuery({
+    queryKey: ['loans', selectedProject?.id],
+    queryFn: async () => {
+      if (!selectedProject) return []
+      const result = await getLoansByProjectId(selectedProject.id)
+      if (result.error) {
+        throw new Error(result.error)
+      }
+      return result.loans
+    },
+    enabled: !!selectedProject
+  })
 
   const columns: ColumnDef<Loan>[] = [
     {
@@ -357,28 +370,6 @@ export default function LoansPage() {
     altInterestMethod: false,
     contractStatus: true,
   }
-
-  useEffect(() => {
-    const fetchLoans = async () => {
-      if (!selectedProject) return
-
-      try {
-        setLoading(true)
-        const response = await fetch(`/api/loans?projectId=${selectedProject.id}`)
-        if (!response.ok) {
-          throw new Error('Failed to fetch loans')
-        }
-        const data = await response.json()
-        setLoans(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchLoans()
-  }, [selectedProject])
 
   if (!selectedProject) {
     return null

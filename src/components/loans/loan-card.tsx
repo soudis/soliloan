@@ -1,9 +1,10 @@
 'use client'
 
+import { deleteTransaction } from '@/app/actions/loans'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { de, enUS } from 'date-fns/locale'
 import { ArrowDownIcon, ArrowUpIcon, Eye, Pencil, Plus, Receipt, Trash2 } from 'lucide-react'
@@ -53,19 +54,6 @@ interface LoanCardProps {
   onEdit?: (id: string) => void
 }
 
-// Function to delete a transaction
-const deleteTransaction = async (loanId: string, transactionId: string) => {
-  const response = await fetch(`/api/loans/${loanId}/transactions?transactionId=${transactionId}`, {
-    method: 'DELETE',
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to delete transaction')
-  }
-
-  return response.json()
-}
-
 export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
   const t = useTranslations('dashboard.loans')
   const locale = useLocale()
@@ -73,19 +61,19 @@ export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false)
   const queryClient = useQueryClient()
 
-  // Use React Query mutation for deleting a transaction
-  const { mutate: deleteTransactionMutation, isPending: isDeleting } = useMutation({
-    mutationFn: (transactionId: string) => deleteTransaction(loan.id, transactionId),
-    onSuccess: () => {
+  const handleDeleteTransaction = async (transactionId: string) => {
+    try {
+      const result = await deleteTransaction(loan.id, transactionId)
+      if (result.error) {
+        throw new Error(result.error)
+      }
       toast.success(t('transactions.deleteSuccess'))
-      // Invalidate the lender query to refetch the data
       queryClient.invalidateQueries({ queryKey: ['lender'] })
-    },
-    onError: (error) => {
+    } catch (error) {
       console.error('Error deleting transaction:', error)
       toast.error(t('transactions.deleteError'))
     }
-  })
+  }
 
   const getTerminationModalities = () => {
     switch (loan.terminationType) {
@@ -132,11 +120,6 @@ export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
       default:
         return 'bg-gray-500/20'
     }
-  }
-
-  const handleDeleteTransaction = (transactionId: string) => {
-    if (isDeleting) return
-    deleteTransactionMutation(transactionId)
   }
 
   return (
@@ -218,7 +201,6 @@ export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDeleteTransaction(transaction.id)}
-                      disabled={isDeleting}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                       <span className="sr-only">Delete</span>
