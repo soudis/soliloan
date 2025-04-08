@@ -14,6 +14,7 @@ globs: **/*.tsx, **/*.ts, src/**/*.ts, src/**/*.tsx
 - ALWAYS use pnpm (not npm or yarn)
 
 ## Forms / UI / react-hook-form
+- always use information from the prisma schema `src/schema/prisma.schema`
 - Use existing components 
 - If there is no existing form component create one using shadcn/ui
 - Always create a form component and a form-fields components

@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 export default function ConfigurationPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const { selectedProject } = useProject()
+  const { selectedProject, setSelectedProject } = useProject()
   const t = useTranslations('dashboard.configuration')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -71,6 +71,17 @@ export default function ConfigurationPage() {
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.error || 'Failed to update configuration')
+      }
+
+      // Get the updated configuration from the response
+      const updatedConfiguration = await response.json()
+
+      // Update the project store with the new configuration
+      if (selectedProject) {
+        setSelectedProject({
+          ...selectedProject,
+          configuration: updatedConfiguration
+        })
       }
 
       // Show success message

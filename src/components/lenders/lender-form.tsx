@@ -42,9 +42,9 @@ export function LenderForm({
   const initialType = initialData?.type || 'PERSON'
   const defaultValues = {
     type: initialType,
-    salutation: initialData?.salutation || 'PERSONAL',
-    notificationType: initialData?.notificationType || 'ONLINE',
-    membershipStatus: initialData?.membershipStatus || 'UNKNOWN',
+    salutation: initialData?.salutation || selectedProject.configuration?.lenderSalutation || 'PERSONAL',
+    notificationType: initialData?.notificationType || selectedProject.configuration?.lenderNotificationType || 'ONLINE',
+    membershipStatus: initialData?.membershipStatus || selectedProject.configuration?.lenderMembershipStatus || 'UNKNOWN',
     projectId: selectedProject.id,
     // Contact Information
     email: initialData?.email || undefined,
@@ -54,7 +54,7 @@ export function LenderForm({
     addon: initialData?.addon || undefined,
     zip: initialData?.zip || undefined,
     place: initialData?.place || undefined,
-    country: initialData?.country || undefined,
+    country: initialData?.country || selectedProject.configuration?.lenderCountry || undefined,
     // Banking Information
     iban: initialData?.iban || undefined,
     bic: initialData?.bic || undefined,

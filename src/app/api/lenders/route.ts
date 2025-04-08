@@ -32,6 +32,9 @@ export async function POST(req: NextRequest) {
             id: session.user.id
           }
         }
+      },
+      include: {
+        configuration: true
       }
     })
 
@@ -72,7 +75,8 @@ export async function POST(req: NextRequest) {
               name: validatedData.type === 'PERSON'
                 ? `${validatedData.firstName} ${validatedData.lastName}`
                 : validatedData.organisationName || '',
-              language: Language.de, // Default language
+              language: project.configuration?.userLanguage || Language.de,
+              theme: project.configuration?.userTheme || 'default',
             }
           }
         } : undefined

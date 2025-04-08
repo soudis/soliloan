@@ -50,13 +50,45 @@ export async function PUT(
     // Validate the request body
     const validatedData = lenderFormSchema.parse(body)
 
+    // Get the lender to check access
+    const existingLender = await db.lender.findUnique({
+      where: {
+        id: params.lenderId,
+      },
+      include: {
+        project: {
+          include: {
+            managers: true,
+            configuration: true
+          },
+        },
+      },
+    })
+
+    if (!existingLender) {
+      return NextResponse.json({ error: 'Lender not found' }, { status: 404 })
+    }
+
+    // Check if the user has access to the project
+    const hasAccess = existingLender.project.managers.some(
+      (manager) => manager.id === session.user.id
+    )
+
+    if (!hasAccess) {
+      return NextResponse.json(
+        { error: 'You do not have access to this project' },
+        { status: 403 }
+      )
+    }
+
     // Update the lender
     const updatedLender = await db.lender.update({
       where: {
         id: params.lenderId,
       },
       data: {
-        ...omit(validatedData, 'email', 'projectId'), user: validatedData.email ? {
+        ...omit(validatedData, 'email', 'projectId'),
+        user: validatedData.email ? {
           connectOrCreate: {
             where: { email: validatedData.email },
             create: {
@@ -64,7 +96,8 @@ export async function PUT(
               name: validatedData.type === 'PERSON'
                 ? `${validatedData.firstName} ${validatedData.lastName}`
                 : validatedData.organisationName || '',
-              language: Language.de, // Default language
+              language: existingLender.project.configuration?.userLanguage || Language.de,
+              theme: existingLender.project.configuration?.userTheme || 'default',
             }
           }
         } : undefined
