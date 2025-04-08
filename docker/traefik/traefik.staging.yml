@@ -1,0 +1,39 @@
+# https://doc.traefik.io/traefik/reference/static-configuration/file/
+
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+entryPoints:
+  web:
+    address: :80
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+
+  websecure:
+    address: :443
+    http:
+      tls:
+        certResolver: letsencrypt
+
+log:
+  level: DEBUG
+
+api:
+  insecure: true
+
+providers:
+  docker:
+    exposedByDefault: false
+    network: directloan_traefik_network
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      httpChallenge:
+        entryPoint: web
+      email: florian.humer@gmail.com
+      storage: /letsencrypt/acme.json

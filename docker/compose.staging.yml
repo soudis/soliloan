@@ -1,0 +1,28 @@
+# This compose file combines all necessary parts via include
+# https://docs.docker.com/compose/multiple-compose-files/include/
+#
+# Example:
+#
+# ```
+# include:
+#   # Service
+#   - path: './docker/docker-compose.yml'
+#     # Optional path to a .env file. Env vars can be only used inside the compose file.
+#     env_file: './docker/.env'
+#     # Optional path to a project directory
+#     project_directory: '.'
+# ```
+
+include:
+  #
+  # Application: directloan
+  #
+  - path:
+      - "./docker/directloan/compose.base.yml"
+      - "./docker/directloan/compose.override.staging.yml"
+    project_directory: "."
+
+networks:
+  traefik_network:
+    external: true
+    name: directloan_traefik_network

@@ -1,0 +1,9 @@
+#
+# Override for dev environment
+#
+
+services:
+  app:
+    image: ghcr.io/habi-dat/commons/commons:${DOCKER_IMAGE_TAG:?}
+    labels:
+      - traefik.http.routers.cfe-${DOCKER_IMAGE_TAG:?}.rule=Host(`staging.commons.app`)

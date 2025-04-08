@@ -1,0 +1,22 @@
+services:
+  traefik:
+    image: traefik:v2.11.2
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.yml:/etc/traefik/traefik.yml:ro
+      - letsencrypt_data:/letsencrypt
+    networks:
+      - traefik_network
+
+volumes:
+  letsencrypt_data:
+
+networks:
+  traefik_network:
+    external: true
+    name: directloan_traefik_network

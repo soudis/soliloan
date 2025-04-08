@@ -1,0 +1,36 @@
+# This compose file combines all necessary parts via include
+# https://docs.docker.com/compose/multiple-compose-files/include/
+#
+# Example:
+#
+# ```
+# include:
+#   # Service
+#   - path: './docker/docker-compose.yml'
+#     # Optional path to a .env file. Env vars can be only used inside the compose file.
+#     env_file: './docker/.env'
+#     # Optional path to a project directory
+#     project_directory: '.'
+# ```
+
+include:
+  #
+  # Service: traefik
+  #
+  - path:
+      - "./docker/traefik/compose.yml"
+
+  #
+  # Service: Postgresql
+  #
+  - path:
+      - "./docker/postgres/compose.base.yml"
+      - "./docker/postgres/compose.override.dev.yml"
+
+  #
+  # Application:
+  #
+  - path:
+      - "./docker/app/compose.base.yml"
+      - "./docker/app/compose.override.dev.yml"
+    project_directory: "."

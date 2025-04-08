@@ -1,0 +1,22 @@
+#
+# Override for dev environment
+#
+
+services:
+  app:
+    build:
+      target: base
+      context: ./
+      dockerfile: ./docker/app/Dockerfile # Relative to `context`
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: no
+    pull_policy: build
+    labels:
+      - traefik.http.routers.cfe-${DOCKER_IMAGE_TAG:?}.rule=Host(`soliloan.localhost`)
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    command: /bin/sh -c "pnpm install && pnpm prisma db push && pnpm prisma db seed && pnpm dev"

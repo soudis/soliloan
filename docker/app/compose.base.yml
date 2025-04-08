@@ -1,0 +1,26 @@
+#
+#  Base configuration
+#
+
+services:
+  app:
+    # image: habidat/directloan:${DOCKER_IMAGE_TAG:?}
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cfe-${DOCKER_IMAGE_TAG:?}.rule=Host(`soliloan.app`)
+      - traefik.http.routers.cfe-${DOCKER_IMAGE_TAG:?}.entrypoints=websecure
+      - traefik.http.services.cfe-${DOCKER_IMAGE_TAG:?}.loadbalancer.server.port=3000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - TZ=Europe/Berlin
+    networks:
+      - traefik_network
+      - backend_network
+
+networks:
+  backend_network:
+    name: directloan_backend_network

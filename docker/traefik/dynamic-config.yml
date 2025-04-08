@@ -1,0 +1,6 @@
+# https://doc.traefik.io/traefik/reference/dynamic-configuration/file/
+
+tls:
+  certificates:
+    - certFile: /etc/traefik/certs/cert.pem
+      keyFile: /etc/traefik/certs/key.pem

@@ -1,0 +1,379 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String
+  email         String?        @unique
+  emailVerified DateTime?
+  language      Language       @default(de)
+  theme         SoliLoansTheme @default(default)
+  password      String?
+  image         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  managerOf     Project[]      @relation("ProjectManager")
+  isAdmin       Boolean?
+  lenders       Lender[]
+  views         View[]
+  notes         Note[]
+  lastLogin     DateTime?
+}
+
+model LoanTemplate {
+  id              String        @id @default(cuid())
+  configurationId String
+  configuration   Configuration @relation(fields: [configurationId], references: [id])
+  name            String
+
+  interestPaymentType   InterestPaymentType
+  interestPayoutType    InterestPayoutType
+  terminationType       TerminationType
+  terminationPeriod     Int?
+  terminationPeriodType DurationType?
+  duration              Int?
+  durationType          DurationType?
+  endDate               DateTime?
+  minInterestRate       Decimal?
+  maxInterestRate       Decimal?
+  minAmount             Decimal?
+  maxAmount             Decimal?
+}
+
+model Configuration {
+  id   String  @id @default(cuid())
+  name String
+  logo String?
+
+  project Project?
+
+  // instance / project settings
+  email   String?
+  telNo   String?
+  website String?
+
+  street  String?
+  addon   String?
+  zip     String?
+  place   String?
+  country Country?
+  iban    String?
+  bic     String?
+
+  // user defaults
+  userLanguage Language?
+  userTheme    SoliLoansTheme?
+
+  // lender settings and defaults
+  lenderSalutation       Salutation?
+  lenderCountry          Country?
+  lenderNotificationType NotificationType?
+  lenderMembershipStatus MembershipStatus?
+  lenderTags             String[]
+
+  // loan settings and defaults
+  interestMethod        InterestMethod?
+  altInterestMethods    InterestMethod[]
+  loanTemplates         LoanTemplate[]
+  defaultLoanTemplateId String?
+  customLoans           Boolean?
+}
+
+model Project {
+  id              String         @id @default(cuid())
+  slug            String         @unique
+  name            String
+  configurationId String         @unique
+  configuration   Configuration  @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+  // duplicate interestMethod on project for performance reasons  
+  interestMethod  InterestMethod
+  lenders         Lender[]
+  changes         Change[]
+  managers        User[]         @relation("ProjectManager")
+}
+
+model Lender {
+  id               String            @id @default(cuid())
+  lenderNumber     Int               @unique @default(autoincrement())
+  projectId        String
+  project          Project           @relation(fields: [projectId], references: [id])
+  type             LenderType
+  salutation       Salutation
+  firstName        String?
+  lastName         String?
+  organisationName String?
+  titlePrefix      String?
+  titleSuffix      String?
+  street           String?
+  addon            String?
+  zip              String?
+  place            String?
+  country          Country?
+  telNo            String?
+  email            String?
+  iban             String?
+  bic              String?
+  notificationType NotificationType
+  membershipStatus MembershipStatus?
+  tag              String?
+  loans            Loan[]
+  test             String?
+  user             User?             @relation(fields: [email], references: [email])
+  files            File[]
+  notes            Note[]
+}
+
+model Loan {
+  id                    String              @id @default(cuid())
+  loanNumber            Int                 @unique @default(autoincrement())
+  lenderId              String
+  lender                Lender              @relation(fields: [lenderId], references: [id])
+  signDate              DateTime
+  interestPaymentType   InterestPaymentType
+  interestPayoutType    InterestPayoutType
+  terminationType       TerminationType
+  endDate               DateTime?
+  terminationDate       DateTime?
+  terminationPeriod     Int?
+  terminationPeriodType DurationType?
+  duration              Int?
+  durationType          DurationType?
+  amount                Decimal
+  interestRate          Decimal
+  altInterestMethod     InterestMethod?
+  contractStatus        ContractStatus
+  transactions          Transaction[]
+  files                 File[]
+  notes                 Note[]
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  loanId      String
+  loan        Loan            @relation(fields: [loanId], references: [id])
+  type        TransactionType
+  date        DateTime
+  amount      Decimal
+  paymentType PaymentType
+}
+
+model File {
+  id          String  @id @default(cuid())
+  mimeType    String
+  name        String
+  data        Bytes
+  public      Boolean
+  description String?
+  thumbnail   Bytes?
+  lenderId    String?
+  lender      Lender? @relation(fields: [lenderId], references: [id])
+  loanId      String?
+  loan        Loan?   @relation(fields: [loanId], references: [id])
+}
+
+model Note {
+  id          String   @id @default(cuid())
+  text        String
+  public      Boolean
+  lenderId    String?
+  lender      Lender?  @relation(fields: [lenderId], references: [id])
+  loanId      String?
+  loan        Loan?    @relation(fields: [loanId], references: [id])
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime
+}
+
+model Change {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  type      String
+  data      Json
+  createdAt DateTime @default(now())
+}
+
+model View {
+  id        String   @id @default(cuid())
+  userId    String
+  type      ViewType
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  data      Json
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+  @@id([identifier, token])
+}
+
+enum LenderType {
+  PERSON
+  ORGANISATION
+}
+
+enum Salutation {
+  PERSONAL
+  FORMAL
+}
+
+enum ViewType {
+  LENDER
+  LOAN
+}
+
+enum NotificationType {
+  ONLINE
+  EMAIL
+  MAIL
+}
+
+enum MembershipStatus {
+  UNKNOWN
+  MEMBER
+  EXTERNAL
+}
+
+enum InterestPaymentType {
+  YEARLY
+  END
+}
+
+enum TerminationType {
+  ENDDATE
+  TERMINATION
+  DURATION
+}
+
+enum InterestPayoutType {
+  MONEY
+  COUPON
+}
+
+enum InterestMethod {
+  ACT_365_NOCOMPOUND
+  E30_360_NOCOMPOUND
+  ACT_360_NOCOMPOUND
+  ACT_ACT_NOCOMPOUND
+  ACT_365_COMPOUND
+  E30_360_COMPOUND
+  ACT_360_COMPOUND
+  ACT_ACT_COMPOUND
+}
+
+enum ContractStatus {
+  PENDING
+  COMPLETED
+}
+
+enum DurationType {
+  MONTHS
+  YEARS
+}
+
+enum TransactionType {
+  INTEREST
+  DEPOSIT
+  WITHDRAWAL
+  TERMINATION
+  INTERESTPAYMENT
+  NOTRECLAIMEDPARTIAL
+  NOTRECLAIMED
+}
+
+enum PaymentType {
+  BANK
+  CASH
+  OTHER
+}
+
+enum Language {
+  de
+  en
+}
+
+enum SoliLoansTheme {
+  default
+  dark
+  light
+}
+
+enum Country {
+  DE
+  AT
+  CH
+  US
+  GB
+  FR
+  IT
+  ES
+  NL
+  BE
+  DK
+  SE
+  NO
+  FI
+  PL
+  CZ
+  HU
+  RO
+  BG
+  HR
+  SI
+  SK
+  EE
+  LV
+  LT
+  CY
+  MT
+  LU
+  IE
+  PT
+  GR
+}
