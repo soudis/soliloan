@@ -1,12 +1,14 @@
 'use client'
 
+import { getProjectConfiguration, updateProjectConfiguration } from '@/app/actions/configuration'
 import { ConfigurationForm } from '@/components/configuration/configuration-form'
 import { useRouter } from '@/i18n/navigation'
 import type { ConfigurationFormData } from '@/lib/schemas/configuration'
 import { useProject } from '@/store/project-context'
+import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
 export default function ConfigurationPage() {
@@ -14,33 +16,27 @@ export default function ConfigurationPage() {
   const router = useRouter()
   const { selectedProject, setSelectedProject } = useProject()
   const t = useTranslations('dashboard.configuration')
-  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [initialData, setInitialData] = useState<Partial<ConfigurationFormData> | null>(null)
 
-  // Fetch configuration data
-  useEffect(() => {
-    const fetchConfiguration = async () => {
-      if (!selectedProject) return
-
-      try {
-        const response = await fetch(`/api/projects/${selectedProject.id}/configuration`)
-        if (!response.ok) {
-          throw new Error('Failed to fetch configuration')
-        }
-        const data = await response.json()
-        setInitialData(data)
-      } catch (error) {
-        console.error('Error fetching configuration:', error)
-        setError(error instanceof Error ? error.message : 'An unknown error occurred')
-        toast.error(t('form.error'))
-      } finally {
-        setIsLoading(false)
+  // Fetch configuration data using React Query
+  const { data: configurationData, isLoading } = useQuery({
+    queryKey: ['configuration', selectedProject?.id],
+    queryFn: async () => {
+      if (!selectedProject) return null
+      console.log('Fetching configuration for project:', selectedProject.id)
+      const result = await getProjectConfiguration(selectedProject.id)
+      console.log('Configuration result:', result)
+      if ('error' in result) {
+        throw new Error(result.error)
       }
-    }
+      return result.configuration
+    },
+    enabled: !!selectedProject?.id,
+    staleTime: 300000, // 5 minutes
+    gcTime: 1800000, // 30 minutes
+  })
 
-    fetchConfiguration()
-  }, [selectedProject, t])
+  console.log('Current configuration data:', configurationData)
 
   if (!session) {
     return null
@@ -50,51 +46,59 @@ export default function ConfigurationPage() {
     return null
   }
 
-  if (isLoading) {
-    return <div>Loading...</div>
+  if (!configurationData) {
+    return null
   }
 
   const handleSubmit = async (data: ConfigurationFormData) => {
     try {
-      setIsLoading(true)
       setError(null)
+      console.log('Submitting configuration data:', data)
 
-      // Send the data to the API
-      const response = await fetch(`/api/projects/${selectedProject.id}/configuration`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
+      // Update the configuration using the server action
+      const result = await updateProjectConfiguration(selectedProject.id, data)
+      console.log('Update result:', result)
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to update configuration')
+      if ('error' in result) {
+        throw new Error(result.error)
       }
-
-      // Get the updated configuration from the response
-      const updatedConfiguration = await response.json()
 
       // Update the project store with the new configuration
-      if (selectedProject) {
-        setSelectedProject({
-          ...selectedProject,
-          configuration: updatedConfiguration
-        })
-      }
+      setSelectedProject({
+        ...selectedProject,
+        configuration: {
+          ...result.configuration,
+          // Keep undefined values as undefined for the project store
+          email: result.configuration.email,
+          telNo: result.configuration.telNo,
+          website: result.configuration.website,
+          street: result.configuration.street,
+          addon: result.configuration.addon,
+          zip: result.configuration.zip,
+          place: result.configuration.place,
+          country: result.configuration.country,
+          iban: result.configuration.iban,
+          bic: result.configuration.bic,
+          userLanguage: result.configuration.userLanguage,
+          userTheme: result.configuration.userTheme,
+          lenderSalutation: result.configuration.lenderSalutation,
+          lenderCountry: result.configuration.lenderCountry,
+          lenderNotificationType: result.configuration.lenderNotificationType,
+          lenderMembershipStatus: result.configuration.lenderMembershipStatus,
+          lenderTags: result.configuration.lenderTags || [],
+          interestMethod: result.configuration.interestMethod,
+          altInterestMethods: result.configuration.altInterestMethods || [],
+          customLoans: result.configuration.customLoans || false,
+        }
+      })
 
       // Show success message
       toast.success(t('form.success'))
 
-      // Navigate back to the previous page using the router
-      router.back()
     } catch (error) {
       console.error('Error submitting form:', error)
       setError(error instanceof Error ? error.message : 'An unknown error occurred')
       toast.error(t('form.error'))
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -105,7 +109,7 @@ export default function ConfigurationPage() {
       submittingButtonText={t('form.submitting')}
       cancelButtonText={t('form.cancel')}
       onSubmit={handleSubmit}
-      initialData={initialData || undefined}
+      initialData={configurationData || undefined}
       isLoading={isLoading}
       error={error}
     />

@@ -66,6 +66,8 @@
         "type": "Typ",
         "typePERSON": "Person",
         "typeORGANISATION": "Organisation",
+        "typePerson": "Person",
+        "typeOrganisation": "Organisation",
         "name": "Name",
         "email": "E-Mail",
         "telNo": "Telefon",

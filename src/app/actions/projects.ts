@@ -142,14 +142,18 @@ export async function updateProjectConfiguration(projectId: string, data: any) {
     }
 
     // Update the project configuration
-    const configuration = await db.projectConfiguration.upsert({
+    const configuration = await db.configuration.upsert({
       where: {
-        projectId
+        id: project.configurationId
       },
       update: data,
       create: {
         ...data,
-        projectId
+        project: {
+          connect: {
+            id: projectId
+          }
+        }
       }
     })
 

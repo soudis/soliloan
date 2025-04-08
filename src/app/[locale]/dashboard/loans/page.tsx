@@ -63,7 +63,7 @@ interface Loan {
 }
 
 export default function LoansPage() {
-  const t = useTranslations('Loans')
+  const t = useTranslations('dashboard.loans')
   const router = useRouter()
   const { selectedProject } = useProject()
   const [error, setError] = useState<string | null>(null)

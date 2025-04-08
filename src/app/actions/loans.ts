@@ -2,6 +2,7 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { User } from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime/library'
 import { revalidatePath } from 'next/cache'
 
@@ -39,6 +40,7 @@ interface Loan {
     firstName?: string
     lastName?: string
     organisationName?: string
+    projectId: string
   }
   transactions: Transaction[]
 }
@@ -73,7 +75,8 @@ function transformLoan(dbLoan: any): Loan {
       lenderNumber: dbLoan.lender.lenderNumber,
       firstName: dbLoan.lender.firstName || undefined,
       lastName: dbLoan.lender.lastName || undefined,
-      organisationName: dbLoan.lender.organisationName || undefined
+      organisationName: dbLoan.lender.organisationName || undefined,
+      projectId: dbLoan.lender.projectId
     },
     transactions: dbLoan.transactions?.map((transaction: any) => ({
       id: transaction.id,
@@ -104,17 +107,18 @@ export async function getLoanById(loanId: string) {
             lenderNumber: true,
             firstName: true,
             lastName: true,
-            organisationName: true
+            organisationName: true,
+            projectId: true,
+            project: {
+              include: {
+                managers: true
+              }
+            }
           }
         },
         transactions: {
           orderBy: {
             date: 'desc'
-          }
-        },
-        project: {
-          include: {
-            managers: true
           }
         }
       }
@@ -125,8 +129,8 @@ export async function getLoanById(loanId: string) {
     }
 
     // Check if the user has access to the project
-    const hasAccess = dbLoan.project.managers.some(
-      (manager) => manager.id === session.user.id
+    const hasAccess = dbLoan.lender.project.managers.some(
+      (manager: User) => manager.id === session.user.id
     )
 
     if (!hasAccess) {
@@ -165,7 +169,7 @@ export async function getLoansByProjectId(projectId: string) {
     }
 
     const hasAccess = project.managers.some(
-      (manager) => manager.id === session.user.id
+      (manager: User) => manager.id === session.user.id
     )
 
     if (!hasAccess) {
@@ -175,7 +179,9 @@ export async function getLoansByProjectId(projectId: string) {
     // Fetch all loans for the project
     const dbLoans = await db.loan.findMany({
       where: {
-        projectId
+        lender: {
+          projectId
+        }
       },
       include: {
         lender: {
@@ -184,7 +190,8 @@ export async function getLoansByProjectId(projectId: string) {
             lenderNumber: true,
             firstName: true,
             lastName: true,
-            organisationName: true
+            organisationName: true,
+            projectId: true
           }
         },
         transactions: {
@@ -221,11 +228,16 @@ export async function updateLoan(loanId: string, data: any) {
         id: loanId,
       },
       include: {
-        project: {
-          include: {
-            managers: true
-          },
-        },
+        lender: {
+          select: {
+            projectId: true,
+            project: {
+              include: {
+                managers: true
+              }
+            }
+          }
+        }
       },
     })
 
@@ -234,8 +246,8 @@ export async function updateLoan(loanId: string, data: any) {
     }
 
     // Check if the user has access to the project
-    const hasAccess = existingLoan.project.managers.some(
-      (manager) => manager.id === session.user.id
+    const hasAccess = existingLoan.lender.project.managers.some(
+      (manager: User) => manager.id === session.user.id
     )
 
     if (!hasAccess) {
@@ -279,9 +291,14 @@ export async function getLoanTransactions(loanId: string) {
             date: 'desc'
           }
         },
-        project: {
-          include: {
-            managers: true
+        lender: {
+          select: {
+            projectId: true,
+            project: {
+              include: {
+                managers: true
+              }
+            }
           }
         }
       }
@@ -292,8 +309,8 @@ export async function getLoanTransactions(loanId: string) {
     }
 
     // Check if the user has access to the project
-    const hasAccess = loan.project.managers.some(
-      (manager) => manager.id === session.user.id
+    const hasAccess = loan.lender.project.managers.some(
+      (manager: User) => manager.id === session.user.id
     )
 
     if (!hasAccess) {
@@ -301,7 +318,7 @@ export async function getLoanTransactions(loanId: string) {
     }
 
     // Transform the transactions
-    const transactions = loan.transactions.map(transaction => ({
+    const transactions = loan.transactions.map((transaction: any) => ({
       id: transaction.id,
       type: transaction.type,
       date: transaction.date.toISOString(),
@@ -330,9 +347,14 @@ export async function addTransaction(loanId: string, data: any) {
         id: loanId,
       },
       include: {
-        project: {
-          include: {
-            managers: true
+        lender: {
+          select: {
+            projectId: true,
+            project: {
+              include: {
+                managers: true
+              }
+            }
           }
         }
       }
@@ -343,8 +365,8 @@ export async function addTransaction(loanId: string, data: any) {
     }
 
     // Check if the user has access to the project
-    const hasAccess = loan.project.managers.some(
-      (manager) => manager.id === session.user.id
+    const hasAccess = loan.lender.project.managers.some(
+      (manager: User) => manager.id === session.user.id
     )
 
     if (!hasAccess) {
@@ -382,9 +404,14 @@ export async function deleteTransaction(loanId: string, transactionId: string) {
         id: loanId,
       },
       include: {
-        project: {
-          include: {
-            managers: true
+        lender: {
+          select: {
+            projectId: true,
+            project: {
+              include: {
+                managers: true
+              }
+            }
           }
         }
       }
@@ -395,8 +422,8 @@ export async function deleteTransaction(loanId: string, transactionId: string) {
     }
 
     // Check if the user has access to the project
-    const hasAccess = loan.project.managers.some(
-      (manager) => manager.id === session.user.id
+    const hasAccess = loan.lender.project.managers.some(
+      (manager: User) => manager.id === session.user.id
     )
 
     if (!hasAccess) {
