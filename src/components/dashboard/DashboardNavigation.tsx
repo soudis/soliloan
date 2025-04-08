@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { useRouter } from '@/i18n/navigation'
 import { ProjectProvider } from '@/store/project-context'
-import { FolderKanban, LayoutDashboard, Menu, Users, Wallet, X } from 'lucide-react'
+import { FolderKanban, LayoutDashboard, Menu, Settings, Users, Wallet, X } from 'lucide-react'
 import { Session } from 'next-auth'
 import { signOut } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
@@ -111,6 +111,13 @@ export default function DashboardNavigation({
               >
                 <Wallet className="h-5 w-5" />
                 <span className="ml-3">{t('loans')}</span>
+              </Link>
+              <Link
+                href="/dashboard/configuration"
+                className="flex items-center rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                <Settings className="h-5 w-5" />
+                <span className="ml-3">{t('configuration')}</span>
               </Link>
             </nav>
           </div>

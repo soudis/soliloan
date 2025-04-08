@@ -32,7 +32,7 @@ export function LoanForm({
   isLoading,
   error,
 }: LoanFormProps) {
-  const t = useTranslations('loans')
+  const t = useTranslations('dashboard.loans')
   const { selectedProject } = useProject()
 
   if (!selectedProject) {

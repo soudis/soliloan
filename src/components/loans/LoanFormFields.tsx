@@ -13,7 +13,7 @@ interface LoanFormFieldsProps {
 }
 
 export function LoanFormFields({ form }: LoanFormFieldsProps) {
-  const t = useTranslations('loans')
+  const t = useTranslations('dashboard.loans')
   const terminationType = form.watch('terminationType')
 
   return (

@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
@@ -35,7 +36,6 @@ interface Loan {
     firstName?: string
     lastName?: string
     organisationName?: string
-    email?: string
   }
   signDate: string
   interestPaymentType: 'YEARLY' | 'END'
@@ -51,6 +51,13 @@ interface Loan {
   interestRate: number
   altInterestMethod?: string
   contractStatus: 'PENDING' | 'COMPLETED'
+  transactions?: {
+    id: string
+    type: string
+    date: string
+    amount: number
+    paymentType: string
+  }[]
 }
 
 export default function LoansPage() {
@@ -69,23 +76,29 @@ export default function LoansPage() {
       ),
     },
     {
+      accessorKey: 'lender.lenderNumber',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('table.lenderNumber')} />
+      ),
+    },
+    {
       accessorKey: 'lender',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('table.lender')} />
       ),
       accessorFn: (row) => {
-        const lender = row.lender;
+        const lender = row.lender
         if (lender.organisationName) {
-          return lender.organisationName;
+          return lender.organisationName
         }
-        return `${lender.firstName || ''} ${lender.lastName || ''}`.trim();
+        return `${lender.firstName || ''} ${lender.lastName || ''}`.trim()
       },
       cell: ({ row }) => {
-        const lender = row.original.lender;
+        const lender = row.original.lender
         if (lender.organisationName) {
-          return lender.organisationName;
+          return lender.organisationName
         }
-        return `${lender.firstName || ''} ${lender.lastName || ''}`.trim();
+        return `${lender.firstName || ''} ${lender.lastName || ''}`.trim()
       },
       filterFn: compoundTextFilter,
       sortingFn: (rowA, rowB, columnId) => {
@@ -95,25 +108,19 @@ export default function LoansPage() {
       },
     },
     {
-      accessorKey: 'lender.lenderNumber',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.lenderNumber')} />
-      ),
-    },
-    {
-      accessorKey: 'lender.email',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.lenderEmail')} />
-      ),
-    },
-    {
       accessorKey: 'signDate',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('table.signDate')} />
       ),
       cell: ({ row }) => {
-        const date = new Date(row.getValue('signDate'));
-        return date.toLocaleDateString();
+        const dateStr = row.getValue('signDate') as string
+        if (!dateStr) return ''
+        try {
+          const date = new Date(dateStr)
+          return isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE')
+        } catch (e) {
+          return ''
+        }
       },
     },
     {
@@ -122,11 +129,11 @@ export default function LoansPage() {
         <DataTableColumnHeader column={column} title={t('table.amount')} />
       ),
       cell: ({ row }) => {
-        const amount = row.getValue('amount');
+        const amount = Number(row.getValue('amount')) || 0
         return new Intl.NumberFormat('de-DE', {
           style: 'currency',
           currency: 'EUR',
-        }).format(Number(amount));
+        }).format(amount)
       },
     },
     {
@@ -135,8 +142,8 @@ export default function LoansPage() {
         <DataTableColumnHeader column={column} title={t('table.interestRate')} />
       ),
       cell: ({ row }) => {
-        const rate = row.getValue('interestRate');
-        return `${Number(rate).toFixed(2)}%`;
+        const rate = Number(row.getValue('interestRate')) || 0
+        return `${rate.toFixed(2)}%`
       },
     },
     {
@@ -145,8 +152,8 @@ export default function LoansPage() {
         <DataTableColumnHeader column={column} title={t('table.interestPaymentType')} />
       ),
       cell: ({ row }) => {
-        const type = row.getValue('interestPaymentType') as string;
-        return type === 'YEARLY' ? t('table.interestPaymentTypeYEARLY') : t('table.interestPaymentTypeEND');
+        const type = row.getValue('interestPaymentType') as string
+        return type ? t(`table.interestPaymentType${type}`) : ''
       },
     },
     {
@@ -155,39 +162,78 @@ export default function LoansPage() {
         <DataTableColumnHeader column={column} title={t('table.interestPayoutType')} />
       ),
       cell: ({ row }) => {
-        const type = row.getValue('interestPayoutType') as string;
-        return type === 'MONEY' ? t('table.interestPayoutTypeMONEY') : t('table.interestPayoutTypeCOUPON');
+        const type = row.getValue('interestPayoutType') as string
+        return type ? t(`table.interestPayoutType${type}`) : ''
       },
     },
     {
-      accessorKey: 'terminationType',
+      id: 'terminationModalities',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.terminationType')} />
+        <DataTableColumnHeader column={column} title={t('table.terminationModalities')} />
       ),
-      cell: ({ row }) => {
-        const type = row.getValue('terminationType') as string;
-        switch (type) {
-          case 'ENDDATE':
-            return t('table.terminationTypeENDDATE');
-          case 'TERMINATION':
-            return t('table.terminationTypeTERMINATION');
-          case 'DURATION':
-            return t('table.terminationTypeDURATION');
-          default:
-            return type;
+      accessorFn: (row) => {
+        const terminationType = row.terminationType
+
+        if (terminationType === 'ENDDATE' && row.endDate) {
+          try {
+            const date = new Date(row.endDate)
+            return isNaN(date.getTime()) ? '' : date.getTime() // Sort by timestamp
+          } catch (e) {
+            return 0
+          }
+        } else if (terminationType === 'DURATION' && row.duration) {
+          // Convert everything to months for consistent sorting
+          const monthMultiplier = row.durationType === 'YEARS' ? 12 : 1
+          return row.duration * monthMultiplier
+        } else if (terminationType === 'TERMINATION' && row.terminationPeriod) {
+          // Convert everything to months for consistent sorting
+          const monthMultiplier = row.terminationPeriodType === 'YEARS' ? 12 : 1
+          return row.terminationPeriod * monthMultiplier
         }
+
+        return 0
+      },
+      cell: ({ row }) => {
+        const loan = row.original
+        const terminationType = loan.terminationType
+
+        if (terminationType === 'ENDDATE' && loan.endDate) {
+          try {
+            const date = new Date(loan.endDate)
+            const formattedDate = isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE')
+            return `${t('table.terminationTypeENDDATE')} - ${formattedDate}`
+          } catch (e) {
+            return t('table.terminationTypeENDDATE')
+          }
+        } else if (terminationType === 'DURATION' && loan.duration && loan.durationType) {
+          const durationType = loan.durationType === 'MONTHS'
+            ? t('table.durationTypeMONTHS')
+            : t('table.durationTypeYEARS')
+          return `${t('table.terminationTypeDURATION')} - ${loan.duration} ${durationType}`
+        } else if (terminationType === 'TERMINATION' && loan.terminationPeriod && loan.terminationPeriodType) {
+          const periodType = loan.terminationPeriodType === 'MONTHS'
+            ? t('table.terminationPeriodTypeMONTHS')
+            : t('table.terminationPeriodTypeYEARS')
+          return `${t('table.terminationTypeTERMINATION')} - ${loan.terminationPeriod} ${periodType}`
+        }
+
+        return t(`table.terminationType${terminationType}`)
+      },
+      filterFn: (row, columnId, filterValue) => {
+        const terminationType = row.original.terminationType;
+        return terminationType === filterValue;
+      },
+      sortingFn: (rowA, rowB, columnId) => {
+        const a = rowA.getValue(columnId) as number;
+        const b = rowB.getValue(columnId) as number;
+        return a - b;
       },
     },
     {
-      accessorKey: 'endDate',
+      accessorKey: 'altInterestMethod',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.endDate')} />
+        <DataTableColumnHeader column={column} title={t('table.altInterestMethod')} />
       ),
-      cell: ({ row }) => {
-        const date = row.getValue('endDate') as string | undefined;
-        if (!date) return '';
-        return new Date(date).toLocaleDateString();
-      },
     },
     {
       accessorKey: 'contractStatus',
@@ -195,26 +241,26 @@ export default function LoansPage() {
         <DataTableColumnHeader column={column} title={t('table.contractStatus')} />
       ),
       cell: ({ row }) => {
-        const status = row.getValue('contractStatus') as string;
-        return status === 'PENDING' ? t('table.contractStatusPENDING') : t('table.contractStatusCOMPLETED');
-      },
-    },
-    {
-      accessorKey: 'actions',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.actions')} />
-      ),
-      cell: ({ row }) => {
+        const status = row.getValue('contractStatus') as string
+        if (!status) return ''
+
+        const statusText = t(`table.contractStatus${status}`)
+
+        // Define badge variant based on status
+        let variant: "default" | "secondary" | "destructive" | "outline" = "default"
+
+        if (status === 'PENDING') {
+          variant = "secondary"
+        } else if (status === 'COMPLETED') {
+          variant = "default"
+        }
+
         return (
-          <div className="flex items-center justify-end space-x-2">
-            <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/loans/${row.original.id}/edit`)}>
-              <Pencil className="h-4 w-4" />
-              <span className="sr-only">Edit</span>
-            </Button>
-          </div>
-        );
+          <Badge variant={variant}>
+            {statusText}
+          </Badge>
+        )
       },
-      enableSorting: false,
     },
   ]
 
@@ -224,21 +270,9 @@ export default function LoansPage() {
       type: 'number' as const,
       label: t('table.loanNumber')
     },
-    lender: {
-      type: 'text' as const,
-      label: t('table.lender')
-    },
     'lender.lenderNumber': {
       type: 'number' as const,
       label: t('table.lenderNumber')
-    },
-    'lender.email': {
-      type: 'text' as const,
-      label: t('table.lenderEmail')
-    },
-    signDate: {
-      type: 'date' as const,
-      label: t('table.signDate')
     },
     amount: {
       type: 'number' as const,
@@ -247,6 +281,10 @@ export default function LoansPage() {
     interestRate: {
       type: 'number' as const,
       label: t('table.interestRate')
+    },
+    signDate: {
+      type: 'date' as const,
+      label: t('table.signDate')
     },
     interestPaymentType: {
       type: 'select' as const,
@@ -273,10 +311,6 @@ export default function LoansPage() {
         { label: t('table.terminationTypeDURATION'), value: 'DURATION' }
       ]
     },
-    endDate: {
-      type: 'date' as const,
-      label: t('table.endDate')
-    },
     contractStatus: {
       type: 'select' as const,
       label: t('table.contractStatus'),
@@ -284,7 +318,20 @@ export default function LoansPage() {
         { label: t('table.contractStatusPENDING'), value: 'PENDING' },
         { label: t('table.contractStatusCOMPLETED'), value: 'COMPLETED' }
       ]
-    }
+    },
+    lender: {
+      type: 'text' as const,
+      label: t('table.lender')
+    },
+    terminationModalities: {
+      type: 'select' as const,
+      label: t('table.terminationModalities'),
+      options: [
+        { label: t('table.terminationTypeENDDATE'), value: 'ENDDATE' },
+        { label: t('table.terminationTypeTERMINATION'), value: 'TERMINATION' },
+        { label: t('table.terminationTypeDURATION'), value: 'DURATION' }
+      ]
+    },
   }
 
   // Define translations for the DataTable component
@@ -299,18 +346,16 @@ export default function LoansPage() {
   // Define default column visibility
   const defaultColumnVisibility = {
     loanNumber: true,
-    lender: true,
     'lender.lenderNumber': true,
-    'lender.email': true,
+    lender: true,
     signDate: true,
     amount: true,
     interestRate: true,
     interestPaymentType: true,
-    interestPayoutType: false,
-    terminationType: true,
-    endDate: true,
+    interestPayoutType: true,
+    terminationModalities: true,
+    altInterestMethod: false,
     contractStatus: true,
-    actions: true,
   }
 
   useEffect(() => {
@@ -365,6 +410,14 @@ export default function LoansPage() {
         defaultColumnVisibility={defaultColumnVisibility}
         viewType="LOAN"
         showFilter={true}
+        actions={(row) => (
+          <div className="flex items-center justify-end space-x-2">
+            <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/loans/${row.id}/edit`)}>
+              <Pencil className="h-4 w-4" />
+              <span className="sr-only">Edit</span>
+            </Button>
+          </div>
+        )}
       />
     </div>
   )

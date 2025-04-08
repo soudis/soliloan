@@ -230,23 +230,6 @@ export default function LendersPage() {
         return salutation ? t(`table.salutation${salutation}`) : ''
       },
     },
-    {
-      accessorKey: 'actions',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.actions')} />
-      ),
-      cell: ({ row }) => {
-        return (
-          <div className="flex items-center justify-end space-x-2">
-            <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/lenders/${row.original.id}/edit`)}>
-              <Pencil className="h-4 w-4" />
-              <span className="sr-only">Edit</span>
-            </Button>
-          </div>
-        );
-      },
-      enableSorting: false,
-    },
   ]
 
   // Define column filters based on data types
@@ -337,7 +320,6 @@ export default function LendersPage() {
     membershipStatus: true,
     tag: true,
     salutation: false,
-    actions: true,
   }
 
   useEffect(() => {
@@ -392,6 +374,14 @@ export default function LendersPage() {
         defaultColumnVisibility={defaultColumnVisibility}
         viewType="LENDER"
         showFilter={true}
+        actions={(row) => (
+          <div className="flex items-center justify-end space-x-2">
+            <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/lenders/${row.id}/edit`)}>
+              <Pencil className="h-4 w-4" />
+              <span className="sr-only">Edit</span>
+            </Button>
+          </div>
+        )}
       />
     </div>
   )

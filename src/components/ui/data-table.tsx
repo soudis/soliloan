@@ -1,40 +1,27 @@
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { useTableStore } from '@/store/table-store'
 import {
   ColumnDef,
   ColumnFiltersState,
   FilterFn,
   SortingState,
   VisibilityState,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
+  useReactTable
 } from '@tanstack/react-table'
-import { SlidersHorizontal } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { useState } from 'react'
-import { SaveViewDialog } from './save-view-dialog'
-import { ViewManager } from './view-manager'
+import { de, enUS } from 'date-fns/locale'
+import { Settings } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
+import { useEffect, useState } from 'react'
+import { DataTableBody } from './data-table-body'
+import { DataTableColumnFilters } from './data-table-column-filters'
+import { DataTableHeader } from './data-table-header'
+import { DataTablePagination } from './data-table-pagination'
 
 // Define the custom filter function for compound text fields
-const compoundTextFilter: FilterFn<any> = (row, columnId, filterValue) => {
+export const compoundTextFilter: FilterFn<any> = (row, columnId, filterValue) => {
   const value = row.getValue(columnId);
   if (!value) return false;
 
@@ -44,6 +31,46 @@ const compoundTextFilter: FilterFn<any> = (row, columnId, filterValue) => {
 
   return searchValue.includes(searchFilter);
 };
+
+// Define the custom date filter function for date range filtering
+export const dateRangeFilter: FilterFn<any> = (row, columnId, filterValue) => {
+  const value = row.getValue(columnId);
+  if (!value || typeof value !== 'string') return false;
+
+  // If no filter is applied, show all rows
+  if (!filterValue || (!filterValue[0] && !filterValue[1])) return true;
+
+  // Convert the row value to a Date object
+  const rowDate = new Date(value);
+
+  // Check if the date is within the range
+  if (filterValue[0] && filterValue[1]) {
+    const startDate = new Date(filterValue[0]);
+    const endDate = new Date(filterValue[1]);
+    // Set end date to end of day to include the entire day
+    endDate.setUTCHours(23, 59, 59, 999);
+    return rowDate >= startDate && rowDate <= endDate;
+  } else if (filterValue[0]) {
+    // Only start date is set
+    const startDate = new Date(filterValue[0]);
+    return rowDate >= startDate;
+  } else if (filterValue[1]) {
+    // Only end date is set
+    const endDate = new Date(filterValue[1]);
+    // Set end date to end of day to include the entire day
+    endDate.setUTCHours(23, 59, 59, 999);
+    return rowDate <= endDate;
+  }
+
+  return true;
+};
+
+// Define the column meta type to include the fixed property
+declare module '@tanstack/react-table' {
+  interface ColumnMeta<TData extends unknown, TValue> {
+    fixed?: boolean;
+  }
+}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -71,6 +98,7 @@ interface DataTableProps<TData, TValue> {
     noResults?: string
     to?: string
   }
+  actions?: (row: TData) => React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
@@ -86,17 +114,40 @@ export function DataTable<TData, TValue>({
   defaultColumnVisibility = {},
   viewType,
   translations,
+  actions,
 }: DataTableProps<TData, TValue>) {
   const t = useTranslations('dataTable')
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFiltersState, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(defaultColumnVisibility)
+  const locale = useLocale()
+  const dateLocale = locale === 'de' ? de : enUS
+
+  // Get the table store
+  const { getState, setState } = useTableStore()
+
+  // Initialize state from store if viewType is provided
+  const storedState = viewType ? getState(viewType) : null
+
+  const [sorting, setSorting] = useState<SortingState>(storedState?.sorting || [])
+  const [columnFiltersState, setColumnFilters] = useState<ColumnFiltersState>(storedState?.columnFilters || [])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(storedState?.columnVisibility || defaultColumnVisibility)
   const [rowSelection, setRowSelection] = useState({})
   const [showColumnFilters, setShowColumnFilters] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [pageSize, setPageSize] = useState(10)
+  const [globalFilter, setGlobalFilter] = useState(storedState?.globalFilter || '')
+  const [pageSize, setPageSize] = useState(storedState?.pageSize || 10)
   const [viewRefreshTrigger, setViewRefreshTrigger] = useState(0)
+
+  // Update store when state changes
+  useEffect(() => {
+    if (viewType) {
+      setState(viewType, {
+        sorting,
+        columnFilters: columnFiltersState,
+        columnVisibility,
+        globalFilter,
+        pageSize,
+      })
+    }
+  }, [viewType, sorting, columnFiltersState, columnVisibility, globalFilter, pageSize, setState])
 
   // Function to check if any filters are active
   const hasActiveFilters = () => {
@@ -115,9 +166,26 @@ export function DataTable<TData, TValue>({
     return hasColumnFilters;
   };
 
+  // Add actions column if actions prop is provided
+  const allColumns = [...columns];
+  if (actions) {
+    allColumns.push({
+      id: 'actions',
+      header: () => (
+        <div className="flex justify-center">
+          <Settings className="h-4 w-4" />
+        </div>
+      ),
+      cell: ({ row }) => actions(row.original),
+      meta: {
+        fixed: true,
+      },
+    });
+  }
+
   const table = useReactTable({
     data,
-    columns,
+    columns: allColumns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -133,9 +201,10 @@ export function DataTable<TData, TValue>({
       rowSelection,
       globalFilter,
     },
-    // Register the custom filter function
+    // Register the custom filter functions
     filterFns: {
       compoundText: compoundTextFilter,
+      dateRange: dateRangeFilter,
     },
     // Add global filter function to search across all columns
     globalFilterFn: (row, columnId, filterValue) => {
@@ -244,248 +313,38 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
-        {showFilter && (
-          <div className="flex items-center gap-4">
-            {filterColumn && (
-              <Input
-                placeholder={filterPlaceholder}
-                value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ''}
-                onChange={(event) =>
-                  table.getColumn(filterColumn)?.setFilterValue(event.target.value)
-                }
-                className="max-w-sm"
-              />
-            )}
-            <Input
-              placeholder={t('globalFilter') || "Search all columns..."}
-              value={globalFilter}
-              onChange={(event) => setGlobalFilter(event.target.value)}
-              className="max-w-sm"
-            />
-          </div>
-        )}
-        <div className="ml-auto flex items-center space-x-2">
-          {viewType && (
-            <>
-              <ViewManager
-                viewType={viewType}
-                onViewSelect={handleLoadView}
-                onViewDelete={handleDeleteView}
-                refreshTrigger={viewRefreshTrigger}
-              />
-              <SaveViewDialog
-                viewType={viewType}
-                onSave={handleSaveView}
-                isLoading={isSaving}
-              />
-            </>
-          )}
-          {Object.keys(columnFilters).length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8"
-              onClick={() => setShowColumnFilters(!showColumnFilters)}
-            >
-              <SlidersHorizontal className="mr-2 h-4 w-4" />
-              {t('filters')}
-              {hasActiveFilters() && (
-                <span className="ml-2 flex h-2 w-2 rounded-full bg-primary"></span>
-              )}
-            </Button>
-          )}
-          {showColumnVisibility && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-8">
-                  {t('columns')}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {table
-                  .getAllColumns()
-                  .filter((column) => column.getCanHide())
-                  .map((column) => {
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={column.id}
-                        className="capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                          column.toggleVisibility(!!value)
-                        }
-                      >
-                        {columnFilters[column.id]?.label || column.id}
-                      </DropdownMenuCheckboxItem>
-                    )
-                  })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-      </div>
+      <DataTableHeader
+        table={table}
+        filterColumn={filterColumn}
+        filterPlaceholder={filterPlaceholder}
+        showColumnVisibility={showColumnVisibility}
+        showFilter={showFilter}
+        columnFilters={columnFilters}
+        viewType={viewType}
+        globalFilter={globalFilter}
+        setGlobalFilter={setGlobalFilter}
+        showColumnFilters={showColumnFilters}
+        setShowColumnFilters={setShowColumnFilters}
+        hasActiveFilters={hasActiveFilters}
+        isSaving={isSaving}
+        handleSaveView={handleSaveView}
+        viewRefreshTrigger={viewRefreshTrigger}
+      />
 
       {showColumnFilters && Object.keys(columnFilters).length > 0 && (
-        <div className="mb-4 grid grid-cols-1 gap-4 rounded-md border p-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Object.entries(columnFilters).map(([columnId, filterConfig]) => {
-            const column = table.getColumn(columnId)
-            if (!column) return null
-
-            return (
-              <div key={columnId} className="flex flex-col space-y-2">
-                <span className="text-sm font-medium">{filterConfig.label || columnId}:</span>
-                <div className="flex items-center space-x-2">
-                  {filterConfig.type === 'select' ? (
-                    <select
-                      className="h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
-                      value={(column.getFilterValue() as string) ?? ''}
-                      onChange={(e) => column.setFilterValue(e.target.value)}
-                    >
-                      <option value="">All</option>
-                      {filterConfig.options?.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  ) : filterConfig.type === 'number' ? (
-                    <div className="flex w-full items-center space-x-2">
-                      <Input
-                        type="number"
-                        placeholder="Min"
-                        value={(column.getFilterValue() as [number, number])?.[0] ?? ''}
-                        onChange={(e) => {
-                          const value = e.target.value ? Number(e.target.value) : undefined
-                          const current = column.getFilterValue() as [number, number] | undefined
-                          column.setFilterValue([value, current?.[1]])
-                        }}
-                        className="h-8 w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      />
-                      <span className="text-sm whitespace-nowrap">{t('to')}</span>
-                      <Input
-                        type="number"
-                        placeholder="Max"
-                        value={(column.getFilterValue() as [number, number])?.[1] ?? ''}
-                        onChange={(e) => {
-                          const value = e.target.value ? Number(e.target.value) : undefined
-                          const current = column.getFilterValue() as [number, number] | undefined
-                          column.setFilterValue([current?.[0], value])
-                        }}
-                        className="h-8 w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      />
-                    </div>
-                  ) : filterConfig.type === 'date' ? (
-                    <div className="flex w-full items-center space-x-2">
-                      <Input
-                        type="date"
-                        value={(column.getFilterValue() as [string, string])?.[0] ?? ''}
-                        onChange={(e) => {
-                          const value = e.target.value || undefined
-                          const current = column.getFilterValue() as [string, string] | undefined
-                          column.setFilterValue([value, current?.[1]])
-                        }}
-                        className="h-8 w-[130px]"
-                      />
-                      <span className="text-sm">{t('to')}</span>
-                      <Input
-                        type="date"
-                        value={(column.getFilterValue() as [string, string])?.[1] ?? ''}
-                        onChange={(e) => {
-                          const value = e.target.value || undefined
-                          const current = column.getFilterValue() as [string, string] | undefined
-                          column.setFilterValue([current?.[0], value])
-                        }}
-                        className="h-8 w-[130px]"
-                      />
-                    </div>
-                  ) : (
-                    <Input
-                      placeholder={`Filter ${filterConfig.label || columnId}...`}
-                      value={(column.getFilterValue() as string) ?? ''}
-                      onChange={(event) => column.setFilterValue(event.target.value)}
-                      className="h-8 w-full"
-                    />
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
+        <DataTableColumnFilters
+          table={table}
+          columnFilters={columnFilters}
+        />
       )}
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className={onRowClick ? 'cursor-pointer' : ''}
-                  onClick={() => onRowClick?.(row.original)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  {t('noResults')}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTableBody
+        table={table}
+        onRowClick={onRowClick}
+      />
 
       {showPagination && (
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            {t('previous')}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            {t('next')}
-          </Button>
-        </div>
+        <DataTablePagination table={table} />
       )}
     </div>
   )

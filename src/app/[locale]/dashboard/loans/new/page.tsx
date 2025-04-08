@@ -13,7 +13,7 @@ export default function NewLoanPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const { selectedProject } = useProject()
-  const t = useTranslations('loans')
+  const t = useTranslations('dashboard.loans')
   const [error, setError] = useState<string | null>(null)
 
   if (!session) {

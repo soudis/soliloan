@@ -27,6 +27,17 @@ export function FormDatePicker({
   const locale = useLocale()
   const dateLocale = locale === 'de' ? de : enUS
 
+  // Function to convert a date to UTC
+  const toUTC = (date: Date | undefined) => {
+    if (!date) return undefined
+    return new Date(Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      0, 0, 0, 0
+    ))
+  }
+
   return (
     <FormField
       control={form.control}
@@ -57,7 +68,7 @@ export function FormDatePicker({
               <Calendar
                 mode="single"
                 selected={field.value}
-                onSelect={field.onChange}
+                onSelect={(date) => field.onChange(toUTC(date))}
                 initialFocus
                 locale={dateLocale}
               />
