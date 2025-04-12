@@ -3,6 +3,7 @@
 import { deleteTransaction } from '@/app/actions/loans'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { InfoItem } from '@/components/ui/info-item'
 import { formatCurrency } from '@/lib/utils'
 import { useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
@@ -158,22 +159,22 @@ export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <div className="text-sm text-muted-foreground">{t('table.amount')}</div>
-              <div className="text-xl font-semibold">{formatCurrency(loan.amount)}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">{t('table.interestRate')}</div>
-              <div className="text-xl font-semibold">{loan.interestRate}%</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">{t('table.signDate')}</div>
-              <div>{format(new Date(loan.signDate), 'PPP', { locale: dateLocale })}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">{t('table.terminationModalities')}</div>
-              <div>{getTerminationModalities()}</div>
-            </div>
+            <InfoItem
+              label={t('table.amount')}
+              value={formatCurrency(loan.amount)}
+            />
+            <InfoItem
+              label={t('table.interestRate')}
+              value={`${loan.interestRate}%`}
+            />
+            <InfoItem
+              label={t('table.signDate')}
+              value={format(new Date(loan.signDate), 'PPP', { locale: dateLocale })}
+            />
+            <InfoItem
+              label={t('table.terminationModalities')}
+              value={getTerminationModalities()}
+            />
           </div>
 
           <div className="mt-6">

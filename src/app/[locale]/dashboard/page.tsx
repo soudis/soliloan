@@ -45,7 +45,7 @@ export default function DashboardPage() {
           </div>
           <h2 className="mb-2 text-xl font-semibold">{t('lenders.title')}</h2>
           <p className="mb-4 text-sm text-muted-foreground">
-            {t('lenders.details')}
+            {t('lenders.description')}
           </p>
           <Button asChild variant="outline" className="w-full">
             <Link href="/dashboard/lenders">{t('lenders.viewLenders')}</Link>

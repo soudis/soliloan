@@ -1,9 +1,9 @@
 'use client'
 
 import { getLenderById } from '@/app/actions/lenders'
+import { LenderInfoCard } from '@/components/lenders/lender-info-card'
 import { LoanCard } from '@/components/loans/loan-card'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useRouter } from '@/i18n/navigation'
 import { useProject } from '@/store/project-context'
 import { useQuery } from '@tanstack/react-query'
@@ -143,94 +143,30 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('details.contactInfo')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                {lender.email ? (
-                  <div>
-                    <div className="text-sm text-muted-foreground">{t('table.email')}</div>
-                    <div>{lender.email}</div>
-                  </div>
-                ) : null}
-                {lender.telNo ? (
-                  <div>
-                    <div className="text-sm text-muted-foreground">{t('table.telNo')}</div>
-                    <div>{lender.telNo}</div>
-                  </div>
-                ) : null}
-                {!lender.email && !lender.telNo && (
-                  <div className="text-muted-foreground italic">
-                    {t('details.noContactInfo')}
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                {lender.street ? (
-                  <div>
-                    <div className="text-sm text-muted-foreground">{t('details.address')}</div>
-                    <div>{lender.street}</div>
-                    {lender.addon && <div>{lender.addon}</div>}
-                    <div>{lender.zip} {lender.place}</div>
-                    {lender.country && <div>{lender.country}</div>}
-                  </div>
-                ) : (
-                  <div className="text-muted-foreground italic">
-                    {t('details.noAddress')}
-                  </div>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('details.banking')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {lender.iban ? (
-              <div>
-                <div className="text-sm text-muted-foreground">IBAN</div>
-                <div>{lender.iban}</div>
-              </div>
-            ) : null}
-            {lender.bic ? (
-              <div>
-                <div className="text-sm text-muted-foreground">BIC</div>
-                <div>{lender.bic}</div>
-              </div>
-            ) : null}
-            {!lender.iban && !lender.bic && (
-              <div className="text-muted-foreground italic">
-                {t('details.noBankingInfo')}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Loan Cards Section - Left side on desktop, bottom on mobile */}
+        <div className="w-full lg:w-2/3 space-y-4">
+          <h2 className="text-2xl font-semibold">{t('details.loans')}</h2>
+          <div className="space-y-6">
+            {lender.loans.map((loan) => (
+              <LoanCard
+                key={loan.id}
+                loan={loan}
+                onView={(id) => router.push(`/dashboard/loans/${id}`)}
+                onEdit={(id) => router.push(`/dashboard/loans/${id}/edit`)}
+              />
+            ))}
+            {lender.loans.length === 0 && (
+              <div className="text-center text-muted-foreground py-8">
+                {t('loans.table.noResults')}
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
 
-      <div className="space-y-4">
-        <h2 className="text-2xl font-semibold">{t('details.loans')}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lender.loans.map((loan) => (
-            <LoanCard
-              key={loan.id}
-              loan={loan}
-              onView={(id) => router.push(`/dashboard/loans/${id}`)}
-              onEdit={(id) => router.push(`/dashboard/loans/${id}/edit`)}
-            />
-          ))}
-          {lender.loans.length === 0 && (
-            <div className="col-span-full text-center text-muted-foreground py-8">
-              {t('loans.table.noResults')}
-            </div>
-          )}
+        {/* Lender Information Section - Right side on desktop, top on mobile */}
+        <div className="w-full lg:w-1/3">
+          <LenderInfoCard lender={lender} />
         </div>
       </div>
     </div>

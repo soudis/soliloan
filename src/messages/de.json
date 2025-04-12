@@ -45,6 +45,15 @@
       "ie": "Irland",
       "pt": "Portugal",
       "gr": "Griechenland"
+    },
+    "clipboard": {
+      "copy": "In die Zwischenablage kopieren",
+      "copied": "In die Zwischenablage kopiert"
+    },
+    "qrCode": {
+      "title": "Zahlungs-QR-Code",
+      "description": "Scannen Sie diesen QR-Code mit Ihrer Banking-App, um die Zahlungsinformationen zu erhalten",
+      "show": "Zahlungs-QR-Code anzeigen"
     }
   },
   "dashboard": {
@@ -191,6 +200,43 @@
         "deleteSuccess": "Zahlung erfolgreich gelöscht",
         "deleteError": "Fehler beim Löschen der Zahlung",
         "noTransactions": "Noch keine Zahlungen",
+        "createTitle": "Neue Zahlung",
+        "createSuccess": "Zahlung erfolgreich erstellt",
+        "createError": "Fehler beim Erstellen der Zahlung",
+        "cancel": "Abbrechen",
+        "create": "Zahlung erstellen",
+        "type": "Zahlungstyp",
+        "typePlaceholder": "Zahlungstyp auswählen",
+        "date": "Datum",
+        "datePlaceholder": "Datum auswählen",
+        "amount": "Betrag",
+        "amountPlaceholder": "Betrag eingeben",
+        "paymentType": "Zahlungsart",
+        "paymentTypePlaceholder": "Zahlungsart auswählen",
+        "typeDeposit": "Einzahlung",
+        "typeWithdrawal": "Auszahlung",
+        "typeInterest": "Zinsen",
+        "typeInterestPayment": "Zinszahlung",
+        "typeTermination": "Kündigung",
+        "typeNotReclaimedPartial": "Nicht zurückgefordert (Teilweise)",
+        "typeNotReclaimed": "Nicht zurückgefordert",
+        "paymentTypeBank": "Banküberweisung",
+        "paymentTypeCash": "Bar",
+        "paymentTypeOther": "Sonstiges",
+        "typeValues": {
+          "INTEREST": "Zinsen",
+          "DEPOSIT": "Einzahlung",
+          "WITHDRAWAL": "Auszahlung",
+          "TERMINATION": "Kündigung",
+          "INTERESTPAYMENT": "Zinszahlung",
+          "NOTRECLAIMEDPARTIAL": "Nicht zurückgefordert (Teilweise)",
+          "NOTRECLAIMED": "Nicht zurückgefordert"
+        },
+        "paymentTypeValues": {
+          "BANK": "Banküberweisung",
+          "CASH": "Bar",
+          "OTHER": "Sonstiges"
+        },
         "type": {
           "INTEREST": "Zinsen",
           "DEPOSIT": "Einzahlung",
@@ -204,22 +250,6 @@
           "BANK": "Banküberweisung",
           "CASH": "Bar",
           "OTHER": "Sonstiges"
-        },
-        "new": {
-          "title": "Neue Zahlung",
-          "description": "Fügen Sie eine neue Zahlung zu diesem Kredit hinzu",
-          "type": "Typ",
-          "typePlaceholder": "Zahlungstyp auswählen",
-          "date": "Datum",
-          "datePlaceholder": "Datum auswählen",
-          "amount": "Betrag",
-          "amountPlaceholder": "Betrag eingeben",
-          "paymentType": "Zahlungsart",
-          "paymentTypePlaceholder": "Zahlungsart auswählen",
-          "note": "Notiz",
-          "notePlaceholder": "Optionale Notiz eingeben",
-          "submit": "Zahlung hinzufügen",
-          "cancel": "Abbrechen"
         }
       },
       "table": {
@@ -250,54 +280,14 @@
         "defaultDate": "Ausfalldatum",
         "defaultAmount": "Ausfallbetrag",
         "defaultReason": "Ausfallgrund",
-        "defaultStatus": "Ausfallstatus",
-        "defaultStatusNONE": "Keiner",
-        "defaultStatusPARTIAL": "Teilweise",
-        "defaultStatusFULL": "Vollständig",
-        "defaultResolution": "Ausfallauflösung",
-        "defaultResolutionNONE": "Keine",
-        "defaultResolutionPAID": "Bezahlt",
-        "defaultResolutionWRITTEN_OFF": "Abgeschrieben",
-        "defaultResolutionRESTRUCTURED": "Umstrukturiert",
-        "defaultResolutionDate": "Auflösungsdatum",
-        "defaultResolutionAmount": "Auflösungsbetrag",
-        "defaultResolutionNote": "Auflösungsnotiz",
-        "tag": "Tag",
-        "note": "Notiz",
-        "actions": "Aktionen",
-        "filterByName": "Nach Namen filtern...",
-        "columns": "Spalten",
-        "filters": "Filter",
-        "noResults": "Keine Kredite gefunden",
-        "previous": "Zurück",
-        "next": "Weiter",
-        "lenderNumber": "Kreditgeber-Nr.",
-        "lender": "Kreditgeber",
-        "signDate": "Unterzeichnungsdatum",
-        "interestPaymentType": "Zinszahlungsart",
-        "interestPaymentTypeYEARLY": "Jährlich",
-        "interestPaymentTypeEND": "Am Ende",
-        "interestPayoutType": "Zinsauszahlungsart",
-        "interestPayoutTypeMONEY": "Geld",
-        "interestPayoutTypeCOUPON": "Coupon",
-        "terminationType": "Kündigungsart",
         "terminationTypeENDDATE": "Enddatum",
         "terminationTypeTERMINATION": "Kündigung",
         "terminationTypeDURATION": "Laufzeit",
-        "terminationDate": "Kündigungsdatum",
-        "terminationPeriod": "Kündigungsfrist",
-        "terminationPeriodType": "Kündigungsfrist-Einheit",
-        "terminationPeriodTypeMONTHS": "Monate",
-        "terminationPeriodTypeYEARS": "Jahre",
-        "duration": "Laufzeit",
-        "durationType": "Laufzeit-Einheit",
-        "durationTypeMONTHS": "Monate",
-        "durationTypeYEARS": "Jahre",
-        "altInterestMethod": "Alternative Zinsmethode",
-        "contractStatus": "Vertragsstatus",
         "contractStatusPENDING": "Ausstehend",
         "contractStatusCOMPLETED": "Abgeschlossen",
-        "terminationModalities": "Kündigungsart"
+        "signDate": "Unterzeichnungsdatum",
+        "terminationModalities": "Kündigungsmodalitäten",
+        "interestPaymentType": "Zinszahlungsart"
       },
       "new": {
         "title": "Neuen Kredit erstellen",
@@ -375,6 +365,12 @@
           "submit": "Kredit aktualisieren",
           "submitting": "Wird aktualisiert..."
         }
+      },
+      "accessibility": {
+        "view": "Anzeigen",
+        "edit": "Bearbeiten",
+        "addTransaction": "Zahlung hinzufügen",
+        "delete": "Löschen"
       }
     },
     "configuration": {
