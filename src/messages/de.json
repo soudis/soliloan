@@ -184,8 +184,19 @@
     }
   },
   "dashboard": {
-    "welcome": "Willkommen, {name}",
-    "description": "Dies ist Ihr Dashboard, wo Sie Ihre Projekte, Kreditgeber und Kredite verwalten können.",
+    "welcome": "Willkommen, {name}!",
+    "description": "Hier finden Sie eine Übersicht über Ihre Kreditgeber und Kredite.",
+    "stats": {
+      "totalLenders": "Kreditgeber gesamt",
+      "personLenders": "Privatpersonen",
+      "organisationLenders": "Organisationen",
+      "totalLoans": "Kredite gesamt",
+      "pendingLoans": "Ausstehend",
+      "completedLoans": "Abgeschlossen",
+      "totalLoanAmount": "Gesamtbetrag der Kredite",
+      "avgInterestRate": "Durchschnittlicher Zinssatz",
+      "loanStatus": "Kreditstatus"
+    },
     "projects": {
       "title": "Projekte",
       "description": "Verwalten Sie Ihre Projekte und Kredite",
@@ -195,7 +206,6 @@
     "lenders": {
       "title": "Kreditgeber",
       "description": "Verwalten Sie Ihre Kreditgeber und deren Informationen",
-      "details": "Fügen Sie Kreditgeberinformationen, Kontaktdaten und Präferenzen hinzu, aktualisieren und verwalten Sie diese.",
       "viewLenders": "Kreditgeber anzeigen",
       "table": {
         "lenderNumber": "Nummer",
