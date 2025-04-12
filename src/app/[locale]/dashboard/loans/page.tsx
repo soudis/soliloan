@@ -31,7 +31,6 @@ type FilterFn = 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'compoundTex
 interface Loan {
   id: string
   loanNumber: number
-  lenderId: string
   lender: {
     id: string
     lenderNumber: number
@@ -64,6 +63,7 @@ interface Loan {
 
 export default function LoansPage() {
   const t = useTranslations('dashboard.loans')
+  const commonT = useTranslations('common')
   const router = useRouter()
   const { selectedProject } = useProject()
   const [error, setError] = useState<string | null>(null)
@@ -166,7 +166,7 @@ export default function LoansPage() {
       ),
       cell: ({ row }) => {
         const type = row.getValue('interestPaymentType') as string
-        return type ? t(`table.interestPaymentType${type}`) : ''
+        return type ? commonT(`enums.loan.interestPaymentType.${type}`) : ''
       },
     },
     {
@@ -176,7 +176,7 @@ export default function LoansPage() {
       ),
       cell: ({ row }) => {
         const type = row.getValue('interestPayoutType') as string
-        return type ? t(`table.interestPayoutType${type}`) : ''
+        return type ? commonT(`enums.loan.interestPayoutType.${type}`) : ''
       },
     },
     {
@@ -214,23 +214,23 @@ export default function LoansPage() {
           try {
             const date = new Date(loan.endDate)
             const formattedDate = isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE')
-            return `${t('table.terminationTypeENDDATE')} - ${formattedDate}`
+            return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${formattedDate}`
           } catch (e) {
-            return t('table.terminationTypeENDDATE')
+            return commonT(`enums.loan.terminationType.${terminationType}`)
           }
         } else if (terminationType === 'DURATION' && loan.duration && loan.durationType) {
           const durationType = loan.durationType === 'MONTHS'
-            ? t('table.durationTypeMONTHS')
-            : t('table.durationTypeYEARS')
-          return `${t('table.terminationTypeDURATION')} - ${loan.duration} ${durationType}`
+            ? commonT('enums.loan.durationUnit.MONTHS')
+            : commonT('enums.loan.durationUnit.YEARS')
+          return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${loan.duration} ${durationType}`
         } else if (terminationType === 'TERMINATION' && loan.terminationPeriod && loan.terminationPeriodType) {
           const periodType = loan.terminationPeriodType === 'MONTHS'
-            ? t('table.terminationPeriodTypeMONTHS')
-            : t('table.terminationPeriodTypeYEARS')
-          return `${t('table.terminationTypeTERMINATION')} - ${loan.terminationPeriod} ${periodType}`
+            ? commonT('enums.loan.durationUnit.MONTHS')
+            : commonT('enums.loan.durationUnit.YEARS')
+          return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${loan.terminationPeriod} ${periodType}`
         }
 
-        return t(`table.terminationType${terminationType}`)
+        return commonT(`enums.loan.terminationType.${terminationType}`)
       },
       filterFn: (row, columnId, filterValue) => {
         const terminationType = row.original.terminationType;
@@ -257,7 +257,7 @@ export default function LoansPage() {
         const status = row.getValue('contractStatus') as string
         if (!status) return ''
 
-        const statusText = t(`table.contractStatus${status}`)
+        const statusText = commonT(`enums.loan.contractStatus.${status}`)
 
         // Define badge variant based on status
         let variant: "default" | "secondary" | "destructive" | "outline" = "default"
@@ -303,33 +303,33 @@ export default function LoansPage() {
       type: 'select' as const,
       label: t('table.interestPaymentType'),
       options: [
-        { label: t('table.interestPaymentTypeYEARLY'), value: 'YEARLY' },
-        { label: t('table.interestPaymentTypeEND'), value: 'END' }
+        { label: commonT('enums.loan.interestPaymentType.YEARLY'), value: 'YEARLY' },
+        { label: commonT('enums.loan.interestPaymentType.END'), value: 'END' }
       ]
     },
     interestPayoutType: {
       type: 'select' as const,
       label: t('table.interestPayoutType'),
       options: [
-        { label: t('table.interestPayoutTypeMONEY'), value: 'MONEY' },
-        { label: t('table.interestPayoutTypeCOUPON'), value: 'COUPON' }
+        { label: commonT('enums.loan.interestPayoutType.MONEY'), value: 'MONEY' },
+        { label: commonT('enums.loan.interestPayoutType.COUPON'), value: 'COUPON' }
       ]
     },
     terminationType: {
       type: 'select' as const,
       label: t('table.terminationType'),
       options: [
-        { label: t('table.terminationTypeENDDATE'), value: 'ENDDATE' },
-        { label: t('table.terminationTypeTERMINATION'), value: 'TERMINATION' },
-        { label: t('table.terminationTypeDURATION'), value: 'DURATION' }
+        { label: commonT('enums.loan.terminationType.ENDDATE'), value: 'ENDDATE' },
+        { label: commonT('enums.loan.terminationType.TERMINATION'), value: 'TERMINATION' },
+        { label: commonT('enums.loan.terminationType.DURATION'), value: 'DURATION' }
       ]
     },
     contractStatus: {
       type: 'select' as const,
       label: t('table.contractStatus'),
       options: [
-        { label: t('table.contractStatusPENDING'), value: 'PENDING' },
-        { label: t('table.contractStatusCOMPLETED'), value: 'COMPLETED' }
+        { label: commonT('enums.loan.contractStatus.PENDING'), value: 'PENDING' },
+        { label: commonT('enums.loan.contractStatus.COMPLETED'), value: 'COMPLETED' }
       ]
     },
     lender: {
@@ -340,20 +340,20 @@ export default function LoansPage() {
       type: 'select' as const,
       label: t('table.terminationModalities'),
       options: [
-        { label: t('table.terminationTypeENDDATE'), value: 'ENDDATE' },
-        { label: t('table.terminationTypeTERMINATION'), value: 'TERMINATION' },
-        { label: t('table.terminationTypeDURATION'), value: 'DURATION' }
+        { label: commonT('enums.loan.terminationType.ENDDATE'), value: 'ENDDATE' },
+        { label: commonT('enums.loan.terminationType.TERMINATION'), value: 'TERMINATION' },
+        { label: commonT('enums.loan.terminationType.DURATION'), value: 'DURATION' }
       ]
     },
   }
 
   // Define translations for the DataTable component
   const tableTranslations = {
-    columns: t('table.columns'),
-    filters: t('table.filters'),
-    previous: t('table.previous'),
-    next: t('table.next'),
-    noResults: t('table.noResults')
+    columns: commonT('ui.table.columns'),
+    filters: commonT('ui.table.filters'),
+    previous: commonT('ui.table.previous'),
+    next: commonT('ui.table.next'),
+    noResults: commonT('ui.table.noResults')
   }
 
   // Define default column visibility
@@ -405,7 +405,7 @@ export default function LoansPage() {
           <div className="flex items-center justify-end space-x-2">
             <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/loans/${row.id}/edit`)}>
               <Pencil className="h-4 w-4" />
-              <span className="sr-only">Edit</span>
+              <span className="sr-only">{commonT('ui.actions.edit')}</span>
             </Button>
           </div>
         )}

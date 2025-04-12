@@ -27,6 +27,7 @@ export function FormCountrySelect({
   placeholder = 'Select a country',
 }: FormCountrySelectProps) {
   const t = useTranslations('common.countries')
+  const commonT = useTranslations('common')
 
   // Create options for primary countries
   const primaryOptions = PRIMARY_COUNTRIES.map(code => ({
@@ -62,7 +63,7 @@ export function FormCountrySelect({
       form={form}
       name={name}
       label={label}
-      placeholder={placeholder}
+      placeholder={placeholder || commonT('ui.form.selectPlaceholder')}
       options={[...primaryOptions, ...otherOptions]}
       side="bottom"
       align="start"

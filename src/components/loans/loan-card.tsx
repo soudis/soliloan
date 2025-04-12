@@ -57,6 +57,7 @@ interface LoanCardProps {
 
 export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
   const t = useTranslations('dashboard.loans')
+  const commonT = useTranslations('common')
   const locale = useLocale()
   const dateLocale = locale === 'de' ? de : enUS
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false)
@@ -79,17 +80,17 @@ export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
   const getTerminationModalities = () => {
     switch (loan.terminationType) {
       case 'ENDDATE':
-        return `${t('table.terminationTypeENDDATE')} - ${loan.endDate ? format(new Date(loan.endDate), 'PPP', { locale: dateLocale }) : '-'}`
+        return `${commonT('enums.loan.terminationType.ENDDATE')} - ${loan.endDate ? format(new Date(loan.endDate), 'PPP', { locale: dateLocale }) : '-'}`
       case 'TERMINATION':
-        if (!loan.terminationPeriod || !loan.terminationPeriodType) return `${t('table.terminationTypeTERMINATION')} - -`
-        return `${t('table.terminationTypeTERMINATION')} - ${loan.terminationPeriod} ${loan.terminationPeriodType === 'MONTHS' ?
-          t('new.form.terminationPeriodTypeMonths') :
-          t('new.form.terminationPeriodTypeYears')}`
+        if (!loan.terminationPeriod || !loan.terminationPeriodType) return `${commonT('enums.loan.terminationType.TERMINATION')} - -`
+        return `${commonT('enums.loan.terminationType.TERMINATION')} - ${loan.terminationPeriod} ${loan.terminationPeriodType === 'MONTHS' ?
+          commonT('enums.loan.periodType.MONTHS') :
+          commonT('enums.loan.periodType.YEARS')}`
       case 'DURATION':
-        if (!loan.duration || !loan.durationType) return `${t('table.terminationTypeDURATION')} - -`
-        return `${t('table.terminationTypeDURATION')} - ${loan.duration} ${loan.durationType === 'MONTHS' ?
-          t('new.form.durationTypeMonths') :
-          t('new.form.durationTypeYears')}`
+        if (!loan.duration || !loan.durationType) return `${commonT('enums.loan.terminationType.DURATION')} - -`
+        return `${commonT('enums.loan.terminationType.DURATION')} - ${loan.duration} ${loan.durationType === 'MONTHS' ?
+          commonT('enums.loan.periodType.MONTHS') :
+          commonT('enums.loan.periodType.YEARS')}`
       default:
         return '-'
     }
@@ -135,25 +136,25 @@ export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
               variant={loan.contractStatus === 'PENDING' ? 'secondary' : 'default'}
               className="mt-1"
             >
-              {t(`table.contractStatus${loan.contractStatus}`)}
+              {commonT(`enums.loan.contractStatus.${loan.contractStatus}`)}
             </Badge>
           </div>
           <div className="flex space-x-1">
             {onView && (
               <Button variant="ghost" size="icon" onClick={() => onView(loan.id)}>
                 <Eye className="h-4 w-4" />
-                <span className="sr-only">View</span>
+                <span className="sr-only">{commonT('ui.actions.view')}</span>
               </Button>
             )}
             {onEdit && (
               <Button variant="ghost" size="icon" onClick={() => onEdit(loan.id)}>
                 <Pencil className="h-4 w-4" />
-                <span className="sr-only">Edit</span>
+                <span className="sr-only">{commonT('ui.actions.edit')}</span>
               </Button>
             )}
             <Button variant="ghost" size="icon" onClick={() => setIsTransactionDialogOpen(true)}>
               <Plus className="h-4 w-4" />
-              <span className="sr-only">Add Transaction</span>
+              <span className="sr-only">{commonT('ui.actions.add')}</span>
             </Button>
           </div>
         </CardHeader>
@@ -188,7 +189,7 @@ export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
                     </div>
                     <div>
                       <div className="text-sm font-medium">
-                        {t(`transactions.type.${transaction.type}`)}
+                        {commonT(`enums.transaction.type.${transaction.type}`)}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {format(new Date(transaction.date), 'PPP', { locale: dateLocale })}
@@ -204,7 +205,7 @@ export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
                       onClick={() => handleDeleteTransaction(transaction.id)}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
-                      <span className="sr-only">Delete</span>
+                      <span className="sr-only">{commonT('ui.actions.delete')}</span>
                     </Button>
                   </div>
                 </div>

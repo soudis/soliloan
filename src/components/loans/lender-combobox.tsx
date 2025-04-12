@@ -31,6 +31,7 @@ export function LenderCombobox({
   placeholder,
 }: LenderComboboxProps) {
   const t = useTranslations('dashboard.loans')
+  const commonT = useTranslations('common')
   const { selectedProject } = useProject()
   const [lenders, setLenders] = useState<Lender[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -76,7 +77,7 @@ export function LenderCombobox({
       form={form}
       name={name}
       label={label}
-      placeholder={isLoading ? t('new.form.loadingLenders') : placeholder}
+      placeholder={isLoading ? t('new.form.loadingLenders') : placeholder || commonT('ui.form.selectPlaceholder')}
       options={lenderOptions}
     />
   )

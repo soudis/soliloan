@@ -54,6 +54,133 @@
       "title": "Payment QR Code",
       "description": "Scan this QR code with your banking app to get the payment information",
       "show": "Show payment QR code"
+    },
+    "ui": {
+      "theme": "Theme",
+      "actions": {
+        "cancel": "Cancel",
+        "submit": "Submit",
+        "submitting": "Submitting...",
+        "save": "Save",
+        "saving": "Saving...",
+        "edit": "Edit",
+        "delete": "Delete",
+        "view": "View",
+        "create": "Create",
+        "creating": "Creating...",
+        "update": "Update",
+        "updating": "Updating..."
+      },
+      "status": {
+        "success": "Success",
+        "error": "Error",
+        "loading": "Loading...",
+        "noResults": "No results found"
+      },
+      "form": {
+        "required": "Required",
+        "optional": "Optional",
+        "selectPlaceholder": "Select...",
+        "enterPlaceholder": "Enter..."
+      },
+      "table": {
+        "columns": "Columns",
+        "filters": "Filters",
+        "previous": "Previous",
+        "next": "Next",
+        "noResults": "No results found",
+        "globalFilter": "Search all columns..."
+      }
+    },
+    "enums": {
+      "lender": {
+        "type": {
+          "PERSON": "Person",
+          "ORGANISATION": "Organization"
+        },
+        "salutation": {
+          "PERSONAL": "Personal",
+          "FORMAL": "Formal"
+        },
+        "notificationType": {
+          "ONLINE": "Online",
+          "EMAIL": "Email",
+          "MAIL": "Mail"
+        },
+        "membershipStatus": {
+          "UNKNOWN": "Unknown",
+          "MEMBER": "Member",
+          "EXTERNAL": "External"
+        }
+      },
+      "loan": {
+        "status": {
+          "ACTIVE": "Active",
+          "CLOSED": "Closed",
+          "DEFAULTED": "Defaulted"
+        },
+        "type": {
+          "FIXED": "Fixed",
+          "FLOATING": "Floating"
+        },
+        "paymentFrequency": {
+          "MONTHLY": "Monthly",
+          "QUARTERLY": "Quarterly",
+          "ANNUALLY": "Annually"
+        },
+        "interestPaymentType": {
+          "YEARLY": "Yearly",
+          "END": "At End"
+        },
+        "interestPayoutType": {
+          "MONEY": "Money",
+          "COUPON": "Coupon"
+        },
+        "terminationType": {
+          "ENDDATE": "End Date",
+          "TERMINATION": "Termination",
+          "DURATION": "Duration"
+        },
+        "contractStatus": {
+          "PENDING": "Pending",
+          "COMPLETED": "Completed"
+        },
+        "durationUnit": {
+          "MONTHS": "months",
+          "YEARS": "years"
+        }
+      },
+      "transaction": {
+        "type": {
+          "DEPOSIT": "Deposit",
+          "WITHDRAWAL": "Withdrawal",
+          "INTEREST": "Interest",
+          "INTERESTPAYMENT": "Interest Payment",
+          "TERMINATION": "Termination",
+          "NOTRECLAIMEDPARTIAL": "Not Reclaimed (Partial)",
+          "NOTRECLAIMED": "Not Reclaimed"
+        },
+        "paymentType": {
+          "BANK": "Bank Transfer",
+          "CASH": "Cash",
+          "OTHER": "Other"
+        }
+      },
+      "interestMethod": {
+        "ACT365NOCOMPOUND": "Actual/365 (No Compound)",
+        "E30360NOCOMPOUND": "30/360 (No Compound)",
+        "ACT360NOCOMPOUND": "Actual/360 (No Compound)",
+        "ACTACTNOCOMPOUND": "Actual/Actual (No Compound)",
+        "ACT365COMPOUND": "Actual/365 (Compound)",
+        "E30360COMPOUND": "30/360 (Compound)",
+        "ACT360COMPOUND": "Actual/360 (Compound)",
+        "ACTACTCOMPOUND": "Actual/Actual (Compound)"
+      },
+      "theme": {
+        "DEFAULT": "System",
+        "DARK": "Dark",
+        "LIGHT": "Light"
+      }
     }
   },
   "dashboard": {
@@ -73,32 +200,17 @@
       "table": {
         "lenderNumber": "Number",
         "type": "Type",
-        "typePERSON": "Person",
-        "typeORGANISATION": "Organization",
         "name": "Full Name",
         "email": "Email",
         "telNo": "Phone",
         "address": "Address",
         "banking": "Banking",
         "notificationType": "Notification",
-        "notificationTypeONLINE": "Online",
-        "notificationTypeEMAIL": "Email",
-        "notificationTypeMAIL": "Mail",
         "membershipStatus": "Status",
-        "membershipStatusUNKNOWN": "Unknown",
-        "membershipStatusMEMBER": "Member",
-        "membershipStatusEXTERNAL": "External",
         "tag": "Tag",
         "salutation": "Salutation",
-        "salutationPERSONAL": "Personal",
-        "salutationFORMAL": "Formal",
         "actions": "Actions",
-        "filterByName": "Filter by name...",
-        "columns": "Columns",
-        "filters": "Filters",
-        "noResults": "No lenders found",
-        "previous": "Previous",
-        "next": "Next"
+        "filterByName": "Filter by name..."
       },
       "details": {
         "edit": "Edit Lender",
@@ -121,12 +233,8 @@
           "generalInfo": "General Information",
           "type": "Type",
           "typePlaceholder": "Select type",
-          "typePerson": "Person",
-          "typeOrganisation": "Organization",
           "salutation": "Salutation",
           "salutationPlaceholder": "Select salutation",
-          "salutationPersonal": "Personal",
-          "salutationFormal": "Formal",
           "titlePrefix": "Title Prefix",
           "titlePrefixPlaceholder": "Enter title prefix",
           "firstName": "First Name",
@@ -160,29 +268,19 @@
           "additionalInfo": "Additional Information",
           "notificationType": "Notification Type",
           "notificationTypePlaceholder": "Select notification type",
-          "notificationTypeOnline": "Online",
-          "notificationTypeEmail": "Email",
-          "notificationTypeMail": "Mail",
           "membershipStatus": "Membership Status",
           "membershipStatusPlaceholder": "Select membership status",
-          "membershipStatusUnknown": "Unknown",
-          "membershipStatusMember": "Member",
-          "membershipStatusExternal": "External",
           "tag": "Tag",
           "tagPlaceholder": "Enter tag",
-          "cancel": "Cancel",
-          "submit": "Create Lender",
-          "submitting": "Creating..."
+          "success": "Lender created successfully",
+          "error": "Failed to create lender"
         }
       },
       "edit": {
         "title": "Edit Lender",
         "form": {
           "success": "Lender updated successfully",
-          "error": "Failed to update lender",
-          "cancel": "Cancel",
-          "submit": "Update Lender",
-          "submitting": "Updating..."
+          "error": "Failed to update lender"
         }
       }
     },
@@ -201,8 +299,6 @@
         "createTitle": "New Transaction",
         "createSuccess": "Transaction created successfully",
         "createError": "Failed to create transaction",
-        "cancel": "Cancel",
-        "create": "Create Transaction",
         "type": "Transaction Type",
         "typePlaceholder": "Select transaction type",
         "date": "Date",
@@ -211,80 +307,21 @@
         "amountPlaceholder": "Enter amount",
         "paymentType": "Payment Type",
         "paymentTypePlaceholder": "Select payment type",
-        "typeDeposit": "Deposit",
-        "typeWithdrawal": "Withdrawal",
-        "typeInterest": "Interest",
-        "typeInterestPayment": "Interest Payment",
-        "typeTermination": "Termination",
-        "typeNotReclaimedPartial": "Not Reclaimed (Partial)",
-        "typeNotReclaimed": "Not Reclaimed",
-        "paymentTypeBank": "Bank Transfer",
-        "paymentTypeCash": "Cash",
-        "paymentTypeOther": "Other",
-        "typeValues": {
-          "INTEREST": "Interest",
-          "DEPOSIT": "Deposit",
-          "WITHDRAWAL": "Withdrawal",
-          "TERMINATION": "Termination",
-          "INTERESTPAYMENT": "Interest Payment",
-          "NOTRECLAIMEDPARTIAL": "Not Reclaimed (Partial)",
-          "NOTRECLAIMED": "Not Reclaimed"
-        },
-        "paymentTypeValues": {
-          "BANK": "Bank Transfer",
-          "CASH": "Cash",
-          "OTHER": "Other"
-        },
-        "type": {
-          "INTEREST": "Interest",
-          "DEPOSIT": "Deposit",
-          "WITHDRAWAL": "Withdrawal",
-          "TERMINATION": "Termination",
-          "INTERESTPAYMENT": "Interest Payment",
-          "NOTRECLAIMEDPARTIAL": "Not Reclaimed (Partial)",
-          "NOTRECLAIMED": "Not Reclaimed"
-        },
-        "paymentType": {
-          "BANK": "Bank Transfer",
-          "CASH": "Cash",
-          "OTHER": "Other"
-        },
-        "new": {
-          "title": "New Transaction",
-          "description": "Add a new transaction to this loan",
-          "type": "Type",
-          "typePlaceholder": "Select transaction type",
-          "date": "Date",
-          "datePlaceholder": "Select date",
-          "amount": "Amount",
-          "amountPlaceholder": "Enter amount",
-          "paymentType": "Payment Type",
-          "paymentTypePlaceholder": "Select payment type",
-          "note": "Note",
-          "notePlaceholder": "Enter optional note",
-          "submit": "Add Transaction",
-          "cancel": "Cancel"
-        }
+        "note": "Note",
+        "notePlaceholder": "Enter optional note"
       },
       "table": {
         "loanNumber": "Number",
-        "lenderName": "Lender",
+        "lenderNumber": "Lender Number",
+        "lender": "Lender",
         "amount": "Amount",
         "interestRate": "Interest Rate",
         "startDate": "Start Date",
         "endDate": "End Date",
         "status": "Status",
-        "statusACTIVE": "Active",
-        "statusCLOSED": "Closed",
-        "statusDEFAULTED": "Defaulted",
         "type": "Type",
-        "typeFIXED": "Fixed",
-        "typeFLOATING": "Floating",
         "currency": "Currency",
         "paymentFrequency": "Payment Frequency",
-        "paymentFrequencyMONTHLY": "Monthly",
-        "paymentFrequencyQUARTERLY": "Quarterly",
-        "paymentFrequencyANNUALLY": "Annually",
         "paymentDay": "Payment Day",
         "paymentAmount": "Payment Amount",
         "remainingAmount": "Remaining Amount",
@@ -294,33 +331,18 @@
         "defaultDate": "Default Date",
         "defaultAmount": "Default Amount",
         "defaultReason": "Default Reason",
-        "terminationTypeENDDATE": "End Date",
-        "terminationTypeTERMINATION": "Termination",
-        "terminationTypeDURATION": "Duration",
-        "contractStatusPENDING": "Pending",
-        "contractStatusCOMPLETED": "Completed",
-        "signDate": "Sign Date",
         "terminationModalities": "Termination Modalities",
         "interestPaymentType": "Interest Payment Type",
-        "interestPaymentTypeYEARLY": "Yearly",
-        "interestPaymentTypeEND": "At End",
         "interestPayoutType": "Interest Payout Type",
-        "interestPayoutTypeMONEY": "Money",
-        "interestPayoutTypeCOUPON": "Coupon",
         "terminationType": "Termination Type",
-        "terminationTypeDURATION": "Duration",
         "terminationDate": "Termination Date",
         "terminationPeriod": "Termination Period",
         "terminationPeriodType": "Termination Period Unit",
-        "terminationPeriodTypeMONTHS": "Months",
-        "terminationPeriodTypeYEARS": "Years",
         "duration": "Duration",
         "durationType": "Duration Unit",
-        "durationTypeMONTHS": "Months",
-        "durationTypeYEARS": "Years",
         "altInterestMethod": "Alternative Interest Method",
         "contractStatus": "Contract Status",
-        "terminationModalities": "Termination Modalities"
+        "signDate": "Sign Date"
       },
       "new": {
         "title": "Create New Loan",
@@ -340,63 +362,34 @@
           "terminationInfo": "Termination Information",
           "terminationType": "Termination Type",
           "terminationTypePlaceholder": "Select termination type",
-          "terminationTypeEndDate": "End Date",
-          "terminationTypeTermination": "Termination",
-          "terminationTypeDuration": "Duration",
           "endDate": "End Date",
           "endDatePlaceholder": "Select end date",
           "terminationPeriod": "Termination Period",
           "terminationPeriodPlaceholder": "Enter termination period",
-          "terminationPeriodType": "Termination Period Unit",
-          "terminationPeriodTypePlaceholder": "Select termination period unit",
-          "terminationPeriodTypeMonths": "months",
-          "terminationPeriodTypeYears": "years",
           "terminationDate": "Termination Date",
           "terminationDatePlaceholder": "Select termination date",
           "duration": "Duration",
           "durationPlaceholder": "Enter duration",
           "durationType": "Duration Unit",
           "durationTypePlaceholder": "Select duration unit",
-          "durationTypeMonths": "months",
-          "durationTypeYears": "years",
           "additionalInfo": "Additional Information",
           "interestPaymentType": "Interest Payment Type",
           "interestPaymentTypePlaceholder": "Select interest payment type",
-          "interestPaymentTypeYearly": "Yearly",
-          "interestPaymentTypeEnd": "At End",
           "interestPayoutType": "Interest Payout Type",
           "interestPayoutTypePlaceholder": "Select interest payout type",
-          "interestPayoutTypeMoney": "Money",
-          "interestPayoutTypeCoupon": "Coupon",
           "altInterestMethod": "Alternative Interest Method",
           "altInterestMethodPlaceholder": "Select alternative interest method",
-          "altInterestMethodAct365NoCompound": "ACT/365 No Compound",
-          "altInterestMethodE30360NoCompound": "30/360 No Compound",
-          "altInterestMethodAct360NoCompound": "ACT/360 No Compound",
-          "altInterestMethodActActNoCompound": "ACT/ACT No Compound",
-          "altInterestMethodAct365Compound": "ACT/365 Compound",
-          "altInterestMethodE30360Compound": "30/360 Compound",
-          "altInterestMethodAct360Compound": "ACT/360 Compound",
-          "altInterestMethodActActCompound": "ACT/ACT Compound",
           "contractStatus": "Contract Status",
           "contractStatusPlaceholder": "Select contract status",
-          "contractStatusPending": "Pending",
-          "contractStatusCompleted": "Completed",
           "success": "Loan created successfully",
-          "error": "Failed to create loan",
-          "cancel": "Cancel",
-          "submit": "Create Loan",
-          "submitting": "Creating..."
+          "error": "Failed to create loan"
         }
       },
       "edit": {
         "title": "Edit Loan",
         "form": {
           "success": "Loan updated successfully",
-          "error": "Failed to update loan",
-          "cancel": "Cancel",
-          "submit": "Update Loan",
-          "submitting": "Updating..."
+          "error": "Failed to update loan"
         }
       },
       "accessibility": {
@@ -442,40 +435,18 @@
         "userLanguageEn": "English",
         "userTheme": "Theme",
         "userThemePlaceholder": "Select theme",
-        "userThemeDefault": "System",
-        "userThemeDark": "Dark",
-        "userThemeLight": "Light",
         "lenderDefaults": "Lender Defaults",
         "lenderSalutation": "Salutation",
         "lenderSalutationPlaceholder": "Select salutation",
-        "lenderSalutationPersonal": "Personal",
-        "lenderSalutationFormal": "Formal",
         "lenderCountry": "Country",
         "lenderCountryPlaceholder": "Select country",
         "lenderNotificationType": "Notification Type",
         "lenderNotificationTypePlaceholder": "Select notification type",
-        "lenderNotificationTypeOnline": "Online",
-        "lenderNotificationTypeEmail": "Email",
-        "lenderNotificationTypeMail": "Mail",
         "lenderMembershipStatus": "Membership Status",
         "lenderMembershipStatusPlaceholder": "Select membership status",
-        "lenderMembershipStatusUnknown": "Unknown",
-        "lenderMembershipStatusMember": "Member",
-        "lenderMembershipStatusExternal": "External",
         "loanDefaults": "Loan Defaults",
         "interestMethod": "Interest Method",
         "interestMethodPlaceholder": "Select interest method",
-        "interestMethodAct365NoCompound": "Actual/365 (No Compound)",
-        "interestMethodE30360NoCompound": "30/360 (No Compound)",
-        "interestMethodAct360NoCompound": "Actual/360 (No Compound)",
-        "interestMethodActActNoCompound": "Actual/Actual (No Compound)",
-        "interestMethodAct365Compound": "Actual/365 (Compound)",
-        "interestMethodE30360Compound": "30/360 (Compound)",
-        "interestMethodAct360Compound": "Actual/360 (Compound)",
-        "interestMethodActActCompound": "Actual/Actual (Compound)",
-        "submit": "Save Configuration",
-        "submitting": "Saving...",
-        "cancel": "Cancel",
         "success": "Configuration saved successfully",
         "error": "Failed to save configuration"
       }
@@ -512,7 +483,6 @@
       "name": "View name",
       "namePlaceholder": "Enter a name for this view",
       "isDefault": "Set as default view",
-      "cancel": "Cancel",
       "save": "Save View",
       "saving": "Saving..."
     }

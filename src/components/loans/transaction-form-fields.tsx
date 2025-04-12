@@ -13,6 +13,7 @@ interface TransactionFormFieldsProps {
 
 export function TransactionFormFields({ form }: TransactionFormFieldsProps) {
   const t = useTranslations('dashboard.loans')
+  const commonT = useTranslations('common')
 
   return (
     <>
@@ -20,15 +21,15 @@ export function TransactionFormFields({ form }: TransactionFormFieldsProps) {
         form={form}
         name="type"
         label={t('transactions.type')}
-        placeholder={t('transactions.typePlaceholder')}
+        placeholder={commonT('ui.form.selectPlaceholder')}
         options={[
-          { value: 'DEPOSIT', label: t('transactions.typeDeposit') },
-          { value: 'WITHDRAWAL', label: t('transactions.typeWithdrawal') },
-          { value: 'INTEREST', label: t('transactions.typeInterest') },
-          { value: 'INTERESTPAYMENT', label: t('transactions.typeInterestPayment') },
-          { value: 'TERMINATION', label: t('transactions.typeTermination') },
-          { value: 'NOTRECLAIMEDPARTIAL', label: t('transactions.typeNotReclaimedPartial') },
-          { value: 'NOTRECLAIMED', label: t('transactions.typeNotReclaimed') },
+          { value: 'DEPOSIT', label: commonT('enums.transaction.type.DEPOSIT') },
+          { value: 'WITHDRAWAL', label: commonT('enums.transaction.type.WITHDRAWAL') },
+          { value: 'INTEREST', label: commonT('enums.transaction.type.INTEREST') },
+          { value: 'INTERESTPAYMENT', label: commonT('enums.transaction.type.INTERESTPAYMENT') },
+          { value: 'TERMINATION', label: commonT('enums.transaction.type.TERMINATION') },
+          { value: 'NOTRECLAIMEDPARTIAL', label: commonT('enums.transaction.type.NOTRECLAIMEDPARTIAL') },
+          { value: 'NOTRECLAIMED', label: commonT('enums.transaction.type.NOTRECLAIMED') },
         ]}
       />
 
@@ -52,11 +53,11 @@ export function TransactionFormFields({ form }: TransactionFormFieldsProps) {
         form={form}
         name="paymentType"
         label={t('transactions.paymentType')}
-        placeholder={t('transactions.paymentTypePlaceholder')}
+        placeholder={commonT('ui.form.selectPlaceholder')}
         options={[
-          { value: 'BANK', label: t('transactions.paymentTypeBank') },
-          { value: 'CASH', label: t('transactions.paymentTypeCash') },
-          { value: 'OTHER', label: t('transactions.paymentTypeOther') },
+          { value: 'BANK', label: commonT('enums.transaction.paymentType.BANK') },
+          { value: 'CASH', label: commonT('enums.transaction.paymentType.CASH') },
+          { value: 'OTHER', label: commonT('enums.transaction.paymentType.OTHER') },
         ]}
       />
     </>

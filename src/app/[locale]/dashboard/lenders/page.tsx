@@ -55,6 +55,7 @@ export default function LendersPage() {
   const router = useRouter()
   const { selectedProject } = useProject()
   const t = useTranslations('dashboard.lenders')
+  const commonT = useTranslations('common')
   const [error, setError] = useState<string | null>(null)
 
   const { data: lenders = [], isLoading: loading } = useQuery({
@@ -84,7 +85,7 @@ export default function LendersPage() {
       ),
       cell: ({ row }) => {
         const type = row.getValue('type') as string
-        return type === 'PERSON' ? t('table.typePerson') : t('table.typeOrganisation')
+        return type ? commonT(`enums.lender.type.${type}`) : ''
       },
     },
     {
@@ -214,7 +215,7 @@ export default function LendersPage() {
       ),
       cell: ({ row }) => {
         const type = row.getValue('notificationType') as string
-        return t(`table.notificationType${type}`)
+        return type ? commonT(`enums.lender.notificationType.${type}`) : ''
       },
     },
     {
@@ -224,7 +225,7 @@ export default function LendersPage() {
       ),
       cell: ({ row }) => {
         const status = row.getValue('membershipStatus') as string
-        return status ? t(`table.membershipStatus${status}`) : ''
+        return status ? commonT(`enums.lender.membershipStatus.${status}`) : ''
       },
     },
     {
@@ -240,7 +241,7 @@ export default function LendersPage() {
       ),
       cell: ({ row }) => {
         const salutation = row.getValue('salutation') as string
-        return salutation ? t(`table.salutation${salutation}`) : ''
+        return salutation ? commonT(`enums.lender.salutation.${salutation}`) : ''
       },
     },
   ]
@@ -255,8 +256,8 @@ export default function LendersPage() {
       type: 'select' as const,
       label: t('table.type'),
       options: [
-        { label: t('table.typePerson'), value: 'PERSON' },
-        { label: t('table.typeOrganisation'), value: 'ORGANISATION' }
+        { label: commonT('enums.lender.type.PERSON'), value: 'PERSON' },
+        { label: commonT('enums.lender.type.ORGANISATION'), value: 'ORGANISATION' }
       ]
     },
     name: {
@@ -283,18 +284,18 @@ export default function LendersPage() {
       type: 'select' as const,
       label: t('table.notificationType'),
       options: [
-        { label: t('table.notificationTypeONLINE'), value: 'ONLINE' },
-        { label: t('table.notificationTypeEMAIL'), value: 'EMAIL' },
-        { label: t('table.notificationTypeMAIL'), value: 'MAIL' }
+        { label: commonT('enums.lender.notificationType.ONLINE'), value: 'ONLINE' },
+        { label: commonT('enums.lender.notificationType.EMAIL'), value: 'EMAIL' },
+        { label: commonT('enums.lender.notificationType.MAIL'), value: 'MAIL' }
       ]
     },
     membershipStatus: {
       type: 'select' as const,
       label: t('table.membershipStatus'),
       options: [
-        { label: t('table.membershipStatusUNKNOWN'), value: 'UNKNOWN' },
-        { label: t('table.membershipStatusMEMBER'), value: 'MEMBER' },
-        { label: t('table.membershipStatusEXTERNAL'), value: 'EXTERNAL' }
+        { label: commonT('enums.lender.membershipStatus.UNKNOWN'), value: 'UNKNOWN' },
+        { label: commonT('enums.lender.membershipStatus.MEMBER'), value: 'MEMBER' },
+        { label: commonT('enums.lender.membershipStatus.EXTERNAL'), value: 'EXTERNAL' }
       ]
     },
     tag: {
@@ -305,19 +306,19 @@ export default function LendersPage() {
       type: 'select' as const,
       label: t('table.salutation'),
       options: [
-        { label: t('table.salutationPERSONAL'), value: 'PERSONAL' },
-        { label: t('table.salutationFORMAL'), value: 'FORMAL' }
+        { label: commonT('enums.lender.salutation.PERSONAL'), value: 'PERSONAL' },
+        { label: commonT('enums.lender.salutation.FORMAL'), value: 'FORMAL' }
       ]
     }
   }
 
   // Define translations for the DataTable component
   const tableTranslations = {
-    columns: t('table.columns'),
-    filters: t('table.filters'),
-    previous: t('table.previous'),
-    next: t('table.next'),
-    noResults: t('table.noResults')
+    columns: commonT('ui.table.columns'),
+    filters: commonT('ui.table.filters'),
+    previous: commonT('ui.table.previous'),
+    next: commonT('ui.table.next'),
+    noResults: commonT('ui.table.noResults')
   }
 
   // Define default column visibility
@@ -369,11 +370,11 @@ export default function LendersPage() {
           <div className="flex items-center justify-end space-x-2">
             <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/lenders/${row.id}`)}>
               <Eye className="h-4 w-4" />
-              <span className="sr-only">View</span>
+              <span className="sr-only">{commonT('ui.actions.view')}</span>
             </Button>
             <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/lenders/${row.id}/edit`)}>
               <Pencil className="h-4 w-4" />
-              <span className="sr-only">Edit</span>
+              <span className="sr-only">{commonT('ui.actions.edit')}</span>
             </Button>
           </div>
         )}

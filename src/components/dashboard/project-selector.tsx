@@ -21,6 +21,7 @@ interface Project {
 export default function ProjectSelector() {
   const { selectedProject, setSelectedProject } = useProject()
   const t = useTranslations('navigation')
+  const commonT = useTranslations('common')
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

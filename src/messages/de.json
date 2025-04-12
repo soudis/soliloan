@@ -48,17 +48,144 @@
     },
     "clipboard": {
       "copy": "In die Zwischenablage kopieren",
-      "copied": "In die Zwischenablage kopiert"
+      "copied": "Kopiert!"
     },
     "qrCode": {
       "title": "Zahlungs-QR-Code",
       "description": "Scannen Sie diesen QR-Code mit Ihrer Banking-App, um die Zahlungsinformationen zu erhalten",
       "show": "Zahlungs-QR-Code anzeigen"
+    },
+    "ui": {
+      "theme": "Design",
+      "actions": {
+        "cancel": "Abbrechen",
+        "submit": "Absenden",
+        "submitting": "Wird gesendet...",
+        "save": "Speichern",
+        "saving": "Wird gespeichert...",
+        "edit": "Bearbeiten",
+        "delete": "Löschen",
+        "view": "Anzeigen",
+        "create": "Erstellen",
+        "creating": "Wird erstellt...",
+        "update": "Aktualisieren",
+        "updating": "Wird aktualisiert..."
+      },
+      "status": {
+        "success": "Erfolg",
+        "error": "Fehler",
+        "loading": "Wird geladen...",
+        "noResults": "Keine Ergebnisse gefunden"
+      },
+      "form": {
+        "required": "Erforderlich",
+        "optional": "Optional",
+        "selectPlaceholder": "Auswählen...",
+        "enterPlaceholder": "Eingeben..."
+      },
+      "table": {
+        "columns": "Spalten",
+        "filters": "Filter",
+        "previous": "Zurück",
+        "next": "Weiter",
+        "noResults": "Keine Ergebnisse gefunden",
+        "globalFilter": "Alle Spalten durchsuchen..."
+      }
+    },
+    "enums": {
+      "lender": {
+        "type": {
+          "PERSON": "Person",
+          "ORGANISATION": "Organisation"
+        },
+        "salutation": {
+          "PERSONAL": "Persönlich",
+          "FORMAL": "Formell"
+        },
+        "notificationType": {
+          "ONLINE": "Online",
+          "EMAIL": "E-Mail",
+          "MAIL": "Post"
+        },
+        "membershipStatus": {
+          "UNKNOWN": "Unbekannt",
+          "MEMBER": "Mitglied",
+          "EXTERNAL": "Extern"
+        }
+      },
+      "loan": {
+        "status": {
+          "ACTIVE": "Aktiv",
+          "CLOSED": "Geschlossen",
+          "DEFAULTED": "In Verzug"
+        },
+        "type": {
+          "FIXED": "Fest",
+          "FLOATING": "Variabel"
+        },
+        "paymentFrequency": {
+          "MONTHLY": "Monatlich",
+          "QUARTERLY": "Vierteljährlich",
+          "ANNUALLY": "Jährlich"
+        },
+        "interestPaymentType": {
+          "YEARLY": "Jährlich",
+          "END": "Am Ende"
+        },
+        "interestPayoutType": {
+          "MONEY": "Geld",
+          "COUPON": "Coupon"
+        },
+        "terminationType": {
+          "ENDDATE": "Enddatum",
+          "TERMINATION": "Kündigung",
+          "DURATION": "Laufzeit"
+        },
+        "contractStatus": {
+          "PENDING": "Ausstehend",
+          "COMPLETED": "Abgeschlossen"
+        },
+        "durationUnit": {
+          "MONTHS": "Monate",
+          "YEARS": "Jahre"
+        }
+      },
+      "transaction": {
+        "type": {
+          "DEPOSIT": "Einzahlung",
+          "WITHDRAWAL": "Auszahlung",
+          "INTEREST": "Zinsen",
+          "INTERESTPAYMENT": "Zinszahlung",
+          "TERMINATION": "Kündigung",
+          "NOTRECLAIMEDPARTIAL": "Nicht zurückgefordert (Teilweise)",
+          "NOTRECLAIMED": "Nicht zurückgefordert"
+        },
+        "paymentType": {
+          "BANK": "Banküberweisung",
+          "CASH": "Bar",
+          "OTHER": "Sonstiges"
+        }
+      },
+      "interestMethod": {
+        "ACT365NOCOMPOUND": "Actual/365 (Ohne Zinseszins)",
+        "E30360NOCOMPOUND": "30/360 (Ohne Zinseszins)",
+        "ACT360NOCOMPOUND": "Actual/360 (Ohne Zinseszins)",
+        "ACTACTNOCOMPOUND": "Actual/Actual (Ohne Zinseszins)",
+        "ACT365COMPOUND": "Actual/365 (Mit Zinseszins)",
+        "E30360COMPOUND": "30/360 (Mit Zinseszins)",
+        "ACT360COMPOUND": "Actual/360 (Mit Zinseszins)",
+        "ACTACTCOMPOUND": "Actual/Actual (Mit Zinseszins)"
+      },
+      "theme": {
+        "DEFAULT": "System",
+        "DARK": "Dunkel",
+        "LIGHT": "Hell"
+      }
     }
   },
   "dashboard": {
     "welcome": "Willkommen, {name}",
-    "description": "Dies ist Ihr Dashboard, wo Sie Ihre Projekte, Kreditgeber*innen und Kredite verwalten können.",
+    "description": "Dies ist Ihr Dashboard, wo Sie Ihre Projekte, Kreditgeber und Kredite verwalten können.",
     "projects": {
       "title": "Projekte",
       "description": "Verwalten Sie Ihre Projekte und Kredite",
@@ -66,69 +193,48 @@
       "viewProjects": "Projekte anzeigen"
     },
     "lenders": {
-      "title": "Kreditgeber*innen",
-      "description": "Verwalten Sie Ihre Kreditgeber*innen und deren Informationen",
-      "details": "Fügen Sie Kreditgeber*innen hinzu, aktualisieren und verwalten Sie deren Informationen, Kontaktdaten und Präferenzen.",
-      "viewLenders": "Kreditgeber*innen anzeigen",
+      "title": "Kreditgeber",
+      "description": "Verwalten Sie Ihre Kreditgeber und deren Informationen",
+      "details": "Fügen Sie Kreditgeberinformationen, Kontaktdaten und Präferenzen hinzu, aktualisieren und verwalten Sie diese.",
+      "viewLenders": "Kreditgeber anzeigen",
       "table": {
         "lenderNumber": "Nummer",
         "type": "Typ",
-        "typePERSON": "Person",
-        "typeORGANISATION": "Organisation",
-        "typePerson": "Person",
-        "typeOrganisation": "Organisation",
-        "name": "Name",
+        "name": "Vollständiger Name",
         "email": "E-Mail",
         "telNo": "Telefon",
         "address": "Adresse",
         "banking": "Bankverbindung",
         "notificationType": "Benachrichtigung",
-        "notificationTypeONLINE": "Online",
-        "notificationTypeEMAIL": "E-Mail",
-        "notificationTypeMAIL": "Post",
         "membershipStatus": "Status",
-        "membershipStatusUNKNOWN": "Unbekannt",
-        "membershipStatusMEMBER": "Mitglied",
-        "membershipStatusEXTERNAL": "Extern",
         "tag": "Tag",
         "salutation": "Anrede",
-        "salutationPERSONAL": "Persönlich",
-        "salutationFORMAL": "Formell",
         "actions": "Aktionen",
-        "filterByName": "Nach Name filtern...",
-        "columns": "Spalten",
-        "filters": "Filter",
-        "noResults": "Keine Kreditgeber*innen gefunden",
-        "previous": "Zurück",
-        "next": "Weiter"
+        "filterByName": "Nach Namen filtern..."
       },
       "details": {
-        "edit": "Kreditgeber*in bearbeiten",
+        "edit": "Kreditgeber bearbeiten",
         "newLoan": "Neuer Kredit",
         "contactInfo": "Kontaktinformationen",
         "address": "Adresse",
         "banking": "Bankverbindung",
         "loans": "Kredite",
-        "error": "Fehler beim Laden der Kreditgeber*in",
-        "noContactInfo": "Keine Kontaktinformationen vorhanden",
-        "noAddress": "Keine Adressinformationen vorhanden",
-        "noBankingInfo": "Keine Bankverbindungsinformationen vorhanden"
+        "error": "Fehler beim Laden der Kreditgeberdaten",
+        "noContactInfo": "Keine Kontaktinformationen verfügbar",
+        "noAddress": "Keine Adressinformationen verfügbar",
+        "noBankingInfo": "Keine Bankverbindungsinformationen verfügbar"
       },
       "new": {
-        "title": "Neue*n Kreditgeber*in erstellen",
-        "formTitle": "Kreditgeber*in Informationen",
-        "formDescription": "Geben Sie die Details für die*n neue*n Kreditgeber*in ein",
+        "title": "Neuen Kreditgeber erstellen",
+        "formTitle": "Kreditgeberinformationen",
+        "formDescription": "Geben Sie die Details für den neuen Kreditgeber ein",
         "form": {
-          "requiredFields": "Pflichtfelder",
+          "requiredFields": "Erforderliche Felder",
           "generalInfo": "Allgemeine Informationen",
           "type": "Typ",
           "typePlaceholder": "Typ auswählen",
-          "typePerson": "Person",
-          "typeOrganisation": "Organisation",
           "salutation": "Anrede",
           "salutationPlaceholder": "Anrede auswählen",
-          "salutationPersonal": "Persönlich",
-          "salutationFormal": "Formell",
           "titlePrefix": "Titel Präfix",
           "titlePrefixPlaceholder": "Titel Präfix eingeben",
           "firstName": "Vorname",
@@ -148,13 +254,13 @@
           "streetPlaceholder": "Straße eingeben",
           "addon": "Adresszusatz",
           "addonPlaceholder": "Adresszusatz eingeben",
-          "zip": "Postleitzahl",
-          "zipPlaceholder": "Postleitzahl eingeben",
+          "zip": "PLZ",
+          "zipPlaceholder": "PLZ eingeben",
           "place": "Ort",
           "placePlaceholder": "Ort eingeben",
           "country": "Land",
           "countryPlaceholder": "Land auswählen",
-          "bankingInfo": "Bankverbindung",
+          "bankingInfo": "Bankverbindungsinformationen",
           "iban": "IBAN",
           "ibanPlaceholder": "IBAN eingeben",
           "bic": "BIC",
@@ -162,142 +268,91 @@
           "additionalInfo": "Zusätzliche Informationen",
           "notificationType": "Benachrichtigungstyp",
           "notificationTypePlaceholder": "Benachrichtigungstyp auswählen",
-          "notificationTypeOnline": "Online",
-          "notificationTypeEmail": "E-Mail",
-          "notificationTypeMail": "Post",
           "membershipStatus": "Mitgliedsstatus",
           "membershipStatusPlaceholder": "Mitgliedsstatus auswählen",
-          "membershipStatusUnknown": "Unbekannt",
-          "membershipStatusMember": "Mitglied",
-          "membershipStatusExternal": "Extern",
           "tag": "Tag",
           "tagPlaceholder": "Tag eingeben",
-          "cancel": "Abbrechen",
-          "submit": "Kreditgeber*in erstellen",
-          "submitting": "Wird erstellt..."
+          "success": "Kreditgeber erfolgreich erstellt",
+          "error": "Fehler beim Erstellen des Kreditgebers"
         }
       },
       "edit": {
-        "title": "Kreditgeber*in bearbeiten",
+        "title": "Kreditgeber bearbeiten",
         "form": {
-          "success": "Kreditgeber*in erfolgreich aktualisiert",
-          "error": "Fehler beim Aktualisieren der Kreditgeber*in",
-          "cancel": "Abbrechen",
-          "submit": "Kreditgeber*in aktualisieren",
-          "submitting": "Wird aktualisiert..."
+          "success": "Kreditgeber erfolgreich aktualisiert",
+          "error": "Fehler beim Aktualisieren des Kreditgebers"
         }
       }
     },
     "loans": {
       "title": "Kredite",
       "description": "Verwalten Sie Ihre Kredite und deren Informationen",
-      "details": "Fügen Sie Kredite hinzu, aktualisieren und verwalten Sie Kreditinformationen, Zinssätze und Zahlungspläne.",
+      "details": "Fügen Sie Kreditinformationen, Zinssätze und Zahlungspläne hinzu, aktualisieren und verwalten Sie diese.",
       "viewLoans": "Kredite anzeigen",
       "transactions": {
-        "title": "Zahlungen",
-        "success": "Zahlung erfolgreich erstellt",
-        "error": "Fehler beim Erstellen der Zahlung",
-        "deleteSuccess": "Zahlung erfolgreich gelöscht",
-        "deleteError": "Fehler beim Löschen der Zahlung",
-        "noTransactions": "Noch keine Zahlungen",
-        "createTitle": "Neue Zahlung",
-        "createSuccess": "Zahlung erfolgreich erstellt",
-        "createError": "Fehler beim Erstellen der Zahlung",
-        "cancel": "Abbrechen",
-        "create": "Zahlung erstellen",
-        "type": "Zahlungstyp",
-        "typePlaceholder": "Zahlungstyp auswählen",
+        "title": "Transaktionen",
+        "success": "Transaktion erfolgreich erstellt",
+        "error": "Fehler beim Erstellen der Transaktion",
+        "deleteSuccess": "Transaktion erfolgreich gelöscht",
+        "deleteError": "Fehler beim Löschen der Transaktion",
+        "noTransactions": "Noch keine Transaktionen",
+        "createTitle": "Neue Transaktion",
+        "createSuccess": "Transaktion erfolgreich erstellt",
+        "createError": "Fehler beim Erstellen der Transaktion",
+        "type": "Transaktionstyp",
+        "typePlaceholder": "Transaktionstyp auswählen",
         "date": "Datum",
         "datePlaceholder": "Datum auswählen",
         "amount": "Betrag",
         "amountPlaceholder": "Betrag eingeben",
         "paymentType": "Zahlungsart",
         "paymentTypePlaceholder": "Zahlungsart auswählen",
-        "typeDeposit": "Einzahlung",
-        "typeWithdrawal": "Auszahlung",
-        "typeInterest": "Zinsen",
-        "typeInterestPayment": "Zinszahlung",
-        "typeTermination": "Kündigung",
-        "typeNotReclaimedPartial": "Nicht zurückgefordert (Teilweise)",
-        "typeNotReclaimed": "Nicht zurückgefordert",
-        "paymentTypeBank": "Banküberweisung",
-        "paymentTypeCash": "Bar",
-        "paymentTypeOther": "Sonstiges",
-        "typeValues": {
-          "INTEREST": "Zinsen",
-          "DEPOSIT": "Einzahlung",
-          "WITHDRAWAL": "Auszahlung",
-          "TERMINATION": "Kündigung",
-          "INTERESTPAYMENT": "Zinszahlung",
-          "NOTRECLAIMEDPARTIAL": "Nicht zurückgefordert (Teilweise)",
-          "NOTRECLAIMED": "Nicht zurückgefordert"
-        },
-        "paymentTypeValues": {
-          "BANK": "Banküberweisung",
-          "CASH": "Bar",
-          "OTHER": "Sonstiges"
-        },
-        "type": {
-          "INTEREST": "Zinsen",
-          "DEPOSIT": "Einzahlung",
-          "WITHDRAWAL": "Auszahlung",
-          "TERMINATION": "Kündigung",
-          "INTERESTPAYMENT": "Zinszahlung",
-          "NOTRECLAIMEDPARTIAL": "Nicht zurückgefordert (Teilweise)",
-          "NOTRECLAIMED": "Nicht zurückgefordert"
-        },
-        "paymentType": {
-          "BANK": "Banküberweisung",
-          "CASH": "Bar",
-          "OTHER": "Sonstiges"
-        }
+        "note": "Notiz",
+        "notePlaceholder": "Optionale Notiz eingeben"
       },
       "table": {
         "loanNumber": "Nummer",
-        "lenderName": "Kreditgeber*in",
+        "lenderNumber": "Kreditgeber Nummer",
+        "lender": "Kreditgeber",
         "amount": "Betrag",
         "interestRate": "Zinssatz",
         "startDate": "Startdatum",
         "endDate": "Enddatum",
         "status": "Status",
-        "statusACTIVE": "Aktiv",
-        "statusCLOSED": "Geschlossen",
-        "statusDEFAULTED": "Ausgefallen",
         "type": "Typ",
-        "typeFIXED": "Fest",
-        "typeFLOATING": "Variabel",
         "currency": "Währung",
         "paymentFrequency": "Zahlungsfrequenz",
-        "paymentFrequencyMONTHLY": "Monatlich",
-        "paymentFrequencyQUARTERLY": "Vierteljährlich",
-        "paymentFrequencyANNUALLY": "Jährlich",
         "paymentDay": "Zahlungstag",
         "paymentAmount": "Zahlungsbetrag",
         "remainingAmount": "Restbetrag",
         "nextPaymentDate": "Nächstes Zahlungsdatum",
         "lastPaymentDate": "Letztes Zahlungsdatum",
         "lastPaymentAmount": "Letzter Zahlungsbetrag",
-        "defaultDate": "Ausfalldatum",
-        "defaultAmount": "Ausfallbetrag",
-        "defaultReason": "Ausfallgrund",
-        "terminationTypeENDDATE": "Enddatum",
-        "terminationTypeTERMINATION": "Kündigung",
-        "terminationTypeDURATION": "Laufzeit",
-        "contractStatusPENDING": "Ausstehend",
-        "contractStatusCOMPLETED": "Abgeschlossen",
-        "signDate": "Unterzeichnungsdatum",
+        "defaultDate": "Verzugsdatum",
+        "defaultAmount": "Verzugsbetrag",
+        "defaultReason": "Verzugsgrund",
         "terminationModalities": "Kündigungsmodalitäten",
-        "interestPaymentType": "Zinszahlungsart"
+        "interestPaymentType": "Zinszahlungsart",
+        "interestPayoutType": "Zinsauszahlungsart",
+        "terminationType": "Kündigungstyp",
+        "terminationDate": "Kündigungsdatum",
+        "terminationPeriod": "Kündigungsfrist",
+        "terminationPeriodType": "Kündigungsfristeinheit",
+        "duration": "Laufzeit",
+        "durationType": "Laufzeiteinheit",
+        "altInterestMethod": "Alternative Zinsmethode",
+        "contractStatus": "Vertragsstatus",
+        "signDate": "Unterzeichnungsdatum"
       },
       "new": {
         "title": "Neuen Kredit erstellen",
         "formTitle": "Kreditinformationen",
         "formDescription": "Geben Sie die Details für den neuen Kredit ein",
         "form": {
-          "loadingLenders": "Kreditgeber*innen werden geladen...",
+          "loadingLenders": "Kreditgeber werden geladen...",
           "generalInfo": "Allgemeine Informationen",
-          "lender": "Kreditgeber*in",
-          "lenderPlaceholder": "Kreditgeber*in auswählen",
+          "lender": "Kreditgeber",
+          "lenderPlaceholder": "Kreditgeber auswählen",
           "signDate": "Unterzeichnungsdatum",
           "signDatePlaceholder": "Unterzeichnungsdatum auswählen",
           "amount": "Betrag",
@@ -305,11 +360,8 @@
           "interestRate": "Zinssatz",
           "interestRatePlaceholder": "Zinssatz eingeben",
           "terminationInfo": "Kündigungsinformationen",
-          "terminationType": "Kündigungsart",
-          "terminationTypePlaceholder": "Kündigungsart auswählen",
-          "terminationTypeEndDate": "Enddatum",
-          "terminationTypeTermination": "Kündigung",
-          "terminationTypeDuration": "Laufzeit",
+          "terminationType": "Kündigungstyp",
+          "terminationTypePlaceholder": "Kündigungstyp auswählen",
           "endDate": "Enddatum",
           "endDatePlaceholder": "Enddatum auswählen",
           "terminationPeriod": "Kündigungsfrist",

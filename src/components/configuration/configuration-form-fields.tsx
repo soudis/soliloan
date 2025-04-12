@@ -14,6 +14,7 @@ interface ConfigurationFormFieldsProps {
 
 export function ConfigurationFormFields({ form }: ConfigurationFormFieldsProps) {
   const t = useTranslations('dashboard.configuration')
+  const commonT = useTranslations('common')
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -74,30 +75,26 @@ export function ConfigurationFormFields({ form }: ConfigurationFormFieldsProps) 
             label={t('form.addon')}
             placeholder={t('form.addonPlaceholder')}
           />
-          <div className="grid grid-cols-3 gap-4">
-            <div className="col-span-1">
-              <FormField
-                form={form}
-                name="zip"
-                label={t('form.zip')}
-                placeholder={t('form.zipPlaceholder')}
-              />
-            </div>
-            <div className="col-span-2">
-              <FormField
-                form={form}
-                name="place"
-                label={t('form.place')}
-                placeholder={t('form.placePlaceholder')}
-              />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              form={form}
+              name="zip"
+              label={t('form.zip')}
+              placeholder={t('form.zipPlaceholder')}
+            />
+            <FormField
+              form={form}
+              name="place"
+              label={t('form.place')}
+              placeholder={t('form.placePlaceholder')}
+            />
+            <FormCountrySelect
+              form={form}
+              name="country"
+              label={t('form.country')}
+              placeholder={t('form.countryPlaceholder')}
+            />
           </div>
-          <FormCountrySelect
-            form={form}
-            name="country"
-            label={t('form.country')}
-            placeholder={t('form.countryPlaceholder')}
-          />
         </div>
       </div>
 
@@ -129,7 +126,7 @@ export function ConfigurationFormFields({ form }: ConfigurationFormFieldsProps) 
             form={form}
             name="userLanguage"
             label={t('form.userLanguage')}
-            placeholder={t('form.userLanguagePlaceholder')}
+            placeholder={commonT('ui.form.selectPlaceholder')}
             options={[
               { value: 'de', label: t('form.userLanguageDe') },
               { value: 'en', label: t('form.userLanguageEn') },
@@ -139,11 +136,11 @@ export function ConfigurationFormFields({ form }: ConfigurationFormFieldsProps) 
             form={form}
             name="userTheme"
             label={t('form.userTheme')}
-            placeholder={t('form.userThemePlaceholder')}
+            placeholder={commonT('ui.form.selectPlaceholder')}
             options={[
-              { value: 'default', label: t('form.userThemeDefault') },
-              { value: 'dark', label: t('form.userThemeDark') },
-              { value: 'light', label: t('form.userThemeLight') },
+              { value: 'default', label: commonT('enums.theme.DEFAULT') },
+              { value: 'dark', label: commonT('enums.theme.DARK') },
+              { value: 'light', label: commonT('enums.theme.LIGHT') },
             ]}
           />
         </div>
@@ -158,10 +155,10 @@ export function ConfigurationFormFields({ form }: ConfigurationFormFieldsProps) 
             form={form}
             name="lenderSalutation"
             label={t('form.lenderSalutation')}
-            placeholder={t('form.lenderSalutationPlaceholder')}
+            placeholder={commonT('ui.form.selectPlaceholder')}
             options={[
-              { value: 'PERSONAL', label: t('form.lenderSalutationPersonal') },
-              { value: 'FORMAL', label: t('form.lenderSalutationFormal') },
+              { value: 'PERSONAL', label: commonT('enums.lender.salutation.PERSONAL') },
+              { value: 'FORMAL', label: commonT('enums.lender.salutation.FORMAL') },
             ]}
           />
           <FormCountrySelect
@@ -174,29 +171,29 @@ export function ConfigurationFormFields({ form }: ConfigurationFormFieldsProps) 
             form={form}
             name="lenderNotificationType"
             label={t('form.lenderNotificationType')}
-            placeholder={t('form.lenderNotificationTypePlaceholder')}
+            placeholder={commonT('ui.form.selectPlaceholder')}
             options={[
-              { value: 'ONLINE', label: t('form.lenderNotificationTypeOnline') },
-              { value: 'EMAIL', label: t('form.lenderNotificationTypeEmail') },
-              { value: 'MAIL', label: t('form.lenderNotificationTypeMail') },
+              { value: 'ONLINE', label: commonT('enums.lender.notificationType.ONLINE') },
+              { value: 'EMAIL', label: commonT('enums.lender.notificationType.EMAIL') },
+              { value: 'MAIL', label: commonT('enums.lender.notificationType.MAIL') },
             ]}
           />
           <FormSelect
             form={form}
             name="lenderMembershipStatus"
             label={t('form.lenderMembershipStatus')}
-            placeholder={t('form.lenderMembershipStatusPlaceholder')}
+            placeholder={commonT('ui.form.selectPlaceholder')}
             options={[
-              { value: 'UNKNOWN', label: t('form.lenderMembershipStatusUnknown') },
-              { value: 'MEMBER', label: t('form.lenderMembershipStatusMember') },
-              { value: 'EXTERNAL', label: t('form.lenderMembershipStatusExternal') },
+              { value: 'UNKNOWN', label: commonT('enums.lender.membershipStatus.UNKNOWN') },
+              { value: 'MEMBER', label: commonT('enums.lender.membershipStatus.MEMBER') },
+              { value: 'EXTERNAL', label: commonT('enums.lender.membershipStatus.EXTERNAL') },
             ]}
           />
         </div>
       </div>
 
-      {/* Loan Defaults Section - Bottom Left (Second Row) */}
-      <div className="space-y-4">
+      {/* Loan Defaults Section - Bottom Full Width */}
+      <div className="space-y-4 lg:col-span-2">
         <h2 className="text-lg font-medium text-muted-foreground">{t('form.loanDefaults')}</h2>
 
         <div className="space-y-4">
@@ -204,16 +201,16 @@ export function ConfigurationFormFields({ form }: ConfigurationFormFieldsProps) 
             form={form}
             name="interestMethod"
             label={t('form.interestMethod')}
-            placeholder={t('form.interestMethodPlaceholder')}
+            placeholder={commonT('ui.form.selectPlaceholder')}
             options={[
-              { value: 'ACT_365_NOCOMPOUND', label: t('form.interestMethodAct365NoCompound') },
-              { value: 'E30_360_NOCOMPOUND', label: t('form.interestMethodE30360NoCompound') },
-              { value: 'ACT_360_NOCOMPOUND', label: t('form.interestMethodAct360NoCompound') },
-              { value: 'ACT_ACT_NOCOMPOUND', label: t('form.interestMethodActActNoCompound') },
-              { value: 'ACT_365_COMPOUND', label: t('form.interestMethodAct365Compound') },
-              { value: 'E30_360_COMPOUND', label: t('form.interestMethodE30360Compound') },
-              { value: 'ACT_360_COMPOUND', label: t('form.interestMethodAct360Compound') },
-              { value: 'ACT_ACT_COMPOUND', label: t('form.interestMethodActActCompound') },
+              { value: 'ACT_365_NOCOMPOUND', label: commonT('enums.interestMethod.ACT365NOCOMPOUND') },
+              { value: 'E30_360_NOCOMPOUND', label: commonT('enums.interestMethod.E30360NOCOMPOUND') },
+              { value: 'ACT_360_NOCOMPOUND', label: commonT('enums.interestMethod.ACT360NOCOMPOUND') },
+              { value: 'ACT_ACT_NOCOMPOUND', label: commonT('enums.interestMethod.ACTACTNOCOMPOUND') },
+              { value: 'ACT_365_COMPOUND', label: commonT('enums.interestMethod.ACT365COMPOUND') },
+              { value: 'E30_360_COMPOUND', label: commonT('enums.interestMethod.E30360COMPOUND') },
+              { value: 'ACT_360_COMPOUND', label: commonT('enums.interestMethod.ACT360COMPOUND') },
+              { value: 'ACT_ACT_COMPOUND', label: commonT('enums.interestMethod.ACTACTCOMPOUND') },
             ]}
           />
         </div>

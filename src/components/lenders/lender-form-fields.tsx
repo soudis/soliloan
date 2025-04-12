@@ -14,6 +14,7 @@ interface LenderFormFieldsProps {
 
 export function LenderFormFields({ form }: LenderFormFieldsProps) {
   const t = useTranslations('dashboard.lenders')
+  const commonT = useTranslations('common')
   const type = form.watch('type')
   const salutation = form.watch('salutation')
 
@@ -28,10 +29,10 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
             form={form}
             name="type"
             label={t('new.form.type') + ' *'}
-            placeholder={t('new.form.typePlaceholder')}
+            placeholder={commonT('ui.form.selectPlaceholder')}
             options={[
-              { value: 'PERSON', label: t('new.form.typePerson') },
-              { value: 'ORGANISATION', label: t('new.form.typeOrganisation') },
+              { value: 'PERSON', label: commonT('enums.lender.type.PERSON') },
+              { value: 'ORGANISATION', label: commonT('enums.lender.type.ORGANISATION') },
             ]}
           />
 
@@ -39,10 +40,10 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
             form={form}
             name="salutation"
             label={t('new.form.salutation') + ' *'}
-            placeholder={t('new.form.salutationPlaceholder')}
+            placeholder={commonT('ui.form.selectPlaceholder')}
             options={[
-              { value: 'PERSONAL', label: t('new.form.salutationPersonal') },
-              { value: 'FORMAL', label: t('new.form.salutationFormal') },
+              { value: 'PERSONAL', label: commonT('enums.lender.salutation.PERSONAL') },
+              { value: 'FORMAL', label: commonT('enums.lender.salutation.FORMAL') },
             ]}
           />
         </div>
@@ -190,11 +191,11 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
             form={form}
             name="notificationType"
             label={t('new.form.notificationType') + ' *'}
-            placeholder={t('new.form.notificationTypePlaceholder')}
+            placeholder={commonT('ui.form.selectPlaceholder')}
             options={[
-              { value: 'ONLINE', label: t('new.form.notificationTypeOnline') },
-              { value: 'EMAIL', label: t('new.form.notificationTypeEmail') },
-              { value: 'MAIL', label: t('new.form.notificationTypeMail') },
+              { value: 'ONLINE', label: commonT('enums.lender.notificationType.ONLINE') },
+              { value: 'EMAIL', label: commonT('enums.lender.notificationType.EMAIL') },
+              { value: 'MAIL', label: commonT('enums.lender.notificationType.MAIL') },
             ]}
           />
 
@@ -202,11 +203,11 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
             form={form}
             name="membershipStatus"
             label={t('new.form.membershipStatus')}
-            placeholder={t('new.form.membershipStatusPlaceholder')}
+            placeholder={commonT('ui.form.selectPlaceholder')}
             options={[
-              { value: 'UNKNOWN', label: t('new.form.membershipStatusUnknown') },
-              { value: 'MEMBER', label: t('new.form.membershipStatusMember') },
-              { value: 'EXTERNAL', label: t('new.form.membershipStatusExternal') },
+              { value: 'UNKNOWN', label: commonT('enums.lender.membershipStatus.UNKNOWN') },
+              { value: 'MEMBER', label: commonT('enums.lender.membershipStatus.MEMBER') },
+              { value: 'EXTERNAL', label: commonT('enums.lender.membershipStatus.EXTERNAL') },
             ]}
           />
         </div>
