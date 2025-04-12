@@ -146,8 +146,8 @@
           "COMPLETED": "Completed"
         },
         "durationUnit": {
-          "MONTHS": "months",
-          "YEARS": "years"
+          "MONTHS": "Months",
+          "YEARS": "Years"
         }
       },
       "transaction": {
@@ -312,6 +312,8 @@
       },
       "table": {
         "loanNumber": "Number",
+        "lenderNumber": "Lender Number",
+        "lender": "Lender",
         "amount": "Amount",
         "interestRate": "Interest Rate",
         "startDate": "Start Date",
@@ -364,30 +366,48 @@
           "endDatePlaceholder": "Select end date",
           "terminationPeriod": "Termination Period",
           "terminationPeriodPlaceholder": "Enter termination period",
+          "terminationPeriodType": "Termination Period Unit",
+          "terminationPeriodTypePlaceholder": "Select termination period unit",
+          "terminationPeriodTypeMonths": "Months",
+          "terminationPeriodTypeYears": "Years",
           "terminationDate": "Termination Date",
           "terminationDatePlaceholder": "Select termination date",
           "duration": "Duration",
           "durationPlaceholder": "Enter duration",
           "durationType": "Duration Unit",
           "durationTypePlaceholder": "Select duration unit",
+          "durationTypeMonths": "Months",
+          "durationTypeYears": "Years",
           "additionalInfo": "Additional Information",
           "interestPaymentType": "Interest Payment Type",
           "interestPaymentTypePlaceholder": "Select interest payment type",
+          "interestPaymentTypeYearly": "Yearly",
+          "interestPaymentTypeEnd": "At End",
           "interestPayoutType": "Interest Payout Type",
           "interestPayoutTypePlaceholder": "Select interest payout type",
+          "interestPayoutTypeMoney": "Money",
+          "interestPayoutTypeCoupon": "Coupon",
           "altInterestMethod": "Alternative Interest Method",
           "altInterestMethodPlaceholder": "Select alternative interest method",
           "contractStatus": "Contract Status",
           "contractStatusPlaceholder": "Select contract status",
+          "contractStatusPending": "Pending",
+          "contractStatusCompleted": "Completed",
           "success": "Loan created successfully",
-          "error": "Failed to create loan"
+          "error": "Failed to create loan",
+          "cancel": "Cancel",
+          "submit": "Create Loan",
+          "submitting": "Creating..."
         }
       },
       "edit": {
         "title": "Edit Loan",
         "form": {
           "success": "Loan updated successfully",
-          "error": "Failed to update loan"
+          "error": "Failed to update loan",
+          "cancel": "Cancel",
+          "submit": "Update Loan",
+          "submitting": "Updating..."
         }
       },
       "accessibility": {
@@ -433,18 +453,32 @@
         "userLanguageEn": "English",
         "userTheme": "Theme",
         "userThemePlaceholder": "Select theme",
+        "userThemeDefault": "System",
+        "userThemeDark": "Dark",
+        "userThemeLight": "Light",
         "lenderDefaults": "Lender Defaults",
         "lenderSalutation": "Salutation",
         "lenderSalutationPlaceholder": "Select salutation",
+        "lenderSalutationPersonal": "Personal",
+        "lenderSalutationFormal": "Formal",
         "lenderCountry": "Country",
         "lenderCountryPlaceholder": "Select country",
         "lenderNotificationType": "Notification Type",
         "lenderNotificationTypePlaceholder": "Select notification type",
+        "lenderNotificationTypeOnline": "Online",
+        "lenderNotificationTypeEmail": "Email",
+        "lenderNotificationTypeMail": "Mail",
         "lenderMembershipStatus": "Membership Status",
         "lenderMembershipStatusPlaceholder": "Select membership status",
+        "lenderMembershipStatusUnknown": "Unknown",
+        "lenderMembershipStatusMember": "Member",
+        "lenderMembershipStatusExternal": "External",
         "loanDefaults": "Loan Defaults",
         "interestMethod": "Interest Method",
         "interestMethodPlaceholder": "Select interest method",
+        "submit": "Save Configuration",
+        "submitting": "Saving...",
+        "cancel": "Cancel",
         "success": "Configuration saved successfully",
         "error": "Failed to save configuration"
       }
@@ -481,6 +515,7 @@
       "name": "View name",
       "namePlaceholder": "Enter a name for this view",
       "isDefault": "Set as default view",
+      "cancel": "Cancel",
       "save": "Save View",
       "saving": "Saving..."
     }
