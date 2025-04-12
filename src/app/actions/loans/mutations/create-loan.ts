@@ -16,6 +16,33 @@ export async function createLoan(data: Prisma.LoanCreateInput) {
       throw new Error('Lender ID is required')
     }
 
+    // Check if the user has access to the lender's project
+    const lender = await db.lender.findUnique({
+      where: {
+        id: data.lender.connect.id
+      },
+      include: {
+        project: {
+          include: {
+            managers: true
+          }
+        }
+      }
+    })
+
+    if (!lender) {
+      throw new Error('Lender not found')
+    }
+
+    // Check if the user has access to the project
+    const hasAccess = lender.project.managers.some(
+      (manager) => manager.id === session.user.id
+    )
+
+    if (!hasAccess) {
+      throw new Error('You do not have access to this project')
+    }
+
     // Create the loan
     const loan = await db.loan.create({
       data: {
