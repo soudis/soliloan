@@ -1,5 +1,6 @@
 'use client'
 
+import { createLoan } from '@/app/actions/loans'
 import { LoanForm } from '@/components/loans/loan-form'
 import { useRouter } from '@/i18n/navigation'
 import type { LoanFormData } from '@/lib/schemas/loan'
@@ -27,18 +28,11 @@ export default function NewLoanPage() {
 
   const handleSubmit = async (data: LoanFormData) => {
     try {
-      // Send the data to the API
-      const response = await fetch('/api/loans', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
+      // Create the loan using the server action
+      const result = await createLoan(data)
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to create loan')
+      if (result.error) {
+        throw new Error(result.error)
       }
 
       // Show success message

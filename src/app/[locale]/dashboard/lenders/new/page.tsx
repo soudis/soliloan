@@ -1,5 +1,6 @@
 'use client'
 
+import { createLender } from '@/app/actions/lenders'
 import { LenderForm } from '@/components/lenders/lender-form'
 import { useRouter } from '@/i18n/navigation'
 import type { LenderFormData } from '@/lib/schemas/lender'
@@ -16,6 +17,7 @@ export default function NewLenderPage() {
   const t = useTranslations('dashboard.lenders')
   const commonT = useTranslations('common')
   const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   if (!session) {
     return null
@@ -27,18 +29,13 @@ export default function NewLenderPage() {
 
   const handleSubmit = async (data: LenderFormData) => {
     try {
-      // Send the data to the API
-      const response = await fetch('/api/lenders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
+      setIsSubmitting(true)
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to create lender')
+      // Create the lender using the server action
+      const result = await createLender(data)
+
+      if (result.error) {
+        throw new Error(result.error)
       }
 
       // Show success message
@@ -50,6 +47,8 @@ export default function NewLenderPage() {
       console.error('Error submitting form:', error)
       setError(error instanceof Error ? error.message : 'An unknown error occurred')
       toast.error(t('new.form.error'))
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -61,6 +60,7 @@ export default function NewLenderPage() {
       cancelButtonText={commonT('ui.actions.cancel')}
       onSubmit={handleSubmit}
       error={error}
+      isLoading={isSubmitting}
     />
   )
 } 

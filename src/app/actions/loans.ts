@@ -33,7 +33,7 @@ interface Loan {
   terminationPeriodType?: 'MONTHS' | 'YEARS'
   duration?: number
   durationType?: 'MONTHS' | 'YEARS'
-  altInterestMethod?: string
+  altInterestMethod?: 'ACT_365_NOCOMPOUND' | 'E30_360_NOCOMPOUND' | 'ACT_360_NOCOMPOUND' | 'ACT_ACT_NOCOMPOUND' | 'ACT_365_COMPOUND' | 'E30_360_COMPOUND' | 'ACT_360_COMPOUND' | 'ACT_ACT_COMPOUND'
   lender: {
     id: string
     lenderNumber: number
@@ -449,4 +449,85 @@ export async function deleteTransaction(loanId: string, transactionId: string) {
 
 export async function revalidateLoan(loanId: string) {
   revalidatePath(`/dashboard/loans/${loanId}`)
+}
+
+export async function createLoan(data: Omit<Loan, 'id' | 'transactions'>) {
+  try {
+    const session = await auth()
+    if (!session) {
+      throw new Error('Unauthorized')
+    }
+
+    // Check if the user has access to the project
+    const project = await db.project.findUnique({
+      where: {
+        id: data.lender.projectId,
+      },
+      include: {
+        managers: true
+      }
+    })
+
+    if (!project) {
+      throw new Error('Project not found')
+    }
+
+    const hasAccess = project.managers.some(
+      (manager: User) => manager.id === session.user.id
+    )
+
+    if (!hasAccess) {
+      throw new Error('You do not have access to this project')
+    }
+
+    // Create the loan
+    const dbLoan = await db.loan.create({
+      data: {
+        loanNumber: data.loanNumber,
+        amount: new Decimal(data.amount),
+        interestRate: new Decimal(data.interestRate),
+        signDate: new Date(data.signDate),
+        endDate: data.endDate ? new Date(data.endDate) : null,
+        contractStatus: data.contractStatus,
+        interestPaymentType: data.interestPaymentType,
+        interestPayoutType: data.interestPayoutType,
+        terminationType: data.terminationType,
+        terminationDate: data.terminationDate ? new Date(data.terminationDate) : null,
+        terminationPeriod: data.terminationPeriod,
+        terminationPeriodType: data.terminationPeriodType,
+        duration: data.duration,
+        durationType: data.durationType,
+        altInterestMethod: data.altInterestMethod,
+        lender: {
+          connect: {
+            id: data.lender.id
+          }
+        }
+      },
+      include: {
+        lender: {
+          select: {
+            id: true,
+            lenderNumber: true,
+            firstName: true,
+            lastName: true,
+            organisationName: true,
+            projectId: true
+          }
+        },
+        transactions: true
+      }
+    })
+
+    // Transform the database loan to match the expected Loan interface
+    const loan = transformLoan(dbLoan)
+
+    // Revalidate the loans list page
+    revalidatePath('/dashboard/loans/[projectId]')
+
+    return { loan }
+  } catch (error) {
+    console.error('Error creating loan:', error)
+    return { error: error instanceof Error ? error.message : 'Failed to create loan' }
+  }
 } 

@@ -1,5 +1,6 @@
 'use client'
 
+import { getLendersByProjectId } from '@/app/actions/lenders'
 import { FormCombobox } from '@/components/form/form-combobox'
 import { useProject } from '@/store/project-context'
 import { useTranslations } from 'next-intl'
@@ -45,14 +46,13 @@ export function LenderCombobox({
       setError(null)
 
       try {
-        const response = await fetch(`/api/lenders?projectId=${selectedProject.id}`)
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch lenders')
+        const { lenders: fetchedLenders, error } = await getLendersByProjectId(selectedProject.id)
+        if (error) {
+          throw new Error(error)
         }
-
-        const data = await response.json()
-        setLenders(data)
+        if (fetchedLenders) {
+          setLenders(fetchedLenders)
+        }
       } catch (err) {
         console.error('Error fetching lenders:', err)
         setError(err instanceof Error ? err.message : 'An unknown error occurred')

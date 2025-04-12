@@ -1,5 +1,6 @@
 'use client'
 
+import { getLenderById, updateLender } from '@/app/actions/lenders'
 import { LenderForm } from '@/components/lenders/lender-form'
 import { useRouter } from '@/i18n/navigation'
 import type { LenderFormData } from '@/lib/schemas/lender'
@@ -24,12 +25,15 @@ export default function EditLenderPage({ params }: { params: Promise<{ lenderId:
   useEffect(() => {
     const fetchLender = async () => {
       try {
-        const response = await fetch(`/api/lenders/${resolvedParams.lenderId}`)
-        if (!response.ok) {
-          throw new Error('Failed to fetch lender')
+        const result = await getLenderById(resolvedParams.lenderId)
+
+        if (result.error) {
+          throw new Error(result.error)
         }
-        const data = await response.json()
-        setInitialData(data)
+
+        if (result.lender) {
+          setInitialData(result.lender as Partial<LenderFormData>)
+        }
       } catch (error) {
         console.error('Error fetching lender:', error)
         setError(error instanceof Error ? error.message : 'An unknown error occurred')
@@ -61,18 +65,11 @@ export default function EditLenderPage({ params }: { params: Promise<{ lenderId:
       setIsSubmitting(true)
       setError(null)
 
-      // Send the data to the API
-      const response = await fetch(`/api/lenders/${resolvedParams.lenderId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
+      // Update the lender using the server action
+      const result = await updateLender(resolvedParams.lenderId, data)
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to update lender')
+      if (result.error) {
+        throw new Error(result.error)
       }
 
       // Show success message
@@ -98,7 +95,7 @@ export default function EditLenderPage({ params }: { params: Promise<{ lenderId:
       onSubmit={handleSubmit}
       initialData={initialData || undefined}
       lenderId={resolvedParams.lenderId}
-      isLoading={isLoading}
+      isLoading={isSubmitting}
       error={error}
     />
   )

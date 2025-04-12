@@ -1,3 +1,4 @@
+import { getViewsByType } from '@/app/actions/views';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,11 +12,13 @@ import { useEffect, useRef, useState } from 'react';
 
 interface View {
   id: string;
+  userId: string;
+  type: 'LENDER' | 'LOAN';
   name: string;
   data: any;
-  createdAt: string;
-  updatedAt: string;
-  isDefault?: boolean;
+  isDefault: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface ViewManagerProps {
@@ -44,21 +47,22 @@ export function ViewManager({ viewType, onViewSelect, onViewDelete, refreshTrigg
   const fetchViews = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/views?type=${viewType}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch views');
+      const { views: fetchedViews, error } = await getViewsByType(viewType);
+      if (error) {
+        throw new Error(error);
       }
-      const data = await response.json();
-      setViews(data);
+      if (fetchedViews) {
+        setViews(fetchedViews);
 
-      // Find default view if it exists
-      const defaultView = data.find((view: View) => view.isDefault);
-      if (defaultView) {
-        setSelectedView(defaultView.id);
-        onViewSelectRef.current(defaultView);
-      } else {
-        setSelectedView(null);
-        onViewSelectRef.current(null); // This will trigger the default view
+        // Find default view if it exists
+        const defaultView = fetchedViews.find((view: View) => view.isDefault);
+        if (defaultView) {
+          setSelectedView(defaultView.id);
+          onViewSelectRef.current(defaultView);
+        } else {
+          setSelectedView(null);
+          onViewSelectRef.current(null); // This will trigger the default view
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

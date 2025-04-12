@@ -340,4 +340,77 @@ export async function updateLender(lenderId: string, data: any) {
 
 export async function revalidateLender(lenderId: string) {
   revalidatePath(`/dashboard/lenders/${lenderId}`)
+}
+
+export async function createLender(data: any) {
+  try {
+    const session = await auth()
+    if (!session) {
+      throw new Error('Unauthorized')
+    }
+
+    // Check if the user has access to the project
+    const project = await db.project.findUnique({
+      where: {
+        id: data.projectId,
+      },
+      include: {
+        managers: true,
+        configuration: true
+      }
+    })
+
+    if (!project) {
+      throw new Error('Project not found')
+    }
+
+    const hasAccess = project.managers.some(
+      (manager) => manager.id === session.user.id
+    )
+
+    if (!hasAccess) {
+      throw new Error('You do not have access to this project')
+    }
+
+    // Get the next lender number
+    const lastLender = await db.lender.findFirst({
+      where: {
+        projectId: data.projectId
+      },
+      orderBy: {
+        lenderNumber: 'desc'
+      }
+    })
+
+    const nextLenderNumber = lastLender ? lastLender.lenderNumber + 1 : 1
+
+    // Create the lender
+    const newLender = await db.lender.create({
+      data: {
+        ...data,
+        lenderNumber: nextLenderNumber,
+        user: data.email ? {
+          connectOrCreate: {
+            where: { email: data.email },
+            create: {
+              email: data.email,
+              name: data.type === 'PERSON'
+                ? `${data.firstName} ${data.lastName}`
+                : data.organisationName || '',
+              language: project.configuration?.userLanguage || 'de',
+              theme: project.configuration?.userTheme || 'default',
+            }
+          }
+        } : undefined
+      },
+    })
+
+    // Revalidate the lenders list page
+    revalidatePath(`/dashboard/lenders/${data.projectId}`)
+
+    return { lender: newLender }
+  } catch (error) {
+    console.error('Error creating lender:', error)
+    return { error: error instanceof Error ? error.message : 'Failed to create lender' }
+  }
 } 

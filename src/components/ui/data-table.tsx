@@ -1,3 +1,4 @@
+import { createView, deleteView } from '@/app/actions/views'
 import { useTableStore } from '@/store/table-store'
 import {
   ColumnDef,
@@ -235,81 +236,71 @@ export function DataTable<TData, TValue>({
 
   // Function to save the current view
   const handleSaveView = async (name: string, isDefault: boolean) => {
-    if (!viewType) return;
+    if (!viewType) return
 
+    setIsSaving(true)
     try {
-      setIsSaving(true);
-
-      const viewData = {
-        type: viewType,
+      const { view, error } = await createView({
         name,
-        data: {
-          columnVisibility,
+        type: viewType,
+        isDefault,
+        state: {
           sorting,
           columnFilters: columnFiltersState,
+          columnVisibility,
           globalFilter,
           pageSize,
-        },
-      };
+        }
+      })
 
-      const response = await fetch('/api/views', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(viewData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save view');
+      if (error) {
+        throw new Error(error)
       }
 
-      // Increment the refresh trigger to cause the ViewManager to refresh
-      setViewRefreshTrigger(prev => prev + 1);
-    } catch (error) {
-      console.error('Error saving view:', error);
+      // Refresh the view list
+      setViewRefreshTrigger(prev => prev + 1)
+    } catch (err) {
+      console.error('Error saving view:', err)
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
-  // Function to load a view
-  const handleLoadView = (view: any) => {
-    if (view === null) {
-      // Reset to default state
-      setColumnVisibility(defaultColumnVisibility);
-      setSorting([]);
-      setColumnFilters([]);
-      setGlobalFilter('');
-      setPageSize(10);
-      return;
+  const handleLoadView = async (view: any) => {
+    if (!view) return
+
+    try {
+      const { view: loadedView, error } = await getViewById(view.id)
+      if (error) {
+        throw new Error(error)
+      }
+
+      if (loadedView) {
+        const state = loadedView.state
+        setSorting(state.sorting || [])
+        setColumnFilters(state.columnFilters || [])
+        setColumnVisibility(state.columnVisibility || defaultColumnVisibility)
+        setGlobalFilter(state.globalFilter || '')
+        setPageSize(state.pageSize || 10)
+      }
+    } catch (err) {
+      console.error('Error loading view:', err)
     }
+  }
 
-    if (!view.data) return;
-
-    const { columnVisibility: newColumnVisibility, sorting: newSorting, columnFilters: newColumnFilters, globalFilter: newGlobalFilter, pageSize: newPageSize } = view.data;
-
-    if (newColumnVisibility) setColumnVisibility(newColumnVisibility);
-    if (newSorting) setSorting(newSorting);
-    if (newColumnFilters) setColumnFilters(newColumnFilters);
-    if (newGlobalFilter !== undefined) setGlobalFilter(newGlobalFilter);
-    if (newPageSize) setPageSize(newPageSize);
-  };
-
-  // Function to delete a view
   const handleDeleteView = async (viewId: string) => {
     try {
-      const response = await fetch(`/api/views/${viewId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete view');
+      const { error } = await deleteView(viewId)
+      if (error) {
+        throw new Error(error)
       }
-    } catch (error) {
-      console.error('Error deleting view:', error);
+
+      // Refresh the view list
+      setViewRefreshTrigger(prev => prev + 1)
+    } catch (err) {
+      console.error('Error deleting view:', err)
     }
-  };
+  }
 
   return (
     <div>

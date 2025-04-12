@@ -1,5 +1,6 @@
 'use client'
 
+import { getProjects } from '@/app/actions/projects'
 import {
   Select,
   SelectContent,
@@ -16,6 +17,30 @@ interface Project {
   id: string
   name: string
   slug: string
+  configuration?: {
+    id: string
+    name: string
+    email?: string
+    telNo?: string
+    website?: string
+    street?: string
+    addon?: string
+    zip?: string
+    place?: string
+    country?: string
+    iban?: string
+    bic?: string
+    userLanguage?: string
+    userTheme?: string
+    lenderSalutation?: string
+    lenderCountry?: string
+    lenderNotificationType?: string
+    lenderMembershipStatus?: string
+    lenderTags: string[]
+    interestMethod?: string
+    altInterestMethods: string[]
+    customLoans: boolean
+  }
 }
 
 export default function ProjectSelector() {
@@ -29,14 +54,45 @@ export default function ProjectSelector() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch('/api/projects')
-        if (!response.ok) {
-          throw new Error('Failed to fetch projects')
+        const { projects: fetchedProjects, error } = await getProjects()
+        if (error) {
+          throw new Error(error)
         }
-        const data = await response.json()
-        setProjects(data)
-        if (data.length > 0 && !selectedProject) {
-          setSelectedProject(data[0])
+        if (fetchedProjects) {
+          // Transform the projects to match the expected format
+          const transformedProjects = fetchedProjects.map(project => ({
+            id: project.id,
+            name: project.name,
+            slug: project.slug,
+            configuration: project.configuration ? {
+              id: project.configuration.id,
+              name: project.configuration.name,
+              email: project.configuration.email || undefined,
+              telNo: project.configuration.telNo || undefined,
+              website: project.configuration.website || undefined,
+              street: project.configuration.street || undefined,
+              addon: project.configuration.addon || undefined,
+              zip: project.configuration.zip || undefined,
+              place: project.configuration.place || undefined,
+              country: project.configuration.country || undefined,
+              iban: project.configuration.iban || undefined,
+              bic: project.configuration.bic || undefined,
+              userLanguage: project.configuration.userLanguage || undefined,
+              userTheme: project.configuration.userTheme || undefined,
+              lenderSalutation: project.configuration.lenderSalutation || undefined,
+              lenderCountry: project.configuration.lenderCountry || undefined,
+              lenderNotificationType: project.configuration.lenderNotificationType || undefined,
+              lenderMembershipStatus: project.configuration.lenderMembershipStatus || undefined,
+              lenderTags: project.configuration.lenderTags || [],
+              interestMethod: project.configuration.interestMethod || undefined,
+              altInterestMethods: project.configuration.altInterestMethods || [],
+              customLoans: project.configuration.customLoans || false
+            } : undefined
+          }))
+          setProjects(transformedProjects)
+          if (transformedProjects.length > 0 && !selectedProject) {
+            setSelectedProject(transformedProjects[0])
+          }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
