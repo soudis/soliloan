@@ -76,7 +76,7 @@ export function ConfigurationForm({
   })
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-6 max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
