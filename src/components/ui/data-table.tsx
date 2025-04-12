@@ -1,4 +1,4 @@
-import { createView, deleteView } from '@/app/actions/views'
+import { createView, deleteView, getViewById } from '@/app/actions/views'
 import { useTableStore } from '@/store/table-store'
 import {
   ColumnDef,
@@ -244,7 +244,7 @@ export function DataTable<TData, TValue>({
         name,
         type: viewType,
         isDefault,
-        state: {
+        data: {
           sorting,
           columnFilters: columnFiltersState,
           columnVisibility,
@@ -275,8 +275,18 @@ export function DataTable<TData, TValue>({
         throw new Error(error)
       }
 
-      if (loadedView) {
-        const state = loadedView.state
+      if (loadedView && loadedView.data) {
+        // Parse the data if it's a string, or use it directly if it's already an object
+        const state = typeof loadedView.data === 'string'
+          ? JSON.parse(loadedView.data)
+          : loadedView.data as {
+            sorting?: SortingState;
+            columnFilters?: ColumnFiltersState;
+            columnVisibility?: VisibilityState;
+            globalFilter?: string;
+            pageSize?: number;
+          };
+
         setSorting(state.sorting || [])
         setColumnFilters(state.columnFilters || [])
         setColumnVisibility(state.columnVisibility || defaultColumnVisibility)

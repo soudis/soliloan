@@ -1,5 +1,6 @@
 'use client'
 
+import { getLenderById } from '@/app/actions/lenders'
 import { createLoan } from '@/app/actions/loans'
 import { LoanForm } from '@/components/loans/loan-form'
 import { useRouter } from '@/i18n/navigation'
@@ -28,8 +29,34 @@ export default function NewLoanPage() {
 
   const handleSubmit = async (data: LoanFormData) => {
     try {
+      // Get the lender details first
+      const lenderResult = await getLenderById(data.lenderId)
+      if (lenderResult.error) {
+        throw new Error(lenderResult.error)
+      }
+
+      if (!lenderResult.lender) {
+        throw new Error('Lender not found')
+      }
+
       // Create the loan using the server action
-      const result = await createLoan(data)
+      const result = await createLoan({
+        ...data,
+        loanNumber: 0, // This will be auto-incremented by the database
+        signDate: data.signDate.toISOString(),
+        endDate: data.endDate?.toISOString(),
+        terminationDate: data.terminationDate?.toISOString(),
+        terminationPeriod: data.terminationPeriod || undefined,
+        terminationPeriodType: data.terminationPeriodType || undefined,
+        duration: data.duration || undefined,
+        durationType: data.durationType || undefined,
+        altInterestMethod: data.altInterestMethod || undefined,
+        lender: {
+          id: data.lenderId,
+          lenderNumber: lenderResult.lender.lenderNumber,
+          projectId: selectedProject.id
+        }
+      })
 
       if (result.error) {
         throw new Error(result.error)
