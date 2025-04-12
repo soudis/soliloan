@@ -91,6 +91,7 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
   const router = useRouter()
   const { selectedProject } = useProject()
   const t = useTranslations('dashboard.lenders')
+  const commonT = useTranslations('common')
 
   // Use React Query to fetch lender data
   const { data: lender, isLoading, error } = useQuery({
@@ -129,7 +130,7 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{lenderName}</h1>
-          <p className="text-muted-foreground">#{lender.lenderNumber} · {t(`table.type${lender.type}`)}</p>
+          <p className="text-muted-foreground">#{lender.lenderNumber} · {commonT(`enums.lender.type.${lender.type}`)}</p>
         </div>
         <div className="flex items-center space-x-4">
           <Button variant="outline" onClick={() => router.push(`/dashboard/lenders/${lender.id}/edit`)}>
@@ -158,7 +159,7 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
             ))}
             {lender.loans.length === 0 && (
               <div className="text-center text-muted-foreground py-8">
-                {t('loans.table.noResults')}
+                {commonT('ui.table.noResults')}
               </div>
             )}
           </div>

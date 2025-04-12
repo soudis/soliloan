@@ -56,14 +56,14 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
                   form={form}
                   name="titlePrefix"
                   label={t('new.form.titlePrefix')}
-                  placeholder={t('new.form.titlePrefixPlaceholder')}
+                  placeholder={commonT('ui.form.enterPlaceholder')}
                 />
 
                 <FormField
                   form={form}
                   name="titleSuffix"
                   label={t('new.form.titleSuffix')}
-                  placeholder={t('new.form.titleSuffixPlaceholder')}
+                  placeholder={commonT('ui.form.enterPlaceholder')}
                 />
               </div>
             )}
@@ -73,14 +73,14 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
                 form={form}
                 name="firstName"
                 label={t('new.form.firstName') + ' *'}
-                placeholder={t('new.form.firstNamePlaceholder')}
+                placeholder={commonT('ui.form.enterPlaceholder')}
               />
 
               <FormField
                 form={form}
                 name="lastName"
                 label={t('new.form.lastName') + ' *'}
-                placeholder={t('new.form.lastNamePlaceholder')}
+                placeholder={commonT('ui.form.enterPlaceholder')}
               />
             </div>
           </>
@@ -89,7 +89,7 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
             form={form}
             name="organisationName"
             label={t('new.form.organisationName') + ' *'}
-            placeholder={t('new.form.organisationNamePlaceholder')}
+            placeholder={commonT('ui.form.enterPlaceholder')}
           />
         )}
       </div>
@@ -103,7 +103,7 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
             form={form}
             name="email"
             label={t('new.form.email')}
-            placeholder={t('new.form.emailPlaceholder')}
+            placeholder={commonT('ui.form.enterPlaceholder')}
             type="email"
           />
 
@@ -111,7 +111,7 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
             form={form}
             name="telNo"
             label={t('new.form.telNo')}
-            placeholder={t('new.form.telNoPlaceholder')}
+            placeholder={commonT('ui.form.enterPlaceholder')}
             type="tel"
           />
         </div>
@@ -121,14 +121,14 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
             form={form}
             name="street"
             label={t('new.form.street')}
-            placeholder={t('new.form.streetPlaceholder')}
+            placeholder={commonT('ui.form.enterPlaceholder')}
           />
 
           <FormField
             form={form}
             name="addon"
             label={t('new.form.addon')}
-            placeholder={t('new.form.addonPlaceholder')}
+            placeholder={commonT('ui.form.enterPlaceholder')}
           />
         </div>
 
@@ -138,7 +138,7 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
               form={form}
               name="zip"
               label={t('new.form.zip')}
-              placeholder={t('new.form.zipPlaceholder')}
+              placeholder={commonT('ui.form.enterPlaceholder')}
             />
           </div>
 
@@ -147,7 +147,7 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
               form={form}
               name="place"
               label={t('new.form.place')}
-              placeholder={t('new.form.placePlaceholder')}
+              placeholder={commonT('ui.form.enterPlaceholder')}
             />
           </div>
 
@@ -156,7 +156,7 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
               form={form}
               name="country"
               label={t('new.form.country')}
-              placeholder={t('new.form.countryPlaceholder')}
+              placeholder={commonT('ui.form.selectPlaceholder')}
             />
           </div>
         </div>
@@ -170,14 +170,14 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
           <FormIbanInput
             name="iban"
             label={t('new.form.iban')}
-            placeholder={t('new.form.ibanPlaceholder')}
+            placeholder={commonT('ui.form.enterPlaceholder')}
           />
 
           <FormField
             form={form}
             name="bic"
             label={t('new.form.bic')}
-            placeholder={t('new.form.bicPlaceholder')}
+            placeholder={commonT('ui.form.enterPlaceholder')}
           />
         </div>
       </div>
@@ -216,7 +216,7 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
           form={form}
           name="tag"
           label={t('new.form.tag')}
-          placeholder={t('new.form.tagPlaceholder')}
+          placeholder={commonT('ui.form.enterPlaceholder')}
         />
       </div>
     </>

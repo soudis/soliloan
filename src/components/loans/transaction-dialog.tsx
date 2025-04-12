@@ -28,6 +28,7 @@ export function TransactionDialog({
   onOpenChange,
 }: TransactionDialogProps) {
   const t = useTranslations('dashboard.loans')
+  const commonT = useTranslations('common')
 
   const form = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
@@ -71,10 +72,10 @@ export function TransactionDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
               >
-                {t('transactions.cancel')}
+                {commonT('ui.actions.cancel')}
               </Button>
               <Button type="submit">
-                {t('transactions.create')}
+                {commonT('ui.actions.create')}
               </Button>
             </div>
           </form>

@@ -28,14 +28,14 @@ export function LoanFormFields({ form }: LoanFormFieldsProps) {
             form={form}
             name="lenderId"
             label={t('new.form.lender') + ' *'}
-            placeholder={t('new.form.lenderPlaceholder')}
+            placeholder={commonT('ui.form.selectPlaceholder')}
           />
 
           <FormDatePicker
             form={form}
             name="signDate"
             label={t('new.form.signDate') + ' *'}
-            placeholder={t('new.form.signDatePlaceholder')}
+            placeholder={commonT('ui.form.enterPlaceholder')}
           />
         </div>
 
@@ -44,7 +44,7 @@ export function LoanFormFields({ form }: LoanFormFieldsProps) {
             form={form}
             name="amount"
             label={t('new.form.amount') + ' *'}
-            placeholder={t('new.form.amountPlaceholder')}
+            placeholder={commonT('ui.form.enterPlaceholder')}
             min={0.01}
             step={0.01}
           />
@@ -53,7 +53,7 @@ export function LoanFormFields({ form }: LoanFormFieldsProps) {
             form={form}
             name="interestRate"
             label={t('new.form.interestRate') + ' *'}
-            placeholder={t('new.form.interestRatePlaceholder')}
+            placeholder={commonT('ui.form.enterPlaceholder')}
             min={0}
             step={0.01}
           />
@@ -85,7 +85,7 @@ export function LoanFormFields({ form }: LoanFormFieldsProps) {
               form={form}
               name="endDate"
               label={t('new.form.endDate') + ' *'}
-              placeholder={t('new.form.endDatePlaceholder')}
+              placeholder={commonT('ui.form.enterPlaceholder')}
             />
           </div>
         )}
@@ -96,7 +96,7 @@ export function LoanFormFields({ form }: LoanFormFieldsProps) {
               form={form}
               name="terminationPeriod"
               label={t('new.form.terminationPeriod') + ' *'}
-              placeholder={t('new.form.terminationPeriodPlaceholder')}
+              placeholder={commonT('ui.form.enterPlaceholder')}
               min={1}
             />
 
@@ -106,8 +106,8 @@ export function LoanFormFields({ form }: LoanFormFieldsProps) {
               label={t('new.form.terminationPeriodType') + ' *'}
               placeholder={commonT('ui.form.selectPlaceholder')}
               options={[
-                { value: 'MONTHS', label: commonT('enums.loan.periodType.MONTHS') },
-                { value: 'YEARS', label: commonT('enums.loan.periodType.YEARS') },
+                { value: 'MONTHS', label: commonT('enums.loan.durationUnit.MONTHS') },
+                { value: 'YEARS', label: commonT('enums.loan.durationUnit.YEARS') },
               ]}
             />
 
@@ -115,7 +115,7 @@ export function LoanFormFields({ form }: LoanFormFieldsProps) {
               form={form}
               name="terminationDate"
               label={t('new.form.terminationDate')}
-              placeholder={t('new.form.terminationDatePlaceholder')}
+              placeholder={commonT('ui.form.enterPlaceholder')}
             />
           </div>
         )}
@@ -126,7 +126,7 @@ export function LoanFormFields({ form }: LoanFormFieldsProps) {
               form={form}
               name="duration"
               label={t('new.form.duration') + ' *'}
-              placeholder={t('new.form.durationPlaceholder')}
+              placeholder={commonT('ui.form.enterPlaceholder')}
               min={1}
             />
 
@@ -136,8 +136,8 @@ export function LoanFormFields({ form }: LoanFormFieldsProps) {
               label={t('new.form.durationType') + ' *'}
               placeholder={commonT('ui.form.selectPlaceholder')}
               options={[
-                { value: 'MONTHS', label: commonT('enums.loan.periodType.MONTHS') },
-                { value: 'YEARS', label: commonT('enums.loan.periodType.YEARS') },
+                { value: 'MONTHS', label: commonT('enums.loan.durationUnit.MONTHS') },
+                { value: 'YEARS', label: commonT('enums.loan.durationUnit.YEARS') },
               ]}
             />
           </div>
@@ -179,14 +179,14 @@ export function LoanFormFields({ form }: LoanFormFieldsProps) {
             label={t('new.form.altInterestMethod')}
             placeholder={commonT('ui.form.selectPlaceholder')}
             options={[
-              { value: 'ACT_365_NOCOMPOUND', label: commonT('enums.loan.interestMethod.ACT_365_NOCOMPOUND') },
-              { value: 'E30_360_NOCOMPOUND', label: commonT('enums.loan.interestMethod.E30_360_NOCOMPOUND') },
-              { value: 'ACT_360_NOCOMPOUND', label: commonT('enums.loan.interestMethod.ACT_360_NOCOMPOUND') },
-              { value: 'ACT_ACT_NOCOMPOUND', label: commonT('enums.loan.interestMethod.ACT_ACT_NOCOMPOUND') },
-              { value: 'ACT_365_COMPOUND', label: commonT('enums.loan.interestMethod.ACT_365_COMPOUND') },
-              { value: 'E30_360_COMPOUND', label: commonT('enums.loan.interestMethod.E30_360_COMPOUND') },
-              { value: 'ACT_360_COMPOUND', label: commonT('enums.loan.interestMethod.ACT_360_COMPOUND') },
-              { value: 'ACT_ACT_COMPOUND', label: commonT('enums.loan.interestMethod.ACT_ACT_COMPOUND') },
+              { value: 'ACT365NOCOMPOUND', label: commonT('enums.interestMethod.ACT365NOCOMPOUND') },
+              { value: 'E30360NOCOMPOUND', label: commonT('enums.interestMethod.E30360NOCOMPOUND') },
+              { value: 'ACT360NOCOMPOUND', label: commonT('enums.interestMethod.ACT360NOCOMPOUND') },
+              { value: 'ACTACTNOCOMPOUND', label: commonT('enums.interestMethod.ACTACTNOCOMPOUND') },
+              { value: 'ACT365COMPOUND', label: commonT('enums.interestMethod.ACT365COMPOUND') },
+              { value: 'E30360COMPOUND', label: commonT('enums.interestMethod.E30360COMPOUND') },
+              { value: 'ACT360COMPOUND', label: commonT('enums.interestMethod.ACT360COMPOUND') },
+              { value: 'ACTACTCOMPOUND', label: commonT('enums.interestMethod.ACTACTCOMPOUND') },
             ]}
           />
 

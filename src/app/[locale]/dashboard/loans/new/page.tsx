@@ -14,6 +14,7 @@ export default function NewLoanPage() {
   const router = useRouter()
   const { selectedProject } = useProject()
   const t = useTranslations('dashboard.loans')
+  const commonT = useTranslations('common')
   const [error, setError] = useState<string | null>(null)
 
   if (!session) {
@@ -55,9 +56,9 @@ export default function NewLoanPage() {
   return (
     <LoanForm
       title={t('new.title')}
-      submitButtonText={t('new.form.submit')}
-      submittingButtonText={t('new.form.submitting')}
-      cancelButtonText={t('new.form.cancel')}
+      submitButtonText={commonT('ui.actions.create')}
+      submittingButtonText={commonT('ui.actions.creating')}
+      cancelButtonText={commonT('ui.actions.cancel')}
       onSubmit={handleSubmit}
       error={error}
     />

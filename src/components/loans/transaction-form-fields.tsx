@@ -37,14 +37,14 @@ export function TransactionFormFields({ form }: TransactionFormFieldsProps) {
         form={form}
         name="date"
         label={t('transactions.date')}
-        placeholder={t('transactions.datePlaceholder')}
+        placeholder={commonT('ui.form.enterPlaceholder')}
       />
 
       <FormNumberInput
         form={form}
         name="amount"
         label={t('transactions.amount')}
-        placeholder={t('transactions.amountPlaceholder')}
+        placeholder={commonT('ui.form.enterPlaceholder')}
         min={0.01}
         step={0.01}
       />

@@ -76,7 +76,7 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
           <InfoItem
             label="IBAN"
             value={lender.iban}
-            emptyMessage="No IBAN provided"
+            emptyMessage={t('details.noBankingInfo')}
             showCopyButton={true}
             showQrButton={true}
             recipientName={lenderName}
@@ -84,7 +84,7 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
           <InfoItem
             label="BIC"
             value={lender.bic}
-            emptyMessage="No BIC provided"
+            emptyMessage={t('details.noBankingInfo')}
             showCopyButton={true}
           />
           {!lender.iban && !lender.bic && (

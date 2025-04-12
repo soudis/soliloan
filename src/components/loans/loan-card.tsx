@@ -84,13 +84,13 @@ export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
       case 'TERMINATION':
         if (!loan.terminationPeriod || !loan.terminationPeriodType) return `${commonT('enums.loan.terminationType.TERMINATION')} - -`
         return `${commonT('enums.loan.terminationType.TERMINATION')} - ${loan.terminationPeriod} ${loan.terminationPeriodType === 'MONTHS' ?
-          commonT('enums.loan.periodType.MONTHS') :
-          commonT('enums.loan.periodType.YEARS')}`
+          commonT('enums.loan.durationUnit.MONTHS') :
+          commonT('enums.loan.durationUnit.YEARS')}`
       case 'DURATION':
         if (!loan.duration || !loan.durationType) return `${commonT('enums.loan.terminationType.DURATION')} - -`
         return `${commonT('enums.loan.terminationType.DURATION')} - ${loan.duration} ${loan.durationType === 'MONTHS' ?
-          commonT('enums.loan.periodType.MONTHS') :
-          commonT('enums.loan.periodType.YEARS')}`
+          commonT('enums.loan.durationUnit.MONTHS') :
+          commonT('enums.loan.durationUnit.YEARS')}`
       default:
         return '-'
     }
@@ -154,7 +154,7 @@ export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
             )}
             <Button variant="ghost" size="icon" onClick={() => setIsTransactionDialogOpen(true)}>
               <Plus className="h-4 w-4" />
-              <span className="sr-only">{commonT('ui.actions.add')}</span>
+              <span className="sr-only">{commonT('ui.actions.create')}</span>
             </Button>
           </div>
         </CardHeader>

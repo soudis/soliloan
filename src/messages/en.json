@@ -312,8 +312,6 @@
       },
       "table": {
         "loanNumber": "Number",
-        "lenderNumber": "Lender Number",
-        "lender": "Lender",
         "amount": "Amount",
         "interestRate": "Interest Rate",
         "startDate": "Start Date",
