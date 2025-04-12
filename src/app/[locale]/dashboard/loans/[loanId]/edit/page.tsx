@@ -1,11 +1,12 @@
 'use client'
 
-import { getLoanById } from '@/app/actions/loans'
+import { getLoanById, updateLoan } from '@/app/actions/loans'
 import { LoanForm } from '@/components/loans/loan-form'
 import { useRouter } from '@/i18n/navigation'
 import { interestMethodEnum } from '@/lib/schemas/common'
 import type { LoanFormData } from '@/lib/schemas/loan'
 import { useProject } from '@/store/project-context'
+import { Prisma } from '@prisma/client'
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
@@ -40,8 +41,8 @@ export default function EditLoanPage({ params }: { params: Promise<{ loanId: str
     const baseData = {
       lenderId: loan.lender.id,
       signDate: new Date(loan.signDate),
-      amount: loan.amount,
-      interestRate: loan.interestRate,
+      amount: Number(loan.amount),
+      interestRate: Number(loan.interestRate),
       interestPaymentType: loan.interestPaymentType,
       interestPayoutType: loan.interestPayoutType,
       altInterestMethod: loan.altInterestMethod ? (loan.altInterestMethod as z.infer<typeof interestMethodEnum>) : null,
@@ -50,10 +51,13 @@ export default function EditLoanPage({ params }: { params: Promise<{ loanId: str
 
     switch (loan.terminationType) {
       case 'ENDDATE':
+        if (!loan.endDate) {
+          throw new Error('End date is required for ENDDATE termination type')
+        }
         return {
           ...baseData,
           terminationType: 'ENDDATE',
-          endDate: new Date(loan.endDate!),
+          endDate: new Date(loan.endDate),
           terminationDate: loan.terminationDate ? new Date(loan.terminationDate) : null,
           terminationPeriod: loan.terminationPeriod ?? null,
           terminationPeriodType: loan.terminationPeriodType ?? null,
@@ -104,18 +108,25 @@ export default function EditLoanPage({ params }: { params: Promise<{ loanId: str
       setIsSubmitting(true)
       setError(null)
 
-      // Send the data to the API
-      const response = await fetch(`/api/loans/${resolvedParams.loanId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+      // Update the loan using the server action
+      const result = await updateLoan(resolvedParams.loanId, {
+        ...data,
+        amount: new Prisma.Decimal(data.amount),
+        interestRate: new Prisma.Decimal(data.interestRate),
+        terminationPeriod: data.terminationPeriod || undefined,
+        terminationPeriodType: data.terminationPeriodType || undefined,
+        duration: data.duration || undefined,
+        durationType: data.durationType || undefined,
+        altInterestMethod: data.altInterestMethod || undefined,
+        lender: {
+          connect: {
+            id: data.lenderId
+          }
+        }
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to update loan')
+      if (result.error) {
+        throw new Error(result.error)
       }
 
       // Show success message

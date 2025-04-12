@@ -75,10 +75,10 @@ model LoanTemplate {
   duration              Int?
   durationType          DurationType?
   endDate               DateTime?
-  minInterestRate       Decimal?
-  maxInterestRate       Decimal?
-  minAmount             Decimal?
-  maxAmount             Decimal?
+  minInterestRate       Float?
+  maxInterestRate       Float?
+  minAmount             Float?
+  maxAmount             Float?
 }
 
 model Configuration {
@@ -179,8 +179,8 @@ model Loan {
   terminationPeriodType DurationType?
   duration              Int?
   durationType          DurationType?
-  amount                Decimal
-  interestRate          Decimal
+  amount                Float
+  interestRate          Float
   altInterestMethod     InterestMethod?
   contractStatus        ContractStatus
   transactions          Transaction[]
@@ -194,7 +194,7 @@ model Transaction {
   loan        Loan            @relation(fields: [loanId], references: [id])
   type        TransactionType
   date        DateTime
-  amount      Decimal
+  amount      Float
   paymentType PaymentType
 }
 

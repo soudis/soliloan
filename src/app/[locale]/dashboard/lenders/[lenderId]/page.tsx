@@ -82,7 +82,60 @@ const fetchLender = async (lenderId: string): Promise<Lender> => {
     throw new Error(result.error)
   }
 
-  return result.lender
+  // Convert null values to undefined for optional fields
+  const lender = result.lender
+  return {
+    ...lender,
+    firstName: lender.firstName || undefined,
+    lastName: lender.lastName || undefined,
+    organisationName: lender.organisationName || undefined,
+    titlePrefix: lender.titlePrefix || undefined,
+    titleSuffix: lender.titleSuffix || undefined,
+    street: lender.street || undefined,
+    addon: lender.addon || undefined,
+    zip: lender.zip || undefined,
+    place: lender.place || undefined,
+    country: lender.country || undefined,
+    email: lender.email || undefined,
+    telNo: lender.telNo || undefined,
+    iban: lender.iban || undefined,
+    bic: lender.bic || undefined,
+    membershipStatus: lender.membershipStatus || undefined,
+    tag: lender.tag || undefined,
+    loans: lender.loans.map(loan => ({
+      id: loan.id,
+      loanNumber: loan.loanNumber,
+      amount: Number(loan.amount),
+      interestRate: Number(loan.interestRate),
+      signDate: loan.signDate.toISOString(),
+      endDate: loan.endDate ? loan.endDate.toISOString() : undefined,
+      contractStatus: loan.contractStatus,
+      interestPaymentType: loan.interestPaymentType,
+      interestPayoutType: loan.interestPayoutType,
+      terminationType: loan.terminationType,
+      terminationDate: loan.terminationDate ? loan.terminationDate.toISOString() : undefined,
+      terminationPeriod: loan.terminationPeriod || undefined,
+      terminationPeriodType: loan.terminationPeriodType || undefined,
+      duration: loan.duration || undefined,
+      durationType: loan.durationType || undefined,
+      altInterestMethod: loan.altInterestMethod || undefined,
+      lender: {
+        id: lender.id,
+        lenderNumber: lender.lenderNumber,
+        firstName: lender.firstName || undefined,
+        lastName: lender.lastName || undefined,
+        organisationName: lender.organisationName || undefined
+      },
+      transactions: loan.transactions.map(transaction => ({
+        id: transaction.id,
+        type: transaction.type,
+        date: transaction.date.toISOString(),
+        amount: Number(transaction.amount),
+        paymentType: transaction.paymentType,
+        note: (transaction as any).note || undefined
+      }))
+    }))
+  }
 }
 
 export default function LenderDetailsPage({ params }: { params: Promise<{ lenderId: string }> }) {

@@ -32,7 +32,14 @@ export default function NewLenderPage() {
       setIsSubmitting(true)
 
       // Create the lender using the server action
-      const result = await createLender(data)
+      const result = await createLender({
+        ...data,
+        project: {
+          connect: {
+            id: selectedProject.id
+          }
+        }
+      })
 
       if (result.error) {
         throw new Error(result.error)

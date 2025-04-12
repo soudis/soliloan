@@ -1,6 +1,6 @@
 'use client'
 
-import { getProjectConfiguration, updateProjectConfiguration } from '@/app/actions/configuration'
+import { getConfiguration, updateConfiguration } from '@/app/actions/configuration'
 import { ConfigurationForm } from '@/components/configuration/configuration-form'
 import { useRouter } from '@/i18n/navigation'
 import type { ConfigurationFormData } from '@/lib/schemas/configuration'
@@ -24,7 +24,7 @@ export default function ConfigurationPage() {
     queryFn: async () => {
       if (!selectedProject) return null
       console.log('Fetching configuration for project:', selectedProject.id)
-      const result = await getProjectConfiguration(selectedProject.id)
+      const result = await getConfiguration(selectedProject.id)
       console.log('Configuration result:', result)
       if ('error' in result) {
         throw new Error(result.error)
@@ -56,7 +56,7 @@ export default function ConfigurationPage() {
       console.log('Submitting configuration data:', data)
 
       // Update the configuration using the server action
-      const result = await updateProjectConfiguration(selectedProject.id, data)
+      const result = await updateConfiguration(selectedProject.id, data)
       console.log('Update result:', result)
 
       if ('error' in result) {

@@ -32,23 +32,23 @@ interface Lender {
   lenderNumber: number
   type: 'PERSON' | 'ORGANISATION'
   salutation: 'PERSONAL' | 'FORMAL'
-  firstName?: string
-  lastName?: string
-  organisationName?: string
-  titlePrefix?: string
-  titleSuffix?: string
-  street?: string
-  addon?: string
-  zip?: string
-  place?: string
-  country?: string
-  email?: string
-  telNo?: string
-  iban?: string
-  bic?: string
+  firstName: string | null
+  lastName: string | null
+  organisationName: string | null
+  titlePrefix: string | null
+  titleSuffix: string | null
+  street: string | null
+  addon: string | null
+  zip: string | null
+  place: string | null
+  country: string | null
+  email: string | null
+  telNo: string | null
+  iban: string | null
+  bic: string | null
   notificationType: 'ONLINE' | 'EMAIL' | 'MAIL'
-  membershipStatus?: 'UNKNOWN' | 'MEMBER' | 'EXTERNAL'
-  tag?: string
+  membershipStatus: 'UNKNOWN' | 'MEMBER' | 'EXTERNAL' | null
+  tag: string | null
 }
 
 export default function LendersPage() {

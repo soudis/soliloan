@@ -240,18 +240,22 @@ export function DataTable<TData, TValue>({
 
     setIsSaving(true)
     try {
+      // Convert the data to a JSON-compatible format
+      const viewData = {
+        sorting: JSON.parse(JSON.stringify(sorting)),
+        columnFilters: JSON.parse(JSON.stringify(columnFiltersState)),
+        columnVisibility: JSON.parse(JSON.stringify(columnVisibility)),
+        globalFilter,
+        pageSize,
+      }
+
+      // Use type assertion to satisfy the TypeScript compiler
       const { view, error } = await createView({
         name,
         type: viewType,
         isDefault,
-        data: {
-          sorting,
-          columnFilters: columnFiltersState,
-          columnVisibility,
-          globalFilter,
-          pageSize,
-        }
-      })
+        data: viewData
+      } as any)
 
       if (error) {
         throw new Error(error)

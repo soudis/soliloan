@@ -11,11 +11,11 @@ interface Lender {
   id: string
   lenderNumber: number
   type: 'PERSON' | 'ORGANISATION'
-  firstName?: string
-  lastName?: string
-  organisationName?: string
-  titlePrefix?: string
-  titleSuffix?: string
+  firstName: string | null
+  lastName: string | null
+  organisationName: string | null
+  titlePrefix: string | null
+  titleSuffix: string | null
 }
 
 interface LenderComboboxProps {

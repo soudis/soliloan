@@ -7,6 +7,7 @@ import { DataTable } from '@/components/ui/data-table'
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { useRouter } from '@/i18n/navigation'
 import { useProject } from '@/store/project-context'
+import { Decimal } from '@prisma/client/runtime/library'
 import { useQuery } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
 import { Pencil, Plus } from 'lucide-react'
@@ -34,31 +35,31 @@ interface Loan {
   lender: {
     id: string
     lenderNumber: number
-    firstName?: string
-    lastName?: string
-    organisationName?: string
+    firstName: string | null
+    lastName: string | null
+    organisationName: string | null
   }
-  signDate: string
+  signDate: Date
   interestPaymentType: 'YEARLY' | 'END'
   interestPayoutType: 'MONEY' | 'COUPON'
   terminationType: 'ENDDATE' | 'TERMINATION' | 'DURATION'
-  endDate?: string
-  terminationDate?: string
-  terminationPeriod?: number
-  terminationPeriodType?: 'MONTHS' | 'YEARS'
-  duration?: number
-  durationType?: 'MONTHS' | 'YEARS'
-  amount: number
-  interestRate: number
-  altInterestMethod?: string
+  endDate: Date | null
+  terminationDate: Date | null
+  terminationPeriod: number | null
+  terminationPeriodType: 'MONTHS' | 'YEARS' | null
+  duration: number | null
+  durationType: 'MONTHS' | 'YEARS' | null
+  amount: Decimal
+  interestRate: Decimal
+  altInterestMethod: string | null
   contractStatus: 'PENDING' | 'COMPLETED'
-  transactions?: {
+  transactions: {
     id: string
     type: string
-    date: string
-    amount: number
+    date: Date
+    amount: Decimal
     paymentType: string
-  }[]
+  }[] | null
 }
 
 export default function LoansPage() {
