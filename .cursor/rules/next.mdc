@@ -66,7 +66,7 @@ globs: **/*.tsx, **/*.ts, src/**/*.ts, src/**/*.tsx
 - Handle parallel routes when needed
 
 ## Translations
-- Always make sure to add translations to the `src/messages/en.json` and `src/messages/de.json` files
+- Always make sure to add translations to the `src/messages/de.json` file
 - Make sure to have a consistent structure with the existing translations
 - Always search for existing translation keys and use them
 
