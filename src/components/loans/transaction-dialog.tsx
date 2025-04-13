@@ -11,7 +11,6 @@ import {
 import { Form } from '@/components/ui/form'
 import { transactionSchema, type TransactionFormData } from '@/lib/schemas/transaction'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Prisma } from '@prisma/client'
 import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -45,7 +44,6 @@ export function TransactionDialog({
     try {
       const result = await addTransaction(loanId, {
         ...data,
-        amount: new Prisma.Decimal(data.amount),
         loan: {
           connect: {
             id: loanId

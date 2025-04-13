@@ -2,10 +2,11 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { Prisma } from '@prisma/client'
+import { Language, Prisma } from '@prisma/client'
+import { omit } from 'lodash'
 import { revalidatePath } from 'next/cache'
 
-export async function createLender(data: Prisma.LenderCreateInput) {
+export async function createLender(data: Prisma.LenderCreateInput & { email?: string | null }) {
   try {
     const session = await auth()
     if (!session) {
@@ -22,7 +23,8 @@ export async function createLender(data: Prisma.LenderCreateInput) {
         id: data.project.connect.id
       },
       include: {
-        managers: true
+        managers: true,
+        configuration: true
       }
     })
 
@@ -42,7 +44,8 @@ export async function createLender(data: Prisma.LenderCreateInput) {
     // Create the lender
     const lender = await db.lender.create({
       data: {
-        ...data,
+        ...omit(data, 'email'),
+        ...(data.email && { user: { connectOrCreate: { where: { email: data.email }, create: { email: data.email, name: data.email, language: project.configuration?.userLanguage ?? Language.de, } } } }),
         project: {
           connect: {
             id: data.project.connect.id

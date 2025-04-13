@@ -13,129 +13,15 @@ import { useTranslations } from 'next-intl'
 import { use } from 'react'
 import { toast } from 'sonner'
 
-interface Transaction {
-  id: string
-  type: 'INTEREST' | 'DEPOSIT' | 'WITHDRAWAL' | 'TERMINATION' | 'INTERESTPAYMENT' | 'NOTRECLAIMEDPARTIAL' | 'NOTRECLAIMED'
-  date: string
-  amount: number
-  paymentType: 'BANK' | 'CASH' | 'OTHER'
-  note?: string
-}
-
-interface Loan {
-  id: string
-  loanNumber: number
-  amount: number
-  interestRate: number
-  signDate: string
-  endDate?: string
-  contractStatus: 'PENDING' | 'COMPLETED'
-  interestPaymentType: 'YEARLY' | 'END'
-  interestPayoutType: 'MONEY' | 'COUPON'
-  terminationType: 'ENDDATE' | 'TERMINATION' | 'DURATION'
-  terminationDate?: string
-  terminationPeriod?: number
-  terminationPeriodType?: 'MONTHS' | 'YEARS'
-  duration?: number
-  durationType?: 'MONTHS' | 'YEARS'
-  altInterestMethod?: string
-  lender: {
-    id: string
-    lenderNumber: number
-    firstName?: string
-    lastName?: string
-    organisationName?: string
-  }
-  transactions: Transaction[]
-}
-
-interface Lender {
-  id: string
-  lenderNumber: number
-  type: 'PERSON' | 'ORGANISATION'
-  salutation: 'PERSONAL' | 'FORMAL'
-  firstName?: string
-  lastName?: string
-  organisationName?: string
-  titlePrefix?: string
-  titleSuffix?: string
-  street?: string
-  addon?: string
-  zip?: string
-  place?: string
-  country?: string
-  email?: string
-  telNo?: string
-  iban?: string
-  bic?: string
-  notificationType: 'ONLINE' | 'EMAIL' | 'MAIL'
-  membershipStatus?: 'UNKNOWN' | 'MEMBER' | 'EXTERNAL'
-  tag?: string
-  loans: Loan[]
-}
-
 // Function to fetch lender data using the server action
-const fetchLender = async (lenderId: string): Promise<Lender> => {
+const fetchLender = async (lenderId: string) => {
   const result = await getLenderById(lenderId)
 
   if ('error' in result) {
     throw new Error(result.error)
   }
 
-  // Convert null values to undefined for optional fields
-  const lender = result.lender
-  return {
-    ...lender,
-    firstName: lender.firstName || undefined,
-    lastName: lender.lastName || undefined,
-    organisationName: lender.organisationName || undefined,
-    titlePrefix: lender.titlePrefix || undefined,
-    titleSuffix: lender.titleSuffix || undefined,
-    street: lender.street || undefined,
-    addon: lender.addon || undefined,
-    zip: lender.zip || undefined,
-    place: lender.place || undefined,
-    country: lender.country || undefined,
-    email: lender.email || undefined,
-    telNo: lender.telNo || undefined,
-    iban: lender.iban || undefined,
-    bic: lender.bic || undefined,
-    membershipStatus: lender.membershipStatus || undefined,
-    tag: lender.tag || undefined,
-    loans: lender.loans.map(loan => ({
-      id: loan.id,
-      loanNumber: loan.loanNumber,
-      amount: Number(loan.amount),
-      interestRate: Number(loan.interestRate),
-      signDate: loan.signDate.toISOString(),
-      endDate: loan.endDate ? loan.endDate.toISOString() : undefined,
-      contractStatus: loan.contractStatus,
-      interestPaymentType: loan.interestPaymentType,
-      interestPayoutType: loan.interestPayoutType,
-      terminationType: loan.terminationType,
-      terminationDate: loan.terminationDate ? loan.terminationDate.toISOString() : undefined,
-      terminationPeriod: loan.terminationPeriod || undefined,
-      terminationPeriodType: loan.terminationPeriodType || undefined,
-      duration: loan.duration || undefined,
-      durationType: loan.durationType || undefined,
-      altInterestMethod: loan.altInterestMethod || undefined,
-      lender: {
-        id: lender.id,
-        lenderNumber: lender.lenderNumber,
-        firstName: lender.firstName || undefined,
-        lastName: lender.lastName || undefined,
-        organisationName: lender.organisationName || undefined
-      },
-      transactions: loan.transactions.map(transaction => ({
-        id: transaction.id,
-        type: transaction.type,
-        date: transaction.date.toISOString(),
-        amount: Number(transaction.amount),
-        paymentType: transaction.paymentType,
-        note: (transaction as any).note || undefined
-      }))
-    }))
-  }
+  return result.lender
 }
 
 export default function LenderDetailsPage({ params }: { params: Promise<{ lenderId: string }> }) {
@@ -178,6 +64,27 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
     ? `${lender.titlePrefix ? `${lender.titlePrefix} ` : ''}${lender.firstName} ${lender.lastName}${lender.titleSuffix ? ` ${lender.titleSuffix}` : ''}`
     : lender.organisationName
 
+  // Map the lender data to match the expected type for LenderInfoCard
+  const mappedLender = {
+    ...lender,
+    firstName: lender.firstName || undefined,
+    lastName: lender.lastName || undefined,
+    organisationName: lender.organisationName || undefined,
+    titlePrefix: lender.titlePrefix || undefined,
+    titleSuffix: lender.titleSuffix || undefined,
+    street: lender.street || undefined,
+    addon: lender.addon || undefined,
+    zip: lender.zip || undefined,
+    place: lender.place || undefined,
+    country: lender.country || undefined,
+    email: lender.email || undefined,
+    telNo: lender.telNo || undefined,
+    iban: lender.iban || undefined,
+    bic: lender.bic || undefined,
+    membershipStatus: lender.membershipStatus || undefined,
+    tag: lender.tag || undefined,
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -202,14 +109,28 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
         <div className="w-full lg:w-2/3 space-y-4">
           <h2 className="text-2xl font-semibold">{t('details.loans')}</h2>
           <div className="space-y-6">
-            {lender.loans.map((loan) => (
-              <LoanCard
-                key={loan.id}
-                loan={loan}
-                onView={(id) => router.push(`/dashboard/loans/${id}`)}
-                onEdit={(id) => router.push(`/dashboard/loans/${id}/edit`)}
-              />
-            ))}
+            {lender.loans.map((loan) => {
+              // Map the loan data to match the expected type for LoanCard
+              const mappedLoan = {
+                ...loan,
+                lender: {
+                  id: lender.id,
+                  lenderNumber: lender.lenderNumber,
+                  firstName: lender.firstName,
+                  lastName: lender.lastName,
+                  organisationName: lender.organisationName
+                }
+              }
+
+              return (
+                <LoanCard
+                  key={loan.id}
+                  loan={mappedLoan}
+                  onView={(id) => router.push(`/dashboard/loans/${id}`)}
+                  onEdit={(id) => router.push(`/dashboard/loans/${id}/edit`)}
+                />
+              )
+            })}
             {lender.loans.length === 0 && (
               <div className="text-center text-muted-foreground py-8">
                 {commonT('ui.table.noResults')}
@@ -220,7 +141,7 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
 
         {/* Lender Information Section - Right side on desktop, top on mobile */}
         <div className="w-full lg:w-1/3">
-          <LenderInfoCard lender={lender} />
+          <LenderInfoCard lender={mappedLender} />
         </div>
       </div>
     </div>

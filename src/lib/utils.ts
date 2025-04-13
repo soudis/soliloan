@@ -1,6 +1,8 @@
+import { Transaction, TransactionType } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
 import { SHA256 as sha256 } from "crypto-js";
 import { twMerge } from "tailwind-merge";
+import { calculateLoanFields } from "./calculations/loan-calculations";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -25,3 +27,24 @@ export function formatCurrency(amount: number): string {
     currency: 'EUR'
   }).format(amount)
 }
+
+export const transactionSorter = (
+  a: Transaction,
+  b: Transaction
+) => {
+  if (a.date > b.date) return 1;
+  else if (b.date > a.date) return -1;
+  else if (a.type === TransactionType.TERMINATION) return 1;
+  else if (b.type === TransactionType.TERMINATION) return -1;
+  else if (a.type === TransactionType.DEPOSIT) return -1;
+  else if (b.type === TransactionType.DEPOSIT) return 1;
+  else return 0;
+};
+
+export const loansSorter = (
+  a: ReturnType<typeof calculateLoanFields>,
+  b: ReturnType<typeof calculateLoanFields>
+) => {
+  const score = a.signDate.getTime() - b.signDate.getTime();
+  return score;
+};

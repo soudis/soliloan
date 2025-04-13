@@ -1,7 +1,15 @@
 'use server'
 
 import { auth } from '@/lib/auth'
+import { calculateLoanFields } from '@/lib/calculations/loan-calculations'
 import { db } from '@/lib/db'
+import { Lender, Loan, Transaction } from '@prisma/client'
+
+// Define the type for the loan with included relations
+type LoanWithRelations = Loan & {
+  lender: Pick<Lender, 'id' | 'lenderNumber' | 'firstName' | 'lastName' | 'organisationName'>
+  transactions: Transaction[]
+}
 
 export async function getLoansByProjectId(projectId: string) {
   try {
@@ -41,12 +49,25 @@ export async function getLoansByProjectId(projectId: string) {
         }
       },
       include: {
-        lender: true,
-        transactions: true
+        lender: {
+          include: {
+            project: true,
+            notes: true,
+            files: true
+          }
+        },
+        transactions: true,
+        notes: true,
+        files: true
       }
     })
 
-    return { loans }
+    // Calculate virtual fields for each loan
+    const loansWithCalculations = loans.map(loan =>
+      calculateLoanFields<Omit<LoanWithRelations, keyof Loan>>(loan)
+    )
+
+    return { loans: loansWithCalculations }
   } catch (error) {
     console.error('Error fetching loans:', error)
     return { error: error instanceof Error ? error.message : 'Failed to fetch loans' }

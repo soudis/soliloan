@@ -6,7 +6,7 @@ import { LoanForm } from '@/components/loans/loan-form'
 import { useRouter } from '@/i18n/navigation'
 import type { LoanFormData } from '@/lib/schemas/loan'
 import { useProject } from '@/store/project-context'
-import { Prisma } from '@prisma/client'
+import { omit } from 'lodash'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
@@ -42,10 +42,8 @@ export default function NewLoanPage() {
 
       // Create the loan using the server action
       const result = await createLoan({
-        ...data,
-        loanNumber: 0, // This will be auto-incremented by the database
-        amount: new Prisma.Decimal(data.amount),
-        interestRate: new Prisma.Decimal(data.interestRate),
+        ...omit(data, 'lenderId'),
+        loanNumber: undefined, // This will be auto-incremented by the database
         terminationPeriod: data.terminationPeriod || undefined,
         terminationPeriodType: data.terminationPeriodType || undefined,
         duration: data.duration || undefined,

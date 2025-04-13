@@ -158,7 +158,6 @@ model Lender {
   membershipStatus MembershipStatus?
   tag              String?
   loans            Loan[]
-  test             String?
   user             User?             @relation(fields: [email], references: [email])
   files            File[]
   notes            Note[]

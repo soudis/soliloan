@@ -7,7 +7,7 @@ import { DataTable } from '@/components/ui/data-table'
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { useRouter } from '@/i18n/navigation'
 import { useProject } from '@/store/project-context'
-import { Decimal } from '@prisma/client/runtime/library'
+import { Lender, Loan, Transaction } from '@prisma/client'
 import { useQuery } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
 import { Pencil, Plus } from 'lucide-react'
@@ -29,37 +29,10 @@ const compoundTextFilter = (row: any, columnId: string, filterValue: any) => {
 // Define the custom filter function type
 type FilterFn = 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'compoundText'
 
-interface Loan {
-  id: string
-  loanNumber: number
-  lender: {
-    id: string
-    lenderNumber: number
-    firstName: string | null
-    lastName: string | null
-    organisationName: string | null
-  }
-  signDate: Date
-  interestPaymentType: 'YEARLY' | 'END'
-  interestPayoutType: 'MONEY' | 'COUPON'
-  terminationType: 'ENDDATE' | 'TERMINATION' | 'DURATION'
-  endDate: Date | null
-  terminationDate: Date | null
-  terminationPeriod: number | null
-  terminationPeriodType: 'MONTHS' | 'YEARS' | null
-  duration: number | null
-  durationType: 'MONTHS' | 'YEARS' | null
-  amount: Decimal
-  interestRate: Decimal
-  altInterestMethod: string | null
-  contractStatus: 'PENDING' | 'COMPLETED'
-  transactions: {
-    id: string
-    type: string
-    date: Date
-    amount: Decimal
-    paymentType: string
-  }[] | null
+// Define the type for the loan with included relations
+type LoanWithRelations = Loan & {
+  lender: Pick<Lender, 'id' | 'lenderNumber' | 'firstName' | 'lastName' | 'organisationName'>
+  transactions: Transaction[] | null
 }
 
 export default function LoansPage() {
@@ -82,7 +55,7 @@ export default function LoansPage() {
     enabled: !!selectedProject
   })
 
-  const columns: ColumnDef<Loan>[] = [
+  const columns: ColumnDef<LoanWithRelations>[] = [
     {
       accessorKey: 'loanNumber',
       header: ({ column }) => (

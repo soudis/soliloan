@@ -1,7 +1,10 @@
 'use server'
 
 import { auth } from '@/lib/auth'
+import { calculateLoanFields } from '@/lib/calculations/loan-calculations'
 import { db } from '@/lib/db'
+import { LoanWithRelations } from '@/types/loans'
+import { Loan } from '@prisma/client'
 
 export async function getLoanById(loanId: string) {
   try {
@@ -22,9 +25,14 @@ export async function getLoanById(loanId: string) {
               include: {
                 managers: true
               }
-            }
+            },
+            notes: true,
+            files: true
           }
-        }
+        },
+        transactions: true,
+        notes: true,
+        files: true
       }
     })
 
@@ -41,7 +49,12 @@ export async function getLoanById(loanId: string) {
       throw new Error('You do not have access to this loan')
     }
 
-    return { loan }
+    // Calculate virtual fields
+    const loanWithCalculations = calculateLoanFields<Omit<LoanWithRelations, keyof Loan>>(
+      loan
+    )
+
+    return { loan: loanWithCalculations }
   } catch (error) {
     console.error('Error fetching loan:', error)
     return { error: error instanceof Error ? error.message : 'Failed to fetch loan' }

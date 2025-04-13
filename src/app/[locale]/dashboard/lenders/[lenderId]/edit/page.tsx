@@ -5,9 +5,10 @@ import { LenderForm } from '@/components/lenders/lender-form'
 import { useRouter } from '@/i18n/navigation'
 import type { LenderFormData } from '@/lib/schemas/lender'
 import { useProject } from '@/store/project-context'
+import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
-import { use, useEffect, useState } from 'react'
+import { use, useState } from 'react'
 import { toast } from 'sonner'
 
 export default function EditLenderPage({ params }: { params: Promise<{ lenderId: string }> }) {
@@ -17,36 +18,20 @@ export default function EditLenderPage({ params }: { params: Promise<{ lenderId:
   const { selectedProject } = useProject()
   const t = useTranslations('dashboard.lenders')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [initialData, setInitialData] = useState<Partial<LenderFormData> | null>(null)
 
-  // Fetch lender data
-  useEffect(() => {
-    const fetchLender = async () => {
-      try {
-        const result = await getLenderById(resolvedParams.lenderId)
-
-        if (result.error) {
-          throw new Error(result.error)
-        }
-
-        if (result.lender) {
-          setInitialData(result.lender as Partial<LenderFormData>)
-        }
-      } catch (error) {
-        console.error('Error fetching lender:', error)
-        setError(error instanceof Error ? error.message : 'An unknown error occurred')
-        toast.error(t('edit.form.error'))
-      } finally {
-        setIsLoading(false)
+  // Use React Query to fetch lender data
+  const { data: lenderData, isLoading, error: queryError } = useQuery({
+    queryKey: ['lender', resolvedParams.lenderId],
+    queryFn: async () => {
+      const result = await getLenderById(resolvedParams.lenderId)
+      if (result.error) {
+        throw new Error(result.error)
       }
-    }
-
-    if (resolvedParams.lenderId) {
-      fetchLender()
-    }
-  }, [resolvedParams.lenderId, t])
+      return result.lender as Partial<LenderFormData>
+    },
+    enabled: !!resolvedParams.lenderId && !!session,
+  })
 
   if (!session) {
     return null
@@ -58,6 +43,11 @@ export default function EditLenderPage({ params }: { params: Promise<{ lenderId:
 
   if (isLoading) {
     return <div>Loading...</div>
+  }
+
+  if (queryError) {
+    toast.error(t('edit.form.error'))
+    return <div>Error loading lender data</div>
   }
 
   const handleSubmit = async (data: LenderFormData) => {
@@ -93,7 +83,7 @@ export default function EditLenderPage({ params }: { params: Promise<{ lenderId:
       submittingButtonText={t('edit.form.submitting')}
       cancelButtonText={t('edit.form.cancel')}
       onSubmit={handleSubmit}
-      initialData={initialData || undefined}
+      initialData={lenderData || undefined}
       lenderId={resolvedParams.lenderId}
       isLoading={isSubmitting}
       error={error}

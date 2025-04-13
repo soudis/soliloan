@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { InfoItem } from '@/components/ui/info-item'
 import { formatCurrency } from '@/lib/utils'
+import { Lender, Loan, Transaction } from '@prisma/client'
 import { useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { de, enUS } from 'date-fns/locale'
@@ -15,42 +16,13 @@ import { toast } from 'sonner'
 import { Button } from '../ui/button'
 import { TransactionDialog } from './transaction-dialog'
 
-interface Transaction {
-  id: string
-  type: 'INTEREST' | 'DEPOSIT' | 'WITHDRAWAL' | 'TERMINATION' | 'INTERESTPAYMENT' | 'NOTRECLAIMEDPARTIAL' | 'NOTRECLAIMED'
-  date: string
-  amount: number
-  paymentType: 'BANK' | 'CASH' | 'OTHER'
-  note?: string
+type LoanWithRelations = Loan & {
+  lender: Pick<Lender, 'id' | 'lenderNumber' | 'firstName' | 'lastName' | 'organisationName'>
+  transactions: Transaction[]
 }
 
 interface LoanCardProps {
-  loan: {
-    id: string
-    loanNumber: number
-    lender: {
-      id: string
-      lenderNumber: number
-      firstName?: string
-      lastName?: string
-      organisationName?: string
-    }
-    signDate: string
-    interestPaymentType: 'YEARLY' | 'END'
-    interestPayoutType: 'MONEY' | 'COUPON'
-    terminationType: 'ENDDATE' | 'TERMINATION' | 'DURATION'
-    endDate?: string
-    terminationDate?: string
-    terminationPeriod?: number
-    terminationPeriodType?: 'MONTHS' | 'YEARS'
-    duration?: number
-    durationType?: 'MONTHS' | 'YEARS'
-    amount: number
-    interestRate: number
-    altInterestMethod?: string
-    contractStatus: 'PENDING' | 'COMPLETED'
-    transactions: Transaction[]
-  }
+  loan: LoanWithRelations
   onView?: (id: string) => void
   onEdit?: (id: string) => void
 }
@@ -193,7 +165,6 @@ export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {format(new Date(transaction.date), 'PPP', { locale: dateLocale })}
-                        {transaction.note && ` · ${transaction.note}`}
                       </div>
                     </div>
                   </div>

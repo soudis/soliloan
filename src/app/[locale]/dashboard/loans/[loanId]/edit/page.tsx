@@ -6,7 +6,6 @@ import { useRouter } from '@/i18n/navigation'
 import { interestMethodEnum } from '@/lib/schemas/common'
 import type { LoanFormData } from '@/lib/schemas/loan'
 import { useProject } from '@/store/project-context'
-import { Prisma } from '@prisma/client'
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
@@ -40,9 +39,9 @@ export default function EditLoanPage({ params }: { params: Promise<{ loanId: str
   const transformedLoan: LoanFormData | undefined = loan ? (() => {
     const baseData = {
       lenderId: loan.lender.id,
-      signDate: new Date(loan.signDate),
-      amount: Number(loan.amount),
-      interestRate: Number(loan.interestRate),
+      signDate: loan.signDate,
+      amount: loan.amount,
+      interestRate: loan.interestRate,
       interestPaymentType: loan.interestPaymentType,
       interestPayoutType: loan.interestPayoutType,
       altInterestMethod: loan.altInterestMethod ? (loan.altInterestMethod as z.infer<typeof interestMethodEnum>) : null,
@@ -57,8 +56,8 @@ export default function EditLoanPage({ params }: { params: Promise<{ loanId: str
         return {
           ...baseData,
           terminationType: 'ENDDATE',
-          endDate: new Date(loan.endDate),
-          terminationDate: loan.terminationDate ? new Date(loan.terminationDate) : null,
+          endDate: loan.endDate,
+          terminationDate: loan.terminationDate || null,
           terminationPeriod: loan.terminationPeriod ?? null,
           terminationPeriodType: loan.terminationPeriodType ?? null,
           duration: loan.duration ?? null,
@@ -68,8 +67,8 @@ export default function EditLoanPage({ params }: { params: Promise<{ loanId: str
         return {
           ...baseData,
           terminationType: 'TERMINATION',
-          endDate: loan.endDate ? new Date(loan.endDate) : null,
-          terminationDate: loan.terminationDate ? new Date(loan.terminationDate) : null,
+          endDate: loan.endDate || null,
+          terminationDate: loan.terminationDate || null,
           terminationPeriod: loan.terminationPeriod ?? 1,
           terminationPeriodType: loan.terminationPeriodType ?? 'MONTHS',
           duration: loan.duration ?? null,
@@ -79,8 +78,8 @@ export default function EditLoanPage({ params }: { params: Promise<{ loanId: str
         return {
           ...baseData,
           terminationType: 'DURATION',
-          endDate: loan.endDate ? new Date(loan.endDate) : null,
-          terminationDate: loan.terminationDate ? new Date(loan.terminationDate) : null,
+          endDate: loan.endDate || null,
+          terminationDate: loan.terminationDate || null,
           terminationPeriod: loan.terminationPeriod ?? null,
           terminationPeriodType: loan.terminationPeriodType ?? null,
           duration: loan.duration ?? 1,
@@ -111,8 +110,6 @@ export default function EditLoanPage({ params }: { params: Promise<{ loanId: str
       // Update the loan using the server action
       const result = await updateLoan(resolvedParams.loanId, {
         ...data,
-        amount: new Prisma.Decimal(data.amount),
-        interestRate: new Prisma.Decimal(data.interestRate),
         terminationPeriod: data.terminationPeriod || undefined,
         terminationPeriodType: data.terminationPeriodType || undefined,
         duration: data.duration || undefined,
