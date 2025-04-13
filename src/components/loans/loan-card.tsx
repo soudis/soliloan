@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { InfoItem } from '@/components/ui/info-item'
 import { formatCurrency } from '@/lib/utils'
-import { Lender, Loan, Note, Transaction } from '@prisma/client'
+import { LoanWithRelations } from '@/types/loans'
 import { format } from 'date-fns'
 import { de, enUS } from 'date-fns/locale'
 import { Eye, Pencil, Plus } from 'lucide-react'
@@ -13,11 +13,6 @@ import { Button } from '../ui/button'
 import { LoanNotes } from './loan-notes'
 import { LoanTransactions } from './loan-transactions'
 
-type LoanWithRelations = Loan & {
-  lender: Pick<Lender, 'id' | 'lenderNumber' | 'firstName' | 'lastName' | 'organisationName'>
-  transactions: Transaction[]
-  notes: Note[]
-}
 
 interface LoanCardProps {
   loan: LoanWithRelations

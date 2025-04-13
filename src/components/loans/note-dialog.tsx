@@ -11,6 +11,7 @@ import {
 import { Form } from '@/components/ui/form'
 import { noteSchema, type NoteFormData } from '@/lib/schemas/note'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -29,6 +30,7 @@ export function NoteDialog({
 }: NoteDialogProps) {
   const t = useTranslations('dashboard.notes')
   const commonT = useTranslations('common')
+  const queryClient = useQueryClient()
 
   const form = useForm<NoteFormData>({
     resolver: zodResolver(noteSchema),
@@ -55,6 +57,8 @@ export function NoteDialog({
       toast.success(t('createSuccess'))
       onOpenChange(false)
       form.reset()
+      queryClient.invalidateQueries({ queryKey: ['lender'] })
+      queryClient.invalidateQueries({ queryKey: ['loans'] })
     } catch (error) {
       console.error('Error creating note:', error)
       toast.error(t('createError'))

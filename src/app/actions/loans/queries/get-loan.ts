@@ -26,12 +26,12 @@ export async function getLoanById(loanId: string) {
                 managers: true
               }
             },
-            notes: true,
+            notes: { include: { createdBy: { select: { id: true, name: true } } } },
             files: true
           }
         },
         transactions: true,
-        notes: true,
+        notes: { include: { createdBy: { select: { id: true, name: true } } } },
         files: true
       }
     })

@@ -113,13 +113,7 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
               // Map the loan data to match the expected type for LoanCard
               const mappedLoan = {
                 ...loan,
-                lender: {
-                  id: lender.id,
-                  lenderNumber: lender.lenderNumber,
-                  firstName: lender.firstName,
-                  lastName: lender.lastName,
-                  organisationName: lender.organisationName
-                }
+                lender
               }
 
               return (

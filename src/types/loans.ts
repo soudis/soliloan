@@ -1,4 +1,4 @@
-import { File, Lender, Loan, Note, Project, Transaction } from "@prisma/client"
+import { File, Lender, Loan, Note, Project, Transaction, User } from "@prisma/client"
 
 export enum LoanStatus {
   ACTIVE = "ACTIVE",
@@ -10,10 +10,14 @@ export enum LoanStatus {
 export type LoanWithRelations = Loan & {
   lender: Lender & {
     project: Project
-    notes: Note[]
+    notes: (Note & {
+      createdBy: Pick<User, 'id' | 'name'>
+    })[]
     files: File[]
   }
-  notes: Note[]
+  notes: (Note & {
+    createdBy: Pick<User, 'id' | 'name'>
+  })[]
   files: File[]
   transactions: Transaction[]
 }

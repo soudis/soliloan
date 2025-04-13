@@ -14,7 +14,12 @@ import { NoteDialog } from './note-dialog'
 
 interface LoanNotesProps {
   loanId: string
-  notes: Note[]
+  notes: (Note & {
+    createdBy: {
+      id: string
+      name: string
+    }
+  })[]
 }
 
 export function LoanNotes({ loanId, notes }: LoanNotesProps) {
@@ -33,6 +38,7 @@ export function LoanNotes({ loanId, notes }: LoanNotesProps) {
       }
       toast.success(t('deleteSuccess'))
       queryClient.invalidateQueries({ queryKey: ['lender'] })
+      queryClient.invalidateQueries({ queryKey: ['loans'] })
     } catch (error) {
       console.error('Error deleting note:', error)
       toast.error(t('deleteError'))
@@ -49,45 +55,58 @@ export function LoanNotes({ loanId, notes }: LoanNotesProps) {
             <span className="sr-only">{commonT('ui.actions.create')}</span>
           </Button>
         </div>
-        <div className="mt-2 space-y-2">
+        <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 auto-rows-fr">
           {notes.map((note) => (
-            <div key={note.id} className="flex items-start justify-between rounded-lg bg-muted/50 p-2">
-              <div className="flex items-start space-x-3">
-                <div className="rounded-full bg-amber-500/20 p-1 mt-1">
-                  <FileText className="h-4 w-4 text-amber-500" />
-                </div>
-                <div>
-                  <div className="text-sm">{note.text}</div>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <div className="text-xs text-muted-foreground">
-                      {format(new Date(note.createdAt), 'PPP', { locale: dateLocale })}
-                    </div>
-                    {note.public ? (
-                      <div className="flex items-center text-xs text-muted-foreground">
-                        <Unlock className="h-3 w-3 mr-1" />
-                        {t('public')}
-                      </div>
-                    ) : (
-                      <div className="flex items-center text-xs text-muted-foreground">
-                        <Lock className="h-3 w-3 mr-1" />
-                        {t('private')}
-                      </div>
-                    )}
+            <div
+              key={note.id}
+              className="relative group rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow duration-200 h-full"
+              style={{
+                backgroundColor: note.public ? 'hsl(48, 100%, 96%)' : 'hsl(210, 100%, 96%)',
+                border: '1px solid rgba(0,0,0,0.05)'
+              }}
+            >
+              <div className="flex flex-col h-full">
+                <div className="flex items-start space-x-3">
+                  <div className={`rounded-full p-1 mt-1 ${note.public ? 'bg-amber-500/20' : 'bg-blue-500/20'}`}>
+                    <FileText className={`h-4 w-4 ${note.public ? 'text-amber-500' : 'text-blue-500'}`} />
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm whitespace-pre-line">{note.text}</div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2"
+                    onClick={() => handleDeleteNote(note.id)}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                    <span className="sr-only">{commonT('ui.actions.delete')}</span>
+                  </Button>
+                </div>
+                <div className="flex items-center justify-end space-x-2 mt-auto pt-2">
+                  <div className="text-xs text-muted-foreground">
+                    {format(new Date(note.createdAt), 'PPP', { locale: dateLocale })}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    • {note.createdBy.name}
+                  </div>
+                  {note.public ? (
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <Unlock className="h-3 w-3 mr-1" />
+                      {t('public')}
+                    </div>
+                  ) : (
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <Lock className="h-3 w-3 mr-1" />
+                      {t('private')}
+                    </div>
+                  )}
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleDeleteNote(note.id)}
-              >
-                <Trash2 className="h-4 w-4 text-destructive" />
-                <span className="sr-only">{commonT('ui.actions.delete')}</span>
-              </Button>
             </div>
           ))}
           {notes.length === 0 && (
-            <div className="text-center text-sm text-muted-foreground py-4">
+            <div className="text-center text-sm text-muted-foreground py-4 col-span-full">
               {t('noNotes')}
             </div>
           )}

@@ -36,12 +36,12 @@ export async function getLenderById(lenderId: string) {
         loans: {
           include: {
             transactions: true,
-            notes: true,
+            notes: { include: { createdBy: { select: { id: true, name: true } } } },
             files: true
           }
         },
         user: true,
-        notes: true,
+        notes: { include: { createdBy: { select: { id: true, name: true } } } },
         files: true
       }
     })

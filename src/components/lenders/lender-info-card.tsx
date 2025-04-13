@@ -31,68 +31,89 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
     ? `${lender.titlePrefix ? `${lender.titlePrefix} ` : ''}${lender.firstName} ${lender.lastName}${lender.titleSuffix ? ` ${lender.titleSuffix}` : ''}`
     : lender.organisationName
 
+  // Check if we have any contact information
+  const hasContactInfo = lender.email || lender.telNo
+
+  // Check if we have any address information
+  const hasAddressInfo = lender.street || lender.addon || lender.zip || lender.place || lender.country
+
+  // Check if we have any banking information
+  const hasBankingInfo = lender.iban || lender.bic
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>{t('details.contactInfo')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Name Information */}
+        {lenderName && (
+          <div className="grid grid-cols-1 gap-4">
+            <InfoItem
+              label={t('table.name')}
+              value={lenderName}
+              showCopyButton={true}
+            />
+          </div>
+        )}
+
         {/* Contact Information */}
-        <div className="grid grid-cols-1 gap-4">
-          <InfoItem
-            label={t('table.email')}
-            value={lender.email}
-            emptyMessage={t('details.noContactInfo')}
-            showCopyButton={true}
-          />
-          <InfoItem
-            label={t('table.telNo')}
-            value={lender.telNo}
-            emptyMessage={t('details.noContactInfo')}
-            showCopyButton={true}
-          />
-        </div>
+        {hasContactInfo && (
+          <div className="grid grid-cols-1 gap-4">
+            {lender.email && (
+              <InfoItem
+                label={t('table.email')}
+                value={lender.email}
+                showCopyButton={true}
+              />
+            )}
+            {lender.telNo && (
+              <InfoItem
+                label={t('table.telNo')}
+                value={lender.telNo}
+                showCopyButton={true}
+              />
+            )}
+          </div>
+        )}
 
         {/* Address Information */}
-        <div className="grid grid-cols-1 gap-4">
-          <div className="text-sm text-muted-foreground">{t('details.address')}</div>
-          {lender.street ? (
+        {hasAddressInfo && (
+          <div className="grid grid-cols-1 gap-4">
+            <div className="text-sm text-muted-foreground">{t('details.address')}</div>
             <div className="text-lg font-medium">
-              <div>{lender.street}</div>
+              {lender.street && <div>{lender.street}</div>}
               {lender.addon && <div>{lender.addon}</div>}
-              <div>{lender.zip} {lender.place}</div>
+              {(lender.zip || lender.place) && (
+                <div>{lender.zip} {lender.place}</div>
+              )}
               {lender.country && <div>{lender.country}</div>}
             </div>
-          ) : (
-            <div className="text-muted-foreground italic">
-              {t('details.noAddress')}
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Banking Information */}
-        <div className="grid grid-cols-1 gap-4">
-          <div className="text-sm text-muted-foreground">{t('details.banking')}</div>
-          <InfoItem
-            label="IBAN"
-            value={lender.iban}
-            emptyMessage={t('details.noBankingInfo')}
-            showCopyButton={true}
-            showQrButton={true}
-            recipientName={lenderName}
-          />
-          <InfoItem
-            label="BIC"
-            value={lender.bic}
-            emptyMessage={t('details.noBankingInfo')}
-            showCopyButton={true}
-          />
-          {!lender.iban && !lender.bic && (
-            <div className="text-muted-foreground italic">
-              {t('details.noBankingInfo')}
-            </div>
-          )}
-        </div>
+        {hasBankingInfo && (
+          <div className="grid grid-cols-1 gap-4">
+            <div className="text-sm text-muted-foreground">{t('details.banking')}</div>
+            {lender.iban && (
+              <InfoItem
+                label="IBAN"
+                value={lender.iban}
+                showCopyButton={true}
+                showQrButton={true}
+                recipientName={lenderName}
+              />
+            )}
+            {lender.bic && (
+              <InfoItem
+                label="BIC"
+                value={lender.bic}
+                showCopyButton={true}
+              />
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   )

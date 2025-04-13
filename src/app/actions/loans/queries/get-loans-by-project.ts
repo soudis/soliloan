@@ -52,12 +52,12 @@ export async function getLoansByProjectId(projectId: string) {
         lender: {
           include: {
             project: true,
-            notes: true,
+            notes: { include: { createdBy: { select: { id: true, name: true } } } },
             files: true
           }
         },
         transactions: true,
-        notes: true,
+        notes: { include: { createdBy: { select: { id: true, name: true } } } },
         files: true
       }
     })
