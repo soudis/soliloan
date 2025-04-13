@@ -100,13 +100,6 @@ export function LoanFiles({ loanId, files }: LoanFilesProps) {
   return (
     <>
       <div className="mt-6">
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-medium">{t('title')}</div>
-          <Button variant="ghost" size="icon" onClick={() => setIsFileDialogOpen(true)}>
-            <Plus className="h-4 w-4" />
-            <span className="sr-only">{commonT('ui.actions.create')}</span>
-          </Button>
-        </div>
         <div className="mt-2 grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-3 auto-rows-fr">
           {files.map((file) => (
             <div
@@ -150,7 +143,7 @@ export function LoanFiles({ loanId, files }: LoanFilesProps) {
                     </div>
                   </div>
                 </div>
-              ) : (
+              ) :
                 <div className={`w-32 flex-shrink-0 flex items-center justify-center relative ${file.public ? 'bg-amber-500/20' : 'bg-blue-500/20'}`}>
                   {getFileTypeIcon(file)}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -176,7 +169,7 @@ export function LoanFiles({ loanId, files }: LoanFilesProps) {
                     </div>
                   </div>
                 </div>
-              )}
+              }
               <div className="flex flex-col h-full p-3 flex-1">
                 <div className="flex items-start space-x-3">
                   <div className="flex-1 min-w-0">
@@ -205,11 +198,15 @@ export function LoanFiles({ loanId, files }: LoanFilesProps) {
               </div>
             </div>
           ))}
-          {files.length === 0 && (
-            <div className="text-center text-sm text-muted-foreground py-4 col-span-full">
-              {t('noFiles')}
-            </div>
-          )}
+
+          <Button
+            variant="outline"
+            className="h-full flex flex-col items-center justify-center p-6 border-dashed"
+            onClick={() => setIsFileDialogOpen(true)}
+          >
+            <Plus className="h-8 w-8 mb-2" />
+            <span className="text-sm">{t('add')}</span>
+          </Button>
         </div>
       </div>
 

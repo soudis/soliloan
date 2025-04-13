@@ -48,13 +48,6 @@ export function LoanNotes({ loanId, notes }: LoanNotesProps) {
   return (
     <>
       <div className="mt-6">
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-medium">{t('title')}</div>
-          <Button variant="ghost" size="icon" onClick={() => setIsNoteDialogOpen(true)}>
-            <Plus className="h-4 w-4" />
-            <span className="sr-only">{commonT('ui.actions.create')}</span>
-          </Button>
-        </div>
         <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 auto-rows-fr">
           {notes.map((note) => (
             <div
@@ -105,11 +98,15 @@ export function LoanNotes({ loanId, notes }: LoanNotesProps) {
               </div>
             </div>
           ))}
-          {notes.length === 0 && (
-            <div className="text-center text-sm text-muted-foreground py-4 col-span-full">
-              {t('noNotes')}
-            </div>
-          )}
+
+          <Button
+            variant="outline"
+            className="h-full flex flex-col items-center justify-center p-6 border-dashed"
+            onClick={() => setIsNoteDialogOpen(true)}
+          >
+            <Plus className="h-8 w-8 mb-2" />
+            <span className="text-sm">{commonT('ui.actions.create')}</span>
+          </Button>
         </div>
       </div>
 

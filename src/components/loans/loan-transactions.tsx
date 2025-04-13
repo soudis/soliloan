@@ -71,13 +71,6 @@ export function LoanTransactions({ loanId, transactions }: LoanTransactionsProps
   return (
     <>
       <div className="mt-6">
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-medium">{t('transactions.title')}</div>
-          <Button variant="ghost" size="icon" onClick={() => setIsTransactionDialogOpen(true)}>
-            <Plus className="h-4 w-4" />
-            <span className="sr-only">{commonT('ui.actions.create')}</span>
-          </Button>
-        </div>
         <div className="mt-2 space-y-2">
           {transactions.map((transaction) => (
             <div key={transaction.id} className="flex items-center justify-between rounded-lg bg-muted/50 p-2">
@@ -112,6 +105,14 @@ export function LoanTransactions({ loanId, transactions }: LoanTransactionsProps
               {t('transactions.noTransactions')}
             </div>
           )}
+          <Button
+            variant="outline"
+            className="w-full mt-2"
+            onClick={() => setIsTransactionDialogOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {commonT('ui.actions.create')}
+          </Button>
         </div>
       </div>
 

@@ -86,6 +86,12 @@ export default function LoansPage() {
 
     createCurrencyColumn<LoanWithRelations>('balance', 'table.balance', t),
 
+    createCurrencyColumn<LoanWithRelations>('deposits', 'table.deposits', t),
+
+    createCurrencyColumn<LoanWithRelations>('withdrawals', 'table.withdrawals', t),
+
+    createCurrencyColumn<LoanWithRelations>('notReclaimed', 'table.notReclaimed', t),
+
     createPercentageColumn<LoanWithRelations>('interestRate', 'table.interestRate', t),
 
     createCurrencyColumn<LoanWithRelations>('interest', 'table.interest', t),
@@ -199,6 +205,18 @@ export default function LoansPage() {
       type: 'number' as const,
       label: t('table.balance')
     },
+    deposits: {
+      type: 'number' as const,
+      label: t('table.deposits')
+    },
+    withdrawals: {
+      type: 'number' as const,
+      label: t('table.withdrawals')
+    },
+    notReclaimed: {
+      type: 'number' as const,
+      label: t('table.notReclaimed')
+    },
     interestRate: {
       type: 'number' as const,
       label: t('table.interestRate')
@@ -289,20 +307,23 @@ export default function LoansPage() {
 
   // Define default column visibility
   const defaultColumnVisibility = {
-    loanNumber: true,
-    lenderNumber: true,
+    loanNumber: false,
+    lenderNumber: false,
     lenderName: true,
     signDate: true,
     amount: true,
     balance: true,
+    deposits: false,
+    withdrawals: false,
+    notReclaimed: false,
     interestRate: true,
-    interest: true,
-    interestPaid: true,
-    interestPaymentType: true,
-    interestPayoutType: true,
-    terminationType: true,
-    terminationModalities: true,
-    repayDate: true,
+    interest: false,
+    interestPaid: false,
+    interestPaymentType: false,
+    interestPayoutType: false,
+    terminationType: false,
+    terminationModalities: false,
+    repayDate: false,
     status: true,
     altInterestMethod: false,
     contractStatus: true,

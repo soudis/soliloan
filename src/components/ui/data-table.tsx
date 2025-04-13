@@ -151,10 +151,9 @@ export function DataTable<TData, TValue>({
 
   // Initialize state from store if viewType is provided
   const storedState = viewType ? getState(viewType) : null
-
   const [sorting, setSorting] = useState<SortingState>(storedState?.sorting || [])
   const [columnFiltersState, setColumnFilters] = useState<ColumnFiltersState>(storedState?.columnFilters || [])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(storedState?.columnVisibility || defaultColumnVisibility)
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({ ...defaultColumnVisibility, ...storedState?.columnVisibility, })
   const [rowSelection, setRowSelection] = useState({})
   const [showColumnFilters, setShowColumnFilters] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -226,6 +225,10 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
       globalFilter,
+    },
+    // Add initial column visibility
+    initialState: {
+      columnVisibility,
     },
     // Register the custom filter functions
     filterFns: {

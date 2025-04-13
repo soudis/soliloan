@@ -18,7 +18,7 @@ export const paymentTypeEnum = z.enum(['BANK', 'CASH', 'OTHER'])
 export const transactionFormSchema = z.object({
   type: transactionTypeEnum,
   date: createDateSchema(true),
-  amount: createNumberSchema(0.01),
+  amount: createNumberSchema(),
   paymentType: paymentTypeEnum,
 })
 

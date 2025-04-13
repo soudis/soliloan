@@ -124,7 +124,7 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
               return (
                 <LoanCard
                   key={loan.id}
-                  loan={mappedLoan}
+                  loan={loan}
                   onView={(id) => router.push(`/dashboard/loans/${id}`)}
                   onEdit={(id) => router.push(`/dashboard/loans/${id}/edit`)}
                   className={highlightLoanId === loan.id ? 'ring-2 ring-primary' : ''}

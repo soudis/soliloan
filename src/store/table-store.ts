@@ -1,6 +1,5 @@
 import { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/react-table'
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 
 export type ViewType = 'LENDER' | 'LOAN'
 
@@ -26,27 +25,20 @@ const defaultTableState: TableState = {
   pageSize: 10,
 }
 
-export const useTableStore = create<TableStore>()(
-  persist(
-    (set, get) => ({
+export const useTableStore = create<TableStore>()((set, get) => ({
+  states: {
+    LENDER: defaultTableState,
+    LOAN: defaultTableState,
+  },
+  setState: (viewType, newState) =>
+    set((state) => ({
       states: {
-        LENDER: defaultTableState,
-        LOAN: defaultTableState,
+        ...state.states,
+        [viewType]: {
+          ...state.states[viewType],
+          ...newState,
+        },
       },
-      setState: (viewType, newState) =>
-        set((state) => ({
-          states: {
-            ...state.states,
-            [viewType]: {
-              ...state.states[viewType],
-              ...newState,
-            },
-          },
-        })),
-      getState: (viewType) => get().states[viewType] || defaultTableState,
-    }),
-    {
-      name: 'table-storage',
-    }
-  )
-) 
+    })),
+  getState: (viewType) => get().states[viewType] || defaultTableState,
+})) 

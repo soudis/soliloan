@@ -45,7 +45,6 @@ export function TransactionFormFields({ form }: TransactionFormFieldsProps) {
         name="amount"
         label={t('transactions.amount')}
         placeholder={commonT('ui.form.enterPlaceholder')}
-        min={0.01}
         step={0.01}
       />
 

@@ -11,6 +11,7 @@ import {
 import { Form } from '@/components/ui/form'
 import { transactionFormSchema, type TransactionFormData } from '@/lib/schemas/transaction'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -29,6 +30,7 @@ export function TransactionDialog({
 }: TransactionDialogProps) {
   const t = useTranslations('dashboard.loans')
   const commonT = useTranslations('common')
+  const queryClient = useQueryClient()
 
   const form = useForm<TransactionFormData>({
     resolver: zodResolver(transactionFormSchema),
@@ -51,6 +53,8 @@ export function TransactionDialog({
       toast.success(t('transactions.createSuccess'))
       onOpenChange(false)
       form.reset()
+      queryClient.invalidateQueries({ queryKey: ['lender'] })
+      queryClient.invalidateQueries({ queryKey: ['loans'] })
     } catch (error) {
       console.error('Error creating transaction:', error)
       toast.error(t('transactions.createError'))
