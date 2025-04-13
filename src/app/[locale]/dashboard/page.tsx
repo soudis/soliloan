@@ -1,6 +1,11 @@
 'use client'
 
 import { getDashboardStats } from '@/app/actions/dashboard/get-dashboard-stats'
+import { getLoansByProjectId } from '@/app/actions/loans/queries/get-loans-by-project'
+import { LoanAmountDistributionChart } from '@/components/dashboard/loan-amount-distribution-chart'
+import { LoanStatusChart } from '@/components/dashboard/loan-status-chart'
+import { YearlyDataChart } from '@/components/dashboard/yearly-data-chart'
+import { YearlyTable } from '@/components/dashboard/yearly-table'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils'
@@ -29,6 +34,54 @@ export default function DashboardPage() {
     },
     enabled: !!selectedProject
   })
+
+  // Fetch loans data for the distribution chart
+  const { data: loansData } = useQuery({
+    queryKey: ['loans-by-project', selectedProject?.id],
+    queryFn: async () => {
+      if (!selectedProject) return null
+      const result = await getLoansByProjectId(selectedProject.id)
+      if (result.error) {
+        throw new Error(result.error)
+      }
+      return result.loans
+    },
+    enabled: !!selectedProject
+  })
+
+  // Calculate loan amount distribution
+  const calculateLoanAmountDistribution = (loans: any[]) => {
+    // Define amount ranges
+    const ranges = [
+      { min: 0, max: 1000, label: '0 - 1,000' },
+      { min: 1001, max: 5000, label: '1,001 - 5,000' },
+      { min: 5001, max: 10000, label: '5,001 - 10,000' },
+      { min: 10001, max: 25000, label: '10,001 - 25,000' },
+      { min: 25001, max: 50000, label: '25,001 - 50,000' },
+      { min: 50001, max: 100000, label: '50,001 - 100,000' },
+      { min: 100001, max: Infinity, label: '100,001+' }
+    ]
+
+    // Initialize distribution data
+    const distribution = ranges.map(range => ({
+      range: range.label,
+      count: 0,
+      totalAmount: 0
+    }))
+
+    // Calculate distribution
+    loans.forEach(loan => {
+      const amount = Number(loan.amount)
+      const rangeIndex = ranges.findIndex(range => amount >= range.min && amount <= range.max)
+      if (rangeIndex !== -1) {
+        distribution[rangeIndex].count++
+        distribution[rangeIndex].totalAmount += amount
+      }
+    })
+
+    // Filter out ranges with no loans
+    return distribution.filter(item => item.count > 0)
+  }
 
   if (!session) {
     return null
@@ -122,6 +175,76 @@ export default function DashboardPage() {
           </Card>
         </div>
       ) : null}
+
+      {/* Additional Statistics Cards */}
+      {statsData && (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t('stats.totalInterest')}</CardTitle>
+              <Percent className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(statsData.totalInterest)}</div>
+              <p className="text-xs text-muted-foreground">
+                {t('stats.interestPaid')}: {formatCurrency(statsData.totalInterestPaid)}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t('stats.totalBalance')}</CardTitle>
+              <Wallet className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(statsData.totalBalance)}</div>
+              <p className="text-xs text-muted-foreground">
+                {t('stats.notReclaimed')}: {formatCurrency(statsData.totalNotReclaimed)}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t('stats.totalDeposits')}</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(statsData.totalDeposits)}</div>
+              <p className="text-xs text-muted-foreground">
+                {t('stats.withdrawals')}: {formatCurrency(statsData.totalWithdrawals)}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Charts Section */}
+      {statsData && (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mb-8">
+          {/* Loan Status Pie Chart */}
+          <LoanStatusChart data={statsData.loanStatusBreakdown} />
+
+          {/* Yearly Data Bar Chart */}
+          <YearlyDataChart data={statsData.yearlyData} />
+        </div>
+      )}
+
+      {/* Loan Amount Distribution Chart */}
+      {statsData && loansData && (
+        <div className="mb-8">
+          <LoanAmountDistributionChart
+            data={calculateLoanAmountDistribution(loansData)}
+            loans={loansData}
+          />
+        </div>
+      )}
+
+      {/* Yearly Table Section */}
+      {statsData && statsData.yearlyLoanData && statsData.yearlyLoanData.length > 0 && (
+        <YearlyTable data={statsData.yearlyLoanData} />
+      )}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="rounded-lg border bg-card p-6 shadow-sm transition-all hover:shadow-md">

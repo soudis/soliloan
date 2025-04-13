@@ -1,16 +1,55 @@
 {
   "welcome": "Willkommen, {name}!",
-  "description": "Hier findest du eine Übersicht über deine Kreditgeber*innen und Kredite.",
+  "description": "Hier findest du eine Übersicht über deine Kredite und Kreditgeber.",
   "stats": {
-    "totalLenders": "Kreditgeber*innen gesamt",
+    "totalLenders": "Kreditgeber",
     "personLenders": "Privatpersonen",
     "organisationLenders": "Organisationen",
-    "totalLoans": "Kredite gesamt",
+    "totalLoans": "Alle Kredite",
     "pendingLoans": "Ausstehend",
     "completedLoans": "Abgeschlossen",
-    "totalLoanAmount": "Gesamtbetrag der Kredite",
+    "totalLoanAmount": "Kreditbetrag",
     "avgInterestRate": "Durchschnittlicher Zinssatz",
-    "loanStatus": "Kreditstatus"
+    "loanStatus": "Kreditstatus",
+    "totalInterest": "Gesamtzinsen",
+    "interestPaid": "Ausbezahlte Zinsen",
+    "totalBalance": "Gesamtsaldo",
+    "notReclaimed": "Nicht zurückgefordert",
+    "totalDeposits": "Einzahlungen",
+    "withdrawals": "Auszahlungen",
+    "lenderAmount": "Kreditgeberbetrag",
+    "lenderInterest": "Kreditgeberzinsen",
+    "activeLoans": "Aktive Kredite",
+    "repaidLoans": "Zurückgezahlte Kredite",
+    "terminatedLoans": "Beendete Kredite",
+    "notDepositedLoans": "Nicht ausgezahlte Kredite"
+  },
+  "charts": {
+    "loanStatus": "Kreditstatus",
+    "yearlyData": "Jährliche Daten",
+    "yearlyBalance": "Jährliche Bilanz",
+    "totalAmount": "Gesamtbetrag",
+    "totalInterest": "Gesamtzinsen",
+    "totalDeposits": "Einzahlungen",
+    "totalWithdrawals": "Auszahlungen",
+    "netDeposits": "Netto-Einzahlungen",
+    "interest": "Zinsen",
+    "balance": "Kontostand",
+    "yearlyChanges": "Jährliche Änderungen",
+    "yearlyBalance": "Jährlicher Kontostand",
+    "loanAmountDistribution": "Kreditbetragsverteilung",
+    "loanCount": "Anzahl der Kredite"
+  },
+  "yearlyTable": {
+    "title": "Jährliche Kreditübersicht",
+    "year": "Jahr",
+    "begin": "Anfangssaldo",
+    "end": "Endsaldo",
+    "withdrawals": "Auszahlungen",
+    "deposits": "Einzahlungen",
+    "notReclaimed": "Nicht zurückgefordert",
+    "interestPaid": "Ausbezahlte Zinsen",
+    "interest": "Zinsen"
   },
   "projects": {
     "title": "Projekte",
@@ -19,9 +58,9 @@
     "viewProjects": "Projekte anzeigen"
   },
   "lenders": {
-    "title": "Kreditgeber*innen",
-    "description": "Verwalte deine Kreditgeber*innen und deren Informationen",
-    "viewLenders": "Kreditgeber*innen anzeigen",
+    "title": "Kreditgeber",
+    "description": "Verwalte deine Kreditgeber und deren Informationen.",
+    "viewLenders": "Kreditgeber anzeigen",
     "table": {
       "lenderNumber": "Nummer",
       "type": "Typ",
@@ -98,9 +137,9 @@
   },
   "loans": {
     "title": "Kredite",
-    "description": "Verwalte deine Kredite und deren Informationen",
-    "details": "Füge Kreditinformationen, Zinssätze und Zahlungspläne hinzu, aktualisiere und verwalte diese.",
+    "description": "Verwalte deine Kredite und deren Details.",
     "viewLoans": "Kredite anzeigen",
+    "details": "Verwalte deine Kredite und deren Details.",
     "transactions": {
       "title": "Zahlungen",
       "success": "Zahlung erfolgreich erstellt",
@@ -348,5 +387,6 @@
     "private": "Intern",
     "publicDescription": "Öffentliche Dateien sind für auch für Kreditgeber*innen sichtbar",
     "noFiles": "Noch keine Dateien"
-  }
+  },
+  "noData": "Keine Daten verfügbar"
 }
