@@ -257,6 +257,7 @@ export default function LendersPage() {
         defaultColumnVisibility={defaultColumnVisibility}
         viewType="LENDER"
         showFilter={true}
+        onRowClick={(row) => router.push(`/dashboard/lenders/${row.id}`)}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
             <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/lenders/${row.id}`)}>

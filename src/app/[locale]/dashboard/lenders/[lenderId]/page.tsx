@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Pencil, Plus } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
 import { use } from 'react'
 import { toast } from 'sonner'
 
@@ -28,9 +29,13 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
   const resolvedParams = use(params)
   const { data: session } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { selectedProject } = useProject()
   const t = useTranslations('dashboard.lenders')
   const commonT = useTranslations('common')
+
+  // Get the loan ID to highlight from the URL query parameter
+  const highlightLoanId = searchParams.get('highlightLoan')
 
   // Use React Query to fetch lender data
   const { data: lender, isLoading, error } = useQuery({
@@ -122,6 +127,7 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
                   loan={mappedLoan}
                   onView={(id) => router.push(`/dashboard/loans/${id}`)}
                   onEdit={(id) => router.push(`/dashboard/loans/${id}/edit`)}
+                  className={highlightLoanId === loan.id ? 'ring-2 ring-primary' : ''}
                 />
               )
             })}
@@ -135,6 +141,7 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
 
         {/* Lender Information Section - Right side on desktop, top on mobile */}
         <div className="w-full lg:w-1/3">
+          <h2 className="text-2xl font-semibold mb-4">{t('details.contactInfo')}</h2>
           <LenderInfoCard lender={mappedLender} />
         </div>
       </div>

@@ -10,6 +10,7 @@ import { de, enUS } from 'date-fns/locale'
 import { Eye, Pencil, Plus } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { Button } from '../ui/button'
+import { LoanFiles } from './loan-files'
 import { LoanNotes } from './loan-notes'
 import { LoanTransactions } from './loan-transactions'
 
@@ -18,9 +19,10 @@ interface LoanCardProps {
   loan: LoanWithRelations
   onView?: (id: string) => void
   onEdit?: (id: string) => void
+  className?: string
 }
 
-export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
+export function LoanCard({ loan, onView, onEdit, className }: LoanCardProps) {
   const t = useTranslations('dashboard.loans')
   const commonT = useTranslations('common')
   const locale = useLocale()
@@ -46,7 +48,7 @@ export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
   }
 
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div className="space-y-1">
           <h3 className="text-lg font-semibold">
@@ -99,6 +101,7 @@ export function LoanCard({ loan, onView, onEdit }: LoanCardProps) {
         </div>
 
         <LoanTransactions loanId={loan.id} transactions={loan.transactions} />
+        <LoanFiles loanId={loan.id} files={loan.files} />
         <LoanNotes loanId={loan.id} notes={loan.notes} />
       </CardContent>
     </Card>

@@ -5,7 +5,7 @@ export type LenderWithRelations = Lender & {
   notes: (Note & {
     createdBy: Pick<User, 'id' | 'name'>
   })[]
-  files: File[]
+  files: Omit<File, 'data'>[]
   loans?: Omit<LoanWithRelations, "lender">[];
   user: Pick<User, "id" | "email" | "name" | "lastLogin"> | null;
   project: Project

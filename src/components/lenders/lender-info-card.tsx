@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { InfoItem } from '@/components/ui/info-item'
 import { useTranslations } from 'next-intl'
 
@@ -42,9 +42,6 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{t('details.contactInfo')}</CardTitle>
-      </CardHeader>
       <CardContent className="space-y-6">
         {/* Name Information */}
         {lenderName && (

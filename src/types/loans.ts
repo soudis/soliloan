@@ -13,12 +13,12 @@ export type LoanWithRelations = Loan & {
     notes: (Note & {
       createdBy: Pick<User, 'id' | 'name'>
     })[]
-    files: File[]
+    files: Omit<File, 'data'>[]
   }
   notes: (Note & {
     createdBy: Pick<User, 'id' | 'name'>
   })[]
-  files: File[]
+  files: Omit<File, 'data'>[]
   transactions: Transaction[]
 }
 

@@ -316,5 +316,27 @@
     "private": "Intern",
     "publicDescription": "Öffentliche Notizen sind für auch für Kreditgeber*innen sichtbar",
     "noNotes": "Noch keine Notizen"
+  },
+  "files": {
+    "createTitle": "Datei hochladen",
+    "title": "Dateien",
+    "add": "Datei hinzufügen",
+    "delete": "Datei löschen",
+    "deleteConfirm": "Möchten Sie diese Datei wirklich löschen?",
+    "deleteSuccess": "Datei erfolgreich gelöscht",
+    "deleteError": "Fehler beim Löschen der Datei",
+    "createSuccess": "Datei erfolgreich hochgeladen",
+    "createError": "Fehler beim Hochladen der Datei",
+    "downloadError": "Fehler beim Herunterladen der Datei",
+    "noFileSelected": "Bitte wählen Sie eine Datei aus",
+    "file": "Datei",
+    "name": "Name",
+    "namePlaceholder": "Dateiname eingeben",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Beschreibung eingeben",
+    "public": "Öffentlich",
+    "private": "Intern",
+    "publicDescription": "Öffentliche Dateien sind für auch für Kreditgeber*innen sichtbar",
+    "noFiles": "Noch keine Dateien"
   }
 }

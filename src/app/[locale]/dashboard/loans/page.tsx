@@ -338,6 +338,7 @@ export default function LoansPage() {
         defaultColumnVisibility={defaultColumnVisibility}
         viewType="LOAN"
         showFilter={true}
+        onRowClick={(row) => router.push(`/dashboard/lenders/${row.lender.id}?highlightLoan=${row.id}`)}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
             <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/loans/${row.id}/edit`)}>

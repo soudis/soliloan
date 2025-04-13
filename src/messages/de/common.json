@@ -55,7 +55,8 @@
       "create": "Erstellen",
       "creating": "Wird erstellt...",
       "update": "Aktualisieren",
-      "updating": "Wird aktualisiert..."
+      "updating": "Wird aktualisiert...",
+      "download": "Herunterladen"
     },
     "status": {
       "success": "Erfolg",
