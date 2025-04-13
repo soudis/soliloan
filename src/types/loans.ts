@@ -1,5 +1,5 @@
 import { getLenderById } from "@/app/actions"
-import { File, Lender, Loan, Note, Project, Transaction, User } from "@prisma/client"
+import { Configuration, File, Lender, Loan, Note, Project, Transaction, User } from "@prisma/client"
 
 export enum LoanStatus {
   ACTIVE = "ACTIVE",
@@ -10,7 +10,11 @@ export enum LoanStatus {
 
 export type LoanWithRelations = Loan & {
   lender: Lender & {
-    project: Project
+    project: Project & {
+      configuration: {
+        interestMethod: Configuration['interestMethod']
+      }
+    }
     notes: (Note & {
       createdBy: Pick<User, 'id' | 'name'>
     })[]

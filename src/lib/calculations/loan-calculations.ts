@@ -107,7 +107,8 @@ export const calculateLoanPerYear = function (
   ) {
     toDate = moment(terminationDate);
   }
-  const method = loan.altInterestMethod ?? loan.lender.project.interestMethod;
+
+  const method = loan.altInterestMethod ?? loan.lender.project.configuration.interestMethod;
 
   if (!method) {
     throw new Error("NO_INTEREST_METHOD");

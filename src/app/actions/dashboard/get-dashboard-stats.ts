@@ -68,7 +68,11 @@ export async function getDashboardStats(projectId: string) {
         transactions: true,
         lender: {
           include: {
-            project: true,
+            project: {
+              include: {
+                configuration: { select: { interestMethod: true } }
+              }
+            },
             notes: {
               include: {
                 createdBy: {

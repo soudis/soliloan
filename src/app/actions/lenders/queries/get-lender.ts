@@ -3,17 +3,9 @@
 import { auth } from '@/lib/auth'
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations'
 import { db } from '@/lib/db'
-import { Lender, Loan, Project, Transaction, User } from '@prisma/client'
 
 // Define the type for the lender with included relations
-type LenderWithRelations = Lender & {
-  project: Project & {
-    managers: User[]
-  }
-  loans: (Loan & {
-    transactions: Transaction[]
-  })[]
-}
+
 
 export async function getLenderById(lenderId: string) {
   try {
@@ -30,7 +22,8 @@ export async function getLenderById(lenderId: string) {
       include: {
         project: {
           include: {
-            managers: true
+            managers: true,
+            configuration: { select: { interestMethod: true } }
           }
         },
         loans: {

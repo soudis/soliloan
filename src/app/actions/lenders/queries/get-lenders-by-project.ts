@@ -1,14 +1,6 @@
 "use server"
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations'
 import { db } from '@/lib/db'
-import { Lender, Loan, Transaction } from '@prisma/client'
-
-// Define the type for the lender with included relations
-type LenderWithRelations = Lender & {
-  loans: (Loan & {
-    transactions: Transaction[]
-  })[]
-}
 
 export async function getLendersByProjectId(projectId: string) {
   try {
@@ -30,14 +22,18 @@ export async function getLendersByProjectId(projectId: string) {
         notes: { include: { createdBy: { select: { id: true, name: true } } } },
         files: { select: { id: true, name: true, description: true, public: true, mimeType: true, lenderId: true, loanId: true, thumbnail: true } },
         user: true,
-        project: true
+        project: {
+          include: {
+            configuration: { select: { interestMethod: true } }
+          }
+        }
       }
 
     })
 
     // Calculate virtual fields for each lender
     const lendersWithCalculations = lenders.map(lender =>
-      calculateLenderFields<Omit<LenderWithRelations, keyof Lender>>(lender)
+      calculateLenderFields(lender)
     )
 
     return { lenders: lendersWithCalculations }

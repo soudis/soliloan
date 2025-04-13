@@ -11,7 +11,7 @@ import { Pencil, Plus } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
-import { use } from 'react'
+import { use, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
 // Function to fetch lender data using the server action
@@ -33,6 +33,7 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
   const { selectedProject } = useProject()
   const t = useTranslations('dashboard.lenders')
   const commonT = useTranslations('common')
+  const highlightedLoanRef = useRef<HTMLDivElement>(null)
 
   // Get the loan ID to highlight from the URL query parameter
   const highlightLoanId = searchParams.get('highlightLoan')
@@ -43,6 +44,19 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
     queryFn: () => fetchLender(resolvedParams.lenderId),
     enabled: !!resolvedParams.lenderId,
   })
+
+  // Scroll to the highlighted loan when the component mounts or when highlightLoanId changes
+  useEffect(() => {
+    if (highlightLoanId && highlightedLoanRef.current) {
+      // Use a small timeout to ensure the DOM is fully rendered
+      setTimeout(() => {
+        highlightedLoanRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        })
+      }, 100)
+    }
+  }, [highlightLoanId, lender])
 
   if (!session) {
     return null
@@ -99,13 +113,17 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
               // Calculate loan fields with the lender context
 
               return (
-                <LoanCard
+                <div
                   key={loan.id}
-                  loan={loan}
-                  onView={(id) => router.push(`/dashboard/loans/${id}`)}
-                  onEdit={(id) => router.push(`/dashboard/loans/${id}/edit`)}
-                  className={highlightLoanId === loan.id ? 'ring-2 ring-primary' : ''}
-                />
+                  ref={highlightLoanId === loan.id ? highlightedLoanRef : null}
+                >
+                  <LoanCard
+                    loan={loan}
+                    onView={(id) => router.push(`/dashboard/loans/${id}`)}
+                    onEdit={(id) => router.push(`/dashboard/loans/${id}/edit`)}
+                    className={highlightLoanId === loan.id ? 'ring-2 ring-primary' : ''}
+                  />
+                </div>
               )
             })}
             {lender.loans.length === 0 && (

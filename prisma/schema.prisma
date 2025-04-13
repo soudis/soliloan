@@ -109,7 +109,6 @@ model Project {
   slug            String         @unique
   name            String
   configurationId String         @unique
-  interestMethod  InterestMethod
   changes         Change[]
   lenders         Lender[]
   configuration   Configuration  @relation(fields: [configurationId], references: [id], onDelete: Cascade)
