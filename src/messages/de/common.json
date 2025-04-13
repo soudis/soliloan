@@ -127,7 +127,7 @@
       },
       "terminationType": {
         "ENDDATE": "Enddatum",
-        "TERMINATION": "Kündigung",
+        "TERMINATION": "Kündigungsfrist",
         "DURATION": "Laufzeit"
       },
       "contractStatus": {
@@ -145,7 +145,7 @@
         "WITHDRAWAL": "Auszahlung",
         "INTEREST": "Zinsen",
         "INTERESTPAYMENT": "Zinszahlung",
-        "TERMINATION": "Kündigung",
+        "TERMINATION": "Rückzahlung",
         "NOTRECLAIMEDPARTIAL": "Nicht zurückgefordert (Teilweise)",
         "NOTRECLAIMED": "Nicht zurückgefordert"
       },

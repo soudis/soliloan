@@ -2,10 +2,10 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { Prisma } from '@prisma/client'
+import { LoanFormData } from '@/lib/schemas/loan'
 import { revalidatePath } from 'next/cache'
 
-export async function updateLoan(loanId: string, data: Prisma.LoanUpdateInput) {
+export async function updateLoan(loanId: string, data: LoanFormData) {
   try {
     const session = await auth()
     if (!session) {
@@ -48,7 +48,22 @@ export async function updateLoan(loanId: string, data: Prisma.LoanUpdateInput) {
       where: {
         id: loanId
       },
-      data
+      data: {
+        signDate: data.signDate,
+        interestPaymentType: data.interestPaymentType,
+        interestPayoutType: data.interestPayoutType,
+        terminationType: data.terminationType,
+        endDate: data.endDate,
+        terminationDate: data.terminationDate,
+        terminationPeriod: data.terminationPeriod,
+        terminationPeriodType: data.terminationPeriodType,
+        duration: data.duration,
+        durationType: data.durationType,
+        amount: data.amount,
+        interestRate: data.interestRate,
+        altInterestMethod: data.altInterestMethod,
+        contractStatus: data.contractStatus,
+      }
     })
 
     // Revalidate the loans page

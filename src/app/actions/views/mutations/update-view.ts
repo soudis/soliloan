@@ -2,10 +2,10 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { Prisma } from '@prisma/client'
+import { ViewFormData } from '@/lib/schemas/view'
 import { revalidatePath } from 'next/cache'
 
-export async function updateView(viewId: string, data: Prisma.ViewUpdateInput) {
+export async function updateView(viewId: string, data: ViewFormData) {
   try {
     const session = await auth()
     if (!session) {
@@ -33,7 +33,12 @@ export async function updateView(viewId: string, data: Prisma.ViewUpdateInput) {
       where: {
         id: viewId
       },
-      data
+      data: {
+        name: data.name,
+        type: data.type,
+        data: data.data,
+        isDefault: data.isDefault,
+      }
     })
 
     // Revalidate the view

@@ -38,7 +38,7 @@ export const configurationFormSchema = z.object({
   // Loan Defaults
   interestMethod: interestMethodEnum.nullable().optional(),
   altInterestMethods: z.array(interestMethodEnum).default([]),
-  customLoans: z.boolean().default(false),
+  customLoans: z.coerce.boolean().default(false),
 })
 
 export type ConfigurationFormData = z.infer<typeof configurationFormSchema> 

@@ -2,10 +2,10 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { Prisma } from '@prisma/client'
+import { TransactionFormData } from '@/lib/schemas/transaction'
 import { revalidatePath } from 'next/cache'
 
-export async function addTransaction(loanId: string, data: Prisma.TransactionCreateInput) {
+export async function addTransaction(loanId: string, data: TransactionFormData) {
   try {
     const session = await auth()
     if (!session) {
@@ -46,7 +46,10 @@ export async function addTransaction(loanId: string, data: Prisma.TransactionCre
     // Create the transaction
     const transaction = await db.transaction.create({
       data: {
-        ...data,
+        type: data.type,
+        date: data.date as Date,
+        amount: data.amount as number,
+        paymentType: data.paymentType,
         loan: {
           connect: {
             id: loanId

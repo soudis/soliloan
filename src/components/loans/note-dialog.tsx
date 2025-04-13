@@ -42,15 +42,7 @@ export function NoteDialog({
 
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
-      const result = await addNote(loanId, {
-        text: data.text,
-        public: data.public ?? false,
-        loan: {
-          connect: {
-            id: loanId
-          }
-        }
-      })
+      const result = await addNote(loanId, data)
       if (result.error) {
         throw new Error(result.error)
       }

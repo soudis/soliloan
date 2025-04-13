@@ -1,5 +1,46 @@
-import { isValidIban } from '@/lib/utils/iban'
-import { z } from 'zod'
+import { isValidIban } from '@/lib/utils/iban';
+import { z } from 'zod';
+
+// Generic number schemas
+export const createNumberSchema = (min?: number) => {
+  const baseSchema = z
+    .coerce.number()
+    .refine((value) => value === null || !isNaN(Number(value)), {
+      message: "Expected number, received string",
+    })
+    .nullable();
+
+  if (min !== undefined) {
+    return baseSchema.refine((value) => value === null || value >= min, {
+      message: `Value must be greater than or equal to ${min}`,
+    });
+  }
+
+  return baseSchema;
+};
+
+export const requiredNumberSchema = createNumberSchema().refine((value) => value !== null, {
+  message: "Number is required",
+});
+export const optionalNumberSchema = createNumberSchema().optional();
+
+// Generic date schemas
+export const createDateSchema = (required = true) => {
+  const baseSchema = z.coerce.date({
+    invalid_type_error: "Expected date, received invalid date",
+  }).nullable();
+
+  if (required) {
+    return baseSchema.refine((value) => value !== null, {
+      message: "Date is required",
+    });
+  }
+
+  return baseSchema.optional();
+};
+
+export const requiredDateSchema = createDateSchema(true);
+export const optionalDateSchema = createDateSchema(false);
 
 // Country enum used across multiple schemas
 export const countryEnum = z.enum([
@@ -68,4 +109,7 @@ export const interestPaymentTypeEnum = z.enum(['YEARLY', 'END'])
 export const interestPayoutTypeEnum = z.enum(['MONEY', 'COUPON'])
 
 // Contract status enum
-export const contractStatusEnum = z.enum(['PENDING', 'COMPLETED']) 
+export const contractStatusEnum = z.enum(['PENDING', 'COMPLETED'])
+
+// View type enum
+export const viewTypeEnum = z.enum(['LENDER', 'LOAN']) 

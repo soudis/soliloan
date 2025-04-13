@@ -5,7 +5,6 @@ import { LenderForm } from '@/components/lenders/lender-form'
 import { useRouter } from '@/i18n/navigation'
 import type { LenderFormData } from '@/lib/schemas/lender'
 import { useProject } from '@/store/project-context'
-import { omit } from 'lodash'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
@@ -33,14 +32,7 @@ export default function NewLenderPage() {
       setIsSubmitting(true)
 
       // Create the lender using the server action
-      const result = await createLender({
-        ...omit(data, 'projectId'),
-        project: {
-          connect: {
-            id: selectedProject.id
-          }
-        }
-      })
+      const result = await createLender(data)
 
       if (result.error) {
         throw new Error(result.error)

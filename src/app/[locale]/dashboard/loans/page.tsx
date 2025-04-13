@@ -10,6 +10,7 @@ import {
   createDateColumn,
   createEnumBadgeColumn,
   createLenderColumn,
+  createNumberColumn,
   createPercentageColumn,
   createTerminationModalitiesColumn
 } from '@/lib/table-column-utils'
@@ -39,7 +40,7 @@ type FilterFn = 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'compoundTex
 // Define the type for the loan with included relations
 type LoanWithRelations = Loan & {
   lender: Pick<Lender, 'id' | 'lenderNumber' | 'firstName' | 'lastName' | 'organisationName'>
-  transactions: Transaction[] | null
+  transactions: Transaction[]
 }
 
 export default function LoansPage() {
@@ -62,27 +63,36 @@ export default function LoansPage() {
     enabled: !!selectedProject
   })
 
-  const columns: ColumnDef<Loan>[] = [
-    createColumn<Loan>({
-      accessorKey: 'loanNumber',
-      header: 'table.loanNumber',
+  console.log(loans)
+
+  const columns: ColumnDef<LoanWithRelations>[] = [
+    createNumberColumn<LoanWithRelations>('loanNumber', 'table.loanNumber', t),
+
+    createColumn<LoanWithRelations>({
+      accessorKey: 'lenderNumber',
+      header: 'table.lenderNumber',
+      accessorFn: (row: LoanWithRelations) => row.lender?.lenderNumber,
+      cell: ({ row }) => {
+        const value = row.original.lender?.lenderNumber || 0;
+        return value.toFixed(0);
+      }
     }, t),
 
-    createLenderColumn<Loan>(t),
+    createLenderColumn<LoanWithRelations>(t),
 
-    createDateColumn<Loan>('signDate', 'table.signDate', t),
+    createDateColumn<LoanWithRelations>('signDate', 'table.signDate', t),
 
-    createCurrencyColumn<Loan>('amount', 'table.amount', t),
+    createCurrencyColumn<LoanWithRelations>('amount', 'table.amount', t),
 
-    createCurrencyColumn<Loan>('balance', 'table.balance', t),
+    createCurrencyColumn<LoanWithRelations>('balance', 'table.balance', t),
 
-    createPercentageColumn<Loan>('interestRate', 'table.interestRate', t),
+    createPercentageColumn<LoanWithRelations>('interestRate', 'table.interestRate', t),
 
-    createCurrencyColumn<Loan>('interest', 'table.interest', t),
+    createCurrencyColumn<LoanWithRelations>('interest', 'table.interest', t),
 
-    createCurrencyColumn<Loan>('interestPaid', 'table.interestPaid', t),
+    createCurrencyColumn<LoanWithRelations>('interestPaid', 'table.interestPaid', t),
 
-    createEnumBadgeColumn<Loan>(
+    createEnumBadgeColumn<LoanWithRelations>(
       'interestPaymentType',
       'table.interestPaymentType',
       'enums.loan.interestPaymentType',
@@ -90,7 +100,7 @@ export default function LoansPage() {
       commonT
     ),
 
-    createEnumBadgeColumn<Loan>(
+    createEnumBadgeColumn<LoanWithRelations>(
       'interestPayoutType',
       'table.interestPayoutType',
       'enums.loan.interestPayoutType',
@@ -98,11 +108,19 @@ export default function LoansPage() {
       commonT
     ),
 
-    createTerminationModalitiesColumn<Loan>(t, commonT),
+    createEnumBadgeColumn<LoanWithRelations>(
+      'terminationType',
+      'table.terminationType',
+      'enums.loan.terminationType',
+      t,
+      commonT
+    ),
 
-    createDateColumn<Loan>('repayDate', 'table.repayDate', t),
+    createTerminationModalitiesColumn<LoanWithRelations>(t, commonT),
 
-    createEnumBadgeColumn<Loan>(
+    createDateColumn<LoanWithRelations>('repayDate', 'table.repayDate', t),
+
+    createEnumBadgeColumn<LoanWithRelations>(
       'status',
       'table.status',
       'enums.loan.status',
@@ -122,15 +140,15 @@ export default function LoansPage() {
       }
     ),
 
-    createEnumBadgeColumn<Loan>(
+    createEnumBadgeColumn<LoanWithRelations>(
       'altInterestMethod',
       'table.altInterestMethod',
-      'enums.loan.altInterestMethod',
+      'enums.interestMethod',
       t,
       commonT
     ),
 
-    createEnumBadgeColumn<Loan>(
+    createEnumBadgeColumn<LoanWithRelations>(
       'contractStatus',
       'table.contractStatus',
       'enums.loan.contractStatus',
@@ -157,9 +175,17 @@ export default function LoansPage() {
       type: 'number' as const,
       label: t('table.loanNumber')
     },
-    'lender.lenderNumber': {
+    lenderNumber: {
       type: 'number' as const,
       label: t('table.lenderNumber')
+    },
+    lenderName: {
+      type: 'text' as const,
+      label: t('table.lenderName')
+    },
+    signDate: {
+      type: 'date' as const,
+      label: t('table.signDate')
     },
     amount: {
       type: 'number' as const,
@@ -181,14 +207,6 @@ export default function LoansPage() {
       type: 'number' as const,
       label: t('table.interestPaid')
     },
-    signDate: {
-      type: 'date' as const,
-      label: t('table.signDate')
-    },
-    repayDate: {
-      type: 'date' as const,
-      label: t('table.repayDate')
-    },
     interestPaymentType: {
       type: 'select' as const,
       label: t('table.interestPaymentType'),
@@ -205,6 +223,23 @@ export default function LoansPage() {
         { label: commonT('enums.loan.interestPayoutType.COUPON'), value: 'COUPON' }
       ]
     },
+    terminationType: {
+      type: 'select' as const,
+      label: t('table.terminationType'),
+      options: [
+        { label: commonT('enums.loan.terminationType.ENDDATE'), value: 'ENDDATE' },
+        { label: commonT('enums.loan.terminationType.TERMINATION'), value: 'TERMINATION' },
+        { label: commonT('enums.loan.terminationType.DURATION'), value: 'DURATION' }
+      ]
+    },
+    terminationModalities: {
+      type: 'text' as const,
+      label: t('table.terminationModalities')
+    },
+    repayDate: {
+      type: 'date' as const,
+      label: t('table.repayDate')
+    },
     status: {
       type: 'select' as const,
       label: t('table.status'),
@@ -215,13 +250,18 @@ export default function LoansPage() {
         { label: commonT('enums.loan.status.TERMINATED'), value: 'TERMINATED' }
       ]
     },
-    terminationType: {
+    altInterestMethod: {
       type: 'select' as const,
-      label: t('table.terminationType'),
+      label: t('table.altInterestMethod'),
       options: [
-        { label: commonT('enums.loan.terminationType.ENDDATE'), value: 'ENDDATE' },
-        { label: commonT('enums.loan.terminationType.TERMINATION'), value: 'TERMINATION' },
-        { label: commonT('enums.loan.terminationType.DURATION'), value: 'DURATION' }
+        { label: commonT('enums.interestMethod.ACT365NOCOMPOUND'), value: 'ACT365NOCOMPOUND' },
+        { label: commonT('enums.interestMethod.E30360NOCOMPOUND'), value: 'E30360NOCOMPOUND' },
+        { label: commonT('enums.interestMethod.ACT360NOCOMPOUND'), value: 'ACT360NOCOMPOUND' },
+        { label: commonT('enums.interestMethod.ACTACTNOCOMPOUND'), value: 'ACTACTNOCOMPOUND' },
+        { label: commonT('enums.interestMethod.ACT365COMPOUND'), value: 'ACT365COMPOUND' },
+        { label: commonT('enums.interestMethod.E30360COMPOUND'), value: 'E30360COMPOUND' },
+        { label: commonT('enums.interestMethod.ACT360COMPOUND'), value: 'ACT360COMPOUND' },
+        { label: commonT('enums.interestMethod.ACTACTCOMPOUND'), value: 'ACTACTCOMPOUND' }
       ]
     },
     contractStatus: {
@@ -231,20 +271,7 @@ export default function LoansPage() {
         { label: commonT('enums.loan.contractStatus.PENDING'), value: 'PENDING' },
         { label: commonT('enums.loan.contractStatus.COMPLETED'), value: 'COMPLETED' }
       ]
-    },
-    lender: {
-      type: 'text' as const,
-      label: t('table.lender')
-    },
-    terminationModalities: {
-      type: 'select' as const,
-      label: t('table.terminationModalities'),
-      options: [
-        { label: commonT('enums.loan.terminationType.ENDDATE'), value: 'ENDDATE' },
-        { label: commonT('enums.loan.terminationType.TERMINATION'), value: 'TERMINATION' },
-        { label: commonT('enums.loan.terminationType.DURATION'), value: 'DURATION' }
-      ]
-    },
+    }
   }
 
   // Define translations for the DataTable component
@@ -259,8 +286,8 @@ export default function LoansPage() {
   // Define default column visibility
   const defaultColumnVisibility = {
     loanNumber: true,
-    'lender.lenderNumber': true,
-    lender: true,
+    lenderNumber: true,
+    lenderName: true,
     signDate: true,
     amount: true,
     balance: true,
@@ -269,6 +296,7 @@ export default function LoansPage() {
     interestPaid: true,
     interestPaymentType: true,
     interestPayoutType: true,
+    terminationType: true,
     terminationModalities: true,
     repayDate: true,
     status: true,

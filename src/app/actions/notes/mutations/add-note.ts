@@ -2,10 +2,10 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { Prisma } from '@prisma/client'
+import { NoteFormData } from '@/lib/schemas/note'
 import { revalidatePath } from 'next/cache'
 
-export async function addNote(loanId: string, data: Omit<Prisma.NoteCreateInput, 'createdBy' | 'createdAt'>) {
+export async function addNote(loanId: string, data: NoteFormData) {
   try {
     const session = await auth()
     if (!session) {
@@ -46,7 +46,8 @@ export async function addNote(loanId: string, data: Omit<Prisma.NoteCreateInput,
     // Create the note
     const note = await db.note.create({
       data: {
-        ...data,
+        text: data.text,
+        public: data.public ?? false,
         loan: {
           connect: {
             id: loanId

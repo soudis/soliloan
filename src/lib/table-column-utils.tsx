@@ -3,6 +3,7 @@ import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { formatCurrency } from '@/lib/utils'
 import { ColumnDef } from '@tanstack/react-table'
 import React from 'react'
+import { getLenderName } from './utils'
 
 // Define the custom filter function for compound text fields
 export const compoundTextFilter = (row: any, columnId: string, filterValue: any) => {
@@ -16,11 +17,20 @@ export const compoundTextFilter = (row: any, columnId: string, filterValue: any)
   return searchValue.includes(searchFilter);
 };
 
+// Define the custom filter function for enum fields
+export const enumFilter = (row: any, columnId: string, filterValue: any) => {
+  const value = row.getValue(columnId);
+  if (!value) return false;
+
+  // For enum fields, we do an exact match
+  return value === filterValue;
+};
+
 // Define the custom filter function type
-export type FilterFn = 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'compoundText'
+export type FilterFn = 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'compoundText' | 'numberRange' | 'enum'
 
 // Generic type for creating column definitions
-export type ColumnConfig<T> = {
+export type ColumnConfig<T> = ColumnDef<T> & {
   accessorKey: string
   header: string
   cell?: (row: any) => React.ReactNode
@@ -55,13 +65,35 @@ export function createColumn<T>(
   }
 }
 
+
+export function createNumberColumn<T>(
+  accessorKey: string,
+  headerKey: string,
+  t: (key: string) => string
+): ColumnDef<T> {
+  const column = createColumn<T>({
+    accessorKey,
+    header: headerKey,
+    cell: ({ row }) => {
+      const value = Number(row.getValue(accessorKey)) || 0
+      return value.toFixed(0)
+    }
+  }, t)
+
+  // Add the filter function after creation
+  column.filterFn = 'inNumberRange'
+  return column
+}
+
+
+
 // Create a currency column
 export function createCurrencyColumn<T>(
   accessorKey: string,
   headerKey: string,
   t: (key: string) => string
 ): ColumnDef<T> {
-  return createColumn<T>({
+  const column = createColumn<T>({
     accessorKey,
     header: headerKey,
     cell: ({ row }) => {
@@ -69,6 +101,10 @@ export function createCurrencyColumn<T>(
       return formatCurrency(value)
     }
   }, t)
+
+  // Add the filter function after creation
+  column.filterFn = 'inNumberRange'
+  return column
 }
 
 // Create a date column
@@ -99,7 +135,7 @@ export function createPercentageColumn<T>(
   headerKey: string,
   t: (key: string) => string
 ): ColumnDef<T> {
-  return createColumn<T>({
+  const column = createColumn<T>({
     accessorKey,
     header: headerKey,
     cell: ({ row }) => {
@@ -107,6 +143,10 @@ export function createPercentageColumn<T>(
       return `${value.toFixed(2)}%`
     }
   }, t)
+
+  // Add the filter function after creation
+  column.filterFn = 'inNumberRange'
+  return column
 }
 
 // Create an enum column with badge
@@ -140,6 +180,7 @@ export function createEnumBadgeColumn<T>(
         </Badge>
       )
     },
+    filterFn: enumFilter,
     sortingFn: (rowA, rowB, columnId) => {
       const a = rowA.getValue(columnId) as string;
       const b = rowB.getValue(columnId) as string;
@@ -148,97 +189,21 @@ export function createEnumBadgeColumn<T>(
   }, t)
 }
 
-// Create a lender name column
-export function createLenderColumn<T>(
-  t: (key: string) => string
-): ColumnDef<T> {
-  return createColumn<T>({
-    accessorKey: 'lender',
-    header: 'table.lender',
-    accessorFn: (row: any) => {
-      const lender = row.lender
-      if (lender.organisationName) {
-        return lender.organisationName
-      }
-      return `${lender.firstName || ''} ${lender.lastName || ''}`.trim()
-    },
-    cell: ({ row }) => {
-      const lender = row.original.lender
-      if (lender.organisationName) {
-        return lender.organisationName
-      }
-      return `${lender.firstName || ''} ${lender.lastName || ''}`.trim()
-    },
-    filterFn: compoundTextFilter,
-    sortingFn: (rowA, rowB, columnId) => {
-      const a = rowA.getValue(columnId) as string;
-      const b = rowB.getValue(columnId) as string;
-      return a.localeCompare(b);
-    },
-  }, t)
-}
-
-// Create a termination modalities column
-export function createTerminationModalitiesColumn<T>(
+// Create a termination type column
+export function createTerminationTypeColumn<T>(
   t: (key: string) => string,
   commonT: (key: string) => string
 ): ColumnDef<T> {
   return createColumn<T>({
-    id: 'terminationModalities',
-    accessorKey: 'terminationModalities',
-    header: 'table.terminationModalities',
-    accessorFn: (row: any) => {
-      const terminationType = row.terminationType
-
-      if (terminationType === 'ENDDATE' && row.endDate) {
-        try {
-          const date = new Date(row.endDate)
-          return isNaN(date.getTime()) ? '' : date.getTime() // Sort by timestamp
-        } catch (e) {
-          return 0
-        }
-      } else if (terminationType === 'DURATION' && row.duration) {
-        // Convert everything to months for consistent sorting
-        const monthMultiplier = row.durationType === 'YEARS' ? 12 : 1
-        return row.duration * monthMultiplier
-      } else if (terminationType === 'TERMINATION' && row.terminationPeriod) {
-        // Convert everything to months for consistent sorting
-        const monthMultiplier = row.terminationPeriodType === 'YEARS' ? 12 : 1
-        return row.terminationPeriod * monthMultiplier
-      }
-
-      return 0
-    },
+    accessorKey: 'terminationType',
+    header: 'table.terminationType',
     cell: ({ row }) => {
-      const loan = row.original
-      const terminationType = loan.terminationType
-
-      if (terminationType === 'ENDDATE' && loan.endDate) {
-        try {
-          const date = new Date(loan.endDate)
-          const formattedDate = isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE')
-          return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${formattedDate}`
-        } catch (e) {
-          return commonT(`enums.loan.terminationType.${terminationType}`)
-        }
-      } else if (terminationType === 'DURATION' && loan.duration && loan.durationType) {
-        const durationType = loan.durationType === 'MONTHS'
-          ? commonT('enums.loan.durationUnit.MONTHS')
-          : commonT('enums.loan.durationUnit.YEARS')
-        return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${loan.duration} ${durationType}`
-      } else if (terminationType === 'TERMINATION' && loan.terminationPeriod && loan.terminationPeriodType) {
-        const periodType = loan.terminationPeriodType === 'MONTHS'
-          ? commonT('enums.loan.durationUnit.MONTHS')
-          : commonT('enums.loan.durationUnit.YEARS')
-        return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${loan.terminationPeriod} ${periodType}`
-      }
+      const terminationType = row.getValue('terminationType') as string
+      if (!terminationType) return ''
 
       return commonT(`enums.loan.terminationType.${terminationType}`)
     },
-    filterFn: (row: any, columnId: string, filterValue: any) => {
-      const terminationType = row.original.terminationType;
-      return terminationType === filterValue;
-    },
+    filterFn: enumFilter,
     sortingFn: (rowA, rowB, columnId) => {
       const a = rowA.getValue(columnId) as number;
       const b = rowB.getValue(columnId) as number;
@@ -256,17 +221,11 @@ export function createLenderNameColumn<T>(
     accessorKey: 'name',
     header: 'table.name',
     accessorFn: (row: any) => {
-      if (row.type === 'ORGANISATION') {
-        return row.organisationName || '';
-      }
-      return `${row.firstName || ''} ${row.lastName || ''}`.trim();
+      return getLenderName(row);
     },
     cell: ({ row }) => {
       const lender = row.original;
-      if (lender.type === 'ORGANISATION') {
-        return lender.organisationName || '';
-      }
-      return `${lender.firstName || ''} ${lender.lastName || ''}`.trim();
+      return getLenderName(lender);
     },
     filterFn: compoundTextFilter,
     sortingFn: (rowA, rowB, columnId) => {
@@ -390,10 +349,101 @@ export function createLenderEnumBadgeColumn<T>(
         </Badge>
       );
     },
+    filterFn: enumFilter,
     sortingFn: (rowA, rowB, columnId) => {
       const a = rowA.getValue(columnId) as string;
       const b = rowB.getValue(columnId) as string;
       return a.localeCompare(b);
     }
   }, t);
-} 
+}
+
+// Create a lender name column
+export function createLenderColumn<T>(
+  t: (key: string) => string
+): ColumnDef<T> {
+  return createColumn<T>({
+    accessorKey: 'lenderName',
+    header: 'table.lenderName',
+    accessorFn: (row: any) => {
+      const lender = row.lender
+      if (lender.organisationName) {
+        return lender.organisationName
+      }
+      return `${lender.firstName || ''} ${lender.lastName || ''}`.trim()
+    },
+    cell: ({ row }) => {
+      const lender = row.original.lender
+      if (lender.organisationName) {
+        return lender.organisationName
+      }
+      return `${lender.firstName || ''} ${lender.lastName || ''}`.trim()
+    },
+    filterFn: compoundTextFilter,
+    sortingFn: (rowA, rowB, columnId) => {
+      const a = rowA.getValue(columnId) as string;
+      const b = rowB.getValue(columnId) as string;
+      return a.localeCompare(b);
+    },
+  }, t)
+}
+
+// Create a termination modalities column
+export function createTerminationModalitiesColumn<T>(
+  t: (key: string) => string,
+  commonT: (key: string) => string
+): ColumnDef<T> {
+  return createColumn<T>({
+    id: 'terminationModalities',
+    accessorKey: 'terminationModalities',
+    header: 'table.terminationModalities',
+    accessorFn: (row: any) => {
+      const terminationType = row.terminationType
+
+      if (terminationType === 'ENDDATE' && row.endDate) {
+        try {
+          const date = new Date(row.endDate)
+          return isNaN(date.getTime()) ? '' : date.getTime() // Sort by timestamp
+        } catch (e) {
+          return 0
+        }
+      } else if (terminationType === 'DURATION' && row.duration) {
+        // Convert everything to months for consistent sorting
+        const monthMultiplier = row.durationType === 'YEARS' ? 12 : 1
+        return row.duration * monthMultiplier
+      } else if (terminationType === 'TERMINATION' && row.terminationPeriod) {
+        // Convert everything to months for consistent sorting
+        const monthMultiplier = row.terminationPeriodType === 'YEARS' ? 12 : 1
+        return row.terminationPeriod * monthMultiplier
+      }
+
+      return 0
+    },
+    cell: ({ row }) => {
+      const loan = row.original
+      const terminationType = loan.terminationType
+
+      if (terminationType === 'ENDDATE' && loan.endDate) {
+        try {
+          const date = new Date(loan.endDate)
+          const formattedDate = isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE')
+          return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${formattedDate}`
+        } catch (e) {
+          return commonT(`enums.loan.terminationType.${terminationType}`)
+        }
+      } else if (terminationType === 'DURATION' && loan.duration && loan.durationType) {
+        const durationType = loan.durationType === 'MONTHS'
+          ? commonT('enums.loan.durationUnit.MONTHS')
+          : commonT('enums.loan.durationUnit.YEARS')
+        return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${loan.duration} ${durationType}`
+      } else if (terminationType === 'TERMINATION' && loan.terminationPeriod && loan.terminationPeriodType) {
+        const periodType = loan.terminationPeriodType === 'MONTHS'
+          ? commonT('enums.loan.durationUnit.MONTHS')
+          : commonT('enums.loan.durationUnit.YEARS')
+        return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${loan.terminationPeriod} ${periodType}`
+      }
+
+      return commonT(`enums.loan.terminationType.${terminationType}`)
+    },
+  }, t)
+}

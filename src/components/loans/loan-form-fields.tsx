@@ -6,6 +6,7 @@ import { FormSelect } from '@/components/form/form-select'
 import { LenderCombobox } from '@/components/loans/lender-combobox'
 import type { LoanFormData } from '@/lib/schemas/loan'
 import { useTranslations } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
 import { UseFormReturn } from 'react-hook-form'
 
 interface LoanFormFieldsProps {
@@ -15,7 +16,10 @@ interface LoanFormFieldsProps {
 export function LoanFormFields({ form }: LoanFormFieldsProps) {
   const t = useTranslations('dashboard.loans')
   const commonT = useTranslations('common')
+  const searchParams = useSearchParams()
   const terminationType = form.watch('terminationType')
+  const lenderId = form.watch('lenderId')
+  const preselectedLenderId = searchParams.get('lenderId')
 
   return (
     <>
@@ -29,6 +33,7 @@ export function LoanFormFields({ form }: LoanFormFieldsProps) {
             name="lenderId"
             label={t('new.form.lender') + ' *'}
             placeholder={commonT('ui.form.selectPlaceholder')}
+            disabled={!!preselectedLenderId}
           />
 
           <FormDatePicker
@@ -76,19 +81,16 @@ export function LoanFormFields({ form }: LoanFormFieldsProps) {
               { value: 'DURATION', label: commonT('enums.loan.terminationType.DURATION') },
             ]}
           />
-        </div>
 
-        {/* Conditional fields based on terminationType */}
-        {terminationType === 'ENDDATE' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {terminationType === 'ENDDATE' && (
             <FormDatePicker
               form={form}
               name="endDate"
               label={t('new.form.endDate') + ' *'}
               placeholder={commonT('ui.form.enterPlaceholder')}
             />
-          </div>
-        )}
+          )}
+        </div>
 
         {terminationType === 'TERMINATION' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

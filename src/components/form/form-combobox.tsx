@@ -9,6 +9,7 @@ interface FormComboboxProps {
   placeholder: string
   options: ComboboxOption[]
   required?: boolean
+  disabled?: boolean
 }
 
 export function FormCombobox({
@@ -18,6 +19,7 @@ export function FormCombobox({
   placeholder,
   options,
   required = false,
+  disabled = false,
 }: FormComboboxProps) {
   return (
     <FormFieldWrapper
@@ -32,6 +34,7 @@ export function FormCombobox({
               value={field.value}
               onSelect={field.onChange}
               placeholder={placeholder}
+              disabled={disabled}
             />
           </FormControl>
           <FormMessage />

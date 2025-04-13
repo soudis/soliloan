@@ -2,24 +2,20 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { Prisma } from '@prisma/client'
+import { LoanFormData } from '@/lib/schemas/loan'
 import { revalidatePath } from 'next/cache'
 
-export async function createLoan(data: Prisma.LoanCreateInput) {
+export async function createLoan(data: LoanFormData) {
   try {
     const session = await auth()
     if (!session) {
       throw new Error('Unauthorized')
     }
 
-    if (!data.lender?.connect?.id) {
-      throw new Error('Lender ID is required')
-    }
-
     // Check if the user has access to the lender's project
     const lender = await db.lender.findUnique({
       where: {
-        id: data.lender.connect.id
+        id: data.lenderId
       },
       include: {
         project: {
@@ -46,17 +42,30 @@ export async function createLoan(data: Prisma.LoanCreateInput) {
     // Create the loan
     const loan = await db.loan.create({
       data: {
-        ...data,
+        signDate: data.signDate as Date,
+        interestPaymentType: data.interestPaymentType,
+        interestPayoutType: data.interestPayoutType,
+        terminationType: data.terminationType,
+        endDate: data.endDate,
+        terminationDate: data.terminationDate,
+        terminationPeriod: data.terminationPeriod,
+        terminationPeriodType: data.terminationPeriodType,
+        duration: data.duration,
+        durationType: data.durationType,
+        amount: data.amount as number,
+        interestRate: data.interestRate as number,
+        altInterestMethod: data.altInterestMethod,
+        contractStatus: data.contractStatus,
         lender: {
           connect: {
-            id: data.lender.connect.id
+            id: data.lenderId
           }
         }
       }
     })
 
     // Revalidate the loans page
-    revalidatePath(`/dashboard/loans/${data.lender.connect.id}`)
+    revalidatePath(`/dashboard/loans/${data.lenderId}`)
 
     return { loan }
   } catch (error) {

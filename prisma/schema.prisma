@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -25,9 +19,10 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@id([provider, providerAccountId])
 }
 
@@ -35,9 +30,9 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model User {
@@ -51,22 +46,20 @@ model User {
   image         String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  accounts      Account[]
-  sessions      Session[]
-  managerOf     Project[]      @relation("ProjectManager")
   isAdmin       Boolean?
-  lenders       Lender[]
-  views         View[]
-  notes         Note[]
   lastLogin     DateTime?
+  accounts      Account[]
+  lenders       Lender[]
+  notes         Note[]
+  sessions      Session[]
+  views         View[]
+  managerOf     Project[]      @relation("ProjectManager")
 }
 
 model LoanTemplate {
-  id              String        @id @default(cuid())
-  configurationId String
-  configuration   Configuration @relation(fields: [configurationId], references: [id])
-  name            String
-
+  id                    String              @id @default(cuid())
+  configurationId       String
+  name                  String
   interestPaymentType   InterestPaymentType
   interestPayoutType    InterestPayoutType
   terminationType       TerminationType
@@ -79,45 +72,36 @@ model LoanTemplate {
   maxInterestRate       Float?
   minAmount             Float?
   maxAmount             Float?
+  configuration         Configuration       @relation(fields: [configurationId], references: [id])
 }
 
 model Configuration {
-  id   String  @id @default(cuid())
-  name String
-  logo String?
-
-  project Project?
-
-  // instance / project settings
-  email   String?
-  telNo   String?
-  website String?
-
-  street  String?
-  addon   String?
-  zip     String?
-  place   String?
-  country Country?
-  iban    String?
-  bic     String?
-
-  // user defaults
-  userLanguage Language?
-  userTheme    SoliLoansTheme?
-
-  // lender settings and defaults
+  id                     String            @id @default(cuid())
+  name                   String
+  logo                   String?
+  email                  String?
+  telNo                  String?
+  website                String?
+  street                 String?
+  addon                  String?
+  zip                    String?
+  place                  String?
+  country                Country?
+  iban                   String?
+  bic                    String?
+  userLanguage           Language?
+  userTheme              SoliLoansTheme?
   lenderSalutation       Salutation?
   lenderCountry          Country?
   lenderNotificationType NotificationType?
   lenderMembershipStatus MembershipStatus?
   lenderTags             String[]
-
-  // loan settings and defaults
-  interestMethod        InterestMethod?
-  altInterestMethods    InterestMethod[]
-  loanTemplates         LoanTemplate[]
-  defaultLoanTemplateId String?
-  customLoans           Boolean?
+  interestMethod         InterestMethod?
+  altInterestMethods     InterestMethod[]
+  defaultLoanTemplateId  String?
+  customLoans            Boolean?
+  loanTemplates          LoanTemplate[]
+  project                Project?
 }
 
 model Project {
@@ -125,11 +109,10 @@ model Project {
   slug            String         @unique
   name            String
   configurationId String         @unique
-  configuration   Configuration  @relation(fields: [configurationId], references: [id], onDelete: Cascade)
-  // duplicate interestMethod on project for performance reasons  
   interestMethod  InterestMethod
-  lenders         Lender[]
   changes         Change[]
+  lenders         Lender[]
+  configuration   Configuration  @relation(fields: [configurationId], references: [id], onDelete: Cascade)
   managers        User[]         @relation("ProjectManager")
 }
 
@@ -137,7 +120,6 @@ model Lender {
   id               String            @id @default(cuid())
   lenderNumber     Int               @unique @default(autoincrement())
   projectId        String
-  project          Project           @relation(fields: [projectId], references: [id])
   type             LenderType
   salutation       Salutation
   firstName        String?
@@ -157,9 +139,10 @@ model Lender {
   notificationType NotificationType
   membershipStatus MembershipStatus?
   tag              String?
-  loans            Loan[]
-  user             User?             @relation(fields: [email], references: [email])
   files            File[]
+  user             User?             @relation(fields: [email], references: [email])
+  project          Project           @relation(fields: [projectId], references: [id])
+  loans            Loan[]
   notes            Note[]
 }
 
@@ -167,7 +150,6 @@ model Loan {
   id                    String              @id @default(cuid())
   loanNumber            Int                 @unique @default(autoincrement())
   lenderId              String
-  lender                Lender              @relation(fields: [lenderId], references: [id])
   signDate              DateTime
   interestPaymentType   InterestPaymentType
   interestPayoutType    InterestPayoutType
@@ -182,19 +164,20 @@ model Loan {
   interestRate          Float
   altInterestMethod     InterestMethod?
   contractStatus        ContractStatus
-  transactions          Transaction[]
   files                 File[]
+  lender                Lender              @relation(fields: [lenderId], references: [id])
   notes                 Note[]
+  transactions          Transaction[]
 }
 
 model Transaction {
   id          String          @id @default(cuid())
   loanId      String
-  loan        Loan            @relation(fields: [loanId], references: [id])
   type        TransactionType
   date        DateTime
   amount      Float
   paymentType PaymentType
+  loan        Loan            @relation(fields: [loanId], references: [id])
 }
 
 model File {
@@ -206,8 +189,8 @@ model File {
   description String?
   thumbnail   Bytes?
   lenderId    String?
-  lender      Lender? @relation(fields: [lenderId], references: [id])
   loanId      String?
+  lender      Lender? @relation(fields: [lenderId], references: [id])
   loan        Loan?   @relation(fields: [loanId], references: [id])
 }
 
@@ -216,39 +199,40 @@ model Note {
   text        String
   public      Boolean
   lenderId    String?
-  lender      Lender?  @relation(fields: [lenderId], references: [id])
   loanId      String?
-  loan        Loan?    @relation(fields: [loanId], references: [id])
   createdById String
-  createdBy   User     @relation(fields: [createdById], references: [id])
   createdAt   DateTime
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  lender      Lender?  @relation(fields: [lenderId], references: [id])
+  loan        Loan?    @relation(fields: [loanId], references: [id])
 }
 
 model Change {
   id        String   @id @default(cuid())
   projectId String
-  project   Project  @relation(fields: [projectId], references: [id])
   type      String
   data      Json
   createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id])
 }
 
 model View {
   id        String   @id @default(cuid())
   userId    String
   type      ViewType
-  user      User     @relation(fields: [userId], references: [id])
   name      String
   data      Json
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
+
   @@id([identifier, token])
 }
 

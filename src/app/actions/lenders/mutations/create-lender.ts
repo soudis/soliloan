@@ -2,25 +2,22 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { Language, Prisma } from '@prisma/client'
-import { omit } from 'lodash'
+import { LenderFormData } from '@/lib/schemas/lender'
+import { getLenderName } from '@/lib/utils'
+import { Language } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 
-export async function createLender(data: Prisma.LenderCreateInput & { email?: string | null }) {
+export async function createLender(data: LenderFormData) {
   try {
     const session = await auth()
     if (!session) {
       throw new Error('Unauthorized')
     }
 
-    if (!data.project?.connect?.id) {
-      throw new Error('Project ID is required')
-    }
-
     // Check if the user has access to the project
     const project = await db.project.findUnique({
       where: {
-        id: data.project.connect.id
+        id: data.projectId
       },
       include: {
         managers: true,
@@ -44,18 +41,46 @@ export async function createLender(data: Prisma.LenderCreateInput & { email?: st
     // Create the lender
     const lender = await db.lender.create({
       data: {
-        ...omit(data, 'email'),
-        ...(data.email && { user: { connectOrCreate: { where: { email: data.email }, create: { email: data.email, name: data.email, language: project.configuration?.userLanguage ?? Language.de, } } } }),
+        type: data.type,
+        salutation: data.salutation,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        organisationName: data.organisationName,
+        titlePrefix: data.titlePrefix,
+        titleSuffix: data.titleSuffix,
+        street: data.street,
+        addon: data.addon,
+        zip: data.zip,
+        place: data.place,
+        country: data.country,
+        telNo: data.telNo,
+        iban: data.iban,
+        bic: data.bic,
+        notificationType: data.notificationType,
+        membershipStatus: data.membershipStatus,
+        tag: data.tag,
+        ...(data.email && {
+          user: {
+            connectOrCreate: {
+              where: { email: data.email },
+              create: {
+                email: data.email,
+                name: getLenderName(data),
+                language: project.configuration?.userLanguage ?? Language.de,
+              }
+            }
+          }
+        }),
         project: {
           connect: {
-            id: data.project.connect.id
+            id: data.projectId
           }
         }
       }
     })
 
     // Revalidate the lenders page
-    revalidatePath(`/dashboard/lenders/${data.project.connect.id}`)
+    revalidatePath(`/dashboard/lenders/${data.projectId}`)
 
     return { lender }
   } catch (error) {

@@ -6,19 +6,23 @@ import { LoanForm } from '@/components/loans/loan-form'
 import { useRouter } from '@/i18n/navigation'
 import type { LoanFormData } from '@/lib/schemas/loan'
 import { useProject } from '@/store/project-context'
-import { omit } from 'lodash'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 export default function NewLoanPage() {
   const { data: session } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { selectedProject } = useProject()
   const t = useTranslations('dashboard.loans')
   const commonT = useTranslations('common')
   const [error, setError] = useState<string | null>(null)
+
+  // Get the lenderId from the URL search params
+  const lenderId = searchParams.get('lenderId')
 
   if (!session) {
     return null
@@ -41,20 +45,7 @@ export default function NewLoanPage() {
       }
 
       // Create the loan using the server action
-      const result = await createLoan({
-        ...omit(data, 'lenderId'),
-        loanNumber: undefined, // This will be auto-incremented by the database
-        terminationPeriod: data.terminationPeriod || undefined,
-        terminationPeriodType: data.terminationPeriodType || undefined,
-        duration: data.duration || undefined,
-        durationType: data.durationType || undefined,
-        altInterestMethod: data.altInterestMethod || undefined,
-        lender: {
-          connect: {
-            id: data.lenderId
-          }
-        }
-      })
+      const result = await createLoan(data)
 
       if (result.error) {
         throw new Error(result.error)
@@ -72,6 +63,19 @@ export default function NewLoanPage() {
     }
   }
 
+  // Set up initial data with required fields based on the default termination type
+  const initialData = lenderId ? {
+    lenderId,
+    terminationType: 'ENDDATE' as const,
+    signDate: new Date(),
+    amount: 0,
+    interestRate: 0,
+    interestPaymentType: 'YEARLY' as const,
+    interestPayoutType: 'MONEY' as const,
+    contractStatus: 'PENDING' as const,
+    endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)), // Default to 1 year from now
+  } : undefined
+
   return (
     <LoanForm
       title={t('new.title')}
@@ -80,6 +84,7 @@ export default function NewLoanPage() {
       cancelButtonText={commonT('ui.actions.cancel')}
       onSubmit={handleSubmit}
       error={error}
+      initialData={initialData}
     />
   )
 } 

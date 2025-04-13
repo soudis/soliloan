@@ -39,10 +39,9 @@ export function LoanForm({
     return null
   }
 
-  const initialTerminationType = initialData?.terminationType || 'ENDDATE'
 
   // Create base default values that apply to all termination types
-  const baseDefaultValues = {
+  const baseDefaultValues: LoanFormData = {
     lenderId: initialData?.lenderId || '',
     signDate: initialData?.signDate || null,
     amount: initialData?.amount || null,
@@ -51,58 +50,29 @@ export function LoanForm({
     interestPayoutType: initialData?.interestPayoutType || 'MONEY',
     altInterestMethod: initialData?.altInterestMethod || null,
     contractStatus: initialData?.contractStatus || 'PENDING',
+    terminationType: initialData?.terminationType || 'TERMINATION',
+    endDate: initialData?.endDate || null,
+    terminationDate: initialData?.terminationDate || null,
+    terminationPeriod: initialData?.terminationPeriod || null,
+    terminationPeriodType: initialData?.terminationPeriodType || null,
+    duration: initialData?.duration || null,
+    durationType: initialData?.durationType || null,
   }
 
   // Create termination type specific default values
   let defaultValues: LoanFormData
 
-  if (initialTerminationType === 'ENDDATE') {
-    defaultValues = {
-      ...baseDefaultValues,
-      terminationType: 'ENDDATE',
-      endDate: initialData?.endDate || null,
-      terminationDate: initialData?.terminationDate || null,
-      terminationPeriod: initialData?.terminationPeriod || null,
-      terminationPeriodType: initialData?.terminationPeriodType || null,
-      duration: initialData?.duration || null,
-      durationType: initialData?.durationType || null,
-    } as LoanFormData
-  } else if (initialTerminationType === 'TERMINATION') {
-    defaultValues = {
-      ...baseDefaultValues,
-      terminationType: 'TERMINATION',
-      endDate: initialData?.endDate || null,
-      terminationDate: initialData?.terminationDate || null,
-      terminationPeriod: initialData?.terminationPeriod || 1,
-      terminationPeriodType: initialData?.terminationPeriodType || 'MONTHS',
-      duration: initialData?.duration || null,
-      durationType: initialData?.durationType || null,
-    } as LoanFormData
-  } else {
-    // DURATION type
-    defaultValues = {
-      ...baseDefaultValues,
-      terminationType: 'DURATION',
-      endDate: initialData?.endDate || null,
-      terminationDate: initialData?.terminationDate || null,
-      terminationPeriod: initialData?.terminationPeriod || null,
-      terminationPeriodType: initialData?.terminationPeriodType || null,
-      duration: initialData?.duration || 1,
-      durationType: initialData?.durationType || 'MONTHS',
-    } as LoanFormData
-  }
-
   // Add any additional initial data
   if (initialData) {
     defaultValues = {
-      ...defaultValues,
+      ...baseDefaultValues,
       ...initialData,
     }
   }
 
   const form = useForm<LoanFormData>({
     resolver: zodResolver(loanFormSchema) as any,
-    defaultValues,
+    defaultValues: { ...baseDefaultValues, ...initialData },
   })
 
   const handleSubmit = form.handleSubmit(async (formData: LoanFormData) => {

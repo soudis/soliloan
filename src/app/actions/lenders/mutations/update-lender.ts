@@ -2,10 +2,12 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { Prisma } from '@prisma/client'
+import { LenderFormData } from '@/lib/schemas/lender'
+import { getLenderName } from '@/lib/utils'
+import { Language } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 
-export async function updateLender(lenderId: string, data: Prisma.LenderUpdateInput) {
+export async function updateLender(lenderId: string, data: LenderFormData) {
   try {
     const session = await auth()
     if (!session) {
@@ -20,7 +22,8 @@ export async function updateLender(lenderId: string, data: Prisma.LenderUpdateIn
       include: {
         project: {
           include: {
-            managers: true
+            managers: true,
+            configuration: true
           }
         }
       }
@@ -44,7 +47,38 @@ export async function updateLender(lenderId: string, data: Prisma.LenderUpdateIn
       where: {
         id: lenderId
       },
-      data
+      data: {
+        type: data.type,
+        salutation: data.salutation,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        organisationName: data.organisationName,
+        titlePrefix: data.titlePrefix,
+        titleSuffix: data.titleSuffix,
+        street: data.street,
+        addon: data.addon,
+        zip: data.zip,
+        place: data.place,
+        country: data.country,
+        telNo: data.telNo,
+        iban: data.iban,
+        bic: data.bic,
+        notificationType: data.notificationType,
+        membershipStatus: data.membershipStatus,
+        tag: data.tag,
+        ...(data.email && {
+          user: {
+            connectOrCreate: {
+              where: { email: data.email },
+              create: {
+                email: data.email,
+                name: getLenderName(data),
+                language: lender.project.configuration?.userLanguage ?? Language.de,
+              }
+            }
+          }
+        })
+      }
     })
 
     // Revalidate the lenders page

@@ -33,6 +33,31 @@ export const compoundTextFilter: FilterFn<any> = (row, columnId, filterValue) =>
   return searchValue.includes(searchFilter);
 };
 
+// Define the custom number range filter function for number filtering
+export const inNumberRangeFilter: FilterFn<any> = (row, columnId, filterValue) => {
+  const value = row.getValue(columnId);
+  if (value === null || value === undefined) return false;
+
+  // If no filter is applied, show all rows
+  if (!filterValue || (!filterValue[0] && !filterValue[1])) return true;
+
+  // Convert the row value to a number
+  const rowValue = Number(value);
+
+  // Check if the number is within the range
+  if (filterValue[0] !== undefined && filterValue[1] !== undefined) {
+    return rowValue >= filterValue[0] && rowValue <= filterValue[1];
+  } else if (filterValue[0] !== undefined) {
+    // Only min value is set
+    return rowValue >= filterValue[0];
+  } else if (filterValue[1] !== undefined) {
+    // Only max value is set
+    return rowValue <= filterValue[1];
+  }
+
+  return true;
+};
+
 // Define the custom date filter function for date range filtering
 export const dateRangeFilter: FilterFn<any> = (row, columnId, filterValue) => {
   const value = row.getValue(columnId);
@@ -206,6 +231,7 @@ export function DataTable<TData, TValue>({
     filterFns: {
       compoundText: compoundTextFilter,
       dateRange: dateRangeFilter,
+      inNumberRange: inNumberRangeFilter,
     },
     // Add global filter function to search across all columns
     globalFilterFn: (row, columnId, filterValue) => {

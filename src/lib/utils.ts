@@ -3,6 +3,7 @@ import { type ClassValue, clsx } from "clsx";
 import { SHA256 as sha256 } from "crypto-js";
 import { twMerge } from "tailwind-merge";
 import { calculateLoanFields } from "./calculations/loan-calculations";
+import { LenderFormData } from "./schemas/lender";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -48,3 +49,29 @@ export const loansSorter = (
   const score = a.signDate.getTime() - b.signDate.getTime();
   return score;
 };
+
+/**
+ * Assembles a formatted name from a lender object
+ * @param lender The lender object containing name fields
+ * @returns A formatted name string
+ */
+export function getLenderName(lender: Pick<LenderFormData, 'type' | 'firstName' | 'lastName' | 'organisationName' | 'titlePrefix' | 'titleSuffix'>): string {
+  if (lender.type === 'ORGANISATION') {
+    return lender.organisationName || '';
+  }
+
+  // For PERSON type
+  const parts = [];
+
+  if (lender.titlePrefix) parts.push(lender.titlePrefix);
+  if (lender.firstName) parts.push(lender.firstName);
+  if (lender.lastName) parts.push(lender.lastName);
+
+  const name = parts.join(' ').trim();
+
+  if (lender.titleSuffix) {
+    return `${name}, ${lender.titleSuffix}`;
+  }
+
+  return name;
+}

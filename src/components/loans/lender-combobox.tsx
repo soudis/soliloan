@@ -23,6 +23,7 @@ interface LenderComboboxProps {
   name: string
   label: string
   placeholder: string
+  disabled?: boolean
 }
 
 export function LenderCombobox({
@@ -30,6 +31,7 @@ export function LenderCombobox({
   name,
   label,
   placeholder,
+  disabled = false,
 }: LenderComboboxProps) {
   const t = useTranslations('dashboard.loans')
   const commonT = useTranslations('common')
@@ -79,6 +81,7 @@ export function LenderCombobox({
       label={label}
       placeholder={isLoading ? t('new.form.loadingLenders') : placeholder || commonT('ui.form.selectPlaceholder')}
       options={lenderOptions}
+      disabled={disabled}
     />
   )
 } 

@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Form } from '@/components/ui/form'
-import { transactionSchema, type TransactionFormData } from '@/lib/schemas/transaction'
+import { transactionFormSchema, type TransactionFormData } from '@/lib/schemas/transaction'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
@@ -31,7 +31,7 @@ export function TransactionDialog({
   const commonT = useTranslations('common')
 
   const form = useForm<TransactionFormData>({
-    resolver: zodResolver(transactionSchema),
+    resolver: zodResolver(transactionFormSchema),
     defaultValues: {
       type: 'INTEREST',
       date: new Date(),
@@ -44,11 +44,6 @@ export function TransactionDialog({
     try {
       const result = await addTransaction(loanId, {
         ...data,
-        loan: {
-          connect: {
-            id: loanId
-          }
-        }
       })
       if (result.error) {
         throw new Error(result.error)

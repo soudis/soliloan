@@ -1,85 +1,78 @@
-import { z } from 'zod'
+import { z } from 'zod';
 import {
   contractStatusEnum,
+  createDateSchema,
+  createNumberSchema,
   interestMethodEnum,
   interestPaymentTypeEnum,
   interestPayoutTypeEnum,
+  optionalNumberSchema,
   periodTypeEnum
-} from './common'
+} from './common';
 
 // Define the loan form schema based on the Prisma model
-export const loanFormSchema = z.discriminatedUnion('terminationType', [
-  // ENDDATE termination type
-  z.object({
-    // General Information
-    lenderId: z.string().min(1, { message: 'Lender is required' }),
-    signDate: z.coerce.date({ required_error: 'Sign date is required' }),
-    amount: z.number().min(0.01, { message: 'Amount must be greater than 0' }),
-    interestRate: z.number().min(0, { message: 'Interest rate must be greater than or equal to 0' }),
+export const loanFormSchema = z.object({
+  // General Information
+  lenderId: z.string().min(1, { message: 'Lender is required' }),
+  signDate: createDateSchema(true),
+  amount: createNumberSchema(0.01),
+  interestRate: createNumberSchema(0),
 
-    // Termination Information
-    terminationType: z.literal('ENDDATE'),
-    endDate: z.coerce.date({ required_error: 'End date is required' }),
-    terminationDate: z.coerce.date().nullable().optional(),
-    terminationPeriod: z.number().nullable().optional(),
-    terminationPeriodType: periodTypeEnum.nullable().optional(),
-    duration: z.number().nullable().optional(),
-    durationType: periodTypeEnum.nullable().optional(),
+  // Termination Information
+  terminationType: z.enum(['ENDDATE', 'TERMINATION', 'DURATION']),
+  endDate: createDateSchema(false),
+  terminationDate: createDateSchema(false),
+  terminationPeriod: optionalNumberSchema,
+  terminationPeriodType: periodTypeEnum.nullable().optional(),
+  duration: optionalNumberSchema,
+  durationType: periodTypeEnum.nullable().optional(),
 
-    // Additional Information
-    interestPaymentType: interestPaymentTypeEnum,
-    interestPayoutType: interestPayoutTypeEnum,
-    altInterestMethod: interestMethodEnum.nullable().optional(),
-    contractStatus: contractStatusEnum.default('PENDING'),
-  }),
-
-  // TERMINATION termination type
-  z.object({
-    // General Information
-    lenderId: z.string().min(1, { message: 'Lender is required' }),
-    signDate: z.coerce.date({ required_error: 'Sign date is required' }),
-    amount: z.number().min(0.01, { message: 'Amount must be greater than 0' }),
-    interestRate: z.number().min(0, { message: 'Interest rate must be greater than or equal to 0' }),
-
-    // Termination Information
-    terminationType: z.literal('TERMINATION'),
-    endDate: z.coerce.date().nullable().optional(),
-    terminationDate: z.coerce.date().nullable().optional(),
-    terminationPeriod: z.number().min(1, { message: 'Termination period is required' }),
-    terminationPeriodType: periodTypeEnum.default('MONTHS'),
-    duration: z.number().nullable().optional(),
-    durationType: periodTypeEnum.nullable().optional(),
-
-    // Additional Information
-    interestPaymentType: interestPaymentTypeEnum,
-    interestPayoutType: interestPayoutTypeEnum,
-    altInterestMethod: interestMethodEnum.nullable().optional(),
-    contractStatus: contractStatusEnum.default('PENDING'),
-  }),
-
-  // DURATION termination type
-  z.object({
-    // General Information
-    lenderId: z.string().min(1, { message: 'Lender is required' }),
-    signDate: z.coerce.date({ required_error: 'Sign date is required' }),
-    amount: z.number().min(0.01, { message: 'Amount must be greater than 0' }),
-    interestRate: z.number().min(0, { message: 'Interest rate must be greater than or equal to 0' }),
-
-    // Termination Information
-    terminationType: z.literal('DURATION'),
-    endDate: z.coerce.date().nullable().optional(),
-    terminationDate: z.coerce.date().nullable().optional(),
-    terminationPeriod: z.number().nullable().optional(),
-    terminationPeriodType: periodTypeEnum.nullable().optional(),
-    duration: z.number().min(1, { message: 'Duration is required' }),
-    durationType: periodTypeEnum,
-
-    // Additional Information
-    interestPaymentType: interestPaymentTypeEnum,
-    interestPayoutType: interestPayoutTypeEnum,
-    altInterestMethod: interestMethodEnum.nullable().optional(),
-    contractStatus: contractStatusEnum.default('PENDING'),
-  })
-])
+  // Additional Information
+  interestPaymentType: interestPaymentTypeEnum,
+  interestPayoutType: interestPayoutTypeEnum,
+  altInterestMethod: interestMethodEnum.nullable().optional(),
+  contractStatus: contractStatusEnum.default('PENDING'),
+}).superRefine((data, ctx) => {
+  // Validate fields based on terminationType
+  if (data.terminationType === 'ENDDATE') {
+    if (!data.endDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'End date is required for ENDDATE termination type',
+        path: ['endDate'],
+      });
+    }
+  } else if (data.terminationType === 'TERMINATION') {
+    if (!data.terminationPeriod) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Termination period is required for TERMINATION termination type',
+        path: ['terminationPeriod'],
+      });
+    }
+    if (!data.terminationPeriodType) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Termination period type is required for TERMINATION termination type',
+        path: ['terminationPeriodType'],
+      });
+    }
+  } else if (data.terminationType === 'DURATION') {
+    if (!data.duration) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Duration is required for DURATION termination type',
+        path: ['duration'],
+      });
+    }
+    if (!data.durationType) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Duration type is required for DURATION termination type',
+        path: ['durationType'],
+      });
+    }
+  }
+});
 
 export type LoanFormData = z.infer<typeof loanFormSchema> 

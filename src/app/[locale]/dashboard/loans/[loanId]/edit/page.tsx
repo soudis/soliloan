@@ -108,19 +108,7 @@ export default function EditLoanPage({ params }: { params: Promise<{ loanId: str
       setError(null)
 
       // Update the loan using the server action
-      const result = await updateLoan(resolvedParams.loanId, {
-        ...data,
-        terminationPeriod: data.terminationPeriod || undefined,
-        terminationPeriodType: data.terminationPeriodType || undefined,
-        duration: data.duration || undefined,
-        durationType: data.durationType || undefined,
-        altInterestMethod: data.altInterestMethod || undefined,
-        lender: {
-          connect: {
-            id: data.lenderId
-          }
-        }
-      })
+      const result = await updateLoan(resolvedParams.loanId, data)
 
       if (result.error) {
         throw new Error(result.error)
