@@ -1,0 +1,174 @@
+{
+  "countries": {
+    "de": "Deutschland",
+    "at": "Österreich",
+    "ch": "Schweiz",
+    "us": "Vereinigte Staaten",
+    "gb": "Großbritannien",
+    "fr": "Frankreich",
+    "it": "Italien",
+    "es": "Spanien",
+    "nl": "Niederlande",
+    "be": "Belgien",
+    "dk": "Dänemark",
+    "se": "Schweden",
+    "no": "Norwegen",
+    "fi": "Finnland",
+    "pl": "Polen",
+    "cz": "Tschechische Republik",
+    "hu": "Ungarn",
+    "ro": "Rumänien",
+    "bg": "Bulgarien",
+    "hr": "Kroatien",
+    "si": "Slowenien",
+    "sk": "Slowakei",
+    "ee": "Estland",
+    "lv": "Lettland",
+    "lt": "Litauen",
+    "cy": "Zypern",
+    "mt": "Malta",
+    "lu": "Luxemburg",
+    "ie": "Irland",
+    "pt": "Portugal",
+    "gr": "Griechenland"
+  },
+  "clipboard": {
+    "copy": "In die Zwischenablage kopieren",
+    "copied": "Kopiert!"
+  },
+  "qrCode": {
+    "title": "Zahlungs-QR-Code",
+    "description": "Scanne diesen QR-Code mit deiner Banking-App, um die Zahlungsinformationen zu erhalten",
+    "show": "Zahlungs-QR-Code anzeigen"
+  },
+  "ui": {
+    "theme": "Design",
+    "actions": {
+      "cancel": "Abbrechen",
+      "submit": "Absenden",
+      "submitting": "Wird gesendet...",
+      "save": "Speichern",
+      "saving": "Wird gespeichert...",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "view": "Anzeigen",
+      "create": "Erstellen",
+      "creating": "Wird erstellt...",
+      "update": "Aktualisieren",
+      "updating": "Wird aktualisiert..."
+    },
+    "status": {
+      "success": "Erfolg",
+      "error": "Fehler",
+      "loading": "Wird geladen...",
+      "noResults": "Keine Ergebnisse gefunden"
+    },
+    "form": {
+      "required": "Erforderlich",
+      "optional": "Optional",
+      "selectPlaceholder": "Auswählen...",
+      "enterPlaceholder": "Eingeben..."
+    },
+    "table": {
+      "columns": "Spalten",
+      "filters": "Filter",
+      "previous": "Zurück",
+      "next": "Weiter",
+      "noResults": "Keine Ergebnisse gefunden",
+      "globalFilter": "Alle Spalten durchsuchen..."
+    }
+  },
+  "enums": {
+    "lender": {
+      "type": {
+        "PERSON": "Person",
+        "ORGANISATION": "Organisation"
+      },
+      "salutation": {
+        "PERSONAL": "Persönlich",
+        "FORMAL": "Formell"
+      },
+      "notificationType": {
+        "ONLINE": "Online",
+        "EMAIL": "E-Mail",
+        "MAIL": "Post"
+      },
+      "membershipStatus": {
+        "UNKNOWN": "Unbekannt",
+        "MEMBER": "Mitglied",
+        "EXTERNAL": "Extern"
+      }
+    },
+    "loan": {
+      "status": {
+        "ACTIVE": "Aktiv",
+        "CLOSED": "Geschlossen",
+        "DEFAULTED": "In Verzug",
+        "NOTDEPOSITED": "Nicht ausgezahlt",
+        "REPAID": "Zurückgezahlt",
+        "TERMINATED": "Gekündigt"
+      },
+      "type": {
+        "FIXED": "Fest",
+        "FLOATING": "Variabel"
+      },
+      "paymentFrequency": {
+        "MONTHLY": "Monatlich",
+        "QUARTERLY": "Vierteljährlich",
+        "ANNUALLY": "Jährlich"
+      },
+      "interestPaymentType": {
+        "YEARLY": "Jährlich",
+        "END": "Am Ende"
+      },
+      "interestPayoutType": {
+        "MONEY": "Geld",
+        "COUPON": "Coupon"
+      },
+      "terminationType": {
+        "ENDDATE": "Enddatum",
+        "TERMINATION": "Kündigung",
+        "DURATION": "Laufzeit"
+      },
+      "contractStatus": {
+        "PENDING": "Ausstehend",
+        "COMPLETED": "Abgeschlossen"
+      },
+      "durationUnit": {
+        "MONTHS": "Monate",
+        "YEARS": "Jahre"
+      }
+    },
+    "transaction": {
+      "type": {
+        "DEPOSIT": "Einzahlung",
+        "WITHDRAWAL": "Auszahlung",
+        "INTEREST": "Zinsen",
+        "INTERESTPAYMENT": "Zinszahlung",
+        "TERMINATION": "Kündigung",
+        "NOTRECLAIMEDPARTIAL": "Nicht zurückgefordert (Teilweise)",
+        "NOTRECLAIMED": "Nicht zurückgefordert"
+      },
+      "paymentType": {
+        "BANK": "Banküberweisung",
+        "CASH": "Bar",
+        "OTHER": "Sonstiges"
+      }
+    },
+    "interestMethod": {
+      "ACT365NOCOMPOUND": "Actual/365 (Ohne Zinseszins)",
+      "E30360NOCOMPOUND": "30/360 (Ohne Zinseszins)",
+      "ACT360NOCOMPOUND": "Actual/360 (Ohne Zinseszins)",
+      "ACTACTNOCOMPOUND": "Actual/Actual (Ohne Zinseszins)",
+      "ACT365COMPOUND": "Actual/365 (Mit Zinseszins)",
+      "E30360COMPOUND": "30/360 (Mit Zinseszins)",
+      "ACT360COMPOUND": "Actual/360 (Mit Zinseszins)",
+      "ACTACTCOMPOUND": "Actual/Actual (Mit Zinseszins)"
+    },
+    "theme": {
+      "DEFAULT": "System",
+      "DARK": "Dunkel",
+      "LIGHT": "Hell"
+    }
+  }
+}

@@ -9,8 +9,17 @@ export default getRequestConfig(async ({ requestLocale }) => {
     ? requested
     : routing.defaultLocale;
 
+  // Load all translation files from the locale directory
+  let messages;
+  try {
+    messages = (await import(`../messages/${locale}`)).default;
+  } catch (error) {
+    // Fallback to default locale if requested locale is not available
+    messages = (await import(`../messages/${routing.defaultLocale}`)).default;
+  }
+
   return {
     locale,
-    messages: (await import(`../messages/${locale}.json`)).default
+    messages
   };
 });

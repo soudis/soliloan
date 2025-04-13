@@ -1,0 +1,11 @@
+{
+  "columns": "Spalten",
+  "filters": "Filter",
+  "previous": "Zurück",
+  "next": "Weiter",
+  "noResults": "Keine Ergebnisse.",
+  "to": "bis",
+  "globalFilter": "In allen Spalten suchen...",
+  "startDate": "Startdatum",
+  "endDate": "Enddatum"
+}

@@ -1,0 +1,15 @@
+import auth from './auth.json';
+import common from './common.json';
+import dashboard from './dashboard.json';
+import dataTable from './dataTable.json';
+import navigation from './navigation.json';
+import views from './views.json';
+
+export default {
+  auth,
+  common,
+  dashboard,
+  navigation,
+  dataTable,
+  views
+}; 

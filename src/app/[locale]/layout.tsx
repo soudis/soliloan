@@ -1,9 +1,10 @@
 import { Toaster } from '@/components/ui/sonner'
+import { LOCALES } from '@/i18n/routing'
 import { NextIntlClientProvider } from 'next-intl'
 import { notFound } from 'next/navigation'
 
 export function generateStaticParams() {
-  return [{ locale: 'en' }, { locale: 'de' }]
+  return LOCALES.map((locale) => ({ locale }))
 }
 
 export default async function LocaleLayout({
@@ -16,7 +17,7 @@ export default async function LocaleLayout({
   const { locale } = await params;
   let messages;
   try {
-    messages = (await import(`../../messages/${locale}.json`)).default;
+    messages = (await import(`../../messages/${locale}`)).default;
   } catch (error) {
     notFound();
   }

@@ -39,6 +39,7 @@ globs: **/*.tsx, **/*.ts, src/**/*.ts, src/**/*.tsx
 - Use dynamic loading for non-critical components
 - Implement proper error boundaries
 - Place static content and interfaces at file end
+- use sonner for toasts
 
 ## Performance
 - Optimize images: Use WebP format, size data, lazy loading
@@ -66,7 +67,7 @@ globs: **/*.tsx, **/*.ts, src/**/*.ts, src/**/*.tsx
 - Handle parallel routes when needed
 
 ## Translations
-- Always make sure to add translations to the `src/messages/de.json` file
+- Always make sure to add translations to the `src/messages/de/*.json` file. The messages are split into several json files at the top level key.
 - Make sure to have a consistent structure with the existing translations
 - Always search for existing translation keys and use them
 

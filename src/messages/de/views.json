@@ -1,0 +1,16 @@
+{
+  "loading": "Ansichten werden geladen...",
+  "error": "Fehler beim Laden der Ansichten",
+  "loadView": "Ansicht laden",
+  "defaultView": "Standardansicht",
+  "saveView": {
+    "title": "Ansicht speichern",
+    "description": "Speichere deine aktuellen Ansichtseinstellungen",
+    "name": "Ansichtsname",
+    "namePlaceholder": "Gib einen Namen für diese Ansicht ein",
+    "isDefault": "Als Standardansicht festlegen",
+    "cancel": "Abbrechen",
+    "save": "Ansicht speichern",
+    "saving": "Wird gespeichert..."
+  }
+}
