@@ -97,7 +97,8 @@ export default function LoansPage() {
       'table.interestPaymentType',
       'enums.loan.interestPaymentType',
       t,
-      commonT
+      commonT,
+      () => 'outline'
     ),
 
     createEnumBadgeColumn<LoanWithRelations>(
@@ -105,7 +106,8 @@ export default function LoansPage() {
       'table.interestPayoutType',
       'enums.loan.interestPayoutType',
       t,
-      commonT
+      commonT,
+      () => 'outline'
     ),
 
     createEnumBadgeColumn<LoanWithRelations>(
@@ -113,7 +115,8 @@ export default function LoansPage() {
       'table.terminationType',
       'enums.loan.terminationType',
       t,
-      commonT
+      commonT,
+      () => 'outline'
     ),
 
     createTerminationModalitiesColumn<LoanWithRelations>(t, commonT),
@@ -145,7 +148,8 @@ export default function LoansPage() {
       'table.altInterestMethod',
       'enums.interestMethod',
       t,
-      commonT
+      commonT,
+      () => 'outline'
     ),
 
     createEnumBadgeColumn<LoanWithRelations>(

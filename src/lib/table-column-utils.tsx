@@ -98,7 +98,7 @@ export function createCurrencyColumn<T>(
     header: headerKey,
     cell: ({ row }) => {
       const value = Number(row.getValue(accessorKey)) || 0
-      return formatCurrency(value)
+      return <div className="text-right">{formatCurrency(value)}</div>
     }
   }, t)
 
@@ -140,7 +140,7 @@ export function createPercentageColumn<T>(
     header: headerKey,
     cell: ({ row }) => {
       const value = Number(row.getValue(accessorKey)) || 0
-      return `${value.toFixed(2)}%`
+      return <div className="text-right">{`${value.toFixed(2)}%`}</div>
     }
   }, t)
 
@@ -403,21 +403,24 @@ export function createTerminationModalitiesColumn<T>(
       if (terminationType === 'ENDDATE' && row.endDate) {
         try {
           const date = new Date(row.endDate)
-          return isNaN(date.getTime()) ? '' : date.getTime() // Sort by timestamp
+          const formattedDate = isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE')
+          return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${formattedDate}`
         } catch (e) {
-          return 0
+          return commonT(`enums.loan.terminationType.${terminationType}`)
         }
-      } else if (terminationType === 'DURATION' && row.duration) {
-        // Convert everything to months for consistent sorting
-        const monthMultiplier = row.durationType === 'YEARS' ? 12 : 1
-        return row.duration * monthMultiplier
-      } else if (terminationType === 'TERMINATION' && row.terminationPeriod) {
-        // Convert everything to months for consistent sorting
-        const monthMultiplier = row.terminationPeriodType === 'YEARS' ? 12 : 1
-        return row.terminationPeriod * monthMultiplier
+      } else if (terminationType === 'DURATION' && row.duration && row.durationType) {
+        const durationType = row.durationType === 'MONTHS'
+          ? commonT('enums.loan.durationUnit.MONTHS')
+          : commonT('enums.loan.durationUnit.YEARS')
+        return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${row.duration} ${durationType}`
+      } else if (terminationType === 'TERMINATION' && row.terminationPeriod && row.terminationPeriodType) {
+        const periodType = row.terminationPeriodType === 'MONTHS'
+          ? commonT('enums.loan.durationUnit.MONTHS')
+          : commonT('enums.loan.durationUnit.YEARS')
+        return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${row.terminationPeriod} ${periodType}`
       }
 
-      return 0
+      return commonT(`enums.loan.terminationType.${terminationType}`)
     },
     cell: ({ row }) => {
       const loan = row.original
@@ -445,5 +448,6 @@ export function createTerminationModalitiesColumn<T>(
 
       return commonT(`enums.loan.terminationType.${terminationType}`)
     },
+    filterFn: compoundTextFilter,
   }, t)
 }
