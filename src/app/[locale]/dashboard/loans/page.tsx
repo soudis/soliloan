@@ -1,11 +1,18 @@
 'use client'
 
 import { getLoansByProjectId } from '@/app/actions/loans'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
-import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { useRouter } from '@/i18n/navigation'
+import {
+  createColumn,
+  createCurrencyColumn,
+  createDateColumn,
+  createEnumBadgeColumn,
+  createLenderColumn,
+  createPercentageColumn,
+  createTerminationModalitiesColumn
+} from '@/lib/table-column-utils'
 import { useProject } from '@/store/project-context'
 import { Lender, Loan, Transaction } from '@prisma/client'
 import { useQuery } from '@tanstack/react-query'
@@ -55,200 +62,93 @@ export default function LoansPage() {
     enabled: !!selectedProject
   })
 
-  const columns: ColumnDef<LoanWithRelations>[] = [
-    {
+  const columns: ColumnDef<Loan>[] = [
+    createColumn<Loan>({
       accessorKey: 'loanNumber',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.loanNumber')} />
-      ),
-    },
-    {
-      accessorKey: 'lender.lenderNumber',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.lenderNumber')} />
-      ),
-    },
-    {
-      accessorKey: 'lender',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.lender')} />
-      ),
-      accessorFn: (row) => {
-        const lender = row.lender
-        if (lender.organisationName) {
-          return lender.organisationName
+      header: 'table.loanNumber',
+    }, t),
+
+    createLenderColumn<Loan>(t),
+
+    createDateColumn<Loan>('signDate', 'table.signDate', t),
+
+    createCurrencyColumn<Loan>('amount', 'table.amount', t),
+
+    createCurrencyColumn<Loan>('balance', 'table.balance', t),
+
+    createPercentageColumn<Loan>('interestRate', 'table.interestRate', t),
+
+    createCurrencyColumn<Loan>('interest', 'table.interest', t),
+
+    createCurrencyColumn<Loan>('interestPaid', 'table.interestPaid', t),
+
+    createEnumBadgeColumn<Loan>(
+      'interestPaymentType',
+      'table.interestPaymentType',
+      'enums.loan.interestPaymentType',
+      t,
+      commonT
+    ),
+
+    createEnumBadgeColumn<Loan>(
+      'interestPayoutType',
+      'table.interestPayoutType',
+      'enums.loan.interestPayoutType',
+      t,
+      commonT
+    ),
+
+    createTerminationModalitiesColumn<Loan>(t, commonT),
+
+    createDateColumn<Loan>('repayDate', 'table.repayDate', t),
+
+    createEnumBadgeColumn<Loan>(
+      'status',
+      'table.status',
+      'enums.loan.status',
+      t,
+      commonT,
+      (value) => {
+        switch (value) {
+          case 'ACTIVE':
+            return 'default'
+          case 'TERMINATED':
+            return 'destructive'
+          case 'PENDING':
+            return 'secondary'
+          default:
+            return 'outline'
         }
-        return `${lender.firstName || ''} ${lender.lastName || ''}`.trim()
-      },
-      cell: ({ row }) => {
-        const lender = row.original.lender
-        if (lender.organisationName) {
-          return lender.organisationName
+      }
+    ),
+
+    createEnumBadgeColumn<Loan>(
+      'altInterestMethod',
+      'table.altInterestMethod',
+      'enums.loan.altInterestMethod',
+      t,
+      commonT
+    ),
+
+    createEnumBadgeColumn<Loan>(
+      'contractStatus',
+      'table.contractStatus',
+      'enums.loan.contractStatus',
+      t,
+      commonT,
+      (value) => {
+        switch (value) {
+          case 'SIGNED':
+            return 'default'
+          case 'DRAFT':
+            return 'secondary'
+          case 'EXPIRED':
+            return 'destructive'
+          default:
+            return 'outline'
         }
-        return `${lender.firstName || ''} ${lender.lastName || ''}`.trim()
-      },
-      filterFn: compoundTextFilter,
-      sortingFn: (rowA, rowB, columnId) => {
-        const a = rowA.getValue(columnId) as string;
-        const b = rowB.getValue(columnId) as string;
-        return a.localeCompare(b);
-      },
-    },
-    {
-      accessorKey: 'signDate',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.signDate')} />
-      ),
-      cell: ({ row }) => {
-        const dateStr = row.getValue('signDate') as string
-        if (!dateStr) return ''
-        try {
-          const date = new Date(dateStr)
-          return isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE')
-        } catch (e) {
-          return ''
-        }
-      },
-    },
-    {
-      accessorKey: 'amount',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.amount')} />
-      ),
-      cell: ({ row }) => {
-        const amount = Number(row.getValue('amount')) || 0
-        return new Intl.NumberFormat('de-DE', {
-          style: 'currency',
-          currency: 'EUR',
-        }).format(amount)
-      },
-    },
-    {
-      accessorKey: 'interestRate',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.interestRate')} />
-      ),
-      cell: ({ row }) => {
-        const rate = Number(row.getValue('interestRate')) || 0
-        return `${rate.toFixed(2)}%`
-      },
-    },
-    {
-      accessorKey: 'interestPaymentType',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.interestPaymentType')} />
-      ),
-      cell: ({ row }) => {
-        const type = row.getValue('interestPaymentType') as string
-        return type ? commonT(`enums.loan.interestPaymentType.${type}`) : ''
-      },
-    },
-    {
-      accessorKey: 'interestPayoutType',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.interestPayoutType')} />
-      ),
-      cell: ({ row }) => {
-        const type = row.getValue('interestPayoutType') as string
-        return type ? commonT(`enums.loan.interestPayoutType.${type}`) : ''
-      },
-    },
-    {
-      id: 'terminationModalities',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.terminationModalities')} />
-      ),
-      accessorFn: (row) => {
-        const terminationType = row.terminationType
-
-        if (terminationType === 'ENDDATE' && row.endDate) {
-          try {
-            const date = new Date(row.endDate)
-            return isNaN(date.getTime()) ? '' : date.getTime() // Sort by timestamp
-          } catch (e) {
-            return 0
-          }
-        } else if (terminationType === 'DURATION' && row.duration) {
-          // Convert everything to months for consistent sorting
-          const monthMultiplier = row.durationType === 'YEARS' ? 12 : 1
-          return row.duration * monthMultiplier
-        } else if (terminationType === 'TERMINATION' && row.terminationPeriod) {
-          // Convert everything to months for consistent sorting
-          const monthMultiplier = row.terminationPeriodType === 'YEARS' ? 12 : 1
-          return row.terminationPeriod * monthMultiplier
-        }
-
-        return 0
-      },
-      cell: ({ row }) => {
-        const loan = row.original
-        const terminationType = loan.terminationType
-
-        if (terminationType === 'ENDDATE' && loan.endDate) {
-          try {
-            const date = new Date(loan.endDate)
-            const formattedDate = isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE')
-            return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${formattedDate}`
-          } catch (e) {
-            return commonT(`enums.loan.terminationType.${terminationType}`)
-          }
-        } else if (terminationType === 'DURATION' && loan.duration && loan.durationType) {
-          const durationType = loan.durationType === 'MONTHS'
-            ? commonT('enums.loan.durationUnit.MONTHS')
-            : commonT('enums.loan.durationUnit.YEARS')
-          return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${loan.duration} ${durationType}`
-        } else if (terminationType === 'TERMINATION' && loan.terminationPeriod && loan.terminationPeriodType) {
-          const periodType = loan.terminationPeriodType === 'MONTHS'
-            ? commonT('enums.loan.durationUnit.MONTHS')
-            : commonT('enums.loan.durationUnit.YEARS')
-          return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${loan.terminationPeriod} ${periodType}`
-        }
-
-        return commonT(`enums.loan.terminationType.${terminationType}`)
-      },
-      filterFn: (row, columnId, filterValue) => {
-        const terminationType = row.original.terminationType;
-        return terminationType === filterValue;
-      },
-      sortingFn: (rowA, rowB, columnId) => {
-        const a = rowA.getValue(columnId) as number;
-        const b = rowB.getValue(columnId) as number;
-        return a - b;
-      },
-    },
-    {
-      accessorKey: 'altInterestMethod',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.altInterestMethod')} />
-      ),
-    },
-    {
-      accessorKey: 'contractStatus',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.contractStatus')} />
-      ),
-      cell: ({ row }) => {
-        const status = row.getValue('contractStatus') as string
-        if (!status) return ''
-
-        const statusText = commonT(`enums.loan.contractStatus.${status}`)
-
-        // Define badge variant based on status
-        let variant: "default" | "secondary" | "destructive" | "outline" = "default"
-
-        if (status === 'PENDING') {
-          variant = "secondary"
-        } else if (status === 'COMPLETED') {
-          variant = "default"
-        }
-
-        return (
-          <Badge variant={variant}>
-            {statusText}
-          </Badge>
-        )
-      },
-    },
+      }
+    ),
   ]
 
   // Define column filters based on data types
@@ -265,13 +165,29 @@ export default function LoansPage() {
       type: 'number' as const,
       label: t('table.amount')
     },
+    balance: {
+      type: 'number' as const,
+      label: t('table.balance')
+    },
     interestRate: {
       type: 'number' as const,
       label: t('table.interestRate')
     },
+    interest: {
+      type: 'number' as const,
+      label: t('table.interest')
+    },
+    interestPaid: {
+      type: 'number' as const,
+      label: t('table.interestPaid')
+    },
     signDate: {
       type: 'date' as const,
       label: t('table.signDate')
+    },
+    repayDate: {
+      type: 'date' as const,
+      label: t('table.repayDate')
     },
     interestPaymentType: {
       type: 'select' as const,
@@ -287,6 +203,16 @@ export default function LoansPage() {
       options: [
         { label: commonT('enums.loan.interestPayoutType.MONEY'), value: 'MONEY' },
         { label: commonT('enums.loan.interestPayoutType.COUPON'), value: 'COUPON' }
+      ]
+    },
+    status: {
+      type: 'select' as const,
+      label: t('table.status'),
+      options: [
+        { label: commonT('enums.loan.status.NOTDEPOSITED'), value: 'NOTDEPOSITED' },
+        { label: commonT('enums.loan.status.ACTIVE'), value: 'ACTIVE' },
+        { label: commonT('enums.loan.status.REPAID'), value: 'REPAID' },
+        { label: commonT('enums.loan.status.TERMINATED'), value: 'TERMINATED' }
       ]
     },
     terminationType: {
@@ -337,10 +263,15 @@ export default function LoansPage() {
     lender: true,
     signDate: true,
     amount: true,
+    balance: true,
     interestRate: true,
+    interest: true,
+    interestPaid: true,
     interestPaymentType: true,
     interestPayoutType: true,
     terminationModalities: true,
+    repayDate: true,
+    status: true,
     altInterestMethod: false,
     contractStatus: true,
   }

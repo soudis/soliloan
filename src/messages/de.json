@@ -1,9 +1,9 @@
 {
   "auth": {
     "login": {
-      "title": "Bei Ihrem Konto anmelden",
-      "description": "Geben Sie Ihre Anmeldedaten ein, um auf Ihr Konto zuzugreifen",
-      "createAccount": "Oder erstellen Sie ein neues Konto",
+      "title": "Bei deinem Konto anmelden",
+      "description": "Gib deine Anmeldedaten ein, um auf dein Konto zuzugreifen",
+      "createAccount": "Oder erstelle ein neues Konto",
       "email": "E-Mail",
       "password": "Passwort",
       "rememberMe": "Angemeldet bleiben",
@@ -52,7 +52,7 @@
     },
     "qrCode": {
       "title": "Zahlungs-QR-Code",
-      "description": "Scannen Sie diesen QR-Code mit Ihrer Banking-App, um die Zahlungsinformationen zu erhalten",
+      "description": "Scanne diesen QR-Code mit deiner Banking-App, um die Zahlungsinformationen zu erhalten",
       "show": "Zahlungs-QR-Code anzeigen"
     },
     "ui": {
@@ -117,7 +117,10 @@
         "status": {
           "ACTIVE": "Aktiv",
           "CLOSED": "Geschlossen",
-          "DEFAULTED": "In Verzug"
+          "DEFAULTED": "In Verzug",
+          "NOTDEPOSITED": "Nicht ausgezahlt",
+          "REPAID": "Zurückgezahlt",
+          "TERMINATED": "Gekündigt"
         },
         "type": {
           "FIXED": "Fest",
@@ -185,9 +188,9 @@
   },
   "dashboard": {
     "welcome": "Willkommen, {name}!",
-    "description": "Hier finden Sie eine Übersicht über Ihre Kreditgeber und Kredite.",
+    "description": "Hier findest du eine Übersicht über deine Kreditgeber*innen und Kredite.",
     "stats": {
-      "totalLenders": "Kreditgeber gesamt",
+      "totalLenders": "Kreditgeber*innen gesamt",
       "personLenders": "Privatpersonen",
       "organisationLenders": "Organisationen",
       "totalLoans": "Kredite gesamt",
@@ -199,14 +202,14 @@
     },
     "projects": {
       "title": "Projekte",
-      "description": "Verwalten Sie Ihre Projekte und Kredite",
-      "details": "Erstellen und verwalten Sie Ihre Projekte, konfigurieren Sie Einstellungen und verfolgen Sie den Fortschritt.",
+      "description": "Verwalte deine Projekte und Kredite",
+      "details": "Erstelle und verwalte deine Projekte, konfiguriere Einstellungen und verfolge den Fortschritt.",
       "viewProjects": "Projekte anzeigen"
     },
     "lenders": {
-      "title": "Kreditgeber",
-      "description": "Verwalten Sie Ihre Kreditgeber und deren Informationen",
-      "viewLenders": "Kreditgeber anzeigen",
+      "title": "Kreditgeber*innen",
+      "description": "Verwalte deine Kreditgeber*innen und deren Informationen",
+      "viewLenders": "Kreditgeber*innen anzeigen",
       "table": {
         "lenderNumber": "Nummer",
         "type": "Typ",
@@ -223,21 +226,21 @@
         "filterByName": "Nach Namen filtern..."
       },
       "details": {
-        "edit": "Kreditgeber bearbeiten",
+        "edit": "Kreditgeber*in bearbeiten",
         "newLoan": "Neuer Kredit",
         "contactInfo": "Kontaktinformationen",
         "address": "Adresse",
         "banking": "Bankverbindung",
         "loans": "Kredite",
-        "error": "Fehler beim Laden der Kreditgeberdaten",
+        "error": "Fehler beim Laden der Kreditgeber*innen-Daten",
         "noContactInfo": "Keine Kontaktinformationen verfügbar",
         "noAddress": "Keine Adressinformationen verfügbar",
         "noBankingInfo": "Keine Bankverbindungsinformationen verfügbar"
       },
       "new": {
-        "title": "Neuen Kreditgeber erstellen",
-        "formTitle": "Kreditgeberinformationen",
-        "formDescription": "Geben Sie die Details für den neuen Kreditgeber ein",
+        "title": "Neue*n Kreditgeber*in erstellen",
+        "formTitle": "Kreditgeber*innen-Informationen",
+        "formDescription": "Gib die Details für die*n neue*n Kreditgeber*in ein",
         "form": {
           "requiredFields": "Erforderliche Felder",
           "generalInfo": "Allgemeine Informationen",
@@ -270,10 +273,10 @@
         }
       },
       "edit": {
-        "title": "Kreditgeber bearbeiten",
+        "title": "Kreditgeber*in bearbeiten",
         "form": {
-          "success": "Kreditgeber erfolgreich aktualisiert",
-          "error": "Fehler beim Aktualisieren des Kreditgebers",
+          "success": "Kreditgeber*in erfolgreich aktualisiert",
+          "error": "Fehler beim Aktualisieren der*s Kreditgeber*in",
           "submit": "Aktualisieren",
           "submitting": "Wird aktualisiert...",
           "cancel": "Abbrechen"
@@ -282,8 +285,8 @@
     },
     "loans": {
       "title": "Kredite",
-      "description": "Verwalten Sie Ihre Kredite und deren Informationen",
-      "details": "Fügen Sie Kreditinformationen, Zinssätze und Zahlungspläne hinzu, aktualisieren und verwalten Sie diese.",
+      "description": "Verwalte deine Kredite und deren Informationen",
+      "details": "Füge Kreditinformationen, Zinssätze und Zahlungspläne hinzu, aktualisiere und verwalte diese.",
       "viewLoans": "Kredite anzeigen",
       "transactions": {
         "title": "Transaktionen",
@@ -308,10 +311,13 @@
       },
       "table": {
         "loanNumber": "Nummer",
-        "lenderNumber": "Kreditgeber Nummer",
-        "lender": "Kreditgeber",
+        "lenderNumber": "Kreditgeber*in Nummer",
+        "lender": "Kreditgeber*in",
         "amount": "Betrag",
+        "balance": "Aktueller Saldo",
         "interestRate": "Zinssatz",
+        "interest": "Zinsen",
+        "interestPaid": "Gezahlte Zinsen",
         "startDate": "Startdatum",
         "endDate": "Enddatum",
         "status": "Status",
@@ -338,19 +344,20 @@
         "durationType": "Laufzeiteinheit",
         "altInterestMethod": "Alternative Zinsmethode",
         "contractStatus": "Vertragsstatus",
-        "signDate": "Unterzeichnungsdatum"
+        "signDate": "Datum",
+        "repayDate": "Rückzahlungsdatum"
       },
       "new": {
         "title": "Neuen Kredit erstellen",
         "formTitle": "Kreditinformationen",
-        "formDescription": "Geben Sie die Details für den neuen Kredit ein",
+        "formDescription": "Gib die Details für den neuen Kredit ein",
         "form": {
-          "loadingLenders": "Kreditgeber werden geladen...",
+          "loadingLenders": "Kreditgeber*innen werden geladen...",
           "generalInfo": "Allgemeine Informationen",
-          "lender": "Kreditgeber",
-          "lenderPlaceholder": "Kreditgeber auswählen",
-          "signDate": "Unterzeichnungsdatum",
-          "signDatePlaceholder": "Unterzeichnungsdatum auswählen",
+          "lender": "Kreditgeber*in",
+          "lenderPlaceholder": "Kreditgeber*in auswählen",
+          "signDate": "Datum",
+          "signDatePlaceholder": "Datum auswählen",
           "amount": "Betrag",
           "amountPlaceholder": "Betrag eingeben",
           "interestRate": "Zinssatz",
@@ -452,7 +459,7 @@
         "userThemeDefault": "System",
         "userThemeDark": "Dunkel",
         "userThemeLight": "Hell",
-        "lenderDefaults": "Kreditgeber-Standardeinstellungen",
+        "lenderDefaults": "Kreditgeber*innen-Standardeinstellungen",
         "lenderSalutation": "Anrede",
         "lenderSalutationPlaceholder": "Anrede auswählen",
         "lenderSalutationPersonal": "Persönlich",
@@ -507,9 +514,9 @@
     "defaultView": "Standardansicht",
     "saveView": {
       "title": "Ansicht speichern",
-      "description": "Speichern Sie Ihre aktuellen Ansichtseinstellungen",
+      "description": "Speichere deine aktuellen Ansichtseinstellungen",
       "name": "Ansichtsname",
-      "namePlaceholder": "Geben Sie einen Namen für diese Ansicht ein",
+      "namePlaceholder": "Gib einen Namen für diese Ansicht ein",
       "isDefault": "Als Standardansicht festlegen",
       "cancel": "Abbrechen",
       "save": "Ansicht speichern",

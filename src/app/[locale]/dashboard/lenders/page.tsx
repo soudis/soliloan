@@ -3,8 +3,14 @@
 import { getLendersByProjectId } from '@/app/actions/lenders'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
-import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { useRouter } from '@/i18n/navigation'
+import {
+  createColumn,
+  createLenderAddressColumn,
+  createLenderBankingColumn,
+  createLenderEnumBadgeColumn,
+  createLenderNameColumn
+} from '@/lib/table-column-utils'
 import { useProject } from '@/store/project-context'
 import { useQuery } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
@@ -72,178 +78,63 @@ export default function LendersPage() {
   })
 
   const columns: ColumnDef<Lender>[] = [
-    {
+    createColumn<Lender>({
       accessorKey: 'lenderNumber',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.lenderNumber')} />
-      ),
-    },
-    {
-      accessorKey: 'type',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.type')} />
-      ),
-      cell: ({ row }) => {
-        const type = row.getValue('type') as string
-        return type ? commonT(`enums.lender.type.${type}`) : ''
-      },
-    },
-    {
-      accessorKey: 'name',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.name')} />
-      ),
-      accessorFn: (row) => {
-        const type = row.type;
-        if (type === 'PERSON') {
-          const titlePrefix = row.titlePrefix ? `${row.titlePrefix} ` : '';
-          const firstName = row.firstName || '';
-          const lastName = row.lastName || '';
-          const titleSuffix = row.titleSuffix ? ` ${row.titleSuffix}` : '';
-          return `${titlePrefix}${firstName} ${lastName}${titleSuffix}`;
-        }
-        return row.organisationName || '';
-      },
-      cell: ({ row }) => {
-        const type = row.original.type;
-        if (type === 'PERSON') {
-          const titlePrefix = row.original.titlePrefix ? `${row.original.titlePrefix} ` : '';
-          const firstName = row.original.firstName || '';
-          const lastName = row.original.lastName || '';
-          const titleSuffix = row.original.titleSuffix ? ` ${row.original.titleSuffix}` : '';
-          return `${titlePrefix}${firstName} ${lastName}${titleSuffix}`;
-        }
-        return row.original.organisationName || '';
-      },
-      filterFn: compoundTextFilter,
-      sortingFn: (rowA, rowB, columnId) => {
-        const a = rowA.getValue(columnId) as string;
-        const b = rowB.getValue(columnId) as string;
-        return a.localeCompare(b);
-      },
-    },
-    {
+      header: 'table.lenderNumber',
+    }, t),
+
+    createLenderNameColumn<Lender>(t, commonT),
+
+    createLenderEnumBadgeColumn<Lender>(
+      'type',
+      'table.type',
+      'enums.lender.type',
+      t,
+      commonT
+    ),
+
+    createColumn<Lender>({
       accessorKey: 'email',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.email')} />
-      ),
-    },
-    {
+      header: 'table.email',
+    }, t),
+
+    createColumn<Lender>({
       accessorKey: 'telNo',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.telNo')} />
-      ),
-    },
-    {
-      accessorKey: 'address',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.address')} />
-      ),
-      accessorFn: (row) => {
-        const street = row.street || '';
-        const addon = row.addon ? `, ${row.addon}` : '';
-        const zip = row.zip || '';
-        const place = row.place || '';
-        const country = row.country || '';
+      header: 'table.telNo',
+    }, t),
 
-        if (!street && !zip && !place && !country) return '';
+    createLenderAddressColumn<Lender>(t),
 
-        return `${street}${addon} ${zip} ${place} ${country}`.trim();
-      },
-      cell: ({ row }) => {
-        const street = row.original.street || '';
-        const addon = row.original.addon ? `, ${row.original.addon}` : '';
-        const zip = row.original.zip || '';
-        const place = row.original.place || '';
-        const country = row.original.country || '';
+    createLenderBankingColumn<Lender>(t),
 
-        if (!street && !zip && !place && !country) return '';
+    createLenderEnumBadgeColumn<Lender>(
+      'notificationType',
+      'table.notificationType',
+      'enums.lender.notificationType',
+      t,
+      commonT
+    ),
 
-        return (
-          <div className="flex flex-col">
-            {street && <div className="whitespace-nowrap">{`${street}${addon}`}</div>}
-            {(zip || place || country) && (
-              <div>{`${zip} ${place}${country ? `, ${country}` : ''}`}</div>
-            )}
-          </div>
-        );
-      },
-      filterFn: compoundTextFilter,
-      sortingFn: (rowA, rowB, columnId) => {
-        const a = rowA.getValue(columnId) as string;
-        const b = rowB.getValue(columnId) as string;
-        return a.localeCompare(b);
-      },
-    },
-    {
-      accessorKey: 'banking',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.banking')} />
-      ),
-      accessorFn: (row) => {
-        const iban = row.iban || '';
-        const bic = row.bic || '';
+    createLenderEnumBadgeColumn<Lender>(
+      'membershipStatus',
+      'table.membershipStatus',
+      'enums.lender.membershipStatus',
+      t,
+      commonT
+    ),
 
-        if (!iban && !bic) return '';
-
-        return `${iban} ${bic}`.trim();
-      },
-      cell: ({ row }) => {
-        const iban = row.original.iban || '';
-        const bic = row.original.bic || '';
-
-        if (!iban && !bic) return '';
-
-        return (
-          <div className="flex flex-col">
-            {iban && <div className="whitespace-nowrap">{iban}</div>}
-            {bic && <div className="text-gray-500">{bic}</div>}
-          </div>
-        );
-      },
-      filterFn: compoundTextFilter,
-      sortingFn: (rowA, rowB, columnId) => {
-        const a = rowA.getValue(columnId) as string;
-        const b = rowB.getValue(columnId) as string;
-        return a.localeCompare(b);
-      },
-    },
-    {
-      accessorKey: 'notificationType',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.notificationType')} />
-      ),
-      cell: ({ row }) => {
-        const type = row.getValue('notificationType') as string
-        return type ? commonT(`enums.lender.notificationType.${type}`) : ''
-      },
-    },
-    {
-      accessorKey: 'membershipStatus',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.membershipStatus')} />
-      ),
-      cell: ({ row }) => {
-        const status = row.getValue('membershipStatus') as string
-        return status ? commonT(`enums.lender.membershipStatus.${status}`) : ''
-      },
-    },
-    {
+    createColumn<Lender>({
       accessorKey: 'tag',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.tag')} />
-      ),
-    },
-    {
-      accessorKey: 'salutation',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('table.salutation')} />
-      ),
-      cell: ({ row }) => {
-        const salutation = row.getValue('salutation') as string
-        return salutation ? commonT(`enums.lender.salutation.${salutation}`) : ''
-      },
-    },
+      header: 'table.tag',
+    }, t),
+
+    createLenderEnumBadgeColumn<Lender>(
+      'salutation',
+      'table.salutation',
+      'enums.lender.salutation',
+      t,
+      commonT
+    ),
   ]
 
   // Define column filters based on data types
