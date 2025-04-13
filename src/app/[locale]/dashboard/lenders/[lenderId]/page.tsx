@@ -70,25 +70,6 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
     : lender.organisationName
 
   // Map the lender data to match the expected type for LenderInfoCard
-  const mappedLender = {
-    ...lender,
-    firstName: lender.firstName || undefined,
-    lastName: lender.lastName || undefined,
-    organisationName: lender.organisationName || undefined,
-    titlePrefix: lender.titlePrefix || undefined,
-    titleSuffix: lender.titleSuffix || undefined,
-    street: lender.street || undefined,
-    addon: lender.addon || undefined,
-    zip: lender.zip || undefined,
-    place: lender.place || undefined,
-    country: lender.country || undefined,
-    email: lender.email || undefined,
-    telNo: lender.telNo || undefined,
-    iban: lender.iban || undefined,
-    bic: lender.bic || undefined,
-    membershipStatus: lender.membershipStatus || undefined,
-    tag: lender.tag || undefined,
-  }
 
   return (
     <div className="space-y-6">
@@ -115,11 +96,7 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
           <h2 className="text-2xl font-semibold">{t('details.loans')}</h2>
           <div className="space-y-6">
             {lender.loans.map((loan) => {
-              // Map the loan data to match the expected type for LoanCard
-              const mappedLoan = {
-                ...loan,
-                lender
-              }
+              // Calculate loan fields with the lender context
 
               return (
                 <LoanCard
@@ -141,8 +118,8 @@ export default function LenderDetailsPage({ params }: { params: Promise<{ lender
 
         {/* Lender Information Section - Right side on desktop, top on mobile */}
         <div className="w-full lg:w-1/3">
-          <h2 className="text-2xl font-semibold mb-4">{t('details.contactInfo')}</h2>
-          <LenderInfoCard lender={mappedLender} />
+          <h2 className="text-2xl font-semibold mb-4">{t('details.lenderInfo')}</h2>
+          <LenderInfoCard lender={lender} />
         </div>
       </div>
     </div>

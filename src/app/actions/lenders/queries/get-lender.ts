@@ -60,7 +60,7 @@ export async function getLenderById(lenderId: string) {
     }
 
     // Calculate virtual fields
-    const lenderWithCalculations = calculateLenderFields<Omit<LenderWithRelations, keyof Lender>>(
+    const lenderWithCalculations = calculateLenderFields(
       lender
     )
 

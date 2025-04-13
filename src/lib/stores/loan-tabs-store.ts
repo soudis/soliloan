@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-type TabValue = 'transactions' | 'files' | 'notes'
+type TabValue = 'transactions' | 'files' | 'notes' | 'bookings'
 
 interface LoanTabsState {
   activeTab: TabValue

@@ -13,6 +13,8 @@ interface InfoItemProps {
   showCopyButton?: boolean
   showQrButton?: boolean
   recipientName?: string
+  qrValue?: string
+  copyValue?: string
 }
 
 export function InfoItem({
@@ -22,15 +24,18 @@ export function InfoItem({
   emptyMessage = 'Not provided',
   showCopyButton = false,
   showQrButton = false,
-  recipientName
+  recipientName,
+  qrValue,
+  copyValue
 }: InfoItemProps) {
   const [copied, setCopied] = useState(false)
   const [qrDialogOpen, setQrDialogOpen] = useState(false)
   const t = useTranslations('common')
 
   const handleCopy = () => {
-    if (typeof value === 'string') {
-      navigator.clipboard.writeText(value)
+    const textToCopy = copyValue ?? (typeof value === 'string' ? value : undefined)
+    if (textToCopy) {
+      navigator.clipboard.writeText(textToCopy)
       setCopied(true)
       toast.success(t('clipboard.copied'))
       setTimeout(() => setCopied(false), 2000)
@@ -44,7 +49,7 @@ export function InfoItem({
         <div className="flex items-center justify-between">
           <div className="text-lg font-medium">{value}</div>
           <div className="flex items-center space-x-2">
-            {showCopyButton && typeof value === 'string' && (
+            {showCopyButton && (typeof value === 'string' || copyValue) && (
               <button
                 onClick={handleCopy}
                 className="p-1 rounded-full hover:bg-muted transition-colors"
@@ -53,7 +58,7 @@ export function InfoItem({
                 <Copy className="h-4 w-4 text-muted-foreground" />
               </button>
             )}
-            {showQrButton && typeof value === 'string' && recipientName && (
+            {showQrButton && qrValue && recipientName && (
               <>
                 <button
                   onClick={() => setQrDialogOpen(true)}
@@ -65,7 +70,7 @@ export function InfoItem({
                 <QRCodeDialog
                   open={qrDialogOpen}
                   onOpenChange={setQrDialogOpen}
-                  iban={value}
+                  iban={qrValue}
                   recipientName={recipientName}
                 />
               </>

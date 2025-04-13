@@ -40,14 +40,15 @@
     "details": {
       "edit": "Kreditgeber*in bearbeiten",
       "newLoan": "Neuer Kredit",
-      "contactInfo": "Kontaktinformationen",
+      "lenderInfo": "Kreditgeber*in",
       "address": "Adresse",
       "banking": "Bankverbindung",
       "loans": "Kredite",
       "error": "Fehler beim Laden der Kreditgeber*innen-Daten",
       "noContactInfo": "Keine Kontaktinformationen verfügbar",
       "noAddress": "Keine Adressinformationen verfügbar",
-      "noBankingInfo": "Keine Bankverbindungsinformationen verfügbar"
+      "noBankingInfo": "Keine Bankverbindungsinformationen verfügbar",
+      "loanCalculations": "Kontostand"
     },
     "new": {
       "title": "Neue*n Kreditgeber*in erstellen",
@@ -159,6 +160,7 @@
       "signDate": "Datum",
       "repayDate": "Rückzahlungsdatum",
       "transactions": "Zahlungen",
+      "bookings": "Buchungen",
       "files": "Dateien",
       "notes": "Notizen",
       "deposits": "Einzahlungen",

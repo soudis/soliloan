@@ -1,3 +1,4 @@
+import { getLenderById } from "@/app/actions"
 import { File, Lender, Loan, Note, Project, Transaction, User } from "@prisma/client"
 
 export enum LoanStatus {
@@ -22,3 +23,4 @@ export type LoanWithRelations = Loan & {
   transactions: Transaction[]
 }
 
+export type LoanWithCalculations = NonNullable<Awaited<ReturnType<typeof getLenderById>>['lender']>['loans'][0]

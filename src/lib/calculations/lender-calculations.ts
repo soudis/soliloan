@@ -23,49 +23,44 @@ export type LenderWithCalculations = Lender & {
 // Define a generic type that can include relations
 export type LenderWithCalculationsAndRelations<T = {}> = LenderWithCalculations & T
 
-export function calculateLenderFields<T = {}>(
-  lender: LenderWithRelations & T, options: CalculationOptions = {}
+export function calculateLenderFields(
+  lender: LenderWithRelations, options: CalculationOptions = {}
 ) {
   const { client = false } = options ?? {};
 
   const loans = lender.loans?.map((loan) =>
     calculateLoanFields({ ...loan, lender }, options)
   );
-  const sums = loans?.reduce(
-    (acc, loan) => ({
-      balance: acc.balance + loan.balance,
-      interest: acc.interest + loan.interest,
-      deposits: acc.deposits + loan.deposits,
-      withdrawals: acc.withdrawals + loan.withdrawals,
-      interestPaid: acc.interestPaid + loan.interestPaid,
-      interestError: acc.interestError + loan.interestError,
-      amount: acc.amount + loan.amount,
-      interestRate: acc.interestRate + loan.interestRate * loan.amount,
-      balanceInterestRate:
-        acc.balanceInterestRate + loan.balance * loan.interestRate,
-    }),
-    {
-      balance: 0,
-      interest: 0,
-      deposits: 0,
-      withdrawals: 0,
-      interestPaid: 0,
-      interestError: 0,
-      amount: 0,
-      interestRate: 0,
-      balanceInterestRate: 0,
-    }
-  ) ?? {
+
+  // Initialize sums object
+  const sums = {
     balance: 0,
     interest: 0,
     deposits: 0,
     withdrawals: 0,
     interestPaid: 0,
     interestError: 0,
+    notReclaimed: 0,
     amount: 0,
     interestRate: 0,
     balanceInterestRate: 0,
   };
+
+  // Use forEach instead of reduce to avoid TypeScript issues
+  if (loans && loans.length > 0) {
+    loans.forEach((loan) => {
+      sums.balance += loan.balance;
+      sums.interest += loan.interest;
+      sums.deposits += loan.deposits;
+      sums.withdrawals += loan.withdrawals;
+      sums.interestPaid += loan.interestPaid;
+      sums.interestError += loan.interestError;
+      sums.notReclaimed += loan.notReclaimed;
+      sums.amount += loan.amount;
+      sums.interestRate += loan.interestRate * loan.amount;
+      sums.balanceInterestRate += loan.balance * loan.interestRate;
+    });
+  }
 
   sums.interestRate =
     sums.interestRate > 0 && sums.amount > 0

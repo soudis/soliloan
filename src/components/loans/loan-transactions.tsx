@@ -16,9 +16,10 @@ import { TransactionDialog } from './transaction-dialog'
 interface LoanTransactionsProps {
   loanId: string
   transactions: Transaction[]
+  hideDeleteForInterest?: boolean
 }
 
-export function LoanTransactions({ loanId, transactions }: LoanTransactionsProps) {
+export function LoanTransactions({ loanId, transactions, hideDeleteForInterest = false }: LoanTransactionsProps) {
   const t = useTranslations('dashboard.loans')
   const commonT = useTranslations('common')
   const locale = useLocale()
@@ -89,14 +90,18 @@ export function LoanTransactions({ loanId, transactions }: LoanTransactionsProps
               </div>
               <div className="flex items-center space-x-2">
                 <div className="font-medium">{formatCurrency(transaction.amount)}</div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDeleteTransaction(transaction.id)}
-                >
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                  <span className="sr-only">{commonT('ui.actions.delete')}</span>
-                </Button>
+                <div className="w-8 flex justify-end">
+                  {(!hideDeleteForInterest || transaction.type !== 'INTEREST') && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteTransaction(transaction.id)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                      <span className="sr-only">{commonT('ui.actions.delete')}</span>
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           ))}

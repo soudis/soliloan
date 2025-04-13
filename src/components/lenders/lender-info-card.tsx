@@ -1,27 +1,13 @@
 'use client'
 
+import { LoanCalculations } from '@/components/loans/loan-calculations'
 import { Card, CardContent } from '@/components/ui/card'
 import { InfoItem } from '@/components/ui/info-item'
+import { LenderWithCalculations } from '@/types/lenders'
 import { useTranslations } from 'next-intl'
 
 interface LenderInfoCardProps {
-  lender: {
-    type?: 'PERSON' | 'ORGANISATION'
-    firstName?: string
-    lastName?: string
-    organisationName?: string
-    titlePrefix?: string
-    titleSuffix?: string
-    email?: string
-    telNo?: string
-    street?: string
-    addon?: string
-    zip?: string
-    place?: string
-    country?: string
-    iban?: string
-    bic?: string
-  }
+  lender: LenderWithCalculations;
 }
 
 export function LenderInfoCard({ lender }: LenderInfoCardProps) {
@@ -39,6 +25,12 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
 
   // Check if we have any banking information
   const hasBankingInfo = lender.iban || lender.bic
+
+  // Check if we have any loan calculations
+  const hasLoanCalculations = lender.balance !== undefined || lender.withdrawals !== undefined ||
+    lender.deposits !== undefined || lender.notReclaimed !== undefined ||
+    lender.interestPaid !== undefined || lender.interest !== undefined ||
+    lender.interestError !== undefined
 
   return (
     <Card>
@@ -77,38 +69,56 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
         {/* Address Information */}
         {hasAddressInfo && (
           <div className="grid grid-cols-1 gap-4">
-            <div className="text-sm text-muted-foreground">{t('details.address')}</div>
-            <div className="text-lg font-medium">
-              {lender.street && <div>{lender.street}</div>}
-              {lender.addon && <div>{lender.addon}</div>}
-              {(lender.zip || lender.place) && (
-                <div>{lender.zip} {lender.place}</div>
-              )}
-              {lender.country && <div>{lender.country}</div>}
-            </div>
+            <InfoItem
+              label={t('details.address')}
+              value={
+                <>
+                  {lender.street && <div>{lender.street}</div>}
+                  {lender.addon && <div>{lender.addon}</div>}
+                  {(lender.zip || lender.place) && (
+                    <div>{lender.zip} {lender.place}</div>
+                  )}
+                  {lender.country && <div>{lender.country}</div>}
+                </>
+              }
+              showCopyButton={true}
+            />
           </div>
         )}
 
         {/* Banking Information */}
         {hasBankingInfo && (
           <div className="grid grid-cols-1 gap-4">
-            <div className="text-sm text-muted-foreground">{t('details.banking')}</div>
-            {lender.iban && (
-              <InfoItem
-                label="IBAN"
-                value={lender.iban}
-                showCopyButton={true}
-                showQrButton={true}
-                recipientName={lenderName}
-              />
-            )}
-            {lender.bic && (
-              <InfoItem
-                label="BIC"
-                value={lender.bic}
-                showCopyButton={true}
-              />
-            )}
+            <InfoItem
+              label={t('details.banking')}
+              value={
+                <>
+                  {lender.iban && <div>{lender.iban}</div>}
+                  {lender.bic && <div className="text-muted-foreground">{lender.bic}</div>}
+                </>
+              }
+              showCopyButton={true}
+              showQrButton={!!lender.iban}
+              recipientName={lenderName ?? undefined}
+              qrValue={lender.iban ?? undefined}
+              copyValue={lender.iban ?? undefined}
+            />
+          </div>
+        )}
+
+        {/* Loan Calculations */}
+        {hasLoanCalculations && (
+          <div className="grid grid-cols-1 gap-4">
+            <div className="text-sm text-muted-foreground">{t('details.loanCalculations')}</div>
+            <LoanCalculations
+              deposits={lender.deposits || 0}
+              withdrawals={lender.withdrawals || 0}
+              notReclaimed={lender.notReclaimed || 0}
+              interest={lender.interest || 0}
+              interestPaid={lender.interestPaid || 0}
+              interestError={lender.interestError || 0}
+              balance={lender.balance || 0}
+            />
           </div>
         )}
       </CardContent>
