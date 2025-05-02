@@ -1,5 +1,6 @@
 'use server'
 
+import { createAuditEntry, getLenderContext, getLoanContext, removeNullFields } from '@/lib/audit-trail'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
@@ -11,7 +12,7 @@ export async function deleteNote(loanId: string, noteId: string) {
       throw new Error('Unauthorized')
     }
 
-    // Fetch the loan
+    // Fetch the loan and note
     const loan = await db.loan.findUnique({
       where: {
         id: loanId
@@ -25,12 +26,22 @@ export async function deleteNote(loanId: string, noteId: string) {
               }
             }
           }
+        },
+        notes: {
+          where: {
+            id: noteId
+          }
         }
       }
     })
 
     if (!loan) {
       throw new Error('Loan not found')
+    }
+
+    const note = loan.notes[0]
+    if (!note) {
+      throw new Error('Note not found')
     }
 
     // Check if the user has access to the loan's project
@@ -41,6 +52,20 @@ export async function deleteNote(loanId: string, noteId: string) {
     if (!hasAccess) {
       throw new Error('You do not have access to this loan')
     }
+
+    // Create audit trail entry before deletion
+    await createAuditEntry(db, {
+      entity: 'note',
+      operation: 'DELETE',
+      primaryKey: noteId,
+      before: removeNullFields(note),
+      after: {},
+      context: {
+        ...getLenderContext(loan.lender),
+        ...getLoanContext(loan),
+      },
+      projectId: loan.lender.project.id,
+    })
 
     // Delete the note
     await db.note.delete({

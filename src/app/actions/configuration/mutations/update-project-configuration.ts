@@ -1,8 +1,10 @@
 'use server'
 
+import { createAuditEntry, getChangedFields, removeNullFields } from '@/lib/audit-trail'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { configurationFormSchema } from '@/lib/schemas/configuration'
+import { Entity, Operation } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 
 export async function updateConfiguration(projectId: string, data: any) {
@@ -65,6 +67,10 @@ export async function updateConfiguration(projectId: string, data: any) {
       customLoans: validatedData.customLoans || false,
     }
 
+    // Get the current configuration for audit trail
+    const currentConfig = project.configuration
+    const isCreate = !currentConfig
+
     // Update the project configuration
     const configuration = await db.configuration.upsert({
       where: {
@@ -80,6 +86,32 @@ export async function updateConfiguration(projectId: string, data: any) {
         }
       }
     })
+
+    // Create audit trail entry
+    if (isCreate) {
+      await createAuditEntry(db, {
+        entity: Entity.configuration,
+        operation: Operation.CREATE,
+        primaryKey: configuration.id,
+        before: {},
+        after: removeNullFields(configuration),
+        context: {},
+        projectId,
+      })
+    } else {
+      const { before, after } = getChangedFields(currentConfig, configuration)
+      if (Object.keys(before).length > 0) {
+        await createAuditEntry(db, {
+          entity: Entity.configuration,
+          operation: Operation.UPDATE,
+          primaryKey: configuration.id,
+          before,
+          after,
+          context: {},
+          projectId,
+        })
+      }
+    }
 
     // Revalidate the project configuration page
     revalidatePath(`/dashboard/configuration`)

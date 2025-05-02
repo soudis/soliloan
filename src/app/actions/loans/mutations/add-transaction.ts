@@ -1,8 +1,10 @@
 'use server'
 
+import { createAuditEntry, getLenderContext, getLoanContext, getTransactionContext, removeNullFields } from '@/lib/audit-trail'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { TransactionFormData } from '@/lib/schemas/transaction'
+import { Entity, Operation } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 
 export async function addTransaction(loanId: string, data: TransactionFormData) {
@@ -56,6 +58,21 @@ export async function addTransaction(loanId: string, data: TransactionFormData) 
           }
         }
       }
+    })
+
+    // Create audit trail entry
+    await createAuditEntry(db, {
+      entity: Entity.transaction,
+      operation: Operation.CREATE,
+      primaryKey: transaction.id,
+      before: {},
+      after: removeNullFields(transaction),
+      context: {
+        ...getLenderContext(loan.lender),
+        ...getLoanContext(loan),
+        ...getTransactionContext(transaction),
+      },
+      projectId: loan.lender.project.id,
     })
 
     // Revalidate the loan page

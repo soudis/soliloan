@@ -1,10 +1,11 @@
 'use server'
 
+import { createAuditEntry, getChangedFields, getLenderContext } from '@/lib/audit-trail'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { LenderFormData } from '@/lib/schemas/lender'
 import { getLenderName } from '@/lib/utils'
-import { Language } from '@prisma/client'
+import { Entity, Language, Operation } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 
 export async function updateLender(lenderId: string, data: LenderFormData) {
@@ -80,6 +81,20 @@ export async function updateLender(lenderId: string, data: LenderFormData) {
         })
       }
     })
+
+    // Create audit trail entry
+    const { before, after } = getChangedFields(lender, updatedLender)
+    if (Object.keys(before).length > 0) {
+      await createAuditEntry(db, {
+        entity: Entity.lender,
+        operation: Operation.UPDATE,
+        primaryKey: lenderId,
+        before,
+        after,
+        context: getLenderContext(updatedLender),
+        projectId: lender.projectId,
+      })
+    }
 
     // Revalidate the lenders page
     revalidatePath(`/dashboard/lenders/${lender.projectId}`)

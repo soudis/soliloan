@@ -1,5 +1,6 @@
 'use server'
 
+import { createAuditEntry, getLenderContext, getLoanContext, removeNullFields } from '@/lib/audit-trail'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { NoteFormData } from '@/lib/schemas/note'
@@ -60,6 +61,20 @@ export async function addNote(loanId: string, data: NoteFormData) {
         },
         createdAt: new Date()
       }
+    })
+
+    // Create audit trail entry
+    await createAuditEntry(db, {
+      entity: 'note',
+      operation: 'CREATE',
+      primaryKey: note.id,
+      before: {},
+      after: removeNullFields(note),
+      context: {
+        ...getLenderContext(loan.lender),
+        ...getLoanContext(loan),
+      },
+      projectId: loan.lender.project.id,
     })
 
     // Revalidate the loan page

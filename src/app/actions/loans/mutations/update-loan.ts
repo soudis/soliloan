@@ -1,8 +1,10 @@
 'use server'
 
+import { createAuditEntry, getChangedFields, getLenderContext, getLoanContext } from '@/lib/audit-trail'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { LoanFormData } from '@/lib/schemas/loan'
+import { Entity, Operation } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 
 export async function updateLoan(loanId: string, data: LoanFormData) {
@@ -49,22 +51,39 @@ export async function updateLoan(loanId: string, data: LoanFormData) {
         id: loanId
       },
       data: {
-        signDate: data.signDate,
+        signDate: data.signDate || undefined,
         interestPaymentType: data.interestPaymentType,
         interestPayoutType: data.interestPayoutType,
         terminationType: data.terminationType,
-        endDate: data.endDate,
-        terminationDate: data.terminationDate,
+        endDate: data.endDate || undefined,
+        terminationDate: data.terminationDate || undefined,
         terminationPeriod: data.terminationPeriod,
         terminationPeriodType: data.terminationPeriodType,
         duration: data.duration,
         durationType: data.durationType,
-        amount: data.amount,
-        interestRate: data.interestRate,
+        amount: data.amount || undefined,
+        interestRate: data.interestRate || undefined,
         altInterestMethod: data.altInterestMethod,
         contractStatus: data.contractStatus,
       }
     })
+
+    // Create audit trail entry
+    const { before, after } = getChangedFields(loan, updatedLoan)
+    if (Object.keys(before).length > 0) {
+      await createAuditEntry(db, {
+        entity: Entity.loan,
+        operation: Operation.UPDATE,
+        primaryKey: loanId,
+        before,
+        after,
+        context: {
+          ...getLenderContext(loan.lender),
+          ...getLoanContext(updatedLoan),
+        },
+        projectId: loan.lender.project.id,
+      })
+    }
 
     // Revalidate the loans page
     revalidatePath(`/dashboard/loans/${loan.lenderId}`)

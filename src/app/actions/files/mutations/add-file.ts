@@ -1,8 +1,10 @@
 'use server'
 
+import { createAuditEntry, getFileContext, getLenderContext, getLoanContext, removeNullFields } from '@/lib/audit-trail'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { FileFormData } from '@/lib/schemas/file'
+import { Entity, Operation } from '@prisma/client'
 import { exec } from 'child_process'
 import { readFile, unlink, writeFile } from 'fs/promises'
 import { revalidatePath } from 'next/cache'
@@ -104,6 +106,31 @@ export async function addFile(loanId: string, data: FileFormData, base64Data: st
           }
         }
       }
+    })
+
+    // Create audit trail entry
+    const fileForAudit = {
+      id: file.id,
+      name: file.name,
+      mimeType: file.mimeType,
+      public: file.public,
+      description: file.description,
+      lenderId: file.lenderId,
+      loanId: file.loanId,
+    }
+
+    await createAuditEntry(db, {
+      entity: Entity.file,
+      operation: Operation.CREATE,
+      primaryKey: file.id,
+      before: {},
+      after: removeNullFields(fileForAudit),
+      context: {
+        ...getLenderContext(loan.lender),
+        ...getLoanContext(loan),
+        ...getFileContext(file),
+      },
+      projectId: loan.lender.project.id,
     })
 
     // Revalidate the loan page

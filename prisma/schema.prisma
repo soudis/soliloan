@@ -209,14 +209,35 @@ model Note {
   loan        Loan?    @relation(fields: [loanId], references: [id])
 }
 
-model Change {
-  id        String   @id @default(cuid())
-  projectId String
-  type      String
-  data      Json
-  createdAt DateTime @default(now())
-  project   Project  @relation(fields: [projectId], references: [id])
+enum Operation {
+  CREATE
+  UPDATE
+  DELETE
 }
+
+enum Entity {
+  configuration
+  lender
+  loan
+  transaction
+  file
+  note
+}
+
+
+model Change {
+  id          String    @id @default(cuid())
+  primaryKey  String
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id])
+  before      Json
+  after       Json
+  context     Json
+  entity      Entity
+  operation   Operation
+  committedAt DateTime
+}
+
 
 model View {
   id        String   @id @default(cuid())
