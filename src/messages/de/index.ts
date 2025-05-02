@@ -2,6 +2,7 @@ import auth from './auth.json';
 import common from './common.json';
 import dashboard from './dashboard.json';
 import dataTable from './dataTable.json';
+import logbook from './logbook.json';
 import navigation from './navigation.json';
 import views from './views.json';
 
@@ -11,5 +12,6 @@ export default {
   dashboard,
   navigation,
   dataTable,
-  views
+  views,
+  logbook
 }; 

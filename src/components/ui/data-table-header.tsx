@@ -6,12 +6,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { ViewType } from '@prisma/client'
 import { Table } from '@tanstack/react-table'
 import { SlidersHorizontal } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { SaveViewDialog } from './save-view-dialog'
 import { ViewManager } from './view-manager'
-
 interface DataTableHeaderProps<TData> {
   table: Table<TData>
   filterColumn?: string
@@ -25,7 +25,7 @@ interface DataTableHeaderProps<TData> {
       label?: string
     }
   }
-  viewType?: 'LENDER' | 'LOAN'
+  viewType?: ViewType
   globalFilter: string
   setGlobalFilter: (value: string) => void
   showColumnFilters: boolean

@@ -1,8 +1,13 @@
+import { auth } from '@/lib/auth';
 import { Entity, Operation, type Configuration, type File, type Lender, type Loan, type Note, type PrismaClient, type Transaction } from '@prisma/client';
 
 type EntityData = Configuration | Lender | Loan | Transaction | Note | Partial<File>;
 
 interface AuditContext {
+  user?: {
+    id: string;
+    name: string;
+  };
   lender?: {
     id: string;
     name: string;
@@ -42,6 +47,11 @@ export async function createAuditEntry(
     projectId: string;
   }
 ) {
+  const session = await auth();
+  if (!session) {
+    throw new Error('Unauthorized');
+  }
+
   // @ts-ignore - Prisma types are not being generated correctly
   return prisma.change.create({
     data: {
@@ -50,7 +60,13 @@ export async function createAuditEntry(
       primaryKey,
       before: before || {},
       after: after || {},
-      context: context || {},
+      context: {
+        ...context,
+        user: {
+          id: session.user.id,
+          name: session.user.name,
+        },
+      },
       project: {
         connect: {
           id: projectId,

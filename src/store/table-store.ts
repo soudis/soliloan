@@ -1,7 +1,7 @@
+import { ViewType } from '@prisma/client'
 import { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/react-table'
 import { create } from 'zustand'
 
-export type ViewType = 'LENDER' | 'LOAN'
 
 interface TableState {
   columnVisibility: VisibilityState
@@ -29,6 +29,7 @@ export const useTableStore = create<TableStore>()((set, get) => ({
   states: {
     LENDER: defaultTableState,
     LOAN: defaultTableState,
+    LOGBOOK: defaultTableState,
   },
   setState: (viewType, newState) =>
     set((state) => ({

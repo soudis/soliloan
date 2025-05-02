@@ -272,6 +272,7 @@ enum Salutation {
 enum ViewType {
   LENDER
   LOAN
+  LOGBOOK
 }
 
 enum NotificationType {

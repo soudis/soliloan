@@ -1,9 +1,10 @@
 {
   "dashboard": "Dashboard",
   "projects": "Projekte",
-  "lenders": "Kreditgeber*innen",
+  "lenders": "Kreditgeber",
   "loans": "Kredite",
   "signOut": "Abmelden",
   "selectProject": "Projekt auswählen",
-  "configuration": "Konfiguration"
+  "configuration": "Konfiguration",
+  "logbook": "Logbuch"
 }

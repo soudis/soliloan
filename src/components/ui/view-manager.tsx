@@ -1,11 +1,7 @@
 import { getViewsByType } from '@/app/actions/views';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { ViewType } from '@prisma/client';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
@@ -13,7 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 interface View {
   id: string;
   userId: string;
-  type: 'LENDER' | 'LOAN';
+  type: ViewType;
   name: string;
   data: any;
   isDefault: boolean;
@@ -22,7 +18,7 @@ interface View {
 }
 
 interface ViewManagerProps {
-  viewType: 'LENDER' | 'LOAN';
+  viewType: ViewType;
   onViewSelect: (view: View | null) => void;
   onViewDelete?: (viewId: string) => Promise<void>;
   refreshTrigger?: number;

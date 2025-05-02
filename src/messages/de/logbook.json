@@ -1,0 +1,33 @@
+{
+  "title": "Logbuch",
+  "who": "Wer",
+  "when": "Wann",
+  "what": "Was",
+  "changeDetails": "Änderungsdetails",
+  "before": "Vorher",
+  "after": "Nachher",
+  "unknownUser": "Unbekannter Benutzer",
+  "unknownChange": "Unbekannte Änderung",
+  "loanText": "Kredit",
+  "file": {
+    "created": "Die Datei {filename} wurde für den Kredit #{loanNumber} von {lenderName} hinzugefügt",
+    "deleted": "Die Datei {filename} wurde für den #{loanNumber} von {lenderName} gelöscht"
+  },
+  "loan": {
+    "created": "Ein neuer Kredit #{loanNumber} wurde für {lenderName} erstellt",
+    "updated": "Der #{loanNumber} von {lenderName} wurde aktualisiert"
+  },
+  "transaction": {
+    "created": "Eine neue Zahlung über {amount} € wurde für den #{loanNumber} von {lenderName} erstellt",
+    "deleted": "Eine Zahlung über {amount} € wurde für den #{loanNumber} von {lenderName} gelöscht"
+  },
+  "note": {
+    "created": "Eine neue Notiz wurde für den #{loanNumber} von {lenderName} erstellt",
+    "deleted": "Eine Notiz wurde für den #{loanNumber} von {lenderName} gelöscht"
+  },
+  "lender": {
+    "created": "Ein neuer Kreditgeber {lenderName} wurde erstellt",
+    "updated": "Der Kreditgeber {lenderName} wurde aktualisiert",
+    "deleted": "Der Kreditgeber {lenderName} wurde gelöscht"
+  }
+}

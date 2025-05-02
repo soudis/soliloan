@@ -1,16 +1,17 @@
 import { createView, deleteView, getViewById } from '@/app/actions/views'
 import { useTableStore } from '@/store/table-store'
+import { ViewType } from '@prisma/client'
 import {
   ColumnDef,
   ColumnFiltersState,
   FilterFn,
-  SortingState,
-  VisibilityState,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable
+  SortingState,
+  useReactTable,
+  VisibilityState
 } from '@tanstack/react-table'
 import { de, enUS } from 'date-fns/locale'
 import { Settings } from 'lucide-react'
@@ -115,7 +116,7 @@ interface DataTableProps<TData, TValue> {
     }
   }
   defaultColumnVisibility?: VisibilityState
-  viewType?: 'LENDER' | 'LOAN'
+  viewType?: ViewType
   translations?: {
     columns?: string
     filters?: string

@@ -2,7 +2,7 @@
 
 import { ThemeSelector } from '@/components/theme-selector'
 import { useAppStore } from '@/store'
-import { LayoutDashboard, Settings, Users, Wallet } from 'lucide-react'
+import { History, LayoutDashboard, Settings, Users, Wallet } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { NavItem } from './nav-item'
 import ProjectSelector from './project-selector'
@@ -46,6 +46,11 @@ export function SidebarNav({ isSidebarOpen }: SidebarNavProps) {
               href="/dashboard/loans"
               icon={Wallet}
               label={t('loans')}
+            />
+            <NavItem
+              href="/dashboard/logbook"
+              icon={History}
+              label={t('logbook')}
             />
             <NavItem
               href="/dashboard/configuration"
