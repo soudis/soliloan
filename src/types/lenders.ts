@@ -8,7 +8,7 @@ export type LenderWithRelations = Lender & {
   })[]
   files: Omit<File, 'data'>[]
   loans?: Omit<LoanWithRelations, "lender">[];
-  user: Pick<User, "id" | "email" | "name" | "lastLogin"> | null;
+  user: Pick<User, "id" | "email" | "name" | "lastLogin" | "lastInvited"> | null;
   project: Project & {
     configuration: {
       interestMethod: Configuration['interestMethod']

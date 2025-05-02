@@ -27,7 +27,6 @@
   "charts": {
     "loanStatus": "Kreditstatus",
     "yearlyData": "Jährliche Daten",
-    "yearlyBalance": "Jährliche Bilanz",
     "totalAmount": "Gesamtbetrag",
     "totalInterest": "Gesamtzinsen",
     "totalDeposits": "Einzahlungen",
@@ -87,7 +86,16 @@
       "noContactInfo": "Keine Kontaktinformationen verfügbar",
       "noAddress": "Keine Adressinformationen verfügbar",
       "noBankingInfo": "Keine Bankverbindungsinformationen verfügbar",
-      "loanCalculations": "Kontostand"
+      "loanCalculations": "Kontostand",
+      "userInfo": "Benutzerinformationen",
+      "lastLogin": "Letzte Anmeldung",
+      "lastInvited": "Letzte Einladung",
+      "neverLoggedIn": "Noch nie angemeldet",
+      "neverInvited": "Noch nie eingeladen",
+      "sendInvitation": "Einladung senden",
+      "sendingInvitation": "Wird gesendet...",
+      "invitationSent": "Einladung wurde erfolgreich gesendet",
+      "invitationError": "Fehler beim Senden der Einladung"
     },
     "new": {
       "title": "Neue*n Kreditgeber*in erstellen",
@@ -121,7 +129,8 @@
         "additionalInfo": "Zusätzliche Informationen",
         "notificationType": "Benachrichtigungstyp",
         "membershipStatus": "Mitgliedsstatus",
-        "tag": "Tag"
+        "tag": "Tag",
+        "success": "Kreditgeber*in erfolgreich erstellt"
       }
     },
     "edit": {

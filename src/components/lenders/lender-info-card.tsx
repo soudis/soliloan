@@ -1,10 +1,19 @@
 'use client'
 
+import { sendInvitationEmail } from '@/app/actions/users'
 import { LoanCalculations } from '@/components/loans/loan-calculations'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { InfoItem } from '@/components/ui/info-item'
+import { useProject } from '@/store/project-context'
 import { LenderWithCalculations } from '@/types/lenders'
-import { useTranslations } from 'next-intl'
+import { useQueryClient } from '@tanstack/react-query'
+import { format } from 'date-fns'
+import { de, enUS } from 'date-fns/locale'
+import { Mail } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface LenderInfoCardProps {
   lender: LenderWithCalculations;
@@ -12,6 +21,11 @@ interface LenderInfoCardProps {
 
 export function LenderInfoCard({ lender }: LenderInfoCardProps) {
   const t = useTranslations('dashboard.lenders')
+  const locale = useLocale()
+  const { selectedProject } = useProject();
+  const queryClient = useQueryClient()
+  const dateLocale = locale === 'de' ? de : enUS
+  const [isSendingInvitation, setIsSendingInvitation] = useState(false)
 
   const lenderName = lender.type === 'PERSON'
     ? `${lender.titlePrefix ? `${lender.titlePrefix} ` : ''}${lender.firstName} ${lender.lastName}${lender.titleSuffix ? ` ${lender.titleSuffix}` : ''}`
@@ -31,6 +45,27 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
     lender.deposits !== undefined || lender.notReclaimed !== undefined ||
     lender.interestPaid !== undefined || lender.interest !== undefined ||
     lender.interestError !== undefined
+
+  // Handle sending invitation email
+  const handleSendInvitation = async () => {
+    if (!lender.user) return
+
+    setIsSendingInvitation(true)
+    try {
+      const result = await sendInvitationEmail(lender.user.id, selectedProject?.name ?? '')
+      if (result.success) {
+        toast.success(t('details.invitationSent'))
+        queryClient.invalidateQueries({ queryKey: ['lender'] })
+      } else {
+        toast.error(result.error || t('details.invitationError'))
+      }
+    } catch (error) {
+      console.error('Error sending invitation:', error)
+      toast.error(t('details.invitationError'))
+    } finally {
+      setIsSendingInvitation(false)
+    }
+  }
 
   return (
     <Card>
@@ -119,6 +154,39 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
               interestError={lender.interestError || 0}
               balance={lender.balance || 0}
             />
+          </div>
+        )}
+
+        {/* User Information */}
+        {lender.user && (
+          <div className="grid grid-cols-1 gap-4 mt-6">
+            <div className="text-sm text-muted-foreground">{t('details.userInfo')}</div>
+            <div className="grid grid-cols-1 gap-4">
+              <InfoItem
+                label={t('details.lastLogin')}
+                value={lender.user.lastLogin
+                  ? format(new Date(lender.user.lastLogin), 'PPP p', { locale: dateLocale })
+                  : t('details.neverLoggedIn')}
+              />
+              <div className="flex items-center justify-between">
+                <InfoItem
+                  label={t('details.lastInvited')}
+                  value={lender.user.lastInvited
+                    ? format(new Date(lender.user.lastInvited), 'PPP p', { locale: dateLocale })
+                    : t('details.neverInvited')}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSendInvitation}
+                  disabled={isSendingInvitation}
+                  className="ml-2"
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  {isSendingInvitation ? t('details.sendingInvitation') : t('details.sendInvitation')}
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </CardContent>

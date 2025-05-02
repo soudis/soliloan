@@ -1,34 +1,30 @@
 'use client'
 
-import { LoginForm } from '@/components/auth/login-form'
+import { ForgotPasswordForm } from '@/components/auth/forgot-password-form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 
-export default function LoginPage() {
-  const t = useTranslations('auth.login')
+export default function ForgotPasswordPage() {
+  const t = useTranslations('auth')
 
   return (
     <div className="space-y-8">
       <div>
         <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
-          {t('title')}
+          {t('forgotPassword.title')}
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          {t('createAccount')}{' '}
-          <Link href="/auth/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-            {t('createAccount')}
-          </Link>
+          {t('forgotPassword.description')}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>{t('title')}</CardTitle>
-          <CardDescription>{t('description')}</CardDescription>
+          <CardTitle>{t('forgotPassword.title')}</CardTitle>
+          <CardDescription>{t('forgotPassword.description')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <LoginForm />
+          <ForgotPasswordForm />
         </CardContent>
       </Card>
     </div>

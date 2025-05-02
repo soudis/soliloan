@@ -1,0 +1,20 @@
+{
+  "passwordInvitation": {
+    "preview": "Einladung zur Passwortfestlegung für {domain}",
+    "title": "Willkommen bei {domain}",
+    "greeting": "Hallo {name}!",
+    "message": "Danke für deinen Direktkredit an {projectName}! Wir laden dich ein, ein Konto bei {domain} zu erstellen. Damit kannst du ganz bequem jederzeit deinen Kreditkontostand nachschauen und wichtige Dokument herunterladen. Mit dem untenstehenden Link kannst du dein Passwort festlegen und dein Konto aktivieren.",
+    "button": "Passwort festlegen",
+    "fallbackText": "Falls du den Button nicht anklicken kannst, kopiere den folgenden Link in deinen Browser:",
+    "footer": "Diese E-Mail wurde von {domain} gesendet. Falls du diese E-Mail nicht erwartet hast, kannst du sie einfach ignorieren."
+  },
+  "passwordReset": {
+    "preview": "Passwort zurücksetzen für {domain}",
+    "title": "Passwort zurücksetzen für {domain}",
+    "greeting": "Hallo {name}!",
+    "message": "Du hast die Zurücksetzung deines Passworts für {domain} angefordert. Klicke auf den Button unten, um ein neues Passwort festzulegen. Der Link ist eine Stunde gültig.",
+    "button": "Passwort zurücksetzen",
+    "fallbackText": "Falls du den Button nicht anklicken kannst, kopiere den folgenden Link in deinen Browser:",
+    "footer": "Diese E-Mail wurde von {domain} gesendet. Falls du diese E-Mail nicht angefordert hast, kannst du sie einfach ignorieren."
+  }
+}

@@ -1,8 +1,7 @@
 import { hashPassword } from "@/lib/utils";
 import {
-  InterestMethod,
   Language,
-  PrismaClient,
+  PrismaClient
 } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -40,7 +39,6 @@ async function main() {
           data: {
             slug: "dev-gmbh",
             name: "Development GmbH",
-            interestMethod: InterestMethod.E30_360_COMPOUND,
             configuration: {
               create: {
                 name: "Development GmbH",

@@ -21,7 +21,7 @@ export async function getLendersByProjectId(projectId: string) {
         },
         notes: { include: { createdBy: { select: { id: true, name: true } } } },
         files: { select: { id: true, name: true, description: true, public: true, mimeType: true, lenderId: true, loanId: true, thumbnail: true } },
-        user: true,
+        user: { select: { name: true, id: true, email: true, lastLogin: true, lastInvited: true } },
         project: {
           include: {
             configuration: { select: { interestMethod: true } }

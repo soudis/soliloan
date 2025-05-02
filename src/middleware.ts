@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { LOCALES, routing } from './i18n/routing';
 import { auth } from './lib/auth';
 
-const PUBLIC_PAGES = ['/auth/login', '/auth/forgot-password', '/auth/register'];
+const PUBLIC_PAGES = ['/auth/login', '/auth/forgot-password', '/auth/register', '/auth/set-password'];
 
 const handleI18nRouting = createIntlMiddleware(routing);
 

@@ -48,6 +48,9 @@ model User {
   updatedAt     DateTime       @updatedAt
   isAdmin       Boolean?
   lastLogin     DateTime?
+  lastInvited   DateTime?
+  passwordResetToken String?
+  passwordResetTokenExpiresAt DateTime?
   accounts      Account[]
   lenders       Lender[]
   notes         Note[]

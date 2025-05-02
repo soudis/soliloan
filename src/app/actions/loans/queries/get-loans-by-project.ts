@@ -56,6 +56,7 @@ export async function getLoansByProjectId(projectId: string) {
                 configuration: { select: { interestMethod: true } }
               }
             },
+            user: { select: { name: true, id: true, email: true, lastLogin: true, lastInvited: true } },
             notes: { include: { createdBy: { select: { id: true, name: true } } } },
             files: { select: { id: true, name: true, description: true, public: true, mimeType: true, lenderId: true, loanId: true, thumbnail: true } }
           }
