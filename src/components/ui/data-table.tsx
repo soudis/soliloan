@@ -161,6 +161,7 @@ export function DataTable<TData, TValue>({
   const [globalFilter, setGlobalFilter] = useState(storedState?.globalFilter || '')
   const [pageSize, setPageSize] = useState(storedState?.pageSize || 10)
   const [viewRefreshTrigger, setViewRefreshTrigger] = useState(0)
+  const [viewLoaded, setViewLoaded] = useState(false)
 
   // Update store when state changes
   useEffect(() => {
@@ -253,6 +254,7 @@ export function DataTable<TData, TValue>({
     pageCount: Math.ceil(data.length / pageSize),
 
   })
+
 
   // Function to save the current view
   const handleSaveView = async (name: string, isDefault: boolean) => {
@@ -354,6 +356,7 @@ export function DataTable<TData, TValue>({
         isSaving={isSaving}
         handleSaveView={handleSaveView}
         viewRefreshTrigger={viewRefreshTrigger}
+        onViewLoad={() => setViewLoaded(true)}
       />
 
       {showColumnFilters && Object.keys(columnFilters).length > 0 && (
@@ -363,12 +366,14 @@ export function DataTable<TData, TValue>({
         />
       )}
 
-      <DataTableBody
-        table={table}
-        onRowClick={onRowClick}
-      />
+      {viewLoaded && (
+        <DataTableBody
+          table={table}
+          onRowClick={onRowClick}
+        />
+      )}
 
-      {showPagination && (
+      {viewLoaded && showPagination && (
         <DataTablePagination table={table} />
       )}
     </div>

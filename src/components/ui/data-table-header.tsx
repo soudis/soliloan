@@ -34,6 +34,7 @@ interface DataTableHeaderProps<TData> {
   isSaving: boolean
   handleSaveView: (name: string, isDefault: boolean) => Promise<void>
   viewRefreshTrigger: number
+  onViewLoad?: () => void
 }
 
 export function DataTableHeader<TData>({
@@ -52,6 +53,7 @@ export function DataTableHeader<TData>({
   isSaving,
   handleSaveView,
   viewRefreshTrigger,
+  onViewLoad,
 }: DataTableHeaderProps<TData>) {
   const t = useTranslations('dataTable')
 
@@ -82,6 +84,7 @@ export function DataTableHeader<TData>({
           <>
             <ViewManager
               viewType={viewType}
+              onLoad={onViewLoad}
               onViewSelect={(view) => {
                 if (view === null) {
                   // Reset to default state
@@ -95,7 +98,7 @@ export function DataTableHeader<TData>({
 
                 if (!view.data) return;
 
-                const { columnVisibility, sorting, columnFilters, globalFilter, pageSize } = view.data;
+                const { columnVisibility, sorting, columnFilters, globalFilter, pageSize } = view.data as any;
 
                 if (columnVisibility) table.setColumnVisibility(columnVisibility);
                 if (sorting) table.setSorting(sorting);

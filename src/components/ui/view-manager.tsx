@@ -1,41 +1,37 @@
 import { getViewsByType } from '@/app/actions/views';
 import { Button } from '@/components/ui/button';
-import { ViewType } from '@prisma/client';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu';
+import { View, ViewType } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
-import { Loader2, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu';
 
-interface View {
-  id: string;
-  userId: string;
-  type: ViewType;
-  name: string;
-  data: any;
-  isDefault: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 interface ViewManagerProps {
   viewType: ViewType;
   onViewSelect: (view: View | null) => void;
   onViewDelete?: (viewId: string) => Promise<void>;
+  onLoad?: () => void;
   refreshTrigger?: number;
 }
 
-export function ViewManager({ viewType, onViewSelect, onViewDelete, refreshTrigger = 0 }: ViewManagerProps) {
+export function ViewManager({ viewType, onViewSelect, onViewDelete, onLoad, refreshTrigger = 0 }: ViewManagerProps) {
   const [selectedView, setSelectedView] = useState<string | null>(null);
   const t = useTranslations('views');
 
   // Use a ref to store the callback to avoid dependency issues
   const onViewSelectRef = useRef(onViewSelect);
+  const onLoadRef = useRef(onLoad);
 
   // Update the ref when the callback changes
   useEffect(() => {
     onViewSelectRef.current = onViewSelect;
   }, [onViewSelect]);
+
+  useEffect(() => {
+    onLoadRef.current = onLoad;
+  }, [onLoad]);
 
   const { data: views, isLoading, error } = useQuery({
     queryKey: ['views', viewType, refreshTrigger],
@@ -47,6 +43,12 @@ export function ViewManager({ viewType, onViewSelect, onViewDelete, refreshTrigg
       return fetchedViews;
     },
   });
+
+  useEffect(() => {
+    if (views && !isLoading) {
+      onLoadRef.current?.();
+    }
+  }, [views, onLoad, isLoading]);
 
   useEffect(() => {
     if (views) {
@@ -83,12 +85,7 @@ export function ViewManager({ viewType, onViewSelect, onViewDelete, refreshTrigg
   };
 
   if (isLoading) {
-    return (
-      <Button variant="outline" size="sm" disabled>
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        {t('loading')}
-      </Button>
-    );
+    return null;
   }
 
   if (error) {
