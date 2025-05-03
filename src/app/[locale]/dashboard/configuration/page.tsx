@@ -89,6 +89,7 @@ export default function ConfigurationPage() {
           altInterestMethods: result.configuration.altInterestMethods || [],
           customLoans: result.configuration.customLoans || false,
           lenderRequiredFields: result.configuration.lenderRequiredFields || [],
+          logo: result.configuration.logo || null,
         }
       })
 

@@ -9,7 +9,9 @@ import { FormSection } from '@/components/ui/form-section'
 import type { ConfigurationFormData } from '@/lib/schemas/configuration'
 import { InterestMethod, Language, LenderRequiredField, MembershipStatus, NotificationType, Salutation, SoliLoansTheme } from '@prisma/client'
 import { useTranslations } from 'next-intl'
+import { useEffect, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
+import { LogoInput } from './logo-input'
 
 interface ConfigurationFormFieldsProps {
   form: UseFormReturn<ConfigurationFormData>
@@ -19,6 +21,14 @@ interface ConfigurationFormFieldsProps {
 export function ConfigurationFormFields({ form, hasHistoricTransactions }: ConfigurationFormFieldsProps) {
   const t = useTranslations('dashboard.configuration')
   const commonT = useTranslations('common')
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+
+  useEffect(() => {
+    const logo = form.getValues('logo')
+    if (logo) {
+      setLogoPreview(logo)
+    }
+  }, [form])
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -30,6 +40,7 @@ export function ConfigurationFormFields({ form, hasHistoricTransactions }: Confi
           label={t('form.name') + ' *'}
           placeholder={t('form.namePlaceholder')}
         />
+        <LogoInput form={form} />
       </FormSection>
 
       {/* Contact Information Section - Top Right */}

@@ -7,9 +7,9 @@ import { configurationFormSchema, type ConfigurationFormData } from '@/lib/schem
 import { useProject } from '@/store/project-context'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { ConfigurationFormFields } from './configuration-form-fields'
-
 interface ConfigurationFormProps {
   title: string
   submitButtonText: string
@@ -35,6 +35,7 @@ export function ConfigurationForm({
 }: ConfigurationFormProps) {
   const t = useTranslations('dashboard.configuration')
   const { selectedProject } = useProject()
+  const router = useRouter()
 
   if (!selectedProject) {
     return null
@@ -42,7 +43,7 @@ export function ConfigurationForm({
 
   const defaultValues: ConfigurationFormData = {
     name: initialData?.name || '',
-    logo: initialData?.logo || undefined,
+    logo: initialData?.logo || '',
     email: initialData?.email || undefined,
     telNo: initialData?.telNo || undefined,
     website: initialData?.website || undefined,
@@ -91,6 +92,7 @@ export function ConfigurationForm({
             submittingButtonText={submittingButtonText}
             cancelButtonText={cancelButtonText}
             isLoading={isLoading}
+
           />
         </form>
       </Form>

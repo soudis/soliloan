@@ -6,11 +6,35 @@ import { validationError } from '../utils/validation';
 // Generic number schemas
 export const createNumberSchema = (min?: number) => {
   const baseSchema = z.union([
-    z.coerce.number().refine((value) => !isNaN(Number(value)), {
+    z.number().refine((value) => !isNaN(Number(value)), {
       message: "validation.common.number",
     }),
     z.literal("")
   ]);
+
+  if (min !== undefined) {
+    return baseSchema.refine((value) => value === "" || value >= min, {
+      message: validationError('validation.common.numberMin', { min }),
+    });
+  }
+
+  return baseSchema;
+};
+
+export const createNumberSchemaRequired = (min?: number, errorMessage = "validation.common.required") => {
+  const baseSchema = z.union([
+    z.number().refine((value) => !isNaN(Number(value)), {
+      message: "validation.common.number",
+    }),
+    z.literal("")
+  ]).superRefine((value, ctx) => {
+    if (value === "") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: errorMessage,
+      });
+    }
+  });
 
   if (min !== undefined) {
     return baseSchema.refine((value) => value === "" || value >= min, {

@@ -64,6 +64,7 @@ export async function getConfiguration(projectId: string) {
       altInterestMethods: project.configuration.altInterestMethods || [],
       customLoans: project.configuration.customLoans || false,
       lenderRequiredFields: project.configuration.lenderRequiredFields || [],
+      logo: project.configuration.logo || undefined,
     } : null
 
     return { configuration, hasHistoricTransactions: project.lenders.some(lender => lender.loans.some(loan => loan.transactions.filter(t => moment(t.date).isBefore(moment().startOf('year'))).length > 0)) }

@@ -81,7 +81,7 @@ export function LoanCard({ loan, onView, onEdit, className }: LoanCardProps) {
         </div>
         <div className="flex space-x-1">
           {onEdit && (
-            <Button variant="ghost" size="sm" onClick={() => onEdit(loan.id)}>
+            <Button variant="outline" size="sm" onClick={() => onEdit(loan.id)}>
               <Pencil className="h-4 w-4 mr-2" />
               {commonT('ui.actions.edit')}
             </Button>

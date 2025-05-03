@@ -38,9 +38,9 @@ export function FormNumberInput({
               max={max}
               step={step}
               {...field}
-              value={field.value === undefined || field.value === null ? '' : field.value}
+              value={field.value}
               onChange={(e) => {
-                const value = e.target.value === '' ? null : parseFloat(e.target.value)
+                const value = e.target.value === '' ? '' : parseFloat(e.target.value)
                 field.onChange(value)
               }}
               className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"

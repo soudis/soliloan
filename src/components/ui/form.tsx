@@ -151,7 +151,6 @@ const FormMessage = React.forwardRef<
   const { error, formMessageId } = useFormField()
   const t = useTranslations()
   const parsedError = parseValidationError(error?.message)
-
   const body = error ? String((parsedError || error?.message?.startsWith('validation.')) ? t(parsedError?.message ?? error.message, parsedError?.params) : error.message) : children
 
   if (!body) {

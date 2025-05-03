@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   contractStatusEnum,
   createDateSchema,
-  createNumberSchema,
+  createNumberSchemaRequired,
   interestMethodEnum,
   interestPaymentTypeEnum,
   interestPayoutTypeEnum,
@@ -15,8 +15,8 @@ export const loanFormSchema = z.object({
   // General Information  
   lenderId: z.string().min(1, { message: 'validation.common.required' }),
   signDate: createDateSchema(true),
-  amount: createNumberSchema(0.01),
-  interestRate: createNumberSchema(0),
+  amount: createNumberSchemaRequired(0.01),
+  interestRate: createNumberSchemaRequired(0),
 
   // Termination Information
   terminationType: z.nativeEnum(TerminationType),
