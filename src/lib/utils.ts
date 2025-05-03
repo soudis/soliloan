@@ -75,3 +75,12 @@ export function getLenderName(lender: Pick<LenderFormData, 'type' | 'firstName' 
 
   return name;
 }
+
+/**
+ * Converts empty strings to null
+ * @param value The value to check
+ * @returns The value if not an empty string, otherwise null
+ */
+export function emptyStringToNull<T>(value: T): T | null {
+  return value === '' ? null : value;
+}

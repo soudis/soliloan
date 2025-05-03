@@ -11,12 +11,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ViewType } from '@prisma/client';
 import { Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 interface SaveViewDialogProps {
-  viewType: 'LENDER' | 'LOAN';
+  viewType: ViewType;
   onSave: (name: string, isDefault: boolean) => Promise<void>;
   isLoading?: boolean;
 }

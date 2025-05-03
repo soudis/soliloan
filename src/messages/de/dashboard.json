@@ -1,8 +1,8 @@
 {
   "welcome": "Willkommen, {name}!",
-  "description": "Hier findest du eine Übersicht über deine Kredite und Kreditgeber.",
+  "description": "Hier findest du eine Übersicht über deine Kredite und Kreditgeber*innen.",
   "stats": {
-    "totalLenders": "Kreditgeber",
+    "totalLenders": "Kreditgeber*innen",
     "personLenders": "Privatpersonen",
     "organisationLenders": "Organisationen",
     "totalLoans": "Alle Kredite",
@@ -57,9 +57,9 @@
     "viewProjects": "Projekte anzeigen"
   },
   "lenders": {
-    "title": "Kreditgeber",
-    "description": "Verwalte deine Kreditgeber und deren Informationen.",
-    "viewLenders": "Kreditgeber anzeigen",
+    "title": "Kreditgeber*innen",
+    "description": "Verwalte deine Kreditgeber*innen und deren Informationen.",
+    "viewLenders": "Kreditgeber*innen anzeigen",
     "table": {
       "lenderNumber": "Nummer",
       "type": "Typ",
@@ -217,7 +217,8 @@
       "notReclaimed": "Nicht zurückgefordert"
     },
     "new": {
-      "title": "Neuen Kredit erstellen",
+      "title": "Kredit erstellen",
+      "titleWithLender": "Kredit von {lenderName} erstellen",
       "formTitle": "Kreditinformationen",
       "formDescription": "Gib die Details für den neuen Kredit ein",
       "form": {
@@ -273,7 +274,7 @@
       }
     },
     "edit": {
-      "title": "Kredit bearbeiten",
+      "title": "Kredit von {lenderName} bearbeiten",
       "form": {
         "success": "Kredit erfolgreich aktualisiert",
         "error": "Fehler beim Aktualisieren des Kredits",

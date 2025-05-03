@@ -62,7 +62,8 @@
       "clear": "Löschen",
       "close": "Schließen",
       "noResults": "Keine Ergebnisse gefunden",
-      "select": "Auswählen"
+      "select": "Auswählen",
+      "createLoan": "Kredit erstellen"
     },
     "status": {
       "success": "Erfolg",
@@ -174,14 +175,14 @@
       }
     },
     "interestMethod": {
-      "ACT_365_NOCOMPOUND": "Actual/365 (Ohne Zinseszins)",
-      "E30_360_NOCOMPOUND": "30/360 (Ohne Zinseszins)",
-      "ACT_360_NOCOMPOUND": "Actual/360 (Ohne Zinseszins)",
-      "ACT_ACT_NOCOMPOUND": "Actual/Actual (Ohne Zinseszins)",
-      "ACT_365_COMPOUND": "Actual/365 (Mit Zinseszins)",
-      "E30_360_COMPOUND": "30/360 (Mit Zinseszins)",
-      "ACT_360_COMPOUND": "Actual/360 (Mit Zinseszins)",
-      "ACT_ACT_COMPOUND": "Actual/Actual (Mit Zinseszins)"
+      "ACT_365_NOCOMPOUND": "ACT/365 (Ohne Zinseszins)",
+      "E30_360_NOCOMPOUND": "E30/360 (Ohne Zinseszins)",
+      "ACT_360_NOCOMPOUND": "ACT/360 (Ohne Zinseszins)",
+      "ACT_ACT_NOCOMPOUND": "ACT/ACT (Ohne Zinseszins)",
+      "ACT_365_COMPOUND": "ACT/365 (Mit Zinseszins)",
+      "E30_360_COMPOUND": "E30/360 (Mit Zinseszins)",
+      "ACT_360_COMPOUND": "ACT/360 (Mit Zinseszins)",
+      "ACT_ACT_COMPOUND": "ACT/ACT (Mit Zinseszins)"
     },
     "theme": {
       "default": "Standard",
@@ -191,5 +192,6 @@
       "lavender": "Lavendel"
     }
   },
-  "clear": "Keine Standardeinstellung"
+  "clear": "Keine Standardeinstellung",
+  "default": "Standard"
 }

@@ -5,7 +5,9 @@ import { createLoan } from '@/app/actions/loans'
 import { LoanForm } from '@/components/loans/loan-form'
 import { useRouter } from '@/i18n/navigation'
 import type { LoanFormData } from '@/lib/schemas/loan'
+import { getLenderName } from '@/lib/utils'
 import { useProject } from '@/store/project-context'
+import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
@@ -20,9 +22,24 @@ export default function NewLoanPage() {
   const t = useTranslations('dashboard.loans')
   const commonT = useTranslations('common')
   const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Get the lenderId from the URL search params
   const lenderId = searchParams.get('lenderId')
+
+  // Fetch lender data using React Query if lenderId is provided
+  const { data: lender, isLoading: lenderLoading } = useQuery({
+    queryKey: ['lender', lenderId],
+    queryFn: async () => {
+      if (!lenderId) return null
+      const result = await getLenderById(lenderId)
+      if (result.error) {
+        throw new Error(result.error)
+      }
+      return result.lender
+    },
+    enabled: !!lenderId
+  })
 
   if (!session) {
     return null
@@ -32,8 +49,13 @@ export default function NewLoanPage() {
     return null
   }
 
+  if (lenderLoading) {
+    return null;
+  }
+
   const handleSubmit = async (data: LoanFormData) => {
     try {
+      setIsSubmitting(true)
       // Get the lender details first
       const lenderResult = await getLenderById(data.lenderId)
       if (lenderResult.error) {
@@ -55,36 +77,38 @@ export default function NewLoanPage() {
       toast.success(t('new.form.success'))
 
       // Redirect to the loans list page for this project
-      router.push(`/dashboard/loans/${selectedProject.id}`)
+      router.push(`/dashboard/lenders/${result.loan?.lenderId}?highlightLoan=${result.loan?.id}`)
     } catch (error) {
       console.error('Error submitting form:', error)
       setError(error instanceof Error ? error.message : 'An unknown error occurred')
       toast.error(t('new.form.error'))
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   // Set up initial data with required fields based on the default termination type
   const initialData = lenderId ? {
     lenderId,
-    terminationType: 'ENDDATE' as const,
-    signDate: new Date(),
-    amount: 0,
-    interestRate: 0,
-    interestPaymentType: 'YEARLY' as const,
-    interestPayoutType: 'MONEY' as const,
-    contractStatus: 'PENDING' as const,
-    endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)), // Default to 1 year from now
   } : undefined
+
+  // Format the title based on whether we have lender data
+  const title = lender
+    ? t('new.titleWithLender', {
+      lenderName: getLenderName(lender)
+    })
+    : t('new.title')
 
   return (
     <LoanForm
-      title={t('new.title')}
+      title={title}
       submitButtonText={commonT('ui.actions.create')}
       submittingButtonText={commonT('ui.actions.creating')}
       cancelButtonText={commonT('ui.actions.cancel')}
       onSubmit={handleSubmit}
       error={error}
       initialData={initialData}
+      isLoading={isSubmitting}
     />
   )
 } 

@@ -5,15 +5,15 @@ import { validationError } from '../utils/validation';
 
 // Generic number schemas
 export const createNumberSchema = (min?: number) => {
-  const baseSchema = z
-    .coerce.number()
-    .refine((value) => value === null || !isNaN(Number(value)), {
+  const baseSchema = z.union([
+    z.coerce.number().refine((value) => !isNaN(Number(value)), {
       message: "validation.common.number",
-    })
-    .nullable();
+    }),
+    z.literal("")
+  ]);
 
   if (min !== undefined) {
-    return baseSchema.refine((value) => value === null || value >= min, {
+    return baseSchema.refine((value) => value === "" || value >= min, {
       message: validationError('validation.common.numberMin', { min }),
     });
   }
@@ -47,17 +47,20 @@ export const optionalNumberSchema = createNumberSchema().optional();
 
 // Generic date schemas
 export const createDateSchema = (required = true) => {
-  const baseSchema = z.coerce.date({
-    message: "validation.common.date",
-  }).nullable();
+  const baseSchema = z.union([
+    z.coerce.date({
+      message: "validation.common.date",
+    }),
+    z.literal("")
+  ]);
 
   if (required) {
-    return baseSchema.refine((value) => value !== null, {
+    return baseSchema.refine((value) => value !== "", {
       message: "validation.common.required",
     });
   }
 
-  return baseSchema.optional();
+  return baseSchema;
 };
 
 export const requiredDateSchema = createDateSchema(true);
@@ -188,7 +191,7 @@ export const bankingSchema = z.object({
 })
 
 // Interest method enum
-export const interestMethodEnum = selectEnumRequired(InterestMethod)
+export const interestMethodEnum = selectEnumOptional(InterestMethod)
 
 // Notification type enum
 export const notificationTypeEnumRequired = selectEnumRequired(NotificationType)

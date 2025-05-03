@@ -2,6 +2,7 @@ import { getViewsByType } from '@/app/actions/views';
 import { Button } from '@/components/ui/button';
 import { ViewType } from '@prisma/client';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu';
+import { useQuery } from '@tanstack/react-query';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
@@ -25,9 +26,6 @@ interface ViewManagerProps {
 }
 
 export function ViewManager({ viewType, onViewSelect, onViewDelete, refreshTrigger = 0 }: ViewManagerProps) {
-  const [views, setViews] = useState<View[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedView, setSelectedView] = useState<string | null>(null);
   const t = useTranslations('views');
 
@@ -39,38 +37,30 @@ export function ViewManager({ viewType, onViewSelect, onViewDelete, refreshTrigg
     onViewSelectRef.current = onViewSelect;
   }, [onViewSelect]);
 
-  // Function to fetch views
-  const fetchViews = async () => {
-    try {
-      setLoading(true);
+  const { data: views, isLoading, error } = useQuery({
+    queryKey: ['views', viewType, refreshTrigger],
+    queryFn: async () => {
       const { views: fetchedViews, error } = await getViewsByType(viewType);
       if (error) {
         throw new Error(error);
       }
-      if (fetchedViews) {
-        setViews(fetchedViews);
-
-        // Find default view if it exists
-        const defaultView = fetchedViews.find((view: View) => view.isDefault);
-        if (defaultView) {
-          setSelectedView(defaultView.id);
-          onViewSelectRef.current(defaultView);
-        } else {
-          setSelectedView(null);
-          onViewSelectRef.current(null); // This will trigger the default view
-        }
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('Error fetching views:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return fetchedViews;
+    },
+  });
 
   useEffect(() => {
-    fetchViews();
-  }, [viewType, refreshTrigger]); // Add refreshTrigger to dependencies
+    if (views) {
+      // Find default view if it exists
+      const defaultView = views.find((view: View) => view.isDefault);
+      if (defaultView) {
+        setSelectedView(defaultView.id);
+        onViewSelectRef.current(defaultView);
+      } else {
+        setSelectedView(null);
+        onViewSelectRef.current(null); // This will trigger the default view
+      }
+    }
+  }, [views]);
 
   const handleDelete = async (viewId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -78,7 +68,6 @@ export function ViewManager({ viewType, onViewSelect, onViewDelete, refreshTrigg
 
     try {
       await onViewDelete(viewId);
-      setViews(views.filter(view => view.id !== viewId));
       if (selectedView === viewId) {
         setSelectedView(null);
         onViewSelectRef.current(null); // Switch to default view
@@ -93,7 +82,7 @@ export function ViewManager({ viewType, onViewSelect, onViewDelete, refreshTrigg
     onViewSelectRef.current(view);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Button variant="outline" size="sm" disabled>
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -114,7 +103,7 @@ export function ViewManager({ viewType, onViewSelect, onViewDelete, refreshTrigg
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
-          {selectedView ? views.find(v => v.id === selectedView)?.name || t('loadView') : t('defaultView')}
+          {selectedView ? views?.find(v => v.id === selectedView)?.name || t('loadView') : t('defaultView')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -124,7 +113,7 @@ export function ViewManager({ viewType, onViewSelect, onViewDelete, refreshTrigg
         >
           <span>{t('defaultView')}</span>
         </DropdownMenuItem>
-        {views.map((view) => (
+        {views?.map((view) => (
           <DropdownMenuItem
             key={view.id}
             onClick={() => handleViewSelect(view)}

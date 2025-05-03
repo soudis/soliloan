@@ -322,7 +322,7 @@ export default function LoansPage() {
   }
 
   if (loading) {
-    return <div>Loading...</div>
+    return null;
   }
 
   if (error) {
@@ -350,7 +350,10 @@ export default function LoansPage() {
         onRowClick={(row) => router.push(`/dashboard/lenders/${row.lender.id}?highlightLoan=${row.id}`)}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
-            <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/loans/${row.id}/edit`)}>
+            <Button variant="ghost" size="icon" onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/dashboard/loans/${row.id}/edit`);
+            }}>
               <Pencil className="h-4 w-4" />
               <span className="sr-only">{commonT('ui.actions.edit')}</span>
             </Button>

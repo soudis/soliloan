@@ -5,6 +5,7 @@ import { LoanForm } from '@/components/loans/loan-form'
 import { useRouter } from '@/i18n/navigation'
 import { interestMethodEnum } from '@/lib/schemas/common'
 import type { LoanFormData } from '@/lib/schemas/loan'
+import { getLenderName } from '@/lib/utils'
 import { useProject } from '@/store/project-context'
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
@@ -36,10 +37,10 @@ export default function EditLoanPage({ params }: { params: Promise<{ loanId: str
   })
 
   // Transform loan data to match LoanFormData type based on terminationType
-  const transformedLoan: LoanFormData | undefined = loan ? (() => {
+  const transformedLoan: Partial<LoanFormData> | undefined = loan ? (() => {
     const baseData = {
       lenderId: loan.lender.id,
-      signDate: loan.signDate,
+      signDate: loan.signDate ?? "",
       amount: loan.amount,
       interestRate: loan.interestRate,
       interestPaymentType: loan.interestPaymentType,
@@ -56,33 +57,33 @@ export default function EditLoanPage({ params }: { params: Promise<{ loanId: str
         return {
           ...baseData,
           terminationType: 'ENDDATE',
-          endDate: loan.endDate,
-          terminationDate: loan.terminationDate || null,
-          terminationPeriod: loan.terminationPeriod ?? null,
+          endDate: loan.endDate ?? "",
+          terminationDate: loan.terminationDate ?? "",
+          terminationPeriod: loan.terminationPeriod ?? "",
           terminationPeriodType: loan.terminationPeriodType ?? null,
-          duration: loan.duration ?? null,
+          duration: loan.duration ?? "",
           durationType: loan.durationType ?? null,
         }
       case 'TERMINATION':
         return {
           ...baseData,
           terminationType: 'TERMINATION',
-          endDate: loan.endDate || null,
-          terminationDate: loan.terminationDate || null,
-          terminationPeriod: loan.terminationPeriod ?? 1,
+          endDate: loan.endDate ?? "",
+          terminationDate: loan.terminationDate ?? "",
+          terminationPeriod: loan.terminationPeriod ?? "",
           terminationPeriodType: loan.terminationPeriodType ?? 'MONTHS',
-          duration: loan.duration ?? null,
+          duration: loan.duration ?? "",
           durationType: loan.durationType ?? null,
         }
       case 'DURATION':
         return {
           ...baseData,
           terminationType: 'DURATION',
-          endDate: loan.endDate || null,
-          terminationDate: loan.terminationDate || null,
-          terminationPeriod: loan.terminationPeriod ?? null,
+          endDate: loan.endDate || "",
+          terminationDate: loan.terminationDate || "",
+          terminationPeriod: loan.terminationPeriod ?? "",
           terminationPeriodType: loan.terminationPeriodType ?? null,
-          duration: loan.duration ?? 1,
+          duration: loan.duration ?? "",
           durationType: loan.durationType ?? 'MONTHS',
         }
       default:
@@ -98,8 +99,8 @@ export default function EditLoanPage({ params }: { params: Promise<{ loanId: str
     return null
   }
 
-  if (isLoading) {
-    return <div>Loading...</div>
+  if (isLoading || !loan) {
+    return null
   }
 
   const handleSubmit = async (data: LoanFormData) => {
@@ -118,7 +119,7 @@ export default function EditLoanPage({ params }: { params: Promise<{ loanId: str
       toast.success(t('edit.form.success'))
 
       // Navigate back to the previous page using the router
-      router.back()
+      router.push(`/dashboard/lenders/${result.loan?.lenderId}?highlightLoan=${result.loan?.id}`)
     } catch (error) {
       console.error('Error submitting form:', error)
       setError(error instanceof Error ? error.message : 'An unknown error occurred')
@@ -130,14 +131,14 @@ export default function EditLoanPage({ params }: { params: Promise<{ loanId: str
 
   return (
     <LoanForm
-      title={t('edit.title')}
+      title={t('edit.title', { lenderName: getLenderName(loan.lender) })}
       submitButtonText={t('edit.form.submit')}
       submittingButtonText={t('edit.form.submitting')}
       cancelButtonText={t('edit.form.cancel')}
       onSubmit={handleSubmit}
       initialData={transformedLoan}
       loanId={resolvedParams.loanId}
-      isLoading={isLoading}
+      isLoading={isSubmitting}
       error={error}
     />
   )

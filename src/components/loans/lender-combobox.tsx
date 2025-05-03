@@ -1,10 +1,7 @@
 'use client'
 
-import { getLendersByProjectId } from '@/app/actions/lenders'
 import { FormCombobox } from '@/components/form/form-combobox'
-import { useProject } from '@/store/project-context'
 import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
 interface Lender {
@@ -24,6 +21,8 @@ interface LenderComboboxProps {
   label: string
   placeholder: string
   disabled?: boolean
+  lenders: Lender[]
+  isLoading?: boolean
 }
 
 export function LenderCombobox({
@@ -32,39 +31,11 @@ export function LenderCombobox({
   label,
   placeholder,
   disabled = false,
+  lenders,
+  isLoading = false,
 }: LenderComboboxProps) {
   const t = useTranslations('dashboard.loans')
   const commonT = useTranslations('common')
-  const { selectedProject } = useProject()
-  const [lenders, setLenders] = useState<Lender[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const fetchLenders = async () => {
-      if (!selectedProject) return
-
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const { lenders: fetchedLenders, error } = await getLendersByProjectId(selectedProject.id)
-        if (error) {
-          throw new Error(error)
-        }
-        if (fetchedLenders) {
-          setLenders(fetchedLenders)
-        }
-      } catch (err) {
-        console.error('Error fetching lenders:', err)
-        setError(err instanceof Error ? err.message : 'An unknown error occurred')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchLenders()
-  }, [selectedProject])
 
   // Format lender options for the combobox
   const lenderOptions = lenders.map(lender => ({

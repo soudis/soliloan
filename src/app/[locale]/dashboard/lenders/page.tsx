@@ -3,6 +3,7 @@
 import { getLendersByProjectId } from '@/app/actions/lenders'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useRouter } from '@/i18n/navigation'
 import {
   createColumn,
@@ -15,7 +16,7 @@ import { useProject } from '@/store/project-context'
 import { MembershipStatus, NotificationType, Salutation } from '@prisma/client'
 import { useQuery } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
-import { Eye, Pencil, Plus } from 'lucide-react'
+import { Pencil, Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
@@ -231,7 +232,7 @@ export default function LendersPage() {
   }
 
   if (loading) {
-    return <div>Loading...</div>
+    return null;
   }
 
   if (error) {
@@ -259,14 +260,38 @@ export default function LendersPage() {
         onRowClick={(row) => router.push(`/dashboard/lenders/${row.id}`)}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
-            <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/lenders/${row.id}`)}>
-              <Eye className="h-4 w-4" />
-              <span className="sr-only">{commonT('ui.actions.view')}</span>
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/lenders/${row.id}/edit`)}>
-              <Pencil className="h-4 w-4" />
-              <span className="sr-only">{commonT('ui.actions.edit')}</span>
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/dashboard/loans/new?lenderId=${row.id}`);
+                  }}>
+                    <Plus className="h-4 w-4" />
+                    <span className="sr-only">{commonT('ui.actions.createLoan')}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{commonT('ui.actions.createLoan')}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/dashboard/lenders/${row.id}/edit`);
+                  }}>
+                    <Pencil className="h-4 w-4" />
+                    <span className="sr-only">{commonT('ui.actions.edit')}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{commonT('ui.actions.edit')}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         )}
       />

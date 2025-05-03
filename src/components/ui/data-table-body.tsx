@@ -30,7 +30,7 @@ export function DataTableBody<TData>({
                 return (
                   <TableHead
                     key={header.id}
-                    className={header.column.columnDef.meta?.fixed ? 'sticky right-0 bg-background z-10 before:content-[""] before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border' : ''}
+                    className={header.column.columnDef.meta?.fixed ? 'sticky left-0 right-0 bg-background z-10 before:content-[""] before:absolute before:left-auto before:top-0 before:h-full before:w-[1px] before:bg-border' : ''}
                   >
                     {header.isPlaceholder
                       ? null
@@ -56,7 +56,7 @@ export function DataTableBody<TData>({
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
-                    className={cell.column.columnDef.meta?.fixed ? 'sticky right-0 bg-background z-10 before:content-[""] before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border' : ''}
+                    className={cell.column.columnDef.meta?.fixed ? 'sticky left-auto right-0 bg-background z-10 before:content-[""] before:absolute before:left-auto before:top-0 before:h-full before:w-[1px] before:bg-border' : ''}
                   >
                     {flexRender(
                       cell.column.columnDef.cell,

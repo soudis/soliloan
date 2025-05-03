@@ -251,17 +251,7 @@ export function DataTable<TData, TValue>({
     // Enable global filtering for all columns
     enableGlobalFilter: true,
     pageCount: Math.ceil(data.length / pageSize),
-    onPaginationChange: (updater) => {
-      if (typeof updater === 'function') {
-        const newState = updater({
-          pageIndex: 0,
-          pageSize,
-        })
-        setPageSize(newState.pageSize)
-      } else {
-        setPageSize(updater.pageSize)
-      }
-    },
+
   })
 
   // Function to save the current view

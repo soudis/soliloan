@@ -2,31 +2,36 @@
 
 import { FormDatePicker } from '@/components/form/form-date-picker'
 import { FormNumberInput } from '@/components/form/form-number-input'
+import { FormNumberWithSelect } from '@/components/form/form-number-with-select'
 import { FormSelect } from '@/components/form/form-select'
 import { LenderCombobox } from '@/components/loans/lender-combobox'
+import { FormSection } from '@/components/ui/form-section'
 import type { LoanFormData } from '@/lib/schemas/loan'
+import { useProject } from '@/store/project-context'
+import { ContractStatus, DurationType, InterestPaymentType, InterestPayoutType, Lender, TerminationType } from '@prisma/client'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import { UseFormReturn } from 'react-hook-form'
 
 interface LoanFormFieldsProps {
   form: UseFormReturn<LoanFormData>
+  lenders: Lender[]
+
 }
 
-export function LoanFormFields({ form }: LoanFormFieldsProps) {
+export function LoanFormFields({ form, lenders }: LoanFormFieldsProps) {
   const t = useTranslations('dashboard.loans')
   const commonT = useTranslations('common')
   const searchParams = useSearchParams()
   const terminationType = form.watch('terminationType')
   const lenderId = form.watch('lenderId')
   const preselectedLenderId = searchParams.get('lenderId')
+  const { selectedProject } = useProject()
 
   return (
-    <>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {/* General Information Section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-medium text-muted-foreground">{t('new.form.generalInfo')}</h2>
-
+      <FormSection title={t('new.form.generalInfo')}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <LenderCombobox
             form={form}
@@ -34,6 +39,7 @@ export function LoanFormFields({ form }: LoanFormFieldsProps) {
             label={t('new.form.lender') + ' *'}
             placeholder={commonT('ui.form.selectPlaceholder')}
             disabled={!!preselectedLenderId}
+            lenders={lenders}
           />
 
           <FormDatePicker
@@ -63,103 +69,104 @@ export function LoanFormFields({ form }: LoanFormFieldsProps) {
             step={0.01}
           />
         </div>
-      </div>
+        <FormSelect
+          form={form}
+          name="contractStatus"
+          label={t('new.form.contractStatus')}
+          placeholder={commonT('ui.form.selectPlaceholder')}
+          options={Object.entries(ContractStatus).map(([key, value]) => ({
+            value: key,
+            label: commonT(`enums.loan.contractStatus.${key}`)
+          }))}
+        />
+      </FormSection>
 
       {/* Termination Information Section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-medium text-muted-foreground">{t('new.form.terminationInfo')}</h2>
-
+      <FormSection title={t('new.form.terminationInfo')}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormSelect
             form={form}
             name="terminationType"
             label={t('new.form.terminationType') + ' *'}
             placeholder={commonT('ui.form.selectPlaceholder')}
-            options={[
-              { value: 'ENDDATE', label: commonT('enums.loan.terminationType.ENDDATE') },
-              { value: 'TERMINATION', label: commonT('enums.loan.terminationType.TERMINATION') },
-              { value: 'DURATION', label: commonT('enums.loan.terminationType.DURATION') },
-            ]}
+            options={Object.entries(TerminationType).map(([key, value]) => ({
+              value: key,
+              label: commonT(`enums.loan.terminationType.${key}`)
+            }))}
           />
 
-          {terminationType === 'ENDDATE' && (
+
+        </div>
+        {terminationType === 'ENDDATE' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormDatePicker
               form={form}
               name="endDate"
               label={t('new.form.endDate') + ' *'}
               placeholder={commonT('ui.form.enterPlaceholder')}
             />
-          )}
-        </div>
-
+          </div>
+        )}
         {terminationType === 'TERMINATION' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormNumberInput
-              form={form}
-              name="terminationPeriod"
-              label={t('new.form.terminationPeriod') + ' *'}
-              placeholder={commonT('ui.form.enterPlaceholder')}
-              min={1}
-            />
+          <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormNumberWithSelect
+                form={form}
+                numberName="terminationPeriod"
+                selectName="terminationPeriodType"
+                numberLabel={t('new.form.terminationPeriod') + ' *'}
+                numberPlaceholder={commonT('ui.form.enterPlaceholder')}
+                selectPlaceholder={commonT('ui.form.selectPlaceholder')}
+                numberMin={1}
+                selectOptions={Object.entries(DurationType).map(([key, value]) => ({
+                  value: key,
+                  label: commonT(`enums.loan.durationUnit.${key}`)
+                }))}
+              />
+            </div>
 
-            <FormSelect
-              form={form}
-              name="terminationPeriodType"
-              label={t('new.form.terminationPeriodType') + ' *'}
-              placeholder={commonT('ui.form.selectPlaceholder')}
-              options={[
-                { value: 'MONTHS', label: commonT('enums.loan.durationUnit.MONTHS') },
-                { value: 'YEARS', label: commonT('enums.loan.durationUnit.YEARS') },
-              ]}
-            />
-
-            <FormDatePicker
-              form={form}
-              name="terminationDate"
-              label={t('new.form.terminationDate')}
-              placeholder={commonT('ui.form.enterPlaceholder')}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormDatePicker
+                form={form}
+                name="terminationDate"
+                label={t('new.form.terminationDate')}
+                placeholder={commonT('ui.form.enterPlaceholder')}
+              />
+            </div>
           </div>
         )}
 
         {terminationType === 'DURATION' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormNumberInput
+            <FormNumberWithSelect
               form={form}
-              name="duration"
-              label={t('new.form.duration') + ' *'}
-              placeholder={commonT('ui.form.enterPlaceholder')}
-              min={1}
-            />
-
-            <FormSelect
-              form={form}
-              name="durationType"
-              label={t('new.form.durationType') + ' *'}
-              placeholder={commonT('ui.form.selectPlaceholder')}
-              options={[
-                { value: 'MONTHS', label: commonT('enums.loan.durationUnit.MONTHS') },
-                { value: 'YEARS', label: commonT('enums.loan.durationUnit.YEARS') },
-              ]}
+              numberName="duration"
+              selectName="durationType"
+              numberLabel={t('new.form.duration') + ' *'}
+              numberPlaceholder={commonT('ui.form.enterPlaceholder')}
+              selectPlaceholder={commonT('ui.form.selectPlaceholder')}
+              numberMin={1}
+              selectOptions={Object.entries(DurationType).map(([key, value]) => ({
+                value: key,
+                label: commonT(`enums.loan.durationUnit.${key}`)
+              }))}
             />
           </div>
         )}
-      </div>
+      </FormSection>
 
       {/* Additional Information Section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-medium text-muted-foreground">{t('new.form.additionalInfo')}</h2>
-
+      <FormSection title={t('new.form.additionalInfo')}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormSelect
             form={form}
             name="interestPaymentType"
             label={t('new.form.interestPaymentType') + ' *'}
             placeholder={commonT('ui.form.selectPlaceholder')}
-            options={[
-              { value: 'YEARLY', label: commonT('enums.loan.interestPaymentType.YEARLY') },
-              { value: 'END', label: commonT('enums.loan.interestPaymentType.END') },
-            ]}
+            options={Object.entries(InterestPaymentType).map(([key, value]) => ({
+              value: key,
+              label: commonT(`enums.loan.interestPaymentType.${key}`)
+            }))}
           />
 
           <FormSelect
@@ -167,43 +174,28 @@ export function LoanFormFields({ form }: LoanFormFieldsProps) {
             name="interestPayoutType"
             label={t('new.form.interestPayoutType') + ' *'}
             placeholder={commonT('ui.form.selectPlaceholder')}
-            options={[
-              { value: 'MONEY', label: commonT('enums.loan.interestPayoutType.MONEY') },
-              { value: 'COUPON', label: commonT('enums.loan.interestPayoutType.COUPON') },
-            ]}
+            options={Object.entries(InterestPayoutType).map(([key, value]) => ({
+              value: key,
+              label: commonT(`enums.loan.interestPayoutType.${key}`)
+            }))}
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormSelect
-            form={form}
-            name="altInterestMethod"
-            label={t('new.form.altInterestMethod')}
-            placeholder={commonT('ui.form.selectPlaceholder')}
-            options={[
-              { value: 'ACT365NOCOMPOUND', label: commonT('enums.interestMethod.ACT365NOCOMPOUND') },
-              { value: 'E30360NOCOMPOUND', label: commonT('enums.interestMethod.E30360NOCOMPOUND') },
-              { value: 'ACT360NOCOMPOUND', label: commonT('enums.interestMethod.ACT360NOCOMPOUND') },
-              { value: 'ACTACTNOCOMPOUND', label: commonT('enums.interestMethod.ACTACTNOCOMPOUND') },
-              { value: 'ACT365COMPOUND', label: commonT('enums.interestMethod.ACT365COMPOUND') },
-              { value: 'E30360COMPOUND', label: commonT('enums.interestMethod.E30360COMPOUND') },
-              { value: 'ACT360COMPOUND', label: commonT('enums.interestMethod.ACT360COMPOUND') },
-              { value: 'ACTACTCOMPOUND', label: commonT('enums.interestMethod.ACTACTCOMPOUND') },
-            ]}
-          />
-
-          <FormSelect
-            form={form}
-            name="contractStatus"
-            label={t('new.form.contractStatus')}
-            placeholder={commonT('ui.form.selectPlaceholder')}
-            options={[
-              { value: 'PENDING', label: commonT('enums.loan.contractStatus.PENDING') },
-              { value: 'COMPLETED', label: commonT('enums.loan.contractStatus.COMPLETED') },
-            ]}
-          />
+          {(selectedProject?.configuration.altInterestMethods.length ?? 0) > 0 && (
+            <FormSelect
+              form={form}
+              name="altInterestMethod"
+              label={t('new.form.altInterestMethod')}
+              placeholder={`${commonT(`enums.interestMethod.${selectedProject?.configuration.interestMethod}`)} (${commonT('default')})`}
+              options={(selectedProject?.configuration.altInterestMethods ?? []).map((key) => ({
+                value: key,
+                label: commonT(`enums.interestMethod.${key}`)
+              }))}
+            />
+          )}
         </div>
-      </div>
-    </>
+      </FormSection>
+    </div>
   )
 } 

@@ -114,7 +114,7 @@ export function LogbookTable({ changes }: LogbookTableProps) {
       cell: ({ row }: { row: Row<Change> }) => {
         const context = row.original.context as Record<string, any>
         return context.user?.name || t('unknownUser')
-      }
+      },
     }, t),
 
     createColumn<Change>({
@@ -122,7 +122,7 @@ export function LogbookTable({ changes }: LogbookTableProps) {
       header: 'when',
       cell: ({ row }: { row: Row<Change> }) => {
         return format(new Date(row.original.committedAt), 'PPPp', { locale: de })
-      }
+      },
     }, t),
 
     createColumn<Change>({
