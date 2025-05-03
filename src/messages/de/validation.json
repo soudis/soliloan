@@ -1,0 +1,12 @@
+{
+  "common": {
+    "required": "Bitte eingeben",
+    "email": "Bitte gültige E-Mail-Adresse eingeben",
+    "iban": "Bitte gültige IBAN eingeben",
+    "bic": "Bitte gültige BIC/SWIFT eingeben",
+    "number": "Bitte eine Zahl eingeben",
+    "numberMin": "Bitte eine Zahl größer oder gleich {min} eingeben",
+    "date": "Bitte ein gültiges Datum eingeben",
+    "addressComplete": "Bitte eingeben"
+  }
+}

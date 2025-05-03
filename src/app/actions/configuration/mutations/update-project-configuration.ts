@@ -65,6 +65,7 @@ export async function updateConfiguration(projectId: string, data: any) {
       interestMethod: validatedData.interestMethod || null,
       altInterestMethods: validatedData.altInterestMethods || [],
       customLoans: validatedData.customLoans || false,
+      lenderRequiredFields: validatedData.lenderRequiredFields || [],
     }
 
     // Get the current configuration for audit trail
@@ -140,6 +141,7 @@ export async function updateConfiguration(projectId: string, data: any) {
       interestMethod: configuration.interestMethod || undefined,
       altInterestMethods: configuration.altInterestMethods || [],
       customLoans: configuration.customLoans || false,
+      lenderRequiredFields: configuration.lenderRequiredFields || [],
     }
 
     return { configuration: formConfiguration }

@@ -1,10 +1,13 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
+import { FormActions } from '@/components/ui/form-actions'
+import { FormLayout } from '@/components/ui/form-layout'
+import { validateAddressOptional, validateAddressRequired, validateFieldRequired } from '@/lib/schemas/common'
 import { lenderFormSchema, type LenderFormData } from '@/lib/schemas/lender'
 import { useProject } from '@/store/project-context'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { LenderRequiredField } from '@prisma/client'
 import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { LenderFormFields } from './lender-form-fields'
@@ -40,85 +43,86 @@ export function LenderForm({
   }
 
   const initialType = initialData?.type || 'PERSON'
-  const defaultValues = {
+  const defaultValues: LenderFormData = {
     type: initialType,
-    salutation: initialData?.salutation || selectedProject.configuration?.lenderSalutation || 'PERSONAL',
-    notificationType: initialData?.notificationType || selectedProject.configuration?.lenderNotificationType || 'ONLINE',
-    membershipStatus: initialData?.membershipStatus || selectedProject.configuration?.lenderMembershipStatus || 'UNKNOWN',
+    salutation: initialData?.salutation || selectedProject.configuration?.lenderSalutation || '',
+    notificationType: initialData?.notificationType || selectedProject.configuration?.lenderNotificationType || '',
+    membershipStatus: initialData?.membershipStatus || selectedProject.configuration?.lenderMembershipStatus || '',
     projectId: selectedProject.id,
     // Contact Information
-    email: initialData?.email || undefined,
-    telNo: initialData?.telNo || undefined,
+    email: initialData?.email || '',
+    telNo: initialData?.telNo || '',
     // Address Information
-    street: initialData?.street || undefined,
-    addon: initialData?.addon || undefined,
-    zip: initialData?.zip || undefined,
-    place: initialData?.place || undefined,
-    country: initialData?.country || selectedProject.configuration?.lenderCountry || undefined,
+    street: initialData?.street || '',
+    addon: initialData?.addon || '',
+    zip: initialData?.zip || '',
+    place: initialData?.place || '',
+    country: initialData?.country || selectedProject.configuration?.lenderCountry || '',
     // Banking Information
-    iban: initialData?.iban || undefined,
-    bic: initialData?.bic || undefined,
+    iban: initialData?.iban || '',
+    bic: initialData?.bic || '',
     // Additional Information
-    tag: initialData?.tag || undefined,
+    tag: initialData?.tag || '',
     // Person-specific fields
     ...(initialType === 'PERSON'
       ? {
         firstName: initialData?.firstName || '',
         lastName: initialData?.lastName || '',
-        titlePrefix: initialData?.titlePrefix || undefined,
-        titleSuffix: initialData?.titleSuffix || undefined,
-        organisationName: undefined,
+        titlePrefix: initialData?.titlePrefix || '',
+        titleSuffix: initialData?.titleSuffix || '',
+        organisationName: '',
       }
       : {
         organisationName: initialData?.organisationName || '',
-        firstName: undefined,
-        lastName: undefined,
-        titlePrefix: undefined,
-        titleSuffix: undefined,
+        firstName: '',
+        lastName: '',
+        titlePrefix: '',
+        titleSuffix: '',
       }),
     // Include any other fields from initialData that might not be explicitly handled
-    ...initialData,
+  }
+
+  let schema: any = lenderFormSchema
+
+  if (selectedProject.configuration?.lenderRequiredFields.includes(LenderRequiredField.address)) {
+    schema = schema.superRefine(validateAddressRequired)
+  } else {
+    schema = schema.superRefine(validateAddressOptional)
+  }
+  if (selectedProject.configuration?.lenderRequiredFields.includes(LenderRequiredField.email)) {
+    schema = schema.superRefine(validateFieldRequired('email'))
+  }
+  if (selectedProject.configuration?.lenderRequiredFields.includes(LenderRequiredField.telNo)) {
+    schema = schema.superRefine(validateFieldRequired('telNo'))
   }
 
   const form = useForm<LenderFormData>({
-    resolver: zodResolver(lenderFormSchema),
-    defaultValues: defaultValues as any,
+    resolver: zodResolver(schema),
+    defaultValues,
   })
 
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
-      await onSubmit(data as LenderFormData)
+      await onSubmit(data)
     } catch (error) {
       console.error('Error submitting form:', error)
     }
   })
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
-      </div>
-
+    <FormLayout title={title} error={error}>
       <Form {...form}>
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit}>
           <LenderFormFields form={form} />
 
-          <div className="flex justify-end space-x-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => window.history.back()}
-              disabled={isLoading}
-            >
-              {cancelButtonText}
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? submittingButtonText : submitButtonText}
-            </Button>
-          </div>
+          <FormActions
+            submitButtonText={submitButtonText}
+            submittingButtonText={submittingButtonText}
+            cancelButtonText={cancelButtonText}
+            isLoading={isLoading}
+          />
         </form>
       </Form>
-    </div>
+    </FormLayout>
   )
 } 

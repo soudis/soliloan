@@ -8,6 +8,8 @@ interface FormCountrySelectProps {
   name: string
   label?: string
   placeholder?: string
+  required?: boolean
+  clearable?: boolean
 }
 
 // Primary countries that should appear at the top
@@ -25,6 +27,8 @@ export function FormCountrySelect({
   name,
   label = 'Country',
   placeholder = 'Select a country',
+  required = false,
+  clearable = false,
 }: FormCountrySelectProps) {
   const t = useTranslations('common.countries')
   const commonT = useTranslations('common')
@@ -66,9 +70,11 @@ export function FormCountrySelect({
       placeholder={placeholder || commonT('ui.form.selectPlaceholder')}
       options={[...primaryOptions, ...otherOptions]}
       side="bottom"
+      required={required}
       align="start"
       position="popper"
       customContent={renderSelectContent}
+      clearable={clearable}
     />
   )
 } 

@@ -14,6 +14,8 @@ import {
 
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+import { parseValidationError } from "@/lib/utils/validation"
+import { useTranslations } from "next-intl"
 
 const Form = FormProvider
 
@@ -147,7 +149,10 @@ const FormMessage = React.forwardRef<
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, children, ...props }, ref) => {
   const { error, formMessageId } = useFormField()
-  const body = error ? String(error?.message) : children
+  const t = useTranslations()
+  const parsedError = parseValidationError(error?.message)
+
+  const body = error ? String((parsedError || error?.message?.startsWith('validation.')) ? t(parsedError?.message ?? error.message, parsedError?.params) : error.message) : children
 
   if (!body) {
     return null

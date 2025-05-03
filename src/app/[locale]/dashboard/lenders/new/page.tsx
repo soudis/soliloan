@@ -42,7 +42,7 @@ export default function NewLenderPage() {
       toast.success(t('new.form.success'))
 
       // Redirect to the lenders list page for this project
-      router.push(`/dashboard/lenders/${selectedProject.id}`)
+      router.push(`/dashboard/lenders/${result.lender?.id}`)
     } catch (error) {
       console.error('Error submitting form:', error)
       setError(error instanceof Error ? error.message : 'An unknown error occurred')

@@ -1,47 +1,18 @@
 'use client'
 
+import { ProjectWithConfiguration } from '@/types/projects'
 import { createContext, ReactNode, useContext, useState } from 'react'
 
-interface Project {
-  id: string
-  name: string
-  slug: string
-  configuration?: {
-    id: string
-    name: string
-    email?: string
-    telNo?: string
-    website?: string
-    street?: string
-    addon?: string
-    zip?: string
-    place?: string
-    country?: string
-    iban?: string
-    bic?: string
-    userLanguage?: string
-    userTheme?: string
-    lenderSalutation?: string
-    lenderCountry?: string
-    lenderNotificationType?: string
-    lenderMembershipStatus?: string
-    lenderTags: string[]
-    interestMethod?: string
-    altInterestMethods: string[]
-    customLoans: boolean
-  }
-  // Add other project properties as needed
-}
 
 interface ProjectContextType {
-  selectedProject: Project | null
-  setSelectedProject: (project: Project | null) => void
+  selectedProject: ProjectWithConfiguration | null
+  setSelectedProject: (project: ProjectWithConfiguration | null) => void
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined)
 
 export function ProjectProvider({ children }: { children: ReactNode }) {
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [selectedProject, setSelectedProject] = useState<ProjectWithConfiguration | null>(null)
 
   return (
     <ProjectContext.Provider value={{ selectedProject, setSelectedProject }}>

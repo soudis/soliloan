@@ -19,7 +19,7 @@ export default function ConfigurationPage() {
   const [error, setError] = useState<string | null>(null)
 
   // Fetch configuration data using React Query
-  const { data: configurationData, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['configuration', selectedProject?.id],
     queryFn: async () => {
       if (!selectedProject) return null
@@ -29,14 +29,12 @@ export default function ConfigurationPage() {
       if ('error' in result) {
         throw new Error(result.error)
       }
-      return result.configuration
+      return { configuration: result.configuration, hasHistoricTransactions: result.hasHistoricTransactions }
     },
     enabled: !!selectedProject?.id,
     staleTime: 300000, // 5 minutes
     gcTime: 1800000, // 30 minutes
   })
-
-  console.log('Current configuration data:', configurationData)
 
   if (!session) {
     return null
@@ -46,9 +44,11 @@ export default function ConfigurationPage() {
     return null
   }
 
-  if (!configurationData) {
+  if (!data) {
     return null
   }
+
+  const { configuration: configurationData, hasHistoricTransactions } = data
 
   const handleSubmit = async (data: ConfigurationFormData) => {
     try {
@@ -57,7 +57,6 @@ export default function ConfigurationPage() {
 
       // Update the configuration using the server action
       const result = await updateConfiguration(selectedProject.id, data)
-      console.log('Update result:', result)
 
       if ('error' in result) {
         throw new Error(result.error)
@@ -69,26 +68,27 @@ export default function ConfigurationPage() {
         configuration: {
           ...result.configuration,
           // Keep undefined values as undefined for the project store
-          email: result.configuration.email,
-          telNo: result.configuration.telNo,
-          website: result.configuration.website,
-          street: result.configuration.street,
-          addon: result.configuration.addon,
-          zip: result.configuration.zip,
-          place: result.configuration.place,
-          country: result.configuration.country,
-          iban: result.configuration.iban,
-          bic: result.configuration.bic,
-          userLanguage: result.configuration.userLanguage,
-          userTheme: result.configuration.userTheme,
-          lenderSalutation: result.configuration.lenderSalutation,
-          lenderCountry: result.configuration.lenderCountry,
-          lenderNotificationType: result.configuration.lenderNotificationType,
-          lenderMembershipStatus: result.configuration.lenderMembershipStatus,
+          email: result.configuration.email || null,
+          telNo: result.configuration.telNo || null,
+          website: result.configuration.website || null,
+          street: result.configuration.street || null,
+          addon: result.configuration.addon || null,
+          zip: result.configuration.zip || null,
+          place: result.configuration.place || null,
+          country: result.configuration.country || null,
+          iban: result.configuration.iban || null,
+          bic: result.configuration.bic || null,
+          userLanguage: result.configuration.userLanguage || null,
+          userTheme: result.configuration.userTheme || null,
+          lenderSalutation: result.configuration.lenderSalutation || null,
+          lenderCountry: result.configuration.lenderCountry || null,
+          lenderNotificationType: result.configuration.lenderNotificationType || null,
+          lenderMembershipStatus: result.configuration.lenderMembershipStatus || null,
           lenderTags: result.configuration.lenderTags || [],
-          interestMethod: result.configuration.interestMethod,
+          interestMethod: result.configuration.interestMethod || null,
           altInterestMethods: result.configuration.altInterestMethods || [],
           customLoans: result.configuration.customLoans || false,
+          lenderRequiredFields: result.configuration.lenderRequiredFields || [],
         }
       })
 
@@ -110,6 +110,7 @@ export default function ConfigurationPage() {
       cancelButtonText={t('form.cancel')}
       onSubmit={handleSubmit}
       initialData={configurationData || undefined}
+      hasHistoricTransactions={hasHistoricTransactions}
       isLoading={isLoading}
       error={error}
     />

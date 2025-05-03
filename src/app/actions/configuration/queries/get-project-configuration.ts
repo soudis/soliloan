@@ -2,6 +2,7 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
+import moment from 'moment'
 
 export async function getConfiguration(projectId: string) {
   try {
@@ -17,7 +18,10 @@ export async function getConfiguration(projectId: string) {
       },
       include: {
         managers: true,
-        configuration: true
+        configuration: true,
+        lenders: {
+          include: { loans: { include: { transactions: true } } }
+        }
       }
     })
 
@@ -59,9 +63,10 @@ export async function getConfiguration(projectId: string) {
       interestMethod: project.configuration.interestMethod || undefined,
       altInterestMethods: project.configuration.altInterestMethods || [],
       customLoans: project.configuration.customLoans || false,
+      lenderRequiredFields: project.configuration.lenderRequiredFields || [],
     } : null
 
-    return { configuration }
+    return { configuration, hasHistoricTransactions: project.lenders.some(lender => lender.loans.some(loan => loan.transactions.filter(t => moment(t.date).isBefore(moment().startOf('year'))).length > 0)) }
   } catch (error) {
     console.error('Error fetching project configuration:', error)
     return { error: error instanceof Error ? error.message : 'Failed to fetch project configuration' }

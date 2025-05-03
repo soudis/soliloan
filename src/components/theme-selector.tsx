@@ -29,7 +29,7 @@ export function ThemeSelector() {
       <SelectContent>
         {themes.map((theme) => (
           <SelectItem key={theme.value} value={theme.value}>
-            {theme.value === 'default' ? commonT('enums.theme.DEFAULT') : theme.label}
+            {commonT(`enums.theme.${theme.value}`)}
           </SelectItem>
         ))}
       </SelectContent>

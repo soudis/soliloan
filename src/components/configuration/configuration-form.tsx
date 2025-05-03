@@ -1,7 +1,8 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
+import { FormActions } from '@/components/ui/form-actions'
+import { FormLayout } from '@/components/ui/form-layout'
 import { configurationFormSchema, type ConfigurationFormData } from '@/lib/schemas/configuration'
 import { useProject } from '@/store/project-context'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -18,6 +19,7 @@ interface ConfigurationFormProps {
   initialData?: Partial<ConfigurationFormData>
   isLoading?: boolean
   error?: string | null
+  hasHistoricTransactions?: boolean
 }
 
 export function ConfigurationForm({
@@ -29,6 +31,7 @@ export function ConfigurationForm({
   initialData,
   isLoading,
   error,
+  hasHistoricTransactions,
 }: ConfigurationFormProps) {
   const t = useTranslations('dashboard.configuration')
   const { selectedProject } = useProject()
@@ -37,7 +40,7 @@ export function ConfigurationForm({
     return null
   }
 
-  const defaultValues = {
+  const defaultValues: ConfigurationFormData = {
     name: initialData?.name || '',
     logo: initialData?.logo || undefined,
     email: initialData?.email || undefined,
@@ -52,15 +55,17 @@ export function ConfigurationForm({
     bic: initialData?.bic || undefined,
     userLanguage: initialData?.userLanguage || undefined,
     userTheme: initialData?.userTheme || undefined,
+    lenderRequiredFields: initialData?.lenderRequiredFields || [],
     lenderSalutation: initialData?.lenderSalutation || undefined,
     lenderCountry: initialData?.lenderCountry || undefined,
     lenderNotificationType: initialData?.lenderNotificationType || undefined,
     lenderMembershipStatus: initialData?.lenderMembershipStatus || undefined,
     lenderTags: initialData?.lenderTags || [],
-    interestMethod: initialData?.interestMethod || undefined,
+    interestMethod: initialData?.interestMethod || "",
     altInterestMethods: initialData?.altInterestMethods || [],
     customLoans: initialData?.customLoans || false,
   }
+
 
   const form = useForm<ConfigurationFormData>({
     resolver: zodResolver(configurationFormSchema),
@@ -76,31 +81,19 @@ export function ConfigurationForm({
   })
 
   return (
-    <div className="space-y-6 max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
-      </div>
-
+    <FormLayout title={title} error={error}>
       <Form {...form}>
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <ConfigurationFormFields form={form} />
+        <form onSubmit={handleSubmit}>
+          <ConfigurationFormFields form={form} hasHistoricTransactions={hasHistoricTransactions} />
 
-          <div className="flex justify-end space-x-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => window.history.back()}
-              disabled={isLoading}
-            >
-              {cancelButtonText}
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? submittingButtonText : submitButtonText}
-            </Button>
-          </div>
+          <FormActions
+            submitButtonText={submitButtonText}
+            submittingButtonText={submittingButtonText}
+            cancelButtonText={cancelButtonText}
+            isLoading={isLoading}
+          />
         </form>
       </Form>
-    </div>
+    </FormLayout>
   )
 } 

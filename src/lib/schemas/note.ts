@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const noteSchema = z.object({
-  text: z.string().min(1, { message: 'Note text is required' }),
+  text: z.string().min(1, { message: 'validation.common.required' }),
   public: z.boolean().default(false).nullish(),
 })
 

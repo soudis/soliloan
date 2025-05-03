@@ -15,7 +15,8 @@ import {
   createTerminationModalitiesColumn
 } from '@/lib/table-column-utils'
 import { useProject } from '@/store/project-context'
-import { Lender, Loan, Transaction } from '@prisma/client'
+import { LoanStatus } from '@/types/loans'
+import { ContractStatus, InterestMethod, InterestPaymentType, InterestPayoutType, Lender, Loan, TerminationType, Transaction } from '@prisma/client'
 import { useQuery } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
 import { Pencil, Plus } from 'lucide-react'
@@ -166,12 +167,8 @@ export default function LoansPage() {
       commonT,
       (value) => {
         switch (value) {
-          case 'SIGNED':
+          case ContractStatus.COMPLETED:
             return 'default'
-          case 'DRAFT':
-            return 'secondary'
-          case 'EXPIRED':
-            return 'destructive'
           default:
             return 'outline'
         }
@@ -232,27 +229,26 @@ export default function LoansPage() {
     interestPaymentType: {
       type: 'select' as const,
       label: t('table.interestPaymentType'),
-      options: [
-        { label: commonT('enums.loan.interestPaymentType.YEARLY'), value: 'YEARLY' },
-        { label: commonT('enums.loan.interestPaymentType.END'), value: 'END' }
-      ]
+      options: Object.entries(InterestPaymentType).map(([key, value]) => ({
+        label: commonT(`enums.loan.interestPaymentType.${key}`),
+        value: value
+      }))
     },
     interestPayoutType: {
       type: 'select' as const,
       label: t('table.interestPayoutType'),
-      options: [
-        { label: commonT('enums.loan.interestPayoutType.MONEY'), value: 'MONEY' },
-        { label: commonT('enums.loan.interestPayoutType.COUPON'), value: 'COUPON' }
-      ]
+      options: Object.entries(InterestPayoutType).map(([key, value]) => ({
+        label: commonT(`enums.loan.interestPayoutType.${key}`),
+        value: value
+      }))
     },
     terminationType: {
       type: 'select' as const,
       label: t('table.terminationType'),
-      options: [
-        { label: commonT('enums.loan.terminationType.ENDDATE'), value: 'ENDDATE' },
-        { label: commonT('enums.loan.terminationType.TERMINATION'), value: 'TERMINATION' },
-        { label: commonT('enums.loan.terminationType.DURATION'), value: 'DURATION' }
-      ]
+      options: Object.entries(TerminationType).map(([key, value]) => ({
+        label: commonT(`enums.loan.terminationType.${key}`),
+        value: value
+      }))
     },
     terminationModalities: {
       type: 'text' as const,
@@ -265,34 +261,26 @@ export default function LoansPage() {
     status: {
       type: 'select' as const,
       label: t('table.status'),
-      options: [
-        { label: commonT('enums.loan.status.NOTDEPOSITED'), value: 'NOTDEPOSITED' },
-        { label: commonT('enums.loan.status.ACTIVE'), value: 'ACTIVE' },
-        { label: commonT('enums.loan.status.REPAID'), value: 'REPAID' },
-        { label: commonT('enums.loan.status.TERMINATED'), value: 'TERMINATED' }
-      ]
+      options: Object.entries(LoanStatus).map(([key, value]) => ({
+        label: commonT(`enums.loan.status.${key}`),
+        value: value
+      }))
     },
     altInterestMethod: {
       type: 'select' as const,
       label: t('table.altInterestMethod'),
-      options: [
-        { label: commonT('enums.interestMethod.ACT365NOCOMPOUND'), value: 'ACT365NOCOMPOUND' },
-        { label: commonT('enums.interestMethod.E30360NOCOMPOUND'), value: 'E30360NOCOMPOUND' },
-        { label: commonT('enums.interestMethod.ACT360NOCOMPOUND'), value: 'ACT360NOCOMPOUND' },
-        { label: commonT('enums.interestMethod.ACTACTNOCOMPOUND'), value: 'ACTACTNOCOMPOUND' },
-        { label: commonT('enums.interestMethod.ACT365COMPOUND'), value: 'ACT365COMPOUND' },
-        { label: commonT('enums.interestMethod.E30360COMPOUND'), value: 'E30360COMPOUND' },
-        { label: commonT('enums.interestMethod.ACT360COMPOUND'), value: 'ACT360COMPOUND' },
-        { label: commonT('enums.interestMethod.ACTACTCOMPOUND'), value: 'ACTACTCOMPOUND' }
-      ]
+      options: Object.entries(InterestMethod).map(([key, value]) => ({
+        label: commonT(`enums.interestMethod.${key}`),
+        value: value
+      }))
     },
     contractStatus: {
       type: 'select' as const,
       label: t('table.contractStatus'),
-      options: [
-        { label: commonT('enums.loan.contractStatus.PENDING'), value: 'PENDING' },
-        { label: commonT('enums.loan.contractStatus.COMPLETED'), value: 'COMPLETED' }
-      ]
+      options: Object.entries(ContractStatus).map(([key, value]) => ({
+        label: commonT(`enums.loan.contractStatus.${key}`),
+        value: value
+      }))
     }
   }
 

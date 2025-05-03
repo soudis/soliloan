@@ -4,7 +4,9 @@ import { FormCountrySelect } from '@/components/form/form-country-select'
 import { FormField } from '@/components/form/form-field'
 import { FormIbanInput } from '@/components/form/form-iban-input'
 import { FormSelect } from '@/components/form/form-select'
+import { FormSection } from '@/components/ui/form-section'
 import type { LenderFormData } from '@/lib/schemas/lender'
+import { LenderType, MembershipStatus, NotificationType, Salutation } from '@prisma/client'
 import { useTranslations } from 'next-intl'
 import { UseFormReturn } from 'react-hook-form'
 
@@ -19,21 +21,19 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
   const salutation = form.watch('salutation')
 
   return (
-    <>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {/* General Information Section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-medium text-muted-foreground">{t('new.form.generalInfo')}</h2>
-
+      <FormSection title={t('new.form.generalInfo')}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormSelect
             form={form}
             name="type"
             label={t('new.form.type') + ' *'}
             placeholder={commonT('ui.form.selectPlaceholder')}
-            options={[
-              { value: 'PERSON', label: commonT('enums.lender.type.PERSON') },
-              { value: 'ORGANISATION', label: commonT('enums.lender.type.ORGANISATION') },
-            ]}
+            options={Object.entries(LenderType).map(([key, value]) => ({
+              value,
+              label: commonT(`enums.lender.type.${key}`)
+            }))}
           />
 
           <FormSelect
@@ -41,10 +41,10 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
             name="salutation"
             label={t('new.form.salutation') + ' *'}
             placeholder={commonT('ui.form.selectPlaceholder')}
-            options={[
-              { value: 'PERSONAL', label: commonT('enums.lender.salutation.PERSONAL') },
-              { value: 'FORMAL', label: commonT('enums.lender.salutation.FORMAL') },
-            ]}
+            options={Object.entries(Salutation).map(([key, value]) => ({
+              value,
+              label: commonT(`enums.lender.salutation.${key}`)
+            }))}
           />
         </div>
 
@@ -92,12 +92,10 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
             placeholder={commonT('ui.form.enterPlaceholder')}
           />
         )}
-      </div>
+      </FormSection>
 
       {/* Contact Information Section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-medium text-muted-foreground">{t('new.form.contactInfo')}</h2>
-
+      <FormSection title={t('new.form.contactInfo')}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             form={form}
@@ -115,7 +113,6 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
             type="tel"
           />
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             form={form}
@@ -160,12 +157,10 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
             />
           </div>
         </div>
-      </div>
+      </FormSection>
 
       {/* Banking Information Section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-medium text-muted-foreground">{t('new.form.bankingInfo')}</h2>
-
+      <FormSection title={t('new.form.bankingInfo')}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormIbanInput
             name="iban"
@@ -180,23 +175,20 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
             placeholder={commonT('ui.form.enterPlaceholder')}
           />
         </div>
-      </div>
+      </FormSection>
 
       {/* Additional Information Section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-medium text-muted-foreground">{t('new.form.additionalInfo')}</h2>
-
+      <FormSection title={t('new.form.additionalInfo')}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormSelect
             form={form}
             name="notificationType"
             label={t('new.form.notificationType') + ' *'}
             placeholder={commonT('ui.form.selectPlaceholder')}
-            options={[
-              { value: 'ONLINE', label: commonT('enums.lender.notificationType.ONLINE') },
-              { value: 'EMAIL', label: commonT('enums.lender.notificationType.EMAIL') },
-              { value: 'MAIL', label: commonT('enums.lender.notificationType.MAIL') },
-            ]}
+            options={Object.entries(NotificationType).map(([key, value]) => ({
+              value,
+              label: commonT(`enums.lender.notificationType.${key}`)
+            }))}
           />
 
           <FormSelect
@@ -204,11 +196,10 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
             name="membershipStatus"
             label={t('new.form.membershipStatus')}
             placeholder={commonT('ui.form.selectPlaceholder')}
-            options={[
-              { value: 'UNKNOWN', label: commonT('enums.lender.membershipStatus.UNKNOWN') },
-              { value: 'MEMBER', label: commonT('enums.lender.membershipStatus.MEMBER') },
-              { value: 'EXTERNAL', label: commonT('enums.lender.membershipStatus.EXTERNAL') },
-            ]}
+            options={Object.entries(MembershipStatus).map(([key, value]) => ({
+              value,
+              label: commonT(`enums.lender.membershipStatus.${key}`)
+            }))}
           />
         </div>
 
@@ -218,7 +209,7 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
           label={t('new.form.tag')}
           placeholder={commonT('ui.form.enterPlaceholder')}
         />
-      </div>
-    </>
+      </FormSection>
+    </div>
   )
 } 

@@ -1,38 +1,59 @@
 import { isValidIban } from '@/lib/utils/iban';
+import { ContractStatus, Country, DurationType, InterestMethod, InterestPaymentType, InterestPayoutType, MembershipStatus, NotificationType, Salutation, ViewType } from '@prisma/client';
 import { z } from 'zod';
+import { validationError } from '../utils/validation';
 
 // Generic number schemas
 export const createNumberSchema = (min?: number) => {
   const baseSchema = z
     .coerce.number()
     .refine((value) => value === null || !isNaN(Number(value)), {
-      message: "Expected number, received string",
+      message: "validation.common.number",
     })
     .nullable();
 
   if (min !== undefined) {
     return baseSchema.refine((value) => value === null || value >= min, {
-      message: `Value must be greater than or equal to ${min}`,
+      message: validationError('validation.common.numberMin', { min }),
     });
   }
 
   return baseSchema;
 };
 
+
+export const selectEnumRequired = <T extends Record<string, string>>(
+  enumObj: T,
+  errorMessage = "validation.common.required"
+) => {
+  return z
+    .union([z.nativeEnum(enumObj), z.literal("")])
+    .refine((val) => val !== "", {
+      message: errorMessage,
+    });
+}
+
+export const selectEnumOptional = <T extends Record<string, string>>(
+  enumObj: T,
+) => {
+  return z.union([z.nativeEnum(enumObj), z.literal("")])
+}
+
+
 export const requiredNumberSchema = createNumberSchema().refine((value) => value !== null, {
-  message: "Number is required",
+  message: "validation.common.required",
 });
 export const optionalNumberSchema = createNumberSchema().optional();
 
 // Generic date schemas
 export const createDateSchema = (required = true) => {
   const baseSchema = z.coerce.date({
-    invalid_type_error: "Expected date, received invalid date",
+    message: "validation.common.date",
   }).nullable();
 
   if (required) {
     return baseSchema.refine((value) => value !== null, {
-      message: "Date is required",
+      message: "validation.common.required",
     });
   }
 
@@ -43,11 +64,97 @@ export const requiredDateSchema = createDateSchema(true);
 export const optionalDateSchema = createDateSchema(false);
 
 // Country enum used across multiple schemas
-export const countryEnum = z.enum([
-  'DE', 'AT', 'CH', 'US', 'GB', 'FR', 'IT', 'ES', 'NL', 'BE', 'DK', 'SE', 'NO', 'FI', 'PL', 'CZ', 'HU', 'RO', 'BG', 'HR', 'SI', 'SK', 'EE', 'LV', 'LT', 'CY', 'MT', 'LU', 'IE', 'PT', 'GR'
-])
+export const countryEnum = selectEnumOptional(Country)
 
-// Common address fields
+export const validateAddressOptional = (data: {
+  street?: string | null;
+  addon?: string | null;
+  zip?: string | null;
+  place?: string | null;
+  country?: Country | null | '';
+}, ctx: z.RefinementCtx) => {
+  const hasAnyField = data.street && data.street !== '' || data.zip && data.zip !== '' || data.place && data.place !== '' || data.addon && data.addon !== '';
+  if (hasAnyField && (!data.street || data.street === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "validation.common.addressComplete",
+      path: ["street"]
+    });
+  }
+  if (hasAnyField && (!data.zip || data.zip === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "validation.common.addressComplete",
+      path: ["zip"]
+    });
+  }
+  if (hasAnyField && (!data.place || data.place === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "validation.common.addressComplete",
+      path: ["place"]
+    });
+  }
+  if (hasAnyField && (!data.country || data.country === null)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "validation.common.addressComplete",
+      path: ["country"]
+    });
+  }
+};
+
+export const validateAddressRequired = (data: {
+  street?: string | null;
+  addon?: string | null;
+  zip?: string | null;
+  place?: string | null;
+  country?: Country | null | '';
+}, ctx: z.RefinementCtx) => {
+  if ((!data.street || data.street === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "validation.common.required",
+      path: ["street"]
+    });
+  }
+  if ((!data.zip || data.zip === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "validation.common.required",
+      path: ["zip"]
+    });
+  }
+  if ((!data.place || data.place === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "validation.common.required",
+      path: ["place"]
+    });
+  }
+  if ((!data.country || data.country === null)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "validation.common.required",
+      path: ["country"]
+    });
+  }
+}
+
+export const validateFieldRequired = (field: string) => (data: {
+  [key: string]: string | null;
+}, ctx: z.RefinementCtx) => {
+  if ((!data[field] || data[field] === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "validation.common.required",
+      path: [field]
+    });
+  }
+}
+
+
+
 export const addressSchema = z.object({
   street: z.string().nullable().optional(),
   addon: z.string().nullable().optional(),
@@ -56,9 +163,11 @@ export const addressSchema = z.object({
   country: countryEnum.nullable().optional(),
 })
 
+export const emailSchemaOptional = z.string().email({ message: 'validation.common.email' }).or(z.literal('')).nullable().optional()
+export const emailSchemaRequired = z.string().email({ message: 'validation.common.email' })
 // Common contact fields
 export const contactSchema = z.object({
-  email: z.string().email({ message: 'Invalid email address' }).nullable().optional(),
+  email: emailSchemaOptional,
   telNo: z.string().nullable().optional(),
 })
 
@@ -68,48 +177,41 @@ export const bankingSchema = z.object({
     .nullable()
     .optional()
     .refine((val) => !val || isValidIban(val), {
-      message: 'Invalid IBAN number'
+      message: 'validation.common.iban'
     }),
   bic: z.string()
     .nullable()
     .optional()
     .refine((val) => !val || /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(val), {
-      message: 'Invalid BIC/SWIFT code'
+      message: 'validation.common.bic'
     }),
 })
 
 // Interest method enum
-export const interestMethodEnum = z.enum([
-  'ACT_365_NOCOMPOUND',
-  'E30_360_NOCOMPOUND',
-  'ACT_360_NOCOMPOUND',
-  'ACT_ACT_NOCOMPOUND',
-  'ACT_365_COMPOUND',
-  'E30_360_COMPOUND',
-  'ACT_360_COMPOUND',
-  'ACT_ACT_COMPOUND'
-])
+export const interestMethodEnum = selectEnumRequired(InterestMethod)
 
 // Notification type enum
-export const notificationTypeEnum = z.enum(['ONLINE', 'EMAIL', 'MAIL'])
+export const notificationTypeEnumRequired = selectEnumRequired(NotificationType)
+export const notificationTypeEnumOptional = selectEnumOptional(NotificationType)
 
 // Membership status enum
-export const membershipStatusEnum = z.enum(['UNKNOWN', 'MEMBER', 'EXTERNAL'])
+export const membershipStatusEnumRequired = selectEnumRequired(MembershipStatus)
+export const membershipStatusEnumOptional = selectEnumOptional(MembershipStatus)
 
 // Salutation enum
-export const salutationEnum = z.enum(['PERSONAL', 'FORMAL'])
-
-// Period type enum
-export const periodTypeEnum = z.enum(['MONTHS', 'YEARS'])
+export const salutationEnumRequired = selectEnumRequired(Salutation)
+export const salutationEnumOptional = selectEnumOptional(Salutation)
+// Period type enum (TerminationPeriodType) 
+export const periodTypeEnum = selectEnumOptional(DurationType)
 
 // Interest payment type enum
-export const interestPaymentTypeEnum = z.enum(['YEARLY', 'END'])
+export const interestPaymentTypeEnum = selectEnumRequired(InterestPaymentType)
 
 // Interest payout type enum
-export const interestPayoutTypeEnum = z.enum(['MONEY', 'COUPON'])
+export const interestPayoutTypeEnum = selectEnumRequired(InterestPayoutType)
 
 // Contract status enum
-export const contractStatusEnum = z.enum(['PENDING', 'COMPLETED'])
+export const contractStatusEnum = selectEnumRequired(ContractStatus)
 
 // View type enum
-export const viewTypeEnum = z.enum(['LENDER', 'LOAN']) 
+export const viewTypeEnum = selectEnumRequired(ViewType) 

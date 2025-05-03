@@ -56,7 +56,13 @@
       "creating": "Wird erstellt...",
       "update": "Aktualisieren",
       "updating": "Wird aktualisiert...",
-      "download": "Herunterladen"
+      "download": "Herunterladen",
+      "search": "Suchen...",
+      "selectAll": "Alle auswählen",
+      "clear": "Löschen",
+      "close": "Schließen",
+      "noResults": "Keine Ergebnisse gefunden",
+      "select": "Auswählen"
     },
     "status": {
       "success": "Erfolg",
@@ -68,7 +74,9 @@
       "required": "Erforderlich",
       "optional": "Optional",
       "selectPlaceholder": "Auswählen...",
-      "enterPlaceholder": "Eingeben..."
+      "enterPlaceholder": "Eingeben...",
+      "noDefault": "Keine Standardeinstellung",
+      "noRequiredFields": "Keine Pflichtfelder"
     },
     "table": {
       "columns": "Spalten",
@@ -80,6 +88,10 @@
     }
   },
   "enums": {
+    "language": {
+      "de": "Deutsch",
+      "en": "Englisch"
+    },
     "lender": {
       "type": {
         "PERSON": "Person",
@@ -98,6 +110,11 @@
         "UNKNOWN": "Unbekannt",
         "MEMBER": "Mitglied",
         "EXTERNAL": "Extern"
+      },
+      "requiredField": {
+        "address": "Adresse",
+        "email": "E-Mail",
+        "telNo": "Telefonnummer"
       }
     },
     "loan": {
@@ -157,19 +174,22 @@
       }
     },
     "interestMethod": {
-      "ACT365NOCOMPOUND": "Actual/365 (Ohne Zinseszins)",
-      "E30360NOCOMPOUND": "30/360 (Ohne Zinseszins)",
-      "ACT360NOCOMPOUND": "Actual/360 (Ohne Zinseszins)",
-      "ACTACTNOCOMPOUND": "Actual/Actual (Ohne Zinseszins)",
-      "ACT365COMPOUND": "Actual/365 (Mit Zinseszins)",
-      "E30360COMPOUND": "30/360 (Mit Zinseszins)",
-      "ACT360COMPOUND": "Actual/360 (Mit Zinseszins)",
-      "ACTACTCOMPOUND": "Actual/Actual (Mit Zinseszins)"
+      "ACT_365_NOCOMPOUND": "Actual/365 (Ohne Zinseszins)",
+      "E30_360_NOCOMPOUND": "30/360 (Ohne Zinseszins)",
+      "ACT_360_NOCOMPOUND": "Actual/360 (Ohne Zinseszins)",
+      "ACT_ACT_NOCOMPOUND": "Actual/Actual (Ohne Zinseszins)",
+      "ACT_365_COMPOUND": "Actual/365 (Mit Zinseszins)",
+      "E30_360_COMPOUND": "30/360 (Mit Zinseszins)",
+      "ACT_360_COMPOUND": "Actual/360 (Mit Zinseszins)",
+      "ACT_ACT_COMPOUND": "Actual/Actual (Mit Zinseszins)"
     },
     "theme": {
-      "DEFAULT": "System",
-      "DARK": "Dunkel",
-      "LIGHT": "Hell"
+      "default": "Standard",
+      "ocean": "Ozean",
+      "forest": "Wald",
+      "sunset": "Sonnenuntergang",
+      "lavender": "Lavendel"
     }
-  }
+  },
+  "clear": "Keine Standardeinstellung"
 }

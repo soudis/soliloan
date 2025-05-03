@@ -12,6 +12,7 @@ import {
   createLenderNameColumn
 } from '@/lib/table-column-utils'
 import { useProject } from '@/store/project-context'
+import { MembershipStatus, NotificationType, Salutation } from '@prisma/client'
 import { useQuery } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
 import { Eye, Pencil, Plus } from 'lucide-react'
@@ -90,7 +91,7 @@ export default function LendersPage() {
       'table.type',
       'enums.lender.type',
       t,
-      commonT
+      commonT, () => 'outline'
     ),
 
     createColumn<Lender>({
@@ -112,7 +113,7 @@ export default function LendersPage() {
       'table.notificationType',
       'enums.lender.notificationType',
       t,
-      commonT
+      commonT, () => 'outline'
     ),
 
     createLenderEnumBadgeColumn<Lender>(
@@ -120,7 +121,7 @@ export default function LendersPage() {
       'table.membershipStatus',
       'enums.lender.membershipStatus',
       t,
-      commonT
+      commonT, () => 'outline'
     ),
 
     createColumn<Lender>({
@@ -133,7 +134,7 @@ export default function LendersPage() {
       'table.salutation',
       'enums.lender.salutation',
       t,
-      commonT
+      commonT, () => 'outline'
     ),
   ]
 
@@ -174,20 +175,18 @@ export default function LendersPage() {
     notificationType: {
       type: 'select' as const,
       label: t('table.notificationType'),
-      options: [
-        { label: commonT('enums.lender.notificationType.ONLINE'), value: 'ONLINE' },
-        { label: commonT('enums.lender.notificationType.EMAIL'), value: 'EMAIL' },
-        { label: commonT('enums.lender.notificationType.MAIL'), value: 'MAIL' }
-      ]
+      options: Object.entries(NotificationType).map(([key, value]) => ({
+        label: commonT(`enums.lender.notificationType.${key}`),
+        value: value
+      }))
     },
     membershipStatus: {
       type: 'select' as const,
       label: t('table.membershipStatus'),
-      options: [
-        { label: commonT('enums.lender.membershipStatus.UNKNOWN'), value: 'UNKNOWN' },
-        { label: commonT('enums.lender.membershipStatus.MEMBER'), value: 'MEMBER' },
-        { label: commonT('enums.lender.membershipStatus.EXTERNAL'), value: 'EXTERNAL' }
-      ]
+      options: Object.entries(MembershipStatus).map(([key, value]) => ({
+        label: commonT(`enums.lender.membershipStatus.${key}`),
+        value: value
+      }))
     },
     tag: {
       type: 'text' as const,
@@ -196,10 +195,10 @@ export default function LendersPage() {
     salutation: {
       type: 'select' as const,
       label: t('table.salutation'),
-      options: [
-        { label: commonT('enums.lender.salutation.PERSONAL'), value: 'PERSONAL' },
-        { label: commonT('enums.lender.salutation.FORMAL'), value: 'FORMAL' }
-      ]
+      options: Object.entries(Salutation).map(([key, value]) => ({
+        label: commonT(`enums.lender.salutation.${key}`),
+        value: value
+      }))
     }
   }
 

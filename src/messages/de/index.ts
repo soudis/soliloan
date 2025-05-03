@@ -4,6 +4,7 @@ import dashboard from './dashboard.json';
 import dataTable from './dataTable.json';
 import logbook from './logbook.json';
 import navigation from './navigation.json';
+import validation from './validation.json';
 import views from './views.json';
 
 export default {
@@ -13,5 +14,6 @@ export default {
   navigation,
   dataTable,
   views,
-  logbook
+  logbook,
+  validation
 }; 

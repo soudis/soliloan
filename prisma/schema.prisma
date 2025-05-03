@@ -94,6 +94,7 @@ model Configuration {
   bic                    String?
   userLanguage           Language?
   userTheme              SoliLoansTheme?
+  lenderRequiredFields   LenderRequiredField[]
   lenderSalutation       Salutation?
   lenderCountry          Country?
   lenderNotificationType NotificationType?
@@ -347,8 +348,10 @@ enum Language {
 
 enum SoliLoansTheme {
   default
-  dark
-  light
+  ocean
+  forest
+  sunset
+  lavender
 }
 
 enum Country {
@@ -383,4 +386,10 @@ enum Country {
   IE
   PT
   GR
+}
+
+enum LenderRequiredField {
+  address
+  email
+  telNo
 }

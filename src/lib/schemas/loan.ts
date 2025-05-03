@@ -1,3 +1,4 @@
+import { TerminationType } from '@prisma/client';
 import { z } from 'zod';
 import {
   contractStatusEnum,
@@ -9,17 +10,16 @@ import {
   optionalNumberSchema,
   periodTypeEnum
 } from './common';
-
 // Define the loan form schema based on the Prisma model
 export const loanFormSchema = z.object({
-  // General Information
-  lenderId: z.string().min(1, { message: 'Lender is required' }),
+  // General Information  
+  lenderId: z.string().min(1, { message: 'validation.common.required' }),
   signDate: createDateSchema(true),
   amount: createNumberSchema(0.01),
   interestRate: createNumberSchema(0),
 
   // Termination Information
-  terminationType: z.enum(['ENDDATE', 'TERMINATION', 'DURATION']),
+  terminationType: z.nativeEnum(TerminationType),
   endDate: createDateSchema(false),
   terminationDate: createDateSchema(false),
   terminationPeriod: optionalNumberSchema,
@@ -38,7 +38,7 @@ export const loanFormSchema = z.object({
     if (!data.endDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'End date is required for ENDDATE termination type',
+        message: 'validation.common.required',
         path: ['endDate'],
       });
     }
@@ -46,14 +46,14 @@ export const loanFormSchema = z.object({
     if (!data.terminationPeriod) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Termination period is required for TERMINATION termination type',
+        message: 'validation.common.required',
         path: ['terminationPeriod'],
       });
     }
     if (!data.terminationPeriodType) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Termination period type is required for TERMINATION termination type',
+        message: 'validation.common.required',
         path: ['terminationPeriodType'],
       });
     }
@@ -61,14 +61,14 @@ export const loanFormSchema = z.object({
     if (!data.duration) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Duration is required for DURATION termination type',
+        message: 'validation.common.required',
         path: ['duration'],
       });
     }
     if (!data.durationType) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Duration type is required for DURATION termination type',
+        message: 'validation.common.required',
         path: ['durationType'],
       });
     }

@@ -9,45 +9,17 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useProject } from '@/store/project-context'
+import { ProjectWithConfiguration } from '@/types/projects'
 import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 
-interface Project {
-  id: string
-  name: string
-  slug: string
-  configuration?: {
-    id: string
-    name: string
-    email?: string
-    telNo?: string
-    website?: string
-    street?: string
-    addon?: string
-    zip?: string
-    place?: string
-    country?: string
-    iban?: string
-    bic?: string
-    userLanguage?: string
-    userTheme?: string
-    lenderSalutation?: string
-    lenderCountry?: string
-    lenderNotificationType?: string
-    lenderMembershipStatus?: string
-    lenderTags: string[]
-    interestMethod?: string
-    altInterestMethods: string[]
-    customLoans: boolean
-  }
-}
 
 export default function ProjectSelector() {
   const { selectedProject, setSelectedProject } = useProject()
   const t = useTranslations('navigation')
   const commonT = useTranslations('common')
-  const [projects, setProjects] = useState<Project[]>([])
+  const [projects, setProjects] = useState<ProjectWithConfiguration[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -59,39 +31,10 @@ export default function ProjectSelector() {
           throw new Error(error)
         }
         if (fetchedProjects) {
-          // Transform the projects to match the expected format
-          const transformedProjects = fetchedProjects.map(project => ({
-            id: project.id,
-            name: project.name,
-            slug: project.slug,
-            configuration: project.configuration ? {
-              id: project.configuration.id,
-              name: project.configuration.name,
-              email: project.configuration.email || undefined,
-              telNo: project.configuration.telNo || undefined,
-              website: project.configuration.website || undefined,
-              street: project.configuration.street || undefined,
-              addon: project.configuration.addon || undefined,
-              zip: project.configuration.zip || undefined,
-              place: project.configuration.place || undefined,
-              country: project.configuration.country || undefined,
-              iban: project.configuration.iban || undefined,
-              bic: project.configuration.bic || undefined,
-              userLanguage: project.configuration.userLanguage || undefined,
-              userTheme: project.configuration.userTheme || undefined,
-              lenderSalutation: project.configuration.lenderSalutation || undefined,
-              lenderCountry: project.configuration.lenderCountry || undefined,
-              lenderNotificationType: project.configuration.lenderNotificationType || undefined,
-              lenderMembershipStatus: project.configuration.lenderMembershipStatus || undefined,
-              lenderTags: project.configuration.lenderTags || [],
-              interestMethod: project.configuration.interestMethod || undefined,
-              altInterestMethods: project.configuration.altInterestMethods || [],
-              customLoans: project.configuration.customLoans || false
-            } : undefined
-          }))
-          setProjects(transformedProjects)
-          if (transformedProjects.length > 0 && !selectedProject) {
-            setSelectedProject(transformedProjects[0])
+
+          setProjects(fetchedProjects)
+          if (fetchedProjects.length > 0 && !selectedProject) {
+            setSelectedProject(fetchedProjects[0])
           }
         }
       } catch (err) {
@@ -125,7 +68,7 @@ export default function ProjectSelector() {
       <Select
         value={selectedProject?.id}
         onValueChange={(value: string) => {
-          const project = projects.find((p: Project) => p.id === value)
+          const project = projects.find((p: ProjectWithConfiguration) => p.id === value)
           setSelectedProject(project || null)
         }}
       >
@@ -133,7 +76,7 @@ export default function ProjectSelector() {
           <SelectValue placeholder={t('selectProject')} />
         </SelectTrigger>
         <SelectContent>
-          {projects.map((project: Project) => (
+          {projects.map((project: ProjectWithConfiguration) => (
             <SelectItem key={project.id} value={project.id}>
               {project.name}
             </SelectItem>

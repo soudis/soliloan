@@ -1,6 +1,7 @@
 import { FormControl, FormField as FormFieldWrapper, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { useTranslations } from 'next-intl'
 import { UseFormReturn } from 'react-hook-form'
 
 interface FormFieldProps {
@@ -22,6 +23,7 @@ export function FormField({
   multiline = false,
   required = false,
 }: FormFieldProps) {
+  const t = useTranslations()
   return (
     <FormFieldWrapper
       control={form.control}

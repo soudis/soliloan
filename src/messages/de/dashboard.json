@@ -98,9 +98,8 @@
       "invitationError": "Fehler beim Senden der Einladung"
     },
     "new": {
-      "title": "Neue*n Kreditgeber*in erstellen",
+      "title": "Kreditgeber*in erstellen",
       "formTitle": "Kreditgeber*innen-Informationen",
-      "formDescription": "Gib die Details für die*n neue*n Kreditgeber*in ein",
       "form": {
         "requiredFields": "Erforderliche Felder",
         "generalInfo": "Allgemeine Informationen",
@@ -291,7 +290,7 @@
     }
   },
   "configuration": {
-    "title": "Konfiguration",
+    "title": "Projekteinstellungen",
     "form": {
       "generalInfo": "Allgemeine Informationen",
       "name": "Name",
@@ -319,7 +318,7 @@
       "ibanPlaceholder": "IBAN eingeben",
       "bic": "BIC",
       "bicPlaceholder": "BIC eingeben",
-      "userDefaults": "Benutzereinstellungen",
+      "userDefaults": "Einstellungen für Benutzer*innen",
       "userLanguage": "Sprache",
       "userLanguagePlaceholder": "Sprache auswählen",
       "userLanguageDe": "Deutsch",
@@ -329,31 +328,25 @@
       "userThemeDefault": "System",
       "userThemeDark": "Dunkel",
       "userThemeLight": "Hell",
-      "lenderDefaults": "Kreditgeber*innen-Standardeinstellungen",
+      "lenderDefaults": "Einstellungen für Kreditgeber*innen",
       "lenderSalutation": "Anrede",
-      "lenderSalutationPlaceholder": "Anrede auswählen",
-      "lenderSalutationPersonal": "Persönlich",
-      "lenderSalutationFormal": "Formell",
       "lenderCountry": "Land",
       "lenderCountryPlaceholder": "Land auswählen",
       "lenderNotificationType": "Benachrichtigungstyp",
-      "lenderNotificationTypePlaceholder": "Benachrichtigungstyp auswählen",
-      "lenderNotificationTypeOnline": "Online",
-      "lenderNotificationTypeEmail": "E-Mail",
-      "lenderNotificationTypeMail": "Post",
       "lenderMembershipStatus": "Mitgliedsstatus",
-      "lenderMembershipStatusPlaceholder": "Mitgliedsstatus auswählen",
-      "lenderMembershipStatusUnknown": "Unbekannt",
-      "lenderMembershipStatusMember": "Mitglied",
-      "lenderMembershipStatusExternal": "Extern",
-      "loanDefaults": "Kredit-Standardeinstellungen",
+      "lenderRequiredFields": "Pflichtfelder",
+      "loanDefaults": "Einstellungen für Kredite",
       "interestMethod": "Zinsmethode",
       "interestMethodPlaceholder": "Zinsmethode auswählen",
-      "submit": "Konfiguration speichern",
+      "submit": "Speichern",
       "submitting": "Wird gespeichert...",
       "cancel": "Abbrechen",
-      "success": "Konfiguration erfolgreich gespeichert",
-      "error": "Fehler beim Speichern der Konfiguration"
+      "success": "Einstellungen erfolgreich gespeichert",
+      "error": "Fehler beim Speichern der Einstellungen",
+      "altInterestMethods": "Zulässige alternative Zinsmethoden",
+      "hasHistoricTransactions": "Es gibt bereits Zahlungen aus vergangenen Jahren, die Zinsberechnungsmethode kann nicht mehr geändert werden.",
+      "altInterestMethodsHint": "Alternative Zinsmethoden können pro Kredit angegeben werden. Es wird empfohlen keine alternative Methoden zuzulassen.",
+      "noAltInterestMethods": "Keine alternativen Zinsmethoden zugelassen"
     }
   },
   "notes": {
