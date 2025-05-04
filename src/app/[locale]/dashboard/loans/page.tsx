@@ -1,9 +1,24 @@
-'use client'
+"use client";
 
-import { getLoansByProjectId } from '@/app/actions/loans'
-import { Button } from '@/components/ui/button'
-import { DataTable } from '@/components/ui/data-table'
-import { useRouter } from '@/i18n/navigation'
+import {
+  ContractStatus,
+  InterestMethod,
+  InterestPaymentType,
+  InterestPayoutType,
+  Lender,
+  Loan,
+  TerminationType,
+  Transaction,
+} from "@prisma/client";
+import { useQuery } from "@tanstack/react-query";
+import { ColumnDef } from "@tanstack/react-table";
+import { Pencil, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+import { getLoansByProjectId } from "@/app/actions/loans";
+import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
+import { useRouter } from "@/i18n/navigation";
 import {
   createColumn,
   createCurrencyColumn,
@@ -12,286 +27,277 @@ import {
   createLenderColumn,
   createNumberColumn,
   createPercentageColumn,
-  createTerminationModalitiesColumn
-} from '@/lib/table-column-utils'
-import { useProject } from '@/store/project-context'
-import { LoanStatus } from '@/types/loans'
-import { ContractStatus, InterestMethod, InterestPaymentType, InterestPayoutType, Lender, Loan, TerminationType, Transaction } from '@prisma/client'
-import { useQuery } from '@tanstack/react-query'
-import { ColumnDef } from '@tanstack/react-table'
-import { Pencil, Plus } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { useState } from 'react'
-
-// Define the custom filter function for compound text fields
-const compoundTextFilter = (row: any, columnId: string, filterValue: any) => {
-  const value = row.getValue(columnId);
-  if (!value) return false;
-
-  // Convert both the value and filter to lowercase for case-insensitive search
-  const searchValue = String(value).toLowerCase();
-  const searchFilter = String(filterValue).toLowerCase();
-
-  return searchValue.includes(searchFilter);
-};
-
-// Define the custom filter function type
-type FilterFn = 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'compoundText'
+  createTerminationModalitiesColumn,
+} from "@/lib/table-column-utils";
+import { useProject } from "@/store/project-context";
+import { LoanStatus } from "@/types/loans";
 
 // Define the type for the loan with included relations
 type LoanWithRelations = Loan & {
-  lender: Pick<Lender, 'id' | 'lenderNumber' | 'firstName' | 'lastName' | 'organisationName'>
-  transactions: Transaction[]
-}
+  lender: Pick<
+    Lender,
+    "id" | "lenderNumber" | "firstName" | "lastName" | "organisationName"
+  >;
+  transactions: Transaction[];
+};
 
 export default function LoansPage() {
-  const t = useTranslations('dashboard.loans')
-  const commonT = useTranslations('common')
-  const router = useRouter()
-  const { selectedProject } = useProject()
-  const [error, setError] = useState<string | null>(null)
+  const t = useTranslations("dashboard.loans");
+  const commonT = useTranslations("common");
+  const router = useRouter();
+  const { selectedProject } = useProject();
 
   const { data: loans = [], isLoading: loading } = useQuery({
-    queryKey: ['loans', selectedProject?.id],
+    queryKey: ["loans", selectedProject?.id],
     queryFn: async () => {
-      if (!selectedProject) return []
-      const result = await getLoansByProjectId(selectedProject.id)
+      if (!selectedProject) return [];
+      const result = await getLoansByProjectId(selectedProject.id);
       if (result.error) {
-        throw new Error(result.error)
+        throw new Error(result.error);
       }
-      return result.loans
+      return result.loans;
     },
-    enabled: !!selectedProject
-  })
+    enabled: !!selectedProject,
+  });
 
-  console.log(loans)
+  console.log(loans);
 
   const columns: ColumnDef<LoanWithRelations>[] = [
-    createNumberColumn<LoanWithRelations>('loanNumber', 'table.loanNumber', t),
+    createNumberColumn<LoanWithRelations>("loanNumber", "table.loanNumber", t),
 
-    createColumn<LoanWithRelations>({
-      accessorKey: 'lenderNumber',
-      header: 'table.lenderNumber',
-      accessorFn: (row: LoanWithRelations) => row.lender?.lenderNumber,
-      cell: ({ row }) => {
-        const value = row.original.lender?.lenderNumber || 0;
-        return value.toFixed(0);
-      }
-    }, t),
+    createColumn<LoanWithRelations>(
+      {
+        accessorKey: "lenderNumber",
+        header: "table.lenderNumber",
+        accessorFn: (row: LoanWithRelations) => row.lender?.lenderNumber,
+        cell: ({ row }) => {
+          const value = row.original.lender?.lenderNumber || 0;
+          return value.toFixed(0);
+        },
+      },
+      t
+    ),
 
     createLenderColumn<LoanWithRelations>(t),
 
-    createDateColumn<LoanWithRelations>('signDate', 'table.signDate', t),
+    createDateColumn<LoanWithRelations>("signDate", "table.signDate", t),
 
-    createCurrencyColumn<LoanWithRelations>('amount', 'table.amount', t),
+    createCurrencyColumn<LoanWithRelations>("amount", "table.amount", t),
 
-    createCurrencyColumn<LoanWithRelations>('balance', 'table.balance', t),
+    createCurrencyColumn<LoanWithRelations>("balance", "table.balance", t),
 
-    createCurrencyColumn<LoanWithRelations>('deposits', 'table.deposits', t),
+    createCurrencyColumn<LoanWithRelations>("deposits", "table.deposits", t),
 
-    createCurrencyColumn<LoanWithRelations>('withdrawals', 'table.withdrawals', t),
+    createCurrencyColumn<LoanWithRelations>(
+      "withdrawals",
+      "table.withdrawals",
+      t
+    ),
 
-    createCurrencyColumn<LoanWithRelations>('notReclaimed', 'table.notReclaimed', t),
+    createCurrencyColumn<LoanWithRelations>(
+      "notReclaimed",
+      "table.notReclaimed",
+      t
+    ),
 
-    createPercentageColumn<LoanWithRelations>('interestRate', 'table.interestRate', t),
+    createPercentageColumn<LoanWithRelations>(
+      "interestRate",
+      "table.interestRate",
+      t
+    ),
 
-    createCurrencyColumn<LoanWithRelations>('interest', 'table.interest', t),
+    createCurrencyColumn<LoanWithRelations>("interest", "table.interest", t),
 
-    createCurrencyColumn<LoanWithRelations>('interestPaid', 'table.interestPaid', t),
-
-    createEnumBadgeColumn<LoanWithRelations>(
-      'interestPaymentType',
-      'table.interestPaymentType',
-      'enums.loan.interestPaymentType',
-      t,
-      commonT,
-      () => 'outline'
+    createCurrencyColumn<LoanWithRelations>(
+      "interestPaid",
+      "table.interestPaid",
+      t
     ),
 
     createEnumBadgeColumn<LoanWithRelations>(
-      'interestPayoutType',
-      'table.interestPayoutType',
-      'enums.loan.interestPayoutType',
+      "interestPaymentType",
+      "table.interestPaymentType",
+      "enums.loan.interestPaymentType",
       t,
       commonT,
-      () => 'outline'
+      () => "outline"
     ),
 
     createEnumBadgeColumn<LoanWithRelations>(
-      'terminationType',
-      'table.terminationType',
-      'enums.loan.terminationType',
+      "interestPayoutType",
+      "table.interestPayoutType",
+      "enums.loan.interestPayoutType",
       t,
       commonT,
-      () => 'outline'
+      () => "outline"
+    ),
+
+    createEnumBadgeColumn<LoanWithRelations>(
+      "terminationType",
+      "table.terminationType",
+      "enums.loan.terminationType",
+      t,
+      commonT,
+      () => "outline"
     ),
 
     createTerminationModalitiesColumn<LoanWithRelations>(t, commonT),
 
-    createDateColumn<LoanWithRelations>('repayDate', 'table.repayDate', t),
+    createDateColumn<LoanWithRelations>("repayDate", "table.repayDate", t),
 
     createEnumBadgeColumn<LoanWithRelations>(
-      'status',
-      'table.status',
-      'enums.loan.status',
+      "status",
+      "table.status",
+      "enums.loan.status",
       t,
       commonT,
       (value) => {
         switch (value) {
-          case 'ACTIVE':
-            return 'default'
-          case 'TERMINATED':
-            return 'destructive'
-          case 'PENDING':
-            return 'secondary'
+          case "ACTIVE":
+            return "default";
+          case "TERMINATED":
+            return "destructive";
+          case "PENDING":
+            return "secondary";
           default:
-            return 'outline'
+            return "outline";
         }
       }
     ),
 
     createEnumBadgeColumn<LoanWithRelations>(
-      'altInterestMethod',
-      'table.altInterestMethod',
-      'enums.interestMethod',
+      "altInterestMethod",
+      "table.altInterestMethod",
+      "enums.interestMethod",
       t,
       commonT,
-      () => 'outline'
+      () => "outline"
     ),
 
     createEnumBadgeColumn<LoanWithRelations>(
-      'contractStatus',
-      'table.contractStatus',
-      'enums.loan.contractStatus',
+      "contractStatus",
+      "table.contractStatus",
+      "enums.loan.contractStatus",
       t,
       commonT,
       (value) => {
         switch (value) {
           case ContractStatus.COMPLETED:
-            return 'default'
+            return "default";
           default:
-            return 'outline'
+            return "outline";
         }
       }
     ),
-  ]
+  ];
 
   // Define column filters based on data types
   const columnFilters = {
     loanNumber: {
-      type: 'number' as const,
-      label: t('table.loanNumber')
+      type: "number" as const,
+      label: t("table.loanNumber"),
     },
     lenderNumber: {
-      type: 'number' as const,
-      label: t('table.lenderNumber')
+      type: "number" as const,
+      label: t("table.lenderNumber"),
     },
     lenderName: {
-      type: 'text' as const,
-      label: t('table.lenderName')
+      type: "text" as const,
+      label: t("table.lenderName"),
     },
     signDate: {
-      type: 'date' as const,
-      label: t('table.signDate')
+      type: "date" as const,
+      label: t("table.signDate"),
     },
     amount: {
-      type: 'number' as const,
-      label: t('table.amount')
+      type: "number" as const,
+      label: t("table.amount"),
     },
     balance: {
-      type: 'number' as const,
-      label: t('table.balance')
+      type: "number" as const,
+      label: t("table.balance"),
     },
     deposits: {
-      type: 'number' as const,
-      label: t('table.deposits')
+      type: "number" as const,
+      label: t("table.deposits"),
     },
     withdrawals: {
-      type: 'number' as const,
-      label: t('table.withdrawals')
+      type: "number" as const,
+      label: t("table.withdrawals"),
     },
     notReclaimed: {
-      type: 'number' as const,
-      label: t('table.notReclaimed')
+      type: "number" as const,
+      label: t("table.notReclaimed"),
     },
     interestRate: {
-      type: 'number' as const,
-      label: t('table.interestRate')
+      type: "number" as const,
+      label: t("table.interestRate"),
     },
     interest: {
-      type: 'number' as const,
-      label: t('table.interest')
+      type: "number" as const,
+      label: t("table.interest"),
     },
     interestPaid: {
-      type: 'number' as const,
-      label: t('table.interestPaid')
+      type: "number" as const,
+      label: t("table.interestPaid"),
     },
     interestPaymentType: {
-      type: 'select' as const,
-      label: t('table.interestPaymentType'),
+      type: "select" as const,
+      label: t("table.interestPaymentType"),
       options: Object.entries(InterestPaymentType).map(([key, value]) => ({
         label: commonT(`enums.loan.interestPaymentType.${key}`),
-        value: value
-      }))
+        value: value,
+      })),
     },
     interestPayoutType: {
-      type: 'select' as const,
-      label: t('table.interestPayoutType'),
+      type: "select" as const,
+      label: t("table.interestPayoutType"),
       options: Object.entries(InterestPayoutType).map(([key, value]) => ({
         label: commonT(`enums.loan.interestPayoutType.${key}`),
-        value: value
-      }))
+        value: value,
+      })),
     },
     terminationType: {
-      type: 'select' as const,
-      label: t('table.terminationType'),
+      type: "select" as const,
+      label: t("table.terminationType"),
       options: Object.entries(TerminationType).map(([key, value]) => ({
         label: commonT(`enums.loan.terminationType.${key}`),
-        value: value
-      }))
+        value: value,
+      })),
     },
     terminationModalities: {
-      type: 'text' as const,
-      label: t('table.terminationModalities')
+      type: "text" as const,
+      label: t("table.terminationModalities"),
     },
     repayDate: {
-      type: 'date' as const,
-      label: t('table.repayDate')
+      type: "date" as const,
+      label: t("table.repayDate"),
     },
     status: {
-      type: 'select' as const,
-      label: t('table.status'),
+      type: "select" as const,
+      label: t("table.status"),
       options: Object.entries(LoanStatus).map(([key, value]) => ({
         label: commonT(`enums.loan.status.${key}`),
-        value: value
-      }))
+        value: value,
+      })),
     },
     altInterestMethod: {
-      type: 'select' as const,
-      label: t('table.altInterestMethod'),
+      type: "select" as const,
+      label: t("table.altInterestMethod"),
       options: Object.entries(InterestMethod).map(([key, value]) => ({
         label: commonT(`enums.interestMethod.${key}`),
-        value: value
-      }))
+        value: value,
+      })),
     },
     contractStatus: {
-      type: 'select' as const,
-      label: t('table.contractStatus'),
+      type: "select" as const,
+      label: t("table.contractStatus"),
       options: Object.entries(ContractStatus).map(([key, value]) => ({
         label: commonT(`enums.loan.contractStatus.${key}`),
-        value: value
-      }))
-    }
-  }
-
-  // Define translations for the DataTable component
-  const tableTranslations = {
-    columns: commonT('ui.table.columns'),
-    filters: commonT('ui.table.filters'),
-    previous: commonT('ui.table.previous'),
-    next: commonT('ui.table.next'),
-    noResults: commonT('ui.table.noResults')
-  }
+        value: value,
+      })),
+    },
+  };
 
   // Define default column visibility
   const defaultColumnVisibility = {
@@ -315,27 +321,23 @@ export default function LoansPage() {
     status: true,
     altInterestMethod: false,
     contractStatus: true,
-  }
+  };
 
   if (!selectedProject) {
-    return null
+    return null;
   }
 
   if (loading) {
     return null;
   }
 
-  if (error) {
-    return <div className="text-red-500">{error}</div>
-  }
-
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">{t('title')}</h1>
-        <Button onClick={() => router.push('/dashboard/loans/new')}>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
+        <Button onClick={() => router.push("/dashboard/loans/new")}>
           <Plus className="mr-2 h-4 w-4" />
-          {t('new.title')}
+          {t("new.title")}
         </Button>
       </div>
 
@@ -343,23 +345,30 @@ export default function LoansPage() {
         columns={columns}
         data={loans}
         columnFilters={columnFilters}
-        translations={tableTranslations}
         defaultColumnVisibility={defaultColumnVisibility}
         viewType="LOAN"
         showFilter={true}
-        onRowClick={(row) => router.push(`/dashboard/lenders/${row.lender.id}?highlightLoan=${row.id}`)}
+        onRowClick={(row) =>
+          router.push(
+            `/dashboard/lenders/${row.lender.id}?highlightLoan=${row.id}`
+          )
+        }
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
-            <Button variant="ghost" size="icon" onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/dashboard/loans/${row.id}/edit`);
-            }}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/dashboard/loans/${row.id}/edit`);
+              }}
+            >
               <Pencil className="h-4 w-4" />
-              <span className="sr-only">{commonT('ui.actions.edit')}</span>
+              <span className="sr-only">{commonT("ui.actions.edit")}</span>
             </Button>
           </div>
         )}
       />
     </div>
-  )
-} 
+  );
+}

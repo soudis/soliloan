@@ -1,22 +1,27 @@
-'use client'
+"use client";
 
-import { FormField } from '@/components/form/form-field'
-import { Checkbox } from '@/components/ui/checkbox'
-import { FormControl, FormField as FormFieldWrapper, FormItem, FormLabel } from '@/components/ui/form'
-import { FileFormData } from '@/lib/schemas/file'
-import { useTranslations } from 'next-intl'
-import { useFormContext } from 'react-hook-form'
+import { useTranslations } from "next-intl";
+import { useFormContext } from "react-hook-form";
+
+import { FormField } from "@/components/form/form-field";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  FormControl,
+  FormField as FormFieldWrapper,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
+import { FileFormData } from "@/lib/schemas/file";
 
 export function FileFormFields() {
-  const t = useTranslations('dashboard.files')
-  const commonT = useTranslations('common')
-  const form = useFormContext<FileFormData>()
+  const t = useTranslations("dashboard.files");
+  const form = useFormContext<FileFormData>();
 
   return (
     <>
       <div className="space-y-2">
         <label htmlFor="file" className="text-sm font-medium">
-          {t('file')}
+          {t("file")}
         </label>
         <input
           id="file"
@@ -28,24 +33,22 @@ export function FileFormFields() {
             if (file) {
               // Set the name field to the file name without extension
               const fileName = file.name.replace(/\.[^/.]+$/, "");
-              form.setValue('name', fileName);
+              form.setValue("name", fileName);
             }
           }}
         />
       </div>
 
       <FormField
-        form={form}
         name="name"
-        label={t('name')}
-        placeholder={t('namePlaceholder')}
+        label={t("name")}
+        placeholder={t("namePlaceholder")}
       />
 
       <FormField
-        form={form}
         name="description"
-        label={t('description')}
-        placeholder={t('descriptionPlaceholder')}
+        label={t("description")}
+        placeholder={t("descriptionPlaceholder")}
         multiline={true}
       />
 
@@ -61,16 +64,14 @@ export function FileFormFields() {
               />
             </FormControl>
             <div className="space-y-1 leading-none">
-              <FormLabel>
-                {t('public')}
-              </FormLabel>
+              <FormLabel>{t("public")}</FormLabel>
               <p className="text-sm text-muted-foreground">
-                {t('publicDescription')}
+                {t("publicDescription")}
               </p>
             </div>
           </FormItem>
         )}
       />
     </>
-  )
-} 
+  );
+}

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 export default function Loading() {
   return (
     <div className="flex items-center justify-center min-h-[50vh] mt-8">
@@ -15,7 +15,7 @@ export default function Loading() {
           animation: rotation 1s linear infinite;
         }
         .loader::after {
-          content: '';  
+          content: "";
           box-sizing: border-box;
           position: absolute;
           left: 50%;

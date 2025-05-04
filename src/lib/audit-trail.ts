@@ -1,9 +1,26 @@
-import { auth } from '@/lib/auth';
-import { Entity, Operation, type Configuration, type File, type Lender, type Loan, type Note, type PrismaClient, type Transaction } from '@prisma/client';
+import { Entity, Operation } from "@prisma/client";
 
-type EntityData = Configuration | Lender | Loan | Transaction | Note | Partial<File>;
+import { auth } from "@/lib/auth";
 
-interface AuditContext {
+import type {
+  Configuration,
+  File,
+  Lender,
+  Loan,
+  Note,
+  PrismaClient,
+  Transaction,
+} from "@prisma/client";
+
+type EntityData =
+  | Configuration
+  | Lender
+  | Loan
+  | Transaction
+  | Note
+  | Partial<File>;
+
+export interface AuditContext {
   user?: {
     id: string;
     name: string;
@@ -41,18 +58,17 @@ export async function createAuditEntry(
     entity: Entity;
     operation: Operation;
     primaryKey: string;
-    before: any;
-    after: any;
+    before: unknown;
+    after: unknown;
     context: Partial<AuditContext>;
     projectId: string;
   }
 ) {
   const session = await auth();
   if (!session) {
-    throw new Error('Unauthorized');
+    throw new Error("Unauthorized");
   }
 
-  // @ts-ignore - Prisma types are not being generated correctly
   return prisma.change.create({
     data: {
       entity,
@@ -96,7 +112,9 @@ export function getLoanContext(loan: Loan): Partial<AuditContext> {
   };
 }
 
-export function getTransactionContext(transaction: Transaction): Partial<AuditContext> {
+export function getTransactionContext(
+  transaction: Transaction
+): Partial<AuditContext> {
   return {
     transaction: {
       type: transaction.type,
@@ -114,8 +132,14 @@ export function getFileContext(file: File): Partial<AuditContext> {
   };
 }
 
-export function getChangedFields<T extends EntityData>(before: Partial<T>, after: Partial<T>): { before: Partial<T>; after: Partial<T> } {
-  const changedFields: { before: Partial<T>; after: Partial<T> } = { before: {}, after: {} };
+export function getChangedFields<T extends EntityData>(
+  before: Partial<T>,
+  after: Partial<T>
+): { before: Partial<T>; after: Partial<T> } {
+  const changedFields: { before: Partial<T>; after: Partial<T> } = {
+    before: {},
+    after: {},
+  };
 
   for (const key in after) {
     if (JSON.stringify(before[key]) !== JSON.stringify(after[key])) {
@@ -137,4 +161,4 @@ export function removeNullFields<T extends EntityData>(data: T): Partial<T> {
   }
 
   return result;
-} 
+}

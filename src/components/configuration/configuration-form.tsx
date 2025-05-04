@@ -1,25 +1,27 @@
-'use client'
+"use client";
 
-import { Form } from '@/components/ui/form'
-import { FormActions } from '@/components/ui/form-actions'
-import { FormLayout } from '@/components/ui/form-layout'
-import { configurationFormSchema, type ConfigurationFormData } from '@/lib/schemas/configuration'
-import { useProject } from '@/store/project-context'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useTranslations } from 'next-intl'
-import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { ConfigurationFormFields } from './configuration-form-fields'
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+
+import { Form } from "@/components/ui/form";
+import { FormActions } from "@/components/ui/form-actions";
+import { FormLayout } from "@/components/ui/form-layout";
+import { configurationFormSchema } from "@/lib/schemas/configuration";
+import { useProject } from "@/store/project-context";
+
+import { ConfigurationFormFields } from "./configuration-form-fields";
+
+import type { ConfigurationFormData } from "@/lib/schemas/configuration";
 interface ConfigurationFormProps {
-  title: string
-  submitButtonText: string
-  submittingButtonText: string
-  cancelButtonText: string
-  onSubmit: (data: ConfigurationFormData) => Promise<void>
-  initialData?: Partial<ConfigurationFormData>
-  isLoading?: boolean
-  error?: string | null
-  hasHistoricTransactions?: boolean
+  title: string;
+  submitButtonText: string;
+  submittingButtonText: string;
+  cancelButtonText: string;
+  onSubmit: (data: ConfigurationFormData) => Promise<void>;
+  initialData?: Partial<ConfigurationFormData>;
+  isLoading?: boolean;
+  error?: string | null;
+  hasHistoricTransactions?: boolean;
 }
 
 export function ConfigurationForm({
@@ -33,17 +35,11 @@ export function ConfigurationForm({
   error,
   hasHistoricTransactions,
 }: ConfigurationFormProps) {
-  const t = useTranslations('dashboard.configuration')
-  const { selectedProject } = useProject()
-  const router = useRouter()
-
-  if (!selectedProject) {
-    return null
-  }
+  const { selectedProject } = useProject();
 
   const defaultValues: ConfigurationFormData = {
-    name: initialData?.name || '',
-    logo: initialData?.logo || '',
+    name: initialData?.name || "",
+    logo: initialData?.logo || "",
     email: initialData?.email || undefined,
     telNo: initialData?.telNo || undefined,
     website: initialData?.website || undefined,
@@ -65,37 +61,42 @@ export function ConfigurationForm({
     interestMethod: initialData?.interestMethod || "",
     altInterestMethods: initialData?.altInterestMethods || [],
     customLoans: initialData?.customLoans || false,
-  }
-
+  };
 
   const form = useForm<ConfigurationFormData>({
     resolver: zodResolver(configurationFormSchema),
     defaultValues,
-  })
+  });
+
+  if (!selectedProject) {
+    return null;
+  }
 
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
-      await onSubmit(data)
+      await onSubmit(data);
     } catch (error) {
-      console.error('Error submitting form:', error)
+      console.error("Error submitting form:", error);
     }
-  })
+  });
 
   return (
     <FormLayout title={title} error={error}>
       <Form {...form}>
         <form onSubmit={handleSubmit}>
-          <ConfigurationFormFields form={form} hasHistoricTransactions={hasHistoricTransactions} />
+          <ConfigurationFormFields
+            form={form}
+            hasHistoricTransactions={hasHistoricTransactions}
+          />
 
           <FormActions
             submitButtonText={submitButtonText}
             submittingButtonText={submittingButtonText}
             cancelButtonText={cancelButtonText}
             isLoading={isLoading}
-
           />
         </form>
       </Form>
     </FormLayout>
-  )
-} 
+  );
+}

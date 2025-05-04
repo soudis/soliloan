@@ -1,21 +1,22 @@
-'use client'
+"use client";
 
-import { cn } from '@/lib/utils'
-import { useAppStore } from '@/store'
-import { LucideIcon } from 'lucide-react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { LucideIcon } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+import { cn } from "@/lib/utils";
+import { useAppStore } from "@/store";
 
 interface NavItemProps {
-  href: string
-  icon: LucideIcon
-  label: string
+  href: string;
+  icon: LucideIcon;
+  label: string;
 }
 
 export function NavItem({ href, icon: Icon, label }: NavItemProps) {
-  const pathname = usePathname()
-  const isActive = pathname === href || pathname.startsWith(`${href}/`)
-  const { toggleSidebar } = useAppStore()
+  const pathname = usePathname();
+  const isActive = pathname === href || pathname.startsWith(`${href}/`);
+  const { toggleSidebar } = useAppStore();
 
   return (
     <Link
@@ -23,7 +24,7 @@ export function NavItem({ href, icon: Icon, label }: NavItemProps) {
       onClick={() => {
         // Close sidebar on mobile when a navigation item is clicked
         if (window.innerWidth < 768) {
-          toggleSidebar()
+          toggleSidebar();
         }
       }}
       className={cn(
@@ -34,5 +35,5 @@ export function NavItem({ href, icon: Icon, label }: NavItemProps) {
       <Icon className="h-5 w-5" />
       <span className="ml-3">{label}</span>
     </Link>
-  )
-} 
+  );
+}

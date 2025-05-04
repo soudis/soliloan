@@ -1,10 +1,11 @@
-'use server'
+"use server";
 
-import { db } from '@/lib/db'
-import { sendPasswordResetEmail } from '@/lib/email'
-import { generateToken } from '@/lib/token'
-import { hashPassword } from '@/lib/utils'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath } from "next/cache";
+
+import { db } from "@/lib/db";
+import { sendPasswordResetEmail } from "@/lib/email";
+import { generateToken } from "@/lib/token";
+import { hashPassword } from "@/lib/utils/password";
 
 /**
  * Set a user's password using a token
@@ -17,45 +18,44 @@ export async function setPassword(token: string, password: string) {
     // Find the user with the given reset token
     const user = await db.user.findFirst({
       where: {
-        // @ts-ignore - passwordResetToken exists in the schema but not in types
-        passwordResetToken: token
-      }
-    })
+        passwordResetToken: token,
+      },
+    });
 
     // Check if the user exists
     if (!user) {
-      return { success: false, error: 'Invalid or expired token' }
+      return { success: false, error: "Invalid or expired token" };
     }
 
     // Check if the token has expired
-    // @ts-ignore - passwordResetTokenExpiresAt exists in the schema but not in types
-    if (user.passwordResetTokenExpiresAt && user.passwordResetTokenExpiresAt < new Date()) {
-      return { success: false, error: 'Token has expired' }
+    if (
+      user.passwordResetTokenExpiresAt &&
+      user.passwordResetTokenExpiresAt < new Date()
+    ) {
+      return { success: false, error: "Token has expired" };
     }
 
     // Hash the new password
-    const hashedPassword = hashPassword(password)
+    const hashedPassword = hashPassword(password);
 
     // Update the user's password and clear the reset token
     await db.user.update({
       where: { id: user.id },
       data: {
         password: hashedPassword,
-        // @ts-ignore - passwordResetToken exists in the schema but not in types
         passwordResetToken: null,
-        // @ts-ignore - passwordResetTokenExpiresAt exists in the schema but not in types
-        passwordResetTokenExpiresAt: null
-      }
-    })
+        passwordResetTokenExpiresAt: null,
+      },
+    });
 
     // Revalidate the auth pages
-    revalidatePath('/auth/login')
-    revalidatePath('/auth/set-password')
+    revalidatePath("/auth/login");
+    revalidatePath("/auth/set-password");
 
-    return { success: true }
+    return { success: true };
   } catch (error) {
-    console.error('Error setting password:', error)
-    return { success: false, error: 'Failed to set password' }
+    console.error("Error setting password:", error);
+    return { success: false, error: "Failed to set password" };
   }
 }
 
@@ -75,18 +75,18 @@ export async function requestPasswordReset(email: string) {
         name: true,
         language: true,
       },
-    })
+    });
 
     if (!user) {
-      return { success: true } // Return success even if user not found for security
+      return { success: true }; // Return success even if user not found for security
     }
 
     // Generate a token for password reset
-    const token = generateToken()
+    const token = generateToken();
 
     // Calculate expiration date (1 hour from now)
-    const expirationDate = new Date()
-    expirationDate.setHours(expirationDate.getHours() + 1)
+    const expirationDate = new Date();
+    expirationDate.setHours(expirationDate.getHours() + 1);
 
     // Update the user with the token and expiration date
     await db.user.update({
@@ -95,19 +95,19 @@ export async function requestPasswordReset(email: string) {
         passwordResetToken: token,
         passwordResetTokenExpiresAt: expirationDate,
       },
-    })
+    });
 
     // Send the password reset email with the user's language preference
     await sendPasswordResetEmail(
       user.email!,
       user.name,
       token,
-      user.language || 'de'
-    )
+      user.language || "de"
+    );
 
-    return { success: true }
+    return { success: true };
   } catch (error) {
-    console.error('Error requesting password reset:', error)
-    return { success: false, error: 'Failed to request password reset' }
+    console.error("Error requesting password reset:", error);
+    return { success: false, error: "Failed to request password reset" };
   }
-} 
+}

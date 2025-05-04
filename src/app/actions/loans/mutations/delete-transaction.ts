@@ -1,57 +1,64 @@
-'use server'
+"use server";
 
-import { createAuditEntry, getLenderContext, getLoanContext, getTransactionContext, removeNullFields } from '@/lib/audit-trail'
-import { auth } from '@/lib/auth'
-import { db } from '@/lib/db'
-import { Entity, Operation } from '@prisma/client'
-import { revalidatePath } from 'next/cache'
+import { Entity, Operation } from "@prisma/client";
+import { revalidatePath } from "next/cache";
+
+import {
+  createAuditEntry,
+  getLenderContext,
+  getLoanContext,
+  getTransactionContext,
+  removeNullFields,
+} from "@/lib/audit-trail";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 
 export async function deleteTransaction(loanId: string, transactionId: string) {
   try {
-    const session = await auth()
+    const session = await auth();
     if (!session) {
-      throw new Error('Unauthorized')
+      throw new Error("Unauthorized");
     }
 
     // Fetch the loan and transaction
     const loan = await db.loan.findUnique({
       where: {
-        id: loanId
+        id: loanId,
       },
       include: {
         lender: {
           include: {
             project: {
               include: {
-                managers: true
-              }
-            }
-          }
+                managers: true,
+              },
+            },
+          },
         },
         transactions: {
           where: {
-            id: transactionId
-          }
-        }
-      }
-    })
+            id: transactionId,
+          },
+        },
+      },
+    });
 
     if (!loan) {
-      throw new Error('Loan not found')
+      throw new Error("Loan not found");
     }
 
-    const transaction = loan.transactions[0]
+    const transaction = loan.transactions[0];
     if (!transaction) {
-      throw new Error('Transaction not found')
+      throw new Error("Transaction not found");
     }
 
     // Check if the user has access to the loan's project
     const hasAccess = loan.lender.project.managers.some(
       (manager) => manager.id === session.user.id
-    )
+    );
 
     if (!hasAccess) {
-      throw new Error('You do not have access to this loan')
+      throw new Error("You do not have access to this loan");
     }
 
     // Create audit trail entry before deletion
@@ -67,21 +74,24 @@ export async function deleteTransaction(loanId: string, transactionId: string) {
         ...getTransactionContext(transaction),
       },
       projectId: loan.lender.project.id,
-    })
+    });
 
     // Delete the transaction
     await db.transaction.delete({
       where: {
-        id: transactionId
-      }
-    })
+        id: transactionId,
+      },
+    });
 
     // Revalidate the loan page
-    revalidatePath(`/dashboard/loans/${loanId}`)
+    revalidatePath(`/dashboard/loans/${loanId}`);
 
-    return { success: true }
+    return { success: true };
   } catch (error) {
-    console.error('Error deleting transaction:', error)
-    return { error: error instanceof Error ? error.message : 'Failed to delete transaction' }
+    console.error("Error deleting transaction:", error);
+    return {
+      error:
+        error instanceof Error ? error.message : "Failed to delete transaction",
+    };
   }
-} 
+}

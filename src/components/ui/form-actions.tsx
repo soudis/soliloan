@@ -1,13 +1,14 @@
-import { Button } from '@/components/ui/button'
-import { ReactNode } from 'react'
+import { ReactNode } from "react";
+
+import { Button } from "@/components/ui/button";
 
 interface FormActionsProps {
-  submitButtonText: string
-  submittingButtonText: string
-  cancelButtonText: string
-  isLoading?: boolean
-  onCancel?: () => void
-  children?: ReactNode
+  submitButtonText: string;
+  submittingButtonText: string;
+  cancelButtonText: string;
+  isLoading?: boolean;
+  onCancel?: () => void;
+  children?: ReactNode;
 }
 
 export function FormActions({
@@ -34,5 +35,5 @@ export function FormActions({
         {isLoading ? submittingButtonText : submitButtonText}
       </Button>
     </div>
-  )
-} 
+  );
+}

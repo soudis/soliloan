@@ -1,31 +1,41 @@
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
-import { useFormContext } from 'react-hook-form'
+import { useFormContext } from "react-hook-form";
+
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 interface FormIbanInputProps {
-  name: string
-  label: string
-  placeholder?: string
+  name: string;
+  label: string;
+  placeholder?: string;
 }
 
-export function FormIbanInput({ name, label, placeholder }: FormIbanInputProps) {
-  const form = useFormContext()
-  const value = form.watch(name) || ''
+export function FormIbanInput({
+  name,
+  label,
+  placeholder,
+}: FormIbanInputProps) {
+  const form = useFormContext();
 
   const handleIbanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Remove all non-alphanumeric characters
-    const cleaned = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase()
+    const cleaned = e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
 
     // Split into blocks of 4 characters
-    const blocks = cleaned.match(/.{1,4}/g) || []
+    const blocks = cleaned.match(/.{1,4}/g) || [];
 
     // Join blocks with spaces
-    const formatted = blocks.join(' ')
+    const formatted = blocks.join(" ");
 
     // Update form value
-    form.setValue(name, formatted, { shouldValidate: true })
-  }
+    form.setValue(name, formatted, { shouldValidate: true });
+  };
 
   return (
     <FormField
@@ -39,10 +49,7 @@ export function FormIbanInput({ name, label, placeholder }: FormIbanInputProps) 
               {...field}
               placeholder={placeholder}
               onChange={handleIbanChange}
-              className={cn(
-                'font-mono',
-                field.value && 'uppercase'
-              )}
+              className={cn("font-mono", field.value && "uppercase")}
               maxLength={34} // Maximum IBAN length is 34 characters
             />
           </FormControl>
@@ -50,5 +57,5 @@ export function FormIbanInput({ name, label, placeholder }: FormIbanInputProps) 
         </FormItem>
       )}
     />
-  )
-} 
+  );
+}

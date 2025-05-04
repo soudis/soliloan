@@ -1,12 +1,18 @@
-import { getViewsByType } from '@/app/actions/views';
-import { Button } from '@/components/ui/button';
-import { View, ViewType } from '@prisma/client';
-import { useQuery } from '@tanstack/react-query';
-import { Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu';
+import { View, ViewType } from "@prisma/client";
+import { useQuery } from "@tanstack/react-query";
+import { Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useEffect, useRef, useState } from "react";
 
+import { getViewsByType } from "@/app/actions/views";
+import { Button } from "@/components/ui/button";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./dropdown-menu";
 
 interface ViewManagerProps {
   viewType: ViewType;
@@ -16,9 +22,15 @@ interface ViewManagerProps {
   refreshTrigger?: number;
 }
 
-export function ViewManager({ viewType, onViewSelect, onViewDelete, onLoad, refreshTrigger = 0 }: ViewManagerProps) {
+export function ViewManager({
+  viewType,
+  onViewSelect,
+  onViewDelete,
+  onLoad,
+  refreshTrigger = 0,
+}: ViewManagerProps) {
   const [selectedView, setSelectedView] = useState<string | null>(null);
-  const t = useTranslations('views');
+  const t = useTranslations("views");
 
   // Use a ref to store the callback to avoid dependency issues
   const onViewSelectRef = useRef(onViewSelect);
@@ -33,8 +45,12 @@ export function ViewManager({ viewType, onViewSelect, onViewDelete, onLoad, refr
     onLoadRef.current = onLoad;
   }, [onLoad]);
 
-  const { data: views, isLoading, error } = useQuery({
-    queryKey: ['views', viewType, refreshTrigger],
+  const {
+    data: views,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["views", viewType, refreshTrigger],
     queryFn: async () => {
       const { views: fetchedViews, error } = await getViewsByType(viewType);
       if (error) {
@@ -75,7 +91,7 @@ export function ViewManager({ viewType, onViewSelect, onViewDelete, onLoad, refr
         onViewSelectRef.current(null); // Switch to default view
       }
     } catch (err) {
-      console.error('Error deleting view:', err);
+      console.error("Error deleting view:", err);
     }
   };
 
@@ -91,7 +107,7 @@ export function ViewManager({ viewType, onViewSelect, onViewDelete, onLoad, refr
   if (error) {
     return (
       <Button variant="outline" size="sm" disabled>
-        {t('error')}
+        {t("error")}
       </Button>
     );
   }
@@ -100,7 +116,9 @@ export function ViewManager({ viewType, onViewSelect, onViewDelete, onLoad, refr
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
-          {selectedView ? views?.find(v => v.id === selectedView)?.name || t('loadView') : t('defaultView')}
+          {selectedView
+            ? views?.find((v) => v.id === selectedView)?.name || t("loadView")
+            : t("defaultView")}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -108,7 +126,7 @@ export function ViewManager({ viewType, onViewSelect, onViewDelete, onLoad, refr
           onClick={() => handleViewSelect(null)}
           className="flex items-center justify-between"
         >
-          <span>{t('defaultView')}</span>
+          <span>{t("defaultView")}</span>
         </DropdownMenuItem>
         {views?.map((view) => (
           <DropdownMenuItem

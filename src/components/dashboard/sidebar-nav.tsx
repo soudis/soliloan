@@ -1,20 +1,28 @@
-'use client'
+"use client";
 
-import { ThemeSelector } from '@/components/theme-selector'
-import { useAppStore } from '@/store'
-import { History, LayoutDashboard, Settings, Users, Wallet } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { NavItem } from './nav-item'
-import ProjectSelector from './project-selector'
+import {
+  History,
+  LayoutDashboard,
+  Settings,
+  Users,
+  Wallet,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
+
+import { ThemeSelector } from "@/components/theme-selector";
+import { useAppStore } from "@/store";
+
+import { NavItem } from "./nav-item";
+import ProjectSelector from "./project-selector";
 
 interface SidebarNavProps {
-  isSidebarOpen: boolean
+  isSidebarOpen: boolean;
 }
 
 export function SidebarNav({ isSidebarOpen }: SidebarNavProps) {
-  const t = useTranslations('navigation')
-  const commonT = useTranslations('common')
-  const { toggleSidebar } = useAppStore()
+  const t = useTranslations("navigation");
+  const commonT = useTranslations("common");
+  const { toggleSidebar } = useAppStore();
 
   return (
     <>
@@ -26,8 +34,9 @@ export function SidebarNav({ isSidebarOpen }: SidebarNavProps) {
         />
       )}
       <div
-        className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } fixed inset-y-0 left-0 z-30 w-64 transform border-r bg-background transition duration-300 ease-in-out md:relative md:translate-x-0`}
+        className={`${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } fixed inset-y-0 left-0 z-30 w-64 transform border-r bg-background transition duration-300 ease-in-out md:relative md:translate-x-0`}
       >
         <div className="h-full overflow-y-auto px-3 py-4 flex flex-col">
           <ProjectSelector />
@@ -35,39 +44,35 @@ export function SidebarNav({ isSidebarOpen }: SidebarNavProps) {
             <NavItem
               href="/dashboard"
               icon={LayoutDashboard}
-              label={t('dashboard')}
+              label={t("dashboard")}
             />
             <NavItem
               href="/dashboard/lenders"
               icon={Users}
-              label={t('lenders')}
+              label={t("lenders")}
             />
-            <NavItem
-              href="/dashboard/loans"
-              icon={Wallet}
-              label={t('loans')}
-            />
+            <NavItem href="/dashboard/loans" icon={Wallet} label={t("loans")} />
             <NavItem
               href="/dashboard/logbook"
               icon={History}
-              label={t('logbook')}
+              label={t("logbook")}
             />
             <NavItem
               href="/dashboard/configuration"
               icon={Settings}
-              label={t('configuration')}
+              label={t("configuration")}
             />
           </nav>
 
           {/* Theme Selector at the bottom of the sidebar */}
           <div className="mt-auto pt-4 border-t">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">{commonT('ui.theme')}</span>
+              <span className="text-sm font-medium">{commonT("ui.theme")}</span>
             </div>
             <ThemeSelector />
           </div>
         </div>
       </div>
     </>
-  )
-} 
+  );
+}

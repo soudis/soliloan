@@ -1,28 +1,36 @@
-import { FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { CustomSelectTrigger, Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
-import { cn } from '@/lib/utils'
-import { UseFormReturn } from 'react-hook-form'
+import { useFormContext } from "react-hook-form";
 
-
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  CustomSelectTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 interface FormNumberWithSelectProps {
-  form: UseFormReturn<any>
-  numberName: string
-  selectName: string
-  numberLabel: string
-  selectLabel?: string
-  numberPlaceholder?: string
-  selectPlaceholder?: string
-  numberMin?: number
-  numberStep?: number
-  selectOptions: Array<{ value: string; label: string }>
-  className?: string
+  numberName: string;
+  selectName: string;
+  numberLabel: string;
+  selectLabel?: string;
+  numberPlaceholder?: string;
+  selectPlaceholder?: string;
+  numberMin?: number;
+  numberStep?: number;
+  selectOptions: Array<{ value: string; label: string }>;
+  className?: string;
 }
 
 export function FormNumberWithSelect({
-  form,
   numberName,
   selectName,
   numberLabel,
@@ -34,8 +42,9 @@ export function FormNumberWithSelect({
   selectOptions,
   className,
 }: FormNumberWithSelectProps) {
+  const form = useFormContext();
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn("space-y-2", className)}>
       <div className="flex items-center justify-between">
         <Label>{numberLabel}</Label>
         <Label className="text-muted-foreground">{selectLabel}</Label>
@@ -89,5 +98,5 @@ export function FormNumberWithSelect({
         />
       </div>
     </div>
-  )
-} 
+  );
+}

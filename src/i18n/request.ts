@@ -1,6 +1,7 @@
-import { hasLocale } from 'next-intl';
-import { getRequestConfig } from 'next-intl/server';
-import { routing } from './routing';
+import { hasLocale } from "next-intl";
+import { getRequestConfig } from "next-intl/server";
+
+import { routing } from "./routing";
 
 export default getRequestConfig(async ({ requestLocale }) => {
   // Typically corresponds to the `[locale]` segment
@@ -16,10 +17,11 @@ export default getRequestConfig(async ({ requestLocale }) => {
   } catch (error) {
     // Fallback to default locale if requested locale is not available
     messages = (await import(`../messages/${routing.defaultLocale}`)).default;
+    console.error(error);
   }
 
   return {
     locale,
-    messages
+    messages,
   };
 });

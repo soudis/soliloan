@@ -1,13 +1,13 @@
-'use server'
+"use server";
 
-import { auth } from '@/lib/auth'
-import { db } from '@/lib/db'
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 
 export async function getProjects() {
   try {
-    const session = await auth()
+    const session = await auth();
     if (!session) {
-      throw new Error('Unauthorized')
+      throw new Error("Unauthorized");
     }
 
     // Fetch all projects for the user
@@ -15,21 +15,24 @@ export async function getProjects() {
       where: {
         managers: {
           some: {
-            id: session.user.id
-          }
-        }
+            id: session.user.id,
+          },
+        },
       },
       include: {
-        configuration: true
+        configuration: true,
       },
       orderBy: {
-        name: 'asc'
-      }
-    })
+        name: "asc",
+      },
+    });
 
-    return { projects }
+    return { projects };
   } catch (error) {
-    console.error('Error fetching projects:', error)
-    return { error: error instanceof Error ? error.message : 'Failed to fetch projects' }
+    console.error("Error fetching projects:", error);
+    return {
+      error:
+        error instanceof Error ? error.message : "Failed to fetch projects",
+    };
   }
-} 
+}

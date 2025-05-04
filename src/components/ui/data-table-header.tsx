@@ -1,40 +1,42 @@
-import { Button } from '@/components/ui/button'
+import { ViewType } from "@prisma/client";
+import { Table } from "@tanstack/react-table";
+import { SlidersHorizontal } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import { ViewType } from '@prisma/client'
-import { Table } from '@tanstack/react-table'
-import { SlidersHorizontal } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { SaveViewDialog } from './save-view-dialog'
-import { ViewManager } from './view-manager'
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+
+import { SaveViewDialog } from "./save-view-dialog";
+import { ViewManager } from "./view-manager";
 interface DataTableHeaderProps<TData> {
-  table: Table<TData>
-  filterColumn?: string
-  filterPlaceholder?: string
-  showColumnVisibility?: boolean
-  showFilter?: boolean
+  table: Table<TData>;
+  filterColumn?: string;
+  filterPlaceholder?: string;
+  showColumnVisibility?: boolean;
+  showFilter?: boolean;
   columnFilters?: {
     [key: string]: {
-      type: 'text' | 'select' | 'number' | 'date'
-      options?: { label: string; value: string }[]
-      label?: string
-    }
-  }
-  viewType?: ViewType
-  globalFilter: string
-  setGlobalFilter: (value: string) => void
-  showColumnFilters: boolean
-  setShowColumnFilters: (value: boolean) => void
-  hasActiveFilters: () => boolean
-  isSaving: boolean
-  handleSaveView: (name: string, isDefault: boolean) => Promise<void>
-  viewRefreshTrigger: number
-  onViewLoad?: () => void
+      type: "text" | "select" | "number" | "date";
+      options?: { label: string; value: string }[];
+      label?: string;
+    };
+  };
+  viewType?: ViewType;
+  globalFilter: string;
+  setGlobalFilter: (value: string) => void;
+  showColumnFilters: boolean;
+  setShowColumnFilters: (value: boolean) => void;
+  hasActiveFilters: () => boolean;
+  isSaving: boolean;
+  handleSaveView: (name: string, isDefault: boolean) => Promise<void>;
+  viewRefreshTrigger: number;
+  onViewLoad?: () => void;
 }
 
 export function DataTableHeader<TData>({
@@ -55,7 +57,7 @@ export function DataTableHeader<TData>({
   viewRefreshTrigger,
   onViewLoad,
 }: DataTableHeaderProps<TData>) {
-  const t = useTranslations('dataTable')
+  const t = useTranslations("dataTable");
 
   return (
     <div className="flex items-center py-4">
@@ -64,15 +66,20 @@ export function DataTableHeader<TData>({
           {filterColumn && (
             <Input
               placeholder={filterPlaceholder}
-              value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ''}
+              value={
+                (table.getColumn(filterColumn)?.getFilterValue() as string) ??
+                ""
+              }
               onChange={(event) =>
-                table.getColumn(filterColumn)?.setFilterValue(event.target.value)
+                table
+                  .getColumn(filterColumn)
+                  ?.setFilterValue(event.target.value)
               }
               className="max-w-sm"
             />
           )}
           <Input
-            placeholder={t('globalFilter') || "Search all columns..."}
+            placeholder={t("globalFilter") || "Search all columns..."}
             value={globalFilter}
             onChange={(event) => setGlobalFilter(event.target.value)}
             className="max-w-sm"
@@ -91,16 +98,24 @@ export function DataTableHeader<TData>({
                   table.resetColumnVisibility();
                   table.resetSorting();
                   table.resetColumnFilters();
-                  setGlobalFilter('');
+                  setGlobalFilter("");
                   table.setPageSize(10);
                   return;
                 }
 
                 if (!view.data) return;
 
-                const { columnVisibility, sorting, columnFilters, globalFilter, pageSize } = view.data as any;
+                const {
+                  columnVisibility,
+                  sorting,
+                  columnFilters,
+                  globalFilter,
+                  pageSize,
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } = view.data as any;
 
-                if (columnVisibility) table.setColumnVisibility(columnVisibility);
+                if (columnVisibility)
+                  table.setColumnVisibility(columnVisibility);
                 if (sorting) table.setSorting(sorting);
                 if (columnFilters) table.setColumnFilters(columnFilters);
                 if (globalFilter !== undefined) setGlobalFilter(globalFilter);
@@ -109,23 +124,19 @@ export function DataTableHeader<TData>({
               onViewDelete={async (viewId) => {
                 try {
                   const response = await fetch(`/api/views/${viewId}`, {
-                    method: 'DELETE',
+                    method: "DELETE",
                   });
 
                   if (!response.ok) {
-                    throw new Error('Failed to delete view');
+                    throw new Error("Failed to delete view");
                   }
                 } catch (error) {
-                  console.error('Error deleting view:', error);
+                  console.error("Error deleting view:", error);
                 }
               }}
               refreshTrigger={viewRefreshTrigger}
             />
-            <SaveViewDialog
-              viewType={viewType}
-              onSave={handleSaveView}
-              isLoading={isSaving}
-            />
+            <SaveViewDialog onSave={handleSaveView} isLoading={isSaving} />
           </>
         )}
         {Object.keys(columnFilters).length > 0 && (
@@ -136,7 +147,7 @@ export function DataTableHeader<TData>({
             onClick={() => setShowColumnFilters(!showColumnFilters)}
           >
             <SlidersHorizontal className="mr-2 h-4 w-4" />
-            {t('filters')}
+            {t("filters")}
             {hasActiveFilters() && (
               <span className="ml-2 flex h-2 w-2 rounded-full bg-primary"></span>
             )}
@@ -146,7 +157,7 @@ export function DataTableHeader<TData>({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="h-8">
-                {t('columns')}
+                {t("columns")}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -165,12 +176,12 @@ export function DataTableHeader<TData>({
                     >
                       {columnFilters[column.id]?.label || column.id}
                     </DropdownMenuCheckboxItem>
-                  )
+                  );
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
         )}
       </div>
     </div>
-  )
-} 
+  );
+}

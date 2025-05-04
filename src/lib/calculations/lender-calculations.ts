@@ -1,30 +1,29 @@
-import { CalculationOptions } from '@/types/calculation'
-import { LenderWithRelations } from '@/types/lenders'
-import { Lender, Loan, Transaction } from '@prisma/client'
-import { Decimal } from '@prisma/client/runtime/library'
-import { omit } from 'lodash'
-import { loansSorter } from '../utils'
-import { calculateLoanFields } from './loan-calculations'
+import { Lender } from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
+import { omit } from "lodash";
 
-type LoanWithTransactions = Loan & {
-  transactions?: Transaction[]
-}
+import { CalculationOptions } from "@/types/calculation";
+import { LenderWithRelations } from "@/types/lenders";
+
+import { loansSorter } from "../utils";
+import { calculateLoanFields } from "./loan-calculations";
 
 // Define a base type for the lender with calculations
 export type LenderWithCalculations = Lender & {
-  totalLoans: number
-  totalAmount: number
-  totalRemainingAmount: number
-  totalInterest: number
-  activeLoans: number
-  defaultedLoans: number
-}
+  totalLoans: number;
+  totalAmount: number;
+  totalRemainingAmount: number;
+  totalInterest: number;
+  activeLoans: number;
+  defaultedLoans: number;
+};
 
 // Define a generic type that can include relations
-export type LenderWithCalculationsAndRelations<T = {}> = LenderWithCalculations & T
+export type LenderWithCalculationsAndRelations<T> = LenderWithCalculations & T;
 
 export function calculateLenderFields(
-  lender: LenderWithRelations, options: CalculationOptions = {}
+  lender: LenderWithRelations,
+  options: CalculationOptions = {}
 ) {
   const { client = false } = options ?? {};
 
@@ -83,4 +82,4 @@ export function calculateLenderFields(
       .map((file) => omit(file, "data")),
     ...sums,
   };
-} 
+}

@@ -1,5 +1,16 @@
 // src/components/multi-select.tsx
 
+import { cva } from "class-variance-authority";
+import {
+  CheckIcon,
+  ChevronDown,
+  WandSparkles,
+  XCircle,
+  XIcon,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,16 +29,8 @@ import {
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { cva, type VariantProps } from "class-variance-authority";
-import {
-  CheckIcon,
-  ChevronDown,
-  WandSparkles,
-  XCircle,
-  XIcon,
-} from "lucide-react";
-import { useTranslations } from "next-intl";
-import * as React from "react";
+
+import type { VariantProps } from "class-variance-authority";
 
 /**
  * Variants for the multi-select component to handle different styles.
@@ -58,7 +61,7 @@ const multiSelectVariants = cva(
  */
 interface MultiSelectProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-  VariantProps<typeof multiSelectVariants> {
+    VariantProps<typeof multiSelectVariants> {
   /**
    * An array of option objects to be displayed in the multi-select component.
    * Each option object has a label, value, and an optional icon.
@@ -133,7 +136,6 @@ export const MultiSelect = React.forwardRef<
       animation = 0,
       maxCount = 3,
       modalPopover = false,
-      asChild = false,
       className,
       ...props
     },
@@ -143,7 +145,7 @@ export const MultiSelect = React.forwardRef<
       React.useState<string[]>(defaultValue);
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [isAnimating, setIsAnimating] = React.useState(false);
-    const tCommon = useTranslations('common')
+    const tCommon = useTranslations("common");
 
     const handleInputKeyDown = (
       event: React.KeyboardEvent<HTMLInputElement>
@@ -288,11 +290,11 @@ export const MultiSelect = React.forwardRef<
         >
           <Command>
             <CommandInput
-              placeholder={tCommon('ui.actions.search')}
+              placeholder={tCommon("ui.actions.search")}
               onKeyDown={handleInputKeyDown}
             />
             <CommandList>
-              <CommandEmpty>{tCommon('ui.actions.noResults')}</CommandEmpty>
+              <CommandEmpty>{tCommon("ui.actions.noResults")}</CommandEmpty>
               <CommandGroup>
                 <CommandItem
                   key="all"
@@ -309,7 +311,7 @@ export const MultiSelect = React.forwardRef<
                   >
                     <CheckIcon className="h-4 w-4" />
                   </div>
-                  <span>{tCommon('ui.actions.selectAll')}</span>
+                  <span>{tCommon("ui.actions.selectAll")}</span>
                 </CommandItem>
                 {options.map((option) => {
                   const isSelected = selectedValues.includes(option.value);
@@ -346,7 +348,7 @@ export const MultiSelect = React.forwardRef<
                         onSelect={handleClear}
                         className="flex-1 justify-center cursor-pointer"
                       >
-                        {tCommon('ui.actions.clear')}
+                        {tCommon("ui.actions.clear")}
                       </CommandItem>
                       <Separator
                         orientation="vertical"
@@ -358,7 +360,7 @@ export const MultiSelect = React.forwardRef<
                     onSelect={() => setIsPopoverOpen(false)}
                     className="flex-1 justify-center cursor-pointer max-w-full"
                   >
-                    {tCommon('ui.actions.close')}
+                    {tCommon("ui.actions.close")}
                   </CommandItem>
                 </div>
               </CommandGroup>

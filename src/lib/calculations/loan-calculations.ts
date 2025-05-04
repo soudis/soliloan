@@ -1,10 +1,18 @@
-import { CalculationOptions } from '@/types/calculation'
-import { LoanStatus, LoanWithRelations } from '@/types/loans'
-import { DurationType, InterestMethod, PaymentType, TerminationType, TransactionType } from '@prisma/client'
-import { Decimal } from '@prisma/client/runtime/library'
-import { omit } from 'lodash'
-import moment, { Moment } from 'moment'
-import { transactionSorter } from '../utils'
+import {
+  DurationType,
+  InterestMethod,
+  PaymentType,
+  TerminationType,
+  TransactionType,
+} from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
+import { omit } from "lodash";
+import moment, { Moment } from "moment";
+
+import { CalculationOptions } from "@/types/calculation";
+import { LoanStatus, LoanWithRelations } from "@/types/loans";
+
+import { transactionSorter } from "../utils";
 
 export const isRepaid = (loan: LoanWithRelations, toDate: Date) => {
   // check if all money was paid back until given date
@@ -108,7 +116,8 @@ export const calculateLoanPerYear = function (
     toDate = moment(terminationDate);
   }
 
-  const method = loan.altInterestMethod ?? loan.lender.project.configuration.interestMethod;
+  const method =
+    loan.altInterestMethod ?? loan.lender.project.configuration.interestMethod;
 
   if (!method) {
     throw new Error("NO_INTEREST_METHOD");
@@ -301,13 +310,13 @@ export const getRepayDate = (loan: LoanWithRelations) => {
     case TerminationType.TERMINATION:
       return loan.terminationDate
         ? moment(loan.terminationDate)
-          .add(
-            loan.terminationPeriod,
-            loan.terminationPeriodType === DurationType.MONTHS
-              ? "months"
-              : "years"
-          )
-          .toDate()
+            .add(
+              loan.terminationPeriod,
+              loan.terminationPeriodType === DurationType.MONTHS
+                ? "months"
+                : "years"
+            )
+            .toDate()
         : null;
     case TerminationType.DURATION:
       return moment(loan.signDate)
@@ -336,9 +345,9 @@ const getInterestBookingDate = (
     : moment().set("year", year).endOf("year").toDate();
 };
 
-
-export function calculateLoanFields<T = {}>(
-  loan: LoanWithRelations & T, options: CalculationOptions = {}
+export function calculateLoanFields<T>(
+  loan: LoanWithRelations & T,
+  options: CalculationOptions = {}
 ) {
   const {
     toDate = new Date(),
@@ -391,5 +400,5 @@ export function calculateLoanFields<T = {}>(
           }))
       )
       .sort(transactionSorter),
-  }
-} 
+  };
+}

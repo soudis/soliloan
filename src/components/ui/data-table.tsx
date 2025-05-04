@@ -1,6 +1,4 @@
-import { createView, deleteView, getViewById } from '@/app/actions/views'
-import { useTableStore } from '@/store/table-store'
-import { ViewType } from '@prisma/client'
+import { ViewType } from "@prisma/client";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -11,19 +9,25 @@ import {
   getSortedRowModel,
   SortingState,
   useReactTable,
-  VisibilityState
-} from '@tanstack/react-table'
-import { de, enUS } from 'date-fns/locale'
-import { Settings } from 'lucide-react'
-import { useLocale, useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
-import { DataTableBody } from './data-table-body'
-import { DataTableColumnFilters } from './data-table-column-filters'
-import { DataTableHeader } from './data-table-header'
-import { DataTablePagination } from './data-table-pagination'
+  VisibilityState,
+} from "@tanstack/react-table";
+import { Settings } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { createView } from "@/app/actions/views";
+import { useTableStore } from "@/store/table-store";
+
+import { DataTableBody } from "./data-table-body";
+import { DataTableColumnFilters } from "./data-table-column-filters";
+import { DataTableHeader } from "./data-table-header";
+import { DataTablePagination } from "./data-table-pagination";
 
 // Define the custom filter function for compound text fields
-export const compoundTextFilter: FilterFn<any> = (row, columnId, filterValue) => {
+export const compoundTextFilter: FilterFn<unknown> = (
+  row,
+  columnId,
+  filterValue
+) => {
   const value = row.getValue(columnId);
   if (!value) return false;
 
@@ -35,7 +39,11 @@ export const compoundTextFilter: FilterFn<any> = (row, columnId, filterValue) =>
 };
 
 // Define the custom number range filter function for number filtering
-export const inNumberRangeFilter: FilterFn<any> = (row, columnId, filterValue) => {
+export const inNumberRangeFilter: FilterFn<unknown> = (
+  row,
+  columnId,
+  filterValue
+) => {
   const value = row.getValue(columnId);
   if (value === null || value === undefined) return false;
 
@@ -60,9 +68,13 @@ export const inNumberRangeFilter: FilterFn<any> = (row, columnId, filterValue) =
 };
 
 // Define the custom date filter function for date range filtering
-export const dateRangeFilter: FilterFn<any> = (row, columnId, filterValue) => {
+export const dateRangeFilter: FilterFn<unknown> = (
+  row,
+  columnId,
+  filterValue
+) => {
   const value = row.getValue(columnId);
-  if (!value || typeof value !== 'string') return false;
+  if (!value || typeof value !== "string") return false;
 
   // If no filter is applied, show all rows
   if (!filterValue || (!filterValue[0] && !filterValue[1])) return true;
@@ -93,39 +105,32 @@ export const dateRangeFilter: FilterFn<any> = (row, columnId, filterValue) => {
 };
 
 // Define the column meta type to include the fixed property
-declare module '@tanstack/react-table' {
-  interface ColumnMeta<TData extends unknown, TValue> {
+declare module "@tanstack/react-table" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData, TValue> {
     fixed?: boolean;
   }
 }
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-  filterColumn?: string
-  filterPlaceholder?: string
-  onRowClick?: (row: TData) => void
-  showColumnVisibility?: boolean
-  showPagination?: boolean
-  showFilter?: boolean
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  filterColumn?: string;
+  filterPlaceholder?: string;
+  onRowClick?: (row: TData) => void;
+  showColumnVisibility?: boolean;
+  showPagination?: boolean;
+  showFilter?: boolean;
   columnFilters?: {
     [key: string]: {
-      type: 'text' | 'select' | 'number' | 'date'
-      options?: { label: string; value: string }[]
-      label?: string
-    }
-  }
-  defaultColumnVisibility?: VisibilityState
-  viewType?: ViewType
-  translations?: {
-    columns?: string
-    filters?: string
-    previous?: string
-    next?: string
-    noResults?: string
-    to?: string
-  }
-  actions?: (row: TData) => React.ReactNode
+      type: "text" | "select" | "number" | "date";
+      options?: { label: string; value: string }[];
+      label?: string;
+    };
+  };
+  defaultColumnVisibility?: VisibilityState;
+  viewType?: ViewType;
+  actions?: (row: TData) => React.ReactNode;
 }
 
 export function DataTable<TData, TValue>({
@@ -140,28 +145,32 @@ export function DataTable<TData, TValue>({
   columnFilters = {},
   defaultColumnVisibility = {},
   viewType,
-  translations,
   actions,
 }: DataTableProps<TData, TValue>) {
-  const t = useTranslations('dataTable')
-  const locale = useLocale()
-  const dateLocale = locale === 'de' ? de : enUS
-
   // Get the table store
-  const { getState, setState } = useTableStore()
+  const { getState, setState } = useTableStore();
 
   // Initialize state from store if viewType is provided
-  const storedState = viewType ? getState(viewType) : null
-  const [sorting, setSorting] = useState<SortingState>(storedState?.sorting || [])
-  const [columnFiltersState, setColumnFilters] = useState<ColumnFiltersState>(storedState?.columnFilters || [])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({ ...defaultColumnVisibility, ...storedState?.columnVisibility, })
-  const [rowSelection, setRowSelection] = useState({})
-  const [showColumnFilters, setShowColumnFilters] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [globalFilter, setGlobalFilter] = useState(storedState?.globalFilter || '')
-  const [pageSize, setPageSize] = useState(storedState?.pageSize || 10)
-  const [viewRefreshTrigger, setViewRefreshTrigger] = useState(0)
-  const [viewLoaded, setViewLoaded] = useState(false)
+  const storedState = viewType ? getState(viewType) : null;
+  const [sorting, setSorting] = useState<SortingState>(
+    storedState?.sorting || []
+  );
+  const [columnFiltersState, setColumnFilters] = useState<ColumnFiltersState>(
+    storedState?.columnFilters || []
+  );
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    ...defaultColumnVisibility,
+    ...storedState?.columnVisibility,
+  });
+  const [rowSelection, setRowSelection] = useState({});
+  const [showColumnFilters, setShowColumnFilters] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [globalFilter, setGlobalFilter] = useState(
+    storedState?.globalFilter || ""
+  );
+  const [pageSize, setPageSize] = useState(storedState?.pageSize || 10);
+  const [viewRefreshTrigger, setViewRefreshTrigger] = useState(0);
+  const [viewLoaded, setViewLoaded] = useState(false);
 
   // Update store when state changes
   useEffect(() => {
@@ -172,21 +181,29 @@ export function DataTable<TData, TValue>({
         columnVisibility,
         globalFilter,
         pageSize,
-      })
+      });
     }
-  }, [viewType, sorting, columnFiltersState, columnVisibility, globalFilter, pageSize, setState])
+  }, [
+    viewType,
+    sorting,
+    columnFiltersState,
+    columnVisibility,
+    globalFilter,
+    pageSize,
+    setState,
+  ]);
 
   // Function to check if any filters are active
   const hasActiveFilters = () => {
     // Check if any column filters are active
-    const hasColumnFilters = columnFiltersState.some(filter => {
+    const hasColumnFilters = columnFiltersState.some((filter) => {
       const value = filter.value;
       if (Array.isArray(value)) {
         // For range filters (number, date)
-        return value.some(v => v !== undefined && v !== '');
+        return value.some((v) => v !== undefined && v !== "");
       }
       // For text and select filters
-      return value !== undefined && value !== '';
+      return value !== undefined && value !== "";
     });
 
     // Only return true if column filters are active, ignoring global filter
@@ -197,7 +214,7 @@ export function DataTable<TData, TValue>({
   const allColumns = [...columns];
   if (actions) {
     allColumns.push({
-      id: 'actions',
+      id: "actions",
       header: () => (
         <div className="flex justify-center">
           <Settings className="h-4 w-4" />
@@ -252,15 +269,13 @@ export function DataTable<TData, TValue>({
     // Enable global filtering for all columns
     enableGlobalFilter: true,
     pageCount: Math.ceil(data.length / pageSize),
-
-  })
-
+  });
 
   // Function to save the current view
   const handleSaveView = async (name: string, isDefault: boolean) => {
-    if (!viewType) return
+    if (!viewType) return;
 
-    setIsSaving(true)
+    setIsSaving(true);
     try {
       // Convert the data to a JSON-compatible format
       const viewData = {
@@ -269,74 +284,28 @@ export function DataTable<TData, TValue>({
         columnVisibility: JSON.parse(JSON.stringify(columnVisibility)),
         globalFilter,
         pageSize,
-      }
+      };
 
       // Use type assertion to satisfy the TypeScript compiler
-      const { view, error } = await createView({
+      const { error } = await createView({
         name,
-        type: viewType,
+        type: viewType as ViewType,
         isDefault,
-        data: viewData
-      } as any)
+        data: viewData,
+      });
 
       if (error) {
-        throw new Error(error)
+        throw new Error(error);
       }
 
       // Refresh the view list
-      setViewRefreshTrigger(prev => prev + 1)
+      setViewRefreshTrigger((prev) => prev + 1);
     } catch (err) {
-      console.error('Error saving view:', err)
+      console.error("Error saving view:", err);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
-
-  const handleLoadView = async (view: any) => {
-    if (!view) return
-
-    try {
-      const { view: loadedView, error } = await getViewById(view.id)
-      if (error) {
-        throw new Error(error)
-      }
-
-      if (loadedView && loadedView.data) {
-        // Parse the data if it's a string, or use it directly if it's already an object
-        const state = typeof loadedView.data === 'string'
-          ? JSON.parse(loadedView.data)
-          : loadedView.data as {
-            sorting?: SortingState;
-            columnFilters?: ColumnFiltersState;
-            columnVisibility?: VisibilityState;
-            globalFilter?: string;
-            pageSize?: number;
-          };
-
-        setSorting(state.sorting || [])
-        setColumnFilters(state.columnFilters || [])
-        setColumnVisibility(state.columnVisibility || defaultColumnVisibility)
-        setGlobalFilter(state.globalFilter || '')
-        setPageSize(state.pageSize || 10)
-      }
-    } catch (err) {
-      console.error('Error loading view:', err)
-    }
-  }
-
-  const handleDeleteView = async (viewId: string) => {
-    try {
-      const { error } = await deleteView(viewId)
-      if (error) {
-        throw new Error(error)
-      }
-
-      // Refresh the view list
-      setViewRefreshTrigger(prev => prev + 1)
-    } catch (err) {
-      console.error('Error deleting view:', err)
-    }
-  }
+  };
 
   return (
     <div>
@@ -360,22 +329,12 @@ export function DataTable<TData, TValue>({
       />
 
       {showColumnFilters && Object.keys(columnFilters).length > 0 && (
-        <DataTableColumnFilters
-          table={table}
-          columnFilters={columnFilters}
-        />
+        <DataTableColumnFilters table={table} columnFilters={columnFilters} />
       )}
 
-      {viewLoaded && (
-        <DataTableBody
-          table={table}
-          onRowClick={onRowClick}
-        />
-      )}
+      {viewLoaded && <DataTableBody table={table} onRowClick={onRowClick} />}
 
-      {viewLoaded && showPagination && (
-        <DataTablePagination table={table} />
-      )}
+      {viewLoaded && showPagination && <DataTablePagination table={table} />}
     </div>
-  )
-} 
+  );
+}

@@ -1,30 +1,31 @@
-'use client'
+"use client";
 
-import { ProjectWithConfiguration } from '@/types/projects'
-import { createContext, ReactNode, useContext, useState } from 'react'
+import { createContext, ReactNode, useContext, useState } from "react";
 
+import { ProjectWithConfiguration } from "@/types/projects";
 
 interface ProjectContextType {
-  selectedProject: ProjectWithConfiguration | null
-  setSelectedProject: (project: ProjectWithConfiguration | null) => void
+  selectedProject: ProjectWithConfiguration | null;
+  setSelectedProject: (project: ProjectWithConfiguration | null) => void;
 }
 
-const ProjectContext = createContext<ProjectContextType | undefined>(undefined)
+const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
 export function ProjectProvider({ children }: { children: ReactNode }) {
-  const [selectedProject, setSelectedProject] = useState<ProjectWithConfiguration | null>(null)
+  const [selectedProject, setSelectedProject] =
+    useState<ProjectWithConfiguration | null>(null);
 
   return (
     <ProjectContext.Provider value={{ selectedProject, setSelectedProject }}>
       {children}
     </ProjectContext.Provider>
-  )
+  );
 }
 
 export function useProject() {
-  const context = useContext(ProjectContext)
+  const context = useContext(ProjectContext);
   if (context === undefined) {
-    throw new Error('useProject must be used within a ProjectProvider')
+    throw new Error("useProject must be used within a ProjectProvider");
   }
-  return context
-} 
+  return context;
+}

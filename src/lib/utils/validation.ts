@@ -1,9 +1,11 @@
-
-export function validationError(message: string, params?: Record<string, any>) {
+export function validationError(
+  message: string,
+  params?: Record<string, unknown>
+) {
   return JSON.stringify({
     message,
     params,
-  })
+  });
 }
 
 export function parseValidationError(str?: string) {
@@ -12,7 +14,8 @@ export function parseValidationError(str?: string) {
   }
 
   try {
-    return JSON.parse(str)
+    return JSON.parse(str);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return undefined;
   }

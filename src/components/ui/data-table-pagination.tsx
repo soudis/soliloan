@@ -1,15 +1,16 @@
-import { Button } from '@/components/ui/button'
-import { Table } from '@tanstack/react-table'
-import { useTranslations } from 'next-intl'
+import { Table } from "@tanstack/react-table";
+import { useTranslations } from "next-intl";
+
+import { Button } from "@/components/ui/button";
 
 interface DataTablePaginationProps<TData> {
-  table: Table<TData>
+  table: Table<TData>;
 }
 
 export function DataTablePagination<TData>({
   table,
 }: DataTablePaginationProps<TData>) {
-  const t = useTranslations('dataTable')
+  const t = useTranslations("dataTable");
 
   return (
     <div className="flex items-center justify-end space-x-2 py-4">
@@ -19,7 +20,7 @@ export function DataTablePagination<TData>({
         onClick={() => table.previousPage()}
         disabled={!table.getCanPreviousPage()}
       >
-        {t('previous')}
+        {t("previous")}
       </Button>
       <Button
         variant="outline"
@@ -27,8 +28,8 @@ export function DataTablePagination<TData>({
         onClick={() => table.nextPage()}
         disabled={!table.getCanNextPage()}
       >
-        {t('next')}
+        {t("next")}
       </Button>
     </div>
-  )
-} 
+  );
+}

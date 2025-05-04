@@ -1,45 +1,56 @@
-'use server'
+"use server";
 
-import { createAuditEntry, getChangedFields, removeNullFields } from '@/lib/audit-trail'
-import { auth } from '@/lib/auth'
-import { db } from '@/lib/db'
-import { configurationFormSchema } from '@/lib/schemas/configuration'
-import { Entity, Operation } from '@prisma/client'
-import { revalidatePath } from 'next/cache'
+import { Entity, Operation } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
-export async function updateConfiguration(projectId: string, data: any) {
+import {
+  createAuditEntry,
+  getChangedFields,
+  removeNullFields,
+} from "@/lib/audit-trail";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import {
+  ConfigurationFormData,
+  configurationFormSchema,
+} from "@/lib/schemas/configuration";
+
+export async function updateConfiguration(
+  projectId: string,
+  data: ConfigurationFormData
+) {
   try {
-    const session = await auth()
+    const session = await auth();
     if (!session) {
-      throw new Error('Unauthorized')
+      throw new Error("Unauthorized");
     }
 
     // Fetch the project
     const project = await db.project.findUnique({
       where: {
-        id: projectId
+        id: projectId,
       },
       include: {
         managers: true,
-        configuration: true
-      }
-    })
+        configuration: true,
+      },
+    });
 
     if (!project) {
-      throw new Error('Project not found')
+      throw new Error("Project not found");
     }
 
     // Check if the user has access to the project
     const hasAccess = project.managers.some(
       (manager) => manager.id === session.user.id
-    )
+    );
 
     if (!hasAccess) {
-      throw new Error('You do not have access to this project')
+      throw new Error("You do not have access to this project");
     }
 
     // Validate the data
-    const validatedData = configurationFormSchema.parse(data)
+    const validatedData = configurationFormSchema.parse(data);
 
     // Transform the data to match the database schema
     const dbData = {
@@ -67,27 +78,27 @@ export async function updateConfiguration(projectId: string, data: any) {
       customLoans: validatedData.customLoans || false,
       lenderRequiredFields: validatedData.lenderRequiredFields || [],
       logo: validatedData.logo || null,
-    }
+    };
 
     // Get the current configuration for audit trail
-    const currentConfig = project.configuration
-    const isCreate = !currentConfig
+    const currentConfig = project.configuration;
+    const isCreate = !currentConfig;
 
     // Update the project configuration
     const configuration = await db.configuration.upsert({
       where: {
-        id: project.configurationId
+        id: project.configurationId,
       },
       update: dbData,
       create: {
         ...dbData,
         project: {
           connect: {
-            id: projectId
-          }
-        }
-      }
-    })
+            id: projectId,
+          },
+        },
+      },
+    });
 
     // Create audit trail entry
     if (isCreate) {
@@ -99,9 +110,9 @@ export async function updateConfiguration(projectId: string, data: any) {
         after: removeNullFields(configuration),
         context: {},
         projectId,
-      })
+      });
     } else {
-      const { before, after } = getChangedFields(currentConfig, configuration)
+      const { before, after } = getChangedFields(currentConfig, configuration);
       if (Object.keys(before).length > 0) {
         await createAuditEntry(db, {
           entity: Entity.configuration,
@@ -111,12 +122,12 @@ export async function updateConfiguration(projectId: string, data: any) {
           after,
           context: {},
           projectId,
-        })
+        });
       }
     }
 
     // Revalidate the project configuration page
-    revalidatePath(`/dashboard/configuration`)
+    revalidatePath(`/dashboard/configuration`);
 
     // Transform the configuration back to match the form schema
     const formConfiguration = {
@@ -143,11 +154,16 @@ export async function updateConfiguration(projectId: string, data: any) {
       altInterestMethods: configuration.altInterestMethods || [],
       customLoans: configuration.customLoans || false,
       lenderRequiredFields: configuration.lenderRequiredFields || [],
-    }
+    };
 
-    return { configuration: formConfiguration }
+    return { configuration: formConfiguration };
   } catch (error) {
-    console.error('Error updating project configuration:', error)
-    return { error: error instanceof Error ? error.message : 'Failed to update project configuration' }
+    console.error("Error updating project configuration:", error);
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to update project configuration",
+    };
   }
-} 
+}

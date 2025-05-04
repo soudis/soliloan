@@ -1,14 +1,14 @@
-'use client'
+"use client";
 
-import { useTranslations } from 'next-intl'
-import Image from 'next/image'
+import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 export default function AuthLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const t = useTranslations('auth')
+  const t = useTranslations("auth");
 
   return (
     <div className="min-h-screen">
@@ -22,7 +22,9 @@ export default function AuthLayout({
             height={32}
             className="h-8 w-8"
           />
-          <span className="text-xl font-bold text-primary font-comfortaa">Soliloan AI</span>
+          <span className="text-xl font-bold text-primary font-comfortaa">
+            Soliloan AI
+          </span>
         </div>
       </div>
 
@@ -40,10 +42,12 @@ export default function AuthLayout({
                   height={96}
                   className="h-24 w-24"
                 />
-                <span className="text-5xl font-bold text-primary font-comfortaa">Soliloan AI</span>
+                <span className="text-5xl font-bold text-primary font-comfortaa">
+                  Soliloan AI
+                </span>
               </div>
               <p className="text-2xl text-primary mt-8">
-                {t('branding.description')}
+                {t("branding.description")}
               </p>
             </div>
           </div>
@@ -54,11 +58,9 @@ export default function AuthLayout({
 
         {/* Right side - Auth form */}
         <div className="flex-1 md:min-w-[500px] flex items-center justify-start p-6 md:p-12">
-          <div className="w-full max-w-md">
-            {children}
-          </div>
+          <div className="w-full max-w-md">{children}</div>
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

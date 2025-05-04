@@ -1,7 +1,8 @@
+import { DefaultJWT } from "@auth/core/jwt";
 import { DefaultUser } from "@auth/core/types";
 import { DefaultSession } from "next-auth";
+
 import type { AdapterUser as BaseAdapterUser } from "next-auth/adapters";
-import { DefaultJWT } from "@auth/core/jwt";
 
 declare module "@auth/core/adapters" {
   interface AdapterUser extends BaseAdapterUser {
@@ -13,7 +14,6 @@ declare module "@auth/core/adapters" {
   }
 }
 
-
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
@@ -22,7 +22,7 @@ declare module "@auth/core/adapters" {
  */
 declare module "next-auth" {
   export interface Session extends DefaultSession {
-    user: User
+    user: User;
   }
 
   export interface User extends DefaultUser {

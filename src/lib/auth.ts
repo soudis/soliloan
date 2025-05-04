@@ -1,11 +1,11 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import NextAuth from "next-auth";
-
 import { PrismaClient } from "@prisma/client";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { verifyPassword } from "./utils";
-const db = new PrismaClient()
 
+import { verifyPassword } from "./utils/password";
+
+const db = new PrismaClient();
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
@@ -30,7 +30,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             lenders: true,
           },
         });
-        if (!user || !user.password || !verifyPassword(credentials.password as string, user.password)) {
+        if (
+          !user ||
+          !user.password ||
+          !verifyPassword(credentials.password as string, user.password)
+        ) {
           throw new Error("User not found");
         }
         await db.user.update({
@@ -43,20 +47,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           isAdmin: user.isAdmin ?? false,
           isManager: user.managerOf.length > 0,
           managerOf: user.managerOf.map((u) => u.id),
-          loanedToProjects: [
-            ...new Set(user.lenders.map((l) => l.projectId)),
-          ],
+          loanedToProjects: [...new Set(user.lenders.map((l) => l.projectId))],
           language:
-            user.language ??
-            process.env.DIRECTLOAN_DEFAULT_LANGUAGE ??
-            "de"
+            user.language ?? process.env.DIRECTLOAN_DEFAULT_LANGUAGE ?? "de",
         };
       },
     }),
   ],
   callbacks: {
     async session({ session, user, token }) {
-
       return {
         ...session,
         user: {
@@ -74,4 +73,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
   },
-})
+});

@@ -1,42 +1,44 @@
-import { FormControl, FormDescription, FormField as FormFieldWrapper, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { MultiSelect } from '@/components/ui/multi-select'
-import { useTranslations } from 'next-intl'
-import { UseFormReturn } from 'react-hook-form'
+import { useFormContext } from "react-hook-form";
 
+import {
+  FormControl,
+  FormDescription,
+  FormField as FormFieldWrapper,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { MultiSelect } from "@/components/ui/multi-select";
 interface SelectOption {
-  value: string
-  label: string
+  value: string;
+  label: string;
 }
 
 interface FormMultiSelectProps {
-  form: UseFormReturn<any>
-  name: string
-  label: string
-  placeholder: string
-  options: SelectOption[]
-  required?: boolean
-  hint?: string
-  maxCount?: number
+  name: string;
+  label: string;
+  placeholder: string;
+  options: SelectOption[];
+  required?: boolean;
+  hint?: string;
+  maxCount?: number;
 }
 
 export function FormMultiSelect({
-  form,
   name,
   label,
   placeholder,
   options,
-  required = false,
   maxCount,
   hint,
 }: FormMultiSelectProps) {
-  const t = useTranslations('common')
-
+  const form = useFormContext();
   return (
     <FormFieldWrapper
       control={form.control}
       name={name}
       render={({ field }) => {
-        console.log(field.value)
+        console.log(field.value);
         return (
           <FormItem>
             <FormLabel>{label}</FormLabel>
@@ -44,17 +46,20 @@ export function FormMultiSelect({
               <MultiSelect
                 options={options}
                 onValueChange={field.onChange}
-
                 defaultValue={field.value || []}
                 placeholder={placeholder}
                 maxCount={maxCount}
               />
             </FormControl>
-            {hint && <FormDescription className="text-sm text-muted-foreground/80">{hint}</FormDescription>}
+            {hint && (
+              <FormDescription className="text-sm text-muted-foreground/80">
+                {hint}
+              </FormDescription>
+            )}
             <FormMessage />
           </FormItem>
-        )
+        );
       }}
     />
-  )
-} 
+  );
+}

@@ -1,21 +1,22 @@
-'use client'
+"use client";
 
-import { Toaster } from "@/components/ui/sonner"
-import { useAppStore } from "@/store"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
-import { SessionProvider } from "next-auth/react"
-import { ThemeProvider } from "next-themes"
-import { useEffect } from "react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { SessionProvider } from "next-auth/react";
+import { ThemeProvider } from "next-themes";
+import { useEffect } from "react";
 
-const queryClient = new QueryClient()
+import { Toaster } from "@/components/ui/sonner";
+import { useAppStore } from "@/store";
+
+const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const { theme } = useAppStore()
+  const { theme } = useAppStore();
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark")
-  }, [theme])
+    document.documentElement.classList.toggle("dark", theme === "dark");
+  }, [theme]);
 
   return (
     <SessionProvider>
@@ -27,5 +28,5 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </SessionProvider>
-  )
-} 
+  );
+}

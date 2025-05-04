@@ -1,21 +1,26 @@
-'use client'
+"use client";
 
-import { Button } from '@/components/ui/button'
-import { Menu, X } from 'lucide-react'
-import { Session } from 'next-auth'
-import { signOut } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
-import Image from 'next/image'
-import Link from 'next/link'
+import { Menu, X } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Session } from "next-auth";
+import { signOut } from "next-auth/react";
+import { useTranslations } from "next-intl";
+
+import { Button } from "@/components/ui/button";
 
 interface TopNavProps {
-  session: Session
-  isSidebarOpen: boolean
-  setIsSidebarOpen: (isOpen: boolean) => void
+  session: Session;
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (isOpen: boolean) => void;
 }
 
-export function TopNav({ session, isSidebarOpen, setIsSidebarOpen }: TopNavProps) {
-  const t = useTranslations('navigation')
+export function TopNav({
+  session,
+  isSidebarOpen,
+  setIsSidebarOpen,
+}: TopNavProps) {
+  const t = useTranslations("navigation");
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -31,7 +36,9 @@ export function TopNav({ session, isSidebarOpen, setIsSidebarOpen }: TopNavProps
                   height={32}
                   className="mr-2"
                 />
-                <span className="text-xl font-bold text-primary font-comfortaa">Soliloan AI</span>
+                <span className="text-xl font-bold text-primary font-comfortaa">
+                  Soliloan AI
+                </span>
               </Link>
             </div>
             <div className="ml-4 flex items-center md:hidden">
@@ -40,7 +47,11 @@ export function TopNav({ session, isSidebarOpen, setIsSidebarOpen }: TopNavProps
                 size="icon"
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               >
-                {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                {isSidebarOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
               </Button>
             </div>
           </div>
@@ -50,11 +61,8 @@ export function TopNav({ session, isSidebarOpen, setIsSidebarOpen }: TopNavProps
                 <span className="text-sm font-medium">
                   {session.user?.name || session.user?.email}
                 </span>
-                <Button
-                  variant="outline"
-                  onClick={() => signOut()}
-                >
-                  {t('signOut')}
+                <Button variant="outline" onClick={() => signOut()}>
+                  {t("signOut")}
                 </Button>
               </div>
             </div>
@@ -62,5 +70,5 @@ export function TopNav({ session, isSidebarOpen, setIsSidebarOpen }: TopNavProps
         </div>
       </div>
     </nav>
-  )
-} 
+  );
+}

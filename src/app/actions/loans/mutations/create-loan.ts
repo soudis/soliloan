@@ -1,70 +1,84 @@
-'use server'
+"use server";
 
-import { createAuditEntry, getLenderContext, getLoanContext, removeNullFields } from '@/lib/audit-trail'
-import { auth } from '@/lib/auth'
-import { db } from '@/lib/db'
-import { LoanFormData } from '@/lib/schemas/loan'
-import { Entity, Operation } from '@prisma/client'
-import { revalidatePath } from 'next/cache'
+import {
+  ContractStatus,
+  DurationType,
+  Entity,
+  InterestMethod,
+  InterestPaymentType,
+  InterestPayoutType,
+  Operation,
+} from "@prisma/client";
+import { revalidatePath } from "next/cache";
+
+import {
+  createAuditEntry,
+  getLenderContext,
+  getLoanContext,
+  removeNullFields,
+} from "@/lib/audit-trail";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { LoanFormData } from "@/lib/schemas/loan";
 
 export async function createLoan(data: LoanFormData) {
   try {
-    const session = await auth()
+    const session = await auth();
     if (!session) {
-      throw new Error('Unauthorized')
+      throw new Error("Unauthorized");
     }
 
     // Check if the user has access to the lender's project
     const lender = await db.lender.findUnique({
       where: {
-        id: data.lenderId
+        id: data.lenderId,
       },
       include: {
         project: {
           include: {
-            managers: true
-          }
-        }
-      }
-    })
+            managers: true,
+          },
+        },
+      },
+    });
 
     if (!lender) {
-      throw new Error('Lender not found')
+      throw new Error("Lender not found");
     }
 
     // Check if the user has access to the project
     const hasAccess = lender.project.managers.some(
       (manager) => manager.id === session.user.id
-    )
+    );
 
     if (!hasAccess) {
-      throw new Error('You do not have access to this project')
+      throw new Error("You do not have access to this project");
     }
 
     // Create the loan
     const loan = await db.loan.create({
       data: {
         signDate: data.signDate as Date,
-        interestPaymentType: data.interestPaymentType,
-        interestPayoutType: data.interestPayoutType,
+        interestPaymentType: data.interestPaymentType as InterestPaymentType,
+        interestPayoutType: data.interestPayoutType as InterestPayoutType,
         terminationType: data.terminationType,
         endDate: data.endDate,
         terminationDate: data.terminationDate,
-        terminationPeriod: data.terminationPeriod,
-        terminationPeriodType: data.terminationPeriodType,
-        duration: data.duration,
-        durationType: data.durationType,
+        terminationPeriod: Number(data.terminationPeriod),
+        terminationPeriodType: data.terminationPeriodType as DurationType,
+        duration: Number(data.duration),
+        durationType: data.durationType as DurationType,
         amount: data.amount as number,
         interestRate: data.interestRate as number,
-        altInterestMethod: data.altInterestMethod,
-        contractStatus: data.contractStatus,
+        altInterestMethod: data.altInterestMethod as InterestMethod,
+        contractStatus: data.contractStatus as ContractStatus,
         lender: {
           connect: {
-            id: data.lenderId
-          }
-        }
-      }
-    })
+            id: data.lenderId,
+          },
+        },
+      },
+    });
 
     // Create audit trail entry
     await createAuditEntry(db, {
@@ -78,14 +92,16 @@ export async function createLoan(data: LoanFormData) {
         ...getLoanContext(loan),
       },
       projectId: lender.project.id,
-    })
+    });
 
     // Revalidate the loans page
-    revalidatePath(`/dashboard/loans/${data.lenderId}`)
+    revalidatePath(`/dashboard/loans/${data.lenderId}`);
 
-    return { loan }
+    return { loan };
   } catch (error) {
-    console.error('Error creating loan:', error)
-    return { error: error instanceof Error ? error.message : 'Failed to create loan' }
+    console.error("Error creating loan:", error);
+    return {
+      error: error instanceof Error ? error.message : "Failed to create loan",
+    };
   }
-} 
+}

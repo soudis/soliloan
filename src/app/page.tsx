@@ -1,20 +1,21 @@
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import { useSession } from 'next-auth/react'
-import { useRouter } from '@/i18n/navigation'
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+
+import { useRouter } from "@/i18n/navigation";
 
 export default function HomePage() {
-  const router = useRouter()
-  const { status } = useSession()
+  const router = useRouter();
+  const { status } = useSession();
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      router.push('/dashboard')
-    } else if (status === 'unauthenticated') {
-      router.push('/auth/login')
+    if (status === "authenticated") {
+      router.push("/dashboard");
+    } else if (status === "unauthenticated") {
+      router.push("/auth/login");
     }
-  }, [status, router])
+  }, [status, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -22,5 +23,5 @@ export default function HomePage() {
         <h2 className="text-xl font-semibold">Loading...</h2>
       </div>
     </div>
-  )
+  );
 }

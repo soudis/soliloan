@@ -1,29 +1,33 @@
-import { FormControl, FormField as FormFieldWrapper, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { useTranslations } from 'next-intl'
-import { UseFormReturn } from 'react-hook-form'
+import { useFormContext } from "react-hook-form";
+
+import {
+  FormControl,
+  FormField as FormFieldWrapper,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 interface FormFieldProps {
-  form: UseFormReturn<any>
-  name: string
-  label: string
-  placeholder?: string
-  type?: string
-  multiline?: boolean
-  required?: boolean
+  name: string;
+  label: string;
+  placeholder?: string;
+  type?: string;
+  multiline?: boolean;
+  required?: boolean;
 }
 
 export function FormField({
-  form,
   name,
   label,
   placeholder,
-  type = 'text',
+  type = "text",
   multiline = false,
   required = false,
 }: FormFieldProps) {
-  const t = useTranslations()
+  const form = useFormContext();
   return (
     <FormFieldWrapper
       control={form.control}
@@ -33,14 +37,23 @@ export function FormField({
           <FormLabel>{label}</FormLabel>
           <FormControl>
             {multiline ? (
-              <Textarea placeholder={placeholder} {...field} required={required} />
+              <Textarea
+                placeholder={placeholder}
+                {...field}
+                required={required}
+              />
             ) : (
-              <Input type={type} placeholder={placeholder} {...field} required={required} />
+              <Input
+                type={type}
+                placeholder={placeholder}
+                {...field}
+                required={required}
+              />
             )}
           </FormControl>
           <FormMessage />
         </FormItem>
       )}
     />
-  )
-} 
+  );
+}

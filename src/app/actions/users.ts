@@ -1,9 +1,10 @@
-'use server'
+"use server";
 
-import { db } from '@/lib/db';
-import { sendPasswordInvitationEmail } from '@/lib/email';
-import { generateToken } from '@/lib/token';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from "next/cache";
+
+import { db } from "@/lib/db";
+import { sendPasswordInvitationEmail } from "@/lib/email";
+import { generateToken } from "@/lib/token";
 
 /**
  * Send an invitation email to a user to set their password
@@ -25,11 +26,11 @@ export async function sendInvitationEmail(userId: string, projectName: string) {
     });
 
     if (!user) {
-      return { success: false, error: 'User not found' };
+      return { success: false, error: "User not found" };
     }
 
     if (!user.email) {
-      return { success: false, error: 'User has no email address' };
+      return { success: false, error: "User has no email address" };
     }
 
     // Generate a token for password reset
@@ -43,29 +44,27 @@ export async function sendInvitationEmail(userId: string, projectName: string) {
     await db.user.update({
       where: { id: user.id },
       data: {
-        // @ts-ignore - passwordResetToken exists in the schema but not in types
         passwordResetToken: token,
-        // @ts-ignore - passwordResetTokenExpiresAt exists in the schema but not in types
         passwordResetTokenExpiresAt: expirationDate,
-        lastInvited: new Date()
+        lastInvited: new Date(),
       },
     });
 
     // Send the invitation email with the user's language preference
     await sendPasswordInvitationEmail(
       user.email,
-      user.name || 'User',
+      user.name || "User",
       token,
-      user.language || 'de',
+      user.language || "de",
       projectName
     );
 
     // Revalidate the lender page to update the lastInvited timestamp
-    revalidatePath('/dashboard/lenders/[lenderId]');
+    revalidatePath("/dashboard/lenders/[lenderId]");
 
     return { success: true };
   } catch (error) {
-    console.error('Error sending invitation email:', error);
-    return { success: false, error: 'Failed to send invitation email' };
+    console.error("Error sending invitation email:", error);
+    return { success: false, error: "Failed to send invitation email" };
   }
-} 
+}

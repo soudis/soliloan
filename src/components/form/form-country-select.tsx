@@ -1,49 +1,72 @@
-import { FormSelect } from '@/components/form/form-select'
-import { SelectItem, SelectSeparator } from '@/components/ui/select'
-import { useTranslations } from 'next-intl'
-import { UseFormReturn } from 'react-hook-form'
+import { useTranslations } from "next-intl";
+
+import { FormSelect } from "@/components/form/form-select";
+import { SelectItem, SelectSeparator } from "@/components/ui/select";
 
 interface FormCountrySelectProps {
-  form: UseFormReturn<any>
-  name: string
-  label?: string
-  placeholder?: string
-  required?: boolean
-  clearable?: boolean
+  name: string;
+  label?: string;
+  placeholder?: string;
+  required?: boolean;
+  clearable?: boolean;
 }
 
 // Primary countries that should appear at the top
-const PRIMARY_COUNTRIES = ['DE', 'AT', 'CH'] as const
+const PRIMARY_COUNTRIES = ["DE", "AT", "CH"] as const;
 
 // All other countries
 const OTHER_COUNTRIES = [
-  'US', 'GB', 'FR', 'IT', 'ES', 'NL', 'BE', 'DK', 'SE', 'NO', 'FI',
-  'PL', 'CZ', 'HU', 'RO', 'BG', 'HR', 'SI', 'SK', 'EE', 'LV', 'LT', 'CY', 'MT', 'LU',
-  'IE', 'PT', 'GR'
-] as const
+  "US",
+  "GB",
+  "FR",
+  "IT",
+  "ES",
+  "NL",
+  "BE",
+  "DK",
+  "SE",
+  "NO",
+  "FI",
+  "PL",
+  "CZ",
+  "HU",
+  "RO",
+  "BG",
+  "HR",
+  "SI",
+  "SK",
+  "EE",
+  "LV",
+  "LT",
+  "CY",
+  "MT",
+  "LU",
+  "IE",
+  "PT",
+  "GR",
+] as const;
 
 export function FormCountrySelect({
-  form,
   name,
-  label = 'Country',
-  placeholder = 'Select a country',
+  label = "Country",
+  placeholder = "Select a country",
   required = false,
   clearable = false,
 }: FormCountrySelectProps) {
-  const t = useTranslations('common.countries')
-  const commonT = useTranslations('common')
+  const t = useTranslations("common.countries");
+  const commonT = useTranslations("common");
 
   // Create options for primary countries
-  const primaryOptions = PRIMARY_COUNTRIES.map(code => ({
+  const primaryOptions = PRIMARY_COUNTRIES.map((code) => ({
     value: code,
-    label: t(code.toLowerCase())
-  }))
+    label: t(code.toLowerCase()),
+  }));
 
   // Create options for other countries
-  const otherOptions = OTHER_COUNTRIES.map(code => ({
+  const otherOptions = OTHER_COUNTRIES.map((code) => ({
     value: code,
-    label: t(code.toLowerCase())
-  }))
+    label: t(code.toLowerCase()),
+  }));
 
   // Custom render function for the select content
   const renderSelectContent = () => (
@@ -60,14 +83,13 @@ export function FormCountrySelect({
         </SelectItem>
       ))}
     </>
-  )
+  );
 
   return (
     <FormSelect
-      form={form}
       name={name}
       label={label}
-      placeholder={placeholder || commonT('ui.form.selectPlaceholder')}
+      placeholder={placeholder || commonT("ui.form.selectPlaceholder")}
       options={[...primaryOptions, ...otherOptions]}
       side="bottom"
       required={required}
@@ -76,5 +98,5 @@ export function FormCountrySelect({
       customContent={renderSelectContent}
       clearable={clearable}
     />
-  )
-} 
+  );
+}

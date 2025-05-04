@@ -1,66 +1,60 @@
-'use client'
+"use client";
 
-import { getProjects } from '@/app/actions/projects'
+import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
+
+import { getProjects } from "@/app/actions/projects";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { useProject } from '@/store/project-context'
-import { ProjectWithConfiguration } from '@/types/projects'
-import { Loader2 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
-
+} from "@/components/ui/select";
+import { useProject } from "@/store/project-context";
+import { ProjectWithConfiguration } from "@/types/projects";
 
 export default function ProjectSelector() {
-  const { selectedProject, setSelectedProject } = useProject()
-  const t = useTranslations('navigation')
-  const commonT = useTranslations('common')
-  const [projects, setProjects] = useState<ProjectWithConfiguration[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { selectedProject, setSelectedProject } = useProject();
+  const t = useTranslations("navigation");
+  const [projects, setProjects] = useState<ProjectWithConfiguration[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const { projects: fetchedProjects, error } = await getProjects()
+        const { projects: fetchedProjects, error } = await getProjects();
         if (error) {
-          throw new Error(error)
+          throw new Error(error);
         }
         if (fetchedProjects) {
-
-          setProjects(fetchedProjects)
+          setProjects(fetchedProjects);
           if (fetchedProjects.length > 0 && !selectedProject) {
-            setSelectedProject(fetchedProjects[0])
+            setSelectedProject(fetchedProjects[0]);
           }
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
+        setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchProjects()
-  }, [selectedProject, setSelectedProject])
+    fetchProjects();
+  }, [selectedProject, setSelectedProject]);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">
         <Loader2 className="h-4 w-4 animate-spin" />
       </div>
-    )
+    );
   }
 
   if (error) {
-    return (
-      <div className="p-4 text-sm text-red-500">
-        {error}
-      </div>
-    )
+    return <div className="p-4 text-sm text-red-500">{error}</div>;
   }
 
   return (
@@ -68,12 +62,14 @@ export default function ProjectSelector() {
       <Select
         value={selectedProject?.id}
         onValueChange={(value: string) => {
-          const project = projects.find((p: ProjectWithConfiguration) => p.id === value)
-          setSelectedProject(project || null)
+          const project = projects.find(
+            (p: ProjectWithConfiguration) => p.id === value
+          );
+          setSelectedProject(project || null);
         }}
       >
         <SelectTrigger className="w-full">
-          <SelectValue placeholder={t('selectProject')} />
+          <SelectValue placeholder={t("selectProject")} />
         </SelectTrigger>
         <SelectContent>
           {projects.map((project: ProjectWithConfiguration) => (
@@ -84,5 +80,5 @@ export default function ProjectSelector() {
         </SelectContent>
       </Select>
     </div>
-  )
-} 
+  );
+}

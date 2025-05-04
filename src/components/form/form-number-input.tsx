@@ -1,21 +1,25 @@
-'use client'
+"use client";
 
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { UseFormReturn } from 'react-hook-form'
+import { useFormContext } from "react-hook-form";
 
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 interface FormNumberInputProps {
-  form: UseFormReturn<any>
-  name: string
-  label?: string
-  placeholder?: string
-  min?: number
-  max?: number
-  step?: number
+  name: string;
+  label?: string;
+  placeholder?: string;
+  min?: number;
+  max?: number;
+  step?: number;
 }
 
 export function FormNumberInput({
-  form,
   name,
   label,
   placeholder,
@@ -23,6 +27,7 @@ export function FormNumberInput({
   max,
   step = 1,
 }: FormNumberInputProps) {
+  const form = useFormContext();
   return (
     <FormField
       control={form.control}
@@ -40,8 +45,9 @@ export function FormNumberInput({
               {...field}
               value={field.value}
               onChange={(e) => {
-                const value = e.target.value === '' ? '' : parseFloat(e.target.value)
-                field.onChange(value)
+                const value =
+                  e.target.value === "" ? "" : parseFloat(e.target.value);
+                field.onChange(value);
               }}
               className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
@@ -50,5 +56,5 @@ export function FormNumberInput({
         </FormItem>
       )}
     />
-  )
-} 
+  );
+}

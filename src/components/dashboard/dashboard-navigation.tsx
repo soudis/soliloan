@@ -1,22 +1,24 @@
-'use client'
+"use client";
 
-import { useAppStore } from '@/store'
-import { ProjectProvider } from '@/store/project-context'
-import { Session } from 'next-auth'
-import { SidebarNav } from './sidebar-nav'
-import { TopNav } from './top-nav'
+import { Session } from "next-auth";
+
+import { useAppStore } from "@/store";
+import { ProjectProvider } from "@/store/project-context";
+
+import { SidebarNav } from "./sidebar-nav";
+import { TopNav } from "./top-nav";
 
 export default function DashboardNavigation({
   children,
   session,
 }: {
-  children: React.ReactNode
-  session: Session | null
+  children: React.ReactNode;
+  session: Session | null;
 }) {
-  const { isSidebarOpen, toggleSidebar } = useAppStore()
+  const { isSidebarOpen, toggleSidebar } = useAppStore();
 
   if (!session) {
-    return null
+    return null;
   }
 
   return (
@@ -32,11 +34,9 @@ export default function DashboardNavigation({
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container mx-auto py-8 px-6">
-            {children}
-          </div>
+          <div className="container mx-auto py-8 px-6">{children}</div>
         </main>
       </div>
     </ProjectProvider>
-  )
-} 
+  );
+}

@@ -1,17 +1,18 @@
-import { Toaster } from '@/components/ui/sonner'
-import { LOCALES } from '@/i18n/routing'
-import { NextIntlClientProvider } from 'next-intl'
-import { notFound } from 'next/navigation'
+import { notFound } from "next/navigation";
+import { NextIntlClientProvider } from "next-intl";
+
+import { Toaster } from "@/components/ui/sonner";
+import { LOCALES } from "@/i18n/routing";
 
 export function generateStaticParams() {
-  return LOCALES.map((locale) => ({ locale }))
+  return LOCALES.map((locale) => ({ locale }));
 }
 
 export default async function LocaleLayout({
   children,
-  params
+  params,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
@@ -19,6 +20,7 @@ export default async function LocaleLayout({
   try {
     messages = (await import(`../../messages/${locale}`)).default;
   } catch (error) {
+    console.error(error);
     notFound();
   }
 
@@ -27,5 +29,5 @@ export default async function LocaleLayout({
       {children}
       <Toaster />
     </NextIntlClientProvider>
-  )
-} 
+  );
+}
