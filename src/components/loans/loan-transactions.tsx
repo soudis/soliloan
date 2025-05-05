@@ -16,6 +16,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { deleteTransaction } from "@/app/actions/loans";
+import { ConfirmDialog } from "@/components/generic/confirm-dialog";
 import { formatCurrency } from "@/lib/utils";
 
 import { TransactionDialog } from "./transaction-dialog";
@@ -37,19 +38,42 @@ export function LoanTransactions({
   const locale = useLocale();
   const dateLocale = locale === "de" ? de : enUS;
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(
+    null
+  );
   const queryClient = useQueryClient();
 
-  const handleDeleteTransaction = async (transactionId: string) => {
+  const handleDeleteClick = (transactionId: string) => {
+    setTransactionToDelete(transactionId);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!transactionToDelete) return;
+
+    const toastId = toast.loading(t("transactions.delete.loading"));
+
     try {
-      const result = await deleteTransaction(loanId, transactionId);
+      const result = await deleteTransaction(loanId, transactionToDelete);
+
       if (result.error) {
-        throw new Error(result.error);
+        toast.error(t(`transactions.errors.${result.error}`), {
+          id: toastId,
+        });
+      } else {
+        toast.success(t("transactions.delete.success"), {
+          id: toastId,
+        });
+        queryClient.invalidateQueries({ queryKey: ["lender"] });
       }
-      toast.success(t("transactions.deleteSuccess"));
-      queryClient.invalidateQueries({ queryKey: ["lender"] });
     } catch (error) {
       console.error("Error deleting transaction:", error);
-      toast.error(t("transactions.deleteError"));
+      toast.error(t("transactions.delete.error"), {
+        id: toastId,
+      });
+    } finally {
+      setTransactionToDelete(null);
     }
   };
 
@@ -117,7 +141,7 @@ export function LoanTransactions({
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleDeleteTransaction(transaction.id)}
+                      onClick={() => handleDeleteClick(transaction.id)}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                       <span className="sr-only">
@@ -149,6 +173,15 @@ export function LoanTransactions({
         loanId={loanId}
         open={isTransactionDialogOpen}
         onOpenChange={setIsTransactionDialogOpen}
+      />
+
+      <ConfirmDialog
+        open={isConfirmOpen}
+        onOpenChange={setIsConfirmOpen}
+        onConfirm={handleConfirmDelete}
+        title={t("transactions.delete.confirmTitle")}
+        description={t("transactions.delete.confirmDescription")}
+        confirmText={commonT("ui.actions.delete")}
       />
     </>
   );

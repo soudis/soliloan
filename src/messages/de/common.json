@@ -45,6 +45,7 @@
     "theme": "Design",
     "actions": {
       "cancel": "Abbrechen",
+      "confirm": "Bestätigen",
       "submit": "Absenden",
       "submitting": "Wird gesendet...",
       "save": "Speichern",

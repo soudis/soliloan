@@ -1,15 +1,10 @@
-import { hashPassword } from "@/lib/utils";
-import {
-  Language,
-  PrismaClient
-} from "@prisma/client";
+import { Language, PrismaClient } from "@prisma/client";
+
+import { hashPassword } from "@/lib/utils/password";
 
 const prisma = new PrismaClient();
 async function main() {
-  if (
-    process.env.SOLILOAN_ADMIN_EMAIL &&
-    process.env.SOLILOAN_ADMIN_PASSWORD
-  ) {
+  if (process.env.SOLILOAN_ADMIN_EMAIL && process.env.SOLILOAN_ADMIN_PASSWORD) {
     const passwordHasehd = hashPassword(process.env.SOLILOAN_ADMIN_PASSWORD);
     const user = await prisma.user.upsert({
       where: { email: process.env.SOLILOAN_ADMIN_EMAIL },
@@ -28,13 +23,11 @@ async function main() {
     });
     console.info(`Admin user created: ${process.env.SOLILOAN_ADMIN_EMAIL}`);
 
-
     if (process.env.ENVIRONMENT === "dev") {
       const project = await prisma.project.findFirst({
         where: { slug: "dev-gmbh" },
       });
       if (!project) {
-
         await prisma.project.create({
           data: {
             slug: "dev-gmbh",
@@ -44,7 +37,7 @@ async function main() {
                 name: "Development GmbH",
               },
             },
-            managers: { connect: { id: user.id } }
+            managers: { connect: { id: user.id } },
           },
         });
         console.info("Dev instance and project created");

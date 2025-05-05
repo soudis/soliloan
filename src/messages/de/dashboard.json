@@ -167,7 +167,17 @@
       "paymentType": "Zahlungsart",
       "paymentTypePlaceholder": "Zahlungsart auswählen",
       "note": "Notiz",
-      "notePlaceholder": "Optionale Notiz eingeben"
+      "notePlaceholder": "Optionale Notiz eingeben",
+      "delete": {
+        "confirmTitle": "Zahlung löschen?",
+        "confirmDescription": "Sind Sie sicher, dass Sie diese Zahlung löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+        "success": "Zahlung erfolgreich gelöscht.",
+        "error": "Fehler beim Löschen der Zahlung.",
+        "loading": "Zahlung wird gelöscht..."
+      },
+      "errors": {
+        "deleteFailed": "Konnte Zahlung nicht löschen."
+      }
     },
     "table": {
       "loanNumber": "Nummer",
@@ -288,6 +298,17 @@
       "edit": "Bearbeiten",
       "addTransaction": "Zahlung hinzufügen",
       "delete": "Löschen"
+    },
+    "delete": {
+      "confirmTitle": "Kredit löschen?",
+      "confirmDescription": "Sind Sie sicher, dass Sie diesen Kredit löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "success": "Kredit erfolgreich gelöscht.",
+      "error": "Fehler beim Löschen des Kredits.",
+      "loading": "Kredit wird gelöscht..."
+    },
+    "errors": {
+      "notFound": "Kredit nicht gefunden.",
+      "deleteFailed": "Konnte Kredit nicht löschen."
     }
   },
   "configuration": {

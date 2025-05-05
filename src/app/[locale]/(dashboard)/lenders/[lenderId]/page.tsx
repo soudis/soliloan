@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -9,6 +9,7 @@ import { use, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 import { getLenderById } from "@/app/actions/lenders";
+import { deleteLoan } from "@/app/actions/loans";
 import { LenderInfoCard } from "@/components/lenders/lender-info-card";
 import { LoanCard } from "@/components/loans/loan-card";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,8 @@ export default function LenderDetailsPage({
   const t = useTranslations("dashboard.lenders");
   const commonT = useTranslations("common");
   const highlightedLoanRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+  const loanT = useTranslations("dashboard.loans");
 
   // Get the loan ID to highlight from the URL query parameter
   const highlightLoanId = searchParams.get("highlightLoan");
@@ -66,6 +69,33 @@ export default function LenderDetailsPage({
       }, 100);
     }
   }, [highlightLoanId, lender]);
+
+  // Handler for deleting a loan
+  const handleDeleteLoan = async (loanId: string) => {
+    const toastId = toast.loading(loanT("delete.loading"));
+
+    try {
+      const result = await deleteLoan(loanId);
+
+      if (result.error) {
+        toast.error(loanT(`errors.${result.error}`), {
+          id: toastId,
+        });
+      } else {
+        toast.success(loanT("delete.success"), {
+          id: toastId,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ["lender", resolvedParams.lenderId],
+        });
+      }
+    } catch (e) {
+      toast.error(loanT("delete.error"), {
+        id: toastId,
+      });
+      console.error("Failed to delete loan:", e);
+    }
+  };
 
   if (!session) {
     return null;
@@ -137,8 +167,8 @@ export default function LenderDetailsPage({
                 >
                   <LoanCard
                     loan={loan}
-                    onView={(id) => router.push(`/loans/${id}`)}
                     onEdit={(id) => router.push(`/loans/${id}/edit`)}
+                    onDelete={handleDeleteLoan}
                     className={
                       highlightLoanId === loan.id
                         ? "ring-1 ring-primary/70"
