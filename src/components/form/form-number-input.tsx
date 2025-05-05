@@ -44,11 +44,7 @@ export function FormNumberInput({
               step={step}
               {...field}
               value={field.value}
-              onChange={(e) => {
-                const value =
-                  e.target.value === "" ? "" : parseFloat(e.target.value);
-                field.onChange(value);
-              }}
+              onChange={field.onChange}
               className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </FormControl>

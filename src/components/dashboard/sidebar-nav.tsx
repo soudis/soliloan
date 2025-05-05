@@ -41,24 +41,12 @@ export function SidebarNav({ isSidebarOpen }: SidebarNavProps) {
         <div className="h-full overflow-y-auto px-3 py-4 flex flex-col">
           <ProjectSelector />
           <nav className="space-y-2 flex-grow">
+            <NavItem href="/" icon={LayoutDashboard} label={t("dashboard")} />
+            <NavItem href="/lenders" icon={Users} label={t("lenders")} />
+            <NavItem href="/loans" icon={Wallet} label={t("loans")} />
+            <NavItem href="/logbook" icon={History} label={t("logbook")} />
             <NavItem
-              href="/dashboard"
-              icon={LayoutDashboard}
-              label={t("dashboard")}
-            />
-            <NavItem
-              href="/dashboard/lenders"
-              icon={Users}
-              label={t("lenders")}
-            />
-            <NavItem href="/dashboard/loans" icon={Wallet} label={t("loans")} />
-            <NavItem
-              href="/dashboard/logbook"
-              icon={History}
-              label={t("logbook")}
-            />
-            <NavItem
-              href="/dashboard/configuration"
+              href="/configuration"
               icon={Settings}
               label={t("configuration")}
             />

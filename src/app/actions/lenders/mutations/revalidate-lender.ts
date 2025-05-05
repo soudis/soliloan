@@ -39,7 +39,7 @@ export async function revalidateLender(lenderId: string) {
       throw new Error("You do not have access to this lender");
     }
 
-    revalidatePath(`/dashboard/lenders/${lenderId}`);
+    revalidatePath(`/lenders/${lenderId}`);
     return { success: true };
   } catch (error) {
     console.error("Error revalidating lender:", error);

@@ -1,9 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LenderRequiredField } from "@prisma/client";
+import { LenderRequiredField, LenderType } from "@prisma/client";
 import { useForm } from "react-hook-form";
-import { ZodSchema } from "zod";
 
 import { Form } from "@/components/ui/form";
 import { FormActions } from "@/components/ui/form-actions";
@@ -19,6 +18,7 @@ import { useProject } from "@/store/project-context";
 import { LenderFormFields } from "./lender-form-fields";
 
 import type { LenderFormData } from "@/lib/schemas/lender";
+import type { LenderWithRelations } from "@/types/lenders";
 
 interface LenderFormProps {
   title: string;
@@ -26,7 +26,7 @@ interface LenderFormProps {
   submittingButtonText: string;
   cancelButtonText: string;
   onSubmit: (data: LenderFormData) => Promise<void>;
-  initialData?: Partial<LenderFormData>;
+  initialData?: Partial<LenderWithRelations>;
   isLoading?: boolean;
   error?: string | null;
 }
@@ -43,8 +43,8 @@ export function LenderForm({
 }: LenderFormProps) {
   const { selectedProject } = useProject();
 
-  const initialType = initialData?.type || "PERSON";
-  const defaultValues: LenderFormData = {
+  const initialType = initialData?.type || LenderType.PERSON;
+  const defaultValues = {
     type: initialType,
     salutation:
       initialData?.salutation ||
@@ -76,26 +76,16 @@ export function LenderForm({
     bic: initialData?.bic || "",
     // Additional Information
     tag: initialData?.tag || "",
-    // Person-specific fields
-    ...(initialType === "PERSON"
-      ? {
-          firstName: initialData?.firstName || "",
-          lastName: initialData?.lastName || "",
-          titlePrefix: initialData?.titlePrefix || "",
-          titleSuffix: initialData?.titleSuffix || "",
-          organisationName: "",
-        }
-      : {
-          organisationName: initialData?.organisationName || "",
-          firstName: "",
-          lastName: "",
-          titlePrefix: "",
-          titleSuffix: "",
-        }),
+    firstName: initialData?.firstName || "",
+    lastName: initialData?.lastName || "",
+    titlePrefix: initialData?.titlePrefix || "",
+    titleSuffix: initialData?.titleSuffix || "",
+    organisationName: "",
     // Include any other fields from initialData that might not be explicitly handled
   };
 
-  let schema: ZodSchema<LenderFormData> = lenderFormSchema;
+  let schema;
+  schema = lenderFormSchema;
 
   if (
     selectedProject?.configuration?.lenderRequiredFields.includes(
@@ -121,7 +111,7 @@ export function LenderForm({
     schema = schema.superRefine(validateFieldRequired("telNo"));
   }
 
-  const form = useForm<LenderFormData>({
+  const form = useForm({
     resolver: zodResolver(schema),
     defaultValues,
   });
@@ -142,7 +132,7 @@ export function LenderForm({
     <FormLayout title={title} error={error}>
       <Form {...form}>
         <form onSubmit={handleSubmit}>
-          <LenderFormFields form={form} />
+          <LenderFormFields />
 
           <FormActions
             submitButtonText={submitButtonText}

@@ -10,7 +10,7 @@ import {
 } from "@prisma/client";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 
 import { FormDatePicker } from "@/components/form/form-date-picker";
 import { FormNumberInput } from "@/components/form/form-number-input";
@@ -23,14 +23,14 @@ import { useProject } from "@/store/project-context";
 import type { LoanFormData } from "@/lib/schemas/loan";
 
 interface LoanFormFieldsProps {
-  form: UseFormReturn<LoanFormData>;
   lenders: Lender[];
 }
 
-export function LoanFormFields({ form, lenders }: LoanFormFieldsProps) {
+export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
   const t = useTranslations("dashboard.loans");
   const commonT = useTranslations("common");
   const searchParams = useSearchParams();
+  const form = useFormContext<LoanFormData>();
   const terminationType = form.watch("terminationType");
 
   const preselectedLenderId = searchParams.get("lenderId");

@@ -1,19 +1,11 @@
 "use server";
 
-import { Lender, Loan, Transaction } from "@prisma/client";
+import { Loan } from "@prisma/client";
 
 import { auth } from "@/lib/auth";
 import { calculateLoanFields } from "@/lib/calculations/loan-calculations";
 import { db } from "@/lib/db";
-
-// Define the type for the loan with included relations
-type LoanWithRelations = Loan & {
-  lender: Pick<
-    Lender,
-    "id" | "lenderNumber" | "firstName" | "lastName" | "organisationName"
-  >;
-  transactions: Transaction[];
-};
+import { LoanWithRelations } from "@/types/loans";
 
 export async function getLoansByProjectId(projectId: string) {
   try {

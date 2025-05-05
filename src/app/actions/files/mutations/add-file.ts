@@ -148,7 +148,7 @@ export async function addFile(
     });
 
     // Revalidate the loan page
-    revalidatePath(`/dashboard/loans/${loanId}`);
+    revalidatePath(`/loans/${loanId}`);
 
     return { file };
   } catch (error) {

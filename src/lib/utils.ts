@@ -1,8 +1,6 @@
-import { Transaction, TransactionType } from "@prisma/client";
+import { Lender, Transaction, TransactionType } from "@prisma/client";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-
-import { LenderFormData } from "./schemas/lender";
 
 import type { ClassValue } from "clsx";
 
@@ -43,14 +41,16 @@ export const loansSorter = <T extends { signDate: Date }>(a: T, b: T) => {
  * @returns A formatted name string
  */
 export function getLenderName(
-  lender: Pick<
-    LenderFormData,
-    | "type"
-    | "firstName"
-    | "lastName"
-    | "organisationName"
-    | "titlePrefix"
-    | "titleSuffix"
+  lender: Partial<
+    Pick<
+      Lender,
+      | "type"
+      | "firstName"
+      | "lastName"
+      | "organisationName"
+      | "titlePrefix"
+      | "titleSuffix"
+    >
   >
 ): string {
   if (lender.type === "ORGANISATION") {

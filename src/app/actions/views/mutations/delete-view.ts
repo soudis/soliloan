@@ -36,7 +36,7 @@ export async function deleteView(viewId: string) {
     });
 
     // Revalidate the view
-    revalidatePath(`/dashboard/${view.type.toLowerCase()}`);
+    revalidatePath(`/${view.type.toLowerCase()}`);
 
     return { success: true };
   } catch (error) {

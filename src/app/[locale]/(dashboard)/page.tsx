@@ -298,7 +298,7 @@ export default function DashboardPage() {
             {t("lenders.description")}
           </p>
           <Button asChild variant="outline" className="w-full">
-            <Link href="/dashboard/lenders">{t("lenders.viewLenders")}</Link>
+            <Link href="/lenders">{t("lenders.viewLenders")}</Link>
           </Button>
         </div>
 
@@ -311,7 +311,7 @@ export default function DashboardPage() {
             {t("loans.details")}
           </p>
           <Button asChild variant="outline" className="w-full">
-            <Link href="/dashboard/loans">{t("loans.viewLoans")}</Link>
+            <Link href="/loans">{t("loans.viewLoans")}</Link>
           </Button>
         </div>
       </div>

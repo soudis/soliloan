@@ -60,7 +60,7 @@ export async function sendInvitationEmail(userId: string, projectName: string) {
     );
 
     // Revalidate the lender page to update the lastInvited timestamp
-    revalidatePath("/dashboard/lenders/[lenderId]");
+    revalidatePath("/lenders/[lenderId]");
 
     return { success: true };
   } catch (error) {

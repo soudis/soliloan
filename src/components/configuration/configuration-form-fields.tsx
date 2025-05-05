@@ -10,7 +10,7 @@ import {
   SoliLoansTheme,
 } from "@prisma/client";
 import { useTranslations } from "next-intl";
-import { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 
 import { FormCountrySelect } from "@/components/form/form-country-select";
 import { FormField } from "@/components/form/form-field";
@@ -24,16 +24,16 @@ import { LogoInput } from "./logo-input";
 import type { ConfigurationFormData } from "@/lib/schemas/configuration";
 
 interface ConfigurationFormFieldsProps {
-  form: UseFormReturn<ConfigurationFormData>;
   hasHistoricTransactions?: boolean;
 }
 
 export function ConfigurationFormFields({
-  form,
   hasHistoricTransactions,
 }: ConfigurationFormFieldsProps) {
   const t = useTranslations("dashboard.configuration");
   const commonT = useTranslations("common");
+
+  const form = useFormContext<ConfigurationFormData>();
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

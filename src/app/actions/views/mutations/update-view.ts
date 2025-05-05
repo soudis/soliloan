@@ -44,7 +44,7 @@ export async function updateView(viewId: string, data: ViewFormData) {
     });
 
     // Revalidate the view
-    revalidatePath(`/dashboard/${view.type.toLowerCase()}`);
+    revalidatePath(`/${view.type.toLowerCase()}`);
 
     return { view: updatedView };
   } catch (error) {

@@ -1,15 +1,6 @@
 "use server";
 
-import {
-  Country,
-  Entity,
-  Language,
-  LenderType,
-  MembershipStatus,
-  NotificationType,
-  Operation,
-  Salutation,
-} from "@prisma/client";
+import { Entity, Language, Operation } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import {
@@ -63,8 +54,8 @@ export async function updateLender(lenderId: string, data: LenderFormData) {
         id: lenderId,
       },
       data: {
-        type: data.type as LenderType,
-        salutation: data.salutation as Salutation,
+        type: data.type,
+        salutation: data.salutation,
         firstName: data.firstName,
         lastName: data.lastName,
         organisationName: data.organisationName,
@@ -74,12 +65,12 @@ export async function updateLender(lenderId: string, data: LenderFormData) {
         addon: data.addon,
         zip: data.zip,
         place: data.place,
-        country: data.country as Country,
+        country: data.country,
         telNo: data.telNo,
         iban: data.iban,
         bic: data.bic,
-        notificationType: data.notificationType as NotificationType,
-        membershipStatus: data.membershipStatus as MembershipStatus,
+        notificationType: data.notificationType,
+        membershipStatus: data.membershipStatus,
         tag: data.tag,
         ...(data.email && {
           user: {
@@ -112,7 +103,7 @@ export async function updateLender(lenderId: string, data: LenderFormData) {
     }
 
     // Revalidate the lenders page
-    revalidatePath(`/dashboard/lenders/${lender.projectId}`);
+    revalidatePath(`/lenders/${lender.projectId}`);
 
     return { lender: updatedLender };
   } catch (error) {

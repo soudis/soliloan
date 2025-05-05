@@ -84,7 +84,7 @@ export async function addNote(loanId: string, data: NoteFormData) {
     });
 
     // Revalidate the loan page
-    revalidatePath(`/dashboard/loans/${loanId}`);
+    revalidatePath(`/loans/${loanId}`);
 
     return { note };
   } catch (error) {

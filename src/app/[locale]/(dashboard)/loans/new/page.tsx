@@ -80,7 +80,7 @@ export default function NewLoanPage() {
 
       // Redirect to the loans list page for this project
       router.push(
-        `/dashboard/lenders/${result.loan?.lenderId}?highlightLoan=${result.loan?.id}`
+        `/lenders/${result.loan?.lenderId}?highlightLoan=${result.loan?.id}`
       );
     } catch (error) {
       console.error("Error submitting form:", error);

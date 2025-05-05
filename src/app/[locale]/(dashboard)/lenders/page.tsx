@@ -1,6 +1,11 @@
 "use client";
 
-import { MembershipStatus, NotificationType, Salutation } from "@prisma/client";
+import {
+  Lender,
+  MembershipStatus,
+  NotificationType,
+  Salutation,
+} from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Plus } from "lucide-react";
@@ -24,30 +29,6 @@ import {
   createLenderNameColumn,
 } from "@/lib/table-column-utils";
 import { useProject } from "@/store/project-context";
-
-interface Lender {
-  id: string;
-  lenderNumber: number;
-  type: "PERSON" | "ORGANISATION";
-  salutation: "PERSONAL" | "FORMAL";
-  firstName: string | null;
-  lastName: string | null;
-  organisationName: string | null;
-  titlePrefix: string | null;
-  titleSuffix: string | null;
-  street: string | null;
-  addon: string | null;
-  zip: string | null;
-  place: string | null;
-  country: string | null;
-  email: string | null;
-  telNo: string | null;
-  iban: string | null;
-  bic: string | null;
-  notificationType: "ONLINE" | "EMAIL" | "MAIL";
-  membershipStatus: "UNKNOWN" | "MEMBER" | "EXTERNAL" | null;
-  tag: string | null;
-}
 
 export default function LendersPage() {
   const router = useRouter();
@@ -77,7 +58,7 @@ export default function LendersPage() {
       t
     ),
 
-    createLenderNameColumn<Lender>(t, commonT),
+    createLenderNameColumn<Lender>(t),
 
     createLenderEnumBadgeColumn<Lender>(
       "type",
@@ -211,15 +192,6 @@ export default function LendersPage() {
     },
   };
 
-  // Define translations for the DataTable component
-  const tableTranslations = {
-    columns: commonT("ui.table.columns"),
-    filters: commonT("ui.table.filters"),
-    previous: commonT("ui.table.previous"),
-    next: commonT("ui.table.next"),
-    noResults: commonT("ui.table.noResults"),
-  };
-
   // Define default column visibility
   const defaultColumnVisibility = {
     lenderNumber: true,
@@ -247,7 +219,7 @@ export default function LendersPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">{t("title")}</h1>
-        <Button onClick={() => router.push("/dashboard/lenders/new")}>
+        <Button onClick={() => router.push("/lenders/new")}>
           <Plus className="mr-2 h-4 w-4" />
           {t("new.title")}
         </Button>
@@ -257,11 +229,10 @@ export default function LendersPage() {
         columns={columns}
         data={lenders}
         columnFilters={columnFilters}
-        translations={tableTranslations}
         defaultColumnVisibility={defaultColumnVisibility}
         viewType="LENDER"
         showFilter={true}
-        onRowClick={(row) => router.push(`/dashboard/lenders/${row.id}`)}
+        onRowClick={(row) => router.push(`/lenders/${row.id}`)}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
             <TooltipProvider>
@@ -272,7 +243,7 @@ export default function LendersPage() {
                     size="icon"
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`/dashboard/loans/new?lenderId=${row.id}`);
+                      router.push(`/loans/new?lenderId=${row.id}`);
                     }}
                   >
                     <Plus className="h-4 w-4" />
@@ -294,7 +265,7 @@ export default function LendersPage() {
                     size="icon"
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`/dashboard/lenders/${row.id}/edit`);
+                      router.push(`/lenders/${row.id}/edit`);
                     }}
                   >
                     <Pencil className="h-4 w-4" />

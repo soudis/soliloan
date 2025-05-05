@@ -95,7 +95,7 @@ export async function createLoan(data: LoanFormData) {
     });
 
     // Revalidate the loans page
-    revalidatePath(`/dashboard/loans/${data.lenderId}`);
+    revalidatePath(`/lenders/${data.lenderId}`);
 
     return { loan };
   } catch (error) {

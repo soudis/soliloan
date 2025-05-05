@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { de, enUS } from "date-fns/locale";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, X } from "lucide-react";
 import { useLocale } from "next-intl";
 import { useFormContext } from "react-hook-form";
 
@@ -36,7 +36,7 @@ export function FormDatePicker({
 
   // Function to convert a date to UTC
   const toUTC = (date: Date | undefined) => {
-    if (!date) return undefined;
+    if (!date) return null;
     return new Date(
       Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)
     );
@@ -59,12 +59,26 @@ export function FormDatePicker({
                     !field.value && "text-muted-foreground"
                   )}
                 >
-                  {field.value ? (
+                  {field.value && field.value !== "" ? (
                     format(field.value, "PPP", { locale: dateLocale })
                   ) : (
                     <span>{placeholder}</span>
                   )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  <div className="ml-auto flex items-center gap-1">
+                    {field.value && field.value !== "" && (
+                      <div
+                        role="button"
+                        className="flex h-4 w-4 items-center justify-center rounded-sm opacity-50 hover:bg-accent hover:opacity-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          field.onChange("");
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </div>
+                    )}
+                    <CalendarIcon className="h-4 w-4 opacity-50" />
+                  </div>
                 </Button>
               </FormControl>
             </PopoverTrigger>

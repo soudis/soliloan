@@ -65,12 +65,12 @@ export async function updateLoan(loanId: string, data: LoanFormData) {
         id: loanId,
       },
       data: {
-        signDate: data.signDate || undefined,
+        signDate: data.signDate ?? undefined,
         interestPaymentType: data.interestPaymentType as InterestPaymentType,
         interestPayoutType: data.interestPayoutType as InterestPayoutType,
         terminationType: data.terminationType,
-        endDate: data.endDate || undefined,
-        terminationDate: data.terminationDate || undefined,
+        endDate: data.endDate || null,
+        terminationDate: data.terminationDate || null,
         terminationPeriod: Number(data.terminationPeriod),
         terminationPeriodType: data.terminationPeriodType as DurationType,
         duration: Number(data.duration),
@@ -100,7 +100,8 @@ export async function updateLoan(loanId: string, data: LoanFormData) {
     }
 
     // Revalidate the loans page
-    revalidatePath(`/dashboard/loans/${loan.lenderId}`);
+    revalidatePath(`/lenders/${loan.lenderId}`);
+    revalidatePath(`/loans/${loanId}/edit`);
 
     return { loan: updatedLoan };
   } catch (error) {

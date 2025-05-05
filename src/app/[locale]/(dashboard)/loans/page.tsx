@@ -5,10 +5,7 @@ import {
   InterestMethod,
   InterestPaymentType,
   InterestPayoutType,
-  Lender,
-  Loan,
   TerminationType,
-  Transaction,
 } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
@@ -30,16 +27,7 @@ import {
   createTerminationModalitiesColumn,
 } from "@/lib/table-column-utils";
 import { useProject } from "@/store/project-context";
-import { LoanStatus } from "@/types/loans";
-
-// Define the type for the loan with included relations
-type LoanWithRelations = Loan & {
-  lender: Pick<
-    Lender,
-    "id" | "lenderNumber" | "firstName" | "lastName" | "organisationName"
-  >;
-  transactions: Transaction[];
-};
+import { LoanStatus, LoanWithRelations } from "@/types/loans";
 
 export default function LoansPage() {
   const t = useTranslations("dashboard.loans");
@@ -335,7 +323,7 @@ export default function LoansPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">{t("title")}</h1>
-        <Button onClick={() => router.push("/dashboard/loans/new")}>
+        <Button onClick={() => router.push("/loans/new")}>
           <Plus className="mr-2 h-4 w-4" />
           {t("new.title")}
         </Button>
@@ -349,9 +337,7 @@ export default function LoansPage() {
         viewType="LOAN"
         showFilter={true}
         onRowClick={(row) =>
-          router.push(
-            `/dashboard/lenders/${row.lender.id}?highlightLoan=${row.id}`
-          )
+          router.push(`/lenders/${row.lender.id}?highlightLoan=${row.id}`)
         }
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
@@ -360,7 +346,7 @@ export default function LoansPage() {
               size="icon"
               onClick={(e) => {
                 e.stopPropagation();
-                router.push(`/dashboard/loans/${row.id}/edit`);
+                router.push(`/loans/${row.id}/edit`);
               }}
             >
               <Pencil className="h-4 w-4" />

@@ -7,7 +7,7 @@ import {
   Salutation,
 } from "@prisma/client";
 import { useTranslations } from "next-intl";
-import { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 
 import { FormCountrySelect } from "@/components/form/form-country-select";
 import { FormField } from "@/components/form/form-field";
@@ -17,14 +17,14 @@ import { FormSection } from "@/components/ui/form-section";
 
 import type { LenderFormData } from "@/lib/schemas/lender";
 
-interface LenderFormFieldsProps {
-  form: UseFormReturn<LenderFormData>;
-}
-
-export function LenderFormFields({ form }: LenderFormFieldsProps) {
+export function LenderFormFields() {
   const t = useTranslations("dashboard.lenders");
   const commonT = useTranslations("common");
+
+  const form = useFormContext<LenderFormData>();
+
   const type = form.watch("type");
+
   const salutation = form.watch("salutation");
 
   return (
@@ -147,6 +147,7 @@ export function LenderFormFields({ form }: LenderFormFieldsProps) {
               name="country"
               label={t("new.form.country")}
               placeholder={commonT("ui.form.selectPlaceholder")}
+              clearable
             />
           </div>
         </div>

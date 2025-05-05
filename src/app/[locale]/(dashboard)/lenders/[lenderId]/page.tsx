@@ -108,15 +108,13 @@ export default function LenderDetailsPage({
         <div className="flex items-center space-x-4">
           <Button
             variant="outline"
-            onClick={() => router.push(`/dashboard/lenders/${lender.id}/edit`)}
+            onClick={() => router.push(`/lenders/${lender.id}/edit`)}
           >
             <Pencil className="mr-2 h-4 w-4" />
             {t("details.edit")}
           </Button>
           <Button
-            onClick={() =>
-              router.push(`/dashboard/loans/new?lenderId=${lender.id}`)
-            }
+            onClick={() => router.push(`/loans/new?lenderId=${lender.id}`)}
           >
             <Plus className="mr-2 h-4 w-4" />
             {t("details.newLoan")}
@@ -139,8 +137,8 @@ export default function LenderDetailsPage({
                 >
                   <LoanCard
                     loan={loan}
-                    onView={(id) => router.push(`/dashboard/loans/${id}`)}
-                    onEdit={(id) => router.push(`/dashboard/loans/${id}/edit`)}
+                    onView={(id) => router.push(`/loans/${id}`)}
+                    onEdit={(id) => router.push(`/loans/${id}/edit`)}
                     className={
                       highlightLoanId === loan.id
                         ? "ring-1 ring-primary/70"

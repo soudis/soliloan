@@ -1,15 +1,6 @@
 "use server";
 
-import {
-  Country,
-  Entity,
-  Language,
-  NotificationType,
-  Operation,
-  Salutation,
-  MembershipStatus,
-  LenderType,
-} from "@prisma/client";
+import { Country, Entity, Language, Operation } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import {
@@ -56,8 +47,8 @@ export async function createLender(data: LenderFormData) {
     // Create the lender
     const lender = await db.lender.create({
       data: {
-        type: data.type as LenderType,
-        salutation: data.salutation as Salutation,
+        type: data.type,
+        salutation: data.salutation,
         firstName: data.firstName,
         lastName: data.lastName,
         organisationName: data.organisationName,
@@ -71,8 +62,8 @@ export async function createLender(data: LenderFormData) {
         telNo: data.telNo,
         iban: data.iban,
         bic: data.bic,
-        notificationType: data.notificationType as NotificationType,
-        membershipStatus: data.membershipStatus as MembershipStatus,
+        notificationType: data.notificationType,
+        membershipStatus: data.membershipStatus,
         tag: data.tag,
         ...(data.email && {
           user: {
@@ -106,7 +97,7 @@ export async function createLender(data: LenderFormData) {
     });
 
     // Revalidate the lenders page
-    revalidatePath(`/dashboard/lenders/${data.projectId}`);
+    revalidatePath(`/lenders/${data.projectId}`);
 
     return { lender };
   } catch (error) {

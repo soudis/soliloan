@@ -127,7 +127,7 @@ export async function updateConfiguration(
     }
 
     // Revalidate the project configuration page
-    revalidatePath(`/dashboard/configuration`);
+    revalidatePath(`/configuration`);
 
     // Transform the configuration back to match the form schema
     const formConfiguration = {

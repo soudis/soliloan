@@ -159,7 +159,7 @@ export function LogbookTable({ changes }: LogbookTableProps) {
                       {part}
                       {index < array.length - 1 && (
                         <Link
-                          href={`/dashboard/lenders/${context.lender?.id}?highlightLoan=${context.loan?.id}`}
+                          href={`/lenders/${context.lender?.id}?highlightLoan=${context.loan?.id}`}
                           className="text-primary hover:underline"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -181,7 +181,7 @@ export function LogbookTable({ changes }: LogbookTableProps) {
                     {part}
                     {index < array.length - 1 && context.lender && (
                       <Link
-                        href={`/dashboard/lenders/${context.lender.id}`}
+                        href={`/lenders/${context.lender.id}`}
                         className="text-primary hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >

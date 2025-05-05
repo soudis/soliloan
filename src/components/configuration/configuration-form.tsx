@@ -37,33 +37,33 @@ export function ConfigurationForm({
 }: ConfigurationFormProps) {
   const { selectedProject } = useProject();
 
-  const defaultValues: ConfigurationFormData = {
+  const defaultValues = {
     name: initialData?.name || "",
     logo: initialData?.logo || "",
-    email: initialData?.email || undefined,
-    telNo: initialData?.telNo || undefined,
-    website: initialData?.website || undefined,
-    street: initialData?.street || undefined,
-    addon: initialData?.addon || undefined,
-    zip: initialData?.zip || undefined,
-    place: initialData?.place || undefined,
-    country: initialData?.country || undefined,
-    iban: initialData?.iban || undefined,
-    bic: initialData?.bic || undefined,
-    userLanguage: initialData?.userLanguage || undefined,
-    userTheme: initialData?.userTheme || undefined,
+    email: initialData?.email || "",
+    telNo: initialData?.telNo || "",
+    website: initialData?.website || "",
+    street: initialData?.street || "",
+    addon: initialData?.addon || "",
+    zip: initialData?.zip || "",
+    place: initialData?.place || "",
+    country: initialData?.country || "",
+    iban: initialData?.iban || "",
+    bic: initialData?.bic || "",
+    userLanguage: initialData?.userLanguage || "",
+    userTheme: initialData?.userTheme || "",
     lenderRequiredFields: initialData?.lenderRequiredFields || [],
-    lenderSalutation: initialData?.lenderSalutation || undefined,
-    lenderCountry: initialData?.lenderCountry || undefined,
-    lenderNotificationType: initialData?.lenderNotificationType || undefined,
-    lenderMembershipStatus: initialData?.lenderMembershipStatus || undefined,
+    lenderSalutation: initialData?.lenderSalutation || "",
+    lenderCountry: initialData?.lenderCountry || "",
+    lenderNotificationType: initialData?.lenderNotificationType || "",
+    lenderMembershipStatus: initialData?.lenderMembershipStatus || "",
     lenderTags: initialData?.lenderTags || [],
     interestMethod: initialData?.interestMethod || "",
     altInterestMethods: initialData?.altInterestMethods || [],
     customLoans: initialData?.customLoans || false,
   };
 
-  const form = useForm<ConfigurationFormData>({
+  const form = useForm({
     resolver: zodResolver(configurationFormSchema),
     defaultValues,
   });
@@ -85,7 +85,6 @@ export function ConfigurationForm({
       <Form {...form}>
         <form onSubmit={handleSubmit}>
           <ConfigurationFormFields
-            form={form}
             hasHistoricTransactions={hasHistoricTransactions}
           />
 

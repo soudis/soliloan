@@ -17,67 +17,59 @@ import { isValidIban } from "@/lib/utils/iban";
 import { validationError } from "../utils/validation";
 
 // Generic number schemas
-export const createNumberSchema = (min?: number) => {
-  const baseSchema = z.union([
-    z.number().refine((value) => !isNaN(Number(value)), {
-      message: "validation.common.number",
-    }),
-    z.literal(""),
-  ]);
-
-  if (min !== undefined) {
-    return baseSchema.refine((value) => value === "" || value >= min, {
-      message: validationError("validation.common.numberMin", { min }),
-    });
-  }
-
-  return baseSchema;
+export const createNumberSchema = (
+  min?: number,
+  errorMessage = "validation.common.required"
+) => {
+  return min
+    ? z.preprocess(
+        (val) => (val === "" ? null : Number(val)),
+        z.coerce
+          .number({ message: errorMessage })
+          .min(min, validationError("validation.common.numberMin", { min }))
+      )
+    : z.preprocess(
+        (val) => (val === "" ? null : Number(val)),
+        z.coerce.number({ message: errorMessage })
+      );
 };
 
 export const createNumberSchemaRequired = (
   min?: number,
   errorMessage = "validation.common.required"
 ) => {
-  const baseSchema = z
-    .union([
-      z.number().refine((value) => !isNaN(Number(value)), {
-        message: "validation.common.number",
-      }),
-      z.literal(""),
-    ])
-    .superRefine((value, ctx) => {
-      if (value === "") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: errorMessage,
-        });
-      }
-    });
-
-  if (min !== undefined) {
-    return baseSchema.refine((value) => value === "" || value >= min, {
-      message: validationError("validation.common.numberMin", { min }),
-    });
-  }
-
-  return baseSchema;
+  return min
+    ? z.preprocess(
+        (val) => (val === "" ? null : Number(val)),
+        z
+          .number({ message: errorMessage })
+          .min(min, validationError("validation.common.numberMin", { min }))
+          .refine((val) => val !== null, { message: errorMessage })
+      )
+    : z.preprocess(
+        (val) => (val === "" ? null : Number(val)),
+        z
+          .number({ message: errorMessage })
+          .refine((val) => val !== null, { message: errorMessage })
+      );
 };
 
 export const selectEnumRequired = <T extends Record<string, string>>(
   enumObj: T,
   errorMessage = "validation.common.required"
 ) => {
-  return z
-    .union([z.nativeEnum(enumObj), z.literal("")])
-    .refine((val) => val !== "", {
-      message: errorMessage,
-    });
+  return z.preprocess(
+    (val) => (val === "" || val === "clear" ? null : val),
+    z.nativeEnum(enumObj, { message: errorMessage })
+  );
 };
-
 export const selectEnumOptional = <T extends Record<string, string>>(
   enumObj: T
 ) => {
-  return z.union([z.nativeEnum(enumObj), z.literal("")]);
+  return z.preprocess(
+    (val) => (val === "" || val === "clear" ? null : val),
+    z.nativeEnum(enumObj).optional().nullable()
+  );
 };
 
 export const requiredNumberSchema = createNumberSchema().refine(
@@ -86,24 +78,19 @@ export const requiredNumberSchema = createNumberSchema().refine(
     message: "validation.common.required",
   }
 );
-export const optionalNumberSchema = createNumberSchema().optional();
+export const optionalNumberSchema = createNumberSchema().optional().nullable();
 
 // Generic date schemas
 export const createDateSchema = (required = true) => {
-  const baseSchema = z.union([
-    z.coerce.date({
-      message: "validation.common.date",
-    }),
-    z.literal(""),
-  ]);
-
-  if (required) {
-    return baseSchema.refine((value) => value !== "", {
-      message: "validation.common.required",
-    });
-  }
-
-  return baseSchema;
+  return required
+    ? z.preprocess(
+        (val) => (val === "" ? null : new Date(val as string | Date)),
+        z.date({ message: "validation.common.date" })
+      )
+    : z.preprocess(
+        (val) => (val === "" ? null : new Date(val as string | Date)),
+        z.date({ message: "validation.common.date" }).optional().nullable()
+      );
 };
 
 export const requiredDateSchema = createDateSchema(true);

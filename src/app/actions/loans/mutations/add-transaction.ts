@@ -86,7 +86,7 @@ export async function addTransaction(
     });
 
     // Revalidate the loan page
-    revalidatePath(`/dashboard/loans/${loanId}`);
+    revalidatePath(`/loans/${loanId}`);
 
     return { transaction };
   } catch (error) {

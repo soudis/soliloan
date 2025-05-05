@@ -94,7 +94,7 @@ export async function deleteFile(loanId: string, fileId: string) {
     });
 
     // Revalidate the loan page
-    revalidatePath(`/dashboard/loans/${loanId}`);
+    revalidatePath(`/loans/${loanId}`);
 
     return { success: true };
   } catch (error) {

@@ -30,7 +30,7 @@ export async function createView(data: ViewFormData) {
     });
 
     // Revalidate the view
-    revalidatePath(`/dashboard/${view.type.toLowerCase()}`);
+    revalidatePath(`/${view.type.toLowerCase()}`);
 
     return { view };
   } catch (error) {

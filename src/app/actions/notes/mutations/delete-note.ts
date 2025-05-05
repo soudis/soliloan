@@ -81,7 +81,7 @@ export async function deleteNote(loanId: string, noteId: string) {
     });
 
     // Revalidate the loan page
-    revalidatePath(`/dashboard/loans/${loanId}`);
+    revalidatePath(`/loans/${loanId}`);
 
     return { success: true };
   } catch (error) {

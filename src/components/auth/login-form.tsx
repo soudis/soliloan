@@ -55,7 +55,7 @@ export function LoginForm() {
         toast.error(t("invalidCredentials"));
       } else {
         toast.success(t("success"));
-        router.push("/dashboard");
+        router.push("/");
       }
     } catch (error) {
       console.error("Error during login:", error);

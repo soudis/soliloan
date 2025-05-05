@@ -55,11 +55,11 @@ export function LoanForm({
   });
 
   // Create base default values that apply to all termination types
-  const baseDefaultValues: LoanFormData = {
+  const defaultValues = {
     lenderId: initialData?.lenderId || "",
     signDate: initialData?.signDate || "",
-    amount: initialData?.amount || "",
-    interestRate: initialData?.interestRate || "",
+    amount: initialData?.amount || ("" as const),
+    interestRate: initialData?.interestRate || ("" as const),
     interestPaymentType: initialData?.interestPaymentType || "YEARLY",
     interestPayoutType: initialData?.interestPayoutType || "MONEY",
     altInterestMethod: initialData?.altInterestMethod || null,
@@ -74,9 +74,9 @@ export function LoanForm({
     durationType: initialData?.durationType || DurationType.YEARS,
   };
 
-  const form = useForm<LoanFormData>({
+  const form = useForm({
     resolver: zodResolver(loanFormSchema),
-    defaultValues: { ...baseDefaultValues, ...initialData },
+    defaultValues: defaultValues,
   });
 
   if (!selectedProject) {
@@ -107,7 +107,7 @@ export function LoanForm({
     <FormLayout title={title} error={error}>
       <Form {...form}>
         <form onSubmit={handleSubmit}>
-          <LoanFormFields form={form} lenders={lenders} />
+          <LoanFormFields lenders={lenders} />
 
           <FormActions
             submitButtonText={submitButtonText}

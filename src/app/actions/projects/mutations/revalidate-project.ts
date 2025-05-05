@@ -35,7 +35,7 @@ export async function revalidateProject(projectId: string) {
       throw new Error("You do not have access to this project");
     }
 
-    revalidatePath(`/dashboard/projects/${projectId}`);
+    revalidatePath(`/projects/${projectId}`);
     return { success: true };
   } catch (error) {
     console.error("Error revalidating project:", error);

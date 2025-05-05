@@ -1,46 +1,44 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { use, useState } from "react";
 import { toast } from "sonner";
 
-import { getLenderById, updateLender } from "@/app/actions/lenders";
-import { LenderForm } from "@/components/lenders/lender-form";
+import { getLoanById, updateLoan } from "@/app/actions/loans";
+import { LoanForm } from "@/components/loans/loan-form";
 import { useRouter } from "@/i18n/navigation";
+import { getLenderName } from "@/lib/utils";
 import { useProject } from "@/store/project-context";
 
-import type { LenderFormData } from "@/lib/schemas/lender";
+import type { LoanFormData } from "@/lib/schemas/loan";
 
-export default function EditLenderPage({
+export default function EditLoanPage({
   params,
 }: {
-  params: Promise<{ lenderId: string }>;
+  params: Promise<{ loanId: string }>;
 }) {
   const resolvedParams = use(params);
   const { data: session } = useSession();
   const router = useRouter();
   const { selectedProject } = useProject();
-  const t = useTranslations("dashboard.lenders");
+  const t = useTranslations("dashboard.loans");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  // Use React Query to fetch lender data
-  const {
-    data: lenderData,
-    isLoading,
-    error: queryError,
-  } = useQuery({
-    queryKey: ["lender", resolvedParams.lenderId],
+  // Fetch loan data using React Query
+  const { data: loan, isLoading } = useQuery({
+    queryKey: ["loan", resolvedParams.loanId],
     queryFn: async () => {
-      const result = await getLenderById(resolvedParams.lenderId);
+      const result = await getLoanById(resolvedParams.loanId);
       if (result.error) {
         throw new Error(result.error);
       }
-      return result.lender as Partial<LenderFormData>;
+      return result.loan;
     },
-    enabled: !!resolvedParams.lenderId && !!session,
+    enabled: !!resolvedParams.loanId,
   });
 
   if (!session) {
@@ -51,22 +49,17 @@ export default function EditLenderPage({
     return null;
   }
 
-  if (isLoading) {
-    return <div>Loading...</div>;
+  if (isLoading || !loan) {
+    return null;
   }
 
-  if (queryError) {
-    toast.error(t("edit.form.error"));
-    return <div>Error loading lender data</div>;
-  }
-
-  const handleSubmit = async (data: LenderFormData) => {
+  const handleSubmit = async (data: LoanFormData) => {
     try {
       setIsSubmitting(true);
       setError(null);
 
-      // Update the lender using the server action
-      const result = await updateLender(resolvedParams.lenderId, data);
+      // Update the loan using the server action
+      const result = await updateLoan(resolvedParams.loanId, data);
 
       if (result.error) {
         throw new Error(result.error);
@@ -74,9 +67,13 @@ export default function EditLenderPage({
 
       // Show success message
       toast.success(t("edit.form.success"));
+      // invalidate the loan query
+      queryClient.invalidateQueries({ queryKey: ["loan"] });
 
       // Navigate back to the previous page using the router
-      router.back();
+      router.push(
+        `/lenders/${result.loan?.lenderId}?highlightLoan=${result.loan?.id}`
+      );
     } catch (error) {
       console.error("Error submitting form:", error);
       setError(
@@ -89,14 +86,13 @@ export default function EditLenderPage({
   };
 
   return (
-    <LenderForm
-      title={t("edit.title")}
+    <LoanForm
+      title={t("edit.title", { lenderName: getLenderName(loan.lender) })}
       submitButtonText={t("edit.form.submit")}
       submittingButtonText={t("edit.form.submitting")}
       cancelButtonText={t("edit.form.cancel")}
       onSubmit={handleSubmit}
-      initialData={lenderData || undefined}
-      lenderId={resolvedParams.lenderId}
+      initialData={loan}
       isLoading={isSubmitting}
       error={error}
     />
