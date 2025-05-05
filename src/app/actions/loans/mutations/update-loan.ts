@@ -76,7 +76,7 @@ export async function updateLoan(loanId: string, data: LoanFormData) {
         duration: Number(data.duration),
         durationType: data.durationType as DurationType,
         amount: data.amount || undefined,
-        interestRate: data.interestRate || undefined,
+        interestRate: data.interestRate ?? undefined,
         altInterestMethod: data.altInterestMethod as InterestMethod,
         contractStatus: data.contractStatus as ContractStatus,
       },

@@ -1,13 +1,17 @@
 import { PaymentType, TransactionType } from "@prisma/client";
 import { z } from "zod";
 
-import { createDateSchema, createNumberSchema } from "./common";
+import {
+  createDateSchema,
+  createNumberSchema,
+  selectEnumRequired,
+} from "./common";
 
 // Transaction type enum
-export const transactionTypeEnum = z.nativeEnum(TransactionType);
+export const transactionTypeEnum = selectEnumRequired(TransactionType);
 
 // Payment type enum
-export const paymentTypeEnum = z.nativeEnum(PaymentType);
+export const paymentTypeEnum = selectEnumRequired(PaymentType);
 
 export const transactionFormSchema = z.object({
   type: transactionTypeEnum,

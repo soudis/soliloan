@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -19,8 +20,6 @@ import { transactionFormSchema } from "@/lib/schemas/transaction";
 
 import { TransactionFormFields } from "./transaction-form-fields";
 
-import type { TransactionFormData } from "@/lib/schemas/transaction";
-
 interface TransactionDialogProps {
   loanId: string;
   open: boolean;
@@ -36,15 +35,22 @@ export function TransactionDialog({
   const commonT = useTranslations("common");
   const queryClient = useQueryClient();
 
-  const form = useForm<TransactionFormData>({
+  const defaultValues = {
+    type: "",
+    date: "",
+    amount: "",
+    paymentType: "BANK",
+  };
+
+  const form = useForm({
     resolver: zodResolver(transactionFormSchema),
-    defaultValues: {
-      type: "INTEREST",
-      date: new Date(),
-      amount: 0,
-      paymentType: "BANK",
-    },
+    defaultValues,
   });
+
+  useEffect(() => {
+    form.reset(defaultValues);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
@@ -74,7 +80,7 @@ export function TransactionDialog({
 
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <TransactionFormFields />
+            <TransactionFormFields loanId={loanId} />
 
             <div className="flex justify-end space-x-4">
               <Button

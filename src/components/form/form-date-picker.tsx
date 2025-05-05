@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { Calendar as CalendarIcon, X } from "lucide-react";
 import { useLocale } from "next-intl";
+import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 import {
@@ -23,16 +24,19 @@ interface FormDatePickerProps {
   name: string;
   label?: string;
   placeholder?: string;
+  disabled?: (date: Date) => boolean;
 }
 
 export function FormDatePicker({
   name,
   label,
   placeholder = "Pick a date",
+  disabled,
 }: FormDatePickerProps) {
   const locale = useLocale();
   const dateLocale = locale === "de" ? de : enUS;
   const form = useFormContext();
+  const [open, setOpen] = useState(false);
 
   // Function to convert a date to UTC
   const toUTC = (date: Date | undefined) => {
@@ -49,7 +53,7 @@ export function FormDatePicker({
       render={({ field }) => (
         <FormItem className="flex flex-col">
           {label && <FormLabel>{label}</FormLabel>}
-          <Popover>
+          <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <FormControl>
                 <Button
@@ -86,8 +90,12 @@ export function FormDatePicker({
               <Calendar
                 mode="single"
                 selected={field.value}
-                onSelect={(date) => field.onChange(toUTC(date))}
-                initialFocus
+                onSelect={(date) => {
+                  field.onChange(toUTC(date));
+                  setOpen(false);
+                }}
+                autoFocus
+                disabled={disabled}
                 locale={dateLocale}
               />
             </PopoverContent>

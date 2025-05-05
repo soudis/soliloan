@@ -1,14 +1,54 @@
 "use client";
 
+import { TransactionType } from "@prisma/client";
+import { useQuery } from "@tanstack/react-query";
+import moment from "moment";
 import { useTranslations } from "next-intl";
+import { useEffect, useMemo } from "react";
+import { useFormContext } from "react-hook-form";
 
+import { getLoanById } from "@/app/actions";
 import { FormDatePicker } from "@/components/form/form-date-picker";
 import { FormNumberInput } from "@/components/form/form-number-input";
 import { FormSelect } from "@/components/form/form-select";
-
-export function TransactionFormFields() {
+import { TransactionFormData } from "@/lib/schemas/transaction";
+export function TransactionFormFields({ loanId }: { loanId: string }) {
   const t = useTranslations("dashboard.loans");
   const commonT = useTranslations("common");
+  const { watch, setValue } = useFormContext<TransactionFormData>();
+
+  const date = watch("date");
+  const type = watch("type");
+
+  const { data: loanToDate, isLoading: isLoadingLoanToDate } = useQuery({
+    queryKey: ["loan", loanId, date],
+    queryFn: () =>
+      getLoanById(
+        loanId,
+        (date ?? "") === "" ? new Date() : (date ?? new Date())
+      ),
+  });
+
+  useEffect(() => {
+    if (
+      loanToDate?.loan?.transactions.length === 0 &&
+      (type as string) === ""
+    ) {
+      setValue("type", TransactionType.DEPOSIT);
+    }
+  }, [loanToDate, type, setValue]);
+
+  const createTypeOption = (type: TransactionType, disabled?: boolean) => ({
+    value: type,
+    label: commonT(`enums.transaction.type.${type}`),
+    disabled,
+  });
+
+  const latestTransaction = useMemo(() => {
+    return loanToDate?.loan?.transactions.sort(
+      (a, b) => a.date.getTime() - b.date.getTime()
+    )[0];
+  }, [loanToDate]);
 
   return (
     <>
@@ -17,34 +57,35 @@ export function TransactionFormFields() {
         label={t("transactions.type")}
         placeholder={commonT("ui.form.selectPlaceholder")}
         options={[
-          {
-            value: "DEPOSIT",
-            label: commonT("enums.transaction.type.DEPOSIT"),
-          },
-          {
-            value: "WITHDRAWAL",
-            label: commonT("enums.transaction.type.WITHDRAWAL"),
-          },
-          {
-            value: "INTEREST",
-            label: commonT("enums.transaction.type.INTEREST"),
-          },
-          {
-            value: "INTERESTPAYMENT",
-            label: commonT("enums.transaction.type.INTERESTPAYMENT"),
-          },
-          {
-            value: "TERMINATION",
-            label: commonT("enums.transaction.type.TERMINATION"),
-          },
-          {
-            value: "NOTRECLAIMEDPARTIAL",
-            label: commonT("enums.transaction.type.NOTRECLAIMEDPARTIAL"),
-          },
-          {
-            value: "NOTRECLAIMED",
-            label: commonT("enums.transaction.type.NOTRECLAIMED"),
-          },
+          createTypeOption(
+            TransactionType.DEPOSIT,
+            loanToDate?.loan &&
+              loanToDate.loan.deposits >= loanToDate.loan.amount
+          ),
+          "divider",
+          createTypeOption(
+            TransactionType.WITHDRAWAL,
+            loanToDate?.loan && loanToDate.loan.balance <= 0
+          ),
+          createTypeOption(
+            TransactionType.TERMINATION,
+            loanToDate?.loan && loanToDate.loan.balance <= 0
+          ),
+          "divider",
+          createTypeOption(
+            TransactionType.INTERESTPAYMENT,
+            loanToDate?.loan &&
+              loanToDate.loan.interest + loanToDate.loan.interestPaid <= 0
+          ),
+          "divider",
+          createTypeOption(
+            TransactionType.NOTRECLAIMEDPARTIAL,
+            loanToDate?.loan && loanToDate.loan.balance <= 0
+          ),
+          createTypeOption(
+            TransactionType.NOTRECLAIMED,
+            loanToDate?.loan && loanToDate.loan.balance <= 0
+          ),
         ]}
       />
 
@@ -52,6 +93,20 @@ export function TransactionFormFields() {
         name="date"
         label={t("transactions.date")}
         placeholder={commonT("ui.form.enterPlaceholder")}
+        disabled={(date) => {
+          if (date > new Date()) {
+            return true;
+          }
+          if (
+            latestTransaction &&
+            moment(date)
+              .startOf("day")
+              .isBefore(moment(latestTransaction.date).startOf("day"))
+          ) {
+            return true;
+          }
+          return false;
+        }}
       />
 
       <FormNumberInput
@@ -59,6 +114,11 @@ export function TransactionFormFields() {
         label={t("transactions.amount")}
         placeholder={commonT("ui.form.enterPlaceholder")}
         step={0.01}
+        disabled={
+          type === TransactionType.TERMINATION ||
+          type === TransactionType.NOTRECLAIMED ||
+          isLoadingLoanToDate
+        }
       />
 
       <FormSelect

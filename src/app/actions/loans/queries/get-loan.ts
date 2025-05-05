@@ -7,7 +7,7 @@ import { calculateLoanFields } from "@/lib/calculations/loan-calculations";
 import { db } from "@/lib/db";
 import { LoanWithRelations } from "@/types/loans";
 
-export async function getLoanById(loanId: string) {
+export async function getLoanById(loanId: string, toDate?: Date) {
   try {
     const session = await auth();
     if (!session) {
@@ -85,8 +85,9 @@ export async function getLoanById(loanId: string) {
     }
 
     // Calculate virtual fields
-    const loanWithCalculations =
-      calculateLoanFields<Omit<LoanWithRelations, keyof Loan>>(loan);
+    const loanWithCalculations = calculateLoanFields<
+      Omit<LoanWithRelations, keyof Loan>
+    >(loan, { toDate });
 
     return { loan: loanWithCalculations };
   } catch (error) {

@@ -16,14 +16,18 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 
-interface SelectOption {
-  value: string;
-  label: string;
-}
+type SelectOption =
+  | {
+      value: string;
+      label: string;
+      disabled?: boolean;
+    }
+  | "divider";
 
 interface FormSelectProps {
   name: string;
@@ -92,11 +96,19 @@ export function FormSelect({
                 )}
                 {customContent
                   ? customContent()
-                  : options.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
+                  : options.map((option, index) =>
+                      option === "divider" ? (
+                        <SelectSeparator key={`divider_${index}`} />
+                      ) : (
+                        <SelectItem
+                          key={option.value}
+                          value={option.value}
+                          disabled={option.disabled}
+                        >
+                          {option.label}
+                        </SelectItem>
+                      )
+                    )}
               </SelectContent>
             </Select>
             {clearable && field.value && (

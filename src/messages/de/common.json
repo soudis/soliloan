@@ -162,12 +162,12 @@
     "transaction": {
       "type": {
         "DEPOSIT": "Einzahlung",
-        "WITHDRAWAL": "Auszahlung",
+        "WITHDRAWAL": "Teilrückzahlung",
         "INTEREST": "Zinsen",
-        "INTERESTPAYMENT": "Zinszahlung",
+        "INTERESTPAYMENT": "Zinsauszahlung",
         "TERMINATION": "Rückzahlung",
-        "NOTRECLAIMEDPARTIAL": "Nicht zurückgefordert (Teilweise)",
-        "NOTRECLAIMED": "Nicht zurückgefordert"
+        "NOTRECLAIMEDPARTIAL": "Teilabschreibung",
+        "NOTRECLAIMED": "Abschreibung"
       },
       "paymentType": {
         "BANK": "Banküberweisung",

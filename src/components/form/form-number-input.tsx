@@ -17,6 +17,7 @@ interface FormNumberInputProps {
   min?: number;
   max?: number;
   step?: number;
+  disabled?: boolean;
 }
 
 export function FormNumberInput({
@@ -26,6 +27,7 @@ export function FormNumberInput({
   min,
   max,
   step = 1,
+  disabled,
 }: FormNumberInputProps) {
   const form = useFormContext();
   return (
@@ -41,6 +43,7 @@ export function FormNumberInput({
               placeholder={placeholder}
               min={min}
               max={max}
+              disabled={disabled}
               step={step}
               {...field}
               value={field.value}
