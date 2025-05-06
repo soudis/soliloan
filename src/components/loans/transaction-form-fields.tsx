@@ -14,6 +14,11 @@ import { TransactionFormData } from "@/lib/schemas/transaction";
 
 import { FormNumberInput } from "../form/form-number-input";
 
+const formatter = new Intl.NumberFormat("de-DE", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 export function TransactionFormFields({ loanId }: { loanId: string }) {
   const t = useTranslations("dashboard.loans");
   const commonT = useTranslations("common");
@@ -76,7 +81,10 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
       (type === TransactionType.TERMINATION ||
         type === TransactionType.NOTRECLAIMED)
     ) {
-      setValue("amount", -loanToDate.loan.balance);
+      setValue(
+        "amount",
+        formatter.format(loanToDate.loan.balance) as unknown as number
+      );
       setAmountCalculated(true);
     }
     if (
@@ -88,7 +96,15 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
       setValue("amount", "" as unknown as number);
       setAmountCalculated(false);
     }
-  }, [type, loanToDate, setValue, isLoadingLoanToDate, date, amountCalculated]);
+  }, [
+    type,
+    loanToDate,
+    setValue,
+    isLoadingLoanToDate,
+    date,
+    amountCalculated,
+    formatter,
+  ]);
 
   const createTypeOption = (type: TransactionType, disabled?: boolean) => ({
     value: type,

@@ -10,7 +10,7 @@ import { Form } from "@/components/ui/form";
 import { FormActions } from "@/components/ui/form-actions";
 import { FormLayout } from "@/components/ui/form-layout";
 import { loanFormSchema } from "@/lib/schemas/loan";
-import { emptyStringToNull } from "@/lib/utils";
+import { emptyStringToNull, formatNumber } from "@/lib/utils";
 import { useProject } from "@/store/project-context";
 import { LoanWithRelations } from "@/types/loans";
 
@@ -58,8 +58,9 @@ export function LoanForm({
   const defaultValues = {
     lenderId: initialData?.lenderId || "",
     signDate: initialData?.signDate || "",
-    amount: initialData?.amount || ("" as const),
-    interestRate: initialData?.interestRate || ("" as const),
+    amount: formatNumber(initialData?.amount) || ("" as const),
+    interestRate:
+      formatNumber(initialData?.interestRate, 0, 3) || ("" as const),
     interestPaymentType: initialData?.interestPaymentType || "YEARLY",
     interestPayoutType: initialData?.interestPayoutType || "MONEY",
     altInterestMethod: initialData?.altInterestMethod || null,

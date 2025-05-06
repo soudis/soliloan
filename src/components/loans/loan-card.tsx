@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { InfoItem } from "@/components/ui/info-item";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLoanTabsStore } from "@/lib/stores/loan-tabs-store";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatPercentage } from "@/lib/utils";
 import { LoanStatus, LoanWithCalculations } from "@/types/loans";
 
 import { LoanCalculations } from "./loan-calculations";
@@ -137,7 +137,7 @@ export function LoanCard({ loan, onEdit, onDelete, className }: LoanCardProps) {
             />
             <InfoItem
               label={t("table.interestRate")}
-              value={`${loan.interestRate} %`}
+              value={`${formatPercentage(loan.interestRate)} %`}
             />
             <InfoItem
               label={t("table.signDate")}

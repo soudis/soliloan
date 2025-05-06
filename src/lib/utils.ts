@@ -20,6 +20,32 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+/**
+ * Formats a number as a percentage string using German locale
+ * @param amount The amount to format
+ * @returns A formatted percentage string (e.g. "12.34%")
+ */
+export function formatPercentage(amount: number): string {
+  return new Intl.NumberFormat("de-DE", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 3,
+  }).format(amount);
+}
+
+export function formatNumber(
+  amount: number | undefined | null,
+  minimumFractionDigits = 2,
+  maximumFractionDigits = 2
+): string {
+  if (amount === undefined || amount === null) {
+    return "";
+  }
+  return new Intl.NumberFormat("de-DE", {
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(amount);
+}
+
 export class NumberParser {
   private groupSymbol: string;
   private decimalSymbol: string;
@@ -37,11 +63,13 @@ export class NumberParser {
       return null;
     }
 
-    return Number(
-      localizedNumber
-        .replaceAll(this.groupSymbol, "")
-        .replaceAll(this.decimalSymbol, ".")
-    );
+    return typeof localizedNumber === "string"
+      ? Number(
+          localizedNumber
+            .replaceAll(this.groupSymbol, "")
+            .replaceAll(this.decimalSymbol, ".")
+        )
+      : localizedNumber;
   }
 
   strip(localizedNumber: string): string {
