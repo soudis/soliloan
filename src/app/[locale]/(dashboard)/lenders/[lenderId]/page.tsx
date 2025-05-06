@@ -5,7 +5,7 @@ import { Pencil, Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { getLenderById } from "@/app/actions/lenders";
@@ -63,6 +63,13 @@ export default function LenderDetailsPage({
     enabled: !!resolvedParams.lenderId,
   });
 
+  useEffect(() => {
+    if (highlightLoanId) {
+      setSelectedLoanId(lender?.id ?? "", highlightLoanId);
+      router.replace(`/lenders/${lender?.id}`);
+    }
+  }, [lender, highlightLoanId, setSelectedLoanId, router]);
+
   // Effect to update maxTabs based on screen size
   useEffect(() => {
     const checkSize = () => {
@@ -83,14 +90,17 @@ export default function LenderDetailsPage({
   }, []); // Empty dependency array ensures this runs only on mount and unmount
 
   // Determine selected Loan ID
-  const currentSelectedLoanId =
-    (lender?.loans.some(
-      (loan) => loan.id === getSelectedLoanId(lender?.id ?? "")
-    )
-      ? getSelectedLoanId(lender?.id)
-      : null) ??
-    highlightLoanId ??
-    (lender && lender.loans.length > 0 ? lender.loans[0].id : undefined);
+  const currentSelectedLoanId = useMemo(
+    () =>
+      highlightLoanId ??
+      (lender?.loans.some(
+        (loan) => loan.id === getSelectedLoanId(lender?.id ?? "")
+      )
+        ? getSelectedLoanId(lender?.id)
+        : null) ??
+      (lender && lender.loans.length > 0 ? lender.loans[0].id : undefined),
+    [highlightLoanId, lender, getSelectedLoanId]
+  );
 
   // Handler for selecting a loan (from tabs or dropdown)
   const handleSelectLoan = (loanId: string) => {

@@ -7,7 +7,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { ViewFormData } from "@/lib/schemas/view";
 
-export async function updateView(viewId: string, data: ViewFormData) {
+export async function updateView(viewId: string, data: Partial<ViewFormData>) {
   try {
     const session = await auth();
     if (!session) {
@@ -28,6 +28,17 @@ export async function updateView(viewId: string, data: ViewFormData) {
     // Check if the user has access to the view
     if (view.userId !== session.user.id) {
       throw new Error("You do not have access to this view");
+    }
+
+    if (data.isDefault) {
+      await db.view.updateMany({
+        where: {
+          type: view.type,
+        },
+        data: {
+          isDefault: false,
+        },
+      });
     }
 
     // Update the view

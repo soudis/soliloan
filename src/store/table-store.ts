@@ -1,31 +1,25 @@
 import { ViewType } from "@prisma/client";
-import {
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-} from "@tanstack/react-table";
+import { TableState } from "@tanstack/react-table";
 import { create } from "zustand";
 
-interface TableState {
-  columnVisibility: VisibilityState;
-  sorting: SortingState;
-  columnFilters: ColumnFiltersState;
-  globalFilter: string;
-  pageSize: number;
-}
+export type ViewState = Partial<TableState> & { selectedView?: string };
 
 interface TableStore {
-  states: Record<ViewType, TableState>;
-  setState: (viewType: ViewType, state: Partial<TableState>) => void;
-  getState: (viewType: ViewType) => TableState;
+  states: Record<ViewType, ViewState>;
+  setState: (viewType: ViewType, state: ViewState) => void;
+  getState: (viewType: ViewType) => ViewState;
 }
 
-const defaultTableState: TableState = {
+const defaultTableState: ViewState = {
+  selectedView: "init",
   columnVisibility: {},
   sorting: [],
   columnFilters: [],
   globalFilter: "",
-  pageSize: 10,
+  pagination: {
+    pageIndex: 0,
+    pageSize: 25,
+  },
 };
 
 export const useTableStore = create<TableStore>()((set, get) => ({

@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { getLenderById } from "@/app/actions/lenders"; // Adjust if type can be imported more directly
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoanStatus } from "@/types/loans";
-
 // Define LoanBadges locally or import if it's made a shared component
 const LoanBadges = ({
   loan,
@@ -60,8 +60,8 @@ interface LoanSelectorProps {
   selectedLoanId?: string;
   onSelectLoan: (loanId: string) => void;
   maxTabs: number;
-  commonT: (key: string) => string; // Consider more specific type if available
-  loanT: (key: string) => string; // Consider more specific type if available
+  commonT: ReturnType<typeof useTranslations<string>>; // Consider more specific type if available
+  loanT: ReturnType<typeof useTranslations<string>>; // Consider more specific type if available
 }
 
 export function LoanSelector({

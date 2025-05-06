@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface SaveViewDialogProps {
+  disabled?: boolean;
   onSave: (name: string, isDefault: boolean) => Promise<void>;
   isLoading?: boolean;
 }
@@ -24,6 +25,7 @@ interface SaveViewDialogProps {
 export function SaveViewDialog({
   onSave,
   isLoading = false,
+  disabled = false,
 }: SaveViewDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -47,6 +49,7 @@ export function SaveViewDialog({
           size="icon"
           className="h-8 w-8"
           title={t("saveView.title")}
+          disabled={disabled}
         >
           <Save className="h-4 w-4" />
         </Button>
