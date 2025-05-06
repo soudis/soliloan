@@ -60,6 +60,11 @@
     "title": "Kreditgeber*innen",
     "description": "Verwalte deine Kreditgeber*innen und deren Informationen.",
     "viewLenders": "Kreditgeber*innen anzeigen",
+    "noLoans": "Noch keine Kredite",
+    "dropdown": {
+      "selectFallback": "Kredit auswählen",
+      "selectPrompt": "Bitte wählen Sie einen Kredit aus, um Details anzuzeigen."
+    },
     "table": {
       "lenderNumber": "Nummer",
       "type": "Typ",
@@ -181,6 +186,7 @@
     },
     "table": {
       "loanNumber": "Nummer",
+      "loanNumberShort": "Kredit",
       "lenderNumber": "Kreditgeber*in Nummer",
       "lenderName": "Kreditgeber*in",
       "lender": "Kreditgeber*in",

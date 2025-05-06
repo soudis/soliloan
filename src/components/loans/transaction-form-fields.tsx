@@ -4,18 +4,23 @@ import { TransactionType } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 import { getLoanById } from "@/app/actions";
 import { FormDatePicker } from "@/components/form/form-date-picker";
-import { FormNumberInput } from "@/components/form/form-number-input";
 import { FormSelect } from "@/components/form/form-select";
 import { TransactionFormData } from "@/lib/schemas/transaction";
+
+import { FormNumberInput } from "../form/form-number-input";
+
 export function TransactionFormFields({ loanId }: { loanId: string }) {
   const t = useTranslations("dashboard.loans");
   const commonT = useTranslations("common");
   const { watch, setValue } = useFormContext<TransactionFormData>();
+  const [amountCalculated, setAmountCalculated] = useState(false);
+  const [minAmount, setMinAmount] = useState(0);
+  const [maxAmount, setMaxAmount] = useState(0);
 
   const date = watch("date");
   const type = watch("type");
@@ -37,6 +42,53 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
       setValue("type", TransactionType.DEPOSIT);
     }
   }, [loanToDate, type, setValue]);
+
+  useEffect(() => {
+    if (loanToDate?.loan && !isLoadingLoanToDate) {
+      if (type === TransactionType.DEPOSIT) {
+        setMinAmount(0.01);
+        setMaxAmount(loanToDate.loan.amount);
+      }
+      if (
+        type === TransactionType.WITHDRAWAL ||
+        type === TransactionType.NOTRECLAIMEDPARTIAL
+      ) {
+        setMaxAmount(loanToDate.loan.balance - 0.01);
+        setMinAmount(0.01);
+      }
+      if (type === TransactionType.INTERESTPAYMENT) {
+        setMaxAmount(
+          Math.min(
+            loanToDate.loan.interest + loanToDate.loan.interestPaid,
+            loanToDate.loan.balance - 0.01
+          )
+        );
+        setMinAmount(0.01);
+      }
+    }
+  }, [type, loanToDate, isLoadingLoanToDate]);
+
+  useEffect(() => {
+    if (
+      loanToDate?.loan &&
+      !isLoadingLoanToDate &&
+      !!date &&
+      (type === TransactionType.TERMINATION ||
+        type === TransactionType.NOTRECLAIMED)
+    ) {
+      setValue("amount", -loanToDate.loan.balance);
+      setAmountCalculated(true);
+    }
+    if (
+      loanToDate?.loan &&
+      amountCalculated &&
+      type !== TransactionType.TERMINATION &&
+      type !== TransactionType.NOTRECLAIMED
+    ) {
+      setValue("amount", "" as unknown as number);
+      setAmountCalculated(false);
+    }
+  }, [type, loanToDate, setValue, isLoadingLoanToDate, date, amountCalculated]);
 
   const createTypeOption = (type: TransactionType, disabled?: boolean) => ({
     value: type,
@@ -74,8 +126,9 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
           "divider",
           createTypeOption(
             TransactionType.INTERESTPAYMENT,
-            loanToDate?.loan &&
-              loanToDate.loan.interest + loanToDate.loan.interestPaid <= 0
+            (loanToDate?.loan &&
+              loanToDate.loan.interest + loanToDate.loan.interestPaid <= 0) ||
+              (loanToDate?.loan && loanToDate.loan.balance <= 0)
           ),
           "divider",
           createTypeOption(
@@ -113,11 +166,15 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
         name="amount"
         label={t("transactions.amount")}
         placeholder={commonT("ui.form.enterPlaceholder")}
-        step={0.01}
+        min={minAmount}
+        max={maxAmount}
+        prefix="€"
         disabled={
+          !type ||
           type === TransactionType.TERMINATION ||
           type === TransactionType.NOTRECLAIMED ||
-          isLoadingLoanToDate
+          isLoadingLoanToDate ||
+          !date
         }
       />
 

@@ -14,6 +14,7 @@ import { z } from "zod";
 
 import { isValidIban } from "@/lib/utils/iban";
 
+import { NumberParser } from "../utils";
 import { validationError } from "../utils/validation";
 
 // Generic number schemas
@@ -38,16 +39,17 @@ export const createNumberSchemaRequired = (
   min?: number,
   errorMessage = "validation.common.required"
 ) => {
+  const parser = new NumberParser("de-DE");
   return min
     ? z.preprocess(
-        (val) => (val === "" ? null : Number(val)),
+        (val) => (val === "" ? null : parser.parse(val as string)),
         z
           .number({ message: errorMessage })
           .min(min, validationError("validation.common.numberMin", { min }))
           .refine((val) => val !== null, { message: errorMessage })
       )
     : z.preprocess(
-        (val) => (val === "" ? null : Number(val)),
+        (val) => (val === "" ? null : parser.parse(val as string)),
         z
           .number({ message: errorMessage })
           .refine((val) => val !== null, { message: errorMessage })

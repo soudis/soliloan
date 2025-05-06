@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import {
   createDateSchema,
-  createNumberSchema,
+  createNumberSchemaRequired,
   selectEnumRequired,
 } from "./common";
 
@@ -16,7 +16,7 @@ export const paymentTypeEnum = selectEnumRequired(PaymentType);
 export const transactionFormSchema = z.object({
   type: transactionTypeEnum,
   date: createDateSchema(true),
-  amount: createNumberSchema(),
+  amount: createNumberSchemaRequired(),
   paymentType: paymentTypeEnum,
 });
 

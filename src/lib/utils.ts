@@ -20,6 +20,47 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+export class NumberParser {
+  private groupSymbol: string;
+  private decimalSymbol: string;
+
+  constructor(private readonly locale: string) {
+    const parts = Intl.NumberFormat(locale).formatToParts(1111.11);
+    this.groupSymbol =
+      parts.find((part) => part.type === "group")?.value ?? ".";
+    this.decimalSymbol =
+      parts.find((part) => part.type === "decimal")?.value ?? ",";
+  }
+
+  parse(localizedNumber: string): number | null {
+    if (!localizedNumber) {
+      return null;
+    }
+
+    return Number(
+      localizedNumber
+        .replaceAll(this.groupSymbol, "")
+        .replaceAll(this.decimalSymbol, ".")
+    );
+  }
+
+  strip(localizedNumber: string): string {
+    const escapedGroupSymbol = this.groupSymbol.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
+    const escapedDecimalSymbol = this.decimalSymbol.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
+    const regex = new RegExp(
+      `[^0-9${escapedGroupSymbol}${escapedDecimalSymbol}]`,
+      "g"
+    );
+    return localizedNumber.replace(regex, "");
+  }
+}
+
 export const transactionSorter = (a: Transaction, b: Transaction) => {
   if (a.date > b.date) return 1;
   else if (b.date > a.date) return -1;
@@ -31,7 +72,7 @@ export const transactionSorter = (a: Transaction, b: Transaction) => {
 };
 
 export const loansSorter = <T extends { signDate: Date }>(a: T, b: T) => {
-  const score = a.signDate.getTime() - b.signDate.getTime();
+  const score = b.signDate.getTime() - a.signDate.getTime();
   return score;
 };
 

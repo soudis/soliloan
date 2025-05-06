@@ -33,7 +33,8 @@ export function LoanCard({ loan, onEdit, onDelete, className }: LoanCardProps) {
   const commonT = useTranslations("common");
   const locale = useLocale();
   const dateLocale = locale === "de" ? de : enUS;
-  const { activeTab, setActiveTab } = useLoanTabsStore();
+  const { getActiveTab, setActiveTab } = useLoanTabsStore();
+  const activeTab = getActiveTab(loan.id);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const getTerminationModalities = () => {
@@ -136,7 +137,7 @@ export function LoanCard({ loan, onEdit, onDelete, className }: LoanCardProps) {
             />
             <InfoItem
               label={t("table.interestRate")}
-              value={`${loan.interestRate}%`}
+              value={`${loan.interestRate} %`}
             />
             <InfoItem
               label={t("table.signDate")}
@@ -163,6 +164,7 @@ export function LoanCard({ loan, onEdit, onDelete, className }: LoanCardProps) {
             value={activeTab}
             onValueChange={(value) =>
               setActiveTab(
+                loan.id,
                 value as "transactions" | "files" | "notes" | "bookings"
               )
             }
@@ -210,13 +212,14 @@ export function LoanCard({ loan, onEdit, onDelete, className }: LoanCardProps) {
                 transactions={loan.transactions.filter(
                   (t) => t.type !== "INTEREST"
                 )}
+                loan={loan}
               />
             </TabsContent>
             <TabsContent value="bookings">
               <LoanTransactions
                 loanId={loan.id}
                 transactions={loan.transactions}
-                hideDeleteForInterest={true}
+                loan={loan}
               />
             </TabsContent>
             <TabsContent value="files">

@@ -61,6 +61,7 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
             name="amount"
             label={t("new.form.amount") + " *"}
             placeholder={commonT("ui.form.enterPlaceholder")}
+            prefix="€"
             min={0.01}
             step={0.01}
           />
@@ -69,6 +70,9 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
             name="interestRate"
             label={t("new.form.interestRate") + " *"}
             placeholder={commonT("ui.form.enterPlaceholder")}
+            prefix="%"
+            minimumFractionDigits={0}
+            maximumFractionDigits={3}
             min={0}
             step={0.01}
           />

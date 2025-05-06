@@ -168,9 +168,9 @@ model Loan {
   altInterestMethod     InterestMethod?
   contractStatus        ContractStatus
   files                 File[]
-  lender                Lender              @relation(fields: [lenderId], references: [id])
+  lender                Lender              @relation(fields: [lenderId], references: [id], onDelete: Cascade)
   notes                 Note[]
-  transactions          Transaction[]
+  transactions          Transaction[]       
 }
 
 model Transaction {
@@ -180,7 +180,7 @@ model Transaction {
   date        DateTime
   amount      Float
   paymentType PaymentType
-  loan        Loan            @relation(fields: [loanId], references: [id])
+  loan        Loan            @relation(fields: [loanId], references: [id], onDelete: Cascade)
 }
 
 model File {

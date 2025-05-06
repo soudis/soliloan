@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { deleteTransaction } from "@/app/actions/loans";
 import { ConfirmDialog } from "@/components/generic/confirm-dialog";
 import { formatCurrency } from "@/lib/utils";
+import { LoanStatus, LoanWithCalculations } from "@/types/loans";
 
 import { TransactionDialog } from "./transaction-dialog";
 import { Button } from "../ui/button";
@@ -25,13 +26,13 @@ import { Button } from "../ui/button";
 interface LoanTransactionsProps {
   loanId: string;
   transactions: Transaction[];
-  hideDeleteForInterest?: boolean;
+  loan: LoanWithCalculations;
 }
 
 export function LoanTransactions({
   loanId,
   transactions,
-  hideDeleteForInterest = false,
+  loan,
 }: LoanTransactionsProps) {
   const t = useTranslations("dashboard.loans");
   const commonT = useTranslations("common");
@@ -105,6 +106,8 @@ export function LoanTransactions({
     }
   };
 
+  const lastTransaction = transactions.findLast((t) => t.type !== "INTEREST");
+
   return (
     <>
       <div className="mt-6">
@@ -136,8 +139,7 @@ export function LoanTransactions({
                   {formatCurrency(transaction.amount)}
                 </div>
                 <div className="w-8 flex justify-end">
-                  {(!hideDeleteForInterest ||
-                    transaction.type !== "INTEREST") && (
+                  {transaction.id === lastTransaction?.id && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -162,6 +164,7 @@ export function LoanTransactions({
             variant="outline"
             className="w-full mt-2"
             onClick={() => setIsTransactionDialogOpen(true)}
+            disabled={loan.status === LoanStatus.REPAID}
           >
             <Plus className="h-4 w-4 mr-2" />
             {commonT("ui.actions.create")}
