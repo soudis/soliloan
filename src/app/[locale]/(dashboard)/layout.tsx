@@ -1,5 +1,5 @@
-import DashboardNavigation from "@/components/dashboard/dashboard-navigation";
-import { auth } from "@/lib/auth";
+import DashboardNavigation from '@/components/dashboard/dashboard-navigation';
+import { auth } from '@/lib/auth';
 
 export default async function DashboardLayout({
   children,

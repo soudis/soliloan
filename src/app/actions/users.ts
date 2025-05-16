@@ -1,10 +1,10 @@
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath } from 'next/cache';
 
-import { db } from "@/lib/db";
-import { sendPasswordInvitationEmail } from "@/lib/email";
-import { generateToken } from "@/lib/token";
+import { db } from '@/lib/db';
+import { sendPasswordInvitationEmail } from '@/lib/email';
+import { generateToken } from '@/lib/token';
 
 /**
  * Send an invitation email to a user to set their password
@@ -26,11 +26,11 @@ export async function sendInvitationEmail(userId: string, projectName: string) {
     });
 
     if (!user) {
-      return { success: false, error: "User not found" };
+      return { success: false, error: 'User not found' };
     }
 
     if (!user.email) {
-      return { success: false, error: "User has no email address" };
+      return { success: false, error: 'User has no email address' };
     }
 
     // Generate a token for password reset
@@ -51,20 +51,14 @@ export async function sendInvitationEmail(userId: string, projectName: string) {
     });
 
     // Send the invitation email with the user's language preference
-    await sendPasswordInvitationEmail(
-      user.email,
-      user.name || "User",
-      token,
-      user.language || "de",
-      projectName
-    );
+    await sendPasswordInvitationEmail(user.email, user.name || 'User', token, user.language || 'de', projectName);
 
     // Revalidate the lender page to update the lastInvited timestamp
-    revalidatePath("/lenders/[lenderId]");
+    revalidatePath('/lenders/[lenderId]');
 
     return { success: true };
   } catch (error) {
-    console.error("Error sending invitation email:", error);
-    return { success: false, error: "Failed to send invitation email" };
+    console.error('Error sending invitation email:', error);
+    return { success: false, error: 'Failed to send invitation email' };
   }
 }

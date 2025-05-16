@@ -1,19 +1,14 @@
-import { ViewType } from "@prisma/client";
-import { TableState } from "@tanstack/react-table";
+import { ViewType } from '@prisma/client';
+import { TableState } from '@tanstack/react-table';
 
-import { useTableStore } from "@/store/table-store";
+import { useTableStore } from '@/store/table-store';
 
-import {
-  DateFilter,
-  NumberFilter,
-  SelectFilter,
-  TextFilter,
-} from "./data-table-column-filters/index";
+import { DateFilter, NumberFilter, SelectFilter, TextFilter } from './data-table-column-filters/index';
 
 interface DataTableColumnFiltersProps {
   columnFilters: {
     [key: string]: {
-      type: "text" | "select" | "number" | "date";
+      type: 'text' | 'select' | 'number' | 'date';
       options?: { label: string; value: string }[];
       label?: string;
     };
@@ -22,19 +17,13 @@ interface DataTableColumnFiltersProps {
   viewType: ViewType;
 }
 
-export function DataTableColumnFilters({
-  columnFilters,
-  state,
-  viewType,
-}: DataTableColumnFiltersProps) {
+export function DataTableColumnFilters({ columnFilters, state, viewType }: DataTableColumnFiltersProps) {
   const { setState } = useTableStore();
 
   const handleFilterChange = (columnId: string, value: unknown) => {
     setState(viewType, {
       columnFilters: [
-        ...(state.columnFilters ?? []).filter(
-          (filter) => filter.id !== columnId
-        ),
+        ...(state.columnFilters ?? []).filter((filter) => filter.id !== columnId),
         {
           id: columnId,
           value,
@@ -46,22 +35,18 @@ export function DataTableColumnFilters({
   return (
     <div className="mb-4 grid grid-cols-1 gap-4 rounded-md border p-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {Object.entries(columnFilters).map(([columnId, filterConfig]) => {
-        const filterState = state.columnFilters?.find(
-          (filter) => filter.id === columnId
-        );
+        const filterState = state.columnFilters?.find((filter) => filter.id === columnId);
 
         // Only show filter if the column is visible
         if (state.columnVisibility?.[columnId] === false) return null;
 
         return (
           <div key={columnId} className="flex flex-col space-y-2">
-            <span className="text-sm font-medium">
-              {filterConfig.label || columnId}:
-            </span>
+            <span className="text-sm font-medium">{filterConfig.label || columnId}:</span>
             <div className="flex items-center space-x-2">
               {(() => {
                 switch (filterConfig.type) {
-                  case "select":
+                  case 'select':
                     return (
                       <SelectFilter
                         filterState={filterState}
@@ -71,7 +56,7 @@ export function DataTableColumnFilters({
                         }}
                       />
                     );
-                  case "number":
+                  case 'number':
                     return (
                       <NumberFilter
                         filterState={filterState}
@@ -80,7 +65,7 @@ export function DataTableColumnFilters({
                         }}
                       />
                     );
-                  case "date":
+                  case 'date':
                     return (
                       <DateFilter
                         filterState={filterState}
@@ -89,7 +74,7 @@ export function DataTableColumnFilters({
                         }}
                       />
                     );
-                  case "text":
+                  case 'text':
                   default:
                     return (
                       <TextFilter

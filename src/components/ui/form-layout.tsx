@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
 
 interface FormLayoutProps {
   title: string;
@@ -7,12 +7,7 @@ interface FormLayoutProps {
   className?: string;
 }
 
-export function FormLayout({
-  title,
-  children,
-  error,
-  className = "",
-}: FormLayoutProps) {
+export function FormLayout({ title, children, error, className = '' }: FormLayoutProps) {
   return (
     <div className="space-y-8 ">
       <div>

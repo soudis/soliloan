@@ -1,39 +1,36 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useQuery } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-import {
-  getConfiguration,
-  updateConfiguration,
-} from "@/app/actions/configuration";
-import { ConfigurationForm } from "@/components/configuration/configuration-form";
-import { usePathname, useRouter } from "@/i18n/navigation";
-import { useProject } from "@/store/project-context";
+import { getConfiguration, updateConfiguration } from '@/app/actions/configuration';
+import { ConfigurationForm } from '@/components/configuration/configuration-form';
+import { usePathname, useRouter } from '@/i18n/navigation';
+import { useProject } from '@/store/project-context';
 
-import type { ConfigurationFormData } from "@/lib/schemas/configuration";
+import type { ConfigurationFormData } from '@/lib/schemas/configuration';
 
 export default function ConfigurationPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const { selectedProject, setSelectedProject } = useProject();
-  const t = useTranslations("dashboard.configuration");
+  const t = useTranslations('dashboard.configuration');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const pathname = usePathname();
 
   // Fetch configuration data using React Query
   const { data } = useQuery({
-    queryKey: ["configuration", selectedProject?.id],
+    queryKey: ['configuration', selectedProject?.id],
     queryFn: async () => {
       if (!selectedProject) return null;
-      console.log("Fetching configuration for project:", selectedProject.id);
+      console.log('Fetching configuration for project:', selectedProject.id);
       const result = await getConfiguration(selectedProject.id);
-      console.log("Configuration result:", result);
-      if ("error" in result) {
+      console.log('Configuration result:', result);
+      if ('error' in result) {
         throw new Error(result.error);
       }
       return {
@@ -64,12 +61,12 @@ export default function ConfigurationPage() {
     try {
       setError(null);
       setIsSubmitting(true);
-      console.log("Submitting configuration data:", data);
+      console.log('Submitting configuration data:', data);
 
       // Update the configuration using the server action
       const result = await updateConfiguration(selectedProject.id, data);
 
-      if ("error" in result) {
+      if ('error' in result) {
         throw new Error(result.error);
       }
 
@@ -93,10 +90,8 @@ export default function ConfigurationPage() {
           userTheme: result.configuration.userTheme || null,
           lenderSalutation: result.configuration.lenderSalutation || null,
           lenderCountry: result.configuration.lenderCountry || null,
-          lenderNotificationType:
-            result.configuration.lenderNotificationType || null,
-          lenderMembershipStatus:
-            result.configuration.lenderMembershipStatus || null,
+          lenderNotificationType: result.configuration.lenderNotificationType || null,
+          lenderMembershipStatus: result.configuration.lenderMembershipStatus || null,
           lenderTags: result.configuration.lenderTags || [],
           interestMethod: result.configuration.interestMethod || null,
           altInterestMethods: result.configuration.altInterestMethods || [],
@@ -107,14 +102,12 @@ export default function ConfigurationPage() {
       });
 
       // Show success message
-      toast.success(t("form.success"));
+      toast.success(t('form.success'));
       router.replace(pathname, { scroll: true });
     } catch (error) {
-      console.error("Error submitting form:", error);
-      setError(
-        error instanceof Error ? error.message : "An unknown error occurred"
-      );
-      toast.error(t("form.error"));
+      console.error('Error submitting form:', error);
+      setError(error instanceof Error ? error.message : 'An unknown error occurred');
+      toast.error(t('form.error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -122,10 +115,10 @@ export default function ConfigurationPage() {
 
   return (
     <ConfigurationForm
-      title={t("title")}
-      submitButtonText={t("form.submit")}
-      submittingButtonText={t("form.submitting")}
-      cancelButtonText={t("form.cancel")}
+      title={t('title')}
+      submitButtonText={t('form.submit')}
+      submittingButtonText={t('form.submitting')}
+      cancelButtonText={t('form.cancel')}
       onSubmit={handleSubmit}
       initialData={configurationData || undefined}
       hasHistoricTransactions={hasHistoricTransactions}

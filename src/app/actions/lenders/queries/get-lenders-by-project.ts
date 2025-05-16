@@ -1,6 +1,6 @@
-"use server";
-import { calculateLenderFields } from "@/lib/calculations/lender-calculations";
-import { db } from "@/lib/db";
+'use server';
+import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
+import { db } from '@/lib/db';
 
 export async function getLendersByProjectId(projectId: string) {
   try {
@@ -9,7 +9,7 @@ export async function getLendersByProjectId(projectId: string) {
         projectId,
       },
       orderBy: {
-        lenderNumber: "asc",
+        lenderNumber: 'asc',
       },
       include: {
         loans: {
@@ -63,15 +63,13 @@ export async function getLendersByProjectId(projectId: string) {
     });
 
     // Calculate virtual fields for each lender
-    const lendersWithCalculations = lenders.map((lender) =>
-      calculateLenderFields(lender)
-    );
+    const lendersWithCalculations = lenders.map((lender) => calculateLenderFields(lender));
 
     return { lenders: lendersWithCalculations };
   } catch (error) {
-    console.error("Error fetching lenders:", error);
+    console.error('Error fetching lenders:', error);
     return {
-      error: error instanceof Error ? error.message : "Failed to fetch lenders",
+      error: error instanceof Error ? error.message : 'Failed to fetch lenders',
     };
   }
 }

@@ -1,28 +1,18 @@
-"use server";
+'use server';
 
-import { Entity, Operation } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { Entity, Operation } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 
-import {
-  createAuditEntry,
-  getChangedFields,
-  removeNullFields,
-} from "@/lib/audit-trail";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import {
-  ConfigurationFormData,
-  configurationFormSchema,
-} from "@/lib/schemas/configuration";
+import { createAuditEntry, getChangedFields, removeNullFields } from '@/lib/audit-trail';
+import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { ConfigurationFormData, configurationFormSchema } from '@/lib/schemas/configuration';
 
-export async function updateConfiguration(
-  projectId: string,
-  data: ConfigurationFormData
-) {
+export async function updateConfiguration(projectId: string, data: ConfigurationFormData) {
   try {
     const session = await auth();
     if (!session) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     // Fetch the project
@@ -37,16 +27,14 @@ export async function updateConfiguration(
     });
 
     if (!project) {
-      throw new Error("Project not found");
+      throw new Error('Project not found');
     }
 
     // Check if the user has access to the project
-    const hasAccess = project.managers.some(
-      (manager) => manager.id === session.user.id
-    );
+    const hasAccess = project.managers.some((manager) => manager.id === session.user.id);
 
     if (!hasAccess) {
-      throw new Error("You do not have access to this project");
+      throw new Error('You do not have access to this project');
     }
 
     // Validate the data
@@ -158,12 +146,9 @@ export async function updateConfiguration(
 
     return { configuration: formConfiguration };
   } catch (error) {
-    console.error("Error updating project configuration:", error);
+    console.error('Error updating project configuration:', error);
     return {
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to update project configuration",
+      error: error instanceof Error ? error.message : 'Failed to update project configuration',
     };
   }
 }

@@ -1,21 +1,10 @@
-import { useFormContext } from "react-hook-form";
+import { useFormContext } from 'react-hook-form';
 
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  CustomSelectTrigger,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { CustomSelectTrigger, Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 interface FormNumberWithSelectProps {
   numberName: string;
@@ -44,7 +33,7 @@ export function FormNumberWithSelect({
 }: FormNumberWithSelectProps) {
   const form = useFormContext();
   return (
-    <div className={cn("space-y-2", className)}>
+    <div className={cn('space-y-2', className)}>
       <div className="flex items-center justify-between">
         <Label>{numberLabel}</Label>
         <Label className="text-muted-foreground">{selectLabel}</Label>
@@ -76,10 +65,7 @@ export function FormNumberWithSelect({
           render={({ field }) => (
             <FormItem className="w-[120px]">
               <FormControl>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <CustomSelectTrigger className="rounded-l-none h-10">
                     <SelectValue placeholder={selectPlaceholder} />
                   </CustomSelectTrigger>

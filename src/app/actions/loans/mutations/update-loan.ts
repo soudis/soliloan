@@ -1,4 +1,4 @@
-"use server";
+'use server';
 
 import {
   ContractStatus,
@@ -8,24 +8,19 @@ import {
   InterestPaymentType,
   InterestPayoutType,
   Operation,
-} from "@prisma/client";
-import { revalidatePath } from "next/cache";
+} from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 
-import {
-  createAuditEntry,
-  getChangedFields,
-  getLenderContext,
-  getLoanContext,
-} from "@/lib/audit-trail";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { LoanFormData } from "@/lib/schemas/loan";
+import { createAuditEntry, getChangedFields, getLenderContext, getLoanContext } from '@/lib/audit-trail';
+import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { LoanFormData } from '@/lib/schemas/loan';
 
 export async function updateLoan(loanId: string, data: LoanFormData) {
   try {
     const session = await auth();
     if (!session) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     // Fetch the loan
@@ -47,16 +42,14 @@ export async function updateLoan(loanId: string, data: LoanFormData) {
     });
 
     if (!loan) {
-      throw new Error("Loan not found");
+      throw new Error('Loan not found');
     }
 
     // Check if the user has access to the loan's project
-    const hasAccess = loan.lender.project.managers.some(
-      (manager) => manager.id === session.user.id
-    );
+    const hasAccess = loan.lender.project.managers.some((manager) => manager.id === session.user.id);
 
     if (!hasAccess) {
-      throw new Error("You do not have access to this loan");
+      throw new Error('You do not have access to this loan');
     }
 
     // Update the loan
@@ -105,9 +98,9 @@ export async function updateLoan(loanId: string, data: LoanFormData) {
 
     return { loan: updatedLoan };
   } catch (error) {
-    console.error("Error updating loan:", error);
+    console.error('Error updating loan:', error);
     return {
-      error: error instanceof Error ? error.message : "Failed to update loan",
+      error: error instanceof Error ? error.message : 'Failed to update loan',
     };
   }
 }

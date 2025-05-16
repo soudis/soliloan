@@ -1,7 +1,7 @@
-import { useTranslations } from "next-intl";
+import { useTranslations } from 'next-intl';
 
-import { FormSelect } from "@/components/form/form-select";
-import { SelectItem, SelectSeparator } from "@/components/ui/select";
+import { FormSelect } from '@/components/form/form-select';
+import { SelectItem, SelectSeparator } from '@/components/ui/select';
 
 interface FormCountrySelectProps {
   name: string;
@@ -12,49 +12,49 @@ interface FormCountrySelectProps {
 }
 
 // Primary countries that should appear at the top
-const PRIMARY_COUNTRIES = ["DE", "AT", "CH"] as const;
+const PRIMARY_COUNTRIES = ['DE', 'AT', 'CH'] as const;
 
 // All other countries
 const OTHER_COUNTRIES = [
-  "US",
-  "GB",
-  "FR",
-  "IT",
-  "ES",
-  "NL",
-  "BE",
-  "DK",
-  "SE",
-  "NO",
-  "FI",
-  "PL",
-  "CZ",
-  "HU",
-  "RO",
-  "BG",
-  "HR",
-  "SI",
-  "SK",
-  "EE",
-  "LV",
-  "LT",
-  "CY",
-  "MT",
-  "LU",
-  "IE",
-  "PT",
-  "GR",
+  'US',
+  'GB',
+  'FR',
+  'IT',
+  'ES',
+  'NL',
+  'BE',
+  'DK',
+  'SE',
+  'NO',
+  'FI',
+  'PL',
+  'CZ',
+  'HU',
+  'RO',
+  'BG',
+  'HR',
+  'SI',
+  'SK',
+  'EE',
+  'LV',
+  'LT',
+  'CY',
+  'MT',
+  'LU',
+  'IE',
+  'PT',
+  'GR',
 ] as const;
 
 export function FormCountrySelect({
   name,
-  label = "Country",
-  placeholder = "Select a country",
+  label = 'Country',
+  placeholder = 'Select a country',
   required = false,
   clearable = false,
 }: FormCountrySelectProps) {
-  const t = useTranslations("common.countries");
-  const commonT = useTranslations("common");
+  const t = useTranslations('common.countries');
+  const commonT = useTranslations('common');
 
   // Create options for primary countries
   const primaryOptions = PRIMARY_COUNTRIES.map((code) => ({
@@ -89,7 +89,7 @@ export function FormCountrySelect({
     <FormSelect
       name={name}
       label={label}
-      placeholder={placeholder || commonT("ui.form.selectPlaceholder")}
+      placeholder={placeholder || commonT('ui.form.selectPlaceholder')}
       options={[...primaryOptions, ...otherOptions]}
       side="bottom"
       required={required}

@@ -1,10 +1,5 @@
-import {
-  InterestMethod,
-  Language,
-  LenderRequiredField,
-  SoliLoansTheme,
-} from "@prisma/client";
-import { z } from "zod";
+import { InterestMethod, Language, LenderRequiredField, SoliLoansTheme } from '@prisma/client';
+import { z } from 'zod';
 
 import {
   addressSchema,
@@ -17,13 +12,13 @@ import {
   salutationEnumOptional,
   selectEnumRequired,
   validateAddressOptional,
-} from "./common";
+} from './common';
 
 // Define the configuration form schema based on the Prisma model
 export const configurationFormSchema = z
   .object({
     // General Information
-    name: z.string().min(1, { message: "validation.common.required" }),
+    name: z.string().min(1, { message: 'validation.common.required' }),
     logo: z.string().nullable().optional(),
 
     // Contact Information
@@ -39,10 +34,7 @@ export const configurationFormSchema = z
     userTheme: selectEnumRequired(SoliLoansTheme).nullable().optional(),
 
     // Lender Defaults
-    lenderRequiredFields: z
-      .array(z.nativeEnum(LenderRequiredField))
-      .default([])
-      .optional(),
+    lenderRequiredFields: z.array(z.nativeEnum(LenderRequiredField)).default([]).optional(),
     lenderSalutation: salutationEnumOptional.nullable().optional(),
     lenderCountry: countryEnum.nullable().optional(),
     lenderNotificationType: notificationTypeEnumOptional.nullable().optional(),
@@ -51,10 +43,7 @@ export const configurationFormSchema = z
 
     // Loan Defaults
     interestMethod: interestMethodEnum,
-    altInterestMethods: z
-      .array(z.nativeEnum(InterestMethod))
-      .default([])
-      .optional(),
+    altInterestMethods: z.array(z.nativeEnum(InterestMethod)).default([]).optional(),
     customLoans: z.coerce.boolean().default(false).optional(),
   })
   .superRefine(validateAddressOptional);

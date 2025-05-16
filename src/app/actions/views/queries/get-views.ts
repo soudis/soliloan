@@ -1,15 +1,15 @@
-"use server";
+'use server';
 
-import { ViewType } from "@prisma/client";
+import { ViewType } from '@prisma/client';
 
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
 
 export async function getViewsByType(viewType: ViewType) {
   try {
     const session = await auth();
     if (!session) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     // Fetch all views for the user
@@ -19,15 +19,15 @@ export async function getViewsByType(viewType: ViewType) {
         type: viewType,
       },
       orderBy: {
-        name: "asc",
+        name: 'asc',
       },
     });
 
     return { views };
   } catch (error) {
-    console.error("Error fetching views:", error);
+    console.error('Error fetching views:', error);
     return {
-      error: error instanceof Error ? error.message : "Failed to fetch views",
+      error: error instanceof Error ? error.message : 'Failed to fetch views',
     };
   }
 }

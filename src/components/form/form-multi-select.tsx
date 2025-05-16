@@ -1,4 +1,4 @@
-import { useFormContext } from "react-hook-form";
+import { useFormContext } from 'react-hook-form';
 
 import {
   FormControl,
@@ -7,8 +7,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { MultiSelect } from "@/components/ui/multi-select";
+} from '@/components/ui/form';
+import { MultiSelect } from '@/components/ui/multi-select';
 interface SelectOption {
   value: string;
   label: string;
@@ -24,14 +24,7 @@ interface FormMultiSelectProps {
   maxCount?: number;
 }
 
-export function FormMultiSelect({
-  name,
-  label,
-  placeholder,
-  options,
-  maxCount,
-  hint,
-}: FormMultiSelectProps) {
+export function FormMultiSelect({ name, label, placeholder, options, maxCount, hint }: FormMultiSelectProps) {
   const form = useFormContext();
   return (
     <FormFieldWrapper
@@ -51,11 +44,7 @@ export function FormMultiSelect({
                 maxCount={maxCount}
               />
             </FormControl>
-            {hint && (
-              <FormDescription className="text-sm text-muted-foreground/80">
-                {hint}
-              </FormDescription>
-            )}
+            {hint && <FormDescription className="text-sm text-muted-foreground/80">{hint}</FormDescription>}
             <FormMessage />
           </FormItem>
         );

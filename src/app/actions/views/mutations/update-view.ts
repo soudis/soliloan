@@ -1,17 +1,17 @@
-"use server";
+'use server';
 
-import { ViewType } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { ViewType } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { ViewFormData } from "@/lib/schemas/view";
+import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { ViewFormData } from '@/lib/schemas/view';
 
 export async function updateView(viewId: string, data: Partial<ViewFormData>) {
   try {
     const session = await auth();
     if (!session) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     // Fetch the view
@@ -22,12 +22,12 @@ export async function updateView(viewId: string, data: Partial<ViewFormData>) {
     });
 
     if (!view) {
-      throw new Error("View not found");
+      throw new Error('View not found');
     }
 
     // Check if the user has access to the view
     if (view.userId !== session.user.id) {
-      throw new Error("You do not have access to this view");
+      throw new Error('You do not have access to this view');
     }
 
     if (data.isDefault) {
@@ -59,9 +59,9 @@ export async function updateView(viewId: string, data: Partial<ViewFormData>) {
 
     return { view: updatedView };
   } catch (error) {
-    console.error("Error updating view:", error);
+    console.error('Error updating view:', error);
     return {
-      error: error instanceof Error ? error.message : "Failed to update view",
+      error: error instanceof Error ? error.message : 'Failed to update view',
     };
   }
 }

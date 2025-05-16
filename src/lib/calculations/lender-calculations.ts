@@ -1,12 +1,12 @@
-import { Lender } from "@prisma/client";
-import { Decimal } from "@prisma/client/runtime/library";
-import { omit } from "lodash";
+import { Lender } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
+import { omit } from 'lodash';
 
-import { CalculationOptions } from "@/types/calculation";
-import { LenderWithRelations } from "@/types/lenders";
+import { CalculationOptions } from '@/types/calculation';
+import { LenderWithRelations } from '@/types/lenders';
 
-import { loansSorter } from "../utils";
-import { calculateLoanFields } from "./loan-calculations";
+import { loansSorter } from '../utils';
+import { calculateLoanFields } from './loan-calculations';
 
 // Define a base type for the lender with calculations
 export type LenderWithCalculations = Lender & {
@@ -21,15 +21,10 @@ export type LenderWithCalculations = Lender & {
 // Define a generic type that can include relations
 export type LenderWithCalculationsAndRelations<T> = LenderWithCalculations & T;
 
-export function calculateLenderFields(
-  lender: LenderWithRelations,
-  options: CalculationOptions = {}
-) {
+export function calculateLenderFields(lender: LenderWithRelations, options: CalculationOptions = {}) {
   const { client = false } = options ?? {};
 
-  const loans = lender.loans?.map((loan) =>
-    calculateLoanFields({ ...loan, lender }, options)
-  );
+  const loans = lender.loans?.map((loan) => calculateLoanFields({ ...loan, lender }, options));
 
   // Initialize sums object
   const sums = {
@@ -62,9 +57,7 @@ export function calculateLenderFields(
   }
 
   sums.interestRate =
-    sums.interestRate > 0 && sums.amount > 0
-      ? new Decimal(sums.interestRate).div(sums.amount).toNumber()
-      : 0;
+    sums.interestRate > 0 && sums.amount > 0 ? new Decimal(sums.interestRate).div(sums.amount).toNumber() : 0;
 
   sums.balanceInterestRate =
     sums.balanceInterestRate > 0 && sums.balance > 0
@@ -74,12 +67,8 @@ export function calculateLenderFields(
   return {
     ...lender,
     loans: loans?.sort(loansSorter) ?? [],
-    notes: client
-      ? lender.notes.filter((note) => !client || note.public)
-      : lender.notes,
-    files: lender.files
-      .filter((file) => !client || file.public)
-      .map((file) => omit(file, "data")),
+    notes: client ? lender.notes.filter((note) => !client || note.public) : lender.notes,
+    files: lender.files.filter((file) => !client || file.public).map((file) => omit(file, 'data')),
     ...sums,
   };
 }

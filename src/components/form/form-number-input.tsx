@@ -1,16 +1,10 @@
-"use client";
+'use client';
 
-import { useFormContext } from "react-hook-form";
+import { useFormContext } from 'react-hook-form';
 
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { NumberParser } from "@/lib/utils";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { NumberParser } from '@/lib/utils';
 interface FormNumberInputProps {
   name: string;
   label?: string;
@@ -38,12 +32,12 @@ export function FormNumberInput({
 }: FormNumberInputProps) {
   const form = useFormContext();
 
-  const formatter = new Intl.NumberFormat("de-DE", {
+  const formatter = new Intl.NumberFormat('de-DE', {
     maximumFractionDigits,
     minimumFractionDigits,
   });
 
-  const parser = new NumberParser("de-DE");
+  const parser = new NumberParser('de-DE');
 
   return (
     <FormField
@@ -80,7 +74,7 @@ export function FormNumberInput({
                   field.onChange(value);
                 }}
                 className={`[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                  prefix ? "pl-12 " : ""
+                  prefix ? 'pl-12 ' : ''
                 }`}
               />
             </div>

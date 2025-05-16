@@ -1,22 +1,17 @@
-"use server";
+'use server';
 
-import { Entity, Operation } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { Entity, Operation } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 
-import {
-  createAuditEntry,
-  getLenderContext,
-  getLoanContext,
-  removeNullFields,
-} from "@/lib/audit-trail";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { createAuditEntry, getLenderContext, getLoanContext, removeNullFields } from '@/lib/audit-trail';
+import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
 
 export async function deleteLoan(loanId: string) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return { error: "auth.unauthorized" };
+      return { error: 'auth.unauthorized' };
     }
 
     // Fetch the loan with lender and project context
@@ -38,16 +33,14 @@ export async function deleteLoan(loanId: string) {
     });
 
     if (!loan) {
-      return { error: "loan.notFound" };
+      return { error: 'loan.notFound' };
     }
 
     // Check if the user has access to the loan's project
-    const hasAccess = loan.lender.project.managers.some(
-      (manager) => manager.id === session.user.id
-    );
+    const hasAccess = loan.lender.project.managers.some((manager) => manager.id === session.user.id);
 
     if (!hasAccess) {
-      return { error: "auth.forbidden" };
+      return { error: 'auth.forbidden' };
     }
 
     // Create audit trail entry before deletion
@@ -77,9 +70,9 @@ export async function deleteLoan(loanId: string) {
 
     return { success: true };
   } catch (error) {
-    console.error("Error deleting loan:", error);
+    console.error('Error deleting loan:', error);
     return {
-      error: "loan.deleteFailed", // Generic error key
+      error: 'loan.deleteFailed', // Generic error key
     };
   }
 }

@@ -1,10 +1,10 @@
-import { DefaultJWT } from "@auth/core/jwt";
-import { DefaultUser } from "@auth/core/types";
-import { DefaultSession } from "next-auth";
+import { DefaultJWT } from '@auth/core/jwt';
+import { DefaultUser } from '@auth/core/types';
+import { DefaultSession } from 'next-auth';
 
-import type { AdapterUser as BaseAdapterUser } from "next-auth/adapters";
+import type { AdapterUser as BaseAdapterUser } from 'next-auth/adapters';
 
-declare module "@auth/core/adapters" {
+declare module '@auth/core/adapters' {
   interface AdapterUser extends BaseAdapterUser {
     isAdmin: boolean;
     isManager: boolean;
@@ -20,7 +20,7 @@ declare module "@auth/core/adapters" {
  *
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
-declare module "next-auth" {
+declare module 'next-auth' {
   export interface Session extends DefaultSession {
     user: User;
   }

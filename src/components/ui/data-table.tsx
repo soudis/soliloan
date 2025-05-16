@@ -1,5 +1,5 @@
-import { ViewType } from "@prisma/client";
-import { useQuery } from "@tanstack/react-query";
+import { ViewType } from '@prisma/client';
+import { useQuery } from '@tanstack/react-query';
 import {
   ColumnDef,
   FilterFn,
@@ -9,23 +9,19 @@ import {
   getSortedRowModel,
   useReactTable,
   VisibilityState,
-} from "@tanstack/react-table";
-import { Settings } from "lucide-react";
-import { useState } from "react";
+} from '@tanstack/react-table';
+import { Settings } from 'lucide-react';
+import { useState } from 'react';
 
-import { getViewsByType } from "@/app/actions/views";
-import { useTableStore } from "@/store/table-store";
+import { getViewsByType } from '@/app/actions/views';
+import { useTableStore } from '@/store/table-store';
 
-import { DataTableBody } from "./data-table-body";
-import { DataTableHeader } from "./data-table-header";
-import { DataTablePagination } from "./data-table-pagination";
+import { DataTableBody } from './data-table-body';
+import { DataTableHeader } from './data-table-header';
+import { DataTablePagination } from './data-table-pagination';
 
 // Define the custom filter function for compound text fields
-export const compoundTextFilter: FilterFn<unknown> = (
-  row,
-  columnId,
-  filterValue
-) => {
+export const compoundTextFilter: FilterFn<unknown> = (row, columnId, filterValue) => {
   const value = row.getValue(columnId);
   if (!value) return false;
 
@@ -37,11 +33,7 @@ export const compoundTextFilter: FilterFn<unknown> = (
 };
 
 // Define the custom number range filter function for number filtering
-export const inNumberRangeFilter: FilterFn<unknown> = (
-  row,
-  columnId,
-  filterValue
-) => {
+export const inNumberRangeFilter: FilterFn<unknown> = (row, columnId, filterValue) => {
   const value = row.getValue(columnId);
   if (value === null || value === undefined) return false;
 
@@ -66,13 +58,9 @@ export const inNumberRangeFilter: FilterFn<unknown> = (
 };
 
 // Define the custom date filter function for date range filtering
-export const dateRangeFilter: FilterFn<unknown> = (
-  row,
-  columnId,
-  filterValue
-) => {
+export const dateRangeFilter: FilterFn<unknown> = (row, columnId, filterValue) => {
   const value = row.getValue(columnId);
-  if (!value || typeof value !== "string") return false;
+  if (!value || typeof value !== 'string') return false;
 
   // If no filter is applied, show all rows
   if (!filterValue || (!filterValue[0] && !filterValue[1])) return true;
@@ -103,7 +91,7 @@ export const dateRangeFilter: FilterFn<unknown> = (
 };
 
 // Define the column meta type to include the fixed property
-declare module "@tanstack/react-table" {
+declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData, TValue> {
     fixed?: boolean;
@@ -119,7 +107,7 @@ interface DataTableProps<TData, TValue> {
   showFilter?: boolean;
   columnFilters?: {
     [key: string]: {
-      type: "text" | "select" | "number" | "date";
+      type: 'text' | 'select' | 'number' | 'date';
       options?: { label: string; value: string }[];
       label?: string;
     };
@@ -155,18 +143,15 @@ export function DataTable<TData, TValue>({
     pageSize: 25,
   };
 
-  const columnVisibility =
-    storedState?.columnVisibility ?? defaultColumnVisibility;
-  const globalFilter = storedState?.globalFilter ?? "";
+  const columnVisibility = storedState?.columnVisibility ?? defaultColumnVisibility;
+  const globalFilter = storedState?.globalFilter ?? '';
 
   const [rowSelection, setRowSelection] = useState({});
 
   const { data: views, isLoading } = useQuery({
-    queryKey: ["views", viewType],
+    queryKey: ['views', viewType],
     queryFn: async () => {
-      const { views: fetchedViews, error } = await getViewsByType(
-        viewType ?? "LOAN"
-      );
+      const { views: fetchedViews, error } = await getViewsByType(viewType ?? 'LOAN');
       if (error) {
         return [];
       }
@@ -182,10 +167,10 @@ export function DataTable<TData, TValue>({
       const value = filter.value;
       if (Array.isArray(value)) {
         // For range filters (number, date)
-        return value.some((v) => v !== undefined && v !== "");
+        return value.some((v) => v !== undefined && v !== '');
       }
       // For text and select filters
-      return value !== undefined && value !== "";
+      return value !== undefined && value !== '';
     });
 
     // Only return true if column filters are active, ignoring global filter
@@ -196,7 +181,7 @@ export function DataTable<TData, TValue>({
   const allColumns = [...columns];
   if (actions) {
     allColumns.push({
-      id: "actions",
+      id: 'actions',
       header: () => (
         <div className="flex justify-center">
           <Settings className="h-4 w-4" />
@@ -218,8 +203,7 @@ export function DataTable<TData, TValue>({
       }),
     onColumnFiltersChange: (updater) =>
       setState(viewType, {
-        columnFilters:
-          updater instanceof Function ? updater(columnFilterState) : updater,
+        columnFilters: updater instanceof Function ? updater(columnFilterState) : updater,
       }),
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -227,13 +211,11 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: (updater) =>
       setState(viewType, {
-        columnVisibility:
-          updater instanceof Function ? updater(columnVisibility) : updater,
+        columnVisibility: updater instanceof Function ? updater(columnVisibility) : updater,
       }),
     onGlobalFilterChange: (updater) =>
       setState(viewType, {
-        globalFilter:
-          updater instanceof Function ? updater(globalFilter) : updater,
+        globalFilter: updater instanceof Function ? updater(globalFilter) : updater,
       }),
     onPaginationChange: (updater) =>
       setState(viewType, {

@@ -1,6 +1,6 @@
-import { ViewType } from "@prisma/client";
-import { TableState } from "@tanstack/react-table";
-import { create } from "zustand";
+import { ViewType } from '@prisma/client';
+import { TableState } from '@tanstack/react-table';
+import { create } from 'zustand';
 
 export type ViewState = Partial<TableState> & { selectedView?: string };
 
@@ -11,11 +11,11 @@ interface TableStore {
 }
 
 const defaultTableState: ViewState = {
-  selectedView: "init",
+  selectedView: 'init',
   columnVisibility: {},
   sorting: [],
   columnFilters: [],
-  globalFilter: "",
+  globalFilter: '',
   pagination: {
     pageIndex: 0,
     pageSize: 25,

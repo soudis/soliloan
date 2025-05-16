@@ -5,7 +5,7 @@
  */
 export function isValidIban(iban: string): boolean {
   // Remove spaces and convert to uppercase
-  const cleanIban = iban.replace(/\s/g, "").toUpperCase();
+  const cleanIban = iban.replace(/\s/g, '').toUpperCase();
 
   // Check basic format
   if (!/^[A-Z]{2}[0-9A-Z]{2,34}$/.test(cleanIban)) {
@@ -17,7 +17,7 @@ export function isValidIban(iban: string): boolean {
 
   // Convert letters to numbers (A=10, B=11, etc.)
   const converted = rearranged
-    .split("")
+    .split('')
     .map((char) => {
       const code = char.charCodeAt(0);
       if (code >= 65 && code <= 90) {
@@ -26,7 +26,7 @@ export function isValidIban(iban: string): boolean {
       }
       return char;
     })
-    .join("");
+    .join('');
 
   // Check if the number is divisible by 97
   const remainder = BigInt(converted) % BigInt(97);

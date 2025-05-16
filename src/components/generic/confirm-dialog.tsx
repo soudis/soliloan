@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
+import { useTranslations } from 'next-intl';
 
 import {
   AlertDialog,
@@ -11,7 +11,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -32,7 +32,7 @@ export function ConfirmDialog({
   confirmText,
   cancelText,
 }: ConfirmDialogProps) {
-  const commonT = useTranslations("common.ui");
+  const commonT = useTranslations('common.ui');
 
   const handleConfirm = () => {
     onConfirm();
@@ -47,12 +47,8 @@ export function ConfirmDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>
-            {cancelText ?? commonT("actions.cancel")}
-          </AlertDialogCancel>
-          <AlertDialogAction onClick={handleConfirm}>
-            {confirmText ?? commonT("actions.confirm")}
-          </AlertDialogAction>
+          <AlertDialogCancel>{cancelText ?? commonT('actions.cancel')}</AlertDialogCancel>
+          <AlertDialogAction onClick={handleConfirm}>{confirmText ?? commonT('actions.confirm')}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -1,8 +1,8 @@
-import { Lender, Transaction, TransactionType } from "@prisma/client";
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { Lender, Transaction, TransactionType } from '@prisma/client';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-import type { ClassValue } from "clsx";
+import type { ClassValue } from 'clsx';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -14,9 +14,9 @@ export function cn(...inputs: ClassValue[]) {
  * @returns A formatted currency string (e.g. "1.234,56 €")
  */
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("de-DE", {
-    style: "currency",
-    currency: "EUR",
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
   }).format(amount);
 }
 
@@ -26,7 +26,7 @@ export function formatCurrency(amount: number): string {
  * @returns A formatted percentage string (e.g. "12.34%")
  */
 export function formatPercentage(amount: number): string {
-  return new Intl.NumberFormat("de-DE", {
+  return new Intl.NumberFormat('de-DE', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 3,
   }).format(amount);
@@ -35,12 +35,12 @@ export function formatPercentage(amount: number): string {
 export function formatNumber(
   amount: number | undefined | null,
   minimumFractionDigits = 2,
-  maximumFractionDigits = 2
+  maximumFractionDigits = 2,
 ): string {
   if (amount === undefined || amount === null) {
-    return "";
+    return '';
   }
-  return new Intl.NumberFormat("de-DE", {
+  return new Intl.NumberFormat('de-DE', {
     minimumFractionDigits,
     maximumFractionDigits,
   }).format(amount);
@@ -52,10 +52,8 @@ export class NumberParser {
 
   constructor(private readonly locale: string) {
     const parts = Intl.NumberFormat(locale).formatToParts(1111.11);
-    this.groupSymbol =
-      parts.find((part) => part.type === "group")?.value ?? ".";
-    this.decimalSymbol =
-      parts.find((part) => part.type === "decimal")?.value ?? ",";
+    this.groupSymbol = parts.find((part) => part.type === 'group')?.value ?? '.';
+    this.decimalSymbol = parts.find((part) => part.type === 'decimal')?.value ?? ',';
   }
 
   parse(localizedNumber: string): number | null {
@@ -63,29 +61,16 @@ export class NumberParser {
       return null;
     }
 
-    return typeof localizedNumber === "string"
-      ? Number(
-          localizedNumber
-            .replaceAll(this.groupSymbol, "")
-            .replaceAll(this.decimalSymbol, ".")
-        )
+    return typeof localizedNumber === 'string'
+      ? Number(localizedNumber.replaceAll(this.groupSymbol, '').replaceAll(this.decimalSymbol, '.'))
       : localizedNumber;
   }
 
   strip(localizedNumber: string): string {
-    const escapedGroupSymbol = this.groupSymbol.replace(
-      /[.*+?^${}()|[\]\\]/g,
-      "\\$&"
-    );
-    const escapedDecimalSymbol = this.decimalSymbol.replace(
-      /[.*+?^${}()|[\]\\]/g,
-      "\\$&"
-    );
-    const regex = new RegExp(
-      `[^0-9${escapedGroupSymbol}${escapedDecimalSymbol}]`,
-      "g"
-    );
-    return localizedNumber.replace(regex, "");
+    const escapedGroupSymbol = this.groupSymbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escapedDecimalSymbol = this.decimalSymbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`[^0-9${escapedGroupSymbol}${escapedDecimalSymbol}]`, 'g');
+    return localizedNumber.replace(regex, '');
   }
 }
 
@@ -110,20 +95,10 @@ export const loansSorter = <T extends { signDate: Date }>(a: T, b: T) => {
  * @returns A formatted name string
  */
 export function getLenderName(
-  lender: Partial<
-    Pick<
-      Lender,
-      | "type"
-      | "firstName"
-      | "lastName"
-      | "organisationName"
-      | "titlePrefix"
-      | "titleSuffix"
-    >
-  >
+  lender: Partial<Pick<Lender, 'type' | 'firstName' | 'lastName' | 'organisationName' | 'titlePrefix' | 'titleSuffix'>>,
 ): string {
-  if (lender.type === "ORGANISATION") {
-    return lender.organisationName || "";
+  if (lender.type === 'ORGANISATION') {
+    return lender.organisationName || '';
   }
 
   // For PERSON type
@@ -133,7 +108,7 @@ export function getLenderName(
   if (lender.firstName) parts.push(lender.firstName);
   if (lender.lastName) parts.push(lender.lastName);
 
-  const name = parts.join(" ").trim();
+  const name = parts.join(' ').trim();
 
   if (lender.titleSuffix) {
     return `${name}, ${lender.titleSuffix}`;
@@ -148,5 +123,5 @@ export function getLenderName(
  * @returns The value if not an empty string, otherwise null
  */
 export function emptyStringToNull<T>(value: T): T | null {
-  return value === "" ? null : value;
+  return value === '' ? null : value;
 }

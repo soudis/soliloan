@@ -1,43 +1,33 @@
-"use client";
+'use client';
 
-import {
-  Lender,
-  MembershipStatus,
-  NotificationType,
-  Salutation,
-} from "@prisma/client";
-import { useQuery } from "@tanstack/react-query";
-import { ColumnDef } from "@tanstack/react-table";
-import { Pencil, Plus } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Lender, MembershipStatus, NotificationType, Salutation } from '@prisma/client';
+import { useQuery } from '@tanstack/react-query';
+import { ColumnDef } from '@tanstack/react-table';
+import { Pencil, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-import { getLendersByProjectId } from "@/app/actions/lenders";
-import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/ui/data-table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useRouter } from "@/i18n/navigation";
+import { getLendersByProjectId } from '@/app/actions/lenders';
+import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/ui/data-table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useRouter } from '@/i18n/navigation';
 import {
   createColumn,
   createLenderAddressColumn,
   createLenderBankingColumn,
   createLenderEnumBadgeColumn,
   createLenderNameColumn,
-} from "@/lib/table-column-utils";
-import { useProject } from "@/store/project-context";
+} from '@/lib/table-column-utils';
+import { useProject } from '@/store/project-context';
 
 export default function LendersPage() {
   const router = useRouter();
   const { selectedProject } = useProject();
-  const t = useTranslations("dashboard.lenders");
-  const commonT = useTranslations("common");
+  const t = useTranslations('dashboard.lenders');
+  const commonT = useTranslations('common');
 
   const { data: lenders = [], isLoading: loading } = useQuery({
-    queryKey: ["lenders", selectedProject?.id],
+    queryKey: ['lenders', selectedProject?.id],
     queryFn: async () => {
       if (!selectedProject) return [];
       const result = await getLendersByProjectId(selectedProject.id);
@@ -52,37 +42,30 @@ export default function LendersPage() {
   const columns: ColumnDef<Lender>[] = [
     createColumn<Lender>(
       {
-        accessorKey: "lenderNumber",
-        header: "table.lenderNumber",
+        accessorKey: 'lenderNumber',
+        header: 'table.lenderNumber',
       },
-      t
+      t,
     ),
 
     createLenderNameColumn<Lender>(t),
 
-    createLenderEnumBadgeColumn<Lender>(
-      "type",
-      "table.type",
-      "enums.lender.type",
+    createLenderEnumBadgeColumn<Lender>('type', 'table.type', 'enums.lender.type', t, commonT, () => 'outline'),
+
+    createColumn<Lender>(
+      {
+        accessorKey: 'email',
+        header: 'table.email',
+      },
       t,
-      commonT,
-      () => "outline"
     ),
 
     createColumn<Lender>(
       {
-        accessorKey: "email",
-        header: "table.email",
+        accessorKey: 'telNo',
+        header: 'table.telNo',
       },
-      t
-    ),
-
-    createColumn<Lender>(
-      {
-        accessorKey: "telNo",
-        header: "table.telNo",
-      },
-      t
+      t,
     ),
 
     createLenderAddressColumn<Lender>(t),
@@ -90,101 +73,101 @@ export default function LendersPage() {
     createLenderBankingColumn<Lender>(t),
 
     createLenderEnumBadgeColumn<Lender>(
-      "notificationType",
-      "table.notificationType",
-      "enums.lender.notificationType",
+      'notificationType',
+      'table.notificationType',
+      'enums.lender.notificationType',
       t,
       commonT,
-      () => "outline"
+      () => 'outline',
     ),
 
     createLenderEnumBadgeColumn<Lender>(
-      "membershipStatus",
-      "table.membershipStatus",
-      "enums.lender.membershipStatus",
+      'membershipStatus',
+      'table.membershipStatus',
+      'enums.lender.membershipStatus',
       t,
       commonT,
-      () => "outline"
+      () => 'outline',
     ),
 
     createColumn<Lender>(
       {
-        accessorKey: "tag",
-        header: "table.tag",
+        accessorKey: 'tag',
+        header: 'table.tag',
       },
-      t
+      t,
     ),
 
     createLenderEnumBadgeColumn<Lender>(
-      "salutation",
-      "table.salutation",
-      "enums.lender.salutation",
+      'salutation',
+      'table.salutation',
+      'enums.lender.salutation',
       t,
       commonT,
-      () => "outline"
+      () => 'outline',
     ),
   ];
 
   // Define column filters based on data types
   const columnFilters = {
     lenderNumber: {
-      type: "number" as const,
-      label: t("table.lenderNumber"),
+      type: 'number' as const,
+      label: t('table.lenderNumber'),
     },
     type: {
-      type: "select" as const,
-      label: t("table.type"),
+      type: 'select' as const,
+      label: t('table.type'),
       options: [
-        { label: commonT("enums.lender.type.PERSON"), value: "PERSON" },
+        { label: commonT('enums.lender.type.PERSON'), value: 'PERSON' },
         {
-          label: commonT("enums.lender.type.ORGANISATION"),
-          value: "ORGANISATION",
+          label: commonT('enums.lender.type.ORGANISATION'),
+          value: 'ORGANISATION',
         },
       ],
     },
     name: {
-      type: "text" as const,
-      label: t("table.name"),
+      type: 'text' as const,
+      label: t('table.name'),
     },
     email: {
-      type: "text" as const,
-      label: t("table.email"),
+      type: 'text' as const,
+      label: t('table.email'),
     },
     telNo: {
-      type: "text" as const,
-      label: t("table.telNo"),
+      type: 'text' as const,
+      label: t('table.telNo'),
     },
     address: {
-      type: "text" as const,
-      label: t("table.address"),
+      type: 'text' as const,
+      label: t('table.address'),
     },
     banking: {
-      type: "text" as const,
-      label: t("table.banking"),
+      type: 'text' as const,
+      label: t('table.banking'),
     },
     notificationType: {
-      type: "select" as const,
-      label: t("table.notificationType"),
+      type: 'select' as const,
+      label: t('table.notificationType'),
       options: Object.entries(NotificationType).map(([key, value]) => ({
         label: commonT(`enums.lender.notificationType.${key}`),
         value: value,
       })),
     },
     membershipStatus: {
-      type: "select" as const,
-      label: t("table.membershipStatus"),
+      type: 'select' as const,
+      label: t('table.membershipStatus'),
       options: Object.entries(MembershipStatus).map(([key, value]) => ({
         label: commonT(`enums.lender.membershipStatus.${key}`),
         value: value,
       })),
     },
     tag: {
-      type: "text" as const,
-      label: t("table.tag"),
+      type: 'text' as const,
+      label: t('table.tag'),
     },
     salutation: {
-      type: "select" as const,
-      label: t("table.salutation"),
+      type: 'select' as const,
+      label: t('table.salutation'),
       options: Object.entries(Salutation).map(([key, value]) => ({
         label: commonT(`enums.lender.salutation.${key}`),
         value: value,
@@ -218,10 +201,10 @@ export default function LendersPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">{t("title")}</h1>
-        <Button onClick={() => router.push("/lenders/new")}>
+        <h1 className="text-3xl font-bold">{t('title')}</h1>
+        <Button onClick={() => router.push('/lenders/new')}>
           <Plus className="mr-2 h-4 w-4" />
-          {t("new.title")}
+          {t('new.title')}
         </Button>
       </div>
 
@@ -247,13 +230,11 @@ export default function LendersPage() {
                     }}
                   >
                     <Plus className="h-4 w-4" />
-                    <span className="sr-only">
-                      {commonT("ui.actions.createLoan")}
-                    </span>
+                    <span className="sr-only">{commonT('ui.actions.createLoan')}</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{commonT("ui.actions.createLoan")}</p>
+                  <p>{commonT('ui.actions.createLoan')}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -269,13 +250,11 @@ export default function LendersPage() {
                     }}
                   >
                     <Pencil className="h-4 w-4" />
-                    <span className="sr-only">
-                      {commonT("ui.actions.edit")}
-                    </span>
+                    <span className="sr-only">{commonT('ui.actions.edit')}</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{commonT("ui.actions.edit")}</p>
+                  <p>{commonT('ui.actions.edit')}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

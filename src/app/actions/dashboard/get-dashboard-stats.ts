@@ -1,20 +1,16 @@
-"use server";
+'use server';
 
-import { auth } from "@/lib/auth";
-import { calculateLenderFields } from "@/lib/calculations/lender-calculations";
-import {
-  calculateLoanFields,
-  calculateLoanPerYear,
-  getLoanStatus,
-} from "@/lib/calculations/loan-calculations";
-import { db } from "@/lib/db";
-import { LoanStatus } from "@/types/loans";
+import { auth } from '@/lib/auth';
+import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
+import { calculateLoanFields, calculateLoanPerYear, getLoanStatus } from '@/lib/calculations/loan-calculations';
+import { db } from '@/lib/db';
+import { LoanStatus } from '@/types/loans';
 
 export async function getDashboardStats(projectId: string) {
   try {
     const session = await auth();
     if (!session) {
-      return { error: "Unauthorized" };
+      return { error: 'Unauthorized' };
     }
 
     // Check if the user has access to the project
@@ -28,16 +24,14 @@ export async function getDashboardStats(projectId: string) {
     });
 
     if (!project) {
-      return { error: "Project not found" };
+      return { error: 'Project not found' };
     }
 
     // Check if the user has access to the project
-    const hasAccess = project.managers.some(
-      (manager) => manager.id === session.user.id
-    );
+    const hasAccess = project.managers.some((manager) => manager.id === session.user.id);
 
     if (!hasAccess) {
-      return { error: "You do not have access to this project" };
+      return { error: 'You do not have access to this project' };
     }
 
     // Get lender statistics
@@ -115,26 +109,15 @@ export async function getDashboardStats(projectId: string) {
 
     // Calculate average interest rate
     const avgInterestRate =
-      totalLoans > 0
-        ? loans.reduce((sum, loan) => sum + Number(loan.interestRate), 0) /
-          totalLoans
-        : 0;
+      totalLoans > 0 ? loans.reduce((sum, loan) => sum + Number(loan.interestRate), 0) / totalLoans : 0;
 
     // Count loans by status
-    const pendingLoans = loans.filter(
-      (loan) => loan.contractStatus === "PENDING"
-    ).length;
-    const completedLoans = loans.filter(
-      (loan) => loan.contractStatus === "COMPLETED"
-    ).length;
+    const pendingLoans = loans.filter((loan) => loan.contractStatus === 'PENDING').length;
+    const completedLoans = loans.filter((loan) => loan.contractStatus === 'COMPLETED').length;
 
     // Count lenders by type
-    const personLenders = lenders.filter(
-      (lender) => lender.type === "PERSON"
-    ).length;
-    const organisationLenders = lenders.filter(
-      (lender) => lender.type === "ORGANISATION"
-    ).length;
+    const personLenders = lenders.filter((lender) => lender.type === 'PERSON').length;
+    const organisationLenders = lenders.filter((lender) => lender.type === 'ORGANISATION').length;
 
     // Calculate loan status breakdown using the calculation functions
     const today = new Date();
@@ -162,10 +145,8 @@ export async function getDashboardStats(projectId: string) {
         const status = getLoanStatus(loan, today);
         if (status === LoanStatus.ACTIVE) loanStatusBreakdown.active++;
         else if (status === LoanStatus.REPAID) loanStatusBreakdown.repaid++;
-        else if (status === LoanStatus.TERMINATED)
-          loanStatusBreakdown.terminated++;
-        else if (status === LoanStatus.NOTDEPOSITED)
-          loanStatusBreakdown.notDeposited++;
+        else if (status === LoanStatus.TERMINATED) loanStatusBreakdown.terminated++;
+        else if (status === LoanStatus.NOTDEPOSITED) loanStatusBreakdown.notDeposited++;
 
         // Update interest statistics
         totalInterest += Number(calculatedLoan.interest);
@@ -175,7 +156,7 @@ export async function getDashboardStats(projectId: string) {
         totalWithdrawals += Number(calculatedLoan.withdrawals);
         totalNotReclaimed += Number(calculatedLoan.notReclaimed);
       } catch (error) {
-        console.error("Error calculating loan fields:", error);
+        console.error('Error calculating loan fields:', error);
       }
     });
 
@@ -193,11 +174,7 @@ export async function getDashboardStats(projectId: string) {
         const loanStart = loan.signDate ? new Date(loan.signDate) : null;
         const loanEnd = loan.endDate ? new Date(loan.endDate) : null;
 
-        return (
-          (loanStart && loanStart <= yearEnd) ||
-          (loanEnd && loanEnd >= yearStart) ||
-          (!loanStart && !loanEnd)
-        );
+        return (loanStart && loanStart <= yearEnd) || (loanEnd && loanEnd >= yearStart) || (!loanStart && !loanEnd);
       });
 
       // Calculate yearly totals
@@ -214,10 +191,7 @@ export async function getDashboardStats(projectId: string) {
           yearTotalDeposits += Number(calculatedLoan.deposits);
           yearTotalWithdrawals += Number(calculatedLoan.withdrawals);
         } catch (error) {
-          console.error(
-            "Error calculating loan fields for yearly data:",
-            error
-          );
+          console.error('Error calculating loan fields for yearly data:', error);
         }
       });
 
@@ -243,7 +217,7 @@ export async function getDashboardStats(projectId: string) {
         totalLenderInterest += Number(calculatedLender.interest || 0);
         totalLenderBalance += Number(calculatedLender.balance || 0);
       } catch (error) {
-        console.error("Error calculating lender fields:", error);
+        console.error('Error calculating lender fields:', error);
       }
     });
 
@@ -252,11 +226,7 @@ export async function getDashboardStats(projectId: string) {
 
     // Get all years from the earliest loan to the current year
     const earliestYear =
-      loans.length > 0
-        ? Math.min(
-            ...loans.map((loan) => new Date(loan.signDate).getFullYear())
-          )
-        : currentYear - 4;
+      loans.length > 0 ? Math.min(...loans.map((loan) => new Date(loan.signDate).getFullYear())) : currentYear - 4;
 
     for (let year = earliestYear; year <= currentYear; year++) {
       let yearBegin = 0;
@@ -283,10 +253,7 @@ export async function getDashboardStats(projectId: string) {
             yearInterest += Number(yearEntry.interest);
           }
         } catch (error) {
-          console.error(
-            `Error calculating loan per year for loan ${loan.id} in year ${year}:`,
-            error
-          );
+          console.error(`Error calculating loan per year for loan ${loan.id} in year ${year}:`, error);
         }
       });
 
@@ -327,7 +294,7 @@ export async function getDashboardStats(projectId: string) {
       },
     };
   } catch (error) {
-    console.error("Error getting dashboard stats:", error);
-    return { error: "Failed to get dashboard stats" };
+    console.error('Error getting dashboard stats:', error);
+    return { error: 'Failed to get dashboard stats' };
   }
 }

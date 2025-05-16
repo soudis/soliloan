@@ -1,27 +1,27 @@
-import { View, ViewType } from "@prisma/client";
-import { useQueryClient } from "@tanstack/react-query";
-import { Table, VisibilityState } from "@tanstack/react-table";
-import { isEqual } from "lodash";
-import { SlidersHorizontal } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { View, ViewType } from '@prisma/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { Table, VisibilityState } from '@tanstack/react-table';
+import { isEqual } from 'lodash';
+import { SlidersHorizontal } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
 
-import { createView } from "@/app/actions";
-import { deleteView } from "@/app/actions/views";
-import { updateView } from "@/app/actions/views/mutations/update-view";
-import { Button } from "@/components/ui/button";
+import { createView } from '@/app/actions';
+import { deleteView } from '@/app/actions/views';
+import { updateView } from '@/app/actions/views/mutations/update-view';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { useTableStore, ViewState } from "@/store/table-store";
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { useTableStore, ViewState } from '@/store/table-store';
 
-import { DataTableColumnFilters } from "./data-table-column-filters";
-import { SaveViewDialog } from "./save-view-dialog";
-import { ViewManager } from "./view-manager";
+import { DataTableColumnFilters } from './data-table-column-filters';
+import { SaveViewDialog } from './save-view-dialog';
+import { ViewManager } from './view-manager';
 
 interface DataTableHeaderProps<TData> {
   table: Table<TData>;
@@ -29,7 +29,7 @@ interface DataTableHeaderProps<TData> {
   showFilter?: boolean;
   columnFilters?: {
     [key: string]: {
-      type: "text" | "select" | "number" | "date";
+      type: 'text' | 'select' | 'number' | 'date';
       options?: { label: string; value: string }[];
       label?: string;
     };
@@ -52,7 +52,7 @@ export function DataTableHeader<TData>({
   hasActiveFilters,
   state,
 }: DataTableHeaderProps<TData>) {
-  const t = useTranslations("dataTable");
+  const t = useTranslations('dataTable');
   const [showColumnFilters, setShowColumnFilters] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { setState } = useTableStore();
@@ -83,14 +83,14 @@ export function DataTableHeader<TData>({
       }
 
       // Refresh the view list
-      queryClient.invalidateQueries({ queryKey: ["views", viewType] });
+      queryClient.invalidateQueries({ queryKey: ['views', viewType] });
       if (view) {
         setState(viewType, {
           selectedView: view.id,
         });
       }
     } catch (err) {
-      console.error("Error saving view:", err);
+      console.error('Error saving view:', err);
     } finally {
       setIsSaving(false);
     }
@@ -100,24 +100,23 @@ export function DataTableHeader<TData>({
     if (!viewType) return;
 
     await updateView(viewId, { isDefault });
-    queryClient.invalidateQueries({ queryKey: ["views", viewType] });
+    queryClient.invalidateQueries({ queryKey: ['views', viewType] });
   };
 
   const handleViewDelete = async (viewId: string) => {
     if (!viewType) return;
 
     await deleteView(viewId);
-    queryClient.invalidateQueries({ queryKey: ["views", viewType] });
+    queryClient.invalidateQueries({ queryKey: ['views', viewType] });
   };
 
   const viewDirty = useMemo(() => {
-    const view = (views.find((view) => view.id === state.selectedView)
-      ?.data as Partial<ViewState>) ?? {
-      selectedView: "",
+    const view = (views.find((view) => view.id === state.selectedView)?.data as Partial<ViewState>) ?? {
+      selectedView: '',
       columnVisibility: defaultColumnVisibility,
       sorting: [],
       columnFilters: [],
-      globalFilter: "",
+      globalFilter: '',
       pagination: { pageIndex: 0, pageSize: 25 },
     };
 
@@ -136,8 +135,8 @@ export function DataTableHeader<TData>({
         {showFilter && (
           <div className="flex items-center gap-4">
             <Input
-              placeholder={t("globalFilter") || "Search all columns..."}
-              value={state.globalFilter || ""}
+              placeholder={t('globalFilter') || 'Search all columns...'}
+              value={state.globalFilter || ''}
               onChange={(event) =>
                 setState(viewType, {
                   globalFilter: event.target.value,
@@ -159,11 +158,11 @@ export function DataTableHeader<TData>({
                   if (view === null) {
                     // Reset to default state
                     setState(viewType, {
-                      selectedView: "",
+                      selectedView: '',
                       columnVisibility: defaultColumnVisibility,
                       sorting: [],
                       columnFilters: [],
-                      globalFilter: "",
+                      globalFilter: '',
                       pagination: { pageIndex: 0, pageSize: 25 },
                     });
                     return;
@@ -190,11 +189,7 @@ export function DataTableHeader<TData>({
                 }}
                 onViewDelete={handleViewDelete}
               />
-              <SaveViewDialog
-                onSave={handleSaveView}
-                isLoading={isSaving}
-                disabled={!viewDirty}
-              />
+              <SaveViewDialog onSave={handleSaveView} isLoading={isSaving} disabled={!viewDirty} />
             </>
           )}
           {Object.keys(columnFilters).length > 0 && (
@@ -205,17 +200,15 @@ export function DataTableHeader<TData>({
               onClick={() => setShowColumnFilters(!showColumnFilters)}
             >
               <SlidersHorizontal className="mr-2 h-4 w-4" />
-              {t("filters")}
-              {hasActiveFilters() && (
-                <span className="ml-2 flex h-2 w-2 rounded-full bg-primary"></span>
-              )}
+              {t('filters')}
+              {hasActiveFilters() && <span className="ml-2 flex h-2 w-2 rounded-full bg-primary"></span>}
             </Button>
           )}
           {showColumnVisibility && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="h-8">
-                  {t("columns")}
+                  {t('columns')}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -228,9 +221,7 @@ export function DataTableHeader<TData>({
                         key={column.id}
                         className="capitalize"
                         checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                          column.toggleVisibility(!!value)
-                        }
+                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
                       >
                         {columnFilters[column.id]?.label || column.id}
                       </DropdownMenuCheckboxItem>
@@ -241,15 +232,9 @@ export function DataTableHeader<TData>({
           )}
         </div>
       </div>
-      {showColumnFilters &&
-        viewType &&
-        Object.keys(columnFilters).length > 0 && (
-          <DataTableColumnFilters
-            state={state}
-            columnFilters={columnFilters}
-            viewType={viewType}
-          />
-        )}
+      {showColumnFilters && viewType && Object.keys(columnFilters).length > 0 && (
+        <DataTableColumnFilters state={state} columnFilters={columnFilters} viewType={viewType} />
+      )}
     </>
   );
 }

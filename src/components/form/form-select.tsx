@@ -1,9 +1,9 @@
-import { X } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { ReactNode } from "react";
-import { useFormContext } from "react-hook-form";
+import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { ReactNode } from 'react';
+import { useFormContext } from 'react-hook-form';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   FormControl,
   FormDescription,
@@ -11,15 +11,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type SelectOption =
   | {
@@ -27,7 +20,7 @@ type SelectOption =
       label: string;
       disabled?: boolean;
     }
-  | "divider";
+  | 'divider';
 
 interface FormSelectProps {
   name: string;
@@ -37,9 +30,9 @@ interface FormSelectProps {
   hint?: string;
   required?: boolean;
   disabled?: boolean;
-  position?: "popper" | "item-aligned";
-  side?: "top" | "right" | "bottom" | "left";
-  align?: "start" | "center" | "end";
+  position?: 'popper' | 'item-aligned';
+  side?: 'top' | 'right' | 'bottom' | 'left';
+  align?: 'start' | 'center' | 'end';
   customContent?: () => ReactNode;
   clearable?: boolean;
 }
@@ -51,13 +44,13 @@ export function FormSelect({
   options,
   disabled = false,
   hint,
-  position = "popper",
-  side = "bottom",
-  align = "start",
+  position = 'popper',
+  side = 'bottom',
+  align = 'start',
   customContent,
   clearable = false,
 }: FormSelectProps) {
-  const t = useTranslations("common");
+  const t = useTranslations('common');
   const form = useFormContext();
   return (
     <FormFieldWrapper
@@ -69,45 +62,30 @@ export function FormSelect({
           <div className="relative">
             <Select
               disabled={disabled}
-              onValueChange={(value) =>
-                field.onChange(value === "clear" ? "" : value)
-              }
+              onValueChange={(value) => field.onChange(value === 'clear' ? '' : value)}
               value={field.value || undefined}
             >
               <FormControl>
-                <SelectTrigger
-                  className={field.value ? "" : "text-muted-foreground/60"}
-                >
+                <SelectTrigger className={field.value ? '' : 'text-muted-foreground/60'}>
                   <SelectValue placeholder={placeholder} />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent
-                position={position}
-                side={side}
-                align={align}
-                className="max-h-[300px]"
-              >
+              <SelectContent position={position} side={side} align={align} className="max-h-[300px]">
                 {clearable && (
                   <SelectItem value="clear">
-                    <span className="text-muted-foreground/60">
-                      {placeholder ?? t("clear")}
-                    </span>
+                    <span className="text-muted-foreground/60">{placeholder ?? t('clear')}</span>
                   </SelectItem>
                 )}
                 {customContent
                   ? customContent()
                   : options.map((option, index) =>
-                      option === "divider" ? (
+                      option === 'divider' ? (
                         <SelectSeparator key={`divider_${index}`} />
                       ) : (
-                        <SelectItem
-                          key={option.value}
-                          value={option.value}
-                          disabled={option.disabled}
-                        >
+                        <SelectItem key={option.value} value={option.value} disabled={option.disabled}>
                           {option.label}
                         </SelectItem>
-                      )
+                      ),
                     )}
               </SelectContent>
             </Select>
@@ -118,7 +96,7 @@ export function FormSelect({
                 className="absolute right-8 top-1/2 -translate-y-1/2 h-6 w-6"
                 onClick={(e) => {
                   e.preventDefault();
-                  field.onChange("clear");
+                  field.onChange('clear');
                 }}
               >
                 <X className="h-4 w-4" />
@@ -126,11 +104,7 @@ export function FormSelect({
             )}
           </div>
           <FormMessage />
-          {hint && (
-            <FormDescription className="text-sm text-muted-foreground/80">
-              {hint}
-            </FormDescription>
-          )}
+          {hint && <FormDescription className="text-sm text-muted-foreground/80">{hint}</FormDescription>}
         </FormItem>
       )}
     />

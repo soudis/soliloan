@@ -1,27 +1,22 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import { useFormContext } from "react-hook-form";
+import { useTranslations } from 'next-intl';
+import { useFormContext } from 'react-hook-form';
 
-import { FormField } from "@/components/form/form-field";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  FormControl,
-  FormField as FormFieldWrapper,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
-import { FileFormData } from "@/lib/schemas/file";
+import { FormField } from '@/components/form/form-field';
+import { Checkbox } from '@/components/ui/checkbox';
+import { FormControl, FormField as FormFieldWrapper, FormItem, FormLabel } from '@/components/ui/form';
+import { FileFormData } from '@/lib/schemas/file';
 
 export function FileFormFields() {
-  const t = useTranslations("dashboard.files");
+  const t = useTranslations('dashboard.files');
   const form = useFormContext<FileFormData>();
 
   return (
     <>
       <div className="space-y-2">
         <label htmlFor="file" className="text-sm font-medium">
-          {t("file")}
+          {t('file')}
         </label>
         <input
           id="file"
@@ -32,23 +27,19 @@ export function FileFormFields() {
             const file = e.target.files?.[0];
             if (file) {
               // Set the name field to the file name without extension
-              const fileName = file.name.replace(/\.[^/.]+$/, "");
-              form.setValue("name", fileName);
+              const fileName = file.name.replace(/\.[^/.]+$/, '');
+              form.setValue('name', fileName);
             }
           }}
         />
       </div>
 
-      <FormField
-        name="name"
-        label={t("name")}
-        placeholder={t("namePlaceholder")}
-      />
+      <FormField name="name" label={t('name')} placeholder={t('namePlaceholder')} />
 
       <FormField
         name="description"
-        label={t("description")}
-        placeholder={t("descriptionPlaceholder")}
+        label={t('description')}
+        placeholder={t('descriptionPlaceholder')}
         multiline={true}
       />
 
@@ -58,16 +49,11 @@ export function FileFormFields() {
         render={({ field }) => (
           <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
             <FormControl>
-              <Checkbox
-                checked={field.value ?? false}
-                onCheckedChange={field.onChange}
-              />
+              <Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} />
             </FormControl>
             <div className="space-y-1 leading-none">
-              <FormLabel>{t("public")}</FormLabel>
-              <p className="text-sm text-muted-foreground">
-                {t("publicDescription")}
-              </p>
+              <FormLabel>{t('public')}</FormLabel>
+              <p className="text-sm text-muted-foreground">{t('publicDescription')}</p>
             </div>
           </FormItem>
         )}

@@ -1,13 +1,7 @@
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn } from 'react-hook-form';
 
-import { Combobox, ComboboxOption } from "@/components/ui/combobox";
-import {
-  FormControl,
-  FormField as FormFieldWrapper,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Combobox, ComboboxOption } from '@/components/ui/combobox';
+import { FormControl, FormField as FormFieldWrapper, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 interface FormComboboxProps {
   form: UseFormReturn;
@@ -19,14 +13,7 @@ interface FormComboboxProps {
   disabled?: boolean;
 }
 
-export function FormCombobox({
-  form,
-  name,
-  label,
-  placeholder,
-  options,
-  disabled = false,
-}: FormComboboxProps) {
+export function FormCombobox({ form, name, label, placeholder, options, disabled = false }: FormComboboxProps) {
   return (
     <FormFieldWrapper
       control={form.control}

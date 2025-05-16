@@ -1,25 +1,15 @@
-import { Table as TanstackTable, flexRender } from "@tanstack/react-table";
-import { useTranslations } from "next-intl";
+import { Table as TanstackTable, flexRender } from '@tanstack/react-table';
+import { useTranslations } from 'next-intl';
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface DataTableBodyProps<TData> {
   table: TanstackTable<TData>;
   onRowClick?: (row: TData) => void;
 }
 
-export function DataTableBody<TData>({
-  table,
-  onRowClick,
-}: DataTableBodyProps<TData>) {
-  const t = useTranslations("dataTable");
+export function DataTableBody<TData>({ table, onRowClick }: DataTableBodyProps<TData>) {
+  const t = useTranslations('dataTable');
 
   return (
     <div className="rounded-md border">
@@ -34,15 +24,10 @@ export function DataTableBody<TData>({
                     className={
                       header.column.columnDef.meta?.fixed
                         ? 'sticky left-0 right-0 bg-background z-10 before:content-[""] before:absolute before:left-auto before:top-0 before:h-full before:w-[1px] before:bg-border'
-                        : ""
+                        : ''
                     }
                   >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 );
               })}
@@ -54,8 +39,8 @@ export function DataTableBody<TData>({
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-                className={onRowClick ? "cursor-pointer" : ""}
+                data-state={row.getIsSelected() && 'selected'}
+                className={onRowClick ? 'cursor-pointer' : ''}
                 onClick={() => onRowClick?.(row.original)}
               >
                 {row.getVisibleCells().map((cell) => (
@@ -64,7 +49,7 @@ export function DataTableBody<TData>({
                     className={
                       cell.column.columnDef.meta?.fixed
                         ? 'sticky left-auto right-0 bg-background z-10 before:content-[""] before:absolute before:left-auto before:top-0 before:h-full before:w-[1px] before:bg-border'
-                        : ""
+                        : ''
                     }
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -74,11 +59,8 @@ export function DataTableBody<TData>({
             ))
           ) : (
             <TableRow>
-              <TableCell
-                colSpan={table.getAllColumns().length}
-                className="h-24 text-center"
-              >
-                {t("noResults")}
+              <TableCell colSpan={table.getAllColumns().length} className="h-24 text-center">
+                {t('noResults')}
               </TableCell>
             </TableRow>
           )}

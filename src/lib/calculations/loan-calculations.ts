@@ -1,18 +1,12 @@
-import {
-  DurationType,
-  InterestMethod,
-  PaymentType,
-  TerminationType,
-  TransactionType,
-} from "@prisma/client";
-import { Decimal } from "@prisma/client/runtime/library";
-import { omit } from "lodash";
-import moment, { Moment } from "moment";
+import { DurationType, InterestMethod, PaymentType, TerminationType, TransactionType } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
+import { omit } from 'lodash';
+import moment, { Moment } from 'moment';
 
-import { CalculationOptions } from "@/types/calculation";
-import { LoanStatus, LoanWithRelations } from "@/types/loans";
+import { CalculationOptions } from '@/types/calculation';
+import { LoanStatus, LoanWithRelations } from '@/types/loans';
 
-import { transactionSorter } from "../utils";
+import { transactionSorter } from '../utils';
 
 export const isRepaid = (loan: LoanWithRelations, toDate: Date) => {
   // check if all money was paid back until given date
@@ -33,10 +27,7 @@ export const isRepaid = (loan: LoanWithRelations, toDate: Date) => {
 };
 
 export const isLoanTerminated = (loan: LoanWithRelations) => {
-  return (
-    loan.terminationType === TerminationType.TERMINATION &&
-    !!loan.terminationDate
-  );
+  return loan.terminationType === TerminationType.TERMINATION && !!loan.terminationDate;
 };
 
 export const getLoanStatus = (loan: LoanWithRelations, toDate: Date) => {
@@ -53,10 +44,10 @@ export const getLoanStatus = (loan: LoanWithRelations, toDate: Date) => {
 };
 
 const getBaseDays = (method: InterestMethod, date: Moment) => {
-  if (method.startsWith("ACT_ACT")) {
-    return moment(date).endOf("year").dayOfYear();
+  if (method.startsWith('ACT_ACT')) {
+    return moment(date).endOf('year').dayOfYear();
   } else {
-    return parseInt(method.split("_")[1] ?? "360");
+    return parseInt(method.split('_')[1] ?? '360');
   }
 };
 
@@ -65,21 +56,17 @@ export const calculateInterestDaily = (
   toDateParameter: Moment | undefined,
   amount: Decimal,
   rate: Decimal,
-  interestMethod: InterestMethod
+  interestMethod: InterestMethod,
 ) => {
-  const fromDate = fromDateParameter
-    ? fromDateParameter
-    : moment(toDateParameter).startOf("year");
-  const toDate = toDateParameter
-    ? toDateParameter
-    : moment(fromDateParameter).endOf("year");
+  const fromDate = fromDateParameter ? fromDateParameter : moment(toDateParameter).startOf('year');
+  const toDate = toDateParameter ? toDateParameter : moment(fromDateParameter).endOf('year');
   const firstYear = !toDateParameter;
   const lastYear = !fromDateParameter;
   let interestDays = 0;
-  if (interestMethod.startsWith("E30_360")) {
-    if (toDate.isSameOrBefore(moment(fromDate).endOf("month"))) {
+  if (interestMethod.startsWith('E30_360')) {
+    if (toDate.isSameOrBefore(moment(fromDate).endOf('month'))) {
       // if the dates are in the same month
-      interestDays = moment(toDate).diff(fromDate, "days");
+      interestDays = moment(toDate).diff(fromDate, 'days');
     } else {
       // days in first month
       interestDays = Math.max(30 - fromDate.date() + 1, 0);
@@ -92,7 +79,7 @@ export const calculateInterestDaily = (
       interestDays -= !lastYear && !firstYear ? 1 : 0;
     }
   } else {
-    interestDays = toDate.diff(fromDate, "days");
+    interestDays = toDate.diff(fromDate, 'days');
   }
   return new Decimal(amount)
     .times(rate)
@@ -104,26 +91,22 @@ export const calculateInterestDaily = (
 export const calculateLoanPerYear = function (
   loan: LoanWithRelations,
   toDateParameter?: Date,
-  currentTransactionId?: string
+  currentTransactionId?: string,
 ) {
   let toDate = moment(toDateParameter);
   const terminationDate = isRepaid(loan, toDate.toDate());
   // if contract is terminated and the current transaction ID is not the termination transaction only calculate until termination date
-  if (
-    !!terminationDate &&
-    loan.transactions[loan.transactions.length - 1]?.id !== currentTransactionId
-  ) {
+  if (!!terminationDate && loan.transactions[loan.transactions.length - 1]?.id !== currentTransactionId) {
     toDate = moment(terminationDate);
   }
 
-  const method =
-    loan.altInterestMethod ?? loan.lender.project.configuration.interestMethod;
+  const method = loan.altInterestMethod ?? loan.lender.project.configuration.interestMethod;
 
   if (!method) {
-    throw new Error("NO_INTEREST_METHOD");
+    throw new Error('NO_INTEREST_METHOD');
   }
 
-  const compound = method.split("_")[2] === "COMPOUND";
+  const compound = method.split('_')[2] === 'COMPOUND';
   const transactions = loan.transactions.sort(transactionSorter);
   const firstTransaction = transactions[0];
   if (!firstTransaction) {
@@ -158,15 +141,9 @@ export const calculateLoanPerYear = function (
     transactions
       .filter((transaction) => moment(transaction.date).year() === year)
       .forEach((transaction) => {
-        if (
-          toDate.isSameOrAfter(transaction.date) &&
-          currentTransactionId != transaction.id
-        ) {
+        if (toDate.isSameOrAfter(transaction.date) && currentTransactionId != transaction.id) {
           amount = amount.plus(transaction.amount);
-          if (
-            compound ??
-            transaction.type !== TransactionType.INTERESTPAYMENT
-          ) {
+          if (compound ?? transaction.type !== TransactionType.INTERESTPAYMENT) {
             interestBaseAmount = interestBaseAmount.plus(transaction.amount);
             if (amount.lessThanOrEqualTo(1)) {
               terminationDate = moment(transaction.date);
@@ -178,33 +155,25 @@ export const calculateLoanPerYear = function (
                   year === lastYear ? toDate : undefined,
                   new Decimal(transaction.amount),
                   new Decimal(loan.interestRate),
-                  method
-                )
+                  method,
+                ),
               );
             }
           }
           switch (transaction.type) {
             case TransactionType.WITHDRAWAL:
             case TransactionType.TERMINATION:
-              currentYear.withdrawals = currentYear.withdrawals.plus(
-                transaction.amount
-              );
+              currentYear.withdrawals = currentYear.withdrawals.plus(transaction.amount);
               break;
             case TransactionType.DEPOSIT:
-              currentYear.deposits = currentYear.deposits.plus(
-                transaction.amount
-              );
+              currentYear.deposits = currentYear.deposits.plus(transaction.amount);
               break;
             case TransactionType.NOTRECLAIMED:
             case TransactionType.NOTRECLAIMEDPARTIAL:
-              currentYear.notReclaimed = currentYear.notReclaimed.plus(
-                transaction.amount
-              );
+              currentYear.notReclaimed = currentYear.notReclaimed.plus(transaction.amount);
               break;
             case TransactionType.INTERESTPAYMENT:
-              currentYear.interestPaid = currentYear.interestPaid.plus(
-                transaction.amount
-              );
+              currentYear.interestPaid = currentYear.interestPaid.plus(transaction.amount);
               break;
           }
         }
@@ -218,13 +187,11 @@ export const calculateLoanPerYear = function (
           terminationDate ?? toDate,
           currentYear.interestBaseAmount,
           new Decimal(loan.interestRate),
-          method
-        )
+          method,
+        ),
       );
     } else {
-      interest = interest.plus(
-        currentYear.interestBaseAmount.times(loan.interestRate).dividedBy(100)
-      );
+      interest = interest.plus(currentYear.interestBaseAmount.times(loan.interestRate).dividedBy(100));
     }
     currentYear.interest = new Decimal(interest.toFixed(2));
     currentYear.end = new Decimal(amount.plus(currentYear.interest).toFixed(2));
@@ -238,16 +205,10 @@ export const calculateLoanPerYear = function (
         notReclaimed: new Decimal(0),
         interest: new Decimal(0),
         interestPaid: new Decimal(0),
-        interestBaseAmount: interestBaseAmount.plus(
-          compound ? currentYear.interest : 0
-        ),
+        interestBaseAmount: interestBaseAmount.plus(compound ? currentYear.interest : 0),
         interestError: new Decimal(0),
       });
-    } else if (
-      terminationDate &&
-      loan.transactions.at(-1)?.id !== currentTransactionId &&
-      !currentYear.end.equals(0)
-    ) {
+    } else if (terminationDate && loan.transactions.at(-1)?.id !== currentTransactionId && !currentYear.end.equals(0)) {
       // if contract is terminated and there are small rounding numbers from the past correct interest to adjust to a zero end value
       currentYear.interestError = currentYear.interest.minus(currentYear.end);
       currentYear.interest = currentYear.interest.minus(currentYear.end);
@@ -272,10 +233,9 @@ const calculateNumbersToDate = (
   loan: LoanWithRelations,
   toDate: Date | undefined = undefined,
   interestYearParameter: number | undefined = undefined,
-  currentTransactionId: string | undefined = undefined
+  currentTransactionId: string | undefined = undefined,
 ) => {
-  const interestYear =
-    interestYearParameter ?? moment(toDate).subtract(1, "year").year();
+  const interestYear = interestYearParameter ?? moment(toDate).subtract(1, 'year').year();
   const perYear = calculateLoanPerYear(loan, toDate, currentTransactionId);
   return {
     toDate: perYear.reduce(
@@ -286,8 +246,7 @@ const calculateNumbersToDate = (
         notReclaimed: total.notReclaimed.plus(entry.notReclaimed),
         interestPaid: total.interestPaid.plus(entry.interestPaid),
         interest: total.interest.plus(entry.interest),
-        interestOfYear:
-          entry.year === interestYear ? entry.interest : total.interestOfYear,
+        interestOfYear: entry.year === interestYear ? entry.interest : total.interestOfYear,
         interestError: total.interestError.plus(entry.interestError),
       }),
       {
@@ -299,7 +258,7 @@ const calculateNumbersToDate = (
         interest: new Decimal(0),
         interestOfYear: new Decimal(0),
         interestError: new Decimal(0),
-      }
+      },
     ),
     perYear,
   };
@@ -310,20 +269,12 @@ export const getRepayDate = (loan: LoanWithRelations) => {
     case TerminationType.TERMINATION:
       return loan.terminationDate
         ? moment(loan.terminationDate)
-            .add(
-              loan.terminationPeriod,
-              loan.terminationPeriodType === DurationType.MONTHS
-                ? "months"
-                : "years"
-            )
+            .add(loan.terminationPeriod, loan.terminationPeriodType === DurationType.MONTHS ? 'months' : 'years')
             .toDate()
         : null;
     case TerminationType.DURATION:
       return moment(loan.signDate)
-        .add(
-          loan.duration,
-          loan.durationType === DurationType.MONTHS ? "months" : "years"
-        )
+        .add(loan.duration, loan.durationType === DurationType.MONTHS ? 'months' : 'years')
         .toDate();
     case TerminationType.ENDDATE:
       return loan.endDate;
@@ -332,40 +283,23 @@ export const getRepayDate = (loan: LoanWithRelations) => {
   }
 };
 
-const getInterestBookingDate = (
-  year: number,
-  toDate: Date,
-  repaidDate: Date | false | undefined
-) => {
+const getInterestBookingDate = (year: number, toDate: Date, repaidDate: Date | false | undefined) => {
   if (repaidDate && moment(repaidDate).year() === year) {
     return repaidDate;
   }
-  return moment(toDate).year() === year
-    ? moment(toDate).toDate()
-    : moment().set("year", year).endOf("year").toDate();
+  return moment(toDate).year() === year ? moment(toDate).toDate() : moment().set('year', year).endOf('year').toDate();
 };
 
-export function calculateLoanFields<T>(
-  loan: LoanWithRelations & T,
-  options: CalculationOptions = {}
-) {
-  const {
-    toDate = new Date(),
-    interestYear = moment().year(),
-    client = false,
-  } = options ?? {};
+export function calculateLoanFields<T>(loan: LoanWithRelations & T, options: CalculationOptions = {}) {
+  const { toDate = new Date(), interestYear = moment().year(), client = false } = options ?? {};
   const numbers = calculateNumbersToDate(loan, toDate, interestYear);
   const isTerminated = isLoanTerminated(loan);
   const repaidDate = isRepaid(loan, toDate);
 
   return {
     ...loan,
-    notes: client
-      ? loan.notes.filter((note) => !client || note.public)
-      : loan.notes,
-    files: loan.files
-      .filter((file) => !client || file.public)
-      .map((file) => omit(file, "data")),
+    notes: client ? loan.notes.filter((note) => !client || note.public) : loan.notes,
+    files: loan.files.filter((file) => !client || file.public).map((file) => omit(file, 'data')),
     repaidDate: isRepaid(loan, toDate),
     isTerminated,
     repayDate: getRepayDate(loan),
@@ -397,7 +331,7 @@ export function calculateLoanFields<T>(
             amount: numbers.interest.toNumber(),
             paymentType: PaymentType.OTHER,
             loanId: loan.id,
-          }))
+          })),
       )
       .sort(transactionSorter),
   };

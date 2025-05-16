@@ -1,14 +1,8 @@
-import { useFormContext } from "react-hook-form";
+import { useFormContext } from 'react-hook-form';
 
-import {
-  FormControl,
-  FormField as FormFieldWrapper,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { FormControl, FormField as FormFieldWrapper, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 interface FormFieldProps {
   name: string;
@@ -23,7 +17,7 @@ export function FormField({
   name,
   label,
   placeholder,
-  type = "text",
+  type = 'text',
   multiline = false,
   required = false,
 }: FormFieldProps) {
@@ -37,18 +31,9 @@ export function FormField({
           <FormLabel>{label}</FormLabel>
           <FormControl>
             {multiline ? (
-              <Textarea
-                placeholder={placeholder}
-                {...field}
-                required={required}
-              />
+              <Textarea placeholder={placeholder} {...field} required={required} />
             ) : (
-              <Input
-                type={type}
-                placeholder={placeholder}
-                {...field}
-                required={required}
-              />
+              <Input type={type} placeholder={placeholder} {...field} required={required} />
             )}
           </FormControl>
           <FormMessage />

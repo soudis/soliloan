@@ -1,8 +1,8 @@
-import { notFound } from "next/navigation";
-import { NextIntlClientProvider } from "next-intl";
+import { notFound } from 'next/navigation';
+import { NextIntlClientProvider } from 'next-intl';
 
-import { Toaster } from "@/components/ui/sonner";
-import { LOCALES } from "@/i18n/routing";
+import { Toaster } from '@/components/ui/sonner';
+import { LOCALES } from '@/i18n/routing';
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));

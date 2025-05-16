@@ -1,5 +1,5 @@
-import { LenderType } from "@prisma/client";
-import { z } from "zod";
+import { LenderType } from '@prisma/client';
+import { z } from 'zod';
 
 import {
   addressSchema,
@@ -9,7 +9,7 @@ import {
   notificationTypeEnumRequired,
   salutationEnumRequired,
   selectEnumRequired,
-} from "./common";
+} from './common';
 
 // Define the lender form schema based on the Prisma model
 export const lenderFormSchema = z
@@ -39,27 +39,27 @@ export const lenderFormSchema = z
     projectId: z.string(),
   })
   .superRefine((data, ctx) => {
-    if (data.type === "PERSON") {
+    if (data.type === 'PERSON') {
       if (!data.firstName) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "validation.common.required",
-          path: ["firstName"],
+          message: 'validation.common.required',
+          path: ['firstName'],
         });
       }
       if (!data.lastName) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "validation.common.required",
-          path: ["lastName"],
+          message: 'validation.common.required',
+          path: ['lastName'],
         });
       }
-    } else if (data.type === "ORGANISATION") {
+    } else if (data.type === 'ORGANISATION') {
       if (!data.organisationName) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "validation.common.required",
-          path: ["organisationName"],
+          message: 'validation.common.required',
+          path: ['organisationName'],
         });
       }
     }

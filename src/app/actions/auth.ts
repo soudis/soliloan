@@ -1,11 +1,11 @@
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath } from 'next/cache';
 
-import { db } from "@/lib/db";
-import { sendPasswordResetEmail } from "@/lib/email";
-import { generateToken } from "@/lib/token";
-import { hashPassword } from "@/lib/utils/password";
+import { db } from '@/lib/db';
+import { sendPasswordResetEmail } from '@/lib/email';
+import { generateToken } from '@/lib/token';
+import { hashPassword } from '@/lib/utils/password';
 
 /**
  * Set a user's password using a token
@@ -24,15 +24,12 @@ export async function setPassword(token: string, password: string) {
 
     // Check if the user exists
     if (!user) {
-      return { success: false, error: "Invalid or expired token" };
+      return { success: false, error: 'Invalid or expired token' };
     }
 
     // Check if the token has expired
-    if (
-      user.passwordResetTokenExpiresAt &&
-      user.passwordResetTokenExpiresAt < new Date()
-    ) {
-      return { success: false, error: "Token has expired" };
+    if (user.passwordResetTokenExpiresAt && user.passwordResetTokenExpiresAt < new Date()) {
+      return { success: false, error: 'Token has expired' };
     }
 
     // Hash the new password
@@ -49,13 +46,13 @@ export async function setPassword(token: string, password: string) {
     });
 
     // Revalidate the auth pages
-    revalidatePath("/auth/login");
-    revalidatePath("/auth/set-password");
+    revalidatePath('/auth/login');
+    revalidatePath('/auth/set-password');
 
     return { success: true };
   } catch (error) {
-    console.error("Error setting password:", error);
-    return { success: false, error: "Failed to set password" };
+    console.error('Error setting password:', error);
+    return { success: false, error: 'Failed to set password' };
   }
 }
 
@@ -98,16 +95,11 @@ export async function requestPasswordReset(email: string) {
     });
 
     // Send the password reset email with the user's language preference
-    await sendPasswordResetEmail(
-      user.email!,
-      user.name,
-      token,
-      user.language || "de"
-    );
+    await sendPasswordResetEmail(user.email!, user.name, token, user.language || 'de');
 
     return { success: true };
   } catch (error) {
-    console.error("Error requesting password reset:", error);
-    return { success: false, error: "Failed to request password reset" };
+    console.error('Error requesting password reset:', error);
+    return { success: false, error: 'Failed to request password reset' };
   }
 }

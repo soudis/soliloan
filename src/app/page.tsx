@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
 
-import { useRouter } from "@/i18n/navigation";
+import { useRouter } from '@/i18n/navigation';
 
 export default function HomePage() {
   const router = useRouter();
   const { status } = useSession();
 
   useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/");
-    } else if (status === "unauthenticated") {
-      router.push("/auth/login");
+    if (status === 'authenticated') {
+      router.push('/');
+    } else if (status === 'unauthenticated') {
+      router.push('/auth/login');
     }
   }, [status, router]);
 

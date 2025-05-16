@@ -1,6 +1,6 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
-type TabValue = "transactions" | "files" | "notes" | "bookings";
+type TabValue = 'transactions' | 'files' | 'notes' | 'bookings';
 
 interface LoanTabsState {
   activeTabs: Record<string, TabValue>;
@@ -10,7 +10,7 @@ interface LoanTabsState {
 
 export const useLoanTabsStore = create<LoanTabsState>((set, get) => ({
   activeTabs: {},
-  getActiveTab: (loanId) => get().activeTabs[loanId] ?? "transactions", // Default to 'transactions' if no tab is set for the loanId
+  getActiveTab: (loanId) => get().activeTabs[loanId] ?? 'transactions', // Default to 'transactions' if no tab is set for the loanId
   setActiveTab: (loanId, tab) =>
     set((state) => ({
       activeTabs: {

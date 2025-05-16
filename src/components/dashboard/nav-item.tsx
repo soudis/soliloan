@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { LucideIcon } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { LucideIcon } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
-import { cn } from "@/lib/utils";
-import { useAppStore } from "@/store";
+import { cn } from '@/lib/utils';
+import { useAppStore } from '@/store';
 
 interface NavItemProps {
   href: string;
@@ -28,8 +28,8 @@ export function NavItem({ href, icon: Icon, label }: NavItemProps) {
         }
       }}
       className={cn(
-        "flex items-center rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-        isActive && "bg-accent text-accent-foreground"
+        'flex items-center rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+        isActive && 'bg-accent text-accent-foreground',
       )}
     >
       <Icon className="h-5 w-5" />

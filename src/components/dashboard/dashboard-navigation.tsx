@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { Session } from "next-auth";
+import { Session } from 'next-auth';
 
-import { useAppStore } from "@/store";
-import { ProjectProvider } from "@/store/project-context";
+import { useAppStore } from '@/store';
+import { ProjectProvider } from '@/store/project-context';
 
-import { SidebarNav } from "./sidebar-nav";
-import { TopNav } from "./top-nav";
+import { SidebarNav } from './sidebar-nav';
+import { TopNav } from './top-nav';
 
 export default function DashboardNavigation({
   children,
@@ -23,11 +23,7 @@ export default function DashboardNavigation({
 
   return (
     <ProjectProvider>
-      <TopNav
-        session={session}
-        isSidebarOpen={isSidebarOpen}
-        setIsSidebarOpen={toggleSidebar}
-      />
+      <TopNav session={session} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={toggleSidebar} />
 
       <div className="flex h-[calc(100vh-4rem)]">
         <SidebarNav isSidebarOpen={isSidebarOpen} />

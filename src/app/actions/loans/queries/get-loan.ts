@@ -1,17 +1,17 @@
-"use server";
+'use server';
 
-import { Loan } from "@prisma/client";
+import { Loan } from '@prisma/client';
 
-import { auth } from "@/lib/auth";
-import { calculateLoanFields } from "@/lib/calculations/loan-calculations";
-import { db } from "@/lib/db";
-import { LoanWithRelations } from "@/types/loans";
+import { auth } from '@/lib/auth';
+import { calculateLoanFields } from '@/lib/calculations/loan-calculations';
+import { db } from '@/lib/db';
+import { LoanWithRelations } from '@/types/loans';
 
 export async function getLoanById(loanId: string, toDate?: Date) {
   try {
     const session = await auth();
     if (!session) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     // Fetch the loan
@@ -72,28 +72,24 @@ export async function getLoanById(loanId: string, toDate?: Date) {
     });
 
     if (!loan) {
-      throw new Error("Loan not found");
+      throw new Error('Loan not found');
     }
 
     // Check if the user has access to the loan's project
-    const hasAccess = loan.lender.project.managers.some(
-      (manager) => manager.id === session.user.id
-    );
+    const hasAccess = loan.lender.project.managers.some((manager) => manager.id === session.user.id);
 
     if (!hasAccess) {
-      throw new Error("You do not have access to this loan");
+      throw new Error('You do not have access to this loan');
     }
 
     // Calculate virtual fields
-    const loanWithCalculations = calculateLoanFields<
-      Omit<LoanWithRelations, keyof Loan>
-    >(loan, { toDate });
+    const loanWithCalculations = calculateLoanFields<Omit<LoanWithRelations, keyof Loan>>(loan, { toDate });
 
     return { loan: loanWithCalculations };
   } catch (error) {
-    console.error("Error fetching loan:", error);
+    console.error('Error fetching loan:', error);
     return {
-      error: error instanceof Error ? error.message : "Failed to fetch loan",
+      error: error instanceof Error ? error.message : 'Failed to fetch loan',
     };
   }
 }

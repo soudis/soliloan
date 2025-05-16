@@ -1,12 +1,12 @@
-import { render } from "@react-email/render";
-import nodemailer from "nodemailer";
-import React from "react";
+import { render } from '@react-email/render';
+import nodemailer from 'nodemailer';
+import React from 'react';
 
 // Create a transporter using environment variables
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),
-  secure: process.env.SMTP_SECURE === "true",
+  secure: process.env.SMTP_SECURE === 'true',
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASSWORD,
@@ -20,11 +20,7 @@ const transporter = nodemailer.createTransport({
  * @param html React email component to render
  * @returns Promise with the result of the email sending
  */
-export async function sendEmail(
-  to: string,
-  subject: string,
-  html: React.ReactElement
-) {
+export async function sendEmail(to: string, subject: string, html: React.ReactElement) {
   // Render the React email component to HTML
   const htmlContent = render(html);
 
@@ -49,25 +45,23 @@ export async function sendPasswordInvitationEmail(
   to: string,
   name: string,
   token: string,
-  locale: string = "de",
-  projectName: string
+  locale: string = 'de',
+  projectName: string,
 ) {
   const resetUrl = `${process.env.SOLILOAN_URL}/auth/set-password?token=${token}`;
 
   // Import the email template dynamically to avoid SSR issues
-  const { PasswordInvitationEmail } = await import(
-    "@/emails/password-invitation-email"
-  );
+  const { PasswordInvitationEmail } = await import('@/emails/password-invitation-email');
 
   return sendEmail(
     to,
-    "Danke für deinen Direktkredit",
+    'Danke für deinen Direktkredit',
     React.createElement(PasswordInvitationEmail, {
       name,
       resetUrl,
       locale,
       projectName,
-    })
+    }),
   );
 }
 
@@ -79,20 +73,11 @@ export async function sendPasswordInvitationEmail(
  * @param locale User's preferred language (defaults to 'de')
  * @returns Promise with the result of the email sending
  */
-export async function sendPasswordResetEmail(
-  to: string,
-  name: string,
-  token: string,
-  locale: string = "de"
-) {
+export async function sendPasswordResetEmail(to: string, name: string, token: string, locale: string = 'de') {
   const resetUrl = `${process.env.SOLILOAN_URL}/auth/set-password?token=${token}`;
 
   // Import the email template dynamically to avoid SSR issues
-  const { PasswordResetEmail } = await import("@/emails/password-reset-email");
+  const { PasswordResetEmail } = await import('@/emails/password-reset-email');
 
-  return sendEmail(
-    to,
-    "Passwort zurücksetzen",
-    React.createElement(PasswordResetEmail, { name, resetUrl, locale })
-  );
+  return sendEmail(to, 'Passwort zurücksetzen', React.createElement(PasswordResetEmail, { name, resetUrl, locale }));
 }

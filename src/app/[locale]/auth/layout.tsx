@@ -1,30 +1,22 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useTranslations } from "next-intl";
+import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const t = useTranslations("auth");
+  const t = useTranslations('auth');
 
   return (
     <div className="min-h-screen">
       {/* Mobile header */}
       <div className="md:hidden flex items-center justify-center p-6">
         <div className="flex items-center space-x-2">
-          <Image
-            src="/soliloan-logo.webp"
-            alt="Soliloan AI Logo"
-            width={32}
-            height={32}
-            className="h-8 w-8"
-          />
-          <span className="text-xl font-bold text-primary font-comfortaa">
-            Soliloan AI
-          </span>
+          <Image src="/soliloan-logo.webp" alt="Soliloan AI Logo" width={32} height={32} className="h-8 w-8" />
+          <span className="text-xl font-bold text-primary font-comfortaa">Soliloan AI</span>
         </div>
       </div>
 
@@ -35,20 +27,10 @@ export default function AuthLayout({
           <div className="max-w-3xl text-center space-y-6 p-12">
             <div className="px-24 py-20">
               <div className="flex items-center justify-center space-x-6">
-                <Image
-                  src="/soliloan-logo.webp"
-                  alt="Soliloan AI Logo"
-                  width={96}
-                  height={96}
-                  className="h-24 w-24"
-                />
-                <span className="text-5xl font-bold text-primary font-comfortaa">
-                  Soliloan AI
-                </span>
+                <Image src="/soliloan-logo.webp" alt="Soliloan AI Logo" width={96} height={96} className="h-24 w-24" />
+                <span className="text-5xl font-bold text-primary font-comfortaa">Soliloan AI</span>
               </div>
-              <p className="text-2xl text-primary mt-8">
-                {t("branding.description")}
-              </p>
+              <p className="text-2xl text-primary mt-8">{t('branding.description')}</p>
             </div>
           </div>
         </div>

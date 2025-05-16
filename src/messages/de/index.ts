@@ -15,5 +15,5 @@ export default {
   dataTable,
   views,
   logbook,
-  validation
-}; 
+  validation,
+};

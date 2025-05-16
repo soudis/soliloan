@@ -180,6 +180,6 @@
   select:-webkit-autofill:hover,
   select:-webkit-autofill:focus {
     -webkit-box-shadow: 0 0 0px 1000px oklch(1 0 0) inset !important;
-    -webkit-text-fill-color: oklch(0.2 0 0)
+    -webkit-text-fill-color: oklch(0.2 0 0);
   }
 }

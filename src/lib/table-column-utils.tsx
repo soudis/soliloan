@@ -1,17 +1,13 @@
-import { Lender, Loan } from "@prisma/client";
-import { ColumnDef, Row } from "@tanstack/react-table";
-import React from "react";
+import { Lender, Loan } from '@prisma/client';
+import { ColumnDef, Row } from '@tanstack/react-table';
+import React from 'react';
 
-import { Badge } from "@/components/ui/badge";
-import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
-import { formatCurrency, getLenderName } from "@/lib/utils";
+import { Badge } from '@/components/ui/badge';
+import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+import { formatCurrency, getLenderName } from '@/lib/utils';
 
 // Define the custom filter function for compound text fields
-export function compoundTextFilter<T>(
-  row: Row<T>,
-  columnId: string,
-  filterValue: unknown
-) {
+export function compoundTextFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
   const value = row.getValue(columnId);
   if (!value) return false;
 
@@ -23,11 +19,7 @@ export function compoundTextFilter<T>(
 }
 
 // Define the custom filter function for enum fields
-export function enumFilter<T>(
-  row: Row<T>,
-  columnId: string,
-  filterValue: unknown
-) {
+export function enumFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
   const value = row.getValue(columnId);
   if (!value) return false;
 
@@ -36,14 +28,7 @@ export function enumFilter<T>(
 }
 
 // Define the custom filter function type
-export type FilterFn =
-  | "equals"
-  | "contains"
-  | "startsWith"
-  | "endsWith"
-  | "compoundText"
-  | "numberRange"
-  | "enum";
+export type FilterFn = 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'compoundText' | 'numberRange' | 'enum';
 
 type ColumnConfig<T> = ColumnDef<T> & {
   accessorKey: string;
@@ -51,15 +36,10 @@ type ColumnConfig<T> = ColumnDef<T> & {
 };
 
 // Create a basic column definition
-export function createColumn<T>(
-  config: ColumnConfig<T>,
-  t: (key: string) => string
-): ColumnDef<T> {
+export function createColumn<T>(config: ColumnConfig<T>, t: (key: string) => string): ColumnDef<T> {
   return {
     ...config,
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title={t(config.header)} />
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t(config.header)} />,
     sortingFn:
       config.sortingFn ||
       ((rowA, rowB, columnId) => {
@@ -76,7 +56,7 @@ export function createColumn<T>(
 export function createNumberColumn<T>(
   accessorKey: string,
   headerKey: string,
-  t: (key: string) => string
+  t: (key: string) => string,
 ): ColumnDef<T> {
   const column = createColumn<T>(
     {
@@ -87,11 +67,11 @@ export function createNumberColumn<T>(
         return value.toFixed(0);
       },
     },
-    t
+    t,
   );
 
   // Add the filter function after creation
-  column.filterFn = "inNumberRange";
+  column.filterFn = 'inNumberRange';
   return column;
 }
 
@@ -99,7 +79,7 @@ export function createNumberColumn<T>(
 export function createCurrencyColumn<T>(
   accessorKey: string,
   headerKey: string,
-  t: (key: string) => string
+  t: (key: string) => string,
 ): ColumnDef<T> {
   const column = createColumn<T>(
     {
@@ -110,37 +90,33 @@ export function createCurrencyColumn<T>(
         return <div className="text-right">{formatCurrency(value)}</div>;
       },
     },
-    t
+    t,
   );
 
   // Add the filter function after creation
-  column.filterFn = "inNumberRange";
+  column.filterFn = 'inNumberRange';
   return column;
 }
 
 // Create a date column
-export function createDateColumn<T>(
-  accessorKey: string,
-  headerKey: string,
-  t: (key: string) => string
-): ColumnDef<T> {
+export function createDateColumn<T>(accessorKey: string, headerKey: string, t: (key: string) => string): ColumnDef<T> {
   return createColumn<T>(
     {
       accessorKey,
       header: headerKey,
       cell: ({ row }) => {
         const dateStr = row.getValue(accessorKey) as string;
-        if (!dateStr) return "";
+        if (!dateStr) return '';
         try {
           const date = new Date(dateStr);
-          return isNaN(date.getTime()) ? "" : date.toLocaleDateString("de-DE");
+          return isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
-          return "";
+          return '';
         }
       },
     },
-    t
+    t,
   );
 }
 
@@ -148,7 +124,7 @@ export function createDateColumn<T>(
 export function createPercentageColumn<T>(
   accessorKey: string,
   headerKey: string,
-  t: (key: string) => string
+  t: (key: string) => string,
 ): ColumnDef<T> {
   const column = createColumn<T>(
     {
@@ -159,11 +135,11 @@ export function createPercentageColumn<T>(
         return <div className="text-right">{`${value.toFixed(2)}%`}</div>;
       },
     },
-    t
+    t,
   );
 
   // Add the filter function after creation
-  column.filterFn = "inNumberRange";
+  column.filterFn = 'inNumberRange';
   return column;
 }
 
@@ -174,9 +150,7 @@ export function createEnumBadgeColumn<T>(
   enumPrefix: string,
   t: (key: string) => string,
   commonT: (key: string) => string,
-  getBadgeVariant?: (
-    value: string
-  ) => "default" | "secondary" | "destructive" | "outline"
+  getBadgeVariant?: (value: string) => 'default' | 'secondary' | 'destructive' | 'outline',
 ): ColumnDef<T> {
   return createColumn<T>(
     {
@@ -184,13 +158,12 @@ export function createEnumBadgeColumn<T>(
       header: headerKey,
       cell: ({ row }) => {
         const value = row.getValue(accessorKey) as string;
-        if (!value) return "";
+        if (!value) return '';
 
         const enumText = commonT(`${enumPrefix}.${value}`);
 
         // Define badge variant based on status
-        let variant: "default" | "secondary" | "destructive" | "outline" =
-          "default";
+        let variant: 'default' | 'secondary' | 'destructive' | 'outline' = 'default';
 
         if (getBadgeVariant) {
           variant = getBadgeVariant(value);
@@ -205,22 +178,22 @@ export function createEnumBadgeColumn<T>(
         return a.localeCompare(b);
       },
     },
-    t
+    t,
   );
 }
 
 // Create a termination type column
 export function createTerminationTypeColumn<T>(
   t: (key: string) => string,
-  commonT: (key: string) => string
+  commonT: (key: string) => string,
 ): ColumnDef<T> {
   return createColumn<T>(
     {
-      accessorKey: "terminationType",
-      header: "table.terminationType",
+      accessorKey: 'terminationType',
+      header: 'table.terminationType',
       cell: ({ row }) => {
-        const terminationType = row.getValue("terminationType") as string;
-        if (!terminationType) return "";
+        const terminationType = row.getValue('terminationType') as string;
+        if (!terminationType) return '';
 
         return commonT(`enums.loan.terminationType.${terminationType}`);
       },
@@ -231,26 +204,18 @@ export function createTerminationTypeColumn<T>(
         return a - b;
       },
     },
-    t
+    t,
   );
 }
 
 // Create a name column for lenders
 export function createLenderNameColumn<
-  T extends Pick<
-    Lender,
-    | "type"
-    | "firstName"
-    | "lastName"
-    | "organisationName"
-    | "titlePrefix"
-    | "titleSuffix"
-  >,
+  T extends Pick<Lender, 'type' | 'firstName' | 'lastName' | 'organisationName' | 'titlePrefix' | 'titleSuffix'>,
 >(t: (key: string) => string): ColumnDef<T> {
   return createColumn<T>(
     {
-      accessorKey: "name",
-      header: "table.name",
+      accessorKey: 'name',
+      header: 'table.name',
       accessorFn: (row: T) => {
         return getLenderName(row);
       },
@@ -265,46 +230,42 @@ export function createLenderNameColumn<
         return a.localeCompare(b);
       },
     },
-    t
+    t,
   );
 }
 
 // Create an address column for lenders
-export function createLenderAddressColumn<
-  T extends Pick<Lender, "street" | "addon" | "zip" | "place" | "country">,
->(t: (key: string) => string): ColumnDef<T> {
+export function createLenderAddressColumn<T extends Pick<Lender, 'street' | 'addon' | 'zip' | 'place' | 'country'>>(
+  t: (key: string) => string,
+): ColumnDef<T> {
   return createColumn<T>(
     {
-      accessorKey: "address",
-      header: "table.address",
+      accessorKey: 'address',
+      header: 'table.address',
       accessorFn: (row: T) => {
-        const street = row.street || "";
-        const addon = row.addon ? `, ${row.addon}` : "";
-        const zip = row.zip || "";
-        const place = row.place || "";
-        const country = row.country || "";
+        const street = row.street || '';
+        const addon = row.addon ? `, ${row.addon}` : '';
+        const zip = row.zip || '';
+        const place = row.place || '';
+        const country = row.country || '';
 
-        if (!street && !zip && !place && !country) return "";
+        if (!street && !zip && !place && !country) return '';
 
         return `${street}${addon} ${zip} ${place} ${country}`.trim();
       },
       cell: ({ row }) => {
-        const street = row.original.street || "";
-        const addon = row.original.addon ? `, ${row.original.addon}` : "";
-        const zip = row.original.zip || "";
-        const place = row.original.place || "";
-        const country = row.original.country || "";
+        const street = row.original.street || '';
+        const addon = row.original.addon ? `, ${row.original.addon}` : '';
+        const zip = row.original.zip || '';
+        const place = row.original.place || '';
+        const country = row.original.country || '';
 
-        if (!street && !zip && !place && !country) return "";
+        if (!street && !zip && !place && !country) return '';
 
         return (
           <div className="flex flex-col">
-            {street && (
-              <div className="whitespace-nowrap">{`${street}${addon}`}</div>
-            )}
-            {(zip || place || country) && (
-              <div>{`${zip} ${place}${country ? `, ${country}` : ""}`}</div>
-            )}
+            {street && <div className="whitespace-nowrap">{`${street}${addon}`}</div>}
+            {(zip || place || country) && <div>{`${zip} ${place}${country ? `, ${country}` : ''}`}</div>}
           </div>
         );
       },
@@ -315,31 +276,31 @@ export function createLenderAddressColumn<
         return a.localeCompare(b);
       },
     },
-    t
+    t,
   );
 }
 
 // Create a banking column for lenders
-export function createLenderBankingColumn<
-  T extends Pick<Lender, "iban" | "bic">,
->(t: (key: string) => string): ColumnDef<T> {
+export function createLenderBankingColumn<T extends Pick<Lender, 'iban' | 'bic'>>(
+  t: (key: string) => string,
+): ColumnDef<T> {
   return createColumn<T>(
     {
-      accessorKey: "banking",
-      header: "table.banking",
+      accessorKey: 'banking',
+      header: 'table.banking',
       accessorFn: (row: T) => {
-        const iban = row.iban || "";
-        const bic = row.bic || "";
+        const iban = row.iban || '';
+        const bic = row.bic || '';
 
-        if (!iban && !bic) return "";
+        if (!iban && !bic) return '';
 
         return `${iban} ${bic}`.trim();
       },
       cell: ({ row }) => {
-        const iban = row.original.iban || "";
-        const bic = row.original.bic || "";
+        const iban = row.original.iban || '';
+        const bic = row.original.bic || '';
 
-        if (!iban && !bic) return "";
+        if (!iban && !bic) return '';
 
         return (
           <div className="flex flex-col">
@@ -355,7 +316,7 @@ export function createLenderBankingColumn<
         return a.localeCompare(b);
       },
     },
-    t
+    t,
   );
 }
 
@@ -366,9 +327,7 @@ export function createLenderEnumBadgeColumn<T>(
   enumPrefix: string,
   t: (key: string) => string,
   commonT: (key: string) => string,
-  getBadgeVariant?: (
-    value: string
-  ) => "default" | "secondary" | "destructive" | "outline"
+  getBadgeVariant?: (value: string) => 'default' | 'secondary' | 'destructive' | 'outline',
 ): ColumnDef<T> {
   return createColumn<T>(
     {
@@ -376,13 +335,12 @@ export function createLenderEnumBadgeColumn<T>(
       header: headerKey,
       cell: ({ row }) => {
         const value = row.getValue(accessorKey) as string;
-        if (!value) return "";
+        if (!value) return '';
 
         const enumText = commonT(`${enumPrefix}.${value}`);
 
         // Define badge variant based on status
-        let variant: "default" | "secondary" | "destructive" | "outline" =
-          "default";
+        let variant: 'default' | 'secondary' | 'destructive' | 'outline' = 'default';
 
         if (getBadgeVariant) {
           variant = getBadgeVariant(value);
@@ -397,41 +355,33 @@ export function createLenderEnumBadgeColumn<T>(
         return a.localeCompare(b);
       },
     },
-    t
+    t,
   );
 }
 
 // Create a lender name column
 export function createLenderColumn<
   T extends {
-    lender: Pick<
-      Lender,
-      | "organisationName"
-      | "firstName"
-      | "lastName"
-      | "type"
-      | "titlePrefix"
-      | "titleSuffix"
-    >;
+    lender: Pick<Lender, 'organisationName' | 'firstName' | 'lastName' | 'type' | 'titlePrefix' | 'titleSuffix'>;
   },
 >(t: (key: string) => string): ColumnDef<T> {
   return createColumn<T>(
     {
-      accessorKey: "lenderName",
-      header: "table.lenderName",
+      accessorKey: 'lenderName',
+      header: 'table.lenderName',
       accessorFn: (row: T) => {
         const lender = row.lender;
         if (lender.organisationName) {
           return lender.organisationName;
         }
-        return `${lender.firstName || ""} ${lender.lastName || ""}`.trim();
+        return `${lender.firstName || ''} ${lender.lastName || ''}`.trim();
       },
       cell: ({ row }) => {
         const lender = row.original.lender;
         if (lender.organisationName) {
           return lender.organisationName;
         }
-        return `${lender.firstName || ""} ${lender.lastName || ""}`.trim();
+        return `${lender.firstName || ''} ${lender.lastName || ''}`.trim();
       },
       filterFn: compoundTextFilter,
       sortingFn: (rowA, rowB, columnId) => {
@@ -440,7 +390,7 @@ export function createLenderColumn<
         return a.localeCompare(b);
       },
     },
-    t
+    t,
   );
 }
 
@@ -448,52 +398,37 @@ export function createLenderColumn<
 export function createTerminationModalitiesColumn<
   T extends Pick<
     Loan,
-    | "terminationType"
-    | "endDate"
-    | "duration"
-    | "durationType"
-    | "terminationPeriod"
-    | "terminationPeriodType"
+    'terminationType' | 'endDate' | 'duration' | 'durationType' | 'terminationPeriod' | 'terminationPeriodType'
   >,
 >(t: (key: string) => string, commonT: (key: string) => string): ColumnDef<T> {
   return createColumn<T>(
     {
-      id: "terminationModalities",
-      accessorKey: "terminationModalities",
-      header: "table.terminationModalities",
+      id: 'terminationModalities',
+      accessorKey: 'terminationModalities',
+      header: 'table.terminationModalities',
       accessorFn: (row: T) => {
         const terminationType = row.terminationType;
 
-        if (terminationType === "ENDDATE" && row.endDate) {
+        if (terminationType === 'ENDDATE' && row.endDate) {
           try {
             const date = new Date(row.endDate);
-            const formattedDate = isNaN(date.getTime())
-              ? ""
-              : date.toLocaleDateString("de-DE");
+            const formattedDate = isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
             return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${formattedDate}`;
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (e) {
             return commonT(`enums.loan.terminationType.${terminationType}`);
           }
-        } else if (
-          terminationType === "DURATION" &&
-          row.duration &&
-          row.durationType
-        ) {
+        } else if (terminationType === 'DURATION' && row.duration && row.durationType) {
           const durationType =
-            row.durationType === "MONTHS"
-              ? commonT("enums.loan.durationUnit.MONTHS")
-              : commonT("enums.loan.durationUnit.YEARS");
+            row.durationType === 'MONTHS'
+              ? commonT('enums.loan.durationUnit.MONTHS')
+              : commonT('enums.loan.durationUnit.YEARS');
           return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${row.duration} ${durationType}`;
-        } else if (
-          terminationType === "TERMINATION" &&
-          row.terminationPeriod &&
-          row.terminationPeriodType
-        ) {
+        } else if (terminationType === 'TERMINATION' && row.terminationPeriod && row.terminationPeriodType) {
           const periodType =
-            row.terminationPeriodType === "MONTHS"
-              ? commonT("enums.loan.durationUnit.MONTHS")
-              : commonT("enums.loan.durationUnit.YEARS");
+            row.terminationPeriodType === 'MONTHS'
+              ? commonT('enums.loan.durationUnit.MONTHS')
+              : commonT('enums.loan.durationUnit.YEARS');
           return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${row.terminationPeriod} ${periodType}`;
         }
 
@@ -503,36 +438,26 @@ export function createTerminationModalitiesColumn<
         const loan = row.original;
         const terminationType = loan.terminationType;
 
-        if (terminationType === "ENDDATE" && loan.endDate) {
+        if (terminationType === 'ENDDATE' && loan.endDate) {
           try {
             const date = new Date(loan.endDate);
-            const formattedDate = isNaN(date.getTime())
-              ? ""
-              : date.toLocaleDateString("de-DE");
+            const formattedDate = isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
             return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${formattedDate}`;
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (e) {
             return commonT(`enums.loan.terminationType.${terminationType}`);
           }
-        } else if (
-          terminationType === "DURATION" &&
-          loan.duration &&
-          loan.durationType
-        ) {
+        } else if (terminationType === 'DURATION' && loan.duration && loan.durationType) {
           const durationType =
-            loan.durationType === "MONTHS"
-              ? commonT("enums.loan.durationUnit.MONTHS")
-              : commonT("enums.loan.durationUnit.YEARS");
+            loan.durationType === 'MONTHS'
+              ? commonT('enums.loan.durationUnit.MONTHS')
+              : commonT('enums.loan.durationUnit.YEARS');
           return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${loan.duration} ${durationType}`;
-        } else if (
-          terminationType === "TERMINATION" &&
-          loan.terminationPeriod &&
-          loan.terminationPeriodType
-        ) {
+        } else if (terminationType === 'TERMINATION' && loan.terminationPeriod && loan.terminationPeriodType) {
           const periodType =
-            loan.terminationPeriodType === "MONTHS"
-              ? commonT("enums.loan.durationUnit.MONTHS")
-              : commonT("enums.loan.durationUnit.YEARS");
+            loan.terminationPeriodType === 'MONTHS'
+              ? commonT('enums.loan.durationUnit.MONTHS')
+              : commonT('enums.loan.durationUnit.YEARS');
           return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${loan.terminationPeriod} ${periodType}`;
         }
 
@@ -540,6 +465,6 @@ export function createTerminationModalitiesColumn<
       },
       filterFn: compoundTextFilter,
     },
-    t
+    t,
   );
 }

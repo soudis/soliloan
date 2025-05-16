@@ -1,15 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import createIntlMiddleware from "next-intl/middleware";
+import { NextRequest, NextResponse } from 'next/server';
+import createIntlMiddleware from 'next-intl/middleware';
 
-import { LOCALES, routing } from "./i18n/routing";
-import { auth } from "./lib/auth";
+import { LOCALES, routing } from './i18n/routing';
+import { auth } from './lib/auth';
 
-const PUBLIC_PAGES = [
-  "/auth/login",
-  "/auth/forgot-password",
-  "/auth/register",
-  "/auth/set-password",
-];
+const PUBLIC_PAGES = ['/auth/login', '/auth/forgot-password', '/auth/register', '/auth/set-password'];
 
 const handleI18nRouting = createIntlMiddleware(routing);
 
@@ -18,23 +13,17 @@ export async function middleware(request: NextRequest) {
   // ---
   const authResponse = await auth(async (authRequest) => {
     const publicPathnameRegex = RegExp(
-      `^(/(${LOCALES.join("|")}))?(${PUBLIC_PAGES.flatMap((p) =>
-        p === "/" ? ["", "/"] : p
-      ).join("|")})/?$`,
-      "i"
+      `^(/(${LOCALES.join('|')}))?(${PUBLIC_PAGES.flatMap((p) => (p === '/' ? ['', '/'] : p)).join('|')})/?$`,
+      'i',
     );
     const isPublicPage = publicPathnameRegex.test(authRequest.nextUrl.pathname);
 
     if (!authRequest.auth && !isPublicPage) {
       // Redirect to login page if not authenticated and trying to access private page
-      return NextResponse.redirect(
-        new URL("/auth/login", authRequest.nextUrl.origin)
-      );
+      return NextResponse.redirect(new URL('/auth/login', authRequest.nextUrl.origin));
     } else if (authRequest.auth && isPublicPage) {
       // Redirect to root if authenticated and trying to access public page
-      return NextResponse.redirect(
-        new URL("/dashboard", authRequest.nextUrl.origin)
-      );
+      return NextResponse.redirect(new URL('/dashboard', authRequest.nextUrl.origin));
     }
   })(request, {});
 
@@ -68,6 +57,6 @@ export const config = {
     // - /_vercel (Vercel internals)
     // - /static (inside /public)
     // - all files in the public folder
-    "/((?!api|_next|_vercel|static|.*\\..*|favicon.ico).*)",
+    '/((?!api|_next|_vercel|static|.*\\..*|favicon.ico).*)',
   ],
 };

@@ -1,37 +1,37 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-import { getLenderById } from "@/app/actions/lenders";
-import { createLoan } from "@/app/actions/loans";
-import { LoanForm } from "@/components/loans/loan-form";
-import { useRouter } from "@/i18n/navigation";
-import { getLenderName } from "@/lib/utils";
-import { useProject } from "@/store/project-context";
+import { getLenderById } from '@/app/actions/lenders';
+import { createLoan } from '@/app/actions/loans';
+import { LoanForm } from '@/components/loans/loan-form';
+import { useRouter } from '@/i18n/navigation';
+import { getLenderName } from '@/lib/utils';
+import { useProject } from '@/store/project-context';
 
-import type { LoanFormData } from "@/lib/schemas/loan";
+import type { LoanFormData } from '@/lib/schemas/loan';
 
 export default function NewLoanPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { selectedProject } = useProject();
-  const t = useTranslations("dashboard.loans");
-  const commonT = useTranslations("common");
+  const t = useTranslations('dashboard.loans');
+  const commonT = useTranslations('common');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Get the lenderId from the URL search params
-  const lenderId = searchParams.get("lenderId");
+  const lenderId = searchParams.get('lenderId');
 
   // Fetch lender data using React Query if lenderId is provided
   const { data: lender, isLoading: lenderLoading } = useQuery({
-    queryKey: ["lender", lenderId],
+    queryKey: ['lender', lenderId],
     queryFn: async () => {
       if (!lenderId) return null;
       const result = await getLenderById(lenderId);
@@ -65,7 +65,7 @@ export default function NewLoanPage() {
       }
 
       if (!lenderResult.lender) {
-        throw new Error("Lender not found");
+        throw new Error('Lender not found');
       }
 
       // Create the loan using the server action
@@ -76,18 +76,14 @@ export default function NewLoanPage() {
       }
 
       // Show success message
-      toast.success(t("new.form.success"));
+      toast.success(t('new.form.success'));
 
       // Redirect to the loans list page for this project
-      router.push(
-        `/lenders/${result.loan?.lenderId}?highlightLoan=${result.loan?.id}`
-      );
+      router.push(`/lenders/${result.loan?.lenderId}?highlightLoan=${result.loan?.id}`);
     } catch (error) {
-      console.error("Error submitting form:", error);
-      setError(
-        error instanceof Error ? error.message : "An unknown error occurred"
-      );
-      toast.error(t("new.form.error"));
+      console.error('Error submitting form:', error);
+      setError(error instanceof Error ? error.message : 'An unknown error occurred');
+      toast.error(t('new.form.error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -102,17 +98,17 @@ export default function NewLoanPage() {
 
   // Format the title based on whether we have lender data
   const title = lender
-    ? t("new.titleWithLender", {
+    ? t('new.titleWithLender', {
         lenderName: getLenderName(lender),
       })
-    : t("new.title");
+    : t('new.title');
 
   return (
     <LoanForm
       title={title}
-      submitButtonText={commonT("ui.actions.create")}
-      submittingButtonText={commonT("ui.actions.creating")}
-      cancelButtonText={commonT("ui.actions.cancel")}
+      submitButtonText={commonT('ui.actions.create')}
+      submittingButtonText={commonT('ui.actions.creating')}
+      cancelButtonText={commonT('ui.actions.cancel')}
       onSubmit={handleSubmit}
       error={error}
       initialData={initialData}

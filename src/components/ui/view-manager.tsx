@@ -1,17 +1,12 @@
-import { View } from "@prisma/client";
-import { Star, Trash2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect, useRef } from "react";
+import { View } from '@prisma/client';
+import { Star, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useRef } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { ViewState } from "@/store/table-store";
+import { Button } from '@/components/ui/button';
+import { ViewState } from '@/store/table-store';
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu';
 
 interface ViewManagerProps {
   onViewSelect: (view: View | null) => void;
@@ -22,15 +17,8 @@ interface ViewManagerProps {
   viewDirty: boolean;
 }
 
-export function ViewManager({
-  onViewSelect,
-  onViewDelete,
-  onViewDefault,
-  views,
-  state,
-  viewDirty,
-}: ViewManagerProps) {
-  const t = useTranslations("views");
+export function ViewManager({ onViewSelect, onViewDelete, onViewDefault, views, state, viewDirty }: ViewManagerProps) {
+  const t = useTranslations('views');
 
   // Use a ref to store the callback to avoid dependency issues
   const onViewSelectRef = useRef(onViewSelect);
@@ -43,7 +31,7 @@ export function ViewManager({
   useEffect(() => {
     if (views) {
       // Find default view if it exists
-      if (state.selectedView === "init") {
+      if (state.selectedView === 'init') {
         const defaultView = views.find((view: View) => view.isDefault);
         if (defaultView) {
           onViewSelectRef.current(defaultView);
@@ -64,7 +52,7 @@ export function ViewManager({
         onViewSelectRef.current(null); // Switch to default view
       }
     } catch (err) {
-      console.error("Error deleting view:", err);
+      console.error('Error deleting view:', err);
     }
   };
 
@@ -72,11 +60,7 @@ export function ViewManager({
     onViewSelectRef.current(view);
   };
 
-  const handleDefault = async (
-    viewId: string,
-    isDefault: boolean,
-    e: React.MouseEvent
-  ) => {
+  const handleDefault = async (viewId: string, isDefault: boolean, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!onViewDefault) return;
     await onViewDefault(viewId, isDefault);
@@ -85,23 +69,15 @@ export function ViewManager({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={viewDirty ? "italic" : ""}
-        >
+        <Button variant="outline" size="sm" className={viewDirty ? 'italic' : ''}>
           {state.selectedView
-            ? views?.find((v) => v.id === state.selectedView)?.name ||
-              t("loadView")
-            : t("defaultView")}
+            ? views?.find((v) => v.id === state.selectedView)?.name || t('loadView')
+            : t('defaultView')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          onClick={() => handleViewSelect(null)}
-          className="flex items-center justify-between"
-        >
-          <span>{t("defaultView")}</span>
+        <DropdownMenuItem onClick={() => handleViewSelect(null)} className="flex items-center justify-between">
+          <span>{t('defaultView')}</span>
         </DropdownMenuItem>
         {views?.map((view) => (
           <DropdownMenuItem
@@ -114,9 +90,7 @@ export function ViewManager({
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6"
-                onClick={(e) =>
-                  handleDefault(view.id, view.isDefault ? false : true, e)
-                }
+                onClick={(e) => handleDefault(view.id, view.isDefault ? false : true, e)}
               >
                 {view.isDefault ? (
                   <Star className="h-4 w-4 text-primary" />
@@ -127,12 +101,7 @@ export function ViewManager({
             )}
             <span>{view.name}</span>
             {onViewDelete && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={(e) => handleDelete(view.id, e)}
-              >
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => handleDelete(view.id, e)}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             )}

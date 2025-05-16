@@ -1,23 +1,17 @@
-"use client";
+'use client';
 
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 
-import { getProjects } from "@/app/actions/projects";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useProject } from "@/store/project-context";
-import { ProjectWithConfiguration } from "@/types/projects";
+import { getProjects } from '@/app/actions/projects';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useProject } from '@/store/project-context';
+import { ProjectWithConfiguration } from '@/types/projects';
 
 export default function ProjectSelector() {
   const { selectedProject, setSelectedProject } = useProject();
-  const t = useTranslations("navigation");
+  const t = useTranslations('navigation');
   const [projects, setProjects] = useState<ProjectWithConfiguration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +30,7 @@ export default function ProjectSelector() {
           }
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setIsLoading(false);
       }
@@ -62,14 +56,12 @@ export default function ProjectSelector() {
       <Select
         value={selectedProject?.id}
         onValueChange={(value: string) => {
-          const project = projects.find(
-            (p: ProjectWithConfiguration) => p.id === value
-          );
+          const project = projects.find((p: ProjectWithConfiguration) => p.id === value);
           setSelectedProject(project || null);
         }}
       >
         <SelectTrigger className="w-full">
-          <SelectValue placeholder={t("selectProject")} />
+          <SelectValue placeholder={t('selectProject')} />
         </SelectTrigger>
         <SelectContent>
           {projects.map((project: ProjectWithConfiguration) => (

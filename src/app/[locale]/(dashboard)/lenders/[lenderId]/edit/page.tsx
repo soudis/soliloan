@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import { use, useState } from "react";
-import { toast } from "sonner";
+import { useQuery } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
+import { use, useState } from 'react';
+import { toast } from 'sonner';
 
-import { getLenderById, updateLender } from "@/app/actions/lenders";
-import { LenderForm } from "@/components/lenders/lender-form";
-import { useRouter } from "@/i18n/navigation";
-import { useProject } from "@/store/project-context";
+import { getLenderById, updateLender } from '@/app/actions/lenders';
+import { LenderForm } from '@/components/lenders/lender-form';
+import { useRouter } from '@/i18n/navigation';
+import { useProject } from '@/store/project-context';
 
-import type { LenderFormData } from "@/lib/schemas/lender";
+import type { LenderFormData } from '@/lib/schemas/lender';
 
 export default function EditLenderPage({
   params,
@@ -22,7 +22,7 @@ export default function EditLenderPage({
   const { data: session } = useSession();
   const router = useRouter();
   const { selectedProject } = useProject();
-  const t = useTranslations("dashboard.lenders");
+  const t = useTranslations('dashboard.lenders');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,7 +32,7 @@ export default function EditLenderPage({
     isLoading,
     error: queryError,
   } = useQuery({
-    queryKey: ["lender", resolvedParams.lenderId],
+    queryKey: ['lender', resolvedParams.lenderId],
     queryFn: async () => {
       const result = await getLenderById(resolvedParams.lenderId);
       if (result.error) {
@@ -56,7 +56,7 @@ export default function EditLenderPage({
   }
 
   if (queryError) {
-    toast.error(t("edit.form.error"));
+    toast.error(t('edit.form.error'));
     return <div>Error loading lender data</div>;
   }
 
@@ -73,16 +73,14 @@ export default function EditLenderPage({
       }
 
       // Show success message
-      toast.success(t("edit.form.success"));
+      toast.success(t('edit.form.success'));
 
       // Navigate back to the previous page using the router
       router.back();
     } catch (error) {
-      console.error("Error submitting form:", error);
-      setError(
-        error instanceof Error ? error.message : "An unknown error occurred"
-      );
-      toast.error(t("edit.form.error"));
+      console.error('Error submitting form:', error);
+      setError(error instanceof Error ? error.message : 'An unknown error occurred');
+      toast.error(t('edit.form.error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -90,10 +88,10 @@ export default function EditLenderPage({
 
   return (
     <LenderForm
-      title={t("edit.title")}
-      submitButtonText={t("edit.form.submit")}
-      submittingButtonText={t("edit.form.submitting")}
-      cancelButtonText={t("edit.form.cancel")}
+      title={t('edit.title')}
+      submitButtonText={t('edit.form.submit')}
+      submittingButtonText={t('edit.form.submitting')}
+      cancelButtonText={t('edit.form.cancel')}
       onSubmit={handleSubmit}
       initialData={lenderData || undefined}
       isLoading={isSubmitting}

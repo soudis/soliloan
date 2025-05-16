@@ -1,24 +1,10 @@
-import { Entity, Operation } from "@prisma/client";
+import { Entity, Operation } from '@prisma/client';
 
-import { auth } from "@/lib/auth";
+import { auth } from '@/lib/auth';
 
-import type {
-  Configuration,
-  File,
-  Lender,
-  Loan,
-  Note,
-  PrismaClient,
-  Transaction,
-} from "@prisma/client";
+import type { Configuration, File, Lender, Loan, Note, PrismaClient, Transaction } from '@prisma/client';
 
-type EntityData =
-  | Configuration
-  | Lender
-  | Loan
-  | Transaction
-  | Note
-  | Partial<File>;
+type EntityData = Configuration | Lender | Loan | Transaction | Note | Partial<File>;
 
 export interface AuditContext {
   user?: {
@@ -62,11 +48,11 @@ export async function createAuditEntry(
     after: unknown;
     context: Partial<AuditContext>;
     projectId: string;
-  }
+  },
 ) {
   const session = await auth();
   if (!session) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
   return prisma.change.create({
@@ -112,9 +98,7 @@ export function getLoanContext(loan: Loan): Partial<AuditContext> {
   };
 }
 
-export function getTransactionContext(
-  transaction: Transaction
-): Partial<AuditContext> {
+export function getTransactionContext(transaction: Transaction): Partial<AuditContext> {
   return {
     transaction: {
       type: transaction.type,
@@ -134,7 +118,7 @@ export function getFileContext(file: File): Partial<AuditContext> {
 
 export function getChangedFields<T extends EntityData>(
   before: Partial<T>,
-  after: Partial<T>
+  after: Partial<T>,
 ): { before: Partial<T>; after: Partial<T> } {
   const changedFields: { before: Partial<T>; after: Partial<T> } = {
     before: {},

@@ -1,7 +1,4 @@
-export function validationError(
-  message: string,
-  params?: Record<string, unknown>
-) {
+export function validationError(message: string, params?: Record<string, unknown>) {
   return JSON.stringify({
     message,
     params,

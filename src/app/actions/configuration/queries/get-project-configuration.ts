@@ -1,15 +1,15 @@
-"use server";
+'use server';
 
-import moment from "moment";
+import moment from 'moment';
 
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
 
 export async function getConfiguration(projectId: string) {
   try {
     const session = await auth();
     if (!session) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     // Fetch the project
@@ -27,16 +27,14 @@ export async function getConfiguration(projectId: string) {
     });
 
     if (!project) {
-      throw new Error("Project not found");
+      throw new Error('Project not found');
     }
 
     // Check if the user has access to the project
-    const hasAccess = project.managers.some(
-      (manager) => manager.id === session.user.id
-    );
+    const hasAccess = project.managers.some((manager) => manager.id === session.user.id);
 
     if (!hasAccess) {
-      throw new Error("You do not have access to this project");
+      throw new Error('You do not have access to this project');
     }
 
     // Transform the configuration to match the form schema
@@ -59,16 +57,13 @@ export async function getConfiguration(projectId: string) {
           userTheme: project.configuration.userTheme || undefined,
           lenderSalutation: project.configuration.lenderSalutation || undefined,
           lenderCountry: project.configuration.lenderCountry || undefined,
-          lenderNotificationType:
-            project.configuration.lenderNotificationType || undefined,
-          lenderMembershipStatus:
-            project.configuration.lenderMembershipStatus || undefined,
+          lenderNotificationType: project.configuration.lenderNotificationType || undefined,
+          lenderMembershipStatus: project.configuration.lenderMembershipStatus || undefined,
           lenderTags: project.configuration.lenderTags || [],
           interestMethod: project.configuration.interestMethod || undefined,
           altInterestMethods: project.configuration.altInterestMethods || [],
           customLoans: project.configuration.customLoans || false,
-          lenderRequiredFields:
-            project.configuration.lenderRequiredFields || [],
+          lenderRequiredFields: project.configuration.lenderRequiredFields || [],
           logo: project.configuration.logo || undefined,
         }
       : null;
@@ -77,20 +72,14 @@ export async function getConfiguration(projectId: string) {
       configuration,
       hasHistoricTransactions: project.lenders.some((lender) =>
         lender.loans.some(
-          (loan) =>
-            loan.transactions.filter((t) =>
-              moment(t.date).isBefore(moment().startOf("year"))
-            ).length > 0
-        )
+          (loan) => loan.transactions.filter((t) => moment(t.date).isBefore(moment().startOf('year'))).length > 0,
+        ),
       ),
     };
   } catch (error) {
-    console.error("Error fetching project configuration:", error);
+    console.error('Error fetching project configuration:', error);
     return {
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to fetch project configuration",
+      error: error instanceof Error ? error.message : 'Failed to fetch project configuration',
     };
   }
 }

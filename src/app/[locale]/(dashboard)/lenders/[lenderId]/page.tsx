@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus } from "lucide-react";
-import { useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import { use, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Pencil, Plus } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
+import { use, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
-import { getLenderById } from "@/app/actions/lenders";
-import { deleteLoan } from "@/app/actions/loans";
-import { LenderInfoCard } from "@/components/lenders/lender-info-card";
-import { LoanSelector } from "@/components/lenders/loan-selector";
-import { LoanCard } from "@/components/loans/loan-card";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "@/i18n/navigation";
-import { useLenderLoanSelectionStore } from "@/lib/stores/lender-loan-selection-store";
-import { useProject } from "@/store/project-context";
+import { getLenderById } from '@/app/actions/lenders';
+import { deleteLoan } from '@/app/actions/loans';
+import { LenderInfoCard } from '@/components/lenders/lender-info-card';
+import { LoanSelector } from '@/components/lenders/loan-selector';
+import { LoanCard } from '@/components/loans/loan-card';
+import { Button } from '@/components/ui/button';
+import { useRouter } from '@/i18n/navigation';
+import { useLenderLoanSelectionStore } from '@/lib/stores/lender-loan-selection-store';
+import { useProject } from '@/store/project-context';
 
 // Function to fetch lender data using the server action
 const fetchLender = async (lenderId: string) => {
   const result = await getLenderById(lenderId);
 
-  if ("error" in result) {
+  if ('error' in result) {
     throw new Error(result.error);
   }
 
@@ -39,18 +39,17 @@ export default function LenderDetailsPage({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { selectedProject } = useProject();
-  const t = useTranslations("dashboard.lenders");
-  const commonT = useTranslations("common");
+  const t = useTranslations('dashboard.lenders');
+  const commonT = useTranslations('common');
   const queryClient = useQueryClient();
-  const loanT = useTranslations("dashboard.loans");
-  const { getSelectedLoanId, setSelectedLoanId } =
-    useLenderLoanSelectionStore();
+  const loanT = useTranslations('dashboard.loans');
+  const { getSelectedLoanId, setSelectedLoanId } = useLenderLoanSelectionStore();
 
   // State for responsive max tabs
   const [maxTabs, setMaxTabs] = useState(4); // Default for SSR/initial
 
   // Get the loan ID to highlight from the URL query parameter or store
-  const highlightLoanId = searchParams.get("highlightLoan");
+  const highlightLoanId = searchParams.get('highlightLoan');
 
   // Use React Query to fetch lender data
   const {
@@ -58,24 +57,24 @@ export default function LenderDetailsPage({
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["lender", resolvedParams.lenderId],
+    queryKey: ['lender', resolvedParams.lenderId],
     queryFn: () => fetchLender(resolvedParams.lenderId),
     enabled: !!resolvedParams.lenderId,
   });
 
   useEffect(() => {
-    if (highlightLoanId) {
-      setSelectedLoanId(lender?.id ?? "", highlightLoanId);
-      router.replace(`/lenders/${lender?.id}`);
+    if (highlightLoanId && lender) {
+      setSelectedLoanId(lender.id, highlightLoanId);
+      router.replace(`/lenders/${lender.id}`);
     }
   }, [lender, highlightLoanId, setSelectedLoanId, router]);
 
   // Effect to update maxTabs based on screen size
   useEffect(() => {
     const checkSize = () => {
-      if (window.matchMedia("(min-width: 1024px)").matches) {
+      if (window.matchMedia('(min-width: 1024px)').matches) {
         setMaxTabs(4); // lg and up
-      } else if (window.matchMedia("(min-width: 768px)").matches) {
+      } else if (window.matchMedia('(min-width: 768px)').matches) {
         setMaxTabs(3); // md and up
       } else {
         setMaxTabs(2); // sm and down
@@ -83,24 +82,13 @@ export default function LenderDetailsPage({
     };
 
     checkSize(); // Initial check on mount
-    window.addEventListener("resize", checkSize);
+    window.addEventListener('resize', checkSize);
 
     // Cleanup listener on component unmount
-    return () => window.removeEventListener("resize", checkSize);
+    return () => window.removeEventListener('resize', checkSize);
   }, []); // Empty dependency array ensures this runs only on mount and unmount
 
-  // Determine selected Loan ID
-  const currentSelectedLoanId = useMemo(
-    () =>
-      highlightLoanId ??
-      (lender?.loans.some(
-        (loan) => loan.id === getSelectedLoanId(lender?.id ?? "")
-      )
-        ? getSelectedLoanId(lender?.id)
-        : null) ??
-      (lender && lender.loans.length > 0 ? lender.loans[0].id : undefined),
-    [highlightLoanId, lender, getSelectedLoanId]
-  );
+  const selectedLoanId = getSelectedLoanId(lender?.id ?? '') ?? lender?.loans[0]?.id;
 
   // Handler for selecting a loan (from tabs or dropdown)
   const handleSelectLoan = (loanId: string) => {
@@ -110,7 +98,7 @@ export default function LenderDetailsPage({
 
   // Handler for deleting a loan
   const handleDeleteLoan = async (loanId: string) => {
-    const toastId = toast.loading(loanT("delete.loading"));
+    const toastId = toast.loading(loanT('delete.loading'));
 
     try {
       const result = await deleteLoan(loanId);
@@ -120,31 +108,27 @@ export default function LenderDetailsPage({
           id: toastId,
         });
       } else {
-        toast.success(loanT("delete.success"), {
+        toast.success(loanT('delete.success'), {
           id: toastId,
         });
         await queryClient.invalidateQueries({
-          queryKey: ["lender", resolvedParams.lenderId],
+          queryKey: ['lender', resolvedParams.lenderId],
         });
         // Adjust selection after deletion
-        const remainingLoans =
-          lender?.loans.filter((l) => l.id !== loanId) || [];
-        const newSelectedLoanId =
-          remainingLoans.length > 0 ? remainingLoans[0].id : "";
-        setSelectedLoanId(lender?.id ?? "", newSelectedLoanId);
+        const remainingLoans = lender?.loans.filter((l) => l.id !== loanId) || [];
+        const newSelectedLoanId = remainingLoans.length > 0 ? remainingLoans[0].id : '';
+        setSelectedLoanId(lender?.id ?? '', newSelectedLoanId);
       }
     } catch (e) {
-      toast.error(loanT("delete.error"), {
+      toast.error(loanT('delete.error'), {
         id: toastId,
       });
-      console.error("Failed to delete loan:", e);
+      console.error('Failed to delete loan:', e);
     }
   };
 
   // Find the currently selected loan object for display
-  const selectedLoan = lender?.loans.find(
-    (loan) => loan.id === currentSelectedLoanId
-  );
+  const selectedLoan = lender?.loans.find((loan) => loan.id === selectedLoanId);
 
   if (!session) {
     return null;
@@ -159,13 +143,13 @@ export default function LenderDetailsPage({
   }
 
   if (error || !lender) {
-    toast.error(t("details.error"));
+    toast.error(t('details.error'));
     return <div>Error loading lender data</div>;
   }
 
   const lenderName =
-    lender.type === "PERSON"
-      ? `${lender.titlePrefix ? `${lender.titlePrefix} ` : ""}${lender.firstName} ${lender.lastName}${lender.titleSuffix ? ` ${lender.titleSuffix}` : ""}`
+    lender.type === 'PERSON'
+      ? `${lender.titlePrefix ? `${lender.titlePrefix} ` : ''}${lender.firstName} ${lender.lastName}${lender.titleSuffix ? ` ${lender.titleSuffix}` : ''}`
       : lender.organisationName;
 
   return (
@@ -174,24 +158,18 @@ export default function LenderDetailsPage({
         <div>
           <h1 className="text-3xl font-bold">{lenderName}</h1>
           <p className="text-muted-foreground">
-            #{lender.lenderNumber} ·{" "}
-            {commonT(`enums.lender.type.${lender.type}`)} ·{" "}
-            {lender.loans.length} {t("details.loans")}
+            #{lender.lenderNumber} · {commonT(`enums.lender.type.${lender.type}`)} · {lender.loans.length}{' '}
+            {t('details.loans')}
           </p>
         </div>
         <div className="flex items-center space-x-4">
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/lenders/${lender.id}/edit`)}
-          >
+          <Button variant="outline" onClick={() => router.push(`/lenders/${lender.id}/edit`)}>
             <Pencil className="mr-2 h-4 w-4" />
-            {t("details.edit")}
+            {t('details.edit')}
           </Button>
-          <Button
-            onClick={() => router.push(`/loans/new?lenderId=${lender.id}`)}
-          >
+          <Button onClick={() => router.push(`/loans/new?lenderId=${lender.id}`)}>
             <Plus className="mr-2 h-4 w-4" />
-            {t("details.newLoan")}
+            {t('details.newLoan')}
           </Button>
         </div>
       </div>
@@ -200,15 +178,13 @@ export default function LenderDetailsPage({
         {/* Loan Cards Section - Left side on desktop, bottom on mobile */}
         <div className="w-full lg:w-2/3 space-y-0">
           {lender.loans.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              {t("noLoans")}
-            </div>
+            <div className="text-center text-muted-foreground py-8">{t('noLoans')}</div>
           ) : (
             <>
               {/* Loan Selection UI: Use the new LoanSelector component */}
               <LoanSelector
                 loans={lender.loans}
-                selectedLoanId={currentSelectedLoanId}
+                selectedLoanId={selectedLoanId}
                 onSelectLoan={handleSelectLoan}
                 maxTabs={maxTabs}
                 commonT={commonT}
@@ -226,9 +202,7 @@ export default function LenderDetailsPage({
                 // Optional: Show placeholder if no loan is selected and loans exist
                 // This case should ideally be handled by default selection or LoanSelector logic
                 lender.loans.length > 0 && (
-                  <div className="text-center text-muted-foreground py-8">
-                    {t("dropdown.selectPrompt")}
-                  </div>
+                  <div className="text-center text-muted-foreground py-8">{t('dropdown.selectPrompt')}</div>
                 )
               )}
             </>
@@ -237,9 +211,7 @@ export default function LenderDetailsPage({
 
         {/* Lender Information Section - Right side on desktop, top on mobile */}
         <div className="w-full lg:w-1/3 mt-6">
-          <h2 className="text-2xl font-semibold mb-4">
-            {t("details.lenderInfo")}
-          </h2>
+          <h2 className="text-2xl font-semibold mb-4">{t('details.lenderInfo')}</h2>
           <LenderInfoCard lender={lender} />
         </div>
       </div>

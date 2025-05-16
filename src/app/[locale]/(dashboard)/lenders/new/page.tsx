@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-import { createLender } from "@/app/actions/lenders";
-import { LenderForm } from "@/components/lenders/lender-form";
-import { useRouter } from "@/i18n/navigation";
-import { useProject } from "@/store/project-context";
+import { createLender } from '@/app/actions/lenders';
+import { LenderForm } from '@/components/lenders/lender-form';
+import { useRouter } from '@/i18n/navigation';
+import { useProject } from '@/store/project-context';
 
-import type { LenderFormData } from "@/lib/schemas/lender";
+import type { LenderFormData } from '@/lib/schemas/lender';
 
 export default function NewLenderPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const { selectedProject } = useProject();
-  const t = useTranslations("dashboard.lenders");
-  const commonT = useTranslations("common");
+  const t = useTranslations('dashboard.lenders');
+  const commonT = useTranslations('common');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -41,16 +41,14 @@ export default function NewLenderPage() {
       }
 
       // Show success message
-      toast.success(t("new.form.success"));
+      toast.success(t('new.form.success'));
 
       // Redirect to the lenders list page for this project
       router.push(`/lenders/${result.lender?.id}`);
     } catch (error) {
-      console.error("Error submitting form:", error);
-      setError(
-        error instanceof Error ? error.message : "An unknown error occurred"
-      );
-      toast.error(t("new.form.error"));
+      console.error('Error submitting form:', error);
+      setError(error instanceof Error ? error.message : 'An unknown error occurred');
+      toast.error(t('new.form.error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -58,10 +56,10 @@ export default function NewLenderPage() {
 
   return (
     <LenderForm
-      title={t("new.title")}
-      submitButtonText={commonT("ui.actions.create")}
-      submittingButtonText={commonT("ui.actions.creating")}
-      cancelButtonText={commonT("ui.actions.cancel")}
+      title={t('new.title')}
+      submitButtonText={commonT('ui.actions.create')}
+      submittingButtonText={commonT('ui.actions.creating')}
+      cancelButtonText={commonT('ui.actions.cancel')}
       onSubmit={handleSubmit}
       error={error}
       isLoading={isSubmitting}

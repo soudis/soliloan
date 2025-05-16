@@ -1,26 +1,26 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
-import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import { PrismaClient } from '@prisma/client';
+import NextAuth from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
 
-import { verifyPassword } from "./utils/password";
+import { verifyPassword } from './utils/password';
 
 const db = new PrismaClient();
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
-    signIn: "/auth/login",
+    signIn: '/auth/login',
   },
   session: {
-    strategy: "jwt", //(1)
+    strategy: 'jwt', //(1)
   },
   adapter: PrismaAdapter(db),
   providers: [
     CredentialsProvider({
-      name: "Credentials",
+      name: 'Credentials',
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
         const user = await db.user.findUnique({
@@ -30,12 +30,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             lenders: true,
           },
         });
-        if (
-          !user ||
-          !user.password ||
-          !verifyPassword(credentials.password as string, user.password)
-        ) {
-          throw new Error("User not found");
+        if (!user || !user.password || !verifyPassword(credentials.password as string, user.password)) {
+          throw new Error('User not found');
         }
         await db.user.update({
           where: { id: user.id },
@@ -48,8 +44,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           isManager: user.managerOf.length > 0,
           managerOf: user.managerOf.map((u) => u.id),
           loanedToProjects: [...new Set(user.lenders.map((l) => l.projectId))],
-          language:
-            user.language ?? process.env.DIRECTLOAN_DEFAULT_LANGUAGE ?? "de",
+          language: user.language ?? process.env.DIRECTLOAN_DEFAULT_LANGUAGE ?? 'de',
         };
       },
     }),
@@ -66,7 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async jwt({ session, token, user, account }) {
-      if (account && account.type === "credentials") {
+      if (account && account.type === 'credentials') {
         //(2)
         token.user = user;
       }

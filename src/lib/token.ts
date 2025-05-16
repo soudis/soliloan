@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from 'crypto';
 
 /**
  * Generate a secure random token for password reset
@@ -6,5 +6,5 @@ import crypto from "crypto";
  * @returns A secure random token
  */
 export function generateToken(length = 32): string {
-  return crypto.randomBytes(length).toString("hex");
+  return crypto.randomBytes(length).toString('hex');
 }

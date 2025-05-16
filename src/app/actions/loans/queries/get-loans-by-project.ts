@@ -1,17 +1,17 @@
-"use server";
+'use server';
 
-import { Loan } from "@prisma/client";
+import { Loan } from '@prisma/client';
 
-import { auth } from "@/lib/auth";
-import { calculateLoanFields } from "@/lib/calculations/loan-calculations";
-import { db } from "@/lib/db";
-import { LoanWithRelations } from "@/types/loans";
+import { auth } from '@/lib/auth';
+import { calculateLoanFields } from '@/lib/calculations/loan-calculations';
+import { db } from '@/lib/db';
+import { LoanWithRelations } from '@/types/loans';
 
 export async function getLoansByProjectId(projectId: string) {
   try {
     const session = await auth();
     if (!session) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     // Check if the user has access to the project
@@ -25,16 +25,14 @@ export async function getLoansByProjectId(projectId: string) {
     });
 
     if (!project) {
-      throw new Error("Project not found");
+      throw new Error('Project not found');
     }
 
     // Check if the user has access to the project
-    const hasAccess = project.managers.some(
-      (manager) => manager.id === session.user.id
-    );
+    const hasAccess = project.managers.some((manager) => manager.id === session.user.id);
 
     if (!hasAccess) {
-      throw new Error("You do not have access to this project");
+      throw new Error('You do not have access to this project');
     }
 
     // Fetch all loans for the project
@@ -96,15 +94,13 @@ export async function getLoansByProjectId(projectId: string) {
     });
 
     // Calculate virtual fields for each loan
-    const loansWithCalculations = loans.map((loan) =>
-      calculateLoanFields<Omit<LoanWithRelations, keyof Loan>>(loan)
-    );
+    const loansWithCalculations = loans.map((loan) => calculateLoanFields<Omit<LoanWithRelations, keyof Loan>>(loan));
 
     return { loans: loansWithCalculations };
   } catch (error) {
-    console.error("Error fetching loans:", error);
+    console.error('Error fetching loans:', error);
     return {
-      error: error instanceof Error ? error.message : "Failed to fetch loans",
+      error: error instanceof Error ? error.message : 'Failed to fetch loans',
     };
   }
 }

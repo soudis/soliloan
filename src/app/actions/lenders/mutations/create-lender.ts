@@ -1,23 +1,19 @@
-"use server";
+'use server';
 
-import { Country, Entity, Language, Operation } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { Country, Entity, Language, Operation } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 
-import {
-  createAuditEntry,
-  getLenderContext,
-  removeNullFields,
-} from "@/lib/audit-trail";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { LenderFormData } from "@/lib/schemas/lender";
-import { getLenderName } from "@/lib/utils";
+import { createAuditEntry, getLenderContext, removeNullFields } from '@/lib/audit-trail';
+import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { LenderFormData } from '@/lib/schemas/lender';
+import { getLenderName } from '@/lib/utils';
 
 export async function createLender(data: LenderFormData) {
   try {
     const session = await auth();
     if (!session) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     // Check if the user has access to the project
@@ -32,16 +28,14 @@ export async function createLender(data: LenderFormData) {
     });
 
     if (!project) {
-      throw new Error("Project not found");
+      throw new Error('Project not found');
     }
 
     // Check if the user has access to the project
-    const hasAccess = project.managers.some(
-      (manager) => manager.id === session.user.id
-    );
+    const hasAccess = project.managers.some((manager) => manager.id === session.user.id);
 
     if (!hasAccess) {
-      throw new Error("You do not have access to this project");
+      throw new Error('You do not have access to this project');
     }
 
     // Create the lender
@@ -101,9 +95,9 @@ export async function createLender(data: LenderFormData) {
 
     return { lender };
   } catch (error) {
-    console.error("Error creating lender:", error);
+    console.error('Error creating lender:', error);
     return {
-      error: error instanceof Error ? error.message : "Failed to create lender",
+      error: error instanceof Error ? error.message : 'Failed to create lender',
     };
   }
 }

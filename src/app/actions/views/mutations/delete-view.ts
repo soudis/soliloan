@@ -1,15 +1,15 @@
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath } from 'next/cache';
 
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
 
 export async function deleteView(viewId: string) {
   try {
     const session = await auth();
     if (!session) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     // Fetch the view
@@ -20,12 +20,12 @@ export async function deleteView(viewId: string) {
     });
 
     if (!view) {
-      throw new Error("View not found");
+      throw new Error('View not found');
     }
 
     // Check if the user has access to the view
     if (view.userId !== session.user.id) {
-      throw new Error("You do not have access to this view");
+      throw new Error('You do not have access to this view');
     }
 
     // Delete the view
@@ -40,9 +40,9 @@ export async function deleteView(viewId: string) {
 
     return { success: true };
   } catch (error) {
-    console.error("Error deleting view:", error);
+    console.error('Error deleting view:', error);
     return {
-      error: error instanceof Error ? error.message : "Failed to delete view",
+      error: error instanceof Error ? error.message : 'Failed to delete view',
     };
   }
 }

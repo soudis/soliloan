@@ -1,11 +1,7 @@
-import { PaymentType, TransactionType } from "@prisma/client";
-import { z } from "zod";
+import { PaymentType, TransactionType } from '@prisma/client';
+import { z } from 'zod';
 
-import {
-  createDateSchema,
-  createNumberSchemaRequired,
-  selectEnumRequired,
-} from "./common";
+import { createDateSchema, createNumberSchemaRequired, selectEnumRequired } from './common';
 
 // Transaction type enum
 export const transactionTypeEnum = selectEnumRequired(TransactionType);

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   BarElement,
@@ -12,24 +12,15 @@ import {
   PointElement,
   Title,
   Tooltip,
-} from "chart.js";
-import { useTranslations } from "next-intl";
-import { Chart } from "react-chartjs-2";
+} from 'chart.js';
+import { useTranslations } from 'next-intl';
+import { Chart } from 'react-chartjs-2';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/utils';
 
 // Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend);
 
 interface YearlyDataItem {
   year: number;
@@ -51,7 +42,7 @@ interface YearlyDataChartProps {
 }
 
 export function YearlyDataChart({ data }: YearlyDataChartProps) {
-  const t = useTranslations("dashboard");
+  const t = useTranslations('dashboard');
 
   // First, calculate the yearly changes (net deposits and interest)
   const yearlyChanges = data.map((item) => ({
@@ -75,58 +66,58 @@ export function YearlyDataChart({ data }: YearlyDataChartProps) {
   });
 
   // Prepare data for the chart
-  const chartData: ChartData<"bar", number[], string> = {
+  const chartData: ChartData<'bar', number[], string> = {
     labels: processedData.map((item) => item.year.toString()),
     datasets: [
       {
-        type: "bar" as const,
-        label: t("charts.balance"),
+        type: 'bar' as const,
+        label: t('charts.balance'),
         data: processedData.map((item) => item.balance),
-        borderColor: "#8884d8",
-        backgroundColor: "rgba(136, 132, 216, 0.1)",
+        borderColor: '#8884d8',
+        backgroundColor: 'rgba(136, 132, 216, 0.1)',
         borderWidth: 2,
-        yAxisID: "y",
+        yAxisID: 'y',
         order: 1,
       },
       {
-        type: "bar" as const,
-        label: t("charts.netDeposits"),
+        type: 'bar' as const,
+        label: t('charts.netDeposits'),
         data: processedData.map((item) => item.netDeposits),
-        backgroundColor: "#82ca9d",
-        borderColor: "#82ca9d",
+        backgroundColor: '#82ca9d',
+        borderColor: '#82ca9d',
         borderWidth: 1,
-        yAxisID: "y1",
+        yAxisID: 'y1',
         order: 2,
       },
       {
-        type: "bar" as const,
-        label: t("charts.interest"),
+        type: 'bar' as const,
+        label: t('charts.interest'),
         data: processedData.map((item) => item.interest),
-        backgroundColor: "#ffc658",
-        borderColor: "#ffc658",
+        backgroundColor: '#ffc658',
+        borderColor: '#ffc658',
         borderWidth: 1,
-        yAxisID: "y1",
+        yAxisID: 'y1',
         order: 3,
       },
     ],
   };
 
   // Chart options
-  const options: ChartOptions<"bar"> = {
+  const options: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
-      mode: "index" as const,
+      mode: 'index' as const,
       intersect: false,
     },
     plugins: {
       legend: {
-        position: "bottom" as const,
+        position: 'bottom' as const,
       },
       tooltip: {
         callbacks: {
           label: function (context) {
-            const label = context.dataset.label || "";
+            const label = context.dataset.label || '';
             const value = Number(context.raw) || 0;
             return `${label}: ${formatCurrency(value)}`;
           },
@@ -135,12 +126,12 @@ export function YearlyDataChart({ data }: YearlyDataChartProps) {
     },
     scales: {
       y: {
-        type: "linear" as const,
+        type: 'linear' as const,
         display: true,
-        position: "left" as const,
+        position: 'left' as const,
         title: {
           display: true,
-          text: t("charts.balance"),
+          text: t('charts.balance'),
         },
         ticks: {
           callback: function (value) {
@@ -149,12 +140,12 @@ export function YearlyDataChart({ data }: YearlyDataChartProps) {
         },
       },
       y1: {
-        type: "linear" as const,
+        type: 'linear' as const,
         display: true,
-        position: "right" as const,
+        position: 'right' as const,
         title: {
           display: true,
-          text: t("charts.yearlyChanges"),
+          text: t('charts.yearlyChanges'),
         },
         grid: {
           drawOnChartArea: false,
@@ -171,7 +162,7 @@ export function YearlyDataChart({ data }: YearlyDataChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("charts.yearlyBalance")}</CardTitle>
+        <CardTitle>{t('charts.yearlyBalance')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-80">

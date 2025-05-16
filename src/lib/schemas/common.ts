@@ -9,89 +9,71 @@ import {
   NotificationType,
   Salutation,
   ViewType,
-} from "@prisma/client";
-import { z } from "zod";
+} from '@prisma/client';
+import { z } from 'zod';
 
-import { isValidIban } from "@/lib/utils/iban";
+import { isValidIban } from '@/lib/utils/iban';
 
-import { NumberParser } from "../utils";
-import { validationError } from "../utils/validation";
+import { NumberParser } from '../utils';
+import { validationError } from '../utils/validation';
 
 // Generic number schemas
-export const createNumberSchema = (
-  min?: number,
-  errorMessage = "validation.common.required"
-) => {
+export const createNumberSchema = (min?: number, errorMessage = 'validation.common.required') => {
   return min
     ? z.preprocess(
-        (val) => (val === "" ? null : Number(val)),
-        z.coerce
-          .number({ message: errorMessage })
-          .min(min, validationError("validation.common.numberMin", { min }))
+        (val) => (val === '' ? null : Number(val)),
+        z.coerce.number({ message: errorMessage }).min(min, validationError('validation.common.numberMin', { min })),
       )
-    : z.preprocess(
-        (val) => (val === "" ? null : Number(val)),
-        z.coerce.number({ message: errorMessage })
-      );
+    : z.preprocess((val) => (val === '' ? null : Number(val)), z.coerce.number({ message: errorMessage }));
 };
 
-export const createNumberSchemaRequired = (
-  min?: number,
-  errorMessage = "validation.common.required"
-) => {
-  const parser = new NumberParser("de-DE");
+export const createNumberSchemaRequired = (min?: number, errorMessage = 'validation.common.required') => {
+  const parser = new NumberParser('de-DE');
   return min
     ? z.preprocess(
-        (val) => (val === "" ? null : parser.parse(val as string)),
+        (val) => (val === '' ? null : parser.parse(val as string)),
         z
           .number({ message: errorMessage })
-          .min(min, validationError("validation.common.numberMin", { min }))
-          .refine((val) => val !== null, { message: errorMessage })
+          .min(min, validationError('validation.common.numberMin', { min }))
+          .refine((val) => val !== null, { message: errorMessage }),
       )
     : z.preprocess(
-        (val) => (val === "" ? null : parser.parse(val as string)),
-        z
-          .number({ message: errorMessage })
-          .refine((val) => val !== null, { message: errorMessage })
+        (val) => (val === '' ? null : parser.parse(val as string)),
+        z.number({ message: errorMessage }).refine((val) => val !== null, { message: errorMessage }),
       );
 };
 
 export const selectEnumRequired = <T extends Record<string, string>>(
   enumObj: T,
-  errorMessage = "validation.common.required"
+  errorMessage = 'validation.common.required',
 ) => {
   return z.preprocess(
-    (val) => (val === "" || val === "clear" ? null : val),
-    z.nativeEnum(enumObj, { message: errorMessage })
+    (val) => (val === '' || val === 'clear' ? null : val),
+    z.nativeEnum(enumObj, { message: errorMessage }),
   );
 };
-export const selectEnumOptional = <T extends Record<string, string>>(
-  enumObj: T
-) => {
+export const selectEnumOptional = <T extends Record<string, string>>(enumObj: T) => {
   return z.preprocess(
-    (val) => (val === "" || val === "clear" ? null : val),
-    z.nativeEnum(enumObj).optional().nullable()
+    (val) => (val === '' || val === 'clear' ? null : val),
+    z.nativeEnum(enumObj).optional().nullable(),
   );
 };
 
-export const requiredNumberSchema = createNumberSchema().refine(
-  (value) => value !== null,
-  {
-    message: "validation.common.required",
-  }
-);
+export const requiredNumberSchema = createNumberSchema().refine((value) => value !== null, {
+  message: 'validation.common.required',
+});
 export const optionalNumberSchema = createNumberSchema().optional().nullable();
 
 // Generic date schemas
 export const createDateSchema = (required = true) => {
   return required
     ? z.preprocess(
-        (val) => (val === "" ? null : new Date(val as string | Date)),
-        z.date({ message: "validation.common.date" })
+        (val) => (val === '' ? null : new Date(val as string | Date)),
+        z.date({ message: 'validation.common.date' }),
       )
     : z.preprocess(
-        (val) => (val === "" ? null : new Date(val as string | Date)),
-        z.date({ message: "validation.common.date" }).optional().nullable()
+        (val) => (val === '' ? null : new Date(val as string | Date)),
+        z.date({ message: 'validation.common.date' }).optional().nullable(),
       );
 };
 
@@ -107,41 +89,41 @@ export const validateAddressOptional = (
     addon?: string | null;
     zip?: string | null;
     place?: string | null;
-    country?: Country | null | "";
+    country?: Country | null | '';
   },
-  ctx: z.RefinementCtx
+  ctx: z.RefinementCtx,
 ) => {
   const hasAnyField =
-    (data.street && data.street !== "") ||
-    (data.zip && data.zip !== "") ||
-    (data.place && data.place !== "") ||
-    (data.addon && data.addon !== "");
-  if (hasAnyField && (!data.street || data.street === "")) {
+    (data.street && data.street !== '') ||
+    (data.zip && data.zip !== '') ||
+    (data.place && data.place !== '') ||
+    (data.addon && data.addon !== '');
+  if (hasAnyField && (!data.street || data.street === '')) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "validation.common.addressComplete",
-      path: ["street"],
+      message: 'validation.common.addressComplete',
+      path: ['street'],
     });
   }
-  if (hasAnyField && (!data.zip || data.zip === "")) {
+  if (hasAnyField && (!data.zip || data.zip === '')) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "validation.common.addressComplete",
-      path: ["zip"],
+      message: 'validation.common.addressComplete',
+      path: ['zip'],
     });
   }
-  if (hasAnyField && (!data.place || data.place === "")) {
+  if (hasAnyField && (!data.place || data.place === '')) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "validation.common.addressComplete",
-      path: ["place"],
+      message: 'validation.common.addressComplete',
+      path: ['place'],
     });
   }
   if (hasAnyField && (!data.country || data.country === null)) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "validation.common.addressComplete",
-      path: ["country"],
+      message: 'validation.common.addressComplete',
+      path: ['country'],
     });
   }
 };
@@ -152,36 +134,36 @@ export const validateAddressRequired = (
     addon?: string | null;
     zip?: string | null;
     place?: string | null;
-    country?: Country | null | "";
+    country?: Country | null | '';
   },
-  ctx: z.RefinementCtx
+  ctx: z.RefinementCtx,
 ) => {
-  if (!data.street || data.street === "") {
+  if (!data.street || data.street === '') {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "validation.common.required",
-      path: ["street"],
+      message: 'validation.common.required',
+      path: ['street'],
     });
   }
-  if (!data.zip || data.zip === "") {
+  if (!data.zip || data.zip === '') {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "validation.common.required",
-      path: ["zip"],
+      message: 'validation.common.required',
+      path: ['zip'],
     });
   }
-  if (!data.place || data.place === "") {
+  if (!data.place || data.place === '') {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "validation.common.required",
-      path: ["place"],
+      message: 'validation.common.required',
+      path: ['place'],
     });
   }
   if (!data.country || data.country === null) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "validation.common.required",
-      path: ["country"],
+      message: 'validation.common.required',
+      path: ['country'],
     });
   }
 };
@@ -192,12 +174,12 @@ export const validateFieldRequired =
     data: {
       [key: string]: string | null;
     },
-    ctx: z.RefinementCtx
+    ctx: z.RefinementCtx,
   ) => {
-    if (!data[field] || data[field] === "") {
+    if (!data[field] || data[field] === '') {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "validation.common.required",
+        message: 'validation.common.required',
         path: [field],
       });
     }
@@ -213,13 +195,11 @@ export const addressSchema = z.object({
 
 export const emailSchemaOptional = z
   .string()
-  .email({ message: "validation.common.email" })
-  .or(z.literal(""))
+  .email({ message: 'validation.common.email' })
+  .or(z.literal(''))
   .nullable()
   .optional();
-export const emailSchemaRequired = z
-  .string()
-  .email({ message: "validation.common.email" });
+export const emailSchemaRequired = z.string().email({ message: 'validation.common.email' });
 // Common contact fields
 export const contactSchema = z.object({
   email: emailSchemaOptional,
@@ -233,14 +213,14 @@ export const bankingSchema = z.object({
     .nullable()
     .optional()
     .refine((val) => !val || isValidIban(val), {
-      message: "validation.common.iban",
+      message: 'validation.common.iban',
     }),
   bic: z
     .string()
     .nullable()
     .optional()
     .refine((val) => !val || /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(val), {
-      message: "validation.common.bic",
+      message: 'validation.common.bic',
     }),
 });
 
@@ -248,16 +228,12 @@ export const bankingSchema = z.object({
 export const interestMethodEnum = selectEnumOptional(InterestMethod);
 
 // Notification type enum
-export const notificationTypeEnumRequired =
-  selectEnumRequired(NotificationType);
-export const notificationTypeEnumOptional =
-  selectEnumOptional(NotificationType);
+export const notificationTypeEnumRequired = selectEnumRequired(NotificationType);
+export const notificationTypeEnumOptional = selectEnumOptional(NotificationType);
 
 // Membership status enum
-export const membershipStatusEnumRequired =
-  selectEnumRequired(MembershipStatus);
-export const membershipStatusEnumOptional =
-  selectEnumOptional(MembershipStatus);
+export const membershipStatusEnumRequired = selectEnumRequired(MembershipStatus);
+export const membershipStatusEnumOptional = selectEnumOptional(MembershipStatus);
 
 // Salutation enum
 export const salutationEnumRequired = selectEnumRequired(Salutation);

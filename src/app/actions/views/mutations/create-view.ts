@@ -1,17 +1,17 @@
-"use server";
+'use server';
 
-import { ViewType } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { ViewType } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { ViewFormData } from "@/lib/schemas/view";
+import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { ViewFormData } from '@/lib/schemas/view';
 
 export async function createView(data: ViewFormData) {
   try {
     const session = await auth();
     if (!session) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     // Create the view
@@ -34,9 +34,9 @@ export async function createView(data: ViewFormData) {
 
     return { view };
   } catch (error) {
-    console.error("Error creating view:", error);
+    console.error('Error creating view:', error);
     return {
-      error: error instanceof Error ? error.message : "Failed to create view",
+      error: error instanceof Error ? error.message : 'Failed to create view',
     };
   }
 }
