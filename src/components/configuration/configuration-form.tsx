@@ -61,6 +61,8 @@ export function ConfigurationForm({
     interestMethod: initialData?.interestMethod || '',
     altInterestMethods: initialData?.altInterestMethods || [],
     customLoans: initialData?.customLoans || false,
+    lenderAdditionalFields: initialData?.lenderAdditionalFields || [],
+    loanAdditionalFields: initialData?.loanAdditionalFields || [],
   };
 
   const form = useForm({

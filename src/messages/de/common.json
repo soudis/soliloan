@@ -86,7 +86,32 @@
       "previous": "Zurück",
       "next": "Weiter",
       "noResults": "Keine Ergebnisse gefunden",
-      "globalFilter": "Alle Spalten durchsuchen..."
+      "globalFilter": "Alle Spalten durchsuchen...",
+      "all": "Alle"
+    },
+    "additionalFields": {
+      "addField": "Feld hinzufügen",
+      "noFieldsDefined": "Keine zusätzlichen Felder definiert. Klicke auf \"Feld hinzufügen\" um zu beginnen.",
+      "fieldName": "Name",
+      "fieldNamePlaceholder": "Name eingeben",
+      "fieldType": "Typ",
+      "options": "Optionen",
+      "addOption": "Option hinzufügen",
+      "addOptionPlaceholder": "Option hinzufügen",
+      "noOptionsDefined": "Keine Optionen definiert",
+      "text": "Text",
+      "number": "Zahl",
+      "date": "Datum",
+      "select": "Auswahl",
+      "integer": "Ganze Zahl",
+      "money": "Geld",
+      "percent": "Prozent",
+      "numberFormat": "Zahlformat",
+      "selectOptions": "Auswahloptionen",
+      "required": "Pflichtfeld",
+      "enterValue": "Wert eingeben...",
+      "selectOption": "Option auswählen...",
+      "selectDate": "Datum auswählen..."
     }
   },
   "enums": {
@@ -116,7 +141,8 @@
       "requiredField": {
         "address": "Adresse",
         "email": "E-Mail",
-        "telNo": "Telefonnummer"
+        "telNo": "Telefonnummer",
+        "tag": "Kategorie"
       }
     },
     "loan": {

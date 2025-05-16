@@ -1,8 +1,9 @@
-import { Configuration, File, Lender, Note, Project, User } from '@prisma/client';
+import type { Configuration, File, Lender, Note, Project, User } from '@prisma/client';
 
-import { LoanWithRelations } from './loans';
+import type { LoanWithRelations } from './loans';
 
 import type { getLenderById } from '@/app/actions';
+import type { AdditionalFieldValues } from '@/lib/schemas/common';
 
 export type LenderWithRelations = Lender & {
   notes: (Note & {
@@ -16,6 +17,7 @@ export type LenderWithRelations = Lender & {
       interestMethod: Configuration['interestMethod'];
     };
   };
+  additionalFields?: AdditionalFieldValues;
 };
 
 export type LenderWithCalculations = NonNullable<Awaited<ReturnType<typeof getLenderById>>['lender']>;

@@ -3,6 +3,7 @@
 import { auth } from '@/lib/auth';
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { db } from '@/lib/db';
+import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 
 // Define the type for the lender with included relations
 
@@ -82,7 +83,9 @@ export async function getLenderById(lenderId: string) {
     }
 
     // Calculate virtual fields
-    const lenderWithCalculations = calculateLenderFields(lender);
+    const lenderWithCalculations = calculateLenderFields(
+      parseAdditionalFields({ ...lender, loans: lender.loans.map((loan) => parseAdditionalFields(loan)) }),
+    );
 
     return { lender: lenderWithCalculations };
   } catch (error) {

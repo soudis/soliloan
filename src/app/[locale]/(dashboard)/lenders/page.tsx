@@ -1,8 +1,8 @@
 'use client';
 
-import { Lender, MembershipStatus, NotificationType, Salutation } from '@prisma/client';
+import { MembershipStatus, NotificationType, Salutation } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
-import { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -12,13 +12,18 @@ import { DataTable } from '@/components/ui/data-table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRouter } from '@/i18n/navigation';
 import {
+  createAdditionalFieldDefaultColumnVisibility,
+  createAdditionalFieldFilters,
+  createAdditionalFieldsColumns,
   createColumn,
   createLenderAddressColumn,
   createLenderBankingColumn,
   createLenderEnumBadgeColumn,
   createLenderNameColumn,
+  createLenderTagColumn,
 } from '@/lib/table-column-utils';
 import { useProject } from '@/store/project-context';
+import type { LenderWithRelations } from '@/types/lenders';
 
 export default function LendersPage() {
   const router = useRouter();
@@ -39,8 +44,8 @@ export default function LendersPage() {
     enabled: !!selectedProject,
   });
 
-  const columns: ColumnDef<Lender>[] = [
-    createColumn<Lender>(
+  const columns: ColumnDef<LenderWithRelations>[] = [
+    createColumn<LenderWithRelations>(
       {
         accessorKey: 'lenderNumber',
         header: 'table.lenderNumber',
@@ -48,11 +53,18 @@ export default function LendersPage() {
       t,
     ),
 
-    createLenderNameColumn<Lender>(t),
+    createLenderNameColumn<LenderWithRelations>(t),
 
-    createLenderEnumBadgeColumn<Lender>('type', 'table.type', 'enums.lender.type', t, commonT, () => 'outline'),
+    createLenderEnumBadgeColumn<LenderWithRelations>(
+      'type',
+      'table.type',
+      'enums.lender.type',
+      t,
+      commonT,
+      () => 'outline',
+    ),
 
-    createColumn<Lender>(
+    createColumn<LenderWithRelations>(
       {
         accessorKey: 'email',
         header: 'table.email',
@@ -60,7 +72,7 @@ export default function LendersPage() {
       t,
     ),
 
-    createColumn<Lender>(
+    createColumn<LenderWithRelations>(
       {
         accessorKey: 'telNo',
         header: 'table.telNo',
@@ -68,11 +80,11 @@ export default function LendersPage() {
       t,
     ),
 
-    createLenderAddressColumn<Lender>(t),
+    createLenderAddressColumn<LenderWithRelations>(t),
 
-    createLenderBankingColumn<Lender>(t),
+    createLenderBankingColumn<LenderWithRelations>(t),
 
-    createLenderEnumBadgeColumn<Lender>(
+    createLenderEnumBadgeColumn<LenderWithRelations>(
       'notificationType',
       'table.notificationType',
       'enums.lender.notificationType',
@@ -81,7 +93,7 @@ export default function LendersPage() {
       () => 'outline',
     ),
 
-    createLenderEnumBadgeColumn<Lender>(
+    createLenderEnumBadgeColumn<LenderWithRelations>(
       'membershipStatus',
       'table.membershipStatus',
       'enums.lender.membershipStatus',
@@ -90,21 +102,22 @@ export default function LendersPage() {
       () => 'outline',
     ),
 
-    createColumn<Lender>(
-      {
-        accessorKey: 'tag',
-        header: 'table.tag',
-      },
-      t,
-    ),
+    createLenderTagColumn<LenderWithRelations>(t),
 
-    createLenderEnumBadgeColumn<Lender>(
+    createLenderEnumBadgeColumn<LenderWithRelations>(
       'salutation',
       'table.salutation',
       'enums.lender.salutation',
       t,
       commonT,
       () => 'outline',
+    ),
+
+    ...createAdditionalFieldsColumns<LenderWithRelations>(
+      selectedProject?.configuration.lenderAdditionalFields,
+      'additionalFields',
+      t,
+      commonT,
     ),
   ];
 
@@ -162,8 +175,12 @@ export default function LendersPage() {
       })),
     },
     tag: {
-      type: 'text' as const,
+      type: 'select' as const,
       label: t('table.tag'),
+      options: selectedProject?.configuration.lenderTags.map((tag) => ({
+        label: tag,
+        value: tag,
+      })),
     },
     salutation: {
       type: 'select' as const,
@@ -173,6 +190,7 @@ export default function LendersPage() {
         value: value,
       })),
     },
+    ...createAdditionalFieldFilters('additionalFields', selectedProject?.configuration.lenderAdditionalFields),
   };
 
   // Define default column visibility
@@ -186,8 +204,12 @@ export default function LendersPage() {
     banking: false,
     notificationType: true,
     membershipStatus: true,
-    tag: true,
+    tag: false,
     salutation: false,
+    ...createAdditionalFieldDefaultColumnVisibility(
+      'additionalFields',
+      selectedProject?.configuration.lenderAdditionalFields,
+    ),
   };
 
   if (!selectedProject) {

@@ -1,14 +1,14 @@
-import { ViewType } from '@prisma/client';
+import type { ViewType } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 import {
-  ColumnDef,
-  FilterFn,
+  type ColumnDef,
+  type FilterFn,
+  type VisibilityState,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  VisibilityState,
 } from '@tanstack/react-table';
 import { Settings } from 'lucide-react';
 import { useState } from 'react';
@@ -98,6 +98,14 @@ declare module '@tanstack/react-table' {
   }
 }
 
+export type DataTableColumnFilters = {
+  [key: string]: {
+    type: 'text' | 'select' | 'number' | 'date';
+    options?: { label: string; value: string }[];
+    label?: string;
+  };
+};
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -105,13 +113,7 @@ interface DataTableProps<TData, TValue> {
   showColumnVisibility?: boolean;
   showPagination?: boolean;
   showFilter?: boolean;
-  columnFilters?: {
-    [key: string]: {
-      type: 'text' | 'select' | 'number' | 'date';
-      options?: { label: string; value: string }[];
-      label?: string;
-    };
-  };
+  columnFilters?: DataTableColumnFilters;
   defaultColumnVisibility?: VisibilityState;
   viewType: ViewType;
   actions?: (row: TData) => React.ReactNode;

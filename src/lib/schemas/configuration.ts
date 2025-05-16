@@ -2,6 +2,7 @@ import { InterestMethod, Language, LenderRequiredField, SoliLoansTheme } from '@
 import { z } from 'zod';
 
 import {
+  additionalFieldConfigSchema,
   addressSchema,
   bankingSchema,
   contactSchema,
@@ -45,6 +46,8 @@ export const configurationFormSchema = z
     interestMethod: interestMethodEnum,
     altInterestMethods: z.array(z.nativeEnum(InterestMethod)).default([]).optional(),
     customLoans: z.coerce.boolean().default(false).optional(),
+    loanAdditionalFields: z.array(additionalFieldConfigSchema).default([]).optional(),
+    lenderAdditionalFields: z.array(additionalFieldConfigSchema).default([]).optional(),
   })
   .superRefine(validateAddressOptional);
 

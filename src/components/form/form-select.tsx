@@ -1,6 +1,6 @@
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,7 @@ type SelectOption =
 
 interface FormSelectProps {
   name: string;
-  label: string;
+  label?: string;
   placeholder: string;
   options: SelectOption[];
   hint?: string;
@@ -58,7 +58,7 @@ export function FormSelect({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{label}</FormLabel>
+          {label && <FormLabel>{label}</FormLabel>}
           <div className="relative">
             <Select
               disabled={disabled}
@@ -80,7 +80,12 @@ export function FormSelect({
                   ? customContent()
                   : options.map((option, index) =>
                       option === 'divider' ? (
-                        <SelectSeparator key={`divider_${index}`} />
+                        <SelectSeparator
+                          key={`divider_${
+                            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                            index
+                          }`}
+                        />
                       ) : (
                         <SelectItem key={option.value} value={option.value} disabled={option.disabled}>
                           {option.label}

@@ -2,6 +2,7 @@ import { LenderType } from '@prisma/client';
 import { z } from 'zod';
 
 import {
+  additionalFieldValuesSchema,
   addressSchema,
   bankingSchema,
   contactSchema,
@@ -34,7 +35,7 @@ export const lenderFormSchema = z
     notificationType: notificationTypeEnumRequired,
     membershipStatus: membershipStatusEnumRequired,
     tag: z.string().nullable().optional(),
-
+    additionalFields: additionalFieldValuesSchema.default({}).optional().nullable(),
     // Project ID (required for API)
     projectId: z.string(),
   })

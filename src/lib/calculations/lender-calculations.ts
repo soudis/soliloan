@@ -1,9 +1,9 @@
-import { Lender } from '@prisma/client';
+import type { Lender } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { omit } from 'lodash';
 
-import { CalculationOptions } from '@/types/calculation';
-import { LenderWithRelations } from '@/types/lenders';
+import type { CalculationOptions } from '@/types/calculation';
+import type { LenderWithRelations } from '@/types/lenders';
 
 import { loansSorter } from '../utils';
 import { calculateLoanFields } from './loan-calculations';
@@ -42,6 +42,7 @@ export function calculateLenderFields(lender: LenderWithRelations, options: Calc
 
   // Use forEach instead of reduce to avoid TypeScript issues
   if (loans && loans.length > 0) {
+    // biome-ignore lint/complexity/noForEach: <explanation>
     loans.forEach((loan) => {
       sums.balance += loan.balance;
       sums.interest += loan.interest;

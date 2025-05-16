@@ -1,12 +1,12 @@
 'use server';
 
-import { Country, Entity, Language, Operation } from '@prisma/client';
+import { type Country, Entity, Language, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 import { createAuditEntry, getLenderContext, removeNullFields } from '@/lib/audit-trail';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { LenderFormData } from '@/lib/schemas/lender';
+import type { LenderFormData } from '@/lib/schemas/lender';
 import { getLenderName } from '@/lib/utils';
 
 export async function createLender(data: LenderFormData) {
@@ -59,6 +59,7 @@ export async function createLender(data: LenderFormData) {
         notificationType: data.notificationType,
         membershipStatus: data.membershipStatus,
         tag: data.tag,
+        additionalFields: data.additionalFields ?? {},
         ...(data.email && {
           user: {
             connectOrCreate: {
@@ -93,7 +94,7 @@ export async function createLender(data: LenderFormData) {
     // Revalidate the lenders page
     revalidatePath(`/lenders/${data.projectId}`);
 
-    return { lender };
+    return { success: true };
   } catch (error) {
     console.error('Error creating lender:', error);
     return {

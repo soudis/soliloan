@@ -1,9 +1,10 @@
 'use client';
 
-import { LenderType, MembershipStatus, NotificationType, Salutation } from '@prisma/client';
+import { LenderRequiredField, LenderType, MembershipStatus, NotificationType, Salutation } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { useFormContext } from 'react-hook-form';
 
+import { FormAdditionalFields } from '@/components/form/form-additional-fields';
 import { FormCountrySelect } from '@/components/form/form-country-select';
 import { FormField } from '@/components/form/form-field';
 import { FormIbanInput } from '@/components/form/form-iban-input';
@@ -11,16 +12,27 @@ import { FormSelect } from '@/components/form/form-select';
 import { FormSection } from '@/components/ui/form-section';
 
 import type { LenderFormData } from '@/lib/schemas/lender';
+import { useProject } from '@/store/project-context';
 
 export function LenderFormFields() {
   const t = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
 
   const form = useFormContext<LenderFormData>();
+  const { selectedProject } = useProject();
 
   const type = form.watch('type');
 
   const salutation = form.watch('salutation');
+
+  if (!selectedProject) {
+    return null;
+  }
+
+  const isTagRequired = selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.tag);
+  const isAddressRequired = selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.address);
+  const isEmailRequired = selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.email);
+  const isTelNoRequired = selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.telNo);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -29,7 +41,7 @@ export function LenderFormFields() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormSelect
             name="type"
-            label={t('new.form.type') + ' *'}
+            label={`${t('new.form.type')} *`}
             placeholder={commonT('ui.form.selectPlaceholder')}
             options={Object.entries(LenderType).map(([key, value]) => ({
               value,
@@ -39,7 +51,7 @@ export function LenderFormFields() {
 
           <FormSelect
             name="salutation"
-            label={t('new.form.salutation') + ' *'}
+            label={`${t('new.form.salutation')} *`}
             placeholder={commonT('ui.form.selectPlaceholder')}
             options={Object.entries(Salutation).map(([key, value]) => ({
               value,
@@ -69,13 +81,13 @@ export function LenderFormFields() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 name="firstName"
-                label={t('new.form.firstName') + ' *'}
+                label={`${t('new.form.firstName')} *`}
                 placeholder={commonT('ui.form.enterPlaceholder')}
               />
 
               <FormField
                 name="lastName"
-                label={t('new.form.lastName') + ' *'}
+                label={`${t('new.form.lastName')} *`}
                 placeholder={commonT('ui.form.enterPlaceholder')}
               />
             </div>
@@ -83,7 +95,7 @@ export function LenderFormFields() {
         ) : (
           <FormField
             name="organisationName"
-            label={t('new.form.organisationName') + ' *'}
+            label={`${t('new.form.organisationName')} *`}
             placeholder={commonT('ui.form.enterPlaceholder')}
           />
         )}
@@ -94,14 +106,14 @@ export function LenderFormFields() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             name="email"
-            label={t('new.form.email')}
+            label={isEmailRequired ? `${t('new.form.email')} *` : t('new.form.email')}
             placeholder={commonT('ui.form.enterPlaceholder')}
             type="email"
           />
 
           <FormField
             name="telNo"
-            label={t('new.form.telNo')}
+            label={isTelNoRequired ? `${t('new.form.telNo')} *` : t('new.form.telNo')}
             placeholder={commonT('ui.form.enterPlaceholder')}
             type="tel"
           />
@@ -114,17 +126,25 @@ export function LenderFormFields() {
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div className="md:col-span-2">
-            <FormField name="zip" label={t('new.form.zip')} placeholder={commonT('ui.form.enterPlaceholder')} />
+            <FormField
+              name="zip"
+              label={isAddressRequired ? `${t('new.form.zip')} *` : t('new.form.zip')}
+              placeholder={commonT('ui.form.enterPlaceholder')}
+            />
           </div>
 
           <div className="md:col-span-4">
-            <FormField name="place" label={t('new.form.place')} placeholder={commonT('ui.form.enterPlaceholder')} />
+            <FormField
+              name="place"
+              label={isAddressRequired ? `${t('new.form.place')} *` : t('new.form.place')}
+              placeholder={commonT('ui.form.enterPlaceholder')}
+            />
           </div>
 
           <div className="md:col-span-6">
             <FormCountrySelect
               name="country"
-              label={t('new.form.country')}
+              label={isAddressRequired ? `${t('new.form.country')} *` : t('new.form.country')}
               placeholder={commonT('ui.form.selectPlaceholder')}
               clearable
             />
@@ -146,7 +166,7 @@ export function LenderFormFields() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormSelect
             name="notificationType"
-            label={t('new.form.notificationType') + ' *'}
+            label={`${t('new.form.notificationType')} *`}
             placeholder={commonT('ui.form.selectPlaceholder')}
             options={Object.entries(NotificationType).map(([key, value]) => ({
               value,
@@ -156,16 +176,32 @@ export function LenderFormFields() {
 
           <FormSelect
             name="membershipStatus"
-            label={t('new.form.membershipStatus')}
+            label={`${t('new.form.membershipStatus')} *`}
             placeholder={commonT('ui.form.selectPlaceholder')}
             options={Object.entries(MembershipStatus).map(([key, value]) => ({
               value,
               label: commonT(`enums.lender.membershipStatus.${key}`),
             }))}
           />
-        </div>
 
-        <FormField name="tag" label={t('new.form.tag')} placeholder={commonT('ui.form.enterPlaceholder')} />
+          <FormSelect
+            name="tag"
+            label={isTagRequired ? `${t('new.form.tag')} *` : t('new.form.tag')}
+            placeholder={t('new.form.noTag')}
+            clearable={!isTagRequired}
+            options={
+              selectedProject?.configuration.lenderTags.map((tag) => ({
+                value: tag,
+                label: tag,
+              })) || []
+            }
+          />
+
+          <FormAdditionalFields
+            config={selectedProject?.configuration.lenderAdditionalFields}
+            name="additionalFields"
+          />
+        </div>
       </FormSection>
     </div>
   );

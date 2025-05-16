@@ -1,6 +1,7 @@
 'use server';
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { db } from '@/lib/db';
+import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 
 export async function getLendersByProjectId(projectId: string) {
   try {
@@ -63,7 +64,11 @@ export async function getLendersByProjectId(projectId: string) {
     });
 
     // Calculate virtual fields for each lender
-    const lendersWithCalculations = lenders.map((lender) => calculateLenderFields(lender));
+    const lendersWithCalculations = lenders.map((lender) =>
+      calculateLenderFields(
+        parseAdditionalFields({ ...lender, loans: lender.loans.map((loan) => parseAdditionalFields(loan)) }),
+      ),
+    );
 
     return { lenders: lendersWithCalculations };
   } catch (error) {

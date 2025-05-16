@@ -252,3 +252,49 @@ export const contractStatusEnum = selectEnumRequired(ContractStatus);
 
 // View type enum
 export const viewTypeEnum = selectEnumRequired(ViewType);
+
+export enum AdditionalFieldType {
+  TEXT = 'text',
+  NUMBER = 'number',
+  DATE = 'date',
+  SELECT = 'select',
+}
+export enum AdditionalNumberFormat {
+  INTEGER = 'integer',
+  MONEY = 'money',
+  PERCENT = 'percent',
+}
+
+export const additionalFieldTypeEnum = selectEnumRequired(AdditionalFieldType);
+export const additionalNumberFormatEnum = selectEnumOptional(AdditionalNumberFormat);
+export const additionalFieldConfigSchema = z
+  .object({
+    id: z.string(),
+    name: z.string().min(1, { message: 'validation.common.required' }),
+    type: additionalFieldTypeEnum,
+    numberFormat: additionalNumberFormatEnum,
+    selectOptions: z.array(z.string()),
+    required: z.boolean().default(false),
+  })
+  .superRefine((data, ctx) => {
+    if (data.type === AdditionalFieldType.SELECT && (!data.selectOptions || data.selectOptions.length === 0)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'validation.common.required', path: ['selectOptions'] });
+    }
+    if (data.type === AdditionalFieldType.NUMBER && !data.numberFormat) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'validation.common.required', path: ['numberFormat'] });
+    }
+  });
+
+export const additionalFieldConfigArraySchema = z.array(additionalFieldConfigSchema).optional().nullable();
+
+export type AdditionalFieldConfig = z.infer<typeof additionalFieldConfigSchema>;
+
+export const additionalFieldValuesSchema = z
+  .record(
+    z.string(),
+    z.preprocess((val) => val?.toString(), z.string().nullable().optional()),
+  )
+  .optional()
+  .nullable();
+
+export type AdditionalFieldValues = z.infer<typeof additionalFieldValuesSchema>;

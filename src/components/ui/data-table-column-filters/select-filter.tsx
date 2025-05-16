@@ -1,4 +1,5 @@
-import { ColumnFilter } from '@tanstack/react-table';
+import type { ColumnFilter } from '@tanstack/react-table';
+import { useTranslations } from 'next-intl';
 
 interface SelectFilterProps {
   filterState?: ColumnFilter;
@@ -7,13 +8,14 @@ interface SelectFilterProps {
 }
 
 export function SelectFilter({ filterState, options, onFilterChange }: SelectFilterProps) {
+  const t = useTranslations('common.ui');
   return (
     <select
       className="h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
       value={(filterState?.value as string) ?? ''}
       onChange={(e) => onFilterChange(e.target.value)}
     >
-      <option value="">All</option>
+      <option value="">{t('table.all')}</option>
       {options.map((option) => (
         <option key={option.value} value={option.value}>
           {option.label}

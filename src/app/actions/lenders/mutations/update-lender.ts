@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { createAuditEntry, getChangedFields, getLenderContext } from '@/lib/audit-trail';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { LenderFormData } from '@/lib/schemas/lender';
+import type { LenderFormData } from '@/lib/schemas/lender';
 import { getLenderName } from '@/lib/utils';
 
 export async function updateLender(lenderId: string, data: LenderFormData) {
@@ -66,6 +66,7 @@ export async function updateLender(lenderId: string, data: LenderFormData) {
         notificationType: data.notificationType,
         membershipStatus: data.membershipStatus,
         tag: data.tag,
+        additionalFields: data.additionalFields ?? {},
         ...(data.email && {
           user: {
             connectOrCreate: {
@@ -96,9 +97,9 @@ export async function updateLender(lenderId: string, data: LenderFormData) {
     }
 
     // Revalidate the lenders page
-    revalidatePath(`/lenders/${lender.projectId}`);
+    revalidatePath(`/lenders/${updatedLender.id}`);
 
-    return { lender: updatedLender };
+    return { success: true };
   } catch (error) {
     console.error('Error updating lender:', error);
     return {

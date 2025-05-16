@@ -1,8 +1,8 @@
 'use client';
 
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { type ReactNode, createContext, useContext, useState } from 'react';
 
-import { ProjectWithConfiguration } from '@/types/projects';
+import type { ProjectWithConfiguration } from '@/types/projects';
 
 interface ProjectContextType {
   selectedProject: ProjectWithConfiguration | null;

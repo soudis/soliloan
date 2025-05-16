@@ -4,6 +4,7 @@ import moment from 'moment';
 
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { additionalFieldConfigArraySchema } from '@/lib/schemas/common';
 
 export async function getConfiguration(projectId: string) {
   try {
@@ -65,6 +66,10 @@ export async function getConfiguration(projectId: string) {
           customLoans: project.configuration.customLoans || false,
           lenderRequiredFields: project.configuration.lenderRequiredFields || [],
           logo: project.configuration.logo || undefined,
+          lenderAdditionalFields:
+            additionalFieldConfigArraySchema.parse(project.configuration.lenderAdditionalFields) || [],
+          loanAdditionalFields:
+            additionalFieldConfigArraySchema.parse(project.configuration.loanAdditionalFields) || [],
         }
       : null;
 

@@ -65,6 +65,7 @@ export async function createLoan(data: LoanFormData) {
         interestRate: data.interestRate as number,
         altInterestMethod: data.altInterestMethod as InterestMethod,
         contractStatus: data.contractStatus as ContractStatus,
+        additionalFields: data.additionalFields ?? {},
         lender: {
           connect: {
             id: data.lenderId,

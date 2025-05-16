@@ -6,7 +6,8 @@ import { revalidatePath } from 'next/cache';
 import { createAuditEntry, getChangedFields, removeNullFields } from '@/lib/audit-trail';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { ConfigurationFormData, configurationFormSchema } from '@/lib/schemas/configuration';
+import { additionalFieldConfigArraySchema } from '@/lib/schemas/common';
+import { type ConfigurationFormData, configurationFormSchema } from '@/lib/schemas/configuration';
 
 export async function updateConfiguration(projectId: string, data: ConfigurationFormData) {
   try {
@@ -66,6 +67,8 @@ export async function updateConfiguration(projectId: string, data: Configuration
       customLoans: validatedData.customLoans || false,
       lenderRequiredFields: validatedData.lenderRequiredFields || [],
       logo: validatedData.logo || null,
+      lenderAdditionalFields: validatedData.lenderAdditionalFields || [],
+      loanAdditionalFields: validatedData.loanAdditionalFields || [],
     };
 
     // Get the current configuration for audit trail
@@ -115,7 +118,7 @@ export async function updateConfiguration(projectId: string, data: Configuration
     }
 
     // Revalidate the project configuration page
-    revalidatePath(`/configuration`);
+    revalidatePath('/configuration');
 
     // Transform the configuration back to match the form schema
     const formConfiguration = {
@@ -142,6 +145,8 @@ export async function updateConfiguration(projectId: string, data: Configuration
       altInterestMethods: configuration.altInterestMethods || [],
       customLoans: configuration.customLoans || false,
       lenderRequiredFields: configuration.lenderRequiredFields || [],
+      loanAdditionalFields: additionalFieldConfigArraySchema.parse(configuration.loanAdditionalFields) || [],
+      lenderAdditionalFields: additionalFieldConfigArraySchema.parse(configuration.lenderAdditionalFields) || [],
     };
 
     return { configuration: formConfiguration };

@@ -2,6 +2,7 @@ import { TerminationType } from '@prisma/client';
 import { z } from 'zod';
 
 import {
+  additionalFieldValuesSchema,
   contractStatusEnum,
   createDateSchema,
   createNumberSchemaRequired,
@@ -34,6 +35,7 @@ export const loanFormSchema = z
     interestPayoutType: interestPayoutTypeEnum,
     altInterestMethod: interestMethodEnum.nullable().optional(),
     contractStatus: contractStatusEnum.default('PENDING'),
+    additionalFields: additionalFieldValuesSchema.default({}).optional().nullable(),
   })
   .superRefine((data, ctx) => {
     // Validate fields based on terminationType

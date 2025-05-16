@@ -27,9 +27,7 @@ export default function ConfigurationPage() {
     queryKey: ['configuration', selectedProject?.id],
     queryFn: async () => {
       if (!selectedProject) return null;
-      console.log('Fetching configuration for project:', selectedProject.id);
       const result = await getConfiguration(selectedProject.id);
-      console.log('Configuration result:', result);
       if ('error' in result) {
         throw new Error(result.error);
       }
@@ -98,6 +96,8 @@ export default function ConfigurationPage() {
           customLoans: result.configuration.customLoans || false,
           lenderRequiredFields: result.configuration.lenderRequiredFields || [],
           logo: result.configuration.logo || null,
+          lenderAdditionalFields: result.configuration.lenderAdditionalFields || [],
+          loanAdditionalFields: result.configuration.loanAdditionalFields || [],
         },
       });
 

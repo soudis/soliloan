@@ -12,11 +12,14 @@ import { FormLayout } from '@/components/ui/form-layout';
 import { loanFormSchema } from '@/lib/schemas/loan';
 import { emptyStringToNull, formatNumber } from '@/lib/utils';
 import { useProject } from '@/store/project-context';
-import { LoanWithRelations } from '@/types/loans';
+import type { LoanWithRelations } from '@/types/loans';
 
 import { LoanFormFields } from './loan-form-fields';
 
+import type { AdditionalFieldValues } from '@/lib/schemas/common';
 import type { LoanFormData } from '@/lib/schemas/loan';
+import { additionalFieldDefaults, validateAdditionalFields } from '@/lib/utils/additional-fields';
+import type { ZodSchema } from 'zod';
 
 interface LoanFormProps {
   title: string;
@@ -52,6 +55,13 @@ export function LoanForm({
     enabled: !!selectedProject,
   });
 
+  let schema: ZodSchema;
+  schema = loanFormSchema;
+
+  schema = schema.superRefine(
+    validateAdditionalFields('additionalFields', selectedProject?.configuration.loanAdditionalFields),
+  );
+
   // Create base default values that apply to all termination types
   const defaultValues = {
     lenderId: initialData?.lenderId || '',
@@ -69,10 +79,14 @@ export function LoanForm({
     terminationPeriodType: initialData?.terminationPeriodType || DurationType.MONTHS,
     duration: initialData?.duration || '',
     durationType: initialData?.durationType || DurationType.YEARS,
+    additionalFields: additionalFieldDefaults(
+      selectedProject?.configuration?.loanAdditionalFields || [],
+      (initialData?.additionalFields as AdditionalFieldValues | undefined) || {},
+    ),
   };
 
   const form = useForm({
-    resolver: zodResolver(loanFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: defaultValues,
   });
 

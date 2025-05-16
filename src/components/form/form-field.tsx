@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 
 interface FormFieldProps {
   name: string;
-  label: string;
+  label?: string;
   placeholder?: string;
   type?: string;
   multiline?: boolean;
@@ -28,7 +28,7 @@ export function FormField({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{label}</FormLabel>
+          {label && <FormLabel>{label}</FormLabel>}
           <FormControl>
             {multiline ? (
               <Textarea placeholder={placeholder} {...field} required={required} />

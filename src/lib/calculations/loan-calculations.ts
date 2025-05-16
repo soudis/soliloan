@@ -1,10 +1,10 @@
-import { DurationType, InterestMethod, PaymentType, TerminationType, TransactionType } from '@prisma/client';
+import { DurationType, type InterestMethod, PaymentType, TerminationType, TransactionType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { omit } from 'lodash';
-import moment, { Moment } from 'moment';
+import moment, { type Moment } from 'moment';
 
-import { CalculationOptions } from '@/types/calculation';
-import { LoanStatus, LoanWithRelations } from '@/types/loans';
+import type { CalculationOptions } from '@/types/calculation';
+import { LoanStatus, type LoanWithRelations } from '@/types/loans';
 
 import { transactionSorter } from '../utils';
 
@@ -12,18 +12,17 @@ export const isRepaid = (loan: LoanWithRelations, toDate: Date) => {
   // check if all money was paid back until given date
   if (loan.transactions.length <= 1) {
     return undefined;
-  } else {
-    const transactions = loan.transactions.sort(transactionSorter);
-    const lastTransaction = transactions[transactions.length - 1];
-    if (!lastTransaction) {
-      return undefined;
-    }
-    return (lastTransaction.type === TransactionType.TERMINATION ||
-      lastTransaction.type === TransactionType.NOTRECLAIMED) &&
-      moment(lastTransaction.date).isSameOrBefore(toDate)
-      ? lastTransaction.date
-      : undefined;
   }
+  const transactions = loan.transactions.sort(transactionSorter);
+  const lastTransaction = transactions[transactions.length - 1];
+  if (!lastTransaction) {
+    return undefined;
+  }
+  return (lastTransaction.type === TransactionType.TERMINATION ||
+    lastTransaction.type === TransactionType.NOTRECLAIMED) &&
+    moment(lastTransaction.date).isSameOrBefore(toDate)
+    ? lastTransaction.date
+    : undefined;
 };
 
 export const isLoanTerminated = (loan: LoanWithRelations) => {
@@ -46,9 +45,8 @@ export const getLoanStatus = (loan: LoanWithRelations, toDate: Date) => {
 const getBaseDays = (method: InterestMethod, date: Moment) => {
   if (method.startsWith('ACT_ACT')) {
     return moment(date).endOf('year').dayOfYear();
-  } else {
-    return parseInt(method.split('_')[1] ?? '360');
   }
+  return Number.parseInt(method.split('_')[1] ?? '360');
 };
 
 export const calculateInterestDaily = (
@@ -88,11 +86,11 @@ export const calculateInterestDaily = (
     .dividedBy(getBaseDays(interestMethod, toDate));
 };
 
-export const calculateLoanPerYear = function (
+export const calculateLoanPerYear = (
   loan: LoanWithRelations,
   toDateParameter?: Date,
   currentTransactionId?: string,
-) {
+) => {
   let toDate = moment(toDateParameter);
   const terminationDate = isRepaid(loan, toDate.toDate());
   // if contract is terminated and the current transaction ID is not the termination transaction only calculate until termination date
@@ -132,16 +130,20 @@ export const calculateLoanPerYear = function (
     },
   ];
   for (let year = firstYear; year <= lastYear; year++) {
-    const currentYear = years.at(-1)!;
+    const currentYear = years.at(-1);
+    if (!currentYear) {
+      throw new Error('CURRENT_YEAR_NOT_FOUND');
+    }
     let amount = new Decimal(currentYear.begin);
     let interestBaseAmount = currentYear.interestBaseAmount;
     // calculate interest for new transactions of year
     let interest = new Decimal(0);
     let terminationDate = undefined;
+    // biome-ignore lint/complexity/noForEach: <explanation>
     transactions
       .filter((transaction) => moment(transaction.date).year() === year)
       .forEach((transaction) => {
-        if (toDate.isSameOrAfter(transaction.date) && currentTransactionId != transaction.id) {
+        if (toDate.isSameOrAfter(transaction.date) && currentTransactionId !== transaction.id) {
           amount = amount.plus(transaction.amount);
           if (compound ?? transaction.type !== TransactionType.INTERESTPAYMENT) {
             interestBaseAmount = interestBaseAmount.plus(transaction.amount);

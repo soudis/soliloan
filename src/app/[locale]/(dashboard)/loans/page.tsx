@@ -8,7 +8,7 @@ import {
   TerminationType,
 } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
-import { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -17,6 +17,9 @@ import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { useRouter } from '@/i18n/navigation';
 import {
+  createAdditionalFieldDefaultColumnVisibility,
+  createAdditionalFieldFilters,
+  createAdditionalFieldsColumns,
   createColumn,
   createCurrencyColumn,
   createDateColumn,
@@ -27,7 +30,7 @@ import {
   createTerminationModalitiesColumn,
 } from '@/lib/table-column-utils';
 import { useProject } from '@/store/project-context';
-import { LoanStatus, LoanWithRelations } from '@/types/loans';
+import { LoanStatus, type LoanWithRelations } from '@/types/loans';
 
 export default function LoansPage() {
   const t = useTranslations('dashboard.loans');
@@ -154,6 +157,12 @@ export default function LoansPage() {
         }
       },
     ),
+    ...createAdditionalFieldsColumns<LoanWithRelations>(
+      selectedProject?.configuration.loanAdditionalFields,
+      'additionalFields',
+      t,
+      commonT,
+    ),
   ];
 
   // Define column filters based on data types
@@ -262,6 +271,7 @@ export default function LoansPage() {
         value: value,
       })),
     },
+    ...createAdditionalFieldFilters('additionalFields', selectedProject?.configuration.loanAdditionalFields),
   };
 
   // Define default column visibility
@@ -286,6 +296,10 @@ export default function LoansPage() {
     status: true,
     altInterestMethod: false,
     contractStatus: true,
+    ...createAdditionalFieldDefaultColumnVisibility(
+      'additionalFields',
+      selectedProject?.configuration.loanAdditionalFields,
+    ),
   };
 
   if (!selectedProject) {

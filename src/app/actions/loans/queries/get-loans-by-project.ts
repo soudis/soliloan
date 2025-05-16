@@ -1,11 +1,12 @@
 'use server';
 
-import { Loan } from '@prisma/client';
+import type { Loan } from '@prisma/client';
 
 import { auth } from '@/lib/auth';
 import { calculateLoanFields } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
-import { LoanWithRelations } from '@/types/loans';
+import { parseAdditionalFields } from '@/lib/utils/additional-fields';
+import type { LoanWithRelations } from '@/types/loans';
 
 export async function getLoansByProjectId(projectId: string) {
   try {
@@ -94,7 +95,11 @@ export async function getLoansByProjectId(projectId: string) {
     });
 
     // Calculate virtual fields for each loan
-    const loansWithCalculations = loans.map((loan) => calculateLoanFields<Omit<LoanWithRelations, keyof Loan>>(loan));
+    const loansWithCalculations = loans.map((loan) =>
+      calculateLoanFields<Omit<LoanWithRelations, keyof Loan>>(
+        parseAdditionalFields({ ...loan, lender: parseAdditionalFields(loan.lender) }),
+      ),
+    );
 
     return { loans: loansWithCalculations };
   } catch (error) {

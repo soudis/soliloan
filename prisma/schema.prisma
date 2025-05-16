@@ -100,12 +100,14 @@ model Configuration {
   lenderNotificationType NotificationType?
   lenderMembershipStatus MembershipStatus?
   lenderTags             String[]
+  lenderAdditionalFields Json           @default("[]")
   interestMethod         InterestMethod?
   altInterestMethods     InterestMethod[]
   defaultLoanTemplateId  String?
   customLoans            Boolean?
   loanTemplates          LoanTemplate[]
   project                Project?
+  loanAdditionalFields   Json?
 }
 
 model Project {
@@ -147,6 +149,7 @@ model Lender {
   project          Project           @relation(fields: [projectId], references: [id])
   loans            Loan[]
   notes            Note[]
+  additionalFields Json?
 }
 
 model Loan {
@@ -171,6 +174,7 @@ model Loan {
   lender                Lender              @relation(fields: [lenderId], references: [id], onDelete: Cascade)
   notes                 Note[]
   transactions          Transaction[]       
+  additionalFields      Json?
 }
 
 model Transaction {
@@ -392,4 +396,5 @@ enum LenderRequiredField {
   address
   email
   telNo
+  tag
 }

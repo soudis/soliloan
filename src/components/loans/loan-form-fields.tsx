@@ -5,11 +5,11 @@ import {
   DurationType,
   InterestPaymentType,
   InterestPayoutType,
-  Lender,
+  type Lender,
   TerminationType,
 } from '@prisma/client';
-import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { useFormContext } from 'react-hook-form';
 
 import { FormDatePicker } from '@/components/form/form-date-picker';
@@ -21,6 +21,7 @@ import { FormSection } from '@/components/ui/form-section';
 import { useProject } from '@/store/project-context';
 
 import type { LoanFormData } from '@/lib/schemas/loan';
+import { FormAdditionalFields } from '../form/form-additional-fields';
 
 interface LoanFormFieldsProps {
   lenders: Lender[];
@@ -43,7 +44,7 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <LenderCombobox
             name="lenderId"
-            label={t('new.form.lender') + ' *'}
+            label={`${t('new.form.lender')} *`}
             placeholder={commonT('ui.form.selectPlaceholder')}
             disabled={!!preselectedLenderId}
             lenders={lenders}
@@ -51,7 +52,7 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
 
           <FormDatePicker
             name="signDate"
-            label={t('new.form.signDate') + ' *'}
+            label={`${t('new.form.signDate')} *`}
             placeholder={commonT('ui.form.enterPlaceholder')}
           />
         </div>
@@ -59,7 +60,7 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormNumberInput
             name="amount"
-            label={t('new.form.amount') + ' *'}
+            label={`${t('new.form.amount')} *`}
             placeholder={commonT('ui.form.enterPlaceholder')}
             prefix="€"
             min={0.01}
@@ -68,7 +69,7 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
 
           <FormNumberInput
             name="interestRate"
-            label={t('new.form.interestRate') + ' *'}
+            label={`${t('new.form.interestRate')} *`}
             placeholder={commonT('ui.form.enterPlaceholder')}
             prefix="%"
             minimumFractionDigits={0}
@@ -79,7 +80,7 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
         </div>
         <FormSelect
           name="contractStatus"
-          label={t('new.form.contractStatus')}
+          label={`${t('new.form.contractStatus')} *`}
           placeholder={commonT('ui.form.selectPlaceholder')}
           options={Object.keys(ContractStatus).map((key) => ({
             value: key,
@@ -93,7 +94,7 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormSelect
             name="terminationType"
-            label={t('new.form.terminationType') + ' *'}
+            label={`${t('new.form.terminationType')} *`}
             placeholder={commonT('ui.form.selectPlaceholder')}
             options={Object.keys(TerminationType).map((key) => ({
               value: key,
@@ -105,7 +106,7 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormDatePicker
               name="endDate"
-              label={t('new.form.endDate') + ' *'}
+              label={`${t('new.form.endDate')} *`}
               placeholder={commonT('ui.form.enterPlaceholder')}
             />
           </div>
@@ -116,7 +117,7 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
               <FormNumberWithSelect
                 numberName="terminationPeriod"
                 selectName="terminationPeriodType"
-                numberLabel={t('new.form.terminationPeriod') + ' *'}
+                numberLabel={`${t('new.form.terminationPeriod')} *`}
                 numberPlaceholder={commonT('ui.form.enterPlaceholder')}
                 selectPlaceholder={commonT('ui.form.selectPlaceholder')}
                 numberMin={1}
@@ -142,7 +143,7 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
             <FormNumberWithSelect
               numberName="duration"
               selectName="durationType"
-              numberLabel={t('new.form.duration') + ' *'}
+              numberLabel={`${t('new.form.duration')} *`}
               numberPlaceholder={commonT('ui.form.enterPlaceholder')}
               selectPlaceholder={commonT('ui.form.selectPlaceholder')}
               numberMin={1}
@@ -160,7 +161,7 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormSelect
             name="interestPaymentType"
-            label={t('new.form.interestPaymentType') + ' *'}
+            label={`${t('new.form.interestPaymentType')} *`}
             placeholder={commonT('ui.form.selectPlaceholder')}
             options={Object.keys(InterestPaymentType).map((key) => ({
               value: key,
@@ -170,7 +171,7 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
 
           <FormSelect
             name="interestPayoutType"
-            label={t('new.form.interestPayoutType') + ' *'}
+            label={`${t('new.form.interestPayoutType')} *`}
             placeholder={commonT('ui.form.selectPlaceholder')}
             options={Object.keys(InterestPayoutType).map((key) => ({
               value: key,
@@ -191,6 +192,9 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
               }))}
             />
           )}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormAdditionalFields config={selectedProject?.configuration.loanAdditionalFields} name="additionalFields" />
         </div>
       </FormSection>
     </div>

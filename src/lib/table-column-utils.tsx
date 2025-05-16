@@ -1,10 +1,11 @@
-import { Lender, Loan } from '@prisma/client';
-import { ColumnDef, Row } from '@tanstack/react-table';
-import React from 'react';
+import type { Lender, Loan } from '@prisma/client';
+import type { ColumnDef, Row, VisibilityState } from '@tanstack/react-table';
 
 import { Badge } from '@/components/ui/badge';
+import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { formatCurrency, getLenderName } from '@/lib/utils';
+import { type AdditionalFieldConfig, AdditionalFieldType } from './schemas/common';
 
 // Define the custom filter function for compound text fields
 export function compoundTextFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
@@ -21,10 +22,9 @@ export function compoundTextFilter<T>(row: Row<T>, columnId: string, filterValue
 // Define the custom filter function for enum fields
 export function enumFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
   const value = row.getValue(columnId);
-  if (!value) return false;
 
   // For enum fields, we do an exact match
-  return value === filterValue;
+  return value === filterValue || filterValue === '';
 }
 
 // Define the custom filter function type
@@ -32,14 +32,16 @@ export type FilterFn = 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'comp
 
 type ColumnConfig<T> = ColumnDef<T> & {
   accessorKey: string;
-  header: string;
+  header?: string | undefined;
+  id?: string | undefined;
 };
 
 // Create a basic column definition
 export function createColumn<T>(config: ColumnConfig<T>, t: (key: string) => string): ColumnDef<T> {
   return {
     ...config,
-    header: ({ column }) => <DataTableColumnHeader column={column} title={t(config.header)} />,
+    header: ({ column }) =>
+      config.header ? <DataTableColumnHeader column={column} title={t(config.header)} /> : undefined,
     sortingFn:
       config.sortingFn ||
       ((rowA, rowB, columnId) => {
@@ -55,7 +57,7 @@ export function createColumn<T>(config: ColumnConfig<T>, t: (key: string) => str
 
 export function createNumberColumn<T>(
   accessorKey: string,
-  headerKey: string,
+  headerKey: string | undefined,
   t: (key: string) => string,
 ): ColumnDef<T> {
   const column = createColumn<T>(
@@ -63,8 +65,11 @@ export function createNumberColumn<T>(
       accessorKey,
       header: headerKey,
       cell: ({ row }) => {
-        const value = Number(row.getValue(accessorKey)) || 0;
-        return value.toFixed(0);
+        return row.getValue(accessorKey) !== null &&
+          row.getValue(accessorKey) !== undefined &&
+          row.getValue(accessorKey) !== ''
+          ? Number(row.getValue(accessorKey))?.toFixed(0)
+          : '';
       },
     },
     t,
@@ -78,7 +83,7 @@ export function createNumberColumn<T>(
 // Create a currency column
 export function createCurrencyColumn<T>(
   accessorKey: string,
-  headerKey: string,
+  headerKey: string | undefined,
   t: (key: string) => string,
 ): ColumnDef<T> {
   const column = createColumn<T>(
@@ -99,7 +104,11 @@ export function createCurrencyColumn<T>(
 }
 
 // Create a date column
-export function createDateColumn<T>(accessorKey: string, headerKey: string, t: (key: string) => string): ColumnDef<T> {
+export function createDateColumn<T>(
+  accessorKey: string,
+  headerKey: string | undefined,
+  t: (key: string) => string,
+): ColumnDef<T> {
   return createColumn<T>(
     {
       accessorKey,
@@ -109,7 +118,7 @@ export function createDateColumn<T>(accessorKey: string, headerKey: string, t: (
         if (!dateStr) return '';
         try {
           const date = new Date(dateStr);
-          return isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
+          return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
           return '';
@@ -146,7 +155,7 @@ export function createPercentageColumn<T>(
 // Create an enum column with badge
 export function createEnumBadgeColumn<T>(
   accessorKey: string,
-  headerKey: string,
+  headerKey: string | undefined,
   enumPrefix: string,
   t: (key: string) => string,
   commonT: (key: string) => string,
@@ -359,6 +368,132 @@ export function createLenderEnumBadgeColumn<T>(
   );
 }
 
+export function createAdditionalFieldsColumns<T>(
+  config: AdditionalFieldConfig[] | undefined | null,
+  accessorKey: string,
+  t: (key: string) => string,
+  commonT: (key: string) => string,
+): ColumnDef<T>[] {
+  return (config?.map((field) => {
+    if (field.type === AdditionalFieldType.DATE) {
+      return {
+        ...createDateColumn<T>(`${accessorKey}.${field.name}`, undefined, t),
+        header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+        id: `${accessorKey}.${field.name}`,
+      };
+    }
+
+    if (field.type === AdditionalFieldType.NUMBER) {
+      return {
+        ...createNumberColumn<T>(`${accessorKey}.${field.name}`, undefined, t),
+        header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+        id: `${accessorKey}.${field.name}`,
+      };
+    }
+
+    if (field.type === AdditionalFieldType.SELECT) {
+      return {
+        ...createColumn<T>(
+          {
+            accessorKey: `${accessorKey}.${field.name}`,
+            cell: ({ row }) => {
+              const value = row.getValue(`${accessorKey}.${field.name}`) as string;
+              if (!value) return '';
+              return <Badge variant="outline">{value}</Badge>;
+            },
+            filterFn: enumFilter,
+          },
+          t,
+        ),
+        id: `${accessorKey}.${field.name}`,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+      };
+    }
+
+    return {
+      ...createColumn<T>(
+        {
+          accessorKey: `${accessorKey}.${field.name}`,
+          header: undefined,
+          id: `${accessorKey}.${field.name}`,
+        },
+        t,
+      ),
+      header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+    };
+  }) ?? []) as ColumnDef<T>[];
+}
+
+export function createAdditionalFieldDefaultColumnVisibility<T>(
+  accessorKey: string,
+  config: AdditionalFieldConfig[] | undefined | null,
+) {
+  const defaultColumnVisibility: VisibilityState = {};
+  // biome-ignore lint/complexity/noForEach: <explanation>
+  config?.forEach((field) => {
+    defaultColumnVisibility[`${accessorKey}.${field.name}`] = false;
+  });
+  return defaultColumnVisibility;
+}
+
+export function createAdditionalFieldFilters<T>(
+  accessorKey: string,
+  config: AdditionalFieldConfig[] | undefined | null,
+) {
+  const filters: DataTableColumnFilters = {};
+  // biome-ignore lint/complexity/noForEach: <explanation>
+  config?.forEach((field) => {
+    if (field.type === AdditionalFieldType.TEXT) {
+      filters[`${accessorKey}.${field.name}`] = {
+        type: 'text' as const,
+        label: field.name,
+      };
+    }
+    if (field.type === AdditionalFieldType.SELECT) {
+      filters[`${accessorKey}.${field.name}`] = {
+        type: 'select' as const,
+        label: field.name,
+        options: field.selectOptions.map((option) => ({ label: option, value: option })),
+      };
+    }
+    if (field.type === AdditionalFieldType.DATE) {
+      filters[`${accessorKey}.${field.name}`] = {
+        type: 'date' as const,
+        label: field.name,
+      };
+    }
+    if (field.type === AdditionalFieldType.NUMBER) {
+      filters[`${accessorKey}.${field.name}`] = {
+        type: 'number' as const,
+        label: field.name,
+      };
+    }
+  });
+
+  return filters;
+}
+
+// Create a tag column for lenders
+export function createLenderTagColumn<T extends Pick<Lender, 'tag'>>(t: (key: string) => string): ColumnDef<T> {
+  return createColumn<T>(
+    {
+      accessorKey: 'tag',
+      header: 'table.tag',
+      cell: ({ row }) => {
+        const tag = row.getValue('tag') as string;
+        return tag && tag !== '' ? <Badge variant="outline">{tag}</Badge> : '';
+      },
+      filterFn: enumFilter,
+      sortingFn: (rowA, rowB, columnId) => {
+        const a = rowA.getValue(columnId) as string;
+        const b = rowB.getValue(columnId) as string;
+        return a.localeCompare(b);
+      },
+    },
+    t,
+  );
+}
+
 // Create a lender name column
 export function createLenderColumn<
   T extends {
@@ -412,7 +547,7 @@ export function createTerminationModalitiesColumn<
         if (terminationType === 'ENDDATE' && row.endDate) {
           try {
             const date = new Date(row.endDate);
-            const formattedDate = isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
+            const formattedDate = Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
             return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${formattedDate}`;
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (e) {
@@ -441,7 +576,7 @@ export function createTerminationModalitiesColumn<
         if (terminationType === 'ENDDATE' && loan.endDate) {
           try {
             const date = new Date(loan.endDate);
-            const formattedDate = isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
+            const formattedDate = Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
             return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${formattedDate}`;
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (e) {
