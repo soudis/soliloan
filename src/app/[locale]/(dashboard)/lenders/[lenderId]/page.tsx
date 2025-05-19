@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Pencil, Plus } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
@@ -130,21 +131,8 @@ export default function LenderDetailsPage({
   // Find the currently selected loan object for display
   const selectedLoan = lender?.loans.find((loan) => loan.id === selectedLoanId);
 
-  if (!session) {
+  if (!session || !selectedProject || isLoading || error || !lender) {
     return null;
-  }
-
-  if (!selectedProject) {
-    return null;
-  }
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error || !lender) {
-    toast.error(t('details.error'));
-    return <div>Error loading lender data</div>;
   }
 
   const lenderName =
@@ -188,19 +176,22 @@ export default function LenderDetailsPage({
               />
 
               {/* Loan Card Display - Render only the selected one */}
-              {selectedLoan ? (
-                <LoanCard
-                  loan={selectedLoan}
-                  onEdit={(id) => router.push(`/loans/${id}/edit`)}
-                  onDelete={handleDeleteLoan}
-                />
-              ) : (
-                // Optional: Show placeholder if no loan is selected and loans exist
-                // This case should ideally be handled by default selection or LoanSelector logic
-                lender.loans.length > 0 && (
-                  <div className="text-center text-muted-foreground py-8">{t('dropdown.selectPrompt')}</div>
-                )
-              )}
+              <AnimatePresence mode="wait">
+                {selectedLoan ? (
+                  <motion.div key={selectedLoan.id}>
+                    <LoanCard
+                      loan={selectedLoan}
+                      onEdit={(id) => router.push(`/loans/${id}/edit`)}
+                      onDelete={handleDeleteLoan}
+                    />
+                  </motion.div>
+                ) : (
+                  // Optional: Show placeholder if no loan is selected and loans exist
+                  lender.loans.length > 0 && (
+                    <div className="text-center text-muted-foreground py-8">{t('dropdown.selectPrompt')}</div>
+                  )
+                )}
+              </AnimatePresence>
             </>
           )}
         </div>

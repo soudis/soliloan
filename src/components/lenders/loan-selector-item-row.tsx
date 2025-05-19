@@ -26,18 +26,18 @@ export function LoanSelectorItemRow({ loan, commonT, loanT }: LoanSelectorItemRo
   });
 
   const loanNumberAndBadgeCell = (
-    <td className="align-middle p-2 pl-3">
+    <div className="align-middle p-2 pl-3 table-cell">
       <div className="flex flex-col items-start gap-1">
         <h3 className="text-lg font-medium">
           {loanT('table.loanNumberShort')} #{loan.loanNumber}
         </h3>
         <LoanStatusBadge status={loan.status} commonT={commonT} className="mt-0.5" />
       </div>
-    </td>
+    </div>
   );
 
   const detailsCell = (
-    <td className="align-middle p-2 pr-3 border-l border-border">
+    <div className="align-middle p-2 pr-3 border-l border-border table-cell">
       <div className="text-left flex flex-col justify-center">
         <div className="text-sm font-medium text-primary mb-1">{contractDateStr}</div>
         <div className="text-xs text-muted-foreground space-y-0.5">
@@ -50,7 +50,7 @@ export function LoanSelectorItemRow({ loan, commonT, loanT }: LoanSelectorItemRo
           </div>
         </div>
       </div>
-    </td>
+    </div>
   );
 
   return (
