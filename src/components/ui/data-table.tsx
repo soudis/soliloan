@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   type ColumnDef,
   type FilterFn,
+  type RowData,
   type VisibilityState,
   getCoreRowModel,
   getFilteredRowModel,
@@ -19,6 +20,15 @@ import { useTableStore } from '@/store/table-store';
 import { DataTableBody } from './data-table-body';
 import { DataTableHeader } from './data-table-header';
 import { DataTablePagination } from './data-table-pagination';
+
+declare module '@tanstack/react-table' {
+  interface ColumnMeta<TData extends RowData, TValue> {
+    style?: {
+      textAlign?: 'left' | 'center' | 'right';
+    };
+    fixed?: boolean;
+  }
+}
 
 // Define the custom filter function for compound text fields
 export const compoundTextFilter: FilterFn<unknown> = (row, columnId, filterValue) => {

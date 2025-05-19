@@ -220,5 +220,10 @@
     }
   },
   "clear": "Keine Standardeinstellung",
-  "default": "Standard"
+  "default": "Standard",
+  "terms": {
+    "contractDate": "Vertragsdatum",
+    "contractDateShort": "Vertrag",
+    "atRate": "zu"
+  }
 }

@@ -34,6 +34,7 @@ type ColumnConfig<T> = ColumnDef<T> & {
   accessorKey: string;
   header?: string | undefined;
   id?: string | undefined;
+  align?: 'left' | 'right' | 'center';
 };
 
 // Create a basic column definition
@@ -52,6 +53,11 @@ export function createColumn<T>(config: ColumnConfig<T>, t: (key: string) => str
         if (b === null || b === undefined) return -1;
         return a < b ? -1 : 1;
       }),
+    meta: {
+      style: {
+        textAlign: config.align ?? 'left',
+      },
+    },
   };
 }
 
@@ -90,6 +96,7 @@ export function createCurrencyColumn<T>(
     {
       accessorKey,
       header: headerKey,
+      align: 'right',
       cell: ({ row }) => {
         const value = Number(row.getValue(accessorKey)) || 0;
         return <div className="text-right">{formatCurrency(value)}</div>;

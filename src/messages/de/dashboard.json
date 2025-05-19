@@ -13,7 +13,7 @@
     "loanStatus": "Kreditstatus",
     "totalInterest": "Gesamtzinsen",
     "interestPaid": "Ausbezahlte Zinsen",
-    "totalBalance": "Gesamtsaldo",
+    "totalBalance": "Kontostand",
     "notReclaimed": "Nicht zurückgefordert",
     "totalDeposits": "Einzahlungen",
     "withdrawals": "Auszahlungen",
@@ -81,7 +81,7 @@
       "filterByName": "Nach Namen filtern..."
     },
     "details": {
-      "edit": "Kreditgeber*in bearbeiten",
+      "edit": "Bearbeiten",
       "newLoan": "Neuer Kredit",
       "lenderInfo": "Kreditgeber*in",
       "address": "Adresse",
@@ -192,7 +192,8 @@
       "lenderName": "Kreditgeber*in",
       "lender": "Kreditgeber*in",
       "amount": "Betrag",
-      "balance": "Aktueller Saldo",
+      "balance": "Kontostand",
+      "balanceShort": "Stand:",
       "interestRate": "Zinssatz",
       "interest": "Zinsen",
       "interestPaid": "Ausbezahlte Zinsen",
@@ -230,7 +231,7 @@
       "deposits": "Einzahlungen",
       "withdrawals": "Auszahlungen",
       "interestError": "Zinsfehler",
-      "currentBalance": "Aktueller Saldo",
+      "currentBalance": "Kontostand",
       "notReclaimed": "Nicht zurückgefordert"
     },
     "new": {

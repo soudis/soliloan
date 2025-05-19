@@ -163,10 +163,6 @@ export default function LenderDetailsPage({
           </p>
         </div>
         <div className="flex items-center space-x-4">
-          <Button variant="outline" onClick={() => router.push(`/lenders/${lender.id}/edit`)}>
-            <Pencil className="mr-2 h-4 w-4" />
-            {t('details.edit')}
-          </Button>
           <Button onClick={() => router.push(`/loans/new?lenderId=${lender.id}`)}>
             <Plus className="mr-2 h-4 w-4" />
             {t('details.newLoan')}
@@ -210,8 +206,14 @@ export default function LenderDetailsPage({
         </div>
 
         {/* Lender Information Section - Right side on desktop, top on mobile */}
-        <div className="w-full lg:w-1/3 mt-6">
-          <h2 className="text-2xl font-semibold mb-4">{t('details.lenderInfo')}</h2>
+        <div className="w-full lg:w-1/3 mt-12.5">
+          <div className="flex justify-between">
+            <h2 className="text-2xl font-semibold mb-4">{t('details.lenderInfo')}</h2>
+            <Button variant="outline" size="sm" onClick={() => router.push(`/lenders/${lender.id}/edit`)}>
+              <Pencil className="align-self-end" />
+              {t('details.edit')}
+            </Button>
+          </div>
           <LenderInfoCard lender={lender} />
         </div>
       </div>

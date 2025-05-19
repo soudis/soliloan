@@ -16,6 +16,7 @@ import {
   createAdditionalFieldFilters,
   createAdditionalFieldsColumns,
   createColumn,
+  createCurrencyColumn,
   createLenderAddressColumn,
   createLenderBankingColumn,
   createLenderEnumBadgeColumn,
@@ -29,6 +30,7 @@ export default function LendersPage() {
   const router = useRouter();
   const { selectedProject } = useProject();
   const t = useTranslations('dashboard.lenders');
+  const tLoans = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
 
   const { data: lenders = [], isLoading: loading } = useQuery({
@@ -119,6 +121,20 @@ export default function LendersPage() {
       t,
       commonT,
     ),
+
+    createCurrencyColumn<LenderWithRelations>('amount', 'table.amount', tLoans),
+
+    createCurrencyColumn<LenderWithRelations>('balance', 'table.balance', tLoans),
+
+    createCurrencyColumn<LenderWithRelations>('deposits', 'table.deposits', tLoans),
+
+    createCurrencyColumn<LenderWithRelations>('withdrawals', 'table.withdrawals', tLoans),
+
+    createCurrencyColumn<LenderWithRelations>('notReclaimed', 'table.notReclaimed', tLoans),
+
+    createCurrencyColumn<LenderWithRelations>('interest', 'table.interest', tLoans),
+
+    createCurrencyColumn<LenderWithRelations>('interestPaid', 'table.interestPaid', tLoans),
   ];
 
   // Define column filters based on data types
@@ -191,6 +207,34 @@ export default function LendersPage() {
       })),
     },
     ...createAdditionalFieldFilters('additionalFields', selectedProject?.configuration.lenderAdditionalFields),
+    amount: {
+      type: 'number' as const,
+      label: tLoans('table.amount'),
+    },
+    balance: {
+      type: 'number' as const,
+      label: tLoans('table.balance'),
+    },
+    deposits: {
+      type: 'number' as const,
+      label: tLoans('table.deposits'),
+    },
+    withdrawals: {
+      type: 'number' as const,
+      label: tLoans('table.withdrawals'),
+    },
+    notReclaimed: {
+      type: 'number' as const,
+      label: tLoans('table.notReclaimed'),
+    },
+    interest: {
+      type: 'number' as const,
+      label: tLoans('table.interest'),
+    },
+    interestPaid: {
+      type: 'number' as const,
+      label: tLoans('table.interestPaid'),
+    },
   };
 
   // Define default column visibility
@@ -199,13 +243,20 @@ export default function LendersPage() {
     type: true,
     name: true,
     email: true,
-    telNo: true,
+    telNo: false,
     address: false,
     banking: false,
-    notificationType: true,
-    membershipStatus: true,
+    notificationType: false,
+    membershipStatus: false,
     tag: false,
     salutation: false,
+    amount: false,
+    balance: true,
+    deposits: false,
+    withdrawals: false,
+    notReclaimed: false,
+    interest: false,
+    interestPaid: false,
     ...createAdditionalFieldDefaultColumnVisibility(
       'additionalFields',
       selectedProject?.configuration.lenderAdditionalFields,

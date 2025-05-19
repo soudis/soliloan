@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { InfoItem } from '@/components/ui/info-item';
 import { useProject } from '@/store/project-context';
-import { LenderWithCalculations } from '@/types/lenders';
+import type { LenderWithCalculations } from '@/types/lenders';
 
 interface LenderInfoCardProps {
   lender: LenderWithCalculations;

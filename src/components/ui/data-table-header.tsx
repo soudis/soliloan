@@ -1,6 +1,6 @@
-import { View, ViewType } from '@prisma/client';
+import type { View, ViewType } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { Table, VisibilityState } from '@tanstack/react-table';
+import type { Table, VisibilityState } from '@tanstack/react-table';
 import { isEqual } from 'lodash';
 import { SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { useTableStore, ViewState } from '@/store/table-store';
+import { type ViewState, useTableStore } from '@/store/table-store';
 
 import { DataTableColumnFilters } from './data-table-column-filters';
 import { SaveViewDialog } from './save-view-dialog';
@@ -176,7 +176,7 @@ export function DataTableHeader<TData>({
                     columnFilters,
                     globalFilter,
                     pageSize,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
                   } = view.data as any;
                   setState(viewType, {
                     selectedView: view.id,
@@ -201,7 +201,7 @@ export function DataTableHeader<TData>({
             >
               <SlidersHorizontal className="mr-2 h-4 w-4" />
               {t('filters')}
-              {hasActiveFilters() && <span className="ml-2 flex h-2 w-2 rounded-full bg-primary"></span>}
+              {hasActiveFilters() && <span className="ml-2 flex h-2 w-2 rounded-full bg-primary" />}
             </Button>
           )}
           {showColumnVisibility && (

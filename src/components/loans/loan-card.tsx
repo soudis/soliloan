@@ -13,13 +13,13 @@ import { InfoItem } from '@/components/ui/info-item';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLoanTabsStore } from '@/lib/stores/loan-tabs-store';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
-import { LoanStatus, LoanWithCalculations } from '@/types/loans';
+import { LoanStatus, type LoanWithCalculations } from '@/types/loans';
 
+import { Button } from '../ui/button';
 import { LoanCalculations } from './loan-calculations';
 import { LoanFiles } from './loan-files';
 import { LoanNotes } from './loan-notes';
 import { LoanTransactions } from './loan-transactions';
-import { Button } from '../ui/button';
 
 interface LoanCardProps {
   loan: LoanWithCalculations;

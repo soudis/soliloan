@@ -1,4 +1,4 @@
-import { Lender, Transaction, TransactionType } from '@prisma/client';
+import { type Lender, type Transaction, TransactionType } from '@prisma/client';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
