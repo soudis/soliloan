@@ -59,7 +59,6 @@ export default function ConfigurationPage() {
     try {
       setError(null);
       setIsSubmitting(true);
-      console.log('Submitting configuration data:', data);
 
       // Update the configuration using the server action
       const result = await updateConfiguration(selectedProject.id, data);
@@ -88,9 +87,6 @@ export default function ConfigurationPage() {
           userTheme: result.configuration.userTheme || null,
           lenderSalutation: result.configuration.lenderSalutation || null,
           lenderCountry: result.configuration.lenderCountry || null,
-          lenderNotificationType: result.configuration.lenderNotificationType || null,
-          lenderMembershipStatus: result.configuration.lenderMembershipStatus || null,
-          lenderTags: result.configuration.lenderTags || [],
           interestMethod: result.configuration.interestMethod || null,
           altInterestMethods: result.configuration.altInterestMethods || [],
           customLoans: result.configuration.customLoans || false,

@@ -1,16 +1,10 @@
 'use client';
 
-import {
-  ContractStatus,
-  InterestMethod,
-  InterestPaymentType,
-  InterestPayoutType,
-  TerminationType,
-} from '@prisma/client';
+import { ContractStatus, InterestMethod, TerminationType } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { getLoansByProjectId } from '@/app/actions/loans';
 import { Button } from '@/components/ui/button';
@@ -37,6 +31,7 @@ export default function LoansPage() {
   const commonT = useTranslations('common');
   const router = useRouter();
   const { selectedProject } = useProject();
+  const locale = useLocale();
 
   const { data: loans = [], isLoading: loading } = useQuery({
     queryKey: ['loans', selectedProject?.id],
@@ -51,10 +46,8 @@ export default function LoansPage() {
     enabled: !!selectedProject,
   });
 
-  console.log(loans);
-
   const columns: ColumnDef<LoanWithRelations>[] = [
-    createNumberColumn<LoanWithRelations>('loanNumber', 'table.loanNumber', t),
+    createNumberColumn<LoanWithRelations>('loanNumber', 'table.loanNumber', t, locale),
 
     createColumn<LoanWithRelations>(
       {
@@ -73,39 +66,21 @@ export default function LoansPage() {
 
     createDateColumn<LoanWithRelations>('signDate', 'table.signDate', t),
 
-    createCurrencyColumn<LoanWithRelations>('amount', 'table.amount', t),
+    createCurrencyColumn<LoanWithRelations>('amount', 'table.amount', t, locale),
 
-    createCurrencyColumn<LoanWithRelations>('balance', 'table.balance', t),
+    createCurrencyColumn<LoanWithRelations>('balance', 'table.balance', t, locale),
 
-    createCurrencyColumn<LoanWithRelations>('deposits', 'table.deposits', t),
+    createCurrencyColumn<LoanWithRelations>('deposits', 'table.deposits', t, locale),
 
-    createCurrencyColumn<LoanWithRelations>('withdrawals', 'table.withdrawals', t),
+    createCurrencyColumn<LoanWithRelations>('withdrawals', 'table.withdrawals', t, locale),
 
-    createCurrencyColumn<LoanWithRelations>('notReclaimed', 'table.notReclaimed', t),
+    createCurrencyColumn<LoanWithRelations>('notReclaimed', 'table.notReclaimed', t, locale),
 
-    createPercentageColumn<LoanWithRelations>('interestRate', 'table.interestRate', t),
+    createPercentageColumn<LoanWithRelations>('interestRate', 'table.interestRate', t, locale),
 
-    createCurrencyColumn<LoanWithRelations>('interest', 'table.interest', t),
+    createCurrencyColumn<LoanWithRelations>('interest', 'table.interest', t, locale),
 
-    createCurrencyColumn<LoanWithRelations>('interestPaid', 'table.interestPaid', t),
-
-    createEnumBadgeColumn<LoanWithRelations>(
-      'interestPaymentType',
-      'table.interestPaymentType',
-      'enums.loan.interestPaymentType',
-      t,
-      commonT,
-      () => 'outline',
-    ),
-
-    createEnumBadgeColumn<LoanWithRelations>(
-      'interestPayoutType',
-      'table.interestPayoutType',
-      'enums.loan.interestPayoutType',
-      t,
-      commonT,
-      () => 'outline',
-    ),
+    createCurrencyColumn<LoanWithRelations>('interestPaid', 'table.interestPaid', t, locale),
 
     createEnumBadgeColumn<LoanWithRelations>(
       'terminationType',
@@ -161,7 +136,7 @@ export default function LoansPage() {
       selectedProject?.configuration.loanAdditionalFields,
       'additionalFields',
       t,
-      commonT,
+      locale,
     ),
   ];
 
@@ -214,22 +189,6 @@ export default function LoansPage() {
     interestPaid: {
       type: 'number' as const,
       label: t('table.interestPaid'),
-    },
-    interestPaymentType: {
-      type: 'select' as const,
-      label: t('table.interestPaymentType'),
-      options: Object.entries(InterestPaymentType).map(([key, value]) => ({
-        label: commonT(`enums.loan.interestPaymentType.${key}`),
-        value: value,
-      })),
-    },
-    interestPayoutType: {
-      type: 'select' as const,
-      label: t('table.interestPayoutType'),
-      options: Object.entries(InterestPayoutType).map(([key, value]) => ({
-        label: commonT(`enums.loan.interestPayoutType.${key}`),
-        value: value,
-      })),
     },
     terminationType: {
       type: 'select' as const,
@@ -288,8 +247,6 @@ export default function LoansPage() {
     interestRate: true,
     interest: false,
     interestPaid: false,
-    interestPaymentType: false,
-    interestPayoutType: false,
     terminationType: false,
     terminationModalities: false,
     repayDate: false,

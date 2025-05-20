@@ -3,6 +3,8 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 import type { ClassValue } from 'clsx';
+import { format } from 'date-fns';
+import { de, enUS } from 'date-fns/locale';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -13,8 +15,11 @@ export function cn(...inputs: ClassValue[]) {
  * @param amount The amount to format
  * @returns A formatted currency string (e.g. "1.234,56 €")
  */
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('de-DE', {
+export function formatCurrency(amount: number | undefined | null, locale?: string): string {
+  if (amount === undefined || amount === null) {
+    return '';
+  }
+  return new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'de-DE', {
     style: 'currency',
     currency: 'EUR',
   }).format(amount);
@@ -25,8 +30,11 @@ export function formatCurrency(amount: number): string {
  * @param amount The amount to format
  * @returns A formatted percentage string (e.g. "12.34%")
  */
-export function formatPercentage(amount: number): string {
-  return new Intl.NumberFormat('de-DE', {
+export function formatPercentage(amount: number | undefined | null, locale?: string): string {
+  if (amount === undefined || amount === null) {
+    return '';
+  }
+  return new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'de-DE', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 3,
   }).format(amount);
@@ -36,14 +44,22 @@ export function formatNumber(
   amount: number | undefined | null,
   minimumFractionDigits = 2,
   maximumFractionDigits = 2,
+  locale?: string,
 ): string {
   if (amount === undefined || amount === null) {
     return '';
   }
-  return new Intl.NumberFormat('de-DE', {
+  return new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'de-DE', {
     minimumFractionDigits,
     maximumFractionDigits,
   }).format(amount);
+}
+
+export function formatDate(date: Date | string | null | undefined, locale: string): string {
+  if (!date) {
+    return '';
+  }
+  return format(date, 'PPP', { locale: locale === 'de' ? de : enUS });
 }
 
 export class NumberParser {

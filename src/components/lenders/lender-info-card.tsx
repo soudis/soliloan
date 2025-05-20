@@ -9,12 +9,14 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { sendInvitationEmail } from '@/app/actions/users';
-import { LoanCalculations } from '@/components/loans/loan-calculations';
+import { BalanceTable } from '@/components/loans/balance-table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { InfoItem } from '@/components/ui/info-item';
+import { hasAdditionalFields } from '@/lib/utils/additional-fields';
 import { useProject } from '@/store/project-context';
 import type { LenderWithCalculations } from '@/types/lenders';
+import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-items';
 
 interface LenderInfoCardProps {
   lender: LenderWithCalculations;
@@ -75,7 +77,7 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
 
   return (
     <Card>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4">
         {/* Name Information */}
         {lenderName && (
           <div className="grid grid-cols-1 gap-4">
@@ -120,8 +122,8 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
               label={t('details.banking')}
               value={
                 <>
-                  {lender.iban && <div>{lender.iban}</div>}
-                  {lender.bic && <div className="text-muted-foreground">{lender.bic}</div>}
+                  <div>{lender.iban && <div>{lender.iban}</div>}</div>
+                  {lender.bic && <div className="text-sm text-muted-foreground">{lender.bic}</div>}
                 </>
               }
               showCopyButton={true}
@@ -137,15 +139,7 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
         {hasLoanCalculations && (
           <div className="grid grid-cols-1 gap-4">
             <div className="text-sm text-muted-foreground">{t('details.loanCalculations')}</div>
-            <LoanCalculations
-              deposits={lender.deposits || 0}
-              withdrawals={lender.withdrawals || 0}
-              notReclaimed={lender.notReclaimed || 0}
-              interest={lender.interest || 0}
-              interestPaid={lender.interestPaid || 0}
-              interestError={lender.interestError || 0}
-              balance={lender.balance || 0}
-            />
+            <BalanceTable totals={lender} />
           </div>
         )}
 
@@ -157,22 +151,26 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
               <InfoItem
                 label={t('details.lastLogin')}
                 value={
-                  lender.user.lastLogin
-                    ? format(new Date(lender.user.lastLogin), 'PPP p', {
-                        locale: dateLocale,
-                      })
-                    : t('details.neverLoggedIn')
+                  lender.user.lastLogin ? (
+                    format(new Date(lender.user.lastLogin), 'PPP p', {
+                      locale: dateLocale,
+                    })
+                  ) : (
+                    <div className="text-muted-foreground italic">{t('details.neverLoggedIn')}</div>
+                  )
                 }
               />
               <div className="flex items-center justify-between">
                 <InfoItem
                   label={t('details.lastInvited')}
                   value={
-                    lender.user.lastInvited
-                      ? format(new Date(lender.user.lastInvited), 'PPP p', {
-                          locale: dateLocale,
-                        })
-                      : t('details.neverInvited')
+                    lender.user.lastInvited ? (
+                      format(new Date(lender.user.lastInvited), 'PPP p', {
+                        locale: dateLocale,
+                      })
+                    ) : (
+                      <div className="text-muted-foreground italic">{t('details.neverInvited')}</div>
+                    )
                   }
                 />
                 <Button
@@ -187,6 +185,15 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
                 </Button>
               </div>
             </div>
+          </div>
+        )}
+        {hasAdditionalFields(lender.additionalFields, selectedProject?.configuration.lenderAdditionalFields) && (
+          <div className="grid grid-cols-1 gap-4">
+            <div className="text-sm text-muted-foreground">{t('details.additionalFields')}</div>
+            <AdditionalFieldInfoItems
+              additionalFields={lender.additionalFields}
+              configuration={selectedProject?.configuration.lenderAdditionalFields}
+            />
           </div>
         )}
       </CardContent>

@@ -56,62 +56,60 @@ export function FormSelect({
     <FormFieldWrapper
       control={form.control}
       name={name}
-      render={({ field }) => (
-        <FormItem>
-          {label && <FormLabel>{label}</FormLabel>}
-          <div className="relative">
-            <Select
-              disabled={disabled}
-              onValueChange={(value) => field.onChange(value === 'clear' ? '' : value)}
-              value={field.value || undefined}
-            >
-              <FormControl>
-                <SelectTrigger className={field.value ? '' : 'text-muted-foreground/60'}>
-                  <SelectValue placeholder={placeholder} />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent position={position} side={side} align={align} className="max-h-[300px]">
-                {clearable && (
-                  <SelectItem value="clear">
-                    <span className="text-muted-foreground/60">{placeholder ?? t('clear')}</span>
-                  </SelectItem>
-                )}
-                {customContent
-                  ? customContent()
-                  : options.map((option, index) =>
-                      option === 'divider' ? (
-                        <SelectSeparator
-                          key={`divider_${
-                            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                            index
-                          }`}
-                        />
-                      ) : (
-                        <SelectItem key={option.value} value={option.value} disabled={option.disabled}>
-                          {option.label}
-                        </SelectItem>
-                      ),
-                    )}
-              </SelectContent>
-            </Select>
-            {clearable && field.value && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-8 top-1/2 -translate-y-1/2 h-6 w-6"
-                onClick={(e) => {
-                  e.preventDefault();
-                  field.onChange('clear');
-                }}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-          <FormMessage />
-          {hint && <FormDescription className="text-sm text-muted-foreground/80">{hint}</FormDescription>}
-        </FormItem>
-      )}
+      render={({ field }) => {
+        return (
+          <FormItem>
+            {label && <FormLabel>{label}</FormLabel>}
+            <div className="relative">
+              <Select disabled={disabled} onValueChange={field.onChange} value={field.value || undefined}>
+                <FormControl>
+                  <SelectTrigger className={field.value ? '' : 'text-muted-foreground/60'}>
+                    <SelectValue placeholder={placeholder} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent position={position} side={side} align={align} className="max-h-[300px]">
+                  {clearable && (
+                    <SelectItem value="clear">
+                      <span className="text-muted-foreground/60">{placeholder ?? t('clear')}</span>
+                    </SelectItem>
+                  )}
+                  {customContent
+                    ? customContent()
+                    : options.map((option, index) =>
+                        option === 'divider' ? (
+                          <SelectSeparator
+                            key={`divider_${
+                              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                              index
+                            }`}
+                          />
+                        ) : (
+                          <SelectItem key={option.value} value={option.value} disabled={option.disabled}>
+                            {option.label}
+                          </SelectItem>
+                        ),
+                      )}
+                </SelectContent>
+              </Select>
+              {clearable && field.value && field.value !== 'clear' && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-8 top-1/2 -translate-y-1/2 h-6 w-6"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    field.onChange('clear');
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            <FormMessage />
+            {hint && <FormDescription className="text-sm text-muted-foreground/80">{hint}</FormDescription>}
+          </FormItem>
+        );
+      }}
     />
   );
 }

@@ -1,14 +1,6 @@
 'use server';
 
-import {
-  type ContractStatus,
-  type DurationType,
-  Entity,
-  type InterestMethod,
-  type InterestPaymentType,
-  type InterestPayoutType,
-  Operation,
-} from '@prisma/client';
+import { type ContractStatus, type DurationType, Entity, type InterestMethod, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 import { createAuditEntry, getLenderContext, getLoanContext, removeNullFields } from '@/lib/audit-trail';
@@ -52,8 +44,6 @@ export async function createLoan(data: LoanFormData) {
     const loan = await db.loan.create({
       data: {
         signDate: data.signDate as Date,
-        interestPaymentType: data.interestPaymentType as InterestPaymentType,
-        interestPayoutType: data.interestPayoutType as InterestPayoutType,
         terminationType: data.terminationType,
         endDate: data.endDate,
         terminationDate: data.terminationDate,

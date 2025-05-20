@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
 import type { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
-import { LoanStatusBadge } from './loan-status-badge';
+import { LoanStatusBadge } from '../loans/loan-status-badge';
 
 interface LoanSelectorItemRowProps {
   loan: LoanWithCalculations;

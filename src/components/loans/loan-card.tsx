@@ -14,12 +14,14 @@ import { InfoItem } from '@/components/ui/info-item';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLoanTabsStore } from '@/lib/stores/loan-tabs-store';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
-import { LoanStatus, type LoanWithCalculations } from '@/types/loans';
+import type { LoanWithCalculations } from '@/types/loans';
 
 import { Button } from '../ui/button';
-import { LoanCalculations } from './loan-calculations';
+import { BalanceTable } from './balance-table';
+import { LoanContractStatusBadge } from './loan-contract-status-badge';
 import { LoanFiles } from './loan-files';
 import { LoanNotes } from './loan-notes';
+import { LoanStatusBadge } from './loan-status-badge';
 import { LoanTransactions } from './loan-transactions';
 
 interface LoanCardProps {
@@ -88,23 +90,8 @@ export function LoanCard({ loan, onEdit, onDelete, className }: LoanCardProps) {
                 {t('table.loanNumber')} #{loan.loanNumber}
               </h3>
               <div className="flex space-x-2">
-                <Badge variant={loan.contractStatus === 'PENDING' ? 'secondary' : 'default'} className="mt-1">
-                  {commonT(`enums.loan.contractStatus.${loan.contractStatus}`)}
-                </Badge>
-                <Badge
-                  variant={
-                    loan.status === LoanStatus.ACTIVE
-                      ? 'default'
-                      : loan.status === LoanStatus.TERMINATED
-                        ? 'destructive'
-                        : loan.status === LoanStatus.NOTDEPOSITED
-                          ? 'secondary'
-                          : 'outline'
-                  }
-                  className="mt-1"
-                >
-                  {commonT(`enums.loan.status.${loan.status}`)}
-                </Badge>
+                <LoanContractStatusBadge loan={loan} />
+                <LoanStatusBadge status={loan.status} />
               </div>
             </div>
             <div className="flex space-x-1">
@@ -139,16 +126,7 @@ export function LoanCard({ loan, onEdit, onDelete, className }: LoanCardProps) {
               />
               <InfoItem label={t('table.terminationModalities')} value={getTerminationModalities()} />
             </div>
-            <LoanCalculations
-              className="mt-6"
-              deposits={loan.deposits}
-              withdrawals={loan.withdrawals}
-              notReclaimed={loan.notReclaimed}
-              interest={loan.interest}
-              interestPaid={loan.interestPaid}
-              interestError={loan.interestError}
-              balance={loan.balance}
-            />
+            <BalanceTable className="mt-6" totals={loan} />
             <Tabs
               value={activeTab}
               onValueChange={(value) => setActiveTab(loan.id, value as 'transactions' | 'files' | 'notes' | 'bookings')}

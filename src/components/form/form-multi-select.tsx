@@ -31,7 +31,6 @@ export function FormMultiSelect({ name, label, placeholder, options, maxCount, h
       control={form.control}
       name={name}
       render={({ field }) => {
-        console.log(field.value);
         return (
           <FormItem>
             <FormLabel>{label}</FormLabel>

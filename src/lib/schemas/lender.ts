@@ -6,8 +6,6 @@ import {
   addressSchema,
   bankingSchema,
   contactSchema,
-  membershipStatusEnumRequired,
-  notificationTypeEnumRequired,
   salutationEnumRequired,
   selectEnumRequired,
 } from './common';
@@ -32,9 +30,6 @@ export const lenderFormSchema = z
     ...bankingSchema.shape,
 
     // Additional Information
-    notificationType: notificationTypeEnumRequired,
-    membershipStatus: membershipStatusEnumRequired,
-    tag: z.string().nullable().optional(),
     additionalFields: additionalFieldValuesSchema.default({}).optional().nullable(),
     // Project ID (required for API)
     projectId: z.string(),

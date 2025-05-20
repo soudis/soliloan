@@ -63,9 +63,6 @@ export async function updateLender(lenderId: string, data: LenderFormData) {
         telNo: data.telNo,
         iban: data.iban,
         bic: data.bic,
-        notificationType: data.notificationType,
-        membershipStatus: data.membershipStatus,
-        tag: data.tag,
         additionalFields: data.additionalFields ?? {},
         ...(data.email && {
           user: {

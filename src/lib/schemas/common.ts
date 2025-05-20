@@ -1,15 +1,4 @@
-import {
-  ContractStatus,
-  Country,
-  DurationType,
-  InterestMethod,
-  InterestPaymentType,
-  InterestPayoutType,
-  MembershipStatus,
-  NotificationType,
-  Salutation,
-  ViewType,
-} from '@prisma/client';
+import { ContractStatus, Country, DurationType, InterestMethod, Salutation, ViewType } from '@prisma/client';
 import { z } from 'zod';
 
 import { isValidIban } from '@/lib/utils/iban';
@@ -19,12 +8,16 @@ import { validationError } from '../utils/validation';
 
 // Generic number schemas
 export const createNumberSchema = (min?: number, errorMessage = 'validation.common.required') => {
+  const parser = new NumberParser('de-DE');
   return min
     ? z.preprocess(
-        (val) => (val === '' ? null : Number(val)),
+        (val) => (val === '' ? null : parser.parse(val as string)),
         z.coerce.number({ message: errorMessage }).min(min, validationError('validation.common.numberMin', { min })),
       )
-    : z.preprocess((val) => (val === '' ? null : Number(val)), z.coerce.number({ message: errorMessage }));
+    : z.preprocess(
+        (val) => (val === '' ? null : parser.parse(val as string)),
+        z.coerce.number({ message: errorMessage }),
+      );
 };
 
 export const createNumberSchemaRequired = (min?: number, errorMessage = 'validation.common.required') => {
@@ -227,25 +220,11 @@ export const bankingSchema = z.object({
 // Interest method enum
 export const interestMethodEnum = selectEnumOptional(InterestMethod);
 
-// Notification type enum
-export const notificationTypeEnumRequired = selectEnumRequired(NotificationType);
-export const notificationTypeEnumOptional = selectEnumOptional(NotificationType);
-
-// Membership status enum
-export const membershipStatusEnumRequired = selectEnumRequired(MembershipStatus);
-export const membershipStatusEnumOptional = selectEnumOptional(MembershipStatus);
-
 // Salutation enum
 export const salutationEnumRequired = selectEnumRequired(Salutation);
 export const salutationEnumOptional = selectEnumOptional(Salutation);
 // Period type enum (TerminationPeriodType)
 export const periodTypeEnum = selectEnumOptional(DurationType);
-
-// Interest payment type enum
-export const interestPaymentTypeEnum = selectEnumRequired(InterestPaymentType);
-
-// Interest payout type enum
-export const interestPayoutTypeEnum = selectEnumRequired(InterestPayoutType);
 
 // Contract status enum
 export const contractStatusEnum = selectEnumRequired(ContractStatus);
@@ -258,6 +237,7 @@ export enum AdditionalFieldType {
   NUMBER = 'number',
   DATE = 'date',
   SELECT = 'select',
+  BOOLEAN = 'boolean',
 }
 export enum AdditionalNumberFormat {
   INTEGER = 'integer',
@@ -274,6 +254,10 @@ export const additionalFieldConfigSchema = z
     type: additionalFieldTypeEnum,
     numberFormat: additionalNumberFormatEnum,
     selectOptions: z.array(z.string()),
+    defaultValue: z.preprocess(
+      (val) => (val?.toString() === 'clear' ? '' : val?.toString()),
+      z.string().nullable().optional(),
+    ),
     required: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
@@ -282,6 +266,31 @@ export const additionalFieldConfigSchema = z
     }
     if (data.type === AdditionalFieldType.NUMBER && !data.numberFormat) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'validation.common.required', path: ['numberFormat'] });
+    }
+    if (
+      data.type === AdditionalFieldType.NUMBER &&
+      data.defaultValue &&
+      data.defaultValue !== '' &&
+      !createNumberSchema().safeParse(data.defaultValue).success
+    ) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'validation.common.number', path: ['defaultValue'] });
+    }
+    if (
+      data.type === AdditionalFieldType.BOOLEAN &&
+      data.defaultValue &&
+      data.defaultValue !== '' &&
+      data.defaultValue !== 'true' &&
+      data.defaultValue !== 'false'
+    ) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'validation.common.boolean', path: ['defaultValue'] });
+    }
+    if (
+      data.type === AdditionalFieldType.SELECT &&
+      data.defaultValue &&
+      data.defaultValue !== '' &&
+      !data.selectOptions.includes(data.defaultValue)
+    ) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'validation.common.required', path: ['defaultValue'] });
     }
   });
 
@@ -292,7 +301,7 @@ export type AdditionalFieldConfig = z.infer<typeof additionalFieldConfigSchema>;
 export const additionalFieldValuesSchema = z
   .record(
     z.string(),
-    z.preprocess((val) => val?.toString(), z.string().nullable().optional()),
+    z.preprocess((val) => (val?.toString() === 'clear' ? '' : val?.toString()), z.string().nullable().optional()),
   )
   .optional()
   .nullable();

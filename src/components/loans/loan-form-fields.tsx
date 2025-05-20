@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  ContractStatus,
-  DurationType,
-  InterestPaymentType,
-  InterestPayoutType,
-  type Lender,
-  TerminationType,
-} from '@prisma/client';
+import { ContractStatus, DurationType, type Lender, TerminationType } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useFormContext } from 'react-hook-form';
@@ -158,28 +151,6 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
 
       {/* Additional Information Section */}
       <FormSection title={t('new.form.additionalInfo')}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormSelect
-            name="interestPaymentType"
-            label={`${t('new.form.interestPaymentType')} *`}
-            placeholder={commonT('ui.form.selectPlaceholder')}
-            options={Object.keys(InterestPaymentType).map((key) => ({
-              value: key,
-              label: commonT(`enums.loan.interestPaymentType.${key}`),
-            }))}
-          />
-
-          <FormSelect
-            name="interestPayoutType"
-            label={`${t('new.form.interestPayoutType')} *`}
-            placeholder={commonT('ui.form.selectPlaceholder')}
-            options={Object.keys(InterestPayoutType).map((key) => ({
-              value: key,
-              label: commonT(`enums.loan.interestPayoutType.${key}`),
-            }))}
-          />
-        </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {(selectedProject?.configuration.altInterestMethods.length ?? 0) > 0 && (
             <FormSelect

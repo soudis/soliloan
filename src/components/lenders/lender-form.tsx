@@ -47,8 +47,6 @@ export function LenderForm({
 }: LenderFormProps) {
   const { selectedProject } = useProject();
 
-  console.log(initialData);
-
   const initialType = initialData?.type || LenderType.PERSON;
 
   let schema: ZodSchema;
@@ -65,9 +63,6 @@ export function LenderForm({
   if (selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.telNo)) {
     schema = schema.superRefine(validateFieldRequired('telNo'));
   }
-  if (selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.tag)) {
-    schema = schema.superRefine(validateFieldRequired('tag'));
-  }
 
   schema = schema.superRefine(
     validateAdditionalFields('additionalFields', selectedProject?.configuration?.lenderAdditionalFields),
@@ -77,8 +72,6 @@ export function LenderForm({
     return {
       type: initialType,
       salutation: initialData?.salutation || selectedProject?.configuration?.lenderSalutation || '',
-      notificationType: initialData?.notificationType || selectedProject?.configuration?.lenderNotificationType || '',
-      membershipStatus: initialData?.membershipStatus || selectedProject?.configuration?.lenderMembershipStatus || '',
       projectId: selectedProject?.id || '',
       // Contact Information
       email: initialData?.email || '',
@@ -93,7 +86,6 @@ export function LenderForm({
       iban: initialData?.iban || '',
       bic: initialData?.bic || '',
       // Additional Information
-      tag: initialData?.tag || '',
       firstName: initialData?.firstName || '',
       lastName: initialData?.lastName || '',
       titlePrefix: initialData?.titlePrefix || '',
@@ -119,8 +111,6 @@ export function LenderForm({
   if (!selectedProject) {
     return null;
   }
-
-  console.log(form.getValues());
 
   const handleSubmit = form.handleSubmit(async (data) => {
     try {

@@ -7,8 +7,6 @@ import {
   createDateSchema,
   createNumberSchemaRequired,
   interestMethodEnum,
-  interestPaymentTypeEnum,
-  interestPayoutTypeEnum,
   optionalNumberSchema,
   periodTypeEnum,
 } from './common';
@@ -31,8 +29,6 @@ export const loanFormSchema = z
     durationType: periodTypeEnum.nullable().optional(),
 
     // Additional Information
-    interestPaymentType: interestPaymentTypeEnum,
-    interestPayoutType: interestPayoutTypeEnum,
     altInterestMethod: interestMethodEnum.nullable().optional(),
     contractStatus: contractStatusEnum.default('PENDING'),
     additionalFields: additionalFieldValuesSchema.default({}).optional().nullable(),

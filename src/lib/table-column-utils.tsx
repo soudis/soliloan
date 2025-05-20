@@ -4,8 +4,8 @@ import type { ColumnDef, Row, VisibilityState } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { formatCurrency, getLenderName } from '@/lib/utils';
-import { type AdditionalFieldConfig, AdditionalFieldType } from './schemas/common';
+import { NumberParser, formatCurrency, getLenderName } from '@/lib/utils';
+import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat } from './schemas/common';
 
 // Define the custom filter function for compound text fields
 export function compoundTextFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
@@ -65,7 +65,9 @@ export function createNumberColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,
   t: (key: string) => string,
+  locale: string,
 ): ColumnDef<T> {
+  const parser = new NumberParser(locale);
   const column = createColumn<T>(
     {
       accessorKey,
@@ -74,7 +76,7 @@ export function createNumberColumn<T>(
         return row.getValue(accessorKey) !== null &&
           row.getValue(accessorKey) !== undefined &&
           row.getValue(accessorKey) !== ''
-          ? Number(row.getValue(accessorKey))?.toFixed(0)
+          ? parser.parse(row.getValue(accessorKey) as string)
           : '';
       },
     },
@@ -91,14 +93,16 @@ export function createCurrencyColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,
   t: (key: string) => string,
+  locale: string,
 ): ColumnDef<T> {
+  const parser = new NumberParser('de-DE');
   const column = createColumn<T>(
     {
       accessorKey,
       header: headerKey,
       align: 'right',
       cell: ({ row }) => {
-        const value = Number(row.getValue(accessorKey)) || 0;
+        const value = parser.parse(row.getValue(accessorKey) as string) || 0;
         return <div className="text-right">{formatCurrency(value)}</div>;
       },
     },
@@ -139,15 +143,17 @@ export function createDateColumn<T>(
 // Create a percentage column
 export function createPercentageColumn<T>(
   accessorKey: string,
-  headerKey: string,
+  headerKey: string | undefined,
   t: (key: string) => string,
+  locale: string,
 ): ColumnDef<T> {
+  const parser = new NumberParser(locale);
   const column = createColumn<T>(
     {
       accessorKey,
       header: headerKey,
       cell: ({ row }) => {
-        const value = Number(row.getValue(accessorKey)) || 0;
+        const value = parser.parse(row.getValue(accessorKey) as string) || 0;
         return <div className="text-right">{`${value.toFixed(2)}%`}</div>;
       },
     },
@@ -379,7 +385,7 @@ export function createAdditionalFieldsColumns<T>(
   config: AdditionalFieldConfig[] | undefined | null,
   accessorKey: string,
   t: (key: string) => string,
-  commonT: (key: string) => string,
+  locale: string,
 ): ColumnDef<T>[] {
   return (config?.map((field) => {
     if (field.type === AdditionalFieldType.DATE) {
@@ -391,8 +397,22 @@ export function createAdditionalFieldsColumns<T>(
     }
 
     if (field.type === AdditionalFieldType.NUMBER) {
+      if (field.numberFormat === AdditionalNumberFormat.MONEY) {
+        return {
+          ...createCurrencyColumn<T>(`${accessorKey}.${field.name}`, undefined, t, locale),
+          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+          id: `${accessorKey}.${field.name}`,
+        };
+      }
+      if (field.numberFormat === AdditionalNumberFormat.PERCENT) {
+        return {
+          ...createPercentageColumn<T>(`${accessorKey}.${field.name}`, undefined, t, locale),
+          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+          id: `${accessorKey}.${field.name}`,
+        };
+      }
       return {
-        ...createNumberColumn<T>(`${accessorKey}.${field.name}`, undefined, t),
+        ...createNumberColumn<T>(`${accessorKey}.${field.name}`, undefined, t, locale),
         header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
         id: `${accessorKey}.${field.name}`,
       };
@@ -478,27 +498,6 @@ export function createAdditionalFieldFilters<T>(
   });
 
   return filters;
-}
-
-// Create a tag column for lenders
-export function createLenderTagColumn<T extends Pick<Lender, 'tag'>>(t: (key: string) => string): ColumnDef<T> {
-  return createColumn<T>(
-    {
-      accessorKey: 'tag',
-      header: 'table.tag',
-      cell: ({ row }) => {
-        const tag = row.getValue('tag') as string;
-        return tag && tag !== '' ? <Badge variant="outline">{tag}</Badge> : '';
-      },
-      filterFn: enumFilter,
-      sortingFn: (rowA, rowB, columnId) => {
-        const a = rowA.getValue(columnId) as string;
-        const b = rowB.getValue(columnId) as string;
-        return a.localeCompare(b);
-      },
-    },
-    t,
-  );
 }
 
 // Create a lender name column

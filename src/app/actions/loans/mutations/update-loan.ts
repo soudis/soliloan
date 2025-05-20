@@ -1,14 +1,6 @@
 'use server';
 
-import {
-  type ContractStatus,
-  type DurationType,
-  Entity,
-  type InterestMethod,
-  type InterestPaymentType,
-  type InterestPayoutType,
-  Operation,
-} from '@prisma/client';
+import { type ContractStatus, type DurationType, Entity, type InterestMethod, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 import { createAuditEntry, getChangedFields, getLenderContext, getLoanContext } from '@/lib/audit-trail';
@@ -59,8 +51,6 @@ export async function updateLoan(loanId: string, data: LoanFormData) {
       },
       data: {
         signDate: data.signDate ?? undefined,
-        interestPaymentType: data.interestPaymentType as InterestPaymentType,
-        interestPayoutType: data.interestPayoutType as InterestPayoutType,
         terminationType: data.terminationType,
         endDate: data.endDate || null,
         terminationDate: data.terminationDate || null,

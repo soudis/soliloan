@@ -3,28 +3,20 @@
 import { useTranslations } from 'next-intl';
 
 import { formatCurrency } from '@/lib/utils';
+import type { LoanWithCalculations } from '@/types/loans';
 
-interface LoanCalculationsProps {
-  deposits: number;
-  withdrawals: number;
-  notReclaimed: number;
-  interest: number;
-  interestPaid: number;
-  interestError: number;
-  balance: number;
+type BalanceTableProps = {
+  totals: Pick<
+    LoanWithCalculations,
+    'deposits' | 'withdrawals' | 'notReclaimed' | 'interest' | 'interestPaid' | 'interestError' | 'balance'
+  >;
   className?: string;
-}
+};
 
-export function LoanCalculations({
-  deposits,
-  withdrawals,
-  notReclaimed,
-  interest,
-  interestPaid,
-  interestError,
-  balance,
+export function BalanceTable({
+  totals: { deposits, withdrawals, notReclaimed, interest, interestPaid, interestError, balance },
   className = '',
-}: LoanCalculationsProps) {
+}: BalanceTableProps) {
   const t = useTranslations('dashboard.loans');
 
   return (

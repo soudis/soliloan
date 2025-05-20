@@ -1,10 +1,10 @@
 'use client';
 
-import { MembershipStatus, NotificationType, Salutation } from '@prisma/client';
+import { Salutation } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { getLendersByProjectId } from '@/app/actions/lenders';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,6 @@ import {
   createLenderBankingColumn,
   createLenderEnumBadgeColumn,
   createLenderNameColumn,
-  createLenderTagColumn,
 } from '@/lib/table-column-utils';
 import { useProject } from '@/store/project-context';
 import type { LenderWithRelations } from '@/types/lenders';
@@ -32,6 +31,7 @@ export default function LendersPage() {
   const t = useTranslations('dashboard.lenders');
   const tLoans = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
+  const locale = useLocale();
 
   const { data: lenders = [], isLoading: loading } = useQuery({
     queryKey: ['lenders', selectedProject?.id],
@@ -87,26 +87,6 @@ export default function LendersPage() {
     createLenderBankingColumn<LenderWithRelations>(t),
 
     createLenderEnumBadgeColumn<LenderWithRelations>(
-      'notificationType',
-      'table.notificationType',
-      'enums.lender.notificationType',
-      t,
-      commonT,
-      () => 'outline',
-    ),
-
-    createLenderEnumBadgeColumn<LenderWithRelations>(
-      'membershipStatus',
-      'table.membershipStatus',
-      'enums.lender.membershipStatus',
-      t,
-      commonT,
-      () => 'outline',
-    ),
-
-    createLenderTagColumn<LenderWithRelations>(t),
-
-    createLenderEnumBadgeColumn<LenderWithRelations>(
       'salutation',
       'table.salutation',
       'enums.lender.salutation',
@@ -119,22 +99,22 @@ export default function LendersPage() {
       selectedProject?.configuration.lenderAdditionalFields,
       'additionalFields',
       t,
-      commonT,
+      locale,
     ),
 
-    createCurrencyColumn<LenderWithRelations>('amount', 'table.amount', tLoans),
+    createCurrencyColumn<LenderWithRelations>('amount', 'table.amount', tLoans, locale),
 
-    createCurrencyColumn<LenderWithRelations>('balance', 'table.balance', tLoans),
+    createCurrencyColumn<LenderWithRelations>('balance', 'table.balance', tLoans, locale),
 
-    createCurrencyColumn<LenderWithRelations>('deposits', 'table.deposits', tLoans),
+    createCurrencyColumn<LenderWithRelations>('deposits', 'table.deposits', tLoans, locale),
 
-    createCurrencyColumn<LenderWithRelations>('withdrawals', 'table.withdrawals', tLoans),
+    createCurrencyColumn<LenderWithRelations>('withdrawals', 'table.withdrawals', tLoans, locale),
 
-    createCurrencyColumn<LenderWithRelations>('notReclaimed', 'table.notReclaimed', tLoans),
+    createCurrencyColumn<LenderWithRelations>('notReclaimed', 'table.notReclaimed', tLoans, locale),
 
-    createCurrencyColumn<LenderWithRelations>('interest', 'table.interest', tLoans),
+    createCurrencyColumn<LenderWithRelations>('interest', 'table.interest', tLoans, locale),
 
-    createCurrencyColumn<LenderWithRelations>('interestPaid', 'table.interestPaid', tLoans),
+    createCurrencyColumn<LenderWithRelations>('interestPaid', 'table.interestPaid', tLoans, locale),
   ];
 
   // Define column filters based on data types
@@ -173,30 +153,6 @@ export default function LendersPage() {
     banking: {
       type: 'text' as const,
       label: t('table.banking'),
-    },
-    notificationType: {
-      type: 'select' as const,
-      label: t('table.notificationType'),
-      options: Object.entries(NotificationType).map(([key, value]) => ({
-        label: commonT(`enums.lender.notificationType.${key}`),
-        value: value,
-      })),
-    },
-    membershipStatus: {
-      type: 'select' as const,
-      label: t('table.membershipStatus'),
-      options: Object.entries(MembershipStatus).map(([key, value]) => ({
-        label: commonT(`enums.lender.membershipStatus.${key}`),
-        value: value,
-      })),
-    },
-    tag: {
-      type: 'select' as const,
-      label: t('table.tag'),
-      options: selectedProject?.configuration.lenderTags.map((tag) => ({
-        label: tag,
-        value: tag,
-      })),
     },
     salutation: {
       type: 'select' as const,
@@ -246,9 +202,6 @@ export default function LendersPage() {
     telNo: false,
     address: false,
     banking: false,
-    notificationType: false,
-    membershipStatus: false,
-    tag: false,
     salutation: false,
     amount: false,
     balance: true,

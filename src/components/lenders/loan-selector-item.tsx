@@ -2,11 +2,10 @@
 
 import { formatCurrency, formatPercentage } from '@/lib/utils';
 import type { LoanWithCalculations } from '@/types/loans';
-import { format } from 'date-fns';
-import { de, enUS } from 'date-fns/locale';
+import { formatDate } from 'date-fns';
 import type { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
-import { LoanStatusBadge } from './loan-status-badge';
+import { LoanStatusBadge } from '../loans/loan-status-badge';
 
 interface LoanSelectorItemProps {
   loan: LoanWithCalculations;
@@ -16,21 +15,18 @@ interface LoanSelectorItemProps {
 
 export function LoanSelectorItem({ loan, commonT, loanT }: LoanSelectorItemProps) {
   const locale = useLocale();
-  const dateLocale = locale === 'de' ? de : enUS;
 
   const amountStr = formatCurrency(loan.amount);
   const interestRateStr = `${formatPercentage(loan.interestRate)}%`;
   const balanceStr = formatCurrency(loan.balance);
-  const contractDateStr = format(loan.signDate, 'PPP', {
-    locale: dateLocale,
-  });
+  const contractDateStr = formatDate(loan.signDate, locale);
 
   const loanNumberAndBadge = (
     <div className="flex flex-col items-start flex-shrink-0 gap-1">
       <h3 className="text-lg font-medium">
         {loanT('table.loanNumberShort')} #{loan.loanNumber}
       </h3>
-      <LoanStatusBadge status={loan.status} commonT={commonT} className="mt-0.5" />
+      <LoanStatusBadge status={loan.status} className="mt-0.5" />
     </div>
   );
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { LenderRequiredField, LenderType, MembershipStatus, NotificationType, Salutation } from '@prisma/client';
+import { LenderRequiredField, LenderType, Salutation } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { useFormContext } from 'react-hook-form';
 
@@ -28,8 +28,6 @@ export function LenderFormFields() {
   if (!selectedProject) {
     return null;
   }
-
-  const isTagRequired = selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.tag);
   const isAddressRequired = selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.address);
   const isEmailRequired = selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.email);
   const isTelNoRequired = selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.telNo);
@@ -164,39 +162,6 @@ export function LenderFormFields() {
       {/* Additional Information Section */}
       <FormSection title={t('new.form.additionalInfo')}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormSelect
-            name="notificationType"
-            label={`${t('new.form.notificationType')} *`}
-            placeholder={commonT('ui.form.selectPlaceholder')}
-            options={Object.entries(NotificationType).map(([key, value]) => ({
-              value,
-              label: commonT(`enums.lender.notificationType.${key}`),
-            }))}
-          />
-
-          <FormSelect
-            name="membershipStatus"
-            label={`${t('new.form.membershipStatus')} *`}
-            placeholder={commonT('ui.form.selectPlaceholder')}
-            options={Object.entries(MembershipStatus).map(([key, value]) => ({
-              value,
-              label: commonT(`enums.lender.membershipStatus.${key}`),
-            }))}
-          />
-
-          <FormSelect
-            name="tag"
-            label={isTagRequired ? `${t('new.form.tag')} *` : t('new.form.tag')}
-            placeholder={t('new.form.noTag')}
-            clearable={!isTagRequired}
-            options={
-              selectedProject?.configuration.lenderTags.map((tag) => ({
-                value: tag,
-                label: tag,
-              })) || []
-            }
-          />
-
           <FormAdditionalFields
             config={selectedProject?.configuration.lenderAdditionalFields}
             name="additionalFields"

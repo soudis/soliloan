@@ -111,7 +111,9 @@
       "required": "Pflichtfeld",
       "enterValue": "Wert eingeben...",
       "selectOption": "Option auswählen...",
-      "selectDate": "Datum auswählen..."
+      "selectDate": "Datum auswählen...",
+      "boolean": "Wahr/Falsch",
+      "defaultValue": "Standardwert"
     }
   },
   "enums": {
@@ -128,21 +130,10 @@
         "PERSONAL": "Persönlich",
         "FORMAL": "Formell"
       },
-      "notificationType": {
-        "ONLINE": "Online",
-        "EMAIL": "E-Mail",
-        "MAIL": "Post"
-      },
-      "membershipStatus": {
-        "UNKNOWN": "Unbekannt",
-        "MEMBER": "Mitglied",
-        "EXTERNAL": "Extern"
-      },
       "requiredField": {
         "address": "Adresse",
         "email": "E-Mail",
-        "telNo": "Telefonnummer",
-        "tag": "Kategorie"
+        "telNo": "Telefonnummer"
       }
     },
     "loan": {
@@ -162,14 +153,6 @@
         "MONTHLY": "Monatlich",
         "QUARTERLY": "Vierteljährlich",
         "ANNUALLY": "Jährlich"
-      },
-      "interestPaymentType": {
-        "YEARLY": "Jährlich",
-        "END": "Am Ende"
-      },
-      "interestPayoutType": {
-        "MONEY": "Geld",
-        "COUPON": "Coupon"
       },
       "terminationType": {
         "ENDDATE": "Enddatum",

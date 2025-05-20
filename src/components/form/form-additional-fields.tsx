@@ -8,6 +8,7 @@ import { FormDatePicker } from './form-date-picker';
 import { FormField } from './form-field';
 import { FormNumberInput } from './form-number-input';
 import { FormSelect } from './form-select';
+import { FormSwitch } from './form-switch';
 
 interface FormAdditionalFieldsProps {
   config?: AdditionalFieldConfig[];
@@ -66,9 +67,12 @@ export function FormAdditionalFields({ config, name }: FormAdditionalFieldsProps
                   value: option,
                   label: option,
                 }))}
+                clearable={!isRequired}
                 required={isRequired}
               />
             );
+          case AdditionalFieldType.BOOLEAN:
+            return <FormSwitch key={fieldConfig.id} name={fieldName} label={label} />;
           default:
             return null;
         }

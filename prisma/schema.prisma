@@ -63,8 +63,6 @@ model LoanTemplate {
   id                    String              @id @default(cuid())
   configurationId       String
   name                  String
-  interestPaymentType   InterestPaymentType
-  interestPayoutType    InterestPayoutType
   terminationType       TerminationType
   terminationPeriod     Int?
   terminationPeriodType DurationType?
@@ -97,9 +95,6 @@ model Configuration {
   lenderRequiredFields   LenderRequiredField[]
   lenderSalutation       Salutation?
   lenderCountry          Country?
-  lenderNotificationType NotificationType?
-  lenderMembershipStatus MembershipStatus?
-  lenderTags             String[]
   lenderAdditionalFields Json           @default("[]")
   interestMethod         InterestMethod?
   altInterestMethods     InterestMethod[]
@@ -141,9 +136,6 @@ model Lender {
   email            String?
   iban             String?
   bic              String?
-  notificationType NotificationType
-  membershipStatus MembershipStatus?
-  tag              String?
   files            File[]
   user             User?             @relation(fields: [email], references: [email])
   project          Project           @relation(fields: [projectId], references: [id])
@@ -157,8 +149,6 @@ model Loan {
   loanNumber            Int                 @unique @default(autoincrement())
   lenderId              String
   signDate              DateTime
-  interestPaymentType   InterestPaymentType
-  interestPayoutType    InterestPayoutType
   terminationType       TerminationType
   endDate               DateTime?
   terminationDate       DateTime?
@@ -280,33 +270,12 @@ enum ViewType {
   LOGBOOK
 }
 
-enum NotificationType {
-  ONLINE
-  EMAIL
-  MAIL
-}
-
-enum MembershipStatus {
-  UNKNOWN
-  MEMBER
-  EXTERNAL
-}
-
-enum InterestPaymentType {
-  YEARLY
-  END
-}
-
 enum TerminationType {
   ENDDATE
   TERMINATION
   DURATION
 }
 
-enum InterestPayoutType {
-  MONEY
-  COUPON
-}
 
 enum InterestMethod {
   ACT_365_NOCOMPOUND
@@ -396,5 +365,4 @@ enum LenderRequiredField {
   address
   email
   telNo
-  tag
-}
+  }

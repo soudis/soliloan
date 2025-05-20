@@ -53,6 +53,7 @@ export function InfoItem({
           <div className="flex items-center space-x-2">
             {showCopyButton && (typeof value === 'string' || copyValue) && (
               <button
+                type="button"
                 onClick={handleCopy}
                 className="p-1 rounded-full hover:bg-muted transition-colors"
                 title={copied ? t('clipboard.copied') : t('clipboard.copy')}
@@ -63,6 +64,7 @@ export function InfoItem({
             {showQrButton && qrValue && recipientName && (
               <>
                 <button
+                  type="button"
                   onClick={() => setQrDialogOpen(true)}
                   className="p-1 rounded-full hover:bg-muted transition-colors"
                   title={t('qrCode.show')}

@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  InterestMethod,
-  Language,
-  LenderRequiredField,
-  MembershipStatus,
-  NotificationType,
-  Salutation,
-  SoliLoansTheme,
-} from '@prisma/client';
+import { InterestMethod, Language, LenderRequiredField, Salutation, SoliLoansTheme } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { useFormContext } from 'react-hook-form';
 
@@ -22,7 +14,6 @@ import { FormSection } from '@/components/ui/form-section';
 import { LogoInput } from './logo-input';
 
 import type { ConfigurationFormData } from '@/lib/schemas/configuration';
-import { FormChipInput } from '../form/form-chip-input';
 import { FormFieldConfigurator } from '../form/form-field-configurator';
 
 interface ConfigurationFormFieldsProps {
@@ -140,33 +131,6 @@ export function ConfigurationFormFields({ hasHistoricTransactions }: Configurati
             clearable
             label={t('form.lenderCountry')}
             placeholder={commonT('ui.form.noDefault')}
-          />
-          <FormSelect
-            name="lenderNotificationType"
-            clearable
-            label={t('form.lenderNotificationType')}
-            placeholder={commonT('ui.form.noDefault')}
-            options={Object.entries(NotificationType).map(([key, value]) => ({
-              value,
-              label: commonT(`enums.lender.notificationType.${key}`),
-            }))}
-          />
-          <FormSelect
-            name="lenderMembershipStatus"
-            clearable
-            label={t('form.lenderMembershipStatus')}
-            placeholder={commonT('ui.form.noDefault')}
-            options={Object.entries(MembershipStatus).map(([key, value]) => ({
-              value,
-              label: commonT(`enums.lender.membershipStatus.${key}`),
-            }))}
-          />
-          <FormChipInput
-            name="lenderTags"
-            label={t('form.lenderTags')}
-            placeholder={t('form.lenderTagsPlaceholder')}
-            hint={t('form.lenderTagsHint')}
-            noItems={t('form.noLenderTags')}
           />
         </FormSection>
       </div>

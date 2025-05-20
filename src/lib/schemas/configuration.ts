@@ -8,8 +8,6 @@ import {
   contactSchema,
   countryEnum,
   interestMethodEnum,
-  membershipStatusEnumOptional,
-  notificationTypeEnumOptional,
   salutationEnumOptional,
   selectEnumRequired,
   validateAddressOptional,
@@ -38,9 +36,6 @@ export const configurationFormSchema = z
     lenderRequiredFields: z.array(z.nativeEnum(LenderRequiredField)).default([]).optional(),
     lenderSalutation: salutationEnumOptional.nullable().optional(),
     lenderCountry: countryEnum.nullable().optional(),
-    lenderNotificationType: notificationTypeEnumOptional.nullable().optional(),
-    lenderMembershipStatus: membershipStatusEnumOptional.nullable().optional(),
-    lenderTags: z.array(z.string()).default([]).optional(),
 
     // Loan Defaults
     interestMethod: interestMethodEnum,

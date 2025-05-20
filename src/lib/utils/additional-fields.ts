@@ -3,15 +3,17 @@ import {
   type AdditionalFieldConfig,
   AdditionalFieldType,
   type AdditionalFieldValues,
+  AdditionalNumberFormat,
   additionalFieldValuesSchema,
   createDateSchema,
   createNumberSchema,
 } from '../schemas/common';
+import { NumberParser, formatCurrency, formatDate, formatNumber, formatPercentage } from '../utils';
 
 export const additionalFieldDefaults = (config: AdditionalFieldConfig[], values: AdditionalFieldValues) => {
   const defaults: AdditionalFieldValues = {};
   for (const field of config) {
-    defaults[field.name] = values?.[field.name] ?? '';
+    defaults[field.name] = values?.[field.name] ?? field.defaultValue ?? '';
   }
   return defaults;
 };
@@ -33,7 +35,11 @@ export const validateAdditionalFields =
     if (config) {
       for (const field of config) {
         if (field.type === AdditionalFieldType.SELECT) {
-          if (data[name]?.[field.name] && !field.selectOptions.includes(data[name]?.[field.name] ?? '')) {
+          if (
+            data[name]?.[field.name] &&
+            !field.selectOptions.includes(data[name]?.[field.name] ?? '') &&
+            (field.required || data[name]?.[field.name] !== '')
+          ) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
               message: 'validation.common.required',
@@ -44,7 +50,8 @@ export const validateAdditionalFields =
         if (field.type === AdditionalFieldType.DATE) {
           if (
             data[name]?.[field.name] &&
-            !createDateSchema(field.required).safeParse(data[name]?.[field.name]).success
+            !createDateSchema(field.required).safeParse(data[name]?.[field.name]).success &&
+            (field.required || data[name]?.[field.name] !== '')
           ) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
@@ -54,7 +61,11 @@ export const validateAdditionalFields =
           }
         }
         if (field.type === AdditionalFieldType.NUMBER) {
-          if (data[name]?.[field.name] && !createNumberSchema().safeParse(data[name]?.[field.name]).success) {
+          if (
+            data[name]?.[field.name] &&
+            !createNumberSchema().safeParse(data[name]?.[field.name]).success &&
+            (field.required || data[name]?.[field.name] !== '')
+          ) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
               message: 'validation.common.required',
@@ -72,3 +83,33 @@ export const validateAdditionalFields =
       }
     }
   };
+
+export const hasAdditionalFields = (values: AdditionalFieldValues, config?: AdditionalFieldConfig[]) => {
+  return config && config.length > 0 && config.some((field) => values?.[field.name] && values?.[field.name] !== '');
+};
+
+export const formatAdditionalFieldValue = (
+  value: string | null | undefined,
+  config: AdditionalFieldConfig,
+  locale: string,
+) => {
+  if (!value) {
+    return '';
+  }
+  if (config.type === AdditionalFieldType.DATE) {
+    return formatDate(value, locale);
+  }
+  if (config.type === AdditionalFieldType.NUMBER) {
+    const parser = new NumberParser(locale);
+    if (config.numberFormat === AdditionalNumberFormat.INTEGER) {
+      return formatNumber(parser.parse(value), 0, 0, locale);
+    }
+    if (config.numberFormat === AdditionalNumberFormat.MONEY) {
+      return formatCurrency(parser.parse(value), locale);
+    }
+    if (config.numberFormat === AdditionalNumberFormat.PERCENT) {
+      return formatPercentage(parser.parse(value), locale);
+    }
+  }
+  return value;
+};

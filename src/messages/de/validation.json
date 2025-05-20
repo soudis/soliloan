@@ -7,6 +7,7 @@
     "number": "Bitte eine Zahl eingeben",
     "numberMin": "Bitte eine Zahl größer oder gleich {min} eingeben",
     "date": "Bitte ein gültiges Datum eingeben",
-    "addressComplete": "Bitte eingeben"
+    "addressComplete": "Bitte eingeben",
+    "boolean": "Falschwer Wert"
   }
 }

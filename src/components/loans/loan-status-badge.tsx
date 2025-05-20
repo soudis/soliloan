@@ -2,15 +2,16 @@
 
 import { Badge } from '@/components/ui/badge';
 import { LoanStatus } from '@/types/loans';
-import type { useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 interface LoanStatusBadgeProps {
   status: LoanStatus;
-  commonT: ReturnType<typeof useTranslations<string>>;
   className?: string;
 }
 
-export function LoanStatusBadge({ status, commonT, className }: LoanStatusBadgeProps) {
+export function LoanStatusBadge({ status, className }: LoanStatusBadgeProps) {
+  const commonT = useTranslations('common');
+
   return (
     <Badge
       variant={

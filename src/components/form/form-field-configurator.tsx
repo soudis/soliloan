@@ -10,7 +10,9 @@ import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat
 import { useTranslations } from 'next-intl';
 import { FormCheckbox } from './form-checkbox';
 import { FormChipInput } from './form-chip-input';
+import { FormDatePicker } from './form-date-picker';
 import { FormField } from './form-field';
+import { FormNumberInput } from './form-number-input';
 import { FormSelect } from './form-select';
 
 interface FormFieldConfiguratorProps {
@@ -46,6 +48,7 @@ export function FormFieldConfigurator({ name }: FormFieldConfiguratorProps) {
     { value: AdditionalFieldType.NUMBER, label: t('number') },
     { value: AdditionalFieldType.DATE, label: t('date') },
     { value: AdditionalFieldType.SELECT, label: t('select') },
+    { value: AdditionalFieldType.BOOLEAN, label: t('boolean') },
   ];
 
   const numberFormatOptions = [
@@ -66,8 +69,9 @@ export function FormFieldConfigurator({ name }: FormFieldConfiguratorProps) {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[250px]">{t('fieldName')}</TableHead>
-                    <TableHead className="w-[150px]">{t('fieldType')}</TableHead>
+                    <TableHead className="w-[200px]">{t('fieldType')}</TableHead>
                     <TableHead>{t('options')}</TableHead>
+                    <TableHead className="w-[250px]">{t('defaultValue')}</TableHead>
                     <TableHead className="w-[100px]">{t('required')}</TableHead>
                     <TableHead className="w-[50px]" />
                   </TableRow>
@@ -104,6 +108,44 @@ export function FormFieldConfigurator({ name }: FormFieldConfiguratorProps) {
                               placeholder={t('addOptionPlaceholder')}
                               noItems={t('noOptionsDefined')}
                             />
+                          )}
+                        </TableCell>
+                        <TableCell className="align-top">
+                          {watch(`${name}.${index}.type`) === AdditionalFieldType.BOOLEAN && (
+                            <FormCheckbox name={`${name}.${index}.defaultValue`} className="justify-center" />
+                          )}
+                          {watch(`${name}.${index}.type`) === AdditionalFieldType.SELECT && (
+                            <FormSelect
+                              name={`${name}.${index}.defaultValue`}
+                              placeholder={t('selectOption')}
+                              options={watch(`${name}.${index}.selectOptions`).map((option) => ({
+                                value: option,
+                                label: option,
+                              }))}
+                              clearable={true}
+                              required={false}
+                            />
+                          )}
+                          {watch(`${name}.${index}.type`) === AdditionalFieldType.DATE && (
+                            <FormDatePicker name={`${name}.${index}.defaultValue`} placeholder={t('selectDate')} />
+                          )}
+                          {watch(`${name}.${index}.type`) === AdditionalFieldType.NUMBER && (
+                            <FormNumberInput
+                              name={`${name}.${index}.defaultValue`}
+                              placeholder={t('enterValue')}
+                              minimumFractionDigits={watch(`${name}.${index}.numberFormat`) === 'integer' ? 0 : 2}
+                              maximumFractionDigits={watch(`${name}.${index}.numberFormat`) === 'integer' ? 0 : 2}
+                              prefix={
+                                watch(`${name}.${index}.numberFormat`) === 'money'
+                                  ? '€'
+                                  : watch(`${name}.${index}.numberFormat`) === 'percent'
+                                    ? '%'
+                                    : undefined
+                              }
+                            />
+                          )}
+                          {watch(`${name}.${index}.type`) === AdditionalFieldType.TEXT && (
+                            <FormField name={`${name}.${index}.defaultValue`} placeholder={t('enterValue')} />
                           )}
                         </TableCell>
                         <TableCell className="align-top pt-6">

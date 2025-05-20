@@ -2,17 +2,17 @@
 
 import { useFormContext } from 'react-hook-form';
 
-import { Checkbox } from '@/components/ui/checkbox';
 import { FormControl, FormDescription, FormField as FormFieldWrapper, FormItem, FormLabel } from '@/components/ui/form';
+import { Switch } from '../ui/switch';
 
-interface FormCheckboxProps {
+interface FormSwitchProps {
   name: string;
   label?: string;
   hint?: string;
   className?: string;
 }
 
-export function FormCheckbox({ name, label, hint, className }: FormCheckboxProps) {
+export function FormSwitch({ name, label, hint, className }: FormSwitchProps) {
   const form = useFormContext();
 
   return (
@@ -23,7 +23,11 @@ export function FormCheckbox({ name, label, hint, className }: FormCheckboxProps
         <FormItem className={className}>
           {label && <FormLabel>{label}</FormLabel>}
           <FormControl>
-            <Checkbox checked={field.value && field.value !== 'false'} onCheckedChange={field.onChange} />
+            <Switch
+              checked={field.value && field.value !== 'false'}
+              onCheckedChange={field.onChange}
+              className="mt-2"
+            />
           </FormControl>
           {hint && <FormDescription className="text-sm text-muted-foreground/80">{hint}</FormDescription>}
         </FormItem>
