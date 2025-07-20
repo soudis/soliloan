@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { addTransaction } from '@/app/actions/loans';
+import { addTransaction } from '@/actions/loans';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
@@ -38,9 +38,9 @@ export function TransactionDialog({ loanId, open, onOpenChange }: TransactionDia
     defaultValues,
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     form.reset(defaultValues);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const handleSubmit = form.handleSubmit(async (data) => {

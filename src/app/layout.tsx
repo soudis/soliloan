@@ -1,19 +1,23 @@
-import { Comfortaa, Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 
 import './globals.css';
 import { Providers } from './providers';
 
 import type { Metadata } from 'next';
 
-const inter = Inter({
-  subsets: ['latin'],
+const inter = localFont({
+  src: '../fonts/Inter-VariableFont_opsz,wght.ttf',
   variable: '--font-inter',
 });
 
-const comfortaa = Comfortaa({
-  subsets: ['latin'],
-  weight: ['400', '700'],
+const comfortaa = localFont({
+  src: '../fonts/Comfortaa-VariableFont_wght.ttf',
   variable: '--font-comfortaa',
+});
+
+const roboto = localFont({
+  src: '../fonts/RobotoMono-VariableFont_wght.ttf',
+  variable: '--font-mono',
 });
 
 export const metadata: Metadata = {
@@ -29,7 +33,11 @@ export default function RootLayout({
   params?: { locale?: string };
 }>) {
   return (
-    <html lang={params?.locale || 'en'} suppressHydrationWarning className={`${inter.variable} ${comfortaa.variable}`}>
+    <html
+      lang={params?.locale || 'en'}
+      suppressHydrationWarning
+      className={`${inter.variable} ${comfortaa.variable} ${roboto.variable}`}
+    >
       <head>
         <link rel="icon" href="/soliloan-logo.webp" sizes="any" />
       </head>

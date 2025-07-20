@@ -1,7 +1,7 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 interface FormLayoutProps {
-  title: string;
+  title?: string;
   children: ReactNode;
   error?: string | null;
   className?: string;
@@ -10,12 +10,14 @@ interface FormLayoutProps {
 export function FormLayout({ title, children, error, className = '' }: FormLayoutProps) {
   return (
     <div className="space-y-8 ">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
-        {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
-      </div>
+      {title && (
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
+        </div>
+      )}
 
       <div className={className}>{children}</div>
+      {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
     </div>
   );
 }

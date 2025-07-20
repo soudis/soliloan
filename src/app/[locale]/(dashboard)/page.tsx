@@ -1,14 +1,14 @@
 'use client';
 
-import { Loan } from '@prisma/client';
+import type { Loan } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart3, CheckCircle, Clock, Percent, Users, Wallet } from 'lucide-react';
-import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 
-import { getDashboardStats } from '@/app/actions/dashboard/get-dashboard-stats';
-import { getLoansByProjectId } from '@/app/actions/loans/queries/get-loans-by-project';
+import { getDashboardStats } from '@/actions/dashboard/get-dashboard-stats';
+import { getLoansByProjectId } from '@/actions/loans/queries/get-loans-by-project';
 import { LoanAmountDistributionChart } from '@/components/dashboard/loan-amount-distribution-chart';
 import { LoanStatusChart } from '@/components/dashboard/loan-status-chart';
 import { YearlyDataChart } from '@/components/dashboard/yearly-data-chart';
@@ -16,12 +16,12 @@ import { YearlyTable } from '@/components/dashboard/yearly-table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
-import { useProject } from '@/store/project-context';
+import { useProjects } from '@/store/projects-store';
 
 export default function DashboardPage() {
   const { data: session } = useSession();
   const t = useTranslations('dashboard');
-  const { selectedProject } = useProject();
+  const { selectedProject } = useProjects();
 
   // Fetch dashboard statistics
   const { data: statsData, isLoading } = useQuery({
@@ -61,7 +61,7 @@ export default function DashboardPage() {
       { min: 10001, max: 25000, label: '10,001 - 25,000' },
       { min: 25001, max: 50000, label: '25,001 - 50,000' },
       { min: 50001, max: 100000, label: '50,001 - 100,000' },
-      { min: 100001, max: Infinity, label: '100,001+' },
+      { min: 100001, max: Number.POSITIVE_INFINITY, label: '100,001+' },
     ];
 
     // Initialize distribution data
@@ -72,14 +72,14 @@ export default function DashboardPage() {
     }));
 
     // Calculate distribution
-    loans.forEach((loan) => {
+    for (const loan of loans) {
       const amount = Number(loan.amount);
       const rangeIndex = ranges.findIndex((range) => amount >= range.min && amount <= range.max);
       if (rangeIndex !== -1) {
         distribution[rangeIndex].count++;
         distribution[rangeIndex].totalAmount += amount;
       }
-    });
+    }
 
     // Filter out ranges with no loans
     return distribution.filter((item) => item.count > 0);
@@ -103,10 +103,10 @@ export default function DashboardPage() {
           {[1, 2, 3, 4].map((i) => (
             <Card key={i} className="animate-pulse">
               <CardHeader className="pb-2">
-                <div className="h-6 w-24 bg-muted rounded"></div>
+                <div className="h-6 w-24 bg-muted rounded" />
               </CardHeader>
               <CardContent>
-                <div className="h-8 w-16 bg-muted rounded"></div>
+                <div className="h-8 w-16 bg-muted rounded" />
               </CardContent>
             </Card>
           ))}
@@ -241,7 +241,7 @@ export default function DashboardPage() {
       )}
 
       {/* Yearly Table Section */}
-      {statsData && statsData.yearlyLoanData && statsData.yearlyLoanData.length > 0 && (
+      {statsData?.yearlyLoanData && statsData.yearlyLoanData.length > 0 && (
         <YearlyTable data={statsData.yearlyLoanData} />
       )}
 

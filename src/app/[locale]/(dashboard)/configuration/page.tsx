@@ -1,45 +1,13 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
 
-import { getConfiguration, updateConfiguration } from '@/app/actions/configuration';
-import { ConfigurationForm } from '@/components/configuration/configuration-form';
-import { usePathname, useRouter } from '@/i18n/navigation';
-import { useProject } from '@/store/project-context';
+import { ConfigurationPage } from '@/components/configuration/configuration-page';
+import { useProjects } from '@/store/projects-store';
 
-import type { ConfigurationFormData } from '@/lib/schemas/configuration';
-
-export default function ConfigurationPage() {
+export default function ConfigPage() {
   const { data: session } = useSession();
-  const router = useRouter();
-  const { selectedProject, setSelectedProject } = useProject();
-  const t = useTranslations('dashboard.configuration');
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const pathname = usePathname();
-
-  // Fetch configuration data using React Query
-  const { data } = useQuery({
-    queryKey: ['configuration', selectedProject?.id],
-    queryFn: async () => {
-      if (!selectedProject) return null;
-      const result = await getConfiguration(selectedProject.id);
-      if ('error' in result) {
-        throw new Error(result.error);
-      }
-      return {
-        configuration: result.configuration,
-        hasHistoricTransactions: result.hasHistoricTransactions,
-      };
-    },
-    enabled: !!selectedProject?.id,
-    staleTime: 300000, // 5 minutes
-    gcTime: 1800000, // 30 minutes
-  });
+  const { selectedProject } = useProjects();
 
   if (!session) {
     return null;
@@ -49,77 +17,5 @@ export default function ConfigurationPage() {
     return null;
   }
 
-  if (!data) {
-    return null;
-  }
-
-  const { configuration: configurationData, hasHistoricTransactions } = data;
-
-  const handleSubmit = async (data: ConfigurationFormData) => {
-    try {
-      setError(null);
-      setIsSubmitting(true);
-
-      // Update the configuration using the server action
-      const result = await updateConfiguration(selectedProject.id, data);
-
-      if ('error' in result) {
-        throw new Error(result.error);
-      }
-
-      // Update the project store with the new configuration
-      setSelectedProject({
-        ...selectedProject,
-        configuration: {
-          ...result.configuration,
-          // Keep undefined values as undefined for the project store
-          email: result.configuration.email || null,
-          telNo: result.configuration.telNo || null,
-          website: result.configuration.website || null,
-          street: result.configuration.street || null,
-          addon: result.configuration.addon || null,
-          zip: result.configuration.zip || null,
-          place: result.configuration.place || null,
-          country: result.configuration.country || null,
-          iban: result.configuration.iban || null,
-          bic: result.configuration.bic || null,
-          userLanguage: result.configuration.userLanguage || null,
-          userTheme: result.configuration.userTheme || null,
-          lenderSalutation: result.configuration.lenderSalutation || null,
-          lenderCountry: result.configuration.lenderCountry || null,
-          interestMethod: result.configuration.interestMethod || null,
-          altInterestMethods: result.configuration.altInterestMethods || [],
-          customLoans: result.configuration.customLoans || false,
-          lenderRequiredFields: result.configuration.lenderRequiredFields || [],
-          logo: result.configuration.logo || null,
-          lenderAdditionalFields: result.configuration.lenderAdditionalFields || [],
-          loanAdditionalFields: result.configuration.loanAdditionalFields || [],
-        },
-      });
-
-      // Show success message
-      toast.success(t('form.success'));
-      router.replace(pathname, { scroll: true });
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      setError(error instanceof Error ? error.message : 'An unknown error occurred');
-      toast.error(t('form.error'));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <ConfigurationForm
-      title={t('title')}
-      submitButtonText={t('form.submit')}
-      submittingButtonText={t('form.submitting')}
-      cancelButtonText={t('form.cancel')}
-      onSubmit={handleSubmit}
-      initialData={configurationData || undefined}
-      hasHistoricTransactions={hasHistoricTransactions}
-      isLoading={isSubmitting}
-      error={error}
-    />
-  );
+  return <ConfigurationPage project={selectedProject} />;
 }

@@ -6,7 +6,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { getLendersByProjectId } from '@/app/actions/lenders';
+import { getLendersByProjectId } from '@/actions/lenders';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -22,12 +22,12 @@ import {
   createLenderEnumBadgeColumn,
   createLenderNameColumn,
 } from '@/lib/table-column-utils';
-import { useProject } from '@/store/project-context';
+import { useProjects } from '@/store/projects-store';
 import type { LenderWithRelations } from '@/types/lenders';
 
 export default function LendersPage() {
   const router = useRouter();
-  const { selectedProject } = useProject();
+  const { selectedProject } = useProjects();
   const t = useTranslations('dashboard.lenders');
   const tLoans = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');

@@ -45,17 +45,17 @@ export function InfoItem({
   };
 
   return (
-    <div className={cn('grid grid-cols-1 gap-1', className)}>
+    <div className={cn('flex flex-col gap-1', className)}>
       <div className="text-sm text-muted-foreground">{label}</div>
       {value ? (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between items-start">
           <div className="text-lg font-medium">{value}</div>
           <div className="flex items-center space-x-2">
             {showCopyButton && (typeof value === 'string' || copyValue) && (
               <button
                 type="button"
                 onClick={handleCopy}
-                className="p-1 rounded-full hover:bg-muted transition-colors"
+                className="p-2 rounded-full hover:bg-muted transition-colors cursor-pointer"
                 title={copied ? t('clipboard.copied') : t('clipboard.copy')}
               >
                 <Copy className="h-4 w-4 text-muted-foreground" />
@@ -66,7 +66,7 @@ export function InfoItem({
                 <button
                   type="button"
                   onClick={() => setQrDialogOpen(true)}
-                  className="p-1 rounded-full hover:bg-muted transition-colors"
+                  className="p-2 rounded-full hover:bg-muted transition-colors cursor-pointer"
                   title={t('qrCode.show')}
                 >
                   <QrCode className="h-4 w-4 text-muted-foreground" />

@@ -1,5 +1,5 @@
-import { ViewType } from '@prisma/client';
-import { TableState } from '@tanstack/react-table';
+import type { ViewType } from '@prisma/client';
+import type { TableState } from '@tanstack/react-table';
 import { create } from 'zustand';
 
 export type ViewState = Partial<TableState> & { selectedView?: string };

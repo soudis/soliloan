@@ -4,6 +4,8 @@ import {
   AdditionalFieldType,
   type AdditionalFieldValues,
   AdditionalNumberFormat,
+  additionalFieldConfigArraySchema,
+  additionalFieldConfigSchema,
   additionalFieldValuesSchema,
   createDateSchema,
   createNumberSchema,
@@ -16,6 +18,10 @@ export const additionalFieldDefaults = (config: AdditionalFieldConfig[], values:
     defaults[field.name] = values?.[field.name] ?? field.defaultValue ?? '';
   }
   return defaults;
+};
+
+export const parseAdditionalFieldConfig = (data: unknown) => {
+  return additionalFieldConfigArraySchema.parse(data);
 };
 
 export const parseAdditionalFields = <T extends { additionalFields?: unknown }>(data: T) => {

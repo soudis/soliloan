@@ -1,0 +1,12 @@
+{
+  "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+  "unauthorized": "Nicht autorisiert.",
+  "invalidParameters": "Ungültige Parameter.",
+  "project": {
+    "notFound": "Projekt nicht gefunden.",
+    "updateFailed": "Fehler beim Aktualisieren der Projekt-Konfiguration."
+  },
+  "configuration": {
+    "notFound": "Konfiguration nicht gefunden."
+  }
+}

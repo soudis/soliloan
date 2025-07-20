@@ -6,11 +6,11 @@ import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
 import { toast } from 'sonner';
 
-import { getLoanById, updateLoan } from '@/app/actions/loans';
+import { getLoanById, updateLoan } from '@/actions/loans';
 import { LoanForm } from '@/components/loans/loan-form';
 import { useRouter } from '@/i18n/navigation';
 import { getLenderName } from '@/lib/utils';
-import { useProject } from '@/store/project-context';
+import { useProjects } from '@/store/projects-store';
 
 import type { LoanFormData } from '@/lib/schemas/loan';
 
@@ -22,7 +22,7 @@ export default function EditLoanPage({
   const resolvedParams = use(params);
   const { data: session } = useSession();
   const router = useRouter();
-  const { selectedProject } = useProject();
+  const { selectedProject } = useProjects();
   const t = useTranslations('dashboard.loans');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,10 +68,10 @@ export default function EditLoanPage({
       // Show success message
       toast.success(t('edit.form.success'));
       // invalidate the loan query
-      queryClient.invalidateQueries({ queryKey: ['loan'] });
+      queryClient.invalidateQueries({ queryKey: ['lender', result.loan?.lenderId] });
 
       // Navigate back to the previous page using the router
-      router.push(`/lenders/${result.loan?.lenderId}?highlightLoan=${result.loan?.id}`);
+      router.push(`/lenders/${result.loan?.lenderId}?loanId=${result.loan?.id}`);
     } catch (error) {
       console.error('Error submitting form:', error);
       setError(error instanceof Error ? error.message : 'An unknown error occurred');

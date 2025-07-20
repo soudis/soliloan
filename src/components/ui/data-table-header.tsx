@@ -6,9 +6,9 @@ import { SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
-import { createView } from '@/app/actions';
-import { deleteView } from '@/app/actions/views';
-import { updateView } from '@/app/actions/views/mutations/update-view';
+import { createView } from '@/actions';
+import { deleteView } from '@/actions/views';
+import { updateView } from '@/actions/views/mutations/update-view';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,

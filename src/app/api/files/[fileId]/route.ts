@@ -45,12 +45,14 @@ export async function GET(request: Request, { params }: { params: { fileId: stri
       return new NextResponse('File not found', { status: 404 });
     }
 
-    // Check if the user has access to the file
-    const hasAccess =
-      file.lender?.project.managers.some((manager) => manager.id === session.user.id) ||
-      file.loan?.lender.project.managers.some((manager) => manager.id === session.user.id);
+    const lender = file.lender ?? file.loan?.lender;
 
-    if (!hasAccess && !file.public) {
+    // Check if the user has access to the file
+    const hasManagementAccess =
+      session.user.isAdmin || lender?.project.managers.some((manager) => manager.id === session.user.id);
+    const hasLenderAccess = lender?.email === session.user.email && file.public;
+
+    if (!hasManagementAccess && !hasLenderAccess) {
       return new NextResponse('Forbidden', { status: 403 });
     }
 

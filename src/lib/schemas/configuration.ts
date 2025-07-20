@@ -1,49 +1,76 @@
-import { InterestMethod, Language, LenderRequiredField, SoliLoansTheme } from '@prisma/client';
+import { InterestMethod, Language, LenderRequiredField, SoliLoansTheme, TerminationType } from '@prisma/client';
 import { z } from 'zod';
 
+import type { ResolverOptions } from 'react-hook-form';
 import {
   additionalFieldConfigSchema,
   addressSchema,
   bankingSchema,
   contactSchema,
   countryEnum,
-  interestMethodEnum,
+  interestMethodEnumRequired,
+  optionalNumberSchema,
   salutationEnumOptional,
   selectEnumRequired,
   validateAddressOptional,
 } from './common';
+import { loanTerminationSchema, validateTermination } from './loan';
 
-// Define the configuration form schema based on the Prisma model
-export const configurationFormSchema = z
+const configurationFormGeneralShape = z.object({
+  // General Information
+  name: z.string().min(1, { message: 'validation.common.required' }),
+  logo: z.string().nullable().optional(),
+
+  // Contact Information
+  ...contactSchema.shape,
+  website: z.string().nullable().optional(),
+  ...addressSchema.shape,
+
+  // Banking Information
+  ...bankingSchema.shape,
+});
+
+export const loanTemplateFormSchema = z
   .object({
-    // General Information
+    id: z.string().nullable().optional(),
     name: z.string().min(1, { message: 'validation.common.required' }),
-    logo: z.string().nullable().optional(),
-
-    // Contact Information
-    ...contactSchema.shape,
-    website: z.string().nullable().optional(),
-    ...addressSchema.shape,
-
-    // Banking Information
-    ...bankingSchema.shape,
-
-    // User Defaults
-    userLanguage: selectEnumRequired(Language).nullable().optional(),
-    userTheme: selectEnumRequired(SoliLoansTheme).nullable().optional(),
-
-    // Lender Defaults
-    lenderRequiredFields: z.array(z.nativeEnum(LenderRequiredField)).default([]).optional(),
-    lenderSalutation: salutationEnumOptional.nullable().optional(),
-    lenderCountry: countryEnum.nullable().optional(),
-
-    // Loan Defaults
-    interestMethod: interestMethodEnum,
-    altInterestMethods: z.array(z.nativeEnum(InterestMethod)).default([]).optional(),
-    customLoans: z.coerce.boolean().default(false).optional(),
-    loanAdditionalFields: z.array(additionalFieldConfigSchema).default([]).optional(),
-    lenderAdditionalFields: z.array(additionalFieldConfigSchema).default([]).optional(),
+    isDefault: z.coerce.boolean().default(false),
+    // Termination Information
+    ...loanTerminationSchema.omit({ terminationDate: true }).shape,
+    minInterestRate: optionalNumberSchema,
+    maxInterestRate: optionalNumberSchema,
+    minAmount: optionalNumberSchema,
+    maxAmount: optionalNumberSchema,
+    configurationId: z.string().min(1, { message: 'validation.common.required' }),
   })
-  .superRefine(validateAddressOptional);
+  .superRefine(validateTermination);
+
+export const configurationFormGeneralSchema = configurationFormGeneralShape.superRefine(validateAddressOptional);
+
+export const configurationFormLenderSchema = z.object({
+  userLanguage: selectEnumRequired(Language).nullable().optional(),
+  userTheme: selectEnumRequired(SoliLoansTheme).nullable().optional(),
+  lenderRequiredFields: z.array(z.nativeEnum(LenderRequiredField)).default([]).optional(),
+  lenderSalutation: salutationEnumOptional.nullable().optional(),
+  lenderCountry: countryEnum.nullable().optional(),
+  lenderAdditionalFields: z.array(additionalFieldConfigSchema).default([]).optional(),
+});
+
+export const configurationFormLoanSchema = z.object({
+  interestMethod: interestMethodEnumRequired,
+  altInterestMethods: z.array(z.nativeEnum(InterestMethod)).default([]).optional(),
+  loanAdditionalFields: z.array(additionalFieldConfigSchema).default([]).optional(),
+});
+
+export const configurationFormSchema = z.union([
+  configurationFormGeneralSchema,
+  configurationFormLoanSchema,
+  configurationFormLenderSchema,
+]);
+
+export type ConfigurationFormGeneralData = z.infer<typeof configurationFormGeneralSchema>;
+export type ConfigurationFormLenderData = z.infer<typeof configurationFormLenderSchema>;
+export type ConfigurationFormLoanData = z.infer<typeof configurationFormLoanSchema>;
+export type LoanTemplateFormData = z.infer<typeof loanTemplateFormSchema>;
 
 export type ConfigurationFormData = z.infer<typeof configurationFormSchema>;

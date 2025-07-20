@@ -1,17 +1,17 @@
 'use client';
 
 import { Trash2, Upload } from 'lucide-react';
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import type { UseFormReturn } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { FormControl, FormItem, FormLabel } from '@/components/ui/form';
-import { ConfigurationFormData } from '@/lib/schemas/configuration';
+import type { ConfigurationFormGeneralData } from '@/lib/schemas/configuration';
 
 interface LogoInputProps {
-  form: UseFormReturn<ConfigurationFormData>;
+  form: UseFormReturn<ConfigurationFormGeneralData>;
 }
 
 export function LogoInput({ form }: LogoInputProps) {

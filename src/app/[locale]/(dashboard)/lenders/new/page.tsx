@@ -5,17 +5,17 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { createLender } from '@/app/actions/lenders';
+import { createLender } from '@/actions/lenders';
 import { LenderForm } from '@/components/lenders/lender-form';
 import { useRouter } from '@/i18n/navigation';
-import { useProject } from '@/store/project-context';
 
 import type { LenderFormData } from '@/lib/schemas/lender';
+import { useProjects } from '@/store/projects-store';
 
 export default function NewLenderPage() {
   const { data: session } = useSession();
   const router = useRouter();
-  const { selectedProject } = useProject();
+  const { selectedProject } = useProjects();
   const t = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +44,7 @@ export default function NewLenderPage() {
       toast.success(t('new.form.success'));
 
       // Redirect to the lenders list page for this project
-      router.push(`/lenders/${result.lender?.id}`);
+      router.push(`/lenders/${result.data?.id}`);
     } catch (error) {
       console.error('Error submitting form:', error);
       setError(error instanceof Error ? error.message : 'An unknown error occurred');

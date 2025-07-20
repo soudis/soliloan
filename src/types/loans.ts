@@ -1,6 +1,6 @@
 import type { Configuration, File, Lender, Loan, Note, Project, Transaction, User } from '@prisma/client';
 
-import type { getLenderById } from '@/app/actions';
+import type { getLenderById } from '@/actions';
 import type { AdditionalFieldValues } from '@/lib/schemas/common';
 
 export enum LoanStatus {
@@ -20,13 +20,17 @@ export type LoanWithRelations = Loan & {
     notes: (Note & {
       createdBy: Pick<User, 'id' | 'name'>;
     })[];
-    files: Omit<File, 'data'>[];
+    files: (Omit<File, 'data'> & {
+      createdBy: Pick<User, 'id' | 'name'>;
+    })[];
     additionalFields?: AdditionalFieldValues;
   };
   notes: (Note & {
     createdBy: Pick<User, 'id' | 'name'>;
   })[];
-  files: Omit<File, 'data'>[];
+  files: (Omit<File, 'data'> & {
+    createdBy: Pick<User, 'id' | 'name'>;
+  })[];
   transactions: Transaction[];
   additionalFields?: AdditionalFieldValues;
 };

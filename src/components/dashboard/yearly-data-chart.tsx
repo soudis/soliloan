@@ -3,9 +3,9 @@
 import {
   BarElement,
   CategoryScale,
-  ChartData,
+  type ChartData,
   Chart as ChartJS,
-  ChartOptions,
+  type ChartOptions,
   Legend,
   LineElement,
   LinearScale,
@@ -116,7 +116,7 @@ export function YearlyDataChart({ data }: YearlyDataChartProps) {
       },
       tooltip: {
         callbacks: {
-          label: function (context) {
+          label: (context) => {
             const label = context.dataset.label || '';
             const value = Number(context.raw) || 0;
             return `${label}: ${formatCurrency(value)}`;
@@ -134,9 +134,7 @@ export function YearlyDataChart({ data }: YearlyDataChartProps) {
           text: t('charts.balance'),
         },
         ticks: {
-          callback: function (value) {
-            return formatCurrency(Number(value));
-          },
+          callback: (value) => formatCurrency(Number(value)),
         },
       },
       y1: {
@@ -151,9 +149,7 @@ export function YearlyDataChart({ data }: YearlyDataChartProps) {
           drawOnChartArea: false,
         },
         ticks: {
-          callback: function (value) {
-            return formatCurrency(Number(value));
-          },
+          callback: (value) => formatCurrency(Number(value)),
         },
       },
     },

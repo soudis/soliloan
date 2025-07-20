@@ -1,6 +1,6 @@
 'use client';
 
-import { Note } from '@prisma/client';
+import type { Note } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
@@ -9,10 +9,10 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { deleteNote } from '@/app/actions/notes';
+import { deleteNote } from '@/actions/notes';
 
-import { NoteDialog } from './note-dialog';
 import { Button } from '../ui/button';
+import { NoteDialog } from './note-dialog';
 
 interface LoanNotesProps {
   loanId: string;
@@ -50,7 +50,7 @@ export function LoanNotes({ loanId, notes }: LoanNotesProps) {
   return (
     <>
       <div className="mt-6">
-        <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 auto-rows-fr">
+        <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-6 auto-rows-fr">
           {notes.map((note) => (
             <div
               key={note.id}

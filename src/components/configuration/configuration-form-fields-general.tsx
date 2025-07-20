@@ -1,0 +1,56 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+import { useFormContext } from 'react-hook-form';
+
+import { FormCountrySelect } from '@/components/form/form-country-select';
+import { FormField } from '@/components/form/form-field';
+import { FormIbanInput } from '@/components/form/form-iban-input';
+import { FormSection } from '@/components/ui/form-section';
+
+import { LogoInput } from './logo-input';
+
+import type { ConfigurationFormGeneralData } from '@/lib/schemas/configuration';
+
+export function ConfigurationFormFieldsGeneral() {
+  const t = useTranslations('dashboard.configuration');
+  const commonT = useTranslations('common');
+
+  const form = useFormContext<ConfigurationFormGeneralData>();
+
+  return (
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* General Information Section - Top Left */}
+        <FormSection title={t('form.generalInfo')}>
+          <FormField name="name" label={`${t('form.name')} *`} placeholder={t('form.namePlaceholder')} />
+          <LogoInput form={form} />
+        </FormSection>
+
+        {/* Contact Information Section - Top Right */}
+        <FormSection title={t('form.contactInfo')}>
+          <FormField name="email" label={t('form.email')} placeholder={t('form.emailPlaceholder')} />
+          <FormField name="telNo" label={t('form.telNo')} placeholder={t('form.telNoPlaceholder')} />
+          <FormField name="website" label={t('form.website')} placeholder={t('form.websitePlaceholder')} />
+        </FormSection>
+
+        {/* Address Information Section - Middle Left */}
+        <FormSection title={t('form.addressInfo')}>
+          <FormField name="street" label={t('form.street')} placeholder={t('form.streetPlaceholder')} />
+          <FormField name="addon" label={t('form.addon')} placeholder={t('form.addonPlaceholder')} />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField name="zip" label={t('form.zip')} placeholder={t('form.zipPlaceholder')} />
+            <FormField name="place" label={t('form.place')} placeholder={t('form.placePlaceholder')} />
+            <FormCountrySelect name="country" label={t('form.country')} placeholder={t('form.countryPlaceholder')} />
+          </div>
+        </FormSection>
+
+        {/* Banking Information Section - Middle Right */}
+        <FormSection title={t('form.bankingInfo')}>
+          <FormIbanInput name="iban" label={t('form.iban')} placeholder={t('form.ibanPlaceholder')} />
+          <FormField name="bic" label={t('form.bic')} placeholder={t('form.bicPlaceholder')} />
+        </FormSection>
+      </div>
+    </>
+  );
+}

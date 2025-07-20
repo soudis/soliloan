@@ -1,49 +1,27 @@
 'use client';
 
-import type { getLenderById } from '@/app/actions/lenders';
-import type { useTranslations } from 'next-intl';
+import type { LenderWithCalculations } from '@/types/lenders';
+import type { LoanWithCalculations } from '@/types/loans';
 import { LoanDropdown } from './loan-dropdown';
 import { LoanTabs } from './loan-tabs';
 
-// Define LoanBadges locally or import if it's made a shared component
-// Removed LoanBadges as it's now in LoanDisplayItem.tsx
-
-type LoanInSelector = NonNullable<Awaited<ReturnType<typeof getLenderById>>['lender']>['loans'][0];
-
 interface LoanSelectorProps {
-  loans: LoanInSelector[];
+  loans: LoanWithCalculations[];
+  lender: LenderWithCalculations;
   selectedLoanId?: string;
-  onSelectLoan: (loanId: string) => void;
+  onSelectLoan: (loanId: string | null) => void;
   maxTabs: number;
-  commonT: ReturnType<typeof useTranslations<string>>;
-  loanT: ReturnType<typeof useTranslations<string>>;
 }
 
-export function LoanSelector({ loans, selectedLoanId, onSelectLoan, maxTabs, commonT, loanT }: LoanSelectorProps) {
+export function LoanSelector({ loans, selectedLoanId, onSelectLoan, maxTabs, lender }: LoanSelectorProps) {
   const showTabs = loans.length <= maxTabs;
-
-  if (loans.length === 0) {
-    return null; // Or some placeholder if needed, parent handles "noLoans" message
-  }
 
   return (
     <>
       {showTabs ? (
-        <LoanTabs
-          loans={loans}
-          selectedLoanId={selectedLoanId}
-          onSelectLoan={onSelectLoan}
-          commonT={commonT}
-          loanT={loanT}
-        />
+        <LoanTabs lender={lender} loans={loans} selectedLoanId={selectedLoanId} onSelectLoan={onSelectLoan} />
       ) : (
-        <LoanDropdown
-          loans={loans}
-          selectedLoanId={selectedLoanId}
-          onSelectLoan={onSelectLoan}
-          commonT={commonT}
-          loanT={loanT}
-        />
+        <LoanDropdown lender={lender} loans={loans} selectedLoanId={selectedLoanId} onSelectLoan={onSelectLoan} />
       )}
     </>
   );

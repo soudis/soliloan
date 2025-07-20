@@ -1,22 +1,24 @@
 'use client';
 
-import { formatCurrency, formatPercentage } from '@/lib/utils';
+import { cn, formatCurrency, formatPercentage } from '@/lib/utils';
+import { useLenderLoanSelectionStore } from '@/store/lender-loan-selection-store';
 import type { LoanWithCalculations } from '@/types/loans';
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
-import type { useTranslations } from 'next-intl';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 
 interface LoanSelectorItemRowProps {
   loan: LoanWithCalculations;
-  commonT: ReturnType<typeof useTranslations<string>>;
-  loanT: ReturnType<typeof useTranslations<string>>;
+  highlightActive?: boolean;
 }
 
-export function LoanSelectorItemRow({ loan, commonT, loanT }: LoanSelectorItemRowProps) {
+export function LoanSelectorItemRow({ loan, highlightActive = true }: LoanSelectorItemRowProps) {
   const locale = useLocale();
   const dateLocale = locale === 'de' ? de : enUS;
+  const tCommon = useTranslations('common');
+  const tLoan = useTranslations('dashboard.loans');
+  const { getSelectedLoanId } = useLenderLoanSelectionStore();
 
   const amountStr = formatCurrency(loan.amount);
   const interestRateStr = `${formatPercentage(loan.interestRate)}%`;
@@ -26,12 +28,10 @@ export function LoanSelectorItemRow({ loan, commonT, loanT }: LoanSelectorItemRo
   });
 
   const loanNumberAndBadgeCell = (
-    <div className="align-middle p-2 pl-3 table-cell">
+    <div className="align-middle p-2 pl-3 table-cell min-w-35">
       <div className="flex flex-col items-start gap-1">
-        <h3 className="text-lg font-medium">
-          {loanT('table.loanNumberShort')} #{loan.loanNumber}
-        </h3>
-        <LoanStatusBadge status={loan.status} commonT={commonT} className="mt-0.5" />
+        <h3 className="text-lg font-medium">#{loan.loanNumber}</h3>
+        <LoanStatusBadge status={loan.status} className="mt-0.5" />
       </div>
     </div>
   );
@@ -42,11 +42,11 @@ export function LoanSelectorItemRow({ loan, commonT, loanT }: LoanSelectorItemRo
         <div className="text-sm font-medium text-primary mb-1">{contractDateStr}</div>
         <div className="text-xs text-muted-foreground space-y-0.5">
           <div>
-            <span className="font-medium text-foreground">{amountStr}</span> {commonT('terms.atRate')}{' '}
+            <span className="font-medium text-foreground">{amountStr}</span> {tCommon('terms.atRate')}{' '}
             <span className="font-medium text-foreground">{interestRateStr}</span>
           </div>
           <div>
-            {loanT('table.balanceShort')} <span className="font-medium text-foreground">{balanceStr}</span>
+            {tLoan('table.balanceShort')} <span className="font-medium text-foreground">{balanceStr}</span>
           </div>
         </div>
       </div>
@@ -54,9 +54,14 @@ export function LoanSelectorItemRow({ loan, commonT, loanT }: LoanSelectorItemRo
   );
 
   return (
-    <>
+    <div
+      className={cn(
+        'border-b border-border w-full',
+        getSelectedLoanId(loan.lender.id) === loan.id && highlightActive && 'bg-muted',
+      )}
+    >
       {loanNumberAndBadgeCell}
       {detailsCell}
-    </>
+    </div>
   );
 }

@@ -12,14 +12,14 @@ import { FormSelect } from '@/components/form/form-select';
 import { FormSection } from '@/components/ui/form-section';
 
 import type { LenderFormData } from '@/lib/schemas/lender';
-import { useProject } from '@/store/project-context';
+import { useProjects } from '@/store/projects-store';
 
 export function LenderFormFields() {
   const t = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
 
   const form = useFormContext<LenderFormData>();
-  const { selectedProject } = useProject();
+  const { selectedProject } = useProjects();
 
   const type = form.watch('type');
 
@@ -160,14 +160,16 @@ export function LenderFormFields() {
       </FormSection>
 
       {/* Additional Information Section */}
-      <FormSection title={t('new.form.additionalInfo')}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormAdditionalFields
-            config={selectedProject?.configuration.lenderAdditionalFields}
-            name="additionalFields"
-          />
-        </div>
-      </FormSection>
+      {selectedProject?.configuration.lenderAdditionalFields.length > 0 && (
+        <FormSection title={t('new.form.additionalInfo')}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormAdditionalFields
+              config={selectedProject?.configuration.lenderAdditionalFields}
+              name="additionalFields"
+            />
+          </div>
+        </FormSection>
+      )}
     </div>
   );
 }

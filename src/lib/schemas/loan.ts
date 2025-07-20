@@ -11,6 +11,60 @@ import {
   periodTypeEnum,
 } from './common';
 // Define the loan form schema based on the Prisma model
+
+export const validateTermination = (data: LoanTerminationData, ctx: z.RefinementCtx) => {
+  if (data.terminationType === 'ENDDATE') {
+    if (!data.endDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'validation.common.required',
+        path: ['endDate'],
+      });
+    }
+  } else if (data.terminationType === 'TERMINATION') {
+    if (!data.terminationPeriod) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'validation.common.required',
+        path: ['terminationPeriod'],
+      });
+    }
+    if (!data.terminationPeriodType) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'validation.common.required',
+        path: ['terminationPeriodType'],
+      });
+    }
+  } else if (data.terminationType === 'DURATION') {
+    if (!data.duration) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'validation.common.required',
+        path: ['duration'],
+      });
+    }
+    if (!data.durationType) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'validation.common.required',
+        path: ['durationType'],
+      });
+    }
+  }
+};
+
+export const loanTerminationSchema = z.object({
+  // Termination Information
+  terminationType: z.nativeEnum(TerminationType),
+  endDate: createDateSchema(false),
+  terminationDate: createDateSchema(false),
+  terminationPeriod: optionalNumberSchema,
+  terminationPeriodType: periodTypeEnum.nullable().optional(),
+  duration: optionalNumberSchema,
+  durationType: periodTypeEnum.nullable().optional(),
+});
+
 export const loanFormSchema = z
   .object({
     // General Information
@@ -20,60 +74,14 @@ export const loanFormSchema = z
     interestRate: createNumberSchemaRequired(0),
 
     // Termination Information
-    terminationType: z.nativeEnum(TerminationType),
-    endDate: createDateSchema(false),
-    terminationDate: createDateSchema(false),
-    terminationPeriod: optionalNumberSchema,
-    terminationPeriodType: periodTypeEnum.nullable().optional(),
-    duration: optionalNumberSchema,
-    durationType: periodTypeEnum.nullable().optional(),
+    ...loanTerminationSchema.shape,
 
     // Additional Information
     altInterestMethod: interestMethodEnum.nullable().optional(),
     contractStatus: contractStatusEnum.default('PENDING'),
     additionalFields: additionalFieldValuesSchema.default({}).optional().nullable(),
   })
-  .superRefine((data, ctx) => {
-    // Validate fields based on terminationType
-    if (data.terminationType === 'ENDDATE') {
-      if (!data.endDate) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'validation.common.required',
-          path: ['endDate'],
-        });
-      }
-    } else if (data.terminationType === 'TERMINATION') {
-      if (!data.terminationPeriod) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'validation.common.required',
-          path: ['terminationPeriod'],
-        });
-      }
-      if (!data.terminationPeriodType) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'validation.common.required',
-          path: ['terminationPeriodType'],
-        });
-      }
-    } else if (data.terminationType === 'DURATION') {
-      if (!data.duration) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'validation.common.required',
-          path: ['duration'],
-        });
-      }
-      if (!data.durationType) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'validation.common.required',
-          path: ['durationType'],
-        });
-      }
-    }
-  });
+  .superRefine(validateTermination);
 
 export type LoanFormData = z.infer<typeof loanFormSchema>;
+export type LoanTerminationData = z.infer<typeof loanTerminationSchema>;

@@ -14,7 +14,7 @@ import {
   validateFieldRequired,
 } from '@/lib/schemas/common';
 import { lenderFormSchema } from '@/lib/schemas/lender';
-import { useProject } from '@/store/project-context';
+import { useProjects } from '@/store/projects-store';
 
 import { LenderFormFields } from './lender-form-fields';
 
@@ -45,7 +45,7 @@ export function LenderForm({
   isLoading,
   error,
 }: LenderFormProps) {
-  const { selectedProject } = useProject();
+  const { selectedProject } = useProjects();
 
   const initialType = initialData?.type || LenderType.PERSON;
 
@@ -90,7 +90,7 @@ export function LenderForm({
       lastName: initialData?.lastName || '',
       titlePrefix: initialData?.titlePrefix || '',
       titleSuffix: initialData?.titleSuffix || '',
-      organisationName: '',
+      organisationName: initialData?.organisationName || '',
       additionalFields: additionalFieldDefaults(
         selectedProject?.configuration?.lenderAdditionalFields || [],
         (initialData?.additionalFields as AdditionalFieldValues | undefined) || {},

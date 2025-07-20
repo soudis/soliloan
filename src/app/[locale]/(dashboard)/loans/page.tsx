@@ -6,7 +6,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { getLoansByProjectId } from '@/app/actions/loans';
+import { getLoansByProjectId } from '@/actions/loans';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { useRouter } from '@/i18n/navigation';
@@ -23,14 +23,14 @@ import {
   createPercentageColumn,
   createTerminationModalitiesColumn,
 } from '@/lib/table-column-utils';
-import { useProject } from '@/store/project-context';
+import { useProjects } from '@/store/projects-store';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
 
 export default function LoansPage() {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const router = useRouter();
-  const { selectedProject } = useProject();
+  const { selectedProject } = useProjects();
   const locale = useLocale();
 
   const { data: loans = [], isLoading: loading } = useQuery({
@@ -284,7 +284,7 @@ export default function LoansPage() {
         defaultColumnVisibility={defaultColumnVisibility}
         viewType="LOAN"
         showFilter={true}
-        onRowClick={(row) => router.push(`/lenders/${row.lender.id}?highlightLoan=${row.id}`)}
+        onRowClick={(row) => router.push(`/lenders/${row.lender.id}?loanId=${row.id}`)}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
             <Button

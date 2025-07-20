@@ -17,6 +17,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - TZ=Europe/Berlin
+      - NEXT_PUBLIC_SOLILOAN_PROJECT_NAME=${SOLILOAN_PROJECT_NAME:?}
     networks:
       - traefik_network
       - backend_network

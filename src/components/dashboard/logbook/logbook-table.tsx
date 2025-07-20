@@ -1,16 +1,16 @@
 'use client';
 
-import { Change, ViewType } from '@prisma/client';
-import { ColumnDef, Row } from '@tanstack/react-table';
+import { type Change, ViewType } from '@prisma/client';
+import type { ColumnDef, Row } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useState } from 'react';
 
 import { DataTable } from '@/components/ui/data-table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AuditContext } from '@/lib/audit-trail';
+import type { AuditContext } from '@/lib/audit-trail';
 import { createColumn } from '@/lib/table-column-utils';
 
 interface LogbookTableProps {
@@ -32,7 +32,8 @@ export function LogbookTable({ changes }: LogbookTableProps) {
             loanNumber: context.loan?.loanNumber ?? '',
             lenderName: context.lender?.name ?? '',
           });
-        } else if (change.operation === 'DELETE') {
+        }
+        if (change.operation === 'DELETE') {
           return t('file.deleted', {
             filename: context.file?.name ?? '',
             loanNumber: context.loan?.loanNumber ?? '',
@@ -46,7 +47,8 @@ export function LogbookTable({ changes }: LogbookTableProps) {
             loanNumber: context.loan?.loanNumber ?? '',
             lenderName: context.lender?.name ?? '',
           });
-        } else if (change.operation === 'UPDATE') {
+        }
+        if (change.operation === 'UPDATE') {
           return t('loan.updated', {
             loanNumber: context.loan?.loanNumber ?? '',
             lenderName: context.lender?.name ?? '',
@@ -60,7 +62,8 @@ export function LogbookTable({ changes }: LogbookTableProps) {
             loanNumber: context.loan?.loanNumber ?? '',
             lenderName: context.lender?.name ?? '',
           });
-        } else if (change.operation === 'DELETE') {
+        }
+        if (change.operation === 'DELETE') {
           return t('transaction.deleted', {
             amount: context.transaction?.amount ?? '',
             loanNumber: context.loan?.loanNumber ?? '',
@@ -74,7 +77,8 @@ export function LogbookTable({ changes }: LogbookTableProps) {
             loanNumber: context.loan?.loanNumber ?? '',
             lenderName: context.lender?.name ?? '',
           });
-        } else if (change.operation === 'DELETE') {
+        }
+        if (change.operation === 'DELETE') {
           return t('note.deleted', {
             loanNumber: context.loan?.loanNumber ?? '',
             lenderName: context.lender?.name ?? '',
@@ -87,12 +91,14 @@ export function LogbookTable({ changes }: LogbookTableProps) {
             lenderName: context.lender?.name ?? '',
             lenderId: context.lender?.id ?? '',
           });
-        } else if (change.operation === 'UPDATE') {
+        }
+        if (change.operation === 'UPDATE') {
           return t('lender.updated', {
             lenderName: context.lender?.name ?? '',
             lenderId: context.lender?.id ?? '',
           });
-        } else if (change.operation === 'DELETE') {
+        }
+        if (change.operation === 'DELETE') {
           return t('lender.deleted', {
             lenderName: context.lender?.name ?? '',
             lenderId: context.lender?.id ?? '',
@@ -148,11 +154,11 @@ export function LogbookTable({ changes }: LogbookTableProps) {
             return (
               <div>
                 {description.split(`#${context.loan.loanNumber}`).map((part, index, array) => (
-                  <span key={index}>
+                  <span key={`${context.loan?.id}-${index}`}>
                     {part}
                     {index < array.length - 1 && (
                       <Link
-                        href={`/lenders/${context.lender?.id}?highlightLoan=${context.loan?.id}`}
+                        href={`/lenders/${context.lender?.id}?loanId=${context.loan?.id}`}
                         className="text-primary hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -170,7 +176,7 @@ export function LogbookTable({ changes }: LogbookTableProps) {
             return (
               <div>
                 {description.split(lenderName).map((part, index, array) => (
-                  <span key={index}>
+                  <span key={`${context.lender?.id}-${index}`}>
                     {part}
                     {index < array.length - 1 && context.lender && (
                       <Link

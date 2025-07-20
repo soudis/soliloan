@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 export interface ComboboxOption {
   value: string;
   label: string;
+  customContent?: React.ReactNode;
 }
 
 interface ComboboxProps {
@@ -49,6 +50,7 @@ export function Combobox({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
+          // biome-ignore lint/a11y/useSemanticElements: <explanation>
           role="combobox"
           aria-expanded={open}
           className={cn('w-full justify-between', className)}
@@ -87,9 +89,16 @@ export function Combobox({
                       setOpen(false);
                       setSearchQuery('');
                     }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        onSelect(option.value);
+                        setOpen(false);
+                        setSearchQuery('');
+                      }
+                    }}
                   >
                     <Check className={cn('mr-2 h-4 w-4', value === option.value ? 'opacity-100' : 'opacity-0')} />
-                    {option.label}
+                    {option.customContent || option.label}
                   </div>
                 ))}
               </div>

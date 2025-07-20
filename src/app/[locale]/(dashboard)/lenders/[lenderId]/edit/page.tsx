@@ -6,12 +6,12 @@ import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
 import { toast } from 'sonner';
 
-import { getLenderById, updateLender } from '@/app/actions/lenders';
+import { getLenderById, updateLender } from '@/actions/lenders';
 import { LenderForm } from '@/components/lenders/lender-form';
 import { useRouter } from '@/i18n/navigation';
-import { useProject } from '@/store/project-context';
 
 import type { LenderFormData } from '@/lib/schemas/lender';
+import { useProjects } from '@/store/projects-store';
 
 export default function EditLenderPage({
   params,
@@ -21,7 +21,7 @@ export default function EditLenderPage({
   const resolvedParams = use(params);
   const { data: session } = useSession();
   const router = useRouter();
-  const { selectedProject } = useProject();
+  const { selectedProject } = useProjects();
   const t = useTranslations('dashboard.lenders');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +76,7 @@ export default function EditLenderPage({
       toast.success(t('edit.form.success'));
 
       // Navigate back to the previous page using the router
-      router.back();
+      router.push(`/lenders/${resolvedParams.lenderId}`);
     } catch (error) {
       console.error('Error submitting form:', error);
       setError(error instanceof Error ? error.message : 'An unknown error occurred');

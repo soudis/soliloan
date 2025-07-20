@@ -4,42 +4,31 @@ import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
-import { getProjects } from '@/app/actions/projects';
+import { getProjects } from '@/actions/projects';
+import { getProjectsAction } from '@/actions/projects/queries/get-projects';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useProject } from '@/store/project-context';
-import { ProjectWithConfiguration } from '@/types/projects';
+
+import { useProjects } from '@/store/projects-store';
+import type { ProjectWithConfiguration } from '@/types/projects';
+import { useQuery } from '@tanstack/react-query';
+import { useAction } from 'next-safe-action/hooks';
 
 export default function ProjectSelector() {
-  const { selectedProject, setSelectedProject } = useProject();
+  const { selectedProject, setSelectedProject } = useProjects();
   const t = useTranslations('navigation');
-  const [projects, setProjects] = useState<ProjectWithConfiguration[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  const { data: response, isLoading } = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => getProjectsAction(),
+  });
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const { projects: fetchedProjects, error } = await getProjects();
-        if (error) {
-          throw new Error(error);
-        }
-        if (fetchedProjects) {
-          setProjects(fetchedProjects);
-          if (fetchedProjects.length > 0 && !selectedProject) {
-            setSelectedProject(fetchedProjects[0]);
-          }
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (response?.data?.projects?.length && !selectedProject) {
+      setSelectedProject(response?.data?.projects[0] ?? null);
+    }
+  }, [response, selectedProject, setSelectedProject]);
 
-    fetchProjects();
-  }, [selectedProject, setSelectedProject]);
-
-  if (isLoading) {
+  if (isLoading || !response) {
     return (
       <div className="flex items-center justify-center p-4">
         <Loader2 className="h-4 w-4 animate-spin" />
@@ -47,8 +36,11 @@ export default function ProjectSelector() {
     );
   }
 
-  if (error) {
-    return <div className="p-4 text-sm text-red-500">{error}</div>;
+  const { data, serverError } = response ?? {};
+
+  if (serverError || !data?.projects) {
+    console.error(response);
+    throw new Error(serverError);
   }
 
   return (
@@ -56,7 +48,7 @@ export default function ProjectSelector() {
       <Select
         value={selectedProject?.id}
         onValueChange={(value: string) => {
-          const project = projects.find((p: ProjectWithConfiguration) => p.id === value);
+          const project = data.projects.find((p: ProjectWithConfiguration) => p.id === value);
           setSelectedProject(project || null);
         }}
       >
@@ -64,7 +56,7 @@ export default function ProjectSelector() {
           <SelectValue placeholder={t('selectProject')} />
         </SelectTrigger>
         <SelectContent>
-          {projects.map((project: ProjectWithConfiguration) => (
+          {data.projects.map((project: ProjectWithConfiguration) => (
             <SelectItem key={project.id} value={project.id}>
               {project.name}
             </SelectItem>

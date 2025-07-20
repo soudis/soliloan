@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 
 export default function AuthLayout({
   children,
@@ -16,7 +16,7 @@ export default function AuthLayout({
       <div className="md:hidden flex items-center justify-center p-6">
         <div className="flex items-center space-x-2">
           <Image src="/soliloan-logo.webp" alt="Soliloan AI Logo" width={32} height={32} className="h-8 w-8" />
-          <span className="text-xl font-bold text-primary font-comfortaa">Soliloan AI</span>
+          <span className="text-xl font-bold text-primary font-comfortaa">Soliloan</span>
         </div>
       </div>
 
@@ -28,7 +28,7 @@ export default function AuthLayout({
             <div className="px-24 py-20">
               <div className="flex items-center justify-center space-x-6">
                 <Image src="/soliloan-logo.webp" alt="Soliloan AI Logo" width={96} height={96} className="h-24 w-24" />
-                <span className="text-5xl font-bold text-primary font-comfortaa">Soliloan AI</span>
+                <span className="text-5xl font-bold text-primary font-comfortaa">Soliloan</span>
               </div>
               <p className="text-2xl text-primary mt-8">{t('branding.description')}</p>
             </div>

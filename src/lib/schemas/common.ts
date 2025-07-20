@@ -219,6 +219,7 @@ export const bankingSchema = z.object({
 
 // Interest method enum
 export const interestMethodEnum = selectEnumOptional(InterestMethod);
+export const interestMethodEnumRequired = selectEnumRequired(InterestMethod);
 
 // Salutation enum
 export const salutationEnumRequired = selectEnumRequired(Salutation);

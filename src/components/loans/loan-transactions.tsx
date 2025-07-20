@@ -1,6 +1,6 @@
 'use client';
 
-import { Transaction } from '@prisma/client';
+import type { Transaction } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
@@ -9,13 +9,13 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { deleteTransaction } from '@/app/actions/loans';
+import { deleteTransaction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { formatCurrency } from '@/lib/utils';
-import { LoanStatus, LoanWithCalculations } from '@/types/loans';
+import { LoanStatus, type LoanWithCalculations } from '@/types/loans';
 
-import { TransactionDialog } from './transaction-dialog';
 import { Button } from '../ui/button';
+import { TransactionDialog } from './transaction-dialog';
 
 interface LoanTransactionsProps {
   loanId: string;
@@ -101,7 +101,10 @@ export function LoanTransactions({ loanId, transactions, loan }: LoanTransaction
       <div className="mt-6">
         <div className="mt-2 space-y-2">
           {transactions.map((transaction) => (
-            <div key={transaction.id} className="flex items-center justify-between rounded-lg bg-muted/50 p-2">
+            <div
+              key={transaction.id}
+              className="flex items-center justify-between rounded-lg p-2 border-t first:border-t-0"
+            >
               <div className="flex items-center space-x-3">
                 <div className={`rounded-full ${getTransactionIconBackground(transaction.type)} p-1`}>
                   {getTransactionIcon(transaction.type)}
@@ -116,7 +119,7 @@ export function LoanTransactions({ loanId, transactions, loan }: LoanTransaction
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="font-medium">{formatCurrency(transaction.amount)}</div>
+                <div className="font-medium font-mono">{formatCurrency(transaction.amount)}</div>
                 <div className="w-8 flex justify-end">
                   {transaction.id === lastTransaction?.id && (
                     <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(transaction.id)}>

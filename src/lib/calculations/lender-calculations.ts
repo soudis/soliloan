@@ -5,21 +5,9 @@ import { omit } from 'lodash';
 import type { CalculationOptions } from '@/types/calculation';
 import type { LenderWithRelations } from '@/types/lenders';
 
+import { LoanStatus } from '@/types/loans';
 import { loansSorter } from '../utils';
 import { calculateLoanFields } from './loan-calculations';
-
-// Define a base type for the lender with calculations
-export type LenderWithCalculations = Lender & {
-  totalLoans: number;
-  totalAmount: number;
-  totalRemainingAmount: number;
-  totalInterest: number;
-  activeLoans: number;
-  defaultedLoans: number;
-};
-
-// Define a generic type that can include relations
-export type LenderWithCalculationsAndRelations<T> = LenderWithCalculations & T;
 
 export function calculateLenderFields(lender: LenderWithRelations, options: CalculationOptions = {}) {
   const { client = false } = options ?? {};
@@ -38,6 +26,8 @@ export function calculateLenderFields(lender: LenderWithRelations, options: Calc
     amount: 0,
     interestRate: 0,
     balanceInterestRate: 0,
+    totalLoans: loans?.length ?? 0,
+    activeLoans: loans?.filter((loan) => loan.status === LoanStatus.ACTIVE).length ?? 0,
   };
 
   // Use forEach instead of reduce to avoid TypeScript issues

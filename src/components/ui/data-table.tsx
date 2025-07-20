@@ -14,7 +14,7 @@ import {
 import { Settings } from 'lucide-react';
 import { useState } from 'react';
 
-import { getViewsByType } from '@/app/actions/views';
+import { getViewsByType } from '@/actions/views';
 import { useTableStore } from '@/store/table-store';
 
 import { DataTableBody } from './data-table-body';

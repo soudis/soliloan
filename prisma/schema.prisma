@@ -54,6 +54,7 @@ model User {
   accounts      Account[]
   lenders       Lender[]
   notes         Note[]
+  files         File[]
   sessions      Session[]
   views         View[]
   managerOf     Project[]      @relation("ProjectManager")
@@ -63,6 +64,7 @@ model LoanTemplate {
   id                    String              @id @default(cuid())
   configurationId       String
   name                  String
+  isDefault             Boolean             @default(false)
   terminationType       TerminationType
   terminationPeriod     Int?
   terminationPeriodType DurationType?
@@ -95,14 +97,13 @@ model Configuration {
   lenderRequiredFields   LenderRequiredField[]
   lenderSalutation       Salutation?
   lenderCountry          Country?
-  lenderAdditionalFields Json           @default("[]")
-  interestMethod         InterestMethod?
+  interestMethod         InterestMethod
   altInterestMethods     InterestMethod[]
   defaultLoanTemplateId  String?
-  customLoans            Boolean?
   loanTemplates          LoanTemplate[]
   project                Project?
-  loanAdditionalFields   Json?
+  lenderAdditionalFields Json           @default("[]")
+  loanAdditionalFields   Json           @default("[]")
 }
 
 model Project {
@@ -189,6 +190,9 @@ model File {
   loanId      String?
   lender      Lender? @relation(fields: [lenderId], references: [id])
   loan        Loan?   @relation(fields: [loanId], references: [id])
+  createdAt   DateTime @default(now())
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id])
 }
 
 model Note {

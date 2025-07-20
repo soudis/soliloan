@@ -1,11 +1,11 @@
 'use client';
 
 import { Menu, X } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Session } from 'next-auth';
+import type { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 
@@ -26,7 +26,9 @@ export function TopNav({ session, isSidebarOpen, setIsSidebarOpen }: TopNavProps
             <div className="flex flex-shrink-0 items-center">
               <Link href="/dashboard" className="flex items-center">
                 <Image src="/soliloan-logo.webp" alt="Soliloan AI Logo" width={32} height={32} className="mr-2" />
-                <span className="text-xl font-bold text-primary font-comfortaa">Soliloan AI</span>
+                <span className="text-xl font-bold text-primary font-comfortaa">
+                  {process.env.NEXT_PUBLIC_SOLILOAN_PROJECT_NAME}
+                </span>
               </Link>
             </div>
             <div className="ml-4 flex items-center md:hidden">

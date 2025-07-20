@@ -3,20 +3,25 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
-import { Mail } from 'lucide-react';
+import { BarChart3, Info, Key, Mail, Pencil, Trash2, User, User2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { sendInvitationEmail } from '@/app/actions/users';
+import { sendInvitationEmail } from '@/actions/users';
 import { BalanceTable } from '@/components/loans/balance-table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { InfoItem } from '@/components/ui/info-item';
+import { useRouter } from '@/i18n/navigation';
+import { useScreenSize } from '@/lib/hooks/use-screensize';
 import { hasAdditionalFields } from '@/lib/utils/additional-fields';
-import { useProject } from '@/store/project-context';
+import { formatAddressPlace } from '@/lib/utils/format';
+import { useProjects } from '@/store/projects-store';
 import type { LenderWithCalculations } from '@/types/lenders';
 import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-items';
+import { ConfirmDialog } from '../generic/confirm-dialog';
+import { SectionCard } from '../generic/section-card';
 
 interface LenderInfoCardProps {
   lender: LenderWithCalculations;
@@ -24,11 +29,15 @@ interface LenderInfoCardProps {
 
 export function LenderInfoCard({ lender }: LenderInfoCardProps) {
   const t = useTranslations('dashboard.lenders');
+  const commonT = useTranslations('common');
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const locale = useLocale();
-  const { selectedProject } = useProject();
+  const { selectedProject } = useProjects();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const dateLocale = locale === 'de' ? de : enUS;
   const [isSendingInvitation, setIsSendingInvitation] = useState(false);
+  const { isSmall } = useScreenSize();
 
   const lenderName =
     lender.type === 'PERSON'
@@ -39,7 +48,7 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
   const hasContactInfo = lender.email || lender.telNo;
 
   // Check if we have any address information
-  const hasAddressInfo = lender.street || lender.addon || lender.zip || lender.place || lender.country;
+  const hasAddressInfo = lender.street || lender.addon || lender.zip || lender.place;
 
   // Check if we have any banking information
   const hasBankingInfo = lender.iban || lender.bic;
@@ -75,9 +84,57 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
     }
   };
 
-  return (
-    <Card>
-      <CardContent className="space-y-4">
+  const handleDeleteClick = () => {
+    setIsConfirmOpen(true);
+  };
+
+  const handleDeleteLender = async () => {
+    const toastId = toast.loading(t('delete.loading'));
+
+    try {
+      const result = await deleteLender(lender.id);
+
+      if (result.error) {
+        toast.error(t(`errors.${result.error}`), {
+          id: toastId,
+        });
+      } else {
+        toast.success(t('delete.success'), {
+          id: toastId,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ['lender', lender.id],
+        });
+      }
+    } catch (e) {
+      toast.error(t('delete.error'), {
+        id: toastId,
+      });
+      console.error('Failed to delete lender:', e);
+    }
+  };
+
+  const buttons = (
+    <div className="flex gap-2 ml-auto">
+      <Button variant="outline" size="sm" onClick={() => router.push(`/lenders/${lender.id}/edit`)}>
+        <Pencil className="h-4 w-4 mr-2" />
+        {commonT('ui.actions.edit')}
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleDeleteClick}
+        className="text-destructive hover:text-destructive/90 border-destructive/50 hover:bg-destructive/5"
+      >
+        <Trash2 className="h-4 w-4 mr-2" />
+        {commonT('ui.actions.delete')}
+      </Button>
+    </div>
+  );
+
+  const contactInfo = (
+    <SectionCard title={t('details.contactInfo')} icon={<User className="h-4 w-4 text-muted-foreground" />}>
+      <div className="grid grid-cols-1 gap-4">
         {/* Name Information */}
         {lenderName && (
           <div className="grid grid-cols-1 gap-4">
@@ -102,12 +159,7 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
                 <>
                   {lender.street && <div>{lender.street}</div>}
                   {lender.addon && <div>{lender.addon}</div>}
-                  {(lender.zip || lender.place) && (
-                    <div>
-                      {lender.zip} {lender.place}
-                    </div>
-                  )}
-                  {lender.country && <div>{lender.country}</div>}
+                  {(lender.place || lender.zip) && <div>{formatAddressPlace(lender)}</div>}
                 </>
               }
               showCopyButton={true}
@@ -134,69 +186,105 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
             />
           </div>
         )}
+      </div>
+    </SectionCard>
+  );
 
-        {/* Loan Calculations */}
-        {hasLoanCalculations && (
-          <div className="grid grid-cols-1 gap-4">
-            <div className="text-sm text-muted-foreground">{t('details.loanCalculations')}</div>
-            <BalanceTable totals={lender} />
+  const loanCalculations = (
+    <SectionCard title={t('details.loanCalculations')} icon={<BarChart3 className="h-4 w-4 text-muted-foreground" />}>
+      <BalanceTable totals={lender} />
+    </SectionCard>
+  );
+
+  const additionalFields = (
+    <SectionCard title={t('details.additionalFields')} icon={<Info className="h-4 w-4 text-muted-foreground" />}>
+      <div className="grid grid-cols-1 gap-4">
+        <AdditionalFieldInfoItems
+          additionalFields={lender.additionalFields}
+          configuration={selectedProject?.configuration.lenderAdditionalFields}
+        />
+      </div>
+    </SectionCard>
+  );
+
+  const userInfo = (
+    <SectionCard title={t('details.userInfo')} icon={<Key className="h-4 w-4 text-muted-foreground" />}>
+      <div className="grid grid-cols-1 gap-4">
+        <InfoItem
+          label={t('details.lastLogin')}
+          value={
+            lender.user?.lastLogin ? (
+              format(new Date(lender.user.lastLogin), 'PPP p', {
+                locale: dateLocale,
+              })
+            ) : (
+              <div className="text-muted-foreground italic">{t('details.neverLoggedIn')}</div>
+            )
+          }
+        />
+        <div className="flex items-center justify-between">
+          <InfoItem
+            label={t('details.lastInvited')}
+            value={
+              lender.user?.lastInvited ? (
+                format(new Date(lender.user.lastInvited), 'PPP p', {
+                  locale: dateLocale,
+                })
+              ) : (
+                <div className="text-muted-foreground italic">{t('details.neverInvited')}</div>
+              )
+            }
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSendInvitation}
+            disabled={isSendingInvitation}
+            className="ml-2"
+          >
+            <Mail className="h-4 w-4 mr-2" />
+            {isSendingInvitation ? t('details.sendingInvitation') : t('details.sendInvitation')}
+          </Button>
+        </div>
+      </div>
+    </SectionCard>
+  );
+
+  return (
+    <div className="flex flex-col gap-4">
+      {buttons}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {isSmall ? (
+          <div className="flex flex-col gap-4">
+            {contactInfo}
+            {hasLoanCalculations && loanCalculations}
+            {hasAdditionalFields(lender.additionalFields, selectedProject?.configuration.lenderAdditionalFields) &&
+              additionalFields}
+            {lender.user && userInfo}
           </div>
-        )}
-
-        {/* User Information */}
-        {lender.user && (
-          <div className="grid grid-cols-1 gap-4 mt-6">
-            <div className="text-sm text-muted-foreground">{t('details.userInfo')}</div>
-            <div className="grid grid-cols-1 gap-4">
-              <InfoItem
-                label={t('details.lastLogin')}
-                value={
-                  lender.user.lastLogin ? (
-                    format(new Date(lender.user.lastLogin), 'PPP p', {
-                      locale: dateLocale,
-                    })
-                  ) : (
-                    <div className="text-muted-foreground italic">{t('details.neverLoggedIn')}</div>
-                  )
-                }
-              />
-              <div className="flex items-center justify-between">
-                <InfoItem
-                  label={t('details.lastInvited')}
-                  value={
-                    lender.user.lastInvited ? (
-                      format(new Date(lender.user.lastInvited), 'PPP p', {
-                        locale: dateLocale,
-                      })
-                    ) : (
-                      <div className="text-muted-foreground italic">{t('details.neverInvited')}</div>
-                    )
-                  }
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSendInvitation}
-                  disabled={isSendingInvitation}
-                  className="ml-2"
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  {isSendingInvitation ? t('details.sendingInvitation') : t('details.sendInvitation')}
-                </Button>
-              </div>
+        ) : (
+          <>
+            <div className="flex flex-col gap-4">
+              {contactInfo}
+              {hasAdditionalFields(lender.additionalFields, selectedProject?.configuration.lenderAdditionalFields) && (
+                <div>{additionalFields}</div>
+              )}
             </div>
-          </div>
+            <div className="flex flex-col gap-4">
+              {hasLoanCalculations && <div>{loanCalculations}</div>}
+              {lender.user && <div>{userInfo}</div>}
+            </div>
+          </>
         )}
-        {hasAdditionalFields(lender.additionalFields, selectedProject?.configuration.lenderAdditionalFields) && (
-          <div className="grid grid-cols-1 gap-4">
-            <div className="text-sm text-muted-foreground">{t('details.additionalFields')}</div>
-            <AdditionalFieldInfoItems
-              additionalFields={lender.additionalFields}
-              configuration={selectedProject?.configuration.lenderAdditionalFields}
-            />
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      </div>
+      <ConfirmDialog
+        open={isConfirmOpen}
+        onOpenChange={setIsConfirmOpen}
+        onConfirm={() => handleDeleteLender()}
+        title={t('delete.confirmTitle')}
+        description={t('delete.confirmDescription')}
+        confirmText={commonT('ui.actions.delete')}
+      />
+    </div>
   );
 }

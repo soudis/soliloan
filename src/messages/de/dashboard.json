@@ -65,6 +65,21 @@
       "selectFallback": "Kredit auswählen",
       "selectPrompt": "Bitte wählen Sie einen Kredit aus, um Details anzuzeigen."
     },
+    "delete": {
+      "confirmTitle": "Kreditgeber*in löschen?",
+      "confirmDescription": "Sind Sie sicher, dass Sie diese Kreditgeber*in löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "success": "Kreditgeber*in erfolgreich gelöscht.",
+      "error": "Fehler beim Löschen der Kreditgeber*in.",
+      "loading": "Kreditgeber*in wird gelöscht..."
+    },
+    "lenderPage": {
+      "tabs": {
+        "lender": "Kreditgeber*in",
+        "loans": "Kredite",
+        "files": "Dateien",
+        "notes": "Notizen"
+      }
+    },
     "table": {
       "lenderNumber": "Nummer",
       "type": "Typ",
@@ -79,6 +94,7 @@
     },
     "details": {
       "edit": "Bearbeiten",
+      "contactInfo": "Kontakt",
       "newLoan": "Neuer Kredit",
       "lenderInfo": "Kreditgeber*in",
       "address": "Adresse",
@@ -88,7 +104,7 @@
       "noContactInfo": "Keine Kontaktinformationen verfügbar",
       "noAddress": "Keine Adressinformationen verfügbar",
       "noBankingInfo": "Keine Bankverbindungsinformationen verfügbar",
-      "loanCalculations": "Kontostand",
+      "loanCalculations": "Kreditkonto",
       "userInfo": "Account",
       "lastLogin": "Letzte Anmeldung",
       "lastInvited": "Letzte Einladung",
@@ -148,6 +164,9 @@
     "description": "Verwalte deine Kredite und deren Details.",
     "viewLoans": "Kredite anzeigen",
     "details": "Verwalte deine Kredite und deren Details.",
+    "dropdown": {
+      "selectFallback": "Kredit auswählen"
+    },
     "transactions": {
       "title": "Zahlungen",
       "success": "Zahlung erfolgreich erstellt",
@@ -185,7 +204,7 @@
       "lenderNumber": "Kreditgeber*in Nummer",
       "lenderName": "Kreditgeber*in",
       "lender": "Kreditgeber*in",
-      "amount": "Betrag",
+      "amount": "Kredithöhe",
       "balance": "Kontostand",
       "balanceShort": "Stand:",
       "interestRate": "Zinssatz",
@@ -214,8 +233,9 @@
       "durationType": "Laufzeiteinheit",
       "altInterestMethod": "Alternative Zinsmethode",
       "contractStatus": "Vertragsstatus",
-      "signDate": "Datum",
-      "repayDate": "Rückzahlungsdatum",
+      "signDate": "Vertragsdatum",
+      "repayDate": "Rückzahlungsfrist",
+      "repaidDate": "Rückzahlungsdatum",
       "transactions": "Zahlungen",
       "bookings": "Buchungen",
       "files": "Dateien",
@@ -224,7 +244,12 @@
       "withdrawals": "Auszahlungen",
       "interestError": "Zinsfehler",
       "currentBalance": "Kontostand",
-      "notReclaimed": "Nicht zurückgefordert"
+      "notReclaimed": "Nicht zurückgefordert",
+      "totalLoans": "Kredite (gesamt)",
+      "activeLoans": "Kredite (aktiv)",
+      "interestRateAvg": "Zinssatz (durchschnittlich)",
+      "amountTotal": "Kredithöhe (gesamt)",
+      "for": "zu"
     },
     "new": {
       "title": "Kredit erstellen",
@@ -305,6 +330,13 @@
   },
   "configuration": {
     "title": "Projekteinstellungen",
+    "tabs": {
+      "general": "Projektdaten",
+      "lender": "Kreditgeber*innen",
+      "loans": "Kredite",
+      "templates": "Vorlagen",
+      "files": "Downloads"
+    },
     "form": {
       "generalInfo": "Allgemeine Informationen",
       "name": "Name",
@@ -353,7 +385,7 @@
       "lenderAdditionalFields": "Zusätzliche Felder für Kreditgeber*innen",
       "loanAdditionalFields": "Zusätzliche Felder für Kredite",
       "noLenderAdditionalFields": "Keine zusätzlichen Felder",
-      "loanDefaults": "Einstellungen für Kredite",
+      "loanDefaults": "Einstellungen für alle Kredite",
       "interestMethod": "Zinsmethode",
       "interestMethodPlaceholder": "Zinsmethode auswählen",
       "submit": "Speichern",
@@ -364,7 +396,28 @@
       "altInterestMethods": "Zulässige alternative Zinsmethoden",
       "hasHistoricTransactions": "Es gibt bereits Zahlungen aus vergangenen Jahren, die Zinsberechnungsmethode kann nicht mehr geändert werden.",
       "altInterestMethodsHint": "Alternative Zinsmethoden können pro Kredit angegeben werden. Es wird empfohlen keine alternative Methoden zuzulassen.",
-      "noAltInterestMethods": "Keine alternativen Zinsmethoden zugelassen"
+      "noAltInterestMethods": "Keine alternativen Zinsmethoden zugelassen",
+      "loanTemplates": {
+        "loanTemplates": "Kreditvorlagen",
+        "name": "Name",
+        "default": "Standard",
+        "createTitle": "Kreditvorlage erstellen",
+        "editTitle": "Kreditvorlage bearbeiten",
+        "actions": "Aktionen",
+        "createSuccess": "Kreditvorlage erfolgreich erstellt",
+        "editSuccess": "Kreditvorlage erfolgreich aktualisiert",
+        "minAmount": "Mindestbetrag",
+        "maxAmount": "Höchstbetrag",
+        "minInterestRate": "Mindestzinssatz",
+        "maxInterestRate": "Höchstzinssatz",
+        "open": "offen",
+        "addTemplate": "Kreditvorlage hinzufügen",
+        "terminationInfo": "Kündigungsinformationen",
+        "amountInfo": "Betragsgrenzen",
+        "templateInfo": "Vorlage",
+        "markAsDefaultSuccess": "Kreditvorlage als Standard gesetzt",
+        "deleteSuccess": "Kreditvorlage erfolgreich gelöscht"
+      }
     }
   },
   "notes": {
@@ -390,8 +443,6 @@
     "createTitle": "Datei hochladen",
     "title": "Dateien",
     "add": "Datei hinzufügen",
-    "delete": "Datei löschen",
-    "deleteConfirm": "Möchten Sie diese Datei wirklich löschen?",
     "deleteSuccess": "Datei erfolgreich gelöscht",
     "deleteError": "Fehler beim Löschen der Datei",
     "createSuccess": "Datei erfolgreich hochgeladen",
@@ -406,7 +457,13 @@
     "public": "Öffentlich",
     "private": "Intern",
     "publicDescription": "Öffentliche Dateien sind für auch für Kreditgeber*innen sichtbar",
-    "noFiles": "Noch keine Dateien"
+    "noFiles": "Noch keine Dateien",
+    "loan": "Zugehöriger Kredit (optional)",
+    "loanPlaceholder": "Kredit auswählen",
+    "delete": {
+      "confirmTitle": "Datei löschen?",
+      "confirmDescription": "Bist du sicher, dass du die Datei \"{name}\" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden."
+    }
   },
   "noData": "Keine Daten verfügbar"
 }

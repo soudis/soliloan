@@ -1,10 +1,10 @@
-import { View } from '@prisma/client';
+import type { View } from '@prisma/client';
 import { Star, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { ViewState } from '@/store/table-store';
+import type { ViewState } from '@/store/table-store';
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu';
 

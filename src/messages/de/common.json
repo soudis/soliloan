@@ -207,6 +207,11 @@
   "terms": {
     "contractDate": "Vertragsdatum",
     "contractDateShort": "Vertrag",
-    "atRate": "zu"
+    "atRate": "zu",
+    "loan": "Kredit",
+    "loans": "Kredite",
+    "loanCount": "{count, plural, =0 {keine Kredite} one {1 Kredit} other {# Kredite}}",
+    "lenderNumber": "Konto #{number}",
+    "noLoans": "Keine Kredite vorhanden"
   }
 }

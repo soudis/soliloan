@@ -1,16 +1,18 @@
+import { Icon, Info } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { SectionCard } from '../generic/section-card';
 
 interface FormSectionProps {
   title: string;
   children: ReactNode;
+  icon?: ReactNode;
   className?: string;
 }
 
-export function FormSection({ title, children, className = '' }: FormSectionProps) {
+export function FormSection({ title, children, icon, className = '' }: FormSectionProps) {
   return (
-    <div className={`rounded-lg border bg-card/50 p-6 space-y-6 ${className}`}>
-      <h2 className="text-lg font-medium text-muted-foreground border-b pb-2">{title}</h2>
+    <SectionCard title={title} icon={icon ?? <Info className="h-4 w-4 text-muted-foreground" />}>
       <div className="space-y-4">{children}</div>
-    </div>
+    </SectionCard>
   );
 }

@@ -7,10 +7,10 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
-import { getLoanById } from '@/app/actions';
+import { getLoanById } from '@/actions';
 import { FormDatePicker } from '@/components/form/form-date-picker';
 import { FormSelect } from '@/components/form/form-select';
-import { TransactionFormData } from '@/lib/schemas/transaction';
+import type { TransactionFormData } from '@/lib/schemas/transaction';
 
 import { FormNumberInput } from '../form/form-number-input';
 
@@ -77,7 +77,7 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
       setValue('amount', '' as unknown as number);
       setAmountCalculated(false);
     }
-  }, [type, loanToDate, setValue, isLoadingLoanToDate, date, amountCalculated, formatter]);
+  }, [type, loanToDate, setValue, isLoadingLoanToDate, date, amountCalculated]);
 
   const createTypeOption = (type: TransactionType, disabled?: boolean) => ({
     value: type,

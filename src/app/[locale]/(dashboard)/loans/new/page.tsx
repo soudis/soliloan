@@ -1,18 +1,18 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'next/navigation';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { getLenderById } from '@/app/actions/lenders';
-import { createLoan } from '@/app/actions/loans';
+import { getLenderById } from '@/actions/lenders';
+import { createLoan } from '@/actions/loans';
 import { LoanForm } from '@/components/loans/loan-form';
 import { useRouter } from '@/i18n/navigation';
 import { getLenderName } from '@/lib/utils';
-import { useProject } from '@/store/project-context';
+import { useProjects } from '@/store/projects-store';
 
 import type { LoanFormData } from '@/lib/schemas/loan';
 
@@ -20,10 +20,11 @@ export default function NewLoanPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { selectedProject } = useProject();
+  const { selectedProject } = useProjects();
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Get the lenderId from the URL search params
@@ -77,9 +78,9 @@ export default function NewLoanPage() {
 
       // Show success message
       toast.success(t('new.form.success'));
-
+      queryClient.invalidateQueries({ queryKey: ['lender', result.loan?.lenderId] });
       // Redirect to the loans list page for this project
-      router.push(`/lenders/${result.loan?.lenderId}?highlightLoan=${result.loan?.id}`);
+      router.push(`/lenders/${result.loan?.lenderId}?loanId=${result.loan?.id}`);
     } catch (error) {
       console.error('Error submitting form:', error);
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
