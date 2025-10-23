@@ -21,8 +21,8 @@ const roboto = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'SoliLoans AI',
-  description: 'AI-powered loan management system',
+  title: 'Direktkreditplattform',
+  description: 'Direktkreditplattform',
 };
 
 export default function RootLayout({

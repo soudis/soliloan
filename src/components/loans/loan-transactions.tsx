@@ -4,7 +4,7 @@ import type { Transaction } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
-import { ArrowDownIcon, ArrowUpIcon, Plus, Receipt, Trash2 } from 'lucide-react';
+import { ArrowDownIcon, ArrowUpIcon, Plus, QrCode, Receipt, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';

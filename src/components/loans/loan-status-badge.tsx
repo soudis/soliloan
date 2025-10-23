@@ -23,7 +23,7 @@ export function LoanStatusBadge({ status, className }: LoanStatusBadgeProps) {
               ? 'secondary'
               : 'outline'
       }
-      className={`text-xs px-1.5 py-0.5 ${className}`}
+      className={`mt-1 ${className}`}
     >
       {commonT(`enums.loan.status.${status}`)}
     </Badge>
