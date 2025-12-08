@@ -19,7 +19,7 @@ entryPoints:
       tls: {}
 
 log:
-  level: DEBUG
+  level: ERROR
 
 api:
   insecure: true
@@ -30,3 +30,6 @@ providers:
     network: directloan_traefik_network
   file:
     directory: /etc/traefik/dynamic
+
+core:
+  defaultRuleSyntax: v2

@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: traefik:v2.11.2
+    image: traefik:v3.6.4
     restart: always
     ports:
       - 80:80
@@ -16,4 +16,5 @@ services:
 
 networks:
   traefik_network:
+    external: true
     name: directloan_traefik_network

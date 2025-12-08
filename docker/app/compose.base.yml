@@ -24,4 +24,5 @@ services:
 
 networks:
   backend_network:
+    external: true
     name: directloan_backend_network
