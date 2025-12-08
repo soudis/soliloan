@@ -12,6 +12,7 @@ import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
 import { Files } from '../generic/files';
+import { Notes } from '../generic/notes';
 import { LenderInfoCard } from './lender-info-card';
 import { LenderLoansTab } from './lender-loans-tab';
 
@@ -85,7 +86,9 @@ export const LenderPage = ({ lender }: Props) => {
       <TabsContent value="files">
         <Files lenderId={lender.id} loans={lender.loans} files={lender.files} />
       </TabsContent>
-      <TabsContent value="notes">LenderNotes</TabsContent>
+      <TabsContent value="notes">
+        <Notes notes={lender.notes} lenderId={lender.id} loans={lender.loans} />
+      </TabsContent>
     </Tabs>
   );
 };

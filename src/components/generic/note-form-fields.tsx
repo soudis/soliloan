@@ -7,13 +7,32 @@ import { FormField } from '@/components/form/form-field';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FormControl, FormField as FormFieldWrapper, FormItem, FormLabel } from '@/components/ui/form';
 import type { NoteFormData } from '@/lib/schemas/note';
+import type { LoanWithCalculations } from '@/types/loans';
+import { LoanDropdown } from '../lenders/loan-dropdown';
 
-export function NoteFormFields() {
+type NoteFormFieldsProps = {
+  loans?: LoanWithCalculations[];
+  loanId?: string;
+};
+
+export function NoteFormFields({ loans, loanId }: NoteFormFieldsProps) {
   const t = useTranslations('dashboard.notes');
-  const form = useFormContext<NoteFormData>();
+  const form = useFormContext<NoteFormData & { loanId?: string | null }>();
 
   return (
     <>
+      {!loanId && loans && (
+        <FormItem>
+          <FormLabel>{t('loan')}</FormLabel>
+          <LoanDropdown
+            loans={loans}
+            selectedLoanId={form.watch('loanId') ?? undefined}
+            onSelectLoan={(value) => form.setValue('loanId', value)}
+            simple
+          />
+        </FormItem>
+      )}
+
       <FormField name="text" label={t('text')} placeholder={t('textPlaceholder')} multiline={true} />
 
       <FormFieldWrapper

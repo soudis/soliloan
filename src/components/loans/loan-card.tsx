@@ -24,11 +24,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-items';
 import { Files } from '../generic/files';
+import { Notes } from '../generic/notes';
 import { SectionCard } from '../generic/section-card';
 import { Button } from '../ui/button';
 import { BalanceTable } from './balance-table';
 import { LoanContractStatusBadge } from './loan-contract-status-badge';
-import { LoanNotes } from './loan-notes';
 import { LoanStatusBadge } from './loan-status-badge';
 import { LoanTransactions } from './loan-transactions';
 
@@ -251,7 +251,7 @@ export function LoanCard({ loan, className }: LoanCardProps) {
             <Files lenderId={loan.lender.id} loanId={loan.id} files={loan.files} />
           </TabsContent>
           <TabsContent value="notes">
-            <LoanNotes loanId={loan.id} notes={loan.notes} />
+            <Notes notes={loan.notes} loanId={loan.id} lenderId={loan.lender.id} />
           </TabsContent>
         </Tabs>
       </SectionCard>

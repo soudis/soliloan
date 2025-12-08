@@ -294,3 +294,48 @@ export const fileAction = managerAction
       },
     });
   });
+
+export const noteAction = managerAction
+  .inputSchema(
+    z.object({
+      noteId: z.string(),
+    }),
+  )
+  .use(async ({ next, ctx, clientInput }) => {
+    const { noteId } = clientInput as { noteId: string };
+
+    if (!noteId) {
+      throw new Error('error.note.notFound');
+    }
+
+    if (ctx.session.user.isAdmin) {
+      return next({
+        ctx: {
+          noteId,
+        },
+      });
+    }
+
+    const note = await db.note.findUnique({
+      where: { id: noteId },
+      select: { lender: { select: { projectId: true } } },
+    });
+
+    if (!note) {
+      throw new Error('error.note.notFound');
+    }
+
+    const project = await db.project.count({
+      where: { id: note.lender?.projectId, managers: { some: { id: ctx.session.user.id } } },
+    });
+
+    if (project === 0) {
+      throw new Error('error.note.notFound');
+    }
+
+    return next({
+      ctx: {
+        noteId,
+      },
+    });
+  });

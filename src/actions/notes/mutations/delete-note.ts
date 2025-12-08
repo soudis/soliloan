@@ -1,70 +1,47 @@
 'use server';
 
+import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 import { createAuditEntry, getLenderContext, getLoanContext, removeNullFields } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
-import { managerAction } from '@/lib/utils/safe-action';
+import { noteAction } from '@/lib/utils/safe-action';
 
-export const deleteNoteAction = managerAction
-  .inputSchema(
+export const deleteNoteAction = noteAction
+  .schema(
     z.object({
-      loanId: z.string(),
       noteId: z.string(),
     }),
   )
-  .action(async ({ parsedInput: { loanId, noteId }, ctx }) => {
-    // Fetch the loan and note
-    const loan = await db.loan.findUnique({
+  .action(async ({ parsedInput: { noteId }, ctx }) => {
+    // Fetch the note with context info
+    const note = await db.note.findUnique({
       where: {
-        id: loanId,
+        id: noteId,
       },
       include: {
-        lender: {
-          include: {
-            project: {
-              include: { managers: true },
-            },
-          },
-        },
-        notes: {
-          where: {
-            id: noteId,
-          },
-        },
+        lender: true,
+        loan: true,
       },
     });
 
-    if (!loan) {
-      throw new Error('error.loan.notFound');
-    }
-
-    const note = loan.notes[0];
-    if (!note) {
+    if (!note || !note.lender) {
       throw new Error('error.note.notFound');
-    }
-
-    // Check if the user has access to the loan's project
-    const hasAccess =
-      ctx.session.user.isAdmin || loan.lender.project.managers.some((manager) => manager.id === ctx.session.user.id);
-
-    if (!hasAccess) {
-      throw new Error('error.unauthorized');
     }
 
     // Create audit trail entry before deletion
     await createAuditEntry(db, {
-      entity: 'note',
-      operation: 'DELETE',
+      entity: Entity.note,
+      operation: Operation.DELETE,
       primaryKey: noteId,
       before: removeNullFields(note),
       after: {},
       context: {
-        ...getLenderContext(loan.lender),
-        ...getLoanContext(loan),
+        ...getLenderContext(note.lender),
+        ...(note.loan && getLoanContext(note.loan)),
       },
-      projectId: loan.lender.projectId,
+      projectId: note.lender.projectId,
     });
 
     // Delete the note
@@ -72,8 +49,11 @@ export const deleteNoteAction = managerAction
       where: { id: noteId },
     });
 
-    // Revalidate the loan page
-    revalidatePath(`/loans/${loanId}`);
+    // Revalidate paths
+    revalidatePath(`/lenders/${note.lenderId}`);
+    if (note.loanId) {
+      revalidatePath(`/loans/${note.loanId}`);
+    }
 
     return { success: true };
   });
