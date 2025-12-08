@@ -4,7 +4,7 @@ import type { Transaction } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
-import { ArrowDownIcon, ArrowUpIcon, Plus, QrCode, Receipt, Trash2 } from 'lucide-react';
+import { ArrowDownIcon, ArrowUpIcon, Percent, Plus, QrCode, Receipt, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -61,8 +61,9 @@ export function LoanTransactions({ loanId, transactions, loan }: LoanTransaction
   const getTransactionIcon = (type: Transaction['type']) => {
     switch (type) {
       case 'DEPOSIT':
-      case 'INTEREST':
         return <ArrowDownIcon className="h-4 w-4 text-green-500" />;
+      case 'INTEREST':
+        return <Percent className="h-4 w-4 text-green-500" />;
       case 'WITHDRAWAL':
       case 'INTERESTPAYMENT':
       case 'TERMINATION':
