@@ -1,19 +1,21 @@
 'use server';
 
-import { ViewType } from '@prisma/client';
+import type { ViewType } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
-import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { ViewFormData } from '@/lib/schemas/view';
+import { viewFormSchema } from '@/lib/schemas/view';
+import { authAction } from '@/lib/utils/safe-action';
 
-export async function updateView(viewId: string, data: Partial<ViewFormData>) {
-  try {
-    const session = await auth();
-    if (!session) {
-      throw new Error('Unauthorized');
-    }
-
+export const updateViewAction = authAction
+  .schema(
+    z.object({
+      viewId: z.string(),
+      data: viewFormSchema.partial(),
+    }),
+  )
+  .action(async ({ parsedInput: { viewId, data }, ctx }) => {
     // Fetch the view
     const view = await db.view.findUnique({
       where: {
@@ -26,14 +28,15 @@ export async function updateView(viewId: string, data: Partial<ViewFormData>) {
     }
 
     // Check if the user has access to the view
-    if (view.userId !== session.user.id) {
-      throw new Error('You do not have access to this view');
+    if (view.userId !== ctx.session.user.id) {
+      throw new Error('error.unauthorized');
     }
 
     if (data.isDefault) {
       await db.view.updateMany({
         where: {
           type: view.type,
+          userId: ctx.session.user.id, // Ensure we only update this user's views
         },
         data: {
           isDefault: false,
@@ -47,10 +50,8 @@ export async function updateView(viewId: string, data: Partial<ViewFormData>) {
         id: viewId,
       },
       data: {
-        name: data.name,
-        type: data.type as ViewType,
-        data: data.data,
-        isDefault: data.isDefault,
+        ...data,
+        type: data.type as ViewType | undefined,
       },
     });
 
@@ -58,10 +59,4 @@ export async function updateView(viewId: string, data: Partial<ViewFormData>) {
     revalidatePath(`/${view.type.toLowerCase()}`);
 
     return { view: updatedView };
-  } catch (error) {
-    console.error('Error updating view:', error);
-    return {
-      error: error instanceof Error ? error.message : 'Failed to update view',
-    };
-  }
-}
+  });

@@ -8,7 +8,7 @@ import { Pie } from 'react-chartjs-2';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatCurrency } from '@/lib/utils';
-import { LoanStatus, LoanWithCalculations } from '@/types/loans';
+import { LoanStatus, type LoanWithCalculations } from '@/types/loans';
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -47,7 +47,7 @@ export function LoanAmountDistributionChart({ loans }: LoanAmountDistributionCha
     { min: 10001, max: 25000, label: '10,001 - 25,000' },
     { min: 25001, max: 50000, label: '25,001 - 50,000' },
     { min: 50001, max: 100000, label: '50,001 - 100,000' },
-    { min: 100001, max: Infinity, label: '100,001+' },
+    { min: 100001, max: Number.POSITIVE_INFINITY, label: '100,001+' },
   ];
 
   // Filter loans by status
@@ -57,9 +57,11 @@ export function LoanAmountDistributionChart({ loans }: LoanAmountDistributionCha
       : loans.filter((loan) => {
           if (selectedStatus === 'active') {
             return loan.status === LoanStatus.ACTIVE || loan.status === LoanStatus.TERMINATED;
-          } else if (selectedStatus === 'notDeposited') {
+          }
+          if (selectedStatus === 'notDeposited') {
             return loan.status === LoanStatus.NOTDEPOSITED;
-          } else if (selectedStatus === 'repaid') {
+          }
+          if (selectedStatus === 'repaid') {
             return loan.status === LoanStatus.REPAID;
           }
           return false;
@@ -131,7 +133,7 @@ export function LoanAmountDistributionChart({ loans }: LoanAmountDistributionCha
                   },
                   tooltip: {
                     callbacks: {
-                      label: function (context) {
+                      label: (context) => {
                         const label = context.label || '';
                         const value = Number(context.raw) || 0;
                         const count = filteredData[context.dataIndex].count;

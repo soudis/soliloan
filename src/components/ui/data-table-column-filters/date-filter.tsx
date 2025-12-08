@@ -1,4 +1,4 @@
-import { ColumnFilter } from '@tanstack/react-table';
+import type { ColumnFilter } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
 import { X } from 'lucide-react';

@@ -9,7 +9,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { deleteNote } from '@/actions/notes';
+import { deleteNoteAction } from '@/actions/notes/mutations/delete-note';
 
 import { Button } from '../ui/button';
 import { NoteDialog } from './note-dialog';
@@ -33,18 +33,15 @@ export function LoanNotes({ loanId, notes }: LoanNotesProps) {
   const queryClient = useQueryClient();
 
   const handleDeleteNote = async (noteId: string) => {
-    try {
-      const result = await deleteNote(loanId, noteId);
-      if (result.error) {
-        throw new Error(result.error);
-      }
-      toast.success(t('deleteSuccess'));
-      queryClient.invalidateQueries({ queryKey: ['lender'] });
-      queryClient.invalidateQueries({ queryKey: ['loans'] });
-    } catch (error) {
-      console.error('Error deleting note:', error);
+    const result = await deleteNoteAction({ loanId, noteId });
+    if (result?.serverError || result?.validationErrors) {
+      console.error('Error deleting note:', result.serverError);
       toast.error(t('deleteError'));
+      return;
     }
+    toast.success(t('deleteSuccess'));
+    queryClient.invalidateQueries({ queryKey: ['lender'] });
+    queryClient.invalidateQueries({ queryKey: ['loans'] });
   };
 
   return (

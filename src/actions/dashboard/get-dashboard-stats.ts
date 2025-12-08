@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth';
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFields, calculateLoanPerYear, getLoanStatus } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
+import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { LoanStatus } from '@/types/loans';
 
 export async function getDashboardStats(projectId: string) {
@@ -40,7 +41,16 @@ export async function getDashboardStats(projectId: string) {
         projectId: projectId,
       },
       include: {
-        project: true,
+        project: {
+          include: {
+            configuration: {
+              select: {
+                interestMethod: true,
+              },
+            },
+          },
+        },
+        user: { select: { id: true, email: true, name: true, lastLogin: true, lastInvited: true } },
         notes: {
           include: {
             createdBy: {
@@ -51,7 +61,26 @@ export async function getDashboardStats(projectId: string) {
             },
           },
         },
-        files: true,
+        files: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            public: true,
+            mimeType: true,
+            lenderId: true,
+            loanId: true,
+            thumbnail: true,
+            createdAt: true,
+            createdById: true,
+            createdBy: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -71,6 +100,7 @@ export async function getDashboardStats(projectId: string) {
                 configuration: { select: { interestMethod: true } },
               },
             },
+            user: { select: { id: true, email: true, name: true, lastLogin: true, lastInvited: true } },
             notes: {
               include: {
                 createdBy: {
@@ -81,7 +111,26 @@ export async function getDashboardStats(projectId: string) {
                 },
               },
             },
-            files: true,
+            files: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                public: true,
+                mimeType: true,
+                lenderId: true,
+                loanId: true,
+                thumbnail: true,
+                createdAt: true,
+                createdById: true,
+                createdBy: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
           },
         },
         notes: {
@@ -94,7 +143,26 @@ export async function getDashboardStats(projectId: string) {
             },
           },
         },
-        files: true,
+        files: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            public: true,
+            mimeType: true,
+            lenderId: true,
+            loanId: true,
+            thumbnail: true,
+            createdAt: true,
+            createdById: true,
+            createdBy: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -137,12 +205,14 @@ export async function getDashboardStats(projectId: string) {
     let totalNotReclaimed = 0;
 
     // Process each loan with calculations
-    loans.forEach((loan) => {
+    for (const loan of loans) {
       try {
-        const calculatedLoan = calculateLoanFields(loan);
+        const calculatedLoan = calculateLoanFields(
+          parseAdditionalFields({ ...loan, lender: parseAdditionalFields(loan.lender) }),
+        );
 
         // Update loan status counts
-        const status = getLoanStatus(loan, today);
+        const status = getLoanStatus(calculatedLoan, today);
         if (status === LoanStatus.ACTIVE) loanStatusBreakdown.active++;
         else if (status === LoanStatus.REPAID) loanStatusBreakdown.repaid++;
         else if (status === LoanStatus.TERMINATED) loanStatusBreakdown.terminated++;
@@ -158,7 +228,7 @@ export async function getDashboardStats(projectId: string) {
       } catch (error) {
         console.error('Error calculating loan fields:', error);
       }
-    });
+    }
 
     // Calculate yearly data for charts
     const currentYear = new Date().getFullYear();
@@ -183,9 +253,11 @@ export async function getDashboardStats(projectId: string) {
       let yearTotalDeposits = 0;
       let yearTotalWithdrawals = 0;
 
-      activeLoansInYear.forEach((loan) => {
+      for (const loan of activeLoansInYear) {
         try {
-          const calculatedLoan = calculateLoanFields(loan);
+          const calculatedLoan = calculateLoanFields(
+            parseAdditionalFields({ ...loan, lender: parseAdditionalFields(loan.lender) }),
+          );
           yearTotalAmount += Number(calculatedLoan.amount);
           yearTotalInterest += Number(calculatedLoan.interest);
           yearTotalDeposits += Number(calculatedLoan.deposits);
@@ -193,7 +265,7 @@ export async function getDashboardStats(projectId: string) {
         } catch (error) {
           console.error('Error calculating loan fields for yearly data:', error);
         }
-      });
+      }
 
       yearlyData.push({
         year,
@@ -210,16 +282,16 @@ export async function getDashboardStats(projectId: string) {
     let totalLenderBalance = 0;
 
     // Process each lender with calculations
-    lenders.forEach((lender) => {
+    for (const lender of lenders) {
       try {
-        const calculatedLender = calculateLenderFields(lender);
+        const calculatedLender = calculateLenderFields(parseAdditionalFields(lender));
         totalLenderAmount += Number(calculatedLender.amount || 0);
         totalLenderInterest += Number(calculatedLender.interest || 0);
         totalLenderBalance += Number(calculatedLender.balance || 0);
       } catch (error) {
         console.error('Error calculating lender fields:', error);
       }
-    });
+    }
 
     // Calculate detailed yearly data for each loan
     const yearlyLoanData = [];
@@ -238,9 +310,12 @@ export async function getDashboardStats(projectId: string) {
       let yearInterest = 0;
 
       // Calculate yearly data for each loan
-      loans.forEach((loan) => {
+      for (const loan of loans) {
         try {
-          const yearData = calculateLoanPerYear(loan, new Date(year, 11, 31));
+          const yearData = calculateLoanPerYear(
+            parseAdditionalFields({ ...loan, lender: parseAdditionalFields(loan.lender) }),
+            new Date(year, 11, 31),
+          );
           const yearEntry = yearData.find((entry) => entry.year === year);
 
           if (yearEntry) {
@@ -255,7 +330,7 @@ export async function getDashboardStats(projectId: string) {
         } catch (error) {
           console.error(`Error calculating loan per year for loan ${loan.id} in year ${year}:`, error);
         }
-      });
+      }
 
       yearlyLoanData.push({
         year,

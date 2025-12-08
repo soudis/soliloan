@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { addTransaction } from '@/actions/loans';
+import { addTransactionAction } from '@/actions/loans';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
@@ -44,22 +44,19 @@ export function TransactionDialog({ loanId, open, onOpenChange }: TransactionDia
   }, [open]);
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    try {
-      const result = await addTransaction(loanId, {
-        ...data,
-      });
-      if (result.error) {
-        throw new Error(result.error);
-      }
-      toast.success(t('transactions.createSuccess'));
-      onOpenChange(false);
-      form.reset();
-      queryClient.invalidateQueries({ queryKey: ['lender'] });
-      queryClient.invalidateQueries({ queryKey: ['loans'] });
-    } catch (error) {
-      console.error('Error creating transaction:', error);
+    const result = await addTransactionAction({
+      loanId,
+      data,
+    });
+    if (result?.serverError || result?.validationErrors) {
       toast.error(t('transactions.createError'));
+      return;
     }
+    toast.success(t('transactions.createSuccess'));
+    onOpenChange(false);
+    form.reset();
+    queryClient.invalidateQueries({ queryKey: ['lender'] });
+    queryClient.invalidateQueries({ queryKey: ['loans'] });
   });
 
   return (

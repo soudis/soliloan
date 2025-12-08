@@ -1,4 +1,4 @@
-import { Table } from '@tanstack/react-table';
+import type { Table } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';

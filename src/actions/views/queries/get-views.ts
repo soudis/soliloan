@@ -1,6 +1,6 @@
 'use server';
 
-import { ViewType } from '@prisma/client';
+import type { ViewType } from '@prisma/client';
 
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';

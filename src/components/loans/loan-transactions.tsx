@@ -9,7 +9,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { deleteTransaction } from '@/actions/loans';
+import { deleteTransactionAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { formatCurrency } from '@/lib/utils';
 import { LoanStatus, type LoanWithCalculations } from '@/types/loans';
@@ -43,27 +43,19 @@ export function LoanTransactions({ loanId, transactions, loan }: LoanTransaction
 
     const toastId = toast.loading(t('transactions.delete.loading'));
 
-    try {
-      const result = await deleteTransaction(loanId, transactionToDelete);
+    const result = await deleteTransactionAction({ transactionId: transactionToDelete });
 
-      if (result.error) {
-        toast.error(t(`transactions.errors.${result.error}`), {
-          id: toastId,
-        });
-      } else {
-        toast.success(t('transactions.delete.success'), {
-          id: toastId,
-        });
-        queryClient.invalidateQueries({ queryKey: ['lender'] });
-      }
-    } catch (error) {
-      console.error('Error deleting transaction:', error);
+    if (result?.serverError || result?.validationErrors) {
       toast.error(t('transactions.delete.error'), {
         id: toastId,
       });
-    } finally {
-      setTransactionToDelete(null);
+    } else {
+      toast.success(t('transactions.delete.success'), {
+        id: toastId,
+      });
+      queryClient.invalidateQueries({ queryKey: ['lender'] });
     }
+    setTransactionToDelete(null);
   };
 
   const getTransactionIcon = (type: Transaction['type']) => {

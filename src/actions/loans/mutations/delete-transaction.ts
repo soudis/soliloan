@@ -10,53 +10,36 @@ import {
   getTransactionContext,
   removeNullFields,
 } from '@/lib/audit-trail';
-import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { transactionIdSchema } from '@/lib/schemas/common';
+import { transactionAction } from '@/lib/utils/safe-action';
 
-export async function deleteTransaction(loanId: string, transactionId: string) {
-  try {
-    const session = await auth();
-    if (!session) {
-      throw new Error('Unauthorized');
-    }
-
+export const deleteTransactionAction = transactionAction
+  .inputSchema(transactionIdSchema)
+  .action(async ({ parsedInput: { transactionId } }) => {
     // Fetch the loan and transaction
-    const loan = await db.loan.findUnique({
-      where: {
-        id: loanId,
-      },
+    // Need transaction with loan to identify loanId?
+    const transaction = await db.transaction.findUnique({
+      where: { id: transactionId },
       include: {
-        lender: {
+        loan: {
           include: {
-            project: {
+            lender: {
               include: {
-                managers: true,
+                project: {
+                  include: {
+                    configuration: true,
+                  },
+                },
               },
             },
-          },
-        },
-        transactions: {
-          where: {
-            id: transactionId,
           },
         },
       },
     });
 
-    if (!loan) {
-      throw new Error('Loan not found');
-    }
-
-    const transaction = loan.transactions[0];
     if (!transaction) {
       throw new Error('Transaction not found');
-    }
-
-    // Check if the user has access to the loan's project
-    const hasAccess = loan.lender.project.managers.some((manager) => manager.id === session.user.id);
-
-    if (!hasAccess) {
-      throw new Error('You do not have access to this loan');
     }
 
     // Create audit trail entry before deletion
@@ -67,11 +50,11 @@ export async function deleteTransaction(loanId: string, transactionId: string) {
       before: removeNullFields(transaction),
       after: {},
       context: {
-        ...getLenderContext(loan.lender),
-        ...getLoanContext(loan),
+        ...getLenderContext(transaction.loan.lender),
+        ...getLoanContext(transaction.loan),
         ...getTransactionContext(transaction),
       },
-      projectId: loan.lender.project.id,
+      projectId: transaction.loan.lender.projectId,
     });
 
     // Delete the transaction
@@ -82,13 +65,7 @@ export async function deleteTransaction(loanId: string, transactionId: string) {
     });
 
     // Revalidate the loan page
-    revalidatePath(`/loans/${loanId}`);
+    revalidatePath(`/loans/${transaction.loanId}`);
 
     return { success: true };
-  } catch (error) {
-    console.error('Error deleting transaction:', error);
-    return {
-      error: error instanceof Error ? error.message : 'Failed to delete transaction',
-    };
-  }
-}
+  });

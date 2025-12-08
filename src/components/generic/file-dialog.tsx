@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { addFile } from '@/actions/files';
+import { addFileAction } from '@/actions/files/mutations/add-file';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
@@ -55,9 +55,16 @@ export function FileDialog({ lenderId, loanId, open, loans, onOpenChange }: File
       const arrayBuffer = await file.arrayBuffer();
       const base64Data = Buffer.from(arrayBuffer).toString('base64');
 
-      const result = await addFile(lenderId, data.loanId ?? undefined, data, base64Data, file.type);
-      if (result.error) {
-        throw new Error(result.error);
+      const result = await addFileAction({
+        lenderId,
+        loanId: data.loanId ?? undefined,
+        data,
+        base64Data,
+        mimeType: file.type,
+      });
+
+      if (result?.serverError || result?.validationErrors) {
+        throw new Error(result.serverError || 'Validation failed');
       }
       toast.success(t('createSuccess'));
       onOpenChange(false);
@@ -66,7 +73,7 @@ export function FileDialog({ lenderId, loanId, open, loans, onOpenChange }: File
       queryClient.invalidateQueries({ queryKey: ['loans'] });
     } catch (error) {
       console.error('Error creating file:', error);
-      toast.error(t('createError'));
+      toast.error(error instanceof Error ? error.message : t('createError'));
     }
   });
 

@@ -1,7 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { auth } from '../auth';
 
-import { some } from 'lodash';
 import { createSafeActionClient } from 'next-safe-action';
 import { z } from 'zod';
 import { db } from '../db';
@@ -15,10 +14,10 @@ export const actionClient = createSafeActionClient({
   },
 });
 
-export const managerAction = actionClient.use(async ({ next }) => {
+export const authAction = actionClient.use(async ({ next }) => {
   const session = await auth();
 
-  if (!session?.user.isManager) {
+  if (!session?.user) {
     throw new Error('error.unauthorized');
   }
 
@@ -29,20 +28,27 @@ export const managerAction = actionClient.use(async ({ next }) => {
   });
 });
 
-export const projectManageAction = managerAction
+export const managerAction = authAction.use(async ({ next, ctx }) => {
+  if (!ctx.session.user.isManager) {
+    throw new Error('error.unauthorized');
+  }
+  return next({
+    ctx: {
+      session: ctx.session,
+    },
+  });
+});
+
+export const projectAction = managerAction
   .inputSchema(
     z.object({
       projectId: z.string(),
     }),
   )
   .use(async ({ next, ctx, clientInput }) => {
-    const parsedInput = z
-      .object({
-        projectId: z.string(),
-      })
-      .parse(clientInput);
-
-    const { projectId } = parsedInput;
+    // We re-parse to ensure type safety on the input, though next-safe-action guarantees it matches schema
+    // The explicit parse here is redundant IF inputSchema is strict, but good for destructuring safely
+    const { projectId } = clientInput as { projectId: string };
 
     if (!projectId) {
       throw new Error('error.project.notFound');
@@ -52,15 +58,16 @@ export const projectManageAction = managerAction
       return next({
         ctx: {
           projectId,
+          project: null, // Optimization: don't fetch if admin, or fetch if needed? Keeping it light.
         },
       });
     }
 
-    const project = await db.project.findUnique({
+    const project = await db.project.count({
       where: { id: projectId, managers: { some: { id: ctx.session.user.id } } },
     });
 
-    if (!project) {
+    if (project === 0) {
       throw new Error('error.project.notFound');
     }
 
@@ -71,20 +78,106 @@ export const projectManageAction = managerAction
     });
   });
 
-export const configurationManageAction = managerAction
+export const lenderAction = managerAction
+  .inputSchema(
+    z.object({
+      lenderId: z.string(),
+    }),
+  )
+  .use(async ({ next, ctx, clientInput }) => {
+    const { lenderId } = clientInput as { lenderId: string };
+
+    if (!lenderId) {
+      throw new Error('error.lender.notFound');
+    }
+
+    if (ctx.session.user.isAdmin) {
+      return next({
+        ctx: {
+          lenderId,
+        },
+      });
+    }
+
+    // Check if user manages the project this lender belongs to
+    const lender = await db.lender.findUnique({
+      where: { id: lenderId },
+      select: { projectId: true },
+    });
+
+    if (!lender) {
+      throw new Error('error.lender.notFound');
+    }
+
+    const project = await db.project.count({
+      where: { id: lender.projectId, managers: { some: { id: ctx.session.user.id } } },
+    });
+
+    if (project === 0) {
+      throw new Error('error.lender.notFound');
+    }
+
+    return next({
+      ctx: {
+        lenderId,
+      },
+    });
+  });
+
+export const loanAction = managerAction
+  .inputSchema(
+    z.object({
+      loanId: z.string(),
+    }),
+  )
+  .use(async ({ next, ctx, clientInput }) => {
+    const { loanId } = clientInput as { loanId: string };
+
+    if (!loanId) {
+      throw new Error('error.loan.notFound');
+    }
+
+    if (ctx.session.user.isAdmin) {
+      return next({
+        ctx: {
+          loanId,
+        },
+      });
+    }
+
+    // Check if user manages the project this loan belongs to (via lender)
+    const loan = await db.loan.findUnique({
+      where: { id: loanId },
+      select: { lender: { select: { projectId: true } } },
+    });
+
+    if (!loan) {
+      throw new Error('error.loan.notFound');
+    }
+
+    const project = await db.project.count({
+      where: { id: loan.lender.projectId, managers: { some: { id: ctx.session.user.id } } },
+    });
+
+    if (project === 0) {
+      throw new Error('error.loan.notFound');
+    }
+
+    return next({
+      ctx: {
+        loanId,
+      },
+    });
+  });
+
+export const configurationAction = managerAction
   .inputSchema(
     z.object({
       configurationId: z.string(),
     }),
   )
   .use(async ({ next, ctx, clientInput }) => {
-    const parsedInput = z
-      .object({
-        configurationId: z.string(),
-      })
-      .parse(clientInput);
-
-    const { configurationId } = parsedInput;
+    const { configurationId } = clientInput as { configurationId: string };
 
     if (!configurationId) {
       throw new Error('error.configuration.notFound');
@@ -98,17 +191,106 @@ export const configurationManageAction = managerAction
       });
     }
 
-    const configuration = await db.configuration.findUnique({
+    const configuration = await db.configuration.count({
       where: { id: configurationId, project: { managers: { some: { id: ctx.session.user.id } } } },
     });
 
-    if (!configuration) {
+    if (configuration === 0) {
       throw new Error('error.configuration.notFound');
     }
 
     return next({
       ctx: {
         configurationId,
+      },
+    });
+  });
+export const transactionAction = managerAction
+  .inputSchema(
+    z.object({
+      transactionId: z.string(),
+    }),
+  )
+  .use(async ({ next, ctx, clientInput }) => {
+    const { transactionId } = clientInput as { transactionId: string };
+
+    if (!transactionId) {
+      throw new Error('error.transaction.notFound');
+    }
+
+    if (ctx.session.user.isAdmin) {
+      return next({
+        ctx: {
+          transactionId,
+        },
+      });
+    }
+
+    const transaction = await db.transaction.findUnique({
+      where: { id: transactionId },
+      select: { loan: { select: { lender: { select: { projectId: true } } } } },
+    });
+
+    if (!transaction) {
+      throw new Error('error.transaction.notFound');
+    }
+
+    const project = await db.project.count({
+      where: { id: transaction.loan.lender.projectId, managers: { some: { id: ctx.session.user.id } } },
+    });
+
+    if (project === 0) {
+      throw new Error('error.transaction.notFound');
+    }
+
+    return next({
+      ctx: {
+        transactionId,
+      },
+    });
+  });
+
+export const fileAction = managerAction
+  .inputSchema(
+    z.object({
+      fileId: z.string(),
+    }),
+  )
+  .use(async ({ next, ctx, clientInput }) => {
+    const { fileId } = clientInput as { fileId: string };
+
+    if (!fileId) {
+      throw new Error('error.file.notFound');
+    }
+
+    if (ctx.session.user.isAdmin) {
+      return next({
+        ctx: {
+          fileId,
+        },
+      });
+    }
+
+    const file = await db.file.findUnique({
+      where: { id: fileId },
+      select: { lender: { select: { projectId: true } } },
+    });
+
+    if (!file) {
+      throw new Error('error.file.notFound');
+    }
+
+    const project = await db.project.count({
+      where: { id: file.lender?.projectId, managers: { some: { id: ctx.session.user.id } } },
+    });
+
+    if (project === 0) {
+      throw new Error('error.file.notFound');
+    }
+
+    return next({
+      ctx: {
+        fileId,
       },
     });
   });

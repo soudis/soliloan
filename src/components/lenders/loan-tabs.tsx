@@ -1,18 +1,16 @@
 'use client';
 
-import type { getLenderById } from '@/actions/lenders';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from '@/i18n/navigation';
 import type { LenderWithCalculations } from '@/types/lenders';
+import type { LoanWithCalculations } from '@/types/loans';
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
 import { LoanSelectorItem } from './loan-selector-item';
 
-type LoanInSelector = NonNullable<Awaited<ReturnType<typeof getLenderById>>['lender']>['loans'][0];
-
 interface LoanTabsProps {
-  loans: LoanInSelector[];
+  loans: LoanWithCalculations[];
   lender: LenderWithCalculations;
   selectedLoanId?: string;
   onSelectLoan: (loanId: string) => void;

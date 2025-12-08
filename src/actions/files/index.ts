@@ -1,2 +1,2 @@
-export { addFile } from './mutations/add-file';
-export { deleteFile } from './mutations/delete-file';
+export { addFileAction } from './mutations/add-file';
+export { deleteFileAction } from './mutations/delete-file';

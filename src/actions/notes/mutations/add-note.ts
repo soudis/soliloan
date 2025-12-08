@@ -1,46 +1,33 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 import { createAuditEntry, getLenderContext, getLoanContext, removeNullFields } from '@/lib/audit-trail';
-import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { NoteFormData } from '@/lib/schemas/note';
+import { noteSchema } from '@/lib/schemas/note';
+import { loanAction } from '@/lib/utils/safe-action';
 
-export async function addNote(loanId: string, data: NoteFormData) {
-  try {
-    const session = await auth();
-    if (!session) {
-      throw new Error('Unauthorized');
-    }
-
-    // Fetch the loan
+export const addNoteAction = loanAction
+  .inputSchema(
+    z.object({
+      loanId: z.string(),
+      data: noteSchema, // Fixed import
+    }),
+  )
+  .action(async ({ parsedInput: { loanId, data }, ctx }) => {
+    // Fetch the loan with lender info for context
     const loan = await db.loan.findUnique({
       where: {
         id: loanId,
       },
       include: {
-        lender: {
-          include: {
-            project: {
-              include: {
-                managers: true,
-              },
-            },
-          },
-        },
+        lender: true, // Need projectId for audit
       },
     });
 
     if (!loan) {
-      throw new Error('Loan not found');
-    }
-
-    // Check if the user has access to the loan's project
-    const hasAccess = loan.lender.project.managers.some((manager) => manager.id === session.user.id);
-
-    if (!hasAccess) {
-      throw new Error('You do not have access to this loan');
+      throw new Error('error.loan.notFound');
     }
 
     // Create the note
@@ -55,7 +42,7 @@ export async function addNote(loanId: string, data: NoteFormData) {
         },
         createdBy: {
           connect: {
-            id: session.user.id,
+            id: ctx.session.user.id,
           },
         },
         createdAt: new Date(),
@@ -73,17 +60,11 @@ export async function addNote(loanId: string, data: NoteFormData) {
         ...getLenderContext(loan.lender),
         ...getLoanContext(loan),
       },
-      projectId: loan.lender.project.id,
+      projectId: loan.lender.projectId,
     });
 
     // Revalidate the loan page
     revalidatePath(`/loans/${loanId}`);
 
     return { note };
-  } catch (error) {
-    console.error('Error creating note:', error);
-    return {
-      error: error instanceof Error ? error.message : 'Failed to create note',
-    };
-  }
-}
+  });

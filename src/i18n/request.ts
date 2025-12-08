@@ -9,6 +9,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
   const locale = hasLocale(routing.locales, requested) ? requested : routing.defaultLocale;
 
   // Load all translation files from the locale directory
+  // biome-ignore lint/suspicious/noImplicitAnyLet: needed
   let messages;
   try {
     messages = (await import(`../messages/${locale}`)).default;

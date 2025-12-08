@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { deleteFile } from '@/actions/files';
+import { deleteFileAction } from '@/actions/files/mutations/delete-file';
 
 import { formatDate } from '@/lib/utils';
 import type { LoanWithCalculations } from '@/types/loans';
@@ -33,17 +33,14 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
   const locale = useLocale();
 
   const handleDeleteFile = async (fileId: string) => {
-    try {
-      setIsConfirmOpen(null);
-      const result = await deleteFile(fileId);
-      if (result.error) {
-        throw new Error(result.error);
-      }
+    setIsConfirmOpen(null);
+    const result = await deleteFileAction({ fileId });
+    if (result?.serverError || result?.validationErrors) {
+      console.error('Error deleting file:', result.serverError);
+      toast.error(t('deleteError'));
+    } else {
       toast.success(t('deleteSuccess'));
       queryClient.invalidateQueries({ queryKey: ['lender', lenderId] });
-    } catch (error) {
-      console.error('Error deleting file:', error);
-      toast.error(t('deleteError'));
     }
   };
 

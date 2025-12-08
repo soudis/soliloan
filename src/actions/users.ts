@@ -1,37 +1,42 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { db } from '@/lib/db';
 import { sendPasswordInvitationEmail } from '@/lib/email';
+import { lenderIdSchema } from '@/lib/schemas/common';
 import { generateToken } from '@/lib/token';
+import { lenderAction } from '@/lib/utils/safe-action';
+import { revalidatePath } from 'next/cache';
 
 /**
  * Send an invitation email to a user to set their password
- * @param userId The ID of the user to send the invitation to
- * @returns Object with success status and message
+ * Refactored to use lender context for valid authorization
  */
-export async function sendInvitationEmail(userId: string, projectName: string) {
-  try {
-    // Get the user from the database
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        lastInvited: true,
-        language: true,
+export const sendInvitationEmailAction = lenderAction
+  .inputSchema(lenderIdSchema)
+  .action(async ({ parsedInput: { lenderId } }) => {
+    // Fetch lender with user and project details
+    const lender = await db.lender.findUnique({
+      where: { id: lenderId },
+      include: {
+        user: true,
+        project: {
+          select: { name: true },
+        },
       },
     });
 
-    if (!user) {
-      return { success: false, error: 'User not found' };
+    if (!lender) {
+      throw new Error('Lender not found');
     }
 
-    if (!user.email) {
-      return { success: false, error: 'User has no email address' };
+    if (!lender.user || !lender.email) {
+      // Logic assumes user exists if we are inviting them to set password via this flow?
+      // Or maybe we create user? The original code fetched user by ID.
+      // LenderInfoCard checks if (lender.user).
+      throw new Error('User not found for this lender');
     }
+
+    const user = lender.user;
 
     // Generate a token for password reset
     const token = generateToken();
@@ -50,15 +55,17 @@ export async function sendInvitationEmail(userId: string, projectName: string) {
       },
     });
 
-    // Send the invitation email with the user's language preference
-    await sendPasswordInvitationEmail(user.email, user.name || 'User', token, user.language || 'de', projectName);
+    // Send the invitation email
+    await sendPasswordInvitationEmail(
+      lender.email,
+      user.name || lender.firstName || 'User',
+      token,
+      user.language || 'de',
+      lender.project.name,
+    );
 
     // Revalidate the lender page to update the lastInvited timestamp
-    revalidatePath('/lenders/[lenderId]');
+    revalidatePath(`/lenders/${lenderId}`);
 
     return { success: true };
-  } catch (error) {
-    console.error('Error sending invitation email:', error);
-    return { success: false, error: 'Failed to send invitation email' };
-  }
-}
+  });

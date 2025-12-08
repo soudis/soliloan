@@ -1,5 +1,5 @@
-import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
+import { notFound } from 'next/navigation';
 
 import { Toaster } from '@/components/ui/sonner';
 import { LOCALES } from '@/i18n/routing';
@@ -16,6 +16,7 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  // biome-ignore lint/suspicious/noImplicitAnyLet: needed
   let messages;
   try {
     messages = (await import(`../../messages/${locale}`)).default;

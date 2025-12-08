@@ -16,7 +16,7 @@ import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { useLoanTabsStore } from '@/store/loan-tabs-store';
 import type { LoanWithCalculations } from '@/types/loans';
 
-import { deleteLoan } from '@/actions';
+import { deleteLoanAction } from '@/actions/loans';
 import { useRouter } from '@/i18n/navigation';
 import { useLenderLoanSelectionStore } from '@/store/lender-loan-selection-store';
 import { useProjects } from '@/store/projects-store';
@@ -82,10 +82,10 @@ export function LoanCard({ loan, className }: LoanCardProps) {
     const toastId = toast.loading(t('delete.loading'));
 
     try {
-      const result = await deleteLoan(loan.id);
+      const result = await deleteLoanAction({ loanId: loan.id });
 
-      if (result.error) {
-        toast.error(t(`errors.${result.error}`), {
+      if (result?.serverError || result?.validationErrors) {
+        toast.error(t(`errors.${result.serverError || 'Validation failed'}`), {
           id: toastId,
         });
       } else {

@@ -1,17 +1,14 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
-import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { authAction } from '@/lib/utils/safe-action';
 
-export async function deleteView(viewId: string) {
-  try {
-    const session = await auth();
-    if (!session) {
-      throw new Error('Unauthorized');
-    }
-
+export const deleteViewAction = authAction
+  .schema(z.object({ viewId: z.string() }))
+  .action(async ({ parsedInput: { viewId }, ctx }) => {
     // Fetch the view
     const view = await db.view.findUnique({
       where: {
@@ -24,8 +21,8 @@ export async function deleteView(viewId: string) {
     }
 
     // Check if the user has access to the view
-    if (view.userId !== session.user.id) {
-      throw new Error('You do not have access to this view');
+    if (view.userId !== ctx.session.user.id) {
+      throw new Error('error.unauthorized');
     }
 
     // Delete the view
@@ -39,10 +36,4 @@ export async function deleteView(viewId: string) {
     revalidatePath(`/${view.type.toLowerCase()}`);
 
     return { success: true };
-  } catch (error) {
-    console.error('Error deleting view:', error);
-    return {
-      error: error instanceof Error ? error.message : 'Failed to delete view',
-    };
-  }
-}
+  });

@@ -5,7 +5,7 @@ import { DurationType } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 
-import { getLendersByProjectId } from '@/actions/lenders';
+import { getLendersByProjectAction } from '@/actions/lenders';
 import { Form } from '@/components/ui/form';
 import { FormActions } from '@/components/ui/form-actions';
 import { FormLayout } from '@/components/ui/form-layout';
@@ -48,9 +48,9 @@ export function LoanForm({
     queryKey: ['lenders', selectedProject?.id],
     queryFn: async () => {
       if (!selectedProject) return [];
-      const { lenders: fetchedLenders, error } = await getLendersByProjectId(selectedProject.id);
-      if (error) throw new Error(error);
-      return fetchedLenders || [];
+      const { data: fetchedLenders, serverError } = await getLendersByProjectAction({ projectId: selectedProject.id });
+      if (serverError) throw new Error(serverError);
+      return fetchedLenders?.lenders || [];
     },
     enabled: !!selectedProject,
   });

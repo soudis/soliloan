@@ -6,7 +6,7 @@ import { useFormContext } from 'react-hook-form';
 import { FormField } from '@/components/form/form-field';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FormControl, FormField as FormFieldWrapper, FormItem, FormLabel } from '@/components/ui/form';
-import { NoteFormData } from '@/lib/schemas/note';
+import type { NoteFormData } from '@/lib/schemas/note';
 
 export function NoteFormFields() {
   const t = useTranslations('dashboard.notes');

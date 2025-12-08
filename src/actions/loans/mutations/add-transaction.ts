@@ -1,6 +1,6 @@
 'use server';
 
-import { Entity, Operation } from '@prisma/client';
+import { Entity, Operation, TransactionType } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 import {
@@ -10,18 +10,21 @@ import {
   getTransactionContext,
   removeNullFields,
 } from '@/lib/audit-trail';
-import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import type { TransactionFormData } from '@/lib/schemas/transaction';
+import { transactionFormSchema } from '@/lib/schemas/transaction';
+import { loanAction } from '@/lib/utils/safe-action';
+import { z } from 'zod';
 
-export async function addTransaction(loanId: string, data: TransactionFormData) {
-  try {
-    const session = await auth();
-    if (!session) {
-      throw new Error('Unauthorized');
-    }
-
-    // Fetch the loan
+// We need to extend the combined schema properly
+export const addTransactionAction = loanAction
+  .schema(
+    z.object({
+      loanId: z.string(),
+      data: transactionFormSchema,
+    }),
+  )
+  .action(async ({ parsedInput: { loanId, data } }) => {
+    // Fetch the loan for audit context (and verification)
     const loan = await db.loan.findUnique({
       where: {
         id: loanId,
@@ -31,7 +34,7 @@ export async function addTransaction(loanId: string, data: TransactionFormData) 
           include: {
             project: {
               include: {
-                managers: true,
+                configuration: true,
               },
             },
           },
@@ -43,19 +46,12 @@ export async function addTransaction(loanId: string, data: TransactionFormData) 
       throw new Error('Loan not found');
     }
 
-    // Check if the user has access to the loan's project
-    const hasAccess = loan.lender.project.managers.some((manager) => manager.id === session.user.id);
-
-    if (!hasAccess) {
-      throw new Error('You do not have access to this loan');
-    }
-
     const amount =
-      data.type === 'WITHDRAWAL' ||
-      data.type === 'TERMINATION' ||
-      data.type === 'INTERESTPAYMENT' ||
-      data.type === 'NOTRECLAIMEDPARTIAL' ||
-      data.type === 'NOTRECLAIMED'
+      data.type === TransactionType.WITHDRAWAL ||
+      data.type === TransactionType.TERMINATION ||
+      data.type === TransactionType.INTERESTPAYMENT ||
+      data.type === TransactionType.NOTRECLAIMEDPARTIAL ||
+      data.type === TransactionType.NOTRECLAIMED
         ? -Math.abs(data.amount)
         : data.amount;
 
@@ -63,7 +59,7 @@ export async function addTransaction(loanId: string, data: TransactionFormData) 
     const transaction = await db.transaction.create({
       data: {
         type: data.type,
-        date: data.date as Date,
+        date: data.date ?? new Date(),
         amount,
         paymentType: data.paymentType,
         loan: {
@@ -86,17 +82,11 @@ export async function addTransaction(loanId: string, data: TransactionFormData) 
         ...getLoanContext(loan),
         ...getTransactionContext(transaction),
       },
-      projectId: loan.lender.project.id,
+      projectId: loan.lender.projectId,
     });
 
     // Revalidate the loan page
     revalidatePath(`/loans/${loanId}`);
 
     return { transaction };
-  } catch (error) {
-    console.error('Error creating transaction:', error);
-    return {
-      error: error instanceof Error ? error.message : 'Failed to create transaction',
-    };
-  }
-}
+  });

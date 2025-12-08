@@ -1,18 +1,20 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 import { createAuditEntry, getLenderContext, getLoanContext, removeNullFields } from '@/lib/audit-trail';
-import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { managerAction } from '@/lib/utils/safe-action';
 
-export async function deleteNote(loanId: string, noteId: string) {
-  try {
-    const session = await auth();
-    if (!session) {
-      throw new Error('Unauthorized');
-    }
-
+export const deleteNoteAction = managerAction
+  .inputSchema(
+    z.object({
+      loanId: z.string(),
+      noteId: z.string(),
+    }),
+  )
+  .action(async ({ parsedInput: { loanId, noteId }, ctx }) => {
     // Fetch the loan and note
     const loan = await db.loan.findUnique({
       where: {
@@ -22,9 +24,7 @@ export async function deleteNote(loanId: string, noteId: string) {
         lender: {
           include: {
             project: {
-              include: {
-                managers: true,
-              },
+              include: { managers: true },
             },
           },
         },
@@ -37,19 +37,20 @@ export async function deleteNote(loanId: string, noteId: string) {
     });
 
     if (!loan) {
-      throw new Error('Loan not found');
+      throw new Error('error.loan.notFound');
     }
 
     const note = loan.notes[0];
     if (!note) {
-      throw new Error('Note not found');
+      throw new Error('error.note.notFound');
     }
 
     // Check if the user has access to the loan's project
-    const hasAccess = loan.lender.project.managers.some((manager) => manager.id === session.user.id);
+    const hasAccess =
+      ctx.session.user.isAdmin || loan.lender.project.managers.some((manager) => manager.id === ctx.session.user.id);
 
     if (!hasAccess) {
-      throw new Error('You do not have access to this loan');
+      throw new Error('error.unauthorized');
     }
 
     // Create audit trail entry before deletion
@@ -63,24 +64,16 @@ export async function deleteNote(loanId: string, noteId: string) {
         ...getLenderContext(loan.lender),
         ...getLoanContext(loan),
       },
-      projectId: loan.lender.project.id,
+      projectId: loan.lender.projectId,
     });
 
     // Delete the note
     await db.note.delete({
-      where: {
-        id: noteId,
-      },
+      where: { id: noteId },
     });
 
     // Revalidate the loan page
     revalidatePath(`/loans/${loanId}`);
 
     return { success: true };
-  } catch (error) {
-    console.error('Error deleting note:', error);
-    return {
-      error: error instanceof Error ? error.message : 'Failed to delete note',
-    };
-  }
-}
+  });

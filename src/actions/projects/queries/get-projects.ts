@@ -7,7 +7,7 @@ import { managerAction } from '@/lib/utils/safe-action';
 import { omit } from 'lodash';
 import moment from 'moment';
 
-export async function getProjects(userId?: string) {
+async function getProjects(userId?: string) {
   // Fetch all projects for the user
   const projects = await db.project.findMany({
     ...(userId && {

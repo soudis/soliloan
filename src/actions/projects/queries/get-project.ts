@@ -1,18 +1,19 @@
 'use server';
 
 import { db } from '@/lib/db';
+import { projectIdSchema } from '@/lib/schemas/common';
 import { parseAdditionalFieldConfig } from '@/lib/utils/additional-fields';
+import { projectAction } from '@/lib/utils/safe-action';
 import { omit } from 'lodash';
 import moment from 'moment';
 
-export async function getProject(projectId: string) {
+export async function getProjectUnsafe(projectId: string) {
   // Fetch the project
   const project = await db.project.findUnique({
     where: {
       id: projectId,
     },
     include: {
-      managers: true,
       configuration: {
         include: {
           loanTemplates: true,
@@ -44,3 +45,9 @@ export async function getProject(projectId: string) {
     },
   };
 }
+
+export const getProjectAction = projectAction
+  .inputSchema(projectIdSchema)
+  .action(async ({ parsedInput: { projectId } }) => {
+    return getProjectUnsafe(projectId);
+  });

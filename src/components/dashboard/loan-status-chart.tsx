@@ -1,6 +1,6 @@
 'use client';
 
-import { ArcElement, Chart as ChartJS, ChartOptions, Legend, Tooltip } from 'chart.js';
+import { ArcElement, Chart as ChartJS, type ChartOptions, Legend, Tooltip } from 'chart.js';
 import { useTranslations } from 'next-intl';
 import { Pie } from 'react-chartjs-2';
 
@@ -49,7 +49,7 @@ export function LoanStatusChart({ data }: LoanStatusChartProps) {
       },
       tooltip: {
         callbacks: {
-          label: function (context) {
+          label: (context) => {
             const label = context.label || '';
             const value = Number(context.raw) || 0;
             const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);

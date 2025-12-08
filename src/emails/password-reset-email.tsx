@@ -1,6 +1,6 @@
 import { Body, Button, Container, Head, Heading, Html, Link, Preview, Section, Text } from '@react-email/components';
 import { createTranslator } from 'next-intl';
-import * as React from 'react';
+import type * as React from 'react';
 
 interface PasswordResetEmailProps {
   name: string;
@@ -10,12 +10,13 @@ interface PasswordResetEmailProps {
 
 export const PasswordResetEmail: React.FC<PasswordResetEmailProps> = async ({ name, resetUrl, locale = 'de' }) => {
   // Load translations for the specified locale
+  // biome-ignore lint/suspicious/noImplicitAnyLet: needed
   let messages;
   try {
     messages = (await import(`../messages/${locale}/emails.json`)).default;
   } catch (error) {
     // Fallback to German if the requested locale is not available
-    messages = (await import(`../messages/de/emails.json`)).default;
+    messages = (await import('../messages/de/emails.json')).default;
     console.error(error);
   }
 

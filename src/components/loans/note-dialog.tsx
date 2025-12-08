@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { addNote } from '@/actions/notes';
+import { addNoteAction } from '@/actions/notes/mutations/add-note';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
@@ -36,20 +36,16 @@ export function NoteDialog({ loanId, open, onOpenChange }: NoteDialogProps) {
   });
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    try {
-      const result = await addNote(loanId, data);
-      if (result.error) {
-        throw new Error(result.error);
-      }
-      toast.success(t('createSuccess'));
-      onOpenChange(false);
-      form.reset();
-      queryClient.invalidateQueries({ queryKey: ['lender'] });
-      queryClient.invalidateQueries({ queryKey: ['loans'] });
-    } catch (error) {
-      console.error('Error creating note:', error);
+    const result = await addNoteAction({ loanId, data });
+    if (result?.serverError || result?.validationErrors) {
       toast.error(t('createError'));
+      return;
     }
+    toast.success(t('createSuccess'));
+    onOpenChange(false);
+    form.reset();
+    queryClient.invalidateQueries({ queryKey: ['lender'] });
+    queryClient.invalidateQueries({ queryKey: ['loans'] });
   });
 
   return (

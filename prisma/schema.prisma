@@ -186,9 +186,9 @@ model File {
   public      Boolean
   description String?
   thumbnail   Bytes?
-  lenderId    String?
+  lenderId    String
   loanId      String?
-  lender      Lender? @relation(fields: [lenderId], references: [id])
+  lender      Lender  @relation(fields: [lenderId], references: [id])
   loan        Loan?   @relation(fields: [loanId], references: [id])
   createdAt   DateTime @default(now())
   createdById String

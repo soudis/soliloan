@@ -4,7 +4,6 @@ import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
-import { getProjects } from '@/actions/projects';
 import { getProjectsAction } from '@/actions/projects/queries/get-projects';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 

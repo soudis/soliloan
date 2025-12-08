@@ -2,8 +2,7 @@
 
 import { db } from '@/lib/db';
 import { type LoanTemplateFormData, loanTemplateFormSchema } from '@/lib/schemas/configuration';
-import { configurationManageAction } from '@/lib/utils/safe-action';
-import { omit } from 'lodash';
+import { configurationAction } from '@/lib/utils/safe-action';
 
 export const markLoanTemplateAsDefault = async (template: LoanTemplateFormData) => {
   if (!template.id) {
@@ -25,6 +24,6 @@ export const markLoanTemplateAsDefault = async (template: LoanTemplateFormData) 
   });
 };
 
-export const markLoanTemplateAsDefaultAction = configurationManageAction
+export const markLoanTemplateAsDefaultAction = configurationAction
   .inputSchema(loanTemplateFormSchema)
   .action(async ({ ctx, parsedInput }) => markLoanTemplateAsDefault(parsedInput));

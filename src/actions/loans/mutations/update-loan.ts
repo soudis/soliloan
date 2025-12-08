@@ -1,21 +1,26 @@
 'use server';
 
-import { type ContractStatus, type DurationType, Entity, type InterestMethod, Operation } from '@prisma/client';
+import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 import { createAuditEntry, getChangedFields, getLenderContext, getLoanContext } from '@/lib/audit-trail';
-import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import type { LoanFormData } from '@/lib/schemas/loan';
+import { loanFormSchema } from '@/lib/schemas/loan';
+import { loanAction } from '@/lib/utils/safe-action';
+import { z } from 'zod';
 
-export async function updateLoan(loanId: string, data: LoanFormData) {
-  try {
-    const session = await auth();
-    if (!session) {
-      throw new Error('Unauthorized');
-    }
-
+export const updateLoanAction = loanAction
+  .inputSchema(
+    z.object({
+      loanId: z.string(),
+      data: loanFormSchema,
+    }),
+  )
+  .action(async ({ parsedInput: { loanId, data } }) => {
     // Fetch the loan
+
+    console.log(data.terminationDate);
+
     const loan = await db.loan.findUnique({
       where: {
         id: loanId,
@@ -25,7 +30,7 @@ export async function updateLoan(loanId: string, data: LoanFormData) {
           include: {
             project: {
               include: {
-                managers: true,
+                configuration: true,
               },
             },
           },
@@ -37,32 +42,28 @@ export async function updateLoan(loanId: string, data: LoanFormData) {
       throw new Error('Loan not found');
     }
 
-    // Check if the user has access to the loan's project
-    const hasAccess = loan.lender.project.managers.some((manager) => manager.id === session.user.id);
-
-    if (!hasAccess) {
-      throw new Error('You do not have access to this loan');
-    }
-
     // Update the loan
     const updatedLoan = await db.loan.update({
       where: {
         id: loanId,
       },
       data: {
-        signDate: data.signDate ?? undefined,
+        signDate: data.signDate ?? new Date(),
+        amount: data.amount,
+        interestRate: data.interestRate,
         terminationType: data.terminationType,
-        endDate: data.endDate || null,
-        terminationDate: data.terminationDate || null,
-        terminationPeriod: Number(data.terminationPeriod),
-        terminationPeriodType: data.terminationPeriodType as DurationType,
-        duration: Number(data.duration),
-        durationType: data.durationType as DurationType,
-        amount: data.amount || undefined,
-        interestRate: data.interestRate ?? undefined,
-        altInterestMethod: data.altInterestMethod as InterestMethod,
-        contractStatus: data.contractStatus as ContractStatus,
+        endDate: data.endDate,
+        terminationDate: data.terminationDate,
+        terminationPeriod: data.terminationPeriod,
+        terminationPeriodType: data.terminationPeriodType,
+        duration: data.duration,
+        durationType: data.durationType,
+        altInterestMethod: data.altInterestMethod,
+        contractStatus: data.contractStatus,
         additionalFields: data.additionalFields ?? {},
+      },
+      include: {
+        lender: true,
       },
     });
 
@@ -79,19 +80,12 @@ export async function updateLoan(loanId: string, data: LoanFormData) {
           ...getLenderContext(loan.lender),
           ...getLoanContext(updatedLoan),
         },
-        projectId: loan.lender.project.id,
+        projectId: loan.lender.projectId,
       });
     }
 
-    // Revalidate the loans page
+    // Revalidate the lender page
     revalidatePath(`/lenders/${loan.lenderId}`);
-    revalidatePath(`/loans/${loanId}/edit`);
 
     return { loan: updatedLoan };
-  } catch (error) {
-    console.error('Error updating loan:', error);
-    return {
-      error: error instanceof Error ? error.message : 'Failed to update loan',
-    };
-  }
-}
+  });

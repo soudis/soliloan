@@ -1,47 +1,21 @@
 'use server';
 
-import type { Loan } from '@prisma/client';
-
-import { auth } from '@/lib/auth';
 import { calculateLoanFields } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
+import { projectIdSchema } from '@/lib/schemas/common';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
-import type { LoanWithRelations } from '@/types/loans';
+import { projectAction } from '@/lib/utils/safe-action';
 
-export async function getLoansByProjectId(projectId: string) {
+async function getLoansByProjectUnsafe(projectId: string) {
   try {
-    const session = await auth();
-    if (!session) {
-      throw new Error('Unauthorized');
-    }
-
-    // Check if the user has access to the project
-    const project = await db.project.findUnique({
-      where: {
-        id: projectId,
-      },
-      include: {
-        managers: true,
-      },
-    });
-
-    if (!project) {
-      throw new Error('Project not found');
-    }
-
-    // Check if the user has access to the project
-    const hasAccess = project.managers.some((manager) => manager.id === session.user.id);
-
-    if (!hasAccess) {
-      throw new Error('You do not have access to this project');
-    }
-
-    // Fetch all loans for the project
     const loans = await db.loan.findMany({
       where: {
         lender: {
-          projectId: projectId,
+          projectId,
         },
+      },
+      orderBy: {
+        signDate: 'desc',
       },
       include: {
         lender: {
@@ -102,9 +76,7 @@ export async function getLoansByProjectId(projectId: string) {
 
     // Calculate virtual fields for each loan
     const loansWithCalculations = loans.map((loan) =>
-      calculateLoanFields<Omit<LoanWithRelations, keyof Loan>>(
-        parseAdditionalFields({ ...loan, lender: parseAdditionalFields(loan.lender) }),
-      ),
+      calculateLoanFields(parseAdditionalFields({ ...loan, lender: parseAdditionalFields(loan.lender) })),
     );
 
     return { loans: loansWithCalculations };
@@ -115,3 +87,7 @@ export async function getLoansByProjectId(projectId: string) {
     };
   }
 }
+
+export const getLoansByProjectAction = projectAction.inputSchema(projectIdSchema).action(async ({ parsedInput }) => {
+  return getLoansByProjectUnsafe(parsedInput.projectId);
+});
