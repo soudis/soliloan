@@ -2,8 +2,12 @@
 
 import type { LenderWithCalculations } from '@/types/lenders';
 import type { LoanWithCalculations } from '@/types/loans';
+import { useBreakpoint } from 'use-breakpoint';
 import { LoanDropdown } from './loan-dropdown';
 import { LoanTabs } from './loan-tabs';
+
+// Tailwind breakpoints
+const BREAKPOINTS = { mobile: 0, tablet: 768, desktop: 1280 };
 
 interface LoanSelectorProps {
   loans: LoanWithCalculations[];
@@ -14,7 +18,10 @@ interface LoanSelectorProps {
 }
 
 export function LoanSelector({ loans, selectedLoanId, onSelectLoan, maxTabs, lender }: LoanSelectorProps) {
-  const showTabs = loans.length <= maxTabs;
+  const { breakpoint } = useBreakpoint(BREAKPOINTS, 'mobile');
+  const isMobile = breakpoint === 'mobile';
+
+  const showTabs = loans.length <= maxTabs && !isMobile;
 
   return (
     <>

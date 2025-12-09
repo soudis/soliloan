@@ -3,7 +3,7 @@
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
 import { motion } from 'framer-motion';
-import { Pencil, Trash2, Wallet } from 'lucide-react';
+import { ArrowRightLeft, Files as FilesIcon, NotebookPen, Pencil, Receipt, Trash2, Wallet } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
@@ -201,37 +201,55 @@ export function LoanCard({ loan, className }: LoanCardProps) {
           onValueChange={(value) => setActiveTab(loan.id, value as 'transactions' | 'files' | 'notes' | 'bookings')}
           className="mt-6"
         >
-          <TabsList className="w-full border-b border-border bg-transparent p-0 mt-4 flex justify-start gap-0 overflow-x-auto">
+          <TabsList className="w-full h-auto p-1 bg-muted rounded-xl md:mt-4 flex md:justify-start gap-1">
             <TabsTrigger
               value="transactions"
-              className="rounded-none border-b-2 border-transparent px-6 pt-1 pb-2 text-lg data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent shadow-none data-[state=active]:shadow-none cursor-pointer"
+              className="flex-1 md:flex-none flex flex-col md:flex-row gap-1 md:gap-2 items-center justify-center py-2 md:px-4 rounded-lg text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all hover:text-foreground"
             >
-              {t('table.transactions')}
+              <ArrowRightLeft className="h-5 w-5 md:h-4 md:w-4" />
+              <span className="text-[10px] md:text-sm font-medium">{t('table.transactions')}</span>
             </TabsTrigger>
             <TabsTrigger
               value="bookings"
-              className="rounded-none border-b-2 border-transparent px-6 pt-1 pb-2 text-lg data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent shadow-none data-[state=active]:shadow-none cursor-pointer"
+              className="flex-1 md:flex-none flex flex-col md:flex-row gap-1 md:gap-2 items-center justify-center py-2 md:px-4 rounded-lg text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all hover:text-foreground"
             >
-              {t('table.bookings')}
+              <Receipt className="h-5 w-5 md:h-4 md:w-4" />
+              <span className="text-[10px] md:text-sm font-medium">{t('table.bookings')}</span>
             </TabsTrigger>
             <TabsTrigger
               value="files"
-              className="rounded-none border-b-2 border-transparent px-6 pt-1 pb-2   text-lg data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent shadow-none data-[state=active]:shadow-none cursor-pointer"
+              className="flex-1 md:flex-none flex flex-col md:flex-row gap-1 md:gap-2 items-center justify-center py-2 md:px-4 rounded-lg text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all hover:text-foreground relative"
             >
-              {t('table.files')}
+              <div className="relative">
+                <FilesIcon className="h-5 w-5 md:h-4 md:w-4" />
+                {loan.files && loan.files.length > 0 && (
+                  <span className="absolute -top-2 -right-3 md:hidden flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-[9px] border border-background">
+                    {loan.files.length}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] md:text-sm font-medium">{t('table.files')}</span>
               {loan.files && loan.files.length > 0 && (
-                <Badge variant="secondary" className="ml-2">
+                <Badge variant="secondary" className="ml-2 hidden md:inline-flex h-5 px-1.5">
                   {loan.files.length}
                 </Badge>
               )}
             </TabsTrigger>
             <TabsTrigger
               value="notes"
-              className="rounded-none border-b-2 border-transparent px-6 pt-1 pb-2  text-lg data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent shadow-none data-[state=active]:shadow-none cursor-pointer"
+              className="flex-1 md:flex-none flex flex-col md:flex-row gap-1 md:gap-2 items-center justify-center py-2 md:px-4 rounded-lg text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all hover:text-foreground relative"
             >
-              {t('table.notes')}
+              <div className="relative">
+                <NotebookPen className="h-5 w-5 md:h-4 md:w-4" />
+                {loan.notes && loan.notes.length > 0 && (
+                  <span className="absolute -top-2 -right-3 md:hidden flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-[9px] border border-background">
+                    {loan.notes.length}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] md:text-sm font-medium">{t('table.notes')}</span>
               {loan.notes && loan.notes.length > 0 && (
-                <Badge variant="secondary" className="ml-2">
+                <Badge variant="secondary" className="ml-2 hidden md:inline-flex h-5 px-1.5">
                   {loan.notes.length}
                 </Badge>
               )}

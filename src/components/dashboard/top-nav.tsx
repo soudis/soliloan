@@ -26,7 +26,7 @@ export function TopNav({ session, isSidebarOpen, setIsSidebarOpen }: TopNavProps
             <div className="flex flex-shrink-0 items-center">
               <Link href="/dashboard" className="flex items-center">
                 <Image src="/soliloan-logo.webp" alt="Soliloan AI Logo" width={32} height={32} className="mr-2" />
-                <span className="text-xl font-bold text-primary font-comfortaa">
+                <span className="text-lg md:text-xl font-bold text-primary font-comfortaa">
                   {process.env.NEXT_PUBLIC_SOLILOAN_PROJECT_NAME}
                 </span>
               </Link>
@@ -38,7 +38,7 @@ export function TopNav({ session, isSidebarOpen, setIsSidebarOpen }: TopNavProps
             </div>
           </div>
           <div className="flex items-center">
-            <div className="ml-3 relative">
+            <div className="ml-3 relative hidden md:flex">
               <div className="flex items-center gap-4">
                 <span className="text-sm font-medium">{session.user?.name || session.user?.email}</span>
                 <Button variant="outline" onClick={() => signOut()}>
