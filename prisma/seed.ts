@@ -1,4 +1,4 @@
-import { Language, PrismaClient } from "@prisma/client";
+import { InterestMethod, Language, PrismaClient } from "@prisma/client";
 
 import { hashPassword } from "@/lib/utils/password";
 
@@ -35,6 +35,7 @@ async function main() {
             configuration: {
               create: {
                 name: "Development GmbH",
+                interestMethod: InterestMethod.ACT_360_COMPOUND
               },
             },
             managers: { connect: { id: user.id } },
