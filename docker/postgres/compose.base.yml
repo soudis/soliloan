@@ -1,10 +1,10 @@
 services:
   postgres:
-    image: postgres
+    image: postgres:18
     restart: always
     shm_size: 128mb
     volumes:
-      - directloan-db:/var/lib/postgresql/data
+      - directloan-db:/var/lib/postgresql
     networks:
       - backend_network
     environment:

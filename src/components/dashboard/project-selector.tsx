@@ -1,16 +1,16 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
+import { ChevronsUpDown, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { getProjectsAction } from '@/actions/projects/queries/get-projects';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 
 import { useProjects } from '@/store/projects-store';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { useQuery } from '@tanstack/react-query';
-import { useAction } from 'next-safe-action/hooks';
+import { ProjectLogo } from './project-logo';
 
 export default function ProjectSelector() {
   const { selectedProject, setSelectedProject } = useProjects();
@@ -43,7 +43,7 @@ export default function ProjectSelector() {
   }
 
   return (
-    <div className="mb-4">
+    <div className="mb-4 ">
       <Select
         value={selectedProject?.id}
         onValueChange={(value: string) => {
@@ -51,13 +51,24 @@ export default function ProjectSelector() {
           setSelectedProject(project || null);
         }}
       >
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder={t('selectProject')} />
+        <SelectTrigger className="w-full h-auto py-2 flex items-center justify-start gap-3 border-none shadow-none bg-transparent hover:bg-muted/20 focus:ring-0 [&>svg]:hidden relative">
+          <div className="flex items-center gap-3 min-w-0 text-left">
+            <ProjectLogo project={selectedProject} className="h-16 w-16 rounded-2xl shadow-sm shrink-0" />
+            <span className="font-bold text-lg leading-tight whitespace-normal break-words pb-2">
+              {selectedProject?.name || t('selectProject')}
+            </span>
+          </div>
+          <div className="absolute bottom-2 right-2">
+            <ChevronsUpDown className="h-4 w-4 text-muted-foreground/80" />
+          </div>
         </SelectTrigger>
         <SelectContent>
           {data.projects.map((project: ProjectWithConfiguration) => (
             <SelectItem key={project.id} value={project.id}>
-              {project.name}
+              <div className="flex items-center gap-3">
+                <ProjectLogo project={project} className="h-6 w-6 rounded-md" />
+                <span className="font-medium">{project.name}</span>
+              </div>
             </SelectItem>
           ))}
         </SelectContent>
