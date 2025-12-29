@@ -8,5 +8,14 @@
   },
   "configuration": {
     "notFound": "Konfiguration nicht gefunden."
+  },
+  "lender": {
+    "notFound": "Kreditgeber*in nicht gefunden."
+  },
+  "loan": {
+    "notFound": "Kredit nicht gefunden."
+  },
+  "note": {
+    "notFound": "Notiz nicht gefunden."
   }
 }

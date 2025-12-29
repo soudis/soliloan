@@ -2,6 +2,7 @@ import { type Table as TanstackTable, flexRender } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 
 interface DataTableBodyProps<TData> {
   table: TanstackTable<TData>;
@@ -21,16 +22,12 @@ export function DataTableBody<TData>({ table, onRowClick }: DataTableBodyProps<T
                 return (
                   <TableHead
                     key={header.id}
-                    className={`${
-                      header.column.columnDef.meta?.style?.textAlign
-                        ? `text-${header.column.columnDef.meta.style.textAlign}`
-                        : ''
-                    } 
-                      ${
-                        header.column.columnDef.meta?.fixed
-                          ? 'sticky left-0 right-0 bg-background z-10 before:content-[""] before:absolute before:left-auto before:top-0 before:h-full before:w-[1px] before:bg-border'
-                          : ''
-                      }`}
+                    className={cn(
+                      header.column.columnDef.meta?.style?.textAlign &&
+                        `text-${header.column.columnDef.meta.style.textAlign}`,
+                      header.column.columnDef.meta?.fixed &&
+                        'sticky right-0 z-10 bg-background before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
+                    )}
                   >
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
@@ -45,17 +42,16 @@ export function DataTableBody<TData>({ table, onRowClick }: DataTableBodyProps<T
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && 'selected'}
-                className={onRowClick ? 'cursor-pointer' : ''}
+                className={cn('group/row transition-colors', onRowClick ? 'cursor-pointer' : '')}
                 onClick={() => onRowClick?.(row.original)}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
-                    className={
-                      cell.column.columnDef.meta?.fixed
-                        ? 'sticky left-auto right-0 bg-background z-10 before:content-[""] before:absolute before:left-auto before:top-0 before:h-full before:w-[1px] before:bg-border'
-                        : ''
-                    }
+                    className={cn(
+                      cell.column.columnDef.meta?.fixed &&
+                        'sticky right-0 z-10 bg-background transition-colors data-[state=selected]:bg-muted before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
+                    )}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>

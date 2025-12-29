@@ -24,7 +24,7 @@ import { lenderAction } from '@/lib/utils/safe-action';
 const execAsync = promisify(exec);
 
 export const addFileAction = lenderAction
-  .schema(
+  .inputSchema(
     z.object({
       lenderId: z.string(),
       loanId: z.string().optional(),
@@ -49,7 +49,7 @@ export const addFileAction = lenderAction
     }
 
     const loan = loanId ? lender.loans.find((l) => l.id === loanId) : undefined;
-    if (!loan) {
+    if (loanId && !loan) {
       throw new Error('Loan not found');
     }
 
@@ -99,7 +99,7 @@ export const addFileAction = lenderAction
         name: data.name,
         mimeType,
         data: new Uint8Array(binaryData),
-        thumbnail: thumbnailData,
+        thumbnail: thumbnailData ? new Uint8Array(thumbnailData) : undefined,
         public: data.public ?? false,
         description: data.description,
         // Fix conditional connect syntax

@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { createNoteAction } from '@/actions/notes/mutations/create-note';
+import { updateNoteAction } from '@/actions/notes/mutations/update-note';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
@@ -16,6 +17,7 @@ import { NoteFormFields } from './note-form-fields';
 
 import type { NoteFormData } from '@/lib/schemas/note';
 import type { LoanWithCalculations } from '@/types/loans';
+import type { Note } from '@prisma/client';
 import { useEffect } from 'react';
 import z from 'zod';
 
@@ -25,9 +27,10 @@ interface NoteDialogProps {
   loans?: LoanWithCalculations[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  note?: Note;
 }
 
-export function NoteDialog({ lenderId, loanId, open, loans, onOpenChange }: NoteDialogProps) {
+export function NoteDialog({ lenderId, loanId, open, loans, onOpenChange, note }: NoteDialogProps) {
   const t = useTranslations('dashboard.notes');
   const commonT = useTranslations('common');
   const queryClient = useQueryClient();
@@ -43,23 +46,41 @@ export function NoteDialog({ lenderId, loanId, open, loans, onOpenChange }: Note
 
   useEffect(() => {
     if (open) {
-      form.reset();
+      if (note) {
+        form.reset({
+          text: note.text,
+          public: note.public,
+          loanId: note.loanId,
+        });
+      } else {
+        form.reset({
+          text: '',
+          public: false,
+          loanId: loanId ?? null,
+        });
+      }
     }
-  }, [open, form.reset]);
+  }, [open, note, loanId, form.reset]);
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    console.log(data);
-    const result = await createNoteAction({
-      lenderId,
-      loanId: data.loanId ?? undefined,
-      data,
-    });
+    const result = note
+      ? await updateNoteAction({
+          noteId: note.id,
+          lenderId,
+          loanId: data.loanId ?? undefined,
+          data,
+        })
+      : await createNoteAction({
+          lenderId,
+          loanId: data.loanId ?? undefined,
+          data,
+        });
 
     if (result?.serverError || result?.validationErrors) {
-      toast.error(result.serverError || t('createError'));
+      toast.error(result.serverError || (note ? t('updateError') : t('createError')));
       return;
     }
-    toast.success(t('createSuccess'));
+    toast.success(note ? t('updateSuccess') : t('createSuccess'));
     onOpenChange(false);
     form.reset();
     queryClient.invalidateQueries({ queryKey: ['lender'] });
@@ -70,7 +91,7 @@ export function NoteDialog({ lenderId, loanId, open, loans, onOpenChange }: Note
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('createTitle')}</DialogTitle>
+          <DialogTitle>{note ? t('editTitle') : t('createTitle')}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -81,7 +102,7 @@ export function NoteDialog({ lenderId, loanId, open, loans, onOpenChange }: Note
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 {commonT('ui.actions.cancel')}
               </Button>
-              <Button type="submit">{commonT('ui.actions.create')}</Button>
+              <Button type="submit">{note ? commonT('ui.actions.save') : commonT('ui.actions.create')}</Button>
             </div>
           </form>
         </Form>

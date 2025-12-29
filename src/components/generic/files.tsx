@@ -127,58 +127,35 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
                     sizes="128px"
                     onError={() => handleImageError(file.id)}
                   />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="bg-white/90 hover:bg-white"
-                        onClick={() => handleDownloadFile(file)}
-                      >
-                        <Download className="h-4 w-4" />
-                        <span className="sr-only">{commonT('ui.actions.download')}</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="bg-white/90 hover:bg-white"
-                        onClick={() => setIsConfirmOpen(file.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                        <span className="sr-only">{commonT('ui.actions.delete')}</span>
-                      </Button>
-                    </div>
-                  </div>
                 </div>
               ) : (
                 <div
                   className={`w-32 flex-shrink-0 flex items-center justify-center relative ${file.public ? 'bg-amber-500/20' : 'bg-blue-500/20'}`}
                 >
                   {getFileTypeIcon(file)}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="bg-white/90 hover:bg-white"
-                        onClick={() => handleDownloadFile(file)}
-                      >
-                        <Download className="h-4 w-4" />
-                        <span className="sr-only">{commonT('ui.actions.download')}</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="bg-white/90 hover:bg-white"
-                        onClick={() => handleDeleteFile(file.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                        <span className="sr-only">{commonT('ui.actions.delete')}</span>
-                      </Button>
-                    </div>
-                  </div>
                 </div>
               )}
+
+              <div className="absolute top-2 right-2 flex space-x-1 z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 bg-background/50 hover:bg-background shadow-xs"
+                  onClick={() => handleDownloadFile(file)}
+                >
+                  <Download className="h-4 w-4" />
+                  <span className="sr-only">{commonT('ui.actions.download')}</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 bg-background/50 hover:bg-background shadow-xs"
+                  onClick={() => setIsConfirmOpen(file.id)}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                  <span className="sr-only">{commonT('ui.actions.delete')}</span>
+                </Button>
+              </div>
               <div className="flex flex-col h-full p-3 flex-1">
                 <div className="flex items-start space-x-3">
                   <div className="flex-1 min-w-0">
@@ -226,7 +203,7 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
 
           <Button
             variant="outline"
-            className="h-full flex flex-col items-center justify-center p-6 border-dashed"
+            className="h-full min-h-[150px] flex flex-col items-center justify-center p-6 border-dashed"
             onClick={() => setIsFileDialogOpen(true)}
           >
             <Plus className="h-8 w-8 mb-2" />

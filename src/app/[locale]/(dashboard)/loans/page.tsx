@@ -286,7 +286,7 @@ export default function LoansPage() {
         showFilter={true}
         onRowClick={(row) => router.push(`/lenders/${row.lender.id}?loanId=${row.id}`)}
         actions={(row) => (
-          <div className="flex items-center justify-end space-x-2">
+          <div className="flex items-center space-x-2">
             <Button
               variant="ghost"
               size="icon"

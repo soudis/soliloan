@@ -199,11 +199,11 @@ export function DataTable<TData, TValue>({
     allColumns.push({
       id: 'actions',
       header: () => (
-        <div className="flex justify-center">
+        <div className="flex h-full w-full items-center justify-center">
           <Settings className="h-4 w-4" />
         </div>
       ),
-      cell: ({ row }) => actions(row.original),
+      cell: ({ row }) => <div className="flex items-center justify-center">{actions(row.original)}</div>,
       meta: {
         fixed: true,
       },

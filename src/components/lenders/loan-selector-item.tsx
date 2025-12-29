@@ -21,7 +21,9 @@ export function LoanSelectorItem({ loan }: LoanSelectorItemProps) {
 
   const loanNumberAndBadge = (
     <div className="flex flex-col items-start flex-shrink-0 gap-1 min-w-30">
-      <h3 className="text-lg font-medium">#{loan.loanNumber}</h3>
+      <h3 className="text-lg font-medium">
+        {tLoan('table.loanNumberShort')} #{loan.loanNumber}
+      </h3>
       <LoanStatusBadge status={loan.status} className="mt-0.5" />
     </div>
   );

@@ -110,27 +110,10 @@ export function LoanCard({ loan, className }: LoanCardProps) {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="flex gap-2 justify-end mb-4">
-        <Button variant="outline" size="sm" onClick={() => router.push(`/loans/${loan.id}/edit`)}>
-          <Pencil className="h-4 w-4 mr-2" />
-          {commonT('ui.actions.edit')}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleDeleteClick}
-          className="text-destructive hover:text-destructive/90 border-destructive/50 hover:bg-destructive/5"
-        >
-          <Trash2 className="h-4 w-4 mr-2" />
-          {commonT('ui.actions.delete')}
-        </Button>
-      </div>
-
       <SectionCard
         className={className}
-        icon={<Wallet className="h-4 w-4 text-muted-foreground" />}
         title={
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div className="flex flex-row items-start justify-between w-full">
             <div className="space-y-1">
               <h3 className="text-lg font-semibold">
                 {t('table.loanNumberShort')} #{loan.loanNumber}
@@ -139,6 +122,26 @@ export function LoanCard({ loan, className }: LoanCardProps) {
                 <LoanContractStatusBadge loan={loan} />
                 <LoanStatusBadge status={loan.status} />
               </div>
+            </div>
+            <div className="flex gap-2 ml-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 w-9 p-0 md:h-auto md:w-auto md:px-3 md:py-1.5"
+                onClick={() => router.push(`/loans/${loan.id}/edit`)}
+              >
+                <Pencil className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">{commonT('ui.actions.edit')}</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDeleteClick}
+                className="h-9 w-9 p-0 md:h-auto md:w-auto md:px-3 md:py-1.5 text-destructive hover:text-destructive/90 border-destructive/50 hover:bg-destructive/5"
+              >
+                <Trash2 className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">{commonT('ui.actions.delete')}</span>
+              </Button>
             </div>
           </div>
         }

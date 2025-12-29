@@ -243,7 +243,7 @@ export default function LendersPage() {
         showFilter={true}
         onRowClick={(row) => router.push(`/lenders/${row.id}`)}
         actions={(row) => (
-          <div className="flex items-center justify-end space-x-2">
+          <div className="flex items-center space-x-2">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>

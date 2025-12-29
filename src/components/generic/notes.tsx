@@ -4,7 +4,7 @@ import type { Note } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
-import { FileText, Lock, Plus, Trash2, Unlock } from 'lucide-react';
+import { FileText, Lock, Pencil, Plus, Trash2, Unlock } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -33,6 +33,9 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
   const locale = useLocale();
   const dateLocale = locale === 'de' ? de : enUS;
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<
+    (Note & { createdBy: { id: string; name: string | null } }) | undefined
+  >(undefined);
   const [isConfirmOpen, setIsConfirmOpen] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
@@ -56,7 +59,7 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
           {notes.map((note) => (
             <div
               key={note.id}
-              className="relative group rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow duration-200 break-inside-avoid mb-6 flex flex-col"
+              className="relative group rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow duration-200 break-inside-avoid mb-6 flex flex-col min-h-[150px]"
               style={{
                 backgroundColor: note.public ? 'hsl(48, 100%, 96%)' : 'hsl(210, 100%, 96%)',
                 border: '1px solid rgba(0,0,0,0.05)',
@@ -69,16 +72,32 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
                 <div className="flex-1 min-w-0">
                   <div className="text-sm whitespace-pre-line">{note.text}</div>
                 </div>
+              </div>
+
+              <div className="absolute top-2 right-2 flex space-x-1 z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2"
+                  className="h-8 w-8 bg-background/50 hover:bg-background shadow-xs"
+                  onClick={() => {
+                    setEditingNote(note);
+                    setIsNoteDialogOpen(true);
+                  }}
+                >
+                  <Pencil className="h-4 w-4" />
+                  <span className="sr-only">{commonT('ui.actions.edit')}</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 bg-background/50 hover:bg-background shadow-xs"
                   onClick={() => setIsConfirmOpen(note.id)}
                 >
                   <Trash2 className="h-4 w-4 text-destructive" />
                   <span className="sr-only">{commonT('ui.actions.delete')}</span>
                 </Button>
               </div>
+
               <div className="flex items-center justify-end space-x-2 mt-auto pt-2">
                 {note.loanId && loans && (
                   <div className="flex items-center text-xs text-muted-foreground mr-auto">
@@ -118,7 +137,10 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
           <Button
             variant="outline"
             className="w-full break-inside-avoid flex flex-col items-center justify-center p-6 border-dashed min-h-[150px]"
-            onClick={() => setIsNoteDialogOpen(true)}
+            onClick={() => {
+              setEditingNote(undefined);
+              setIsNoteDialogOpen(true);
+            }}
           >
             <Plus className="h-8 w-8 mb-2" />
             <span className="text-sm">{t('add')}</span>
@@ -132,6 +154,7 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
         loans={loans}
         open={isNoteDialogOpen}
         onOpenChange={setIsNoteDialogOpen}
+        note={editingNote}
       />
     </>
   );
