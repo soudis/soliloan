@@ -15,6 +15,7 @@ import { ConfigurationFormGeneral } from './configuration-form-general';
 import { updateConfigurationAction } from '@/actions/projects/mutations/update-project-configuration';
 import { convertEmptyToNull } from '@/lib/utils/form';
 import { useProjects } from '@/store/projects-store';
+import { FileText, Files as FilesIcon, Settings2, User, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfigurationFormLender } from './configuration-form-lender';
 import { ConfigurationFormLoans } from './configuration-form-loans';
@@ -72,17 +73,30 @@ export const ConfigurationPage = ({ project }: Props) => {
 
   return (
     <Tabs value={activeTab} onValueChange={(value) => setActiveTab(project.id, value as ConfigurationTabValue)}>
-      <TabsList className="mt-2">
-        <div className="mb-4 mr-10">
-          <h1 className="text-3xl font-bold whitespace-nowrap">{project.name}</h1>
-        </div>
-        <div className="flex flex-row gap-4 overflow-x-auto">
-          <TabsTrigger value="general">{t('tabs.general')}</TabsTrigger>
-          <TabsTrigger value="lender">{t('tabs.lender')}</TabsTrigger>
-          <TabsTrigger value="loans">{t('tabs.loans')}</TabsTrigger>
-          <TabsTrigger value="templates">{t('tabs.templates')}</TabsTrigger>
-          <TabsTrigger value="files">{t('tabs.files')}</TabsTrigger>
-        </div>
+      <div className="mb-6 mr-10">
+        <h1 className="text-3xl font-bold whitespace-nowrap">{project.name}</h1>
+      </div>
+      <TabsList variant="modern">
+        <TabsTrigger value="general" variant="modern">
+          <Settings2 className="h-5 w-5 md:h-4 md:w-4" />
+          <span>{t('tabs.general')}</span>
+        </TabsTrigger>
+        <TabsTrigger value="lender" variant="modern">
+          <User className="h-5 w-5 md:h-4 md:w-4" />
+          <span>{t('tabs.lender')}</span>
+        </TabsTrigger>
+        <TabsTrigger value="loans" variant="modern">
+          <Wallet className="h-5 w-5 md:h-4 md:w-4" />
+          <span>{t('tabs.loans')}</span>
+        </TabsTrigger>
+        <TabsTrigger value="templates" variant="modern">
+          <FileText className="h-5 w-5 md:h-4 md:w-4" />
+          <span>{t('tabs.templates')}</span>
+        </TabsTrigger>
+        <TabsTrigger value="files" variant="modern">
+          <FilesIcon className="h-5 w-5 md:h-4 md:w-4" />
+          <span>{t('tabs.files')}</span>
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="general">
         <ConfigurationFormGeneral

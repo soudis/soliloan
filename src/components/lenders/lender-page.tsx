@@ -57,18 +57,12 @@ export const LenderPage = ({ lender }: Props) => {
         </p>
       </div>
 
-      <TabsList className="w-full justify-between md:justify-start h-auto p-1 bg-muted rounded-xl">
-        <TabsTrigger
-          value="lender"
-          className="flex-1 md:flex-none flex flex-col md:flex-row gap-1 md:gap-2 items-center justify-center py-2 md:px-4 rounded-lg text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all hover:text-foreground"
-        >
+      <TabsList variant="modern">
+        <TabsTrigger value="lender" variant="modern">
           <User className="h-5 w-5 md:h-4 md:w-4" />
-          <span className="text-[10px] md:text-base font-medium">{t('tabs.lender')}</span>
+          <span>{t('tabs.lender')}</span>
         </TabsTrigger>
-        <TabsTrigger
-          value="loans"
-          className="flex-1 md:flex-none flex flex-col md:flex-row gap-1 md:gap-2 items-center justify-center py-2 md:px-4 rounded-lg text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all hover:text-foreground relative"
-        >
+        <TabsTrigger value="loans" variant="modern">
           <div className="relative">
             <Wallet className="h-5 w-5 md:h-4 md:w-4" />
             {lender.loans && lender.loans.length > 0 && (
@@ -77,17 +71,14 @@ export const LenderPage = ({ lender }: Props) => {
               </span>
             )}
           </div>
-          <span className="text-[10px] md:text-base font-medium">{t('tabs.loans')}</span>
+          <span>{t('tabs.loans')}</span>
           {lender.loans && lender.loans.length > 0 && (
             <Badge variant="secondary" className="ml-2 hidden md:inline-flex h-5 px-1.5">
               {lender.loans.length}
             </Badge>
           )}
         </TabsTrigger>
-        <TabsTrigger
-          value="files"
-          className="flex-1 md:flex-none flex flex-col md:flex-row gap-1 md:gap-2 items-center justify-center py-2 md:px-4 rounded-lg text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all hover:text-foreground relative"
-        >
+        <TabsTrigger value="files" variant="modern">
           <div className="relative">
             <FilesIcon className="h-5 w-5 md:h-4 md:w-4" />
             {lender.files && lender.files.length > 0 && (
@@ -96,17 +87,14 @@ export const LenderPage = ({ lender }: Props) => {
               </span>
             )}
           </div>
-          <span className="text-[10px] md:text-base font-medium">{t('tabs.files')}</span>
+          <span>{t('tabs.files')}</span>
           {lender.files && lender.files.length > 0 && (
             <Badge variant="secondary" className="ml-2 hidden md:inline-flex h-5 px-1.5">
               {lender.files.length}
             </Badge>
           )}
         </TabsTrigger>
-        <TabsTrigger
-          value="notes"
-          className="flex-1 md:flex-none flex flex-col md:flex-row gap-1 md:gap-2 items-center justify-center py-2 md:px-4 rounded-lg text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all hover:text-foreground relative"
-        >
+        <TabsTrigger value="notes" variant="modern">
           <div className="relative">
             <NotebookPen className="h-5 w-5 md:h-4 md:w-4" />
             {lender.notes && lender.notes.length > 0 && (
@@ -115,7 +103,7 @@ export const LenderPage = ({ lender }: Props) => {
               </span>
             )}
           </div>
-          <span className="text-[10px] md:text-base font-medium">{t('tabs.notes')}</span>
+          <span>{t('tabs.notes')}</span>
           {lender.notes && lender.notes.length > 0 && (
             <Badge variant="secondary" className="ml-2 hidden md:inline-flex h-5 px-1.5">
               {lender.notes.length}

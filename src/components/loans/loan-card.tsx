@@ -201,25 +201,16 @@ export function LoanCard({ loan, className }: LoanCardProps) {
           onValueChange={(value) => setActiveTab(loan.id, value as 'transactions' | 'files' | 'notes' | 'bookings')}
           className="mt-6"
         >
-          <TabsList className="w-full h-auto p-1 bg-muted rounded-xl md:mt-4 flex md:justify-start gap-1">
-            <TabsTrigger
-              value="transactions"
-              className="flex-1 md:flex-none flex flex-col md:flex-row gap-1 md:gap-2 items-center justify-center py-2 md:px-4 rounded-lg text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all hover:text-foreground"
-            >
+          <TabsList variant="modern" className="md:mt-4">
+            <TabsTrigger value="transactions" variant="modern" size="sm">
               <ArrowRightLeft className="h-5 w-5 md:h-4 md:w-4" />
-              <span className="text-[10px] md:text-sm font-medium">{t('table.transactions')}</span>
+              <span>{t('table.transactions')}</span>
             </TabsTrigger>
-            <TabsTrigger
-              value="bookings"
-              className="flex-1 md:flex-none flex flex-col md:flex-row gap-1 md:gap-2 items-center justify-center py-2 md:px-4 rounded-lg text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all hover:text-foreground"
-            >
+            <TabsTrigger value="bookings" variant="modern" size="sm">
               <Receipt className="h-5 w-5 md:h-4 md:w-4" />
-              <span className="text-[10px] md:text-sm font-medium">{t('table.bookings')}</span>
+              <span>{t('table.bookings')}</span>
             </TabsTrigger>
-            <TabsTrigger
-              value="files"
-              className="flex-1 md:flex-none flex flex-col md:flex-row gap-1 md:gap-2 items-center justify-center py-2 md:px-4 rounded-lg text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all hover:text-foreground relative"
-            >
+            <TabsTrigger value="files" variant="modern" size="sm">
               <div className="relative">
                 <FilesIcon className="h-5 w-5 md:h-4 md:w-4" />
                 {loan.files && loan.files.length > 0 && (
@@ -228,17 +219,14 @@ export function LoanCard({ loan, className }: LoanCardProps) {
                   </span>
                 )}
               </div>
-              <span className="text-[10px] md:text-sm font-medium">{t('table.files')}</span>
+              <span>{t('table.files')}</span>
               {loan.files && loan.files.length > 0 && (
                 <Badge variant="secondary" className="ml-2 hidden md:inline-flex h-5 px-1.5">
                   {loan.files.length}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger
-              value="notes"
-              className="flex-1 md:flex-none flex flex-col md:flex-row gap-1 md:gap-2 items-center justify-center py-2 md:px-4 rounded-lg text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all hover:text-foreground relative"
-            >
+            <TabsTrigger value="notes" variant="modern" size="sm">
               <div className="relative">
                 <NotebookPen className="h-5 w-5 md:h-4 md:w-4" />
                 {loan.notes && loan.notes.length > 0 && (
@@ -247,7 +235,7 @@ export function LoanCard({ loan, className }: LoanCardProps) {
                   </span>
                 )}
               </div>
-              <span className="text-[10px] md:text-sm font-medium">{t('table.notes')}</span>
+              <span>{t('table.notes')}</span>
               {loan.notes && loan.notes.length > 0 && (
                 <Badge variant="secondary" className="ml-2 hidden md:inline-flex h-5 px-1.5">
                   {loan.notes.length}
