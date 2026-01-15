@@ -2,6 +2,10 @@
   "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
   "unauthorized": "Nicht autorisiert.",
   "invalidParameters": "Ungültige Parameter.",
+  "accessOnlyForAdministators": {
+    "title": "Zugriff verweigert",
+    "message": "Nur Administratoren haben Zugriff auf diese Seite."
+  },
   "project": {
     "notFound": "Projekt nicht gefunden.",
     "updateFailed": "Fehler beim Aktualisieren der Projekt-Konfiguration."

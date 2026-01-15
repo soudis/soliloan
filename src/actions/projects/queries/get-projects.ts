@@ -20,6 +20,7 @@ async function getProjects(userId?: string) {
       },
     }),
     include: {
+      managers: true,
       configuration: {
         include: {
           loanTemplates: true,

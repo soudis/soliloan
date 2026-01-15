@@ -1,4 +1,3 @@
-import type { Lender, Loan } from '@prisma/client';
 import type { ColumnDef, Row, VisibilityState } from '@tanstack/react-table';
 
 import { Badge } from '@/components/ui/badge';

@@ -41,7 +41,7 @@ export async function updateConfiguration(projectId: string, data: Configuration
   const { before, after } = getChangedFields(currentConfig, configuration);
   if (Object.keys(before).length > 0) {
     await createAuditEntry(db, {
-      entity: Entity.configuration,
+      entity: Entity.project,
       operation: Operation.UPDATE,
       primaryKey: configuration.id,
       before,
