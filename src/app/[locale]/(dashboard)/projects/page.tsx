@@ -9,8 +9,8 @@ import { useState } from 'react';
 
 import { ProjectDialog } from '@/components/projects/project-dialog';
 import { Button } from '@/components/ui/button';
+import { ActionButton } from '@/components/ui/action-button';
 import { DataTable } from '@/components/ui/data-table';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRouter } from '@/i18n/navigation';
 import { createColumn, createEnumBadgeColumn, enumFilter } from '@/lib/table-column-utils';
 import { useProjects } from '@/store/projects-store';
@@ -368,27 +368,15 @@ export default function ProjectsPage() {
         }}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedProject(row);
-                      router.push('/configuration');
-                    }}
-                  >
-                    <Pencil className="h-4 w-4" />
-                    <span className="sr-only">{commonT('ui.actions.edit')}</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{commonT('ui.actions.edit')}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <ActionButton
+              icon={<Pencil className="h-4 w-4" />}
+              tooltip={commonT('ui.actions.edit')}
+              srOnly={commonT('ui.actions.edit')}
+              onClick={() => {
+                setSelectedProject(row);
+                router.push('/configuration');
+              }}
+            />
           </div>
         )}
       />

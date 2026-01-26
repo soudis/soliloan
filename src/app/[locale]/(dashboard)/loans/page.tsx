@@ -7,6 +7,7 @@ import { Pencil, Plus } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { getLoansByProjectAction } from '@/actions';
+import { ActionButton } from '@/components/ui/action-button';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { useRouter } from '@/i18n/navigation';
@@ -286,18 +287,15 @@ export default function LoansPage() {
         showFilter={true}
         onRowClick={(row) => router.push(`/lenders/${row.lender.id}?loanId=${row.id}`)}
         actions={(row) => (
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
+          <div className="flex items-center justify-end space-x-2">
+            <ActionButton
+              icon={<Pencil className="h-4 w-4" />}
+              tooltip={commonT('ui.actions.edit')}
+              srOnly={commonT('ui.actions.edit')}
+              onClick={() => {
                 router.push(`/loans/${row.id}/edit`);
               }}
-            >
-              <Pencil className="h-4 w-4" />
-              <span className="sr-only">{commonT('ui.actions.edit')}</span>
-            </Button>
+            />
           </div>
         )}
       />

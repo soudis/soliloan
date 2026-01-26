@@ -7,9 +7,9 @@ import { Pencil, Plus } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { getLendersByProjectAction } from '@/actions/lenders';
+import { ActionButton } from '@/components/ui/action-button';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRouter } from '@/i18n/navigation';
 import {
   createAdditionalFieldDefaultColumnVisibility,
@@ -243,47 +243,23 @@ export default function LendersPage() {
         showFilter={true}
         onRowClick={(row) => router.push(`/lenders/${row.id}`)}
         actions={(row) => (
-          <div className="flex items-center space-x-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/loans/new?lenderId=${row.id}`);
-                    }}
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span className="sr-only">{commonT('ui.actions.createLoan')}</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{commonT('ui.actions.createLoan')}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/lenders/${row.id}/edit`);
-                    }}
-                  >
-                    <Pencil className="h-4 w-4" />
-                    <span className="sr-only">{commonT('ui.actions.edit')}</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{commonT('ui.actions.edit')}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+          <div className="flex items-center justify-end space-x-2">
+            <ActionButton
+              icon={<Plus className="h-4 w-4" />}
+              tooltip={commonT('ui.actions.createLoan')}
+              srOnly={commonT('ui.actions.createLoan')}
+              onClick={() => {
+                router.push(`/loans/new?lenderId=${row.id}`);
+              }}
+            />
+            <ActionButton
+              icon={<Pencil className="h-4 w-4" />}
+              tooltip={commonT('ui.actions.edit')}
+              srOnly={commonT('ui.actions.edit')}
+              onClick={() => {
+                router.push(`/lenders/${row.id}/edit`);
+              }}
+            />
           </div>
         )}
       />
