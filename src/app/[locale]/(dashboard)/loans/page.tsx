@@ -291,7 +291,6 @@ export default function LoansPage() {
             <ActionButton
               icon={<Pencil className="h-4 w-4" />}
               tooltip={commonT('ui.actions.edit')}
-              srOnly={commonT('ui.actions.edit')}
               onClick={() => {
                 router.push(`/loans/${row.id}/edit`);
               }}

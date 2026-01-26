@@ -8,8 +8,8 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { ProjectDialog } from '@/components/projects/project-dialog';
-import { Button } from '@/components/ui/button';
 import { ActionButton } from '@/components/ui/action-button';
+import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { useRouter } from '@/i18n/navigation';
 import { createColumn, createEnumBadgeColumn, enumFilter } from '@/lib/table-column-utils';
@@ -371,7 +371,6 @@ export default function ProjectsPage() {
             <ActionButton
               icon={<Pencil className="h-4 w-4" />}
               tooltip={commonT('ui.actions.edit')}
-              srOnly={commonT('ui.actions.edit')}
               onClick={() => {
                 setSelectedProject(row);
                 router.push('/configuration');
