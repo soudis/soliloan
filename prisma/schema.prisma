@@ -215,7 +215,7 @@ enum Operation {
 }
 
 enum Entity {
-  configuration
+  project
   lender
   loan
   transaction
@@ -272,6 +272,7 @@ enum ViewType {
   LENDER
   LOAN
   LOGBOOK
+  PROJECT
 }
 
 enum TerminationType {
