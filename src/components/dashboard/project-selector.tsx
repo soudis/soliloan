@@ -55,7 +55,7 @@ export default function ProjectSelector() {
           <div className="flex items-center gap-3 min-w-0 text-left">
             <ProjectLogo project={selectedProject} className="h-16 w-16 rounded-2xl shadow-sm shrink-0" />
             <span className="font-bold text-lg leading-tight whitespace-normal break-words pb-2">
-              {selectedProject?.name || t('selectProject')}
+              {selectedProject?.configuration.name || t('selectProject')}
             </span>
           </div>
           <div className="absolute bottom-2 right-2">
@@ -67,7 +67,7 @@ export default function ProjectSelector() {
             <SelectItem key={project.id} value={project.id}>
               <div className="flex items-center gap-3">
                 <ProjectLogo project={project} className="h-6 w-6 rounded-md" />
-                <span className="font-medium">{project.name}</span>
+                <span className="font-medium">{project.configuration.name}</span>
               </div>
             </SelectItem>
           ))}

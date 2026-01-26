@@ -31,7 +31,9 @@ async function getProjects(userId?: string) {
       },
     },
     orderBy: {
-      name: 'asc',
+      configuration: {
+        name: 'asc',
+      },
     },
   });
 

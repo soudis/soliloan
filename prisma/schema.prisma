@@ -109,7 +109,6 @@ model Configuration {
 model Project {
   id              String         @id @default(cuid())
   slug            String         @unique
-  name            String
   configurationId String         @unique
   changes         Change[]
   lenders         Lender[]

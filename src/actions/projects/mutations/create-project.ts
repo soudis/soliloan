@@ -24,7 +24,6 @@ async function createProject(data: ProjectFormData, session: Session) {
   const project = await db.project.create({
     data: {
       slug,
-      name: data.name,
       configuration: {
         create: {
           name: data.name,

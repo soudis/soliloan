@@ -30,7 +30,6 @@ async function main() {
         await prisma.project.create({
           data: {
             slug: 'dev-gmbh',
-            name: 'Development GmbH',
             configuration: {
               create: {
                 interestMethod: 'E30_360_COMPOUND',
