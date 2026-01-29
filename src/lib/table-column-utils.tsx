@@ -48,6 +48,7 @@ export function createColumn<T>(config: ColumnConfig<T>, t: (key: string) => str
     ...config,
     header: ({ column }) =>
       config.header ? <DataTableColumnHeader column={column} title={t(config.header)} /> : undefined,
+    filterFn: config.filterFn || 'includesString',
     sortingFn:
       config.sortingFn ||
       ((rowA, rowB, columnId) => {
