@@ -17,18 +17,23 @@ interface DataTableColumnFiltersProps {
   viewType: ViewType;
 }
 
+function isEmptyFilterValue(value: unknown): boolean {
+  return value === '' || value == null || (Array.isArray(value) && value.every((v) => v === '' || v == null));
+}
+
 export function DataTableColumnFilters({ columnFilters, state, viewType }: DataTableColumnFiltersProps) {
   const { setState } = useTableStore();
 
   const handleFilterChange = (columnId: string, value: unknown) => {
+    const currentFilters = state.columnFilters ?? [];
+    const filters = currentFilters.filter((filter) => filter.id !== columnId);
+
+    if (!isEmptyFilterValue(value)) {
+      filters.push({ id: columnId, value });
+    }
+
     setState(viewType, {
-      columnFilters: [
-        ...(state.columnFilters ?? []).filter((filter) => filter.id !== columnId),
-        {
-          id: columnId,
-          value,
-        },
-      ],
+      columnFilters: filters,
     });
   };
 
