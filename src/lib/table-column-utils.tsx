@@ -204,7 +204,15 @@ export function createEnumBadgeColumn<T>(
       sortingFn: (rowA, rowB, columnId) => {
         const a = rowA.getValue(columnId) as string;
         const b = rowB.getValue(columnId) as string;
-        return a.localeCompare(b);
+
+        if (!a && !b) return 0;
+        if (!a) return 1;
+        if (!b) return -1;
+
+        const aLocal = commonT(`${enumPrefix}.${a}`);
+        const bLocal = commonT(`${enumPrefix}.${b}`);
+
+        return aLocal.localeCompare(bLocal);
       },
     },
     t,
