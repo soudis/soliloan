@@ -29,6 +29,12 @@ export function enumFilter<T>(row: Row<T>, columnId: string, filterValue: unknow
 // Define the custom filter function type
 export type FilterFn = 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'compoundText' | 'numberRange' | 'enum';
 
+// Convert accessorKey to column ID by replacing dots with underscores
+// Without this TanStack would change the the column id internally and accessing with accessorKey would not work.
+export function accessorKeyToColumnId(accessorKey: string): string {
+  return accessorKey.replaceAll('.', '_');
+}
+
 type ColumnConfig<T> = ColumnDef<T> & {
   accessorKey: string;
   header?: string | undefined;
@@ -173,12 +179,14 @@ export function createEnumBadgeColumn<T>(
   commonT: (key: string) => string,
   getBadgeVariant?: (value: string) => 'default' | 'secondary' | 'destructive' | 'outline',
 ): ColumnDef<T> {
+  const columnId = accessorKeyToColumnId(accessorKey);
   return createColumn<T>(
     {
       accessorKey,
+      id: columnId,
       header: headerKey,
       cell: ({ row }) => {
-        const value = row.getValue(accessorKey) as string;
+        const value = row.getValue(columnId) as string;
         if (!value) return '';
 
         const enumText = commonT(`${enumPrefix}.${value}`);

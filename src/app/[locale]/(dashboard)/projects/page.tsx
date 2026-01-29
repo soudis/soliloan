@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRouter } from '@/i18n/navigation';
-import { createColumn, createCountryColumn, createEnumBadgeColumn, enumFilter } from '@/lib/table-column-utils';
+import { createColumn, createEnumBadgeColumn, enumFilter } from '@/lib/table-column-utils';
 import { useProjects } from '@/store/projects-store';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
@@ -161,7 +161,15 @@ export default function ProjectsPage() {
     ),
 
     // Configuration Enum Fields - Country
-    createCountryColumn<ProjectWithConfiguration>('configuration.country', 'country', configT, commonT),
+    createEnumBadgeColumn<ProjectWithConfiguration>(
+      'configuration.country',
+      'country',
+      'countries',
+      configT,
+      (countryCode) => {
+        return commonT(`${countryCode.toLowerCase()}`);
+      },
+    ),
 
     createEnumBadgeColumn<ProjectWithConfiguration>(
       'configuration.userLanguage',
@@ -188,7 +196,15 @@ export default function ProjectsPage() {
     ),
 
     // Configuration Enum Fields - Lender Country
-    createCountryColumn<ProjectWithConfiguration>('configuration.lenderCountry', 'lenderCountry', configT, commonT),
+    createEnumBadgeColumn<ProjectWithConfiguration>(
+      'configuration.lenderCountry',
+      'lenderCountry',
+      'countries',
+      configT,
+      (countryCode) => {
+        return commonT(`${countryCode.toLowerCase()}`);
+      },
+    ),
 
     createEnumBadgeColumn<ProjectWithConfiguration>(
       'configuration.interestMethod',
