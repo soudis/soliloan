@@ -33,6 +33,8 @@
   "project": {
     "created": "Ein Projekt wurde erstellt",
     "updated": "Ein Projekt wurde aktualisiert",
-    "deleted": "Ein Projekt wurde gelöscht"
+    "deleted": "Ein Projekt wurde gelöscht",
+    "managerAdded": "Ein Projektmanager {email} wurde hinzugefügt",
+    "managerRemoved": "Ein Projektmanager {email} wurde entfernt"
   }
 }

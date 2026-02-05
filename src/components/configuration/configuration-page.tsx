@@ -1,6 +1,6 @@
 'use client';
 
-import { Files as FilesIcon, FileText, Settings2, Users, Wallet } from 'lucide-react';
+import { Files as FilesIcon, FileText, Settings2, User, UserCog, Wallet } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
@@ -15,16 +15,17 @@ import { ConfigurationFormGeneral } from './configuration-form-general';
 
 import { ConfigurationFormLender } from './configuration-form-lender';
 import { ConfigurationFormLoans } from './configuration-form-loans';
-import { ProjectTemplatesTab } from './project-templates-tab';
 import { ConfigurationFormManagers } from './configuration-form-managers';
+import { ProjectTemplatesTab } from './project-templates-tab';
 
 export type ConfigurationTabValue = 'general' | 'lender' | 'loans' | 'templates' | 'files';
 
 type Props = {
   project: ProjectWithConfiguration;
+  inviteValidDays: number;
 };
 
-export const ConfigurationPage = ({ project }: Props) => {
+export const ConfigurationPage = ({ project, inviteValidDays }: Props) => {
   const t = useTranslations('dashboard.configuration');
   const [activeTab, setActiveTab] = useQueryState(
     'tab',
@@ -62,7 +63,7 @@ export const ConfigurationPage = ({ project }: Props) => {
           <span>{t('tabs.general')}</span>
         </TabsTrigger>
         <TabsTrigger value="managers" variant="modern">
-          <Users className="h-5 w-5 md:h-4 md:w-4" />
+          <UserCog className="h-5 w-5 md:h-4 md:w-4" />
           <span>{t('tabs.managers')}</span>
         </TabsTrigger>
         <TabsTrigger value="lender" variant="modern">
@@ -91,7 +92,7 @@ export const ConfigurationPage = ({ project }: Props) => {
         />
       </TabsContent>
       <TabsContent value="managers">
-        <ConfigurationFormManagers project={project} />
+        <ConfigurationFormManagers project={project} inviteValidDays={inviteValidDays} />
       </TabsContent>
       <TabsContent value="lender">
         <ConfigurationFormLender

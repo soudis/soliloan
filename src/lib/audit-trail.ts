@@ -35,6 +35,12 @@ export interface AuditContext {
   file?: {
     name: string;
   };
+  manager?: {
+    id: string;
+    email: string | null;
+    name: string;
+  };
+  managerAction?: 'added' | 'removed';
 }
 
 export async function createAuditEntry(
@@ -119,6 +125,20 @@ export function getFileContext(file: File): Partial<AuditContext> {
   return {
     file: {
       name: file.name,
+    },
+  };
+}
+
+export function getManagerContext(manager: {
+  id: string;
+  email: string | null;
+  name?: string | null;
+}): Partial<AuditContext> {
+  return {
+    manager: {
+      id: manager.id,
+      email: manager.email,
+      name: manager.name ?? '',
     },
   };
 }
