@@ -15,7 +15,6 @@ import { ConfigurationFormGeneral } from './configuration-form-general';
 
 import { ConfigurationFormLender } from './configuration-form-lender';
 import { ConfigurationFormLoans } from './configuration-form-loans';
-import { ConfigurationFormManagers } from './configuration-form-managers';
 import { ProjectTemplatesTab } from './project-templates-tab';
 
 export type ConfigurationTabValue = 'general' | 'lender' | 'loans' | 'templates' | 'files';

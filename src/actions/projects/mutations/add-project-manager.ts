@@ -14,10 +14,10 @@ export const addProjectManagerAction = projectAction
   .inputSchema(
     z.object({
       projectId: z.string(),
-      email: z.email(),
+      email: z.string().email(),
     }),
   )
-  .action(async ({ parsedInput }) => {
+  .action(async ({ ctx, parsedInput }) => {
     const { projectId, email } = parsedInput;
     const normalizedEmail = email.trim().toLowerCase();
 

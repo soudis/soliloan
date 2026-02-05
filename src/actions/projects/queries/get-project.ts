@@ -15,6 +15,7 @@ export async function getProjectUnsafe(projectId: string): Promise<ProjectWithCo
       id: projectId,
     },
     include: {
+      managers: true,
       configuration: {
         include: {
           loanTemplates: true,
@@ -40,7 +41,7 @@ export async function getProjectUnsafe(projectId: string): Promise<ProjectWithCo
     throw new Error('error.project.notFound');
   }
 
-  return {
+  const projectWithConfiguration: ProjectWithConfiguration = {
     ...omit(project, ['lenders']),
     hasHistoricTransactions: project.lenders.some((lender) =>
       lender.loans.some(
