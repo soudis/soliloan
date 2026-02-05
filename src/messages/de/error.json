@@ -12,7 +12,9 @@
   },
   "configuration": {
     "notFound": "Konfiguration nicht gefunden.",
-    "managerAlreadyAdded": "Diese Person ist bereits Verwalter*in des Projekts."
+    "managerAlreadyAdded": "Diese Person ist bereits Verwalter*in des Projekts.",
+    "cannotRemoveLastManager": "Es muss mindestens eine Verwalter*in im Projekt bleiben.",
+    "managerNotFound": "Die ausgewählte Verwalter*in gehört nicht zu diesem Projekt."
   },
   "lender": {
     "notFound": "Kreditgeber*in nicht gefunden."

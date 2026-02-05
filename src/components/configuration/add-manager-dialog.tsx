@@ -1,31 +1,28 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { toast } from 'sonner';
+import { z } from 'zod';
 
 import { addProjectManagerAction } from '@/actions/projects';
 import { FormField } from '@/components/form/form-field';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
-import { useAction } from 'next-safe-action/hooks';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAction } from 'next-safe-action/hooks';
 
 const addManagerFormSchema = z.object({
-  email: z
-    .string()
-    .min(1, { message: 'validation.common.required' })
-    .email({ message: 'validation.common.email' }),
+  email: z.string().min(1, { message: 'validation.common.required' }).email({ message: 'validation.common.email' }),
 });
 
 type AddManagerFormData = z.infer<typeof addManagerFormSchema>;
 
 const defaultValues: AddManagerFormData = {
-  email: null as unknown as string,
+  email: '',
 };
 
 interface AddManagerDialogProps {
@@ -62,7 +59,7 @@ export function AddManagerDialog({ open, onOpenChange, projectId, onManagerAdded
       return;
     }
     if (result?.data?.project) {
-      toast.success(t('form.addManagerSuccess'));
+      toast.success(t('managers.addManagerSuccess'));
       await queryClient.invalidateQueries({ queryKey: ['projects'] });
       onManagerAdded?.();
       onOpenChange(false);
@@ -74,22 +71,24 @@ export function AddManagerDialog({ open, onOpenChange, projectId, onManagerAdded
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('form.addManagerDialogTitle')}</DialogTitle>
+          <DialogTitle>{t('managers.addManagerDialogTitle')}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <FormField
-              name="email"
-              label={t('form.addManagerDialogEmailLabel')}
-              placeholder={t('form.addManagerDialogEmailPlaceholder')}
-              required
-            />
+            <div className="mt-4">
+              <FormField
+                name="email"
+                label={t('managers.addManagerDialogEmailLabel')}
+                placeholder={t('managers.addManagerDialogEmailPlaceholder')}
+                required
+              />
+            </div>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 {commonT('ui.actions.cancel')}
               </Button>
               <Button type="submit" disabled={isExecuting}>
-                {t('form.addManagerSubmit')}
+                {t('managers.addManagerSubmit')}
               </Button>
             </div>
           </form>

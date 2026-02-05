@@ -16,7 +16,6 @@ services:
       - traefik.http.routers.cfe-${DOCKER_IMAGE_TAG:?}.rule=Host(`soliloan.localhost`)
     environment:
       - NODE_ENV=development
-      - AUTH_URL=https://soliloan.localhost
       - DATABASE_URL=${DATABASE_URL:?}
       # File Watching Optimierung für Docker auf Mac
       - WATCHPACK_POLLING=true
