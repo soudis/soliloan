@@ -1,6 +1,6 @@
 'use client';
 
-import { Files as FilesIcon, FileText, Settings2, User, Wallet } from 'lucide-react';
+import { Files as FilesIcon, FileText, Settings2, Users, Wallet } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
@@ -12,9 +12,11 @@ import { convertEmptyToNull } from '@/lib/utils/form';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ConfigurationFormGeneral } from './configuration-form-general';
+
 import { ConfigurationFormLender } from './configuration-form-lender';
 import { ConfigurationFormLoans } from './configuration-form-loans';
 import { ProjectTemplatesTab } from './project-templates-tab';
+import { ConfigurationFormManagers } from './configuration-form-managers';
 
 export type ConfigurationTabValue = 'general' | 'lender' | 'loans' | 'templates' | 'files';
 
@@ -59,6 +61,10 @@ export const ConfigurationPage = ({ project }: Props) => {
           <Settings2 className="h-5 w-5 md:h-4 md:w-4" />
           <span>{t('tabs.general')}</span>
         </TabsTrigger>
+        <TabsTrigger value="managers" variant="modern">
+          <Users className="h-5 w-5 md:h-4 md:w-4" />
+          <span>{t('tabs.managers')}</span>
+        </TabsTrigger>
         <TabsTrigger value="lender" variant="modern">
           <User className="h-5 w-5 md:h-4 md:w-4" />
           <span>{t('tabs.lender')}</span>
@@ -83,6 +89,9 @@ export const ConfigurationPage = ({ project }: Props) => {
           isLoading={isExecuting}
           error={error}
         />
+      </TabsContent>
+      <TabsContent value="managers">
+        <ConfigurationFormManagers project={project} />
       </TabsContent>
       <TabsContent value="lender">
         <ConfigurationFormLender

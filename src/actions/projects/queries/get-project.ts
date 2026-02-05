@@ -2,18 +2,20 @@
 
 import { omit } from 'lodash';
 import moment from 'moment';
+import type { ProjectWithConfiguration } from '@/types/projects';
 import { db } from '@/lib/db';
 import { projectIdSchema } from '@/lib/schemas/common';
 import { parseAdditionalFieldConfig } from '@/lib/utils/additional-fields';
 import { projectAction } from '@/lib/utils/safe-action';
 
-export async function getProjectUnsafe(projectId: string) {
+export async function getProjectUnsafe(projectId: string): Promise<{ project: ProjectWithConfiguration }> {
   // Fetch the project
   const project = await db.project.findUnique({
     where: {
       id: projectId,
     },
     include: {
+      managers: true,
       configuration: {
         include: {
           loanTemplates: true,
@@ -40,21 +42,20 @@ export async function getProjectUnsafe(projectId: string) {
     throw new Error('error.project.notFound');
   }
 
-  return {
-    project: {
-      ...omit(project, ['lenders']),
-      hasHistoricTransactions: project.lenders.some((lender) =>
-        lender.loans.some(
-          (loan) => loan.transactions.filter((t) => moment(t.date).isBefore(moment().startOf('year'))).length > 0,
-        ),
+  const projectWithConfiguration: ProjectWithConfiguration = {
+    ...omit(project, ['lenders']),
+    hasHistoricTransactions: project.lenders.some((lender) =>
+      lender.loans.some(
+        (loan) => loan.transactions.filter((t) => moment(t.date).isBefore(moment().startOf('year'))).length > 0,
       ),
-      configuration: {
-        ...project.configuration,
-        lenderAdditionalFields: parseAdditionalFieldConfig(project.configuration.lenderAdditionalFields) ?? [],
-        loanAdditionalFields: parseAdditionalFieldConfig(project.configuration.loanAdditionalFields) ?? [],
-      },
+    ),
+    configuration: {
+      ...project.configuration,
+      lenderAdditionalFields: parseAdditionalFieldConfig(project.configuration.lenderAdditionalFields) ?? [],
+      loanAdditionalFields: parseAdditionalFieldConfig(project.configuration.loanAdditionalFields) ?? [],
     },
   };
+  return { project: projectWithConfiguration };
 }
 
 export const getProjectAction = projectAction

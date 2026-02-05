@@ -11,7 +11,8 @@
     "updateFailed": "Fehler beim Aktualisieren der Projekt-Konfiguration."
   },
   "configuration": {
-    "notFound": "Konfiguration nicht gefunden."
+    "notFound": "Konfiguration nicht gefunden.",
+    "managerAlreadyAdded": "Diese Person ist bereits Verwalter*in des Projekts."
   },
   "lender": {
     "notFound": "Kreditgeber*in nicht gefunden."
