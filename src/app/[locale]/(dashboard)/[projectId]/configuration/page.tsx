@@ -1,6 +1,7 @@
 import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
 import { ConfigurationPage } from '@/components/configuration/configuration-page';
 import { db } from '@/lib/db';
+import { getInviteValidDays } from '@/lib/env';
 
 interface PageProps {
   params: Promise<{ projectId: string }>;
@@ -20,5 +21,5 @@ export default async function ConfigPage({ params }: PageProps) {
     managers: projectWithManagers?.managers ?? [],
   };
 
-  return <ConfigurationPage project={project} />;
+  return <ConfigurationPage project={project} inviteValidDays={getInviteValidDays()} />;
 }
