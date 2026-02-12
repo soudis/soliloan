@@ -15,32 +15,32 @@
   margin: 0;
 }
 
-/* Merge Tag Pill Styling */
+/* Merge Tag Styling — inline text with {{ }} brackets */
 .merge-tag-wrapper {
   display: inline;
 }
 
 .merge-tag,
 .merge-tag-pill {
-  position: relative !important;
-  display: inline-block !important;
-  vertical-align: middle !important;
-  padding: 6px 8px !important;
-  margin: 0 2px !important;
-  background-color: #3b82f6 !important;
-  color: white !important;
-  border-radius: 4px !important;
-  font-size: 0.85em !important;
+  display: inline !important;
+  vertical-align: baseline !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background-color: transparent !important;
+  color: #6d28d9 !important;
+  border-radius: 0 !important;
+  font-size: inherit !important;
   font-weight: 500 !important;
+  font-family: inherit !important;
   white-space: nowrap !important;
   cursor: pointer !important;
-  z-index: 10 !important;
-  line-height: 1.2 !important;
+  line-height: inherit !important;
   border: none !important;
 }
 
 .merge-tag-pill:hover {
-  background-color: #2563eb;
+  color: #5b21b6 !important;
+  text-decoration: underline;
 }
 
 /* Selection styling */

@@ -4,7 +4,7 @@ import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/ge
 import { useNode } from '@craftjs/core';
 import { EditorContent } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
-import { Bold, Italic, PlusCircle, Underline as UnderlineIcon } from 'lucide-react';
+import { AlignCenter, AlignJustify, AlignLeft, AlignRight, Bold, Italic, PlusCircle, Underline as UnderlineIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { useMergeTagConfig } from '../merge-tag-context';
@@ -14,13 +14,23 @@ import { TextEditorProvider, useTextEditor } from './tiptap/text-editor-context'
 import { useTiptapEditor } from './tiptap/use-tiptap-editor';
 import './tiptap/tiptap.css';
 
+type TextAlign = 'left' | 'center' | 'right' | 'justify';
+
 interface TextProps {
   text: string;
   fontSize?: number;
   color?: string;
+  textAlign?: TextAlign;
 }
 
-export const Text = ({ text, fontSize = 16, color = '#000000' }: TextProps) => {
+const ALIGN_OPTIONS: { value: TextAlign; icon: typeof AlignLeft }[] = [
+  { value: 'left', icon: AlignLeft },
+  { value: 'center', icon: AlignCenter },
+  { value: 'right', icon: AlignRight },
+  { value: 'justify', icon: AlignJustify },
+];
+
+export const Text = ({ text, fontSize = 16, color = '#000000', textAlign = 'left' }: TextProps) => {
   const {
     connectors: { connect },
     actions: { setProp },
@@ -79,6 +89,7 @@ export const Text = ({ text, fontSize = 16, color = '#000000' }: TextProps) => {
         style={{
           fontSize: `${fontSize}px`,
           color,
+          textAlign,
         }}
         className={`relative w-full min-h-[1em] group ${selected ? 'outline-1 outline-blue-500' : ''}`}
       >
@@ -182,11 +193,13 @@ export const TextSettings = () => {
     actions: { setProp },
     fontSize,
     color,
+    textAlign,
     text,
     id,
   } = useNode((node) => ({
     fontSize: node.data.props.fontSize,
     color: node.data.props.color,
+    textAlign: (node.data.props.textAlign as TextAlign) ?? 'left',
     text: node.data.props.text,
     id: node.id,
   }));
@@ -268,6 +281,30 @@ export const TextSettings = () => {
         />
       </div>
 
+      <div className="space-y-2">
+        <label className="text-xs font-medium block">{t('textAlign')}</label>
+        <div className="flex gap-1">
+          {ALIGN_OPTIONS.map(({ value, icon: Icon }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() =>
+                setProp((props: TextProps) => {
+                  props.textAlign = value;
+                })
+              }
+              className={`flex items-center justify-center p-2 rounded-md border transition-colors ${
+                textAlign === value
+                  ? 'bg-zinc-900 text-white border-zinc-900'
+                  : 'bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400 hover:text-zinc-700'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="pt-4 border-t">
         <button
           ref={buttonRef}
@@ -309,6 +346,7 @@ Text.craft = {
     text: 'Hier Text eingeben',
     fontSize: 16,
     color: '#000000',
+    textAlign: 'left' as TextAlign,
   },
   custom: {
     useCustomDragHandle: true,

@@ -1,13 +1,19 @@
 'use client';
 
 import { useNode } from '@craftjs/core';
+import { ArrowDown, ArrowRight, Grid3X3 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
+type LayoutMode = 'vertical' | 'horizontal' | 'grid';
+
 interface ContainerProps {
   padding?: number;
   background?: string;
+  layout?: LayoutMode;
+  gap?: number;
+  gridColumns?: number;
   children?: ReactNode;
 }
 
@@ -60,11 +66,50 @@ const rgbaToString = (r: number, g: number, b: number, a: number): string => {
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 };
 
-export const Container = ({ padding = 20, background = 'transparent', children }: ContainerProps) => {
+/** Build the inline style object for the container based on layout mode */
+const buildLayoutStyle = (
+  layout: LayoutMode,
+  gap: number,
+  gridColumns: number,
+): React.CSSProperties => {
+  switch (layout) {
+    case 'horizontal':
+      return {
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: `${gap}px`,
+      };
+    case 'grid':
+      return {
+        display: 'grid',
+        gridTemplateColumns: `repeat(${gridColumns}, 1fr)`,
+        gap: `${gap}px`,
+      };
+    case 'vertical':
+    default:
+      return {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: `${gap}px`,
+      };
+  }
+};
+
+export const Container = ({
+  padding = 20,
+  background = 'transparent',
+  layout = 'vertical',
+  gap = 0,
+  gridColumns = 2,
+  children,
+}: ContainerProps) => {
   const t = useTranslations('templates.editor.components.container');
   const {
     connectors: { connect },
   } = useNode();
+
+  const layoutStyle = useMemo(() => buildLayoutStyle(layout, gap, gridColumns), [layout, gap, gridColumns]);
 
   return (
     <div
@@ -76,12 +121,13 @@ export const Container = ({ padding = 20, background = 'transparent', children }
       style={{
         padding: `${padding}px`,
         background,
+        ...layoutStyle,
       }}
       className="min-h-[50px] w-full"
     >
       {children}
       {(!children || (Array.isArray(children) && children.length === 0)) && (
-        <div className="py-12 border-2 border-dashed border-zinc-200 rounded-lg flex items-center justify-center text-zinc-400 text-sm pointer-events-none">
+        <div className="py-12 border-2 border-dashed border-zinc-200 rounded-lg flex items-center justify-center text-zinc-400 text-sm pointer-events-none w-full">
           {t('dropHere')}
         </div>
       )}
@@ -89,15 +135,58 @@ export const Container = ({ padding = 20, background = 'transparent', children }
   );
 };
 
+// ─── Layout toggle button ────────────────────────────────────────────────────
+
+const LAYOUT_OPTIONS: { value: LayoutMode; icon: typeof ArrowDown }[] = [
+  { value: 'vertical', icon: ArrowDown },
+  { value: 'horizontal', icon: ArrowRight },
+  { value: 'grid', icon: Grid3X3 },
+];
+
+const LayoutButton = ({
+  value,
+  icon: Icon,
+  isActive,
+  label,
+  onClick,
+}: {
+  value: LayoutMode;
+  icon: typeof ArrowDown;
+  isActive: boolean;
+  label: string;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    title={label}
+    className={`flex items-center justify-center p-2 rounded-md border transition-colors ${
+      isActive
+        ? 'bg-zinc-900 text-white border-zinc-900'
+        : 'bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400 hover:text-zinc-700'
+    }`}
+  >
+    <Icon className="w-4 h-4" />
+  </button>
+);
+
+// ─── Settings ────────────────────────────────────────────────────────────────
+
 export const ContainerSettings = () => {
   const t = useTranslations('templates.editor.components.container');
   const {
     actions: { setProp },
     padding,
     background,
+    layout,
+    gap,
+    gridColumns,
   } = useNode((node) => ({
     padding: node.data.props.padding,
     background: node.data.props.background,
+    layout: (node.data.props.layout as LayoutMode) ?? 'vertical',
+    gap: node.data.props.gap ?? 0,
+    gridColumns: node.data.props.gridColumns ?? 2,
   }));
 
   // Parse the current background color
@@ -135,6 +224,70 @@ export const ContainerSettings = () => {
 
   return (
     <div className="space-y-4 p-4">
+      {/* Layout mode */}
+      <div className="space-y-2">
+        <label className="text-xs font-medium">{t('layout')}</label>
+        <div className="flex gap-2">
+          {LAYOUT_OPTIONS.map((opt) => (
+            <LayoutButton
+              key={opt.value}
+              value={opt.value}
+              icon={opt.icon}
+              isActive={layout === opt.value}
+              label={t(`layout_${opt.value}`)}
+              onClick={() =>
+                setProp((props: ContainerProps) => {
+                  props.layout = opt.value;
+                })
+              }
+            />
+          ))}
+        </div>
+        <p className="text-[11px] text-muted-foreground">{t(`layout_${layout}`)}</p>
+      </div>
+
+      {/* Gap */}
+      <div className="space-y-2">
+        <label htmlFor="gap" className="text-xs font-medium">
+          {t('gap')}
+        </label>
+        <input
+          id="gap"
+          type="number"
+          min={0}
+          value={gap}
+          onChange={(e) =>
+            setProp((props: ContainerProps) => {
+              props.gap = Number(e.target.value);
+            })
+          }
+          className="w-full px-2 py-1 border rounded text-sm"
+        />
+      </div>
+
+      {/* Grid columns (only for grid layout) */}
+      {layout === 'grid' && (
+        <div className="space-y-2">
+          <label htmlFor="gridColumns" className="text-xs font-medium">
+            {t('gridColumns')}
+          </label>
+          <input
+            id="gridColumns"
+            type="number"
+            min={1}
+            max={12}
+            value={gridColumns}
+            onChange={(e) =>
+              setProp((props: ContainerProps) => {
+                props.gridColumns = Number(e.target.value);
+              })
+            }
+            className="w-full px-2 py-1 border rounded text-sm"
+          />
+        </div>
+      )}
+
+      {/* Padding */}
       <div className="space-y-2">
         <label htmlFor="padding" className="text-xs font-medium">
           {t('padding')}
@@ -151,6 +304,8 @@ export const ContainerSettings = () => {
           className="w-full px-2 py-1 border rounded text-sm"
         />
       </div>
+
+      {/* Background color */}
       <div className="space-y-2">
         <label htmlFor="background" className="text-xs font-medium">
           {t('backgroundColor')}
@@ -186,6 +341,9 @@ Container.craft = {
   props: {
     padding: 20,
     background: 'transparent',
+    layout: 'vertical' as LayoutMode,
+    gap: 0,
+    gridColumns: 2,
   },
   related: {
     settings: ContainerSettings,

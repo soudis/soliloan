@@ -22,7 +22,7 @@ export type CreateTemplateFormData = z.infer<typeof createTemplateSchema>;
 
 // Update template schema
 export const updateTemplateSchema = z.object({
-  id: z.string(),
+  templateId: z.string(),
   name: z.string().min(1).max(100).optional(),
   description: z.string().max(500).nullable().optional(),
   designJson: z.record(z.any()).optional(),

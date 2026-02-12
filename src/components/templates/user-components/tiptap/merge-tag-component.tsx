@@ -4,6 +4,7 @@ import type { NodeViewProps } from '@tiptap/core';
 import { NodeViewWrapper } from '@tiptap/react';
 
 export const MergeTagComponent = ({ node }: NodeViewProps) => {
+  const label = node.attrs.label || node.attrs.value || 'Tag';
   return (
     <NodeViewWrapper
       as="span"
@@ -14,7 +15,9 @@ export const MergeTagComponent = ({ node }: NodeViewProps) => {
       data-drag-handle
       contentEditable={false}
     >
-      {node.attrs.label || node.attrs.value || 'Tag'}
+      {'{{'}
+      {label}
+      {'}}'}
     </NodeViewWrapper>
   );
 };

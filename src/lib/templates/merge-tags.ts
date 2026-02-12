@@ -74,6 +74,22 @@ export const NOTE_FIELDS = ['text', 'createdAt', 'createdByName', 'public'] as c
 // Project fields
 export const PROJECT_FIELDS = ['name', 'slug'] as const;
 
+// Configuration fields (project configuration: company info, address, banking)
+export const CONFIGURATION_FIELDS = [
+  'name',
+  'email',
+  'telNo',
+  'website',
+  'street',
+  'addon',
+  'zip',
+  'place',
+  'country',
+  'fullAddress',
+  'iban',
+  'bic',
+] as const;
+
 // Field types for formatting
 export type FieldType = 'string' | 'number' | 'date' | 'boolean' | 'currency' | 'percent' | 'enum';
 
@@ -141,6 +157,19 @@ export const FIELD_TYPES: Record<string, FieldType> = {
   'note.createdAt': 'date',
   'note.createdByName': 'string',
   'note.public': 'boolean',
+  // Configuration
+  'config.name': 'string',
+  'config.email': 'string',
+  'config.telNo': 'string',
+  'config.website': 'string',
+  'config.street': 'string',
+  'config.addon': 'string',
+  'config.zip': 'string',
+  'config.place': 'string',
+  'config.country': 'enum',
+  'config.fullAddress': 'string',
+  'config.iban': 'string',
+  'config.bic': 'string',
 };
 
 // Loop definitions per dataset
@@ -198,22 +227,32 @@ export type DatasetConfig = {
 
 export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
   LENDER: {
-    topLevelFields: [{ entity: 'lender', fields: LENDER_FIELDS }],
+    topLevelFields: [
+      { entity: 'lender', fields: LENDER_FIELDS },
+      { entity: 'config', fields: CONFIGURATION_FIELDS },
+    ],
     loops: ['loans', 'notes'],
   },
   LOAN: {
     topLevelFields: [
       { entity: 'loan', fields: LOAN_FIELDS },
       { entity: 'lender', fields: LENDER_FIELDS },
+      { entity: 'config', fields: CONFIGURATION_FIELDS },
     ],
     loops: ['transactions', 'notes'],
   },
   PROJECT: {
-    topLevelFields: [{ entity: 'project', fields: PROJECT_FIELDS }],
+    topLevelFields: [
+      { entity: 'project', fields: PROJECT_FIELDS },
+      { entity: 'config', fields: CONFIGURATION_FIELDS },
+    ],
     loops: ['lenders'],
   },
   PROJECT_YEARLY: {
-    topLevelFields: [{ entity: 'project', fields: PROJECT_FIELDS }],
+    topLevelFields: [
+      { entity: 'project', fields: PROJECT_FIELDS },
+      { entity: 'config', fields: CONFIGURATION_FIELDS },
+    ],
     loops: ['lenders'],
   },
 };

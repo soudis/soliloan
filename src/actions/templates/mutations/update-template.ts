@@ -10,7 +10,7 @@ export const updateTemplateAction = templateAction
   .inputSchema(updateTemplateSchema)
   .action(async ({ parsedInput: data }) => {
     const template = await db.communicationTemplate.update({
-      where: { id: data.id },
+      where: { id: data.templateId },
       data: {
         ...(data.name !== undefined && { name: data.name }),
         ...(data.description !== undefined && { description: data.description }),

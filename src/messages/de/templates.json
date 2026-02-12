@@ -45,7 +45,7 @@
       "text": "Text",
       "button": "Button",
       "image": "Bild",
-      "loop": "Schleife"
+      "table": "Tabelle"
     },
     "settings": {
       "title": "Einstellungen",
@@ -57,23 +57,43 @@
         "defaultText": "Hier Text eingeben",
         "fontSize": "Schriftgröße",
         "textColor": "Textfarbe",
+        "textAlign": "Textausrichtung",
         "insertPlaceholder": "Platzhalter einfügen"
       },
       "container": {
         "dropHere": "Ziehe Komponenten hierher",
+        "layout": "Layout",
+        "layout_vertical": "Vertikal (untereinander)",
+        "layout_horizontal": "Horizontal (nebeneinander)",
+        "layout_grid": "Raster",
+        "gap": "Abstand (px)",
+        "gridColumns": "Raster-Spalten",
         "padding": "Padding",
-        "backgroundColor": "Background Color",
+        "backgroundColor": "Hintergrundfarbe",
         "opacity": "Deckkraft"
       },
       "image": {
         "imageUrl": "Bild URL",
-        "width": "Breite (e.g. 100%, 200px)"
+        "width": "Breite (e.g. 100%, 200px)",
+        "tabUrl": "URL",
+        "tabUpload": "Hochladen",
+        "tabLogo": "Logo",
+        "uploadImage": "Bild hochladen",
+        "clickToUpload": "Klicke zum Hochladen",
+        "logoProjectHint": "Verwendet das Logo aus der Projekt-Konfiguration.",
+        "logoAppHint": "Kein Projekt-Logo konfiguriert. Es wird das App-Logo verwendet."
       },
-      "loop": {
-        "defaultLabel": "Datenschleife",
-        "loopKey": "Loop Key",
+      "table": {
+        "loopKey": "Datenquelle",
+        "staticTable": "Statische Tabelle (kein Loop)",
         "displayName": "Anzeigename",
-        "placeholder": "z.B. loans"
+        "columns": "Spalten",
+        "rows": "Zeilen",
+        "defaultHeader": "Spalte",
+        "dynamicHint": "Zeilen werden dynamisch aus der Datenquelle generiert.",
+        "staticHint": "Die Tabelle hat eine feste Anzahl an Zeilen.",
+        "cellSelected": "Klicke in der Zelle auf die gewünschte Stelle und füge dann einen Platzhalter ein.",
+        "clickCellHint": "Klicke auf eine Zelle, um Platzhalter einzufügen."
       },
       "button": {
         "defaultText": "Klick mich",

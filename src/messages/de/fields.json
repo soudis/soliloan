@@ -66,6 +66,20 @@
     "createdByName": "Erstellt von",
     "public": "Öffentlich"
   },
+  "config": {
+    "name": "Projektname",
+    "email": "E-Mail",
+    "telNo": "Telefon",
+    "website": "Website",
+    "street": "Straße",
+    "addon": "Adresszusatz",
+    "zip": "PLZ",
+    "place": "Ort",
+    "country": "Land",
+    "fullAddress": "Vollständige Adresse",
+    "iban": "IBAN",
+    "bic": "BIC"
+  },
   "project": {
     "name": "Projektname",
     "slug": "Projekt-ID"
@@ -77,6 +91,7 @@
     "lenders": "Für jeden Darlehensgeber"
   },
   "categories": {
+    "config": "Projekt-Konfiguration",
     "lender": "Darlehensgeber",
     "loan": "Darlehen",
     "transaction": "Transaktion",

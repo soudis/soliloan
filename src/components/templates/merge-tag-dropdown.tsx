@@ -22,9 +22,13 @@ export function MergeTagDropdown({
 
   const lenderFields = config.topLevelFields.filter((f) => f.entity === 'lender');
   const loanFields = config.topLevelFields.filter((f) => f.entity === 'loan');
+  const configFields = config.topLevelFields.filter((f) => f.entity === 'config');
 
   const groups: { label: string; items: (MergeTagField | MergeTagLoop)[]; color: string; isLoop?: boolean }[] = [];
 
+  if (configFields.length > 0) {
+    groups.push({ label: t('categories.config'), items: configFields, color: '#f3e5f5' });
+  }
   if (lenderFields.length > 0) {
     groups.push({ label: t('categories.lender'), items: lenderFields, color: '#e3f2fd' });
   }

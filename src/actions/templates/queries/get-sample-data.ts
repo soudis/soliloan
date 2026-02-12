@@ -54,6 +54,52 @@ export async function getSampleLoansAction(projectId: string, limit = 10) {
 }
 
 /**
+ * Fetch project configuration and build the config merge tag data.
+ */
+async function getConfigData(projectId: string): Promise<Record<string, string>> {
+  const project = await db.project.findUnique({
+    where: { id: projectId },
+    select: {
+      configuration: {
+        select: {
+          name: true,
+          email: true,
+          telNo: true,
+          website: true,
+          street: true,
+          addon: true,
+          zip: true,
+          place: true,
+          country: true,
+          iban: true,
+          bic: true,
+        },
+      },
+    },
+  });
+
+  const c = project?.configuration;
+  if (!c) return {};
+
+  return {
+    name: c.name ?? '',
+    email: c.email ?? '',
+    telNo: c.telNo ?? '',
+    website: c.website ?? '',
+    street: c.street ?? '',
+    addon: c.addon ?? '',
+    zip: c.zip ?? '',
+    place: c.place ?? '',
+    country: c.country ?? '',
+    fullAddress: [c.street, c.addon, `${c.zip ?? ''} ${c.place ?? ''}`.trim()]
+      .filter(Boolean)
+      .join(', '),
+    iban: c.iban ?? '',
+    bic: c.bic ?? '',
+  };
+}
+
+/**
  * Get merge tag values for preview replacement
  * Uses the same calculations as the actual data fetching to ensure consistency
  */
@@ -61,6 +107,7 @@ export async function getMergeTagValuesAction(
   dataset: TemplateDataset,
   recordId: string,
   locale = 'de',
+  projectId?: string,
 ): Promise<Record<string, unknown> | null> {
   if (dataset === 'LENDER') {
     const result = await getLenderAction({ lenderId: recordId });
@@ -69,8 +116,13 @@ export async function getMergeTagValuesAction(
 
     const lender = result.data.lender;
 
+    // Resolve projectId for config lookup
+    const resolvedProjectId = projectId || lender.project?.id;
+    const config = resolvedProjectId ? await getConfigData(resolvedProjectId) : {};
+
     // Format all fields for easy access
     const formattedResult = {
+      config,
       lender: {
         ...lender,
         lenderNumber: String(lender.lenderNumber),
@@ -153,7 +205,12 @@ export async function getMergeTagValuesAction(
     const loan = result.data.loan;
     const lender = loan.lender;
 
+    // Resolve projectId for config lookup
+    const resolvedProjectId = projectId || lender.project?.id;
+    const config = resolvedProjectId ? await getConfigData(resolvedProjectId) : {};
+
     return {
+      config,
       lender: {
         ...lender,
         lenderNumber: String(lender.lenderNumber),

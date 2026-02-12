@@ -8,11 +8,13 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { type MergeTagConfig, getMergeTagConfigAction } from '@/actions/templates/queries/get-merge-tags';
+import { getProjectLogoAction } from '@/actions/templates/queries/get-project-logo';
 import { getMergeTagValuesAction } from '@/actions/templates/queries/get-sample-data';
 
 import { generateEmailHtml } from '@/lib/templates/email-generator';
 import { processTemplate } from '@/lib/templates/template-processor';
 import { isEmpty } from 'lodash';
+import { LogoProvider } from './logo-context';
 import { MergeTagConfigProvider } from './merge-tag-context';
 import { SettingsPanel } from './settings-panel';
 import { Toolbox } from './toolbox';
@@ -182,6 +184,7 @@ export function EmailEditorComponent({
   onDesignChange,
 }: EmailEditorComponentProps) {
   const [mergeTagConfig, setMergeTagConfig] = useState<MergeTagConfig | null>(null);
+  const [projectLogo, setProjectLogo] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [previewHtml, setPreviewHtml] = useState('');
@@ -189,9 +192,17 @@ export function EmailEditorComponent({
   const [currentHtml, setCurrentHtml] = useState<string>('');
   const initializedRef = useRef(false);
 
+  const logoContextValue = useMemo(
+    () => ({ projectLogo, appLogo: '/soliloan-logo.webp' }),
+    [projectLogo],
+  );
+
   useEffect(() => {
     setIsMounted(true);
     getMergeTagConfigAction(dataset, projectId).then(setMergeTagConfig);
+    if (projectId) {
+      getProjectLogoAction(projectId).then(setProjectLogo);
+    }
   }, [dataset, projectId]);
 
   // Sync initial design to local state for preview
@@ -216,7 +227,7 @@ export function EmailEditorComponent({
     let html = currentHtml;
     if (selectedRecordId) {
       try {
-        const data = await getMergeTagValuesAction(dataset, selectedRecordId);
+        const data = await getMergeTagValuesAction(dataset, selectedRecordId, 'de', projectId);
         if (data) {
           html = processTemplate(html, data);
         }
@@ -250,21 +261,23 @@ export function EmailEditorComponent({
       <EditorTopbar isPreviewing={isPreviewing} togglePreview={togglePreview} />
 
       <div className="flex-1 flex flex-col relative">
-        <MergeTagConfigProvider value={mergeTagConfig}>
-          <Editor
-            resolver={USER_COMPONENTS}
-            onNodesChange={debouncedDesignChange}
-            onRender={(props) => <RenderNode {...props} />}
-            enabled={true}
-            indicator={{
-              success: '#22c55e',
-              error: '#ef4444',
-            }}
-          >
-            <EditorInitialWrapper initialDesign={initialDesign} />
-            <InternalEditor isPreviewing={isPreviewing} previewHtml={previewHtml} />
-          </Editor>
-        </MergeTagConfigProvider>
+        <LogoProvider value={logoContextValue}>
+          <MergeTagConfigProvider value={mergeTagConfig}>
+            <Editor
+              resolver={USER_COMPONENTS}
+              onNodesChange={debouncedDesignChange}
+              onRender={(props) => <RenderNode {...props} />}
+              enabled={true}
+              indicator={{
+                success: '#22c55e',
+                error: '#ef4444',
+              }}
+            >
+              <EditorInitialWrapper initialDesign={initialDesign} />
+              <InternalEditor isPreviewing={isPreviewing} previewHtml={previewHtml} />
+            </Editor>
+          </MergeTagConfigProvider>
+        </LogoProvider>
       </div>
     </div>
   );

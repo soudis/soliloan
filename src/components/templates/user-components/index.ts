@@ -1,7 +1,7 @@
 import { Button } from './button';
 import { Container } from './container';
 import { Image } from './image';
-import { Loop } from './loop';
+import { Table } from './table';
 import { Text } from './text';
 
 export const USER_COMPONENTS = {
@@ -9,5 +9,5 @@ export const USER_COMPONENTS = {
   Text,
   Button,
   Image,
-  Loop,
+  Table,
 };

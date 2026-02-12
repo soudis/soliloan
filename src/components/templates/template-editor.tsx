@@ -45,7 +45,7 @@ export function TemplateEditor({ template, projectId }: TemplateEditorProps) {
     }
 
     const result = await updateTemplate({
-      id: template.id,
+      templateId: template.id,
       designJson: pendingDesign,
       htmlContent: pendingHtml,
     });
