@@ -102,6 +102,18 @@
         "url": "URL",
         "backgroundColor": "Hintergrundfarbe",
         "textColor": "Textfarbe"
+      },
+      "pageHeader": {
+        "label": "Kopfzeile",
+        "dropHere": "Kopfzeile: Komponenten hierher ziehen",
+        "padding": "Padding",
+        "backgroundColor": "Hintergrundfarbe"
+      },
+      "pageFooter": {
+        "label": "Fußzeile",
+        "dropHere": "Fußzeile: Komponenten hierher ziehen",
+        "padding": "Padding",
+        "backgroundColor": "Hintergrundfarbe"
       }
     }
   },

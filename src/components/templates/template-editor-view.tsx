@@ -5,13 +5,18 @@ import type { TemplateDataset, TemplateType } from '@prisma/client';
 import debounce from 'lodash.debounce';
 import { Eye, EyeOff, GripVertical, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { type MergeTagConfig, getMergeTagConfigAction } from '@/actions/templates/queries/get-merge-tags';
 import { getProjectLogoAction } from '@/actions/templates/queries/get-project-logo';
 import { getMergeTagValuesAction } from '@/actions/templates/queries/get-sample-data';
 
-import { generateEmailHtml } from '@/lib/templates/email-generator';
+import {
+  generateDocumentParts,
+  generateEmailHtml,
+  getNodesMapFromDesign,
+  getNodesMapFromSerialized,
+} from '@/lib/templates/email-generator';
 import { processTemplate } from '@/lib/templates/template-processor';
 import { isEmpty } from 'lodash';
 import { LogoProvider } from './logo-context';
@@ -20,26 +25,28 @@ import { SettingsPanel } from './settings-panel';
 import { Toolbox } from './toolbox';
 import { USER_COMPONENTS } from './user-components';
 import { Container } from './user-components/container';
+import { PageFooter } from './user-components/page-footer';
+import { PageHeader } from './user-components/page-header';
 
 // ─── A4 dimensions ──────────────────────────────────────────────────────────
 // A4 = 210mm × 297mm. At 96 DPI: 1mm ≈ 3.7795px → 794px × 1123px
 const A4_WIDTH_PX = 794;
 const A4_MIN_HEIGHT_PX = 1123;
 
-/**
- * RenderNode handles the visual indicators (selection, hover) for components in the editor.
- */
+/** IDs that act as structural zones and should not show selection/drag handles */
+const STRUCTURAL_NODE_IDS = new Set(['ROOT', 'PAGE_HEADER', 'PAGE_FOOTER', 'BODY']);
+
 const RenderNode = ({ render }: { render: React.ReactNode }) => {
   const {
-    id,
-    isRoot,
+    nodeId,
+    isStructural,
     isSelected,
     isHovered,
     name,
     connectors: { connect, drag },
   } = useNode((node) => ({
-    id: node.id,
-    isRoot: node.id === 'ROOT',
+    nodeId: node.id,
+    isStructural: STRUCTURAL_NODE_IDS.has(node.id),
     isSelected: node.events.selected,
     isHovered: node.events.hovered,
     name: node.data.name,
@@ -47,11 +54,20 @@ const RenderNode = ({ render }: { render: React.ReactNode }) => {
 
   // Style for selection and hover
   const indicatorClass = useMemo(() => {
-    if (isRoot) return '';
+    if (isStructural) return '';
     if (isSelected) return 'outline outline-2 outline-blue-500 z-10';
     if (isHovered) return 'outline outline-1 outline-blue-300 z-10';
     return '';
-  }, [isSelected, isHovered, isRoot]);
+  }, [isSelected, isHovered, isStructural]);
+
+  // Structural nodes need specific flex behaviour to fill the page:
+  // ROOT: flex-1 + flex-col to fill the outer page container
+  // BODY: flex-1 to push footer to the bottom
+  const structuralClass = useMemo(() => {
+    if (nodeId === 'ROOT') return 'flex-1 flex flex-col [&>*]:flex-1';
+    if (nodeId === 'BODY') return 'flex-1';
+    return '';
+  }, [nodeId]);
 
   return (
     <div
@@ -60,9 +76,9 @@ const RenderNode = ({ render }: { render: React.ReactNode }) => {
           connect(ref);
         }
       }}
-      className={`relative ${indicatorClass}`}
+      className={`relative ${indicatorClass} ${structuralClass}`}
     >
-      {isSelected && !isRoot && (
+      {isSelected && !isStructural && (
         <>
           <div className="absolute top-0 right-0 -translate-y-full bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-t-sm font-bold pointer-events-none z-20">
             {name}
@@ -155,7 +171,15 @@ const EditorViewport = ({
           />
         )}
         <Frame>
-          <Element is={Container} padding={isDocument ? 56 : 40} background="#ffffff" canvas id="ROOT" />
+          {isDocument ? (
+            <Element is={Container} padding={0} background="#ffffff" canvas id="ROOT" layout="vertical" gap={0}>
+              <Element is={PageHeader} padding={16} canvas id="PAGE_HEADER" />
+              <Element is={Container} padding={56} background="#ffffff" canvas id="BODY" />
+              <Element is={PageFooter} padding={16} canvas id="PAGE_FOOTER" />
+            </Element>
+          ) : (
+            <Element is={Container} padding={40} background="#ffffff" canvas id="ROOT" />
+          )}
         </Frame>
       </div>
     </div>
@@ -207,11 +231,17 @@ const InternalEditor = ({
  * Generate a PDF from the template HTML via the server-side API endpoint
  * and open it in a new browser tab.
  */
-const generateAndOpenPdf = async (html: string) => {
+const generateAndOpenPdf = async (
+  html: string,
+  headerHtml?: string,
+  footerHtml?: string,
+  headerPadding?: number,
+  footerPadding?: number,
+) => {
   const response = await fetch('/api/templates/pdf', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ html }),
+    body: JSON.stringify({ html, headerHtml, footerHtml, headerPadding, footerPadding }),
   });
 
   if (!response.ok) {
@@ -254,7 +284,13 @@ export function TemplateEditorView({
   const [previewHtml, setPreviewHtml] = useState('');
   const [currentDesign, setCurrentDesign] = useState<object | null>(null);
   const [currentHtml, setCurrentHtml] = useState<string>('');
-  const initializedRef = useRef(false);
+  const [currentHeaderHtml, setCurrentHeaderHtml] = useState<string>('');
+  const [currentFooterHtml, setCurrentFooterHtml] = useState<string>('');
+  const [currentHeaderPadding, setCurrentHeaderPadding] = useState<number>(16);
+  const [currentFooterPadding, setCurrentFooterPadding] = useState<number>(16);
+
+  /** Ref set by a child inside Editor to get latest document parts (avoids stale debounced state). */
+  const getLatestDocumentPartsRef = useRef<(() => DocumentParts) | null>(null);
 
   const isDocument = templateType === 'DOCUMENT';
 
@@ -265,11 +301,11 @@ export function TemplateEditorView({
 
   useEffect(() => {
     setIsMounted(true);
-    getMergeTagConfigAction(dataset, projectId).then(setMergeTagConfig);
+    getMergeTagConfigAction(dataset, projectId, templateType).then(setMergeTagConfig);
     if (projectId) {
       getProjectLogoAction(projectId).then(setProjectLogo);
     }
-  }, [dataset, projectId]);
+  }, [dataset, projectId, templateType]);
 
   // Sync initial design to local state for preview
   useEffect(() => {
@@ -277,26 +313,45 @@ export function TemplateEditorView({
       try {
         const designData = typeof initialDesign === 'string' ? JSON.parse(initialDesign) : initialDesign;
         setCurrentDesign(designData);
-        setCurrentHtml(generateEmailHtml(designData));
+        if (isDocument) {
+          const nodes = getNodesMapFromDesign(designData as Record<string, unknown>);
+          const parts = generateDocumentParts(nodes);
+          setCurrentHtml(parts.bodyHtml);
+          setCurrentHeaderHtml(parts.headerHtml);
+          setCurrentFooterHtml(parts.footerHtml);
+          setCurrentHeaderPadding(parts.headerPadding);
+          setCurrentFooterPadding(parts.footerPadding);
+        } else {
+          setCurrentHtml(generateEmailHtml(designData));
+        }
       } catch (e) {
         console.error('Error initializing design state', e);
       }
     }
-  }, [initialDesign]);
+  }, [initialDesign, isDocument]);
 
-  const resolvePreviewHtml = async (): Promise<string> => {
+  const resolvePreviewHtml = async (): Promise<{
+    html: string;
+    headerHtml?: string;
+    footerHtml?: string;
+  }> => {
     let html = currentHtml;
+    let headerHtml = currentHeaderHtml;
+    let footerHtml = currentFooterHtml;
+
     if (selectedRecordId) {
       try {
         const data = await getMergeTagValuesAction(dataset, selectedRecordId, 'de', projectId);
         if (data) {
           html = processTemplate(html, data);
+          if (headerHtml) headerHtml = processTemplate(headerHtml, data);
+          if (footerHtml) footerHtml = processTemplate(footerHtml, data);
         }
       } catch (e) {
         console.error('Preview error', e);
       }
     }
-    return html;
+    return { html, headerHtml, footerHtml };
   };
 
   const togglePreview = async () => {
@@ -306,17 +361,53 @@ export function TemplateEditorView({
         setIsPreviewing(false);
         return;
       }
-      const html = await resolvePreviewHtml();
+      const { html } = await resolvePreviewHtml();
       setPreviewHtml(html);
       setIsPreviewing(true);
       return;
     }
 
-    // For document: generate PDF via server API and open in a new tab
+    // For document: generate PDF via server API and open in a new tab.
+    // Use fresh serialized state from the editor so header/footer are never stale (debounce is 500ms).
     setIsGeneratingPdf(true);
     try {
-      const html = await resolvePreviewHtml();
-      await generateAndOpenPdf(html);
+      const getLatest = getLatestDocumentPartsRef.current;
+      let html: string;
+      let headerHtml: string | undefined;
+      let footerHtml: string | undefined;
+      let headerPadding: number;
+      let footerPadding: number;
+
+      if (getLatest) {
+        const parts = getLatest();
+        html = parts.bodyHtml;
+        headerHtml = parts.headerHtml || undefined;
+        footerHtml = parts.footerHtml || undefined;
+        headerPadding = parts.headerPadding;
+        footerPadding = parts.footerPadding;
+      } else {
+        const resolved = await resolvePreviewHtml();
+        html = resolved.html;
+        headerHtml = resolved.headerHtml;
+        footerHtml = resolved.footerHtml;
+        headerPadding = currentHeaderPadding;
+        footerPadding = currentFooterPadding;
+      }
+
+      if (selectedRecordId) {
+        try {
+          const data = await getMergeTagValuesAction(dataset, selectedRecordId, 'de', projectId);
+          if (data) {
+            html = processTemplate(html, data);
+            if (headerHtml) headerHtml = processTemplate(headerHtml, data);
+            if (footerHtml) footerHtml = processTemplate(footerHtml, data);
+          }
+        } catch (e) {
+          console.error('Preview error', e);
+        }
+      }
+
+      await generateAndOpenPdf(html, headerHtml, footerHtml, headerPadding, footerPadding);
     } catch (e) {
       console.error('PDF generation error', e);
     } finally {
@@ -329,13 +420,25 @@ export function TemplateEditorView({
     () =>
       debounce((query: ReturnType<typeof useEditor>['query']) => {
         const serialized = query.serialize();
-        const nodes = JSON.parse(serialized);
-        const html = generateEmailHtml(nodes);
-        setCurrentDesign(nodes);
-        setCurrentHtml(html);
-        onDesignChange(nodes, html);
+        const parsed = JSON.parse(serialized) as object;
+        const nodes = getNodesMapFromSerialized(serialized);
+        setCurrentDesign(parsed);
+
+        if (isDocument) {
+          const parts = generateDocumentParts(nodes);
+          setCurrentHtml(parts.bodyHtml);
+          setCurrentHeaderHtml(parts.headerHtml);
+          setCurrentFooterHtml(parts.footerHtml);
+          setCurrentHeaderPadding(parts.headerPadding);
+          setCurrentFooterPadding(parts.footerPadding);
+          onDesignChange(parsed, parts.bodyHtml);
+        } else {
+          const html = generateEmailHtml(nodes);
+          setCurrentHtml(html);
+          onDesignChange(parsed, html);
+        }
       }, 500),
-    [onDesignChange],
+    [onDesignChange, isDocument],
   );
 
   if (!isMounted) return null;
@@ -358,6 +461,7 @@ export function TemplateEditorView({
               }}
             >
               <EditorInitialWrapper initialDesign={initialDesign} />
+              <DocumentPartsRefSetter getLatestDocumentPartsRef={getLatestDocumentPartsRef} />
               <InternalEditor isPreviewing={isPreviewing} previewHtml={previewHtml} isDocument={isDocument} />
             </Editor>
           </MergeTagConfigProvider>
@@ -384,6 +488,47 @@ const EditorInitialWrapper = ({ initialDesign }: { initialDesign?: string | obje
     }
     initializedRef.current = true;
   }, [initialDesign, actions]);
+
+  return null;
+};
+
+type DocumentParts = {
+  headerHtml: string;
+  bodyHtml: string;
+  footerHtml: string;
+  headerPadding: number;
+  footerPadding: number;
+};
+
+/**
+ * Sets a ref with a function that returns the current document parts from the live editor state.
+ * This ensures the PDF preview uses the latest header/footer/content instead of debounced state.
+ */
+const DocumentPartsRefSetter = ({
+  getLatestDocumentPartsRef,
+}: {
+  getLatestDocumentPartsRef: React.MutableRefObject<(() => DocumentParts) | null>;
+}) => {
+  const { query } = useEditor();
+
+  useEffect(() => {
+    const getter = (): DocumentParts => {
+      const serialized = query.serialize();
+      const nodes = getNodesMapFromSerialized(serialized);
+      const parts = generateDocumentParts(nodes);
+      return {
+        headerHtml: parts.headerHtml,
+        bodyHtml: parts.bodyHtml,
+        footerHtml: parts.footerHtml,
+        headerPadding: parts.headerPadding,
+        footerPadding: parts.footerPadding,
+      };
+    };
+    getLatestDocumentPartsRef.current = getter;
+    return () => {
+      getLatestDocumentPartsRef.current = null;
+    };
+  }, [query, getLatestDocumentPartsRef]);
 
   return null;
 };

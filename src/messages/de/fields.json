@@ -80,6 +80,10 @@
     "iban": "IBAN",
     "bic": "BIC"
   },
+  "page": {
+    "pageNumber": "Seitennummer",
+    "totalPages": "Gesamtseiten"
+  },
   "project": {
     "name": "Projektname",
     "slug": "Projekt-ID"
@@ -96,6 +100,7 @@
     "loan": "Darlehen",
     "transaction": "Transaktion",
     "note": "Notiz",
+    "page": "Seite",
     "loops": "Schleifen",
     "additional": "Zusatzfelder"
   }

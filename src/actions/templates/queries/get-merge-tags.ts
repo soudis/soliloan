@@ -1,6 +1,6 @@
 'use server';
 
-import type { TemplateDataset } from '@prisma/client';
+import type { TemplateDataset, TemplateType } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 
 import { db } from '@/lib/db';
@@ -51,7 +51,7 @@ type AdditionalFieldDef = {
 /**
  * Get merge tag configuration for a dataset with translated labels
  */
-export async function getMergeTagConfigAction(dataset: TemplateDataset, projectId?: string): Promise<MergeTagConfig> {
+export async function getMergeTagConfigAction(dataset: TemplateDataset, projectId?: string, templateType?: TemplateType): Promise<MergeTagConfig> {
   const t = await getTranslations('fields');
 
   const config = DATASET_CONFIGS[dataset];
@@ -184,6 +184,24 @@ export async function getMergeTagConfigAction(dataset: TemplateDataset, projectI
         }
       }
     }
+  }
+
+  // For document templates, add page number merge tags
+  if (templateType === 'DOCUMENT') {
+    topLevelFields.push(
+      {
+        key: 'page.pageNumber',
+        label: t('page.pageNumber'),
+        value: '{{pageNumber}}',
+        entity: 'page',
+      },
+      {
+        key: 'page.totalPages',
+        label: t('page.totalPages'),
+        value: '{{totalPages}}',
+        entity: 'page',
+      },
+    );
   }
 
   return {
