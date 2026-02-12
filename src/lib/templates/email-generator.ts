@@ -23,6 +23,20 @@ const processTiptapContent = (html: string): string => {
 
 const EMAIL_FONT_FAMILY = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
+/** Build inline CSS string for border from component props (for HTML output). */
+const borderPropsToCss = (props: Record<string, unknown> | null | undefined): string => {
+  if (!props || typeof props !== 'object') return '';
+  const color = (props.borderColor as string) ?? '#e4e4e7';
+  const style = (props.borderStyle as string) ?? 'solid';
+  const width = Number(props.borderWidth) || 1;
+  const parts: string[] = [];
+  if (props.borderTop === true) parts.push(`border-top: ${width}px ${style} ${color}`);
+  if (props.borderRight === true) parts.push(`border-right: ${width}px ${style} ${color}`);
+  if (props.borderBottom === true) parts.push(`border-bottom: ${width}px ${style} ${color}`);
+  if (props.borderLeft === true) parts.push(`border-left: ${width}px ${style} ${color}`);
+  return parts.length ? parts.join('; ') + ';' : '';
+};
+
 /**
  * Wrap raw body HTML in a full HTML document with the Inter font loaded,
  * matching the editor's appearance.
@@ -66,21 +80,20 @@ export const generateEmailHtml = (nodes: Record<string, any>) => {
         const gridCols = props.gridColumns || 2;
         const bgColor = props.background || 'transparent';
         const pad = props.padding || 0;
+        const borderCss = borderPropsToCss(props);
 
         // For email compatibility: vertical uses simple block, horizontal uses table cells,
         // grid uses a table-based N-column layout
         if (layout === 'horizontal') {
-          // Wrap children in a single-row table for email-safe horizontal layout
-          return `<table style="width: 100%; padding: ${pad}px; background-color: ${bgColor}; border-spacing: ${gap}px;" cellpadding="0" cellspacing="${gap}"><tr><td style="vertical-align: top;">${content.replace(/<\/div>\s*<div/g, `</div></td><td style="vertical-align: top;"><div`)}</td></tr></table>`;
+          const tableStyle = `width: 100%; padding: ${pad}px; background-color: ${bgColor}; border-spacing: ${gap}px; ${borderCss}`.trim();
+          return `<table style="${tableStyle}" cellpadding="0" cellspacing="${gap}"><tr><td style="vertical-align: top;">${content.replace(/<\/div>\s*<div/g, `</div></td><td style="vertical-align: top;"><div`)}</td></tr></table>`;
         }
         if (layout === 'grid') {
-          // For grid: wrap children into rows of N columns using a table
-          // Since we can't know children count from content string alone, we use
-          // CSS grid with MSO fallback for Outlook
-          return `<div style="padding: ${pad}px; background-color: ${bgColor};"><!--[if mso]><table style="width:100%;border-spacing:${gap}px;" cellpadding="0"><tr><![endif]--><div style="display: grid; grid-template-columns: repeat(${gridCols}, 1fr); gap: ${gap}px;">${content}</div><!--[if mso]></tr></table><![endif]--></div>`;
+          const divStyle = `padding: ${pad}px; background-color: ${bgColor}; ${borderCss}`.trim();
+          return `<div style="${divStyle}"><!--[if mso]><table style="width:100%;border-spacing:${gap}px;" cellpadding="0"><tr><![endif]--><div style="display: grid; grid-template-columns: repeat(${gridCols}, 1fr); gap: ${gap}px;">${content}</div><!--[if mso]></tr></table><![endif]--></div>`;
         }
-        // Vertical (default): stack children with optional gap
-        return `<div style="padding: ${pad}px; background-color: ${bgColor}; width: 100%;">${
+        const verticalStyle = `padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+        return `<div style="${verticalStyle}">${
           gap > 0
             ? content.replace(
                 /(<\/div>)(\s*<)/g,
@@ -192,11 +205,39 @@ export const generateDocumentParts = (
   footerHtml: string;
   headerPadding: number;
   footerPadding: number;
+  headerBorder: {
+    borderTop: boolean;
+    borderRight: boolean;
+    borderBottom: boolean;
+    borderLeft: boolean;
+    borderColor: string;
+    borderStyle: string;
+    borderWidth: number;
+  } | null;
+  footerBorder: {
+    borderTop: boolean;
+    borderRight: boolean;
+    borderBottom: boolean;
+    borderLeft: boolean;
+    borderColor: string;
+    borderStyle: string;
+    borderWidth: number;
+  } | null;
 } => {
   const rootNode = nodes.ROOT ?? Object.values(nodes).find(
     (n: any) => n?.linkedNodes?.PAGE_HEADER && n?.linkedNodes?.BODY && n?.linkedNodes?.PAGE_FOOTER,
   );
-  if (!rootNode) return { headerHtml: '', bodyHtml: '', footerHtml: '', headerPadding: 0, footerPadding: 0 };
+  if (!rootNode) {
+    return {
+      headerHtml: '',
+      bodyHtml: '',
+      footerHtml: '',
+      headerPadding: 0,
+      footerPadding: 0,
+      headerBorder: null,
+      footerBorder: null,
+    };
+  }
 
   const linked = rootNode.linkedNodes || {};
   const childIds: string[] = rootNode.nodes || [];
@@ -218,7 +259,15 @@ export const generateDocumentParts = (
   const hasDocumentStructure = headerNodeId && bodyNodeId && footerNodeId;
 
   if (!hasDocumentStructure) {
-    return { headerHtml: '', bodyHtml: generateEmailHtml(nodes), footerHtml: '', headerPadding: 0, footerPadding: 0 };
+    return {
+      headerHtml: '',
+      bodyHtml: generateEmailHtml(nodes),
+      footerHtml: '',
+      headerPadding: 0,
+      footerPadding: 0,
+      headerBorder: null,
+      footerBorder: null,
+    };
   }
 
   // Build a render function that processes a subtree
@@ -241,17 +290,37 @@ export const generateDocumentParts = (
       case 'PageFooter': {
         const layout = props.layout || 'vertical';
         const gap = props.gap || 0;
-        const gridCols = props.gridColumns || 2;
+        const gridCols = Math.max(1, props.gridColumns || 2);
         const bgColor = props.background || 'transparent';
         const pad = props.padding || 0;
+        const borderCss = borderPropsToCss(props);
 
+        // Document PDF: use flexbox so react-pdf-html / react-pdf respect layout (no grid/table support).
+        // Use longhand flex-grow/flex-shrink/flex-basis so react-pdf-html passes them through; flex shorthand may not be applied.
         if (layout === 'horizontal') {
-          return `<table style="width: 100%; padding: ${pad}px; background-color: ${bgColor}; border-spacing: ${gap}px;" cellpadding="0" cellspacing="${gap}"><tr><td style="vertical-align: top;">${content.replace(/<\/div>\s*<div/g, `</div></td><td style="vertical-align: top;"><div`)}</td></tr></table>`;
+          const flexChildren = (nodeChildren || []).map(
+            (childId: string) =>
+              `<div style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0;">${renderNode(childId)}</div>`,
+          );
+          const inner = flexChildren.join('');
+          const flexStyle = `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+          return `<div style="${flexStyle}">${inner}</div>`;
         }
         if (layout === 'grid') {
-          return `<div style="padding: ${pad}px; background-color: ${bgColor};"><div style="display: grid; grid-template-columns: repeat(${gridCols}, 1fr); gap: ${gap}px;">${content}</div></div>`;
+          // Simulate grid with flex: row wrap + fixed basis per cell (react-pdf has no CSS Grid)
+          const gapPx = gap;
+          const basisPct = gridCols > 1 ? `calc((100% - ${(gridCols - 1) * gapPx}px) / ${gridCols})` : '100%';
+          const flexChildren = (nodeChildren || []).map(
+            (childId: string) =>
+              `<div style="flex-grow: 0; flex-shrink: 0; flex-basis: ${basisPct}; min-width: 0;">${renderNode(childId)}</div>`,
+          );
+          const inner = flexChildren.join('');
+          const flexStyle = `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+          return `<div style="${flexStyle}">${inner}</div>`;
         }
-        return `<div style="padding: ${pad}px; background-color: ${bgColor}; width: 100%;">${
+        // vertical (default)
+        const verticalStyle = `padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+        return `<div style="${verticalStyle}">${
           gap > 0
             ? content.replace(/(<\/div>)(\s*<)/g, `$1<div style="height: ${gap}px;"></div>$2`)
             : content
@@ -311,15 +380,68 @@ export const generateDocumentParts = (
   const headerPadding = nodes[headerNodeId]?.props?.padding ?? 16;
   const footerPadding = nodes[footerNodeId]?.props?.padding ?? 16;
 
-  // For the body, render the BODY node's children
+  // For the body, render the BODY node's children with the same layout as Container (horizontal/grid/vertical)
   const bodyNode = nodes[bodyNodeId];
-  let bodyContent = '';
-  if (bodyNode && bodyNode.nodes) {
-    bodyContent = bodyNode.nodes.map((childId: string) => renderNode(childId)).join('');
+  const bodyChildren = bodyNode?.nodes ?? [];
+  const bodyLayout = bodyNode?.props?.layout || 'vertical';
+  const bodyGap = bodyNode?.props?.gap ?? 0;
+  const bodyGridCols = Math.max(1, bodyNode?.props?.gridColumns ?? 2);
+  const bodyPadding = bodyNode?.props?.padding ?? 56;
+  const bodyBg = bodyNode?.props?.background ?? '#ffffff';
+  const bodyBorderCss = borderPropsToCss(bodyNode?.props ?? {});
+
+  let bodyContentHtml: string;
+  if (bodyChildren.length === 0) {
+    bodyContentHtml = `<div style="padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}"></div>`;
+  } else if (bodyLayout === 'horizontal') {
+    const flexChildren = bodyChildren.map(
+      (childId: string) =>
+        `<div style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0;">${renderNode(childId)}</div>`,
+    );
+    const flexStyle = `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${bodyGap}px; padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
+    bodyContentHtml = `<div style="${flexStyle}">${flexChildren.join('')}</div>`;
+  } else if (bodyLayout === 'grid') {
+    const gapPx = bodyGap;
+    const basisPct = bodyGridCols > 1 ? `calc((100% - ${(bodyGridCols - 1) * gapPx}px) / ${bodyGridCols})` : '100%';
+    const flexChildren = bodyChildren.map(
+      (childId: string) =>
+        `<div style="flex-grow: 0; flex-shrink: 0; flex-basis: ${basisPct}; min-width: 0;">${renderNode(childId)}</div>`,
+    );
+    const flexStyle = `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${bodyGap}px; padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
+    bodyContentHtml = `<div style="${flexStyle}">${flexChildren.join('')}</div>`;
+  } else {
+    const bodyContent = bodyChildren.map((childId: string) => renderNode(childId)).join('');
+    const verticalStyle = `padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
+    bodyContentHtml = `<div style="${verticalStyle}">${
+      bodyGap > 0
+        ? bodyContent.replace(/(<\/div>)(\s*<)/g, `$1<div style="height: ${bodyGap}px;"></div>$2`)
+        : bodyContent
+    }</div>`;
   }
-  const bodyPadding = bodyNode?.props?.padding || 56;
-  const bodyBg = bodyNode?.props?.background || '#ffffff';
-  const bodyContentHtml = `<div style="padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%;">${bodyContent}</div>`;
+
+  // Border config for PDF header/footer (native View styles, since we render them as Text/View not HTML)
+  const headerBorder = nodes[headerNodeId]?.props
+    ? {
+        borderTop: nodes[headerNodeId].props.borderTop === true,
+        borderRight: nodes[headerNodeId].props.borderRight === true,
+        borderBottom: nodes[headerNodeId].props.borderBottom === true,
+        borderLeft: nodes[headerNodeId].props.borderLeft === true,
+        borderColor: nodes[headerNodeId].props.borderColor ?? '#e4e4e7',
+        borderStyle: nodes[headerNodeId].props.borderStyle ?? 'solid',
+        borderWidth: Number(nodes[headerNodeId].props.borderWidth) || 1,
+      }
+    : null;
+  const footerBorder = nodes[footerNodeId]?.props
+    ? {
+        borderTop: nodes[footerNodeId].props.borderTop === true,
+        borderRight: nodes[footerNodeId].props.borderRight === true,
+        borderBottom: nodes[footerNodeId].props.borderBottom === true,
+        borderLeft: nodes[footerNodeId].props.borderLeft === true,
+        borderColor: nodes[footerNodeId].props.borderColor ?? '#e4e4e7',
+        borderStyle: nodes[footerNodeId].props.borderStyle ?? 'solid',
+        borderWidth: Number(nodes[footerNodeId].props.borderWidth) || 1,
+      }
+    : null;
 
   return {
     headerHtml,
@@ -327,5 +449,7 @@ export const generateDocumentParts = (
     footerHtml,
     headerPadding,
     footerPadding,
+    headerBorder,
+    footerBorder,
   };
 };

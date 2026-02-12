@@ -71,7 +71,19 @@
         "gridColumns": "Raster-Spalten",
         "padding": "Padding",
         "backgroundColor": "Hintergrundfarbe",
-        "opacity": "Deckkraft"
+        "opacity": "Deckkraft",
+        "border": "Rahmen",
+        "borderTop": "Oben",
+        "borderRight": "Rechts",
+        "borderBottom": "Unten",
+        "borderLeft": "Links",
+        "borderColor": "Rahmenfarbe",
+        "borderStyle": "Rahmenstil",
+        "borderWidth": "Rahmenstärke (px)",
+        "borderStyle_solid": "Durchgezogen",
+        "borderStyle_dashed": "Gestrichelt",
+        "borderStyle_dotted": "Gepunktet",
+        "borderStyle_double": "Doppelt"
       },
       "image": {
         "imageUrl": "Bild URL",
@@ -107,13 +119,37 @@
         "label": "Kopfzeile",
         "dropHere": "Kopfzeile: Komponenten hierher ziehen",
         "padding": "Padding",
-        "backgroundColor": "Hintergrundfarbe"
+        "backgroundColor": "Hintergrundfarbe",
+        "border": "Rahmen",
+        "borderTop": "Oben",
+        "borderRight": "Rechts",
+        "borderBottom": "Unten",
+        "borderLeft": "Links",
+        "borderColor": "Rahmenfarbe",
+        "borderStyle": "Rahmenstil",
+        "borderWidth": "Rahmenstärke (px)",
+        "borderStyle_solid": "Durchgezogen",
+        "borderStyle_dashed": "Gestrichelt",
+        "borderStyle_dotted": "Gepunktet",
+        "borderStyle_double": "Doppelt"
       },
       "pageFooter": {
         "label": "Fußzeile",
         "dropHere": "Fußzeile: Komponenten hierher ziehen",
         "padding": "Padding",
-        "backgroundColor": "Hintergrundfarbe"
+        "backgroundColor": "Hintergrundfarbe",
+        "border": "Rahmen",
+        "borderTop": "Oben",
+        "borderRight": "Rechts",
+        "borderBottom": "Unten",
+        "borderLeft": "Links",
+        "borderColor": "Rahmenfarbe",
+        "borderStyle": "Rahmenstil",
+        "borderWidth": "Rahmenstärke (px)",
+        "borderStyle_solid": "Durchgezogen",
+        "borderStyle_dashed": "Gestrichelt",
+        "borderStyle_dotted": "Gepunktet",
+        "borderStyle_double": "Doppelt"
       }
     }
   },

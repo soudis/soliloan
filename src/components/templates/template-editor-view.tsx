@@ -228,20 +228,21 @@ const InternalEditor = ({
 // ─── PDF generation helper (document templates) ──────────────────────────────
 
 /**
- * Generate a PDF from the template HTML via the server-side API endpoint
- * and open it in a new browser tab.
+ * Generate a PDF via the server-side API (design + sampleData → native react-pdf).
  */
-const generateAndOpenPdf = async (
-  html: string,
-  headerHtml?: string,
-  footerHtml?: string,
-  headerPadding?: number,
-  footerPadding?: number,
-) => {
+const generateAndOpenPdf = async (params: {
+  design: Record<string, unknown>;
+  sampleData?: Record<string, unknown>;
+  logoUrl?: string | null;
+}) => {
   const response = await fetch('/api/templates/pdf', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ html, headerHtml, footerHtml, headerPadding, footerPadding }),
+    body: JSON.stringify({
+      design: params.design,
+      sampleData: params.sampleData ?? {},
+      logoUrl: params.logoUrl ?? undefined,
+    }),
   });
 
   if (!response.ok) {
@@ -253,7 +254,6 @@ const generateAndOpenPdf = async (
   const url = URL.createObjectURL(blob);
   window.open(url, '_blank');
 
-  // Revoke the object URL after a short delay to free memory
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 };
 
@@ -291,6 +291,8 @@ export function TemplateEditorView({
 
   /** Ref set by a child inside Editor to get latest document parts (avoids stale debounced state). */
   const getLatestDocumentPartsRef = useRef<(() => DocumentParts) | null>(null);
+  /** Ref to get latest email HTML so preview shows current design (including borders) without waiting for debounce. */
+  const getLatestEmailHtmlRef = useRef<(() => string) | null>(null);
 
   const isDocument = templateType === 'DOCUMENT';
 
@@ -322,7 +324,8 @@ export function TemplateEditorView({
           setCurrentHeaderPadding(parts.headerPadding);
           setCurrentFooterPadding(parts.footerPadding);
         } else {
-          setCurrentHtml(generateEmailHtml(designData));
+          const nodes = getNodesMapFromDesign(designData as Record<string, unknown>);
+          setCurrentHtml(generateEmailHtml(nodes));
         }
       } catch (e) {
         console.error('Error initializing design state', e);
@@ -355,59 +358,60 @@ export function TemplateEditorView({
   };
 
   const togglePreview = async () => {
-    // For email: toggle the inline iframe preview overlay
+    // For email: toggle the inline iframe preview overlay (use latest serialized state so borders etc. show)
     if (!isDocument) {
       if (isPreviewing) {
         setIsPreviewing(false);
         return;
       }
-      const { html } = await resolvePreviewHtml();
+      let html: string;
+      const getLatestEmail = getLatestEmailHtmlRef.current;
+      if (getLatestEmail) {
+        html = getLatestEmail();
+      } else {
+        const resolved = await resolvePreviewHtml();
+        html = resolved.html;
+      }
+      if (selectedRecordId) {
+        try {
+          const data = await getMergeTagValuesAction(dataset, selectedRecordId, 'de', projectId);
+          if (data) html = processTemplate(html, data);
+        } catch (e) {
+          console.error('Preview error', e);
+        }
+      }
       setPreviewHtml(html);
       setIsPreviewing(true);
       return;
     }
 
-    // For document: generate PDF via server API and open in a new tab.
-    // Use fresh serialized state from the editor so header/footer are never stale (debounce is 500ms).
+    // For document: generate PDF via server API (design + sampleData → native react-pdf).
     setIsGeneratingPdf(true);
     try {
       const getLatest = getLatestDocumentPartsRef.current;
-      let html: string;
-      let headerHtml: string | undefined;
-      let footerHtml: string | undefined;
-      let headerPadding: number;
-      let footerPadding: number;
-
-      if (getLatest) {
-        const parts = getLatest();
-        html = parts.bodyHtml;
-        headerHtml = parts.headerHtml || undefined;
-        footerHtml = parts.footerHtml || undefined;
-        headerPadding = parts.headerPadding;
-        footerPadding = parts.footerPadding;
-      } else {
-        const resolved = await resolvePreviewHtml();
-        html = resolved.html;
-        headerHtml = resolved.headerHtml;
-        footerHtml = resolved.footerHtml;
-        headerPadding = currentHeaderPadding;
-        footerPadding = currentFooterPadding;
-      }
-
+      let sampleData: Record<string, unknown> = {};
       if (selectedRecordId) {
         try {
           const data = await getMergeTagValuesAction(dataset, selectedRecordId, 'de', projectId);
-          if (data) {
-            html = processTemplate(html, data);
-            if (headerHtml) headerHtml = processTemplate(headerHtml, data);
-            if (footerHtml) footerHtml = processTemplate(footerHtml, data);
-          }
+          if (data) sampleData = data;
         } catch (e) {
           console.error('Preview error', e);
         }
       }
 
-      await generateAndOpenPdf(html, headerHtml, footerHtml, headerPadding, footerPadding);
+      if (getLatest) {
+        const parts = getLatest();
+        if (parts.design) {
+          await generateAndOpenPdf({
+            design: parts.design,
+            sampleData,
+            logoUrl: projectLogo,
+          });
+          return;
+        }
+      }
+
+      throw new Error('Editor design not available for PDF. Try again in a moment.');
     } catch (e) {
       console.error('PDF generation error', e);
     } finally {
@@ -461,7 +465,10 @@ export function TemplateEditorView({
               }}
             >
               <EditorInitialWrapper initialDesign={initialDesign} />
-              <DocumentPartsRefSetter getLatestDocumentPartsRef={getLatestDocumentPartsRef} />
+              <DocumentPartsRefSetter
+                getLatestDocumentPartsRef={getLatestDocumentPartsRef}
+                getLatestEmailHtmlRef={getLatestEmailHtmlRef}
+              />
               <InternalEditor isPreviewing={isPreviewing} previewHtml={previewHtml} isDocument={isDocument} />
             </Editor>
           </MergeTagConfigProvider>
@@ -492,43 +499,75 @@ const EditorInitialWrapper = ({ initialDesign }: { initialDesign?: string | obje
   return null;
 };
 
+type BorderConfig = {
+  borderTop: boolean;
+  borderRight: boolean;
+  borderBottom: boolean;
+  borderLeft: boolean;
+  borderColor: string;
+  borderStyle: string;
+  borderWidth: number;
+};
+
 type DocumentParts = {
   headerHtml: string;
   bodyHtml: string;
   footerHtml: string;
   headerPadding: number;
   footerPadding: number;
+  headerBorder: BorderConfig | null;
+  footerBorder: BorderConfig | null;
+  /** Editor design JSON (for PDF generation from design + sampleData) */
+  design?: Record<string, unknown>;
 };
 
 /**
- * Sets a ref with a function that returns the current document parts from the live editor state.
- * This ensures the PDF preview uses the latest header/footer/content instead of debounced state.
+ * Sets refs with functions that return the current document parts and email HTML from the live editor state.
+ * This ensures preview (email iframe and PDF) uses the latest design including borders.
  */
 const DocumentPartsRefSetter = ({
   getLatestDocumentPartsRef,
+  getLatestEmailHtmlRef,
 }: {
   getLatestDocumentPartsRef: React.MutableRefObject<(() => DocumentParts) | null>;
+  getLatestEmailHtmlRef: React.MutableRefObject<(() => string) | null>;
 }) => {
   const { query } = useEditor();
 
   useEffect(() => {
-    const getter = (): DocumentParts => {
+    const getDocumentParts = (): DocumentParts => {
       const serialized = query.serialize();
       const nodes = getNodesMapFromSerialized(serialized);
       const parts = generateDocumentParts(nodes);
+      let design: Record<string, unknown> | undefined;
+      try {
+        design = JSON.parse(serialized) as Record<string, unknown>;
+      } catch {
+        design = undefined;
+      }
       return {
         headerHtml: parts.headerHtml,
         bodyHtml: parts.bodyHtml,
         footerHtml: parts.footerHtml,
         headerPadding: parts.headerPadding,
         footerPadding: parts.footerPadding,
+        headerBorder: parts.headerBorder ?? null,
+        footerBorder: parts.footerBorder ?? null,
+        design,
       };
     };
-    getLatestDocumentPartsRef.current = getter;
+    const getEmailHtml = (): string => {
+      const serialized = query.serialize();
+      const nodes = getNodesMapFromSerialized(serialized);
+      return generateEmailHtml(nodes);
+    };
+    getLatestDocumentPartsRef.current = getDocumentParts;
+    getLatestEmailHtmlRef.current = getEmailHtml;
     return () => {
       getLatestDocumentPartsRef.current = null;
+      getLatestEmailHtmlRef.current = null;
     };
-  }, [query, getLatestDocumentPartsRef]);
+  }, [query, getLatestDocumentPartsRef, getLatestEmailHtmlRef]);
 
   return null;
 };

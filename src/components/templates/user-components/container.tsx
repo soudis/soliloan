@@ -6,9 +6,16 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
+import {
+  type BorderProps,
+  type BorderStyle,
+  BORDER_STYLE_OPTIONS,
+  buildBorderStyle,
+} from '@/lib/templates/border-utils';
+
 type LayoutMode = 'vertical' | 'horizontal' | 'grid';
 
-interface ContainerProps {
+interface ContainerProps extends BorderProps {
   padding?: number;
   background?: string;
   layout?: LayoutMode;
@@ -102,6 +109,13 @@ export const Container = ({
   layout = 'vertical',
   gap = 0,
   gridColumns = 2,
+  borderTop,
+  borderRight,
+  borderBottom,
+  borderLeft,
+  borderColor,
+  borderStyle,
+  borderWidth,
   children,
 }: ContainerProps) => {
   const t = useTranslations('templates.editor.components.container');
@@ -110,6 +124,19 @@ export const Container = ({
   } = useNode();
 
   const layoutStyle = useMemo(() => buildLayoutStyle(layout, gap, gridColumns), [layout, gap, gridColumns]);
+  const borderStyleObj = useMemo(
+    () =>
+      buildBorderStyle({
+        borderTop,
+        borderRight,
+        borderBottom,
+        borderLeft,
+        borderColor,
+        borderStyle,
+        borderWidth,
+      }),
+    [borderTop, borderRight, borderBottom, borderLeft, borderColor, borderStyle, borderWidth],
+  );
 
   return (
     <div
@@ -122,6 +149,7 @@ export const Container = ({
         padding: `${padding}px`,
         background,
         ...layoutStyle,
+        ...borderStyleObj,
       }}
       className="min-h-[50px] w-full"
     >
@@ -181,12 +209,26 @@ export const ContainerSettings = () => {
     layout,
     gap,
     gridColumns,
+    borderTop,
+    borderRight,
+    borderBottom,
+    borderLeft,
+    borderColor,
+    borderStyle,
+    borderWidth,
   } = useNode((node) => ({
     padding: node.data.props.padding,
     background: node.data.props.background,
     layout: (node.data.props.layout as LayoutMode) ?? 'vertical',
     gap: node.data.props.gap ?? 0,
     gridColumns: node.data.props.gridColumns ?? 2,
+    borderTop: node.data.props.borderTop ?? false,
+    borderRight: node.data.props.borderRight ?? false,
+    borderBottom: node.data.props.borderBottom ?? false,
+    borderLeft: node.data.props.borderLeft ?? false,
+    borderColor: node.data.props.borderColor ?? '#e4e4e7',
+    borderStyle: (node.data.props.borderStyle as BorderStyle) ?? 'solid',
+    borderWidth: node.data.props.borderWidth ?? 1,
   }));
 
   // Parse the current background color
@@ -332,6 +374,85 @@ export const ContainerSettings = () => {
           />
         </div>
       </div>
+
+      {/* Border */}
+      <div className="space-y-2">
+        <label className="text-xs font-medium">{t('border')}</label>
+        <div className="flex flex-wrap gap-2">
+          {(['borderTop', 'borderRight', 'borderBottom', 'borderLeft'] as const).map((side) => (
+            <label key={side} className="flex items-center gap-1.5 text-xs">
+              <input
+                type="checkbox"
+                checked={Boolean(({ borderTop, borderRight, borderBottom, borderLeft } as Record<string, boolean>)[side])}
+                onChange={(e) =>
+                  setProp((props: ContainerProps) => {
+                    (props as Record<string, boolean>)[side] = e.target.checked;
+                  })
+                }
+                className="rounded border-zinc-300"
+              />
+              {t(side)}
+            </label>
+          ))}
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1">
+            <label htmlFor="containerBorderColor" className="text-[11px] text-zinc-600">
+              {t('borderColor')}
+            </label>
+            <input
+              id="containerBorderColor"
+              type="color"
+              value={borderColor ?? '#e4e4e7'}
+              onChange={(e) =>
+                setProp((props: ContainerProps) => {
+                  props.borderColor = e.target.value;
+                })
+              }
+              className="w-full h-7 rounded border"
+            />
+          </div>
+          <div className="space-y-1">
+            <label htmlFor="containerBorderWidth" className="text-[11px] text-zinc-600">
+              {t('borderWidth')}
+            </label>
+            <input
+              id="containerBorderWidth"
+              type="number"
+              min={1}
+              max={20}
+              value={borderWidth ?? 1}
+              onChange={(e) =>
+                setProp((props: ContainerProps) => {
+                  props.borderWidth = Number(e.target.value);
+                })
+              }
+              className="w-full px-2 py-1 border rounded text-sm"
+            />
+          </div>
+        </div>
+        <div className="space-y-1">
+          <label htmlFor="containerBorderStyle" className="text-[11px] text-zinc-600">
+            {t('borderStyle')}
+          </label>
+          <select
+            id="containerBorderStyle"
+            value={borderStyle ?? 'solid'}
+            onChange={(e) =>
+              setProp((props: ContainerProps) => {
+                props.borderStyle = e.target.value as BorderStyle;
+              })
+            }
+            className="w-full px-2 py-1 border rounded text-sm"
+          >
+            {BORDER_STYLE_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {t(`borderStyle_${opt}`)}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
     </div>
   );
 };
@@ -344,6 +465,13 @@ Container.craft = {
     layout: 'vertical' as LayoutMode,
     gap: 0,
     gridColumns: 2,
+    borderTop: false,
+    borderRight: false,
+    borderBottom: false,
+    borderLeft: false,
+    borderColor: '#e4e4e7',
+    borderStyle: 'solid' as BorderStyle,
+    borderWidth: 1,
   },
   related: {
     settings: ContainerSettings,
