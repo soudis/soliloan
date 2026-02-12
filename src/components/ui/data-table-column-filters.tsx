@@ -1,5 +1,5 @@
-import { ViewType } from '@prisma/client';
-import { TableState } from '@tanstack/react-table';
+import type { ViewType } from '@prisma/client';
+import type { TableState } from '@tanstack/react-table';
 
 import { useTableStore } from '@/store/table-store';
 
@@ -74,7 +74,6 @@ export function DataTableColumnFilters({ columnFilters, state, viewType }: DataT
                         }}
                       />
                     );
-                  case 'text':
                   default:
                     return (
                       <TextFilter

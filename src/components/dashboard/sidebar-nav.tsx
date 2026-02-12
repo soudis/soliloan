@@ -1,9 +1,12 @@
 'use client';
 
-import { History, LayoutDashboard, Settings, Users, Wallet } from 'lucide-react';
+import { History, LayoutDashboard, LogOut, Settings, Users, Wallet } from 'lucide-react';
+import type { Session } from 'next-auth';
+import { signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 
 import { ThemeSelector } from '@/components/theme-selector';
+import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/store';
 
 import { NavItem } from './nav-item';
@@ -11,9 +14,10 @@ import ProjectSelector from './project-selector';
 
 interface SidebarNavProps {
   isSidebarOpen: boolean;
+  session: Session;
 }
 
-export function SidebarNav({ isSidebarOpen }: SidebarNavProps) {
+export function SidebarNav({ isSidebarOpen, session }: SidebarNavProps) {
   const t = useTranslations('navigation');
   const commonT = useTranslations('common');
   const { toggleSidebar } = useAppStore();
@@ -48,7 +52,28 @@ export function SidebarNav({ isSidebarOpen }: SidebarNavProps) {
           </nav>
 
           {/* Theme Selector at the bottom of the sidebar */}
-          <div className="mt-auto pt-4 border-t">
+          <div className="mt-auto pt-4 border-t space-y-4">
+            {/* User Profile for Mobile */}
+            <div className="md:hidden space-y-3">
+              <div className="flex items-center gap-2 px-2">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                  {session?.user?.name?.[0] || session?.user?.email?.[0]?.toUpperCase()}
+                </div>
+                <div className="flex flex-col overflow-hidden">
+                  <span className="text-sm font-medium truncate">{session?.user?.name}</span>
+                  <span className="text-xs text-muted-foreground truncate">{session?.user?.email}</span>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
+                onClick={() => signOut()}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                {t('signOut')}
+              </Button>
+            </div>
+
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">{commonT('ui.theme')}</span>
             </div>

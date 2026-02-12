@@ -56,10 +56,12 @@ export const inNumberRangeFilter: FilterFn<unknown> = (row, columnId, filterValu
   // Check if the number is within the range
   if (filterValue[0] !== null && filterValue[1] !== null) {
     return rowValue >= filterValue[0] && rowValue <= filterValue[1];
-  } else if (filterValue[0] !== null) {
+  }
+  if (filterValue[0] !== null) {
     // Only min value is set
     return rowValue >= filterValue[0];
-  } else if (filterValue[1] !== null) {
+  }
+  if (filterValue[1] !== null) {
     // Only max value is set
     return rowValue <= filterValue[1];
   }
@@ -85,11 +87,13 @@ export const dateRangeFilter: FilterFn<unknown> = (row, columnId, filterValue) =
     // Set end date to end of day to include the entire day
     endDate.setUTCHours(23, 59, 59, 999);
     return rowDate >= startDate && rowDate <= endDate;
-  } else if (filterValue[0]) {
+  }
+  if (filterValue[0]) {
     // Only start date is set
     const startDate = new Date(filterValue[0]);
     return rowDate >= startDate;
-  } else if (filterValue[1]) {
+  }
+  if (filterValue[1]) {
     // Only end date is set
     const endDate = new Date(filterValue[1]);
     // Set end date to end of day to include the entire day
@@ -195,11 +199,11 @@ export function DataTable<TData, TValue>({
     allColumns.push({
       id: 'actions',
       header: () => (
-        <div className="flex justify-center">
+        <div className="flex h-full w-full items-center justify-center">
           <Settings className="h-4 w-4" />
         </div>
       ),
-      cell: ({ row }) => actions(row.original),
+      cell: ({ row }) => <div className="flex items-center justify-center">{actions(row.original)}</div>,
       meta: {
         fixed: true,
       },

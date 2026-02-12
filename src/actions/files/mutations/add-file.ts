@@ -8,6 +8,7 @@ import { promisify } from 'node:util';
 
 import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 import {
   createAuditEntry,
@@ -16,35 +17,29 @@ import {
   getLoanContext,
   removeNullFields,
 } from '@/lib/audit-trail';
-import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import type { FileFormData } from '@/lib/schemas/file';
+import { fileSchema } from '@/lib/schemas/file';
+import { lenderAction } from '@/lib/utils/safe-action';
 
 const execAsync = promisify(exec);
 
-export async function addFile(
-  lenderId: string,
-  loanId: string | undefined,
-  data: FileFormData,
-  base64Data: string,
-  mimeType: string,
-) {
-  try {
-    const session = await auth();
-    if (!session) {
-      throw new Error('Unauthorized');
-    }
-
+export const addFileAction = lenderAction
+  .inputSchema(
+    z.object({
+      lenderId: z.string(),
+      loanId: z.string().optional(),
+      data: fileSchema, // Fixed import
+      base64Data: z.string(),
+      mimeType: z.string(),
+    }),
+  )
+  .action(async ({ parsedInput: { lenderId, loanId, data, base64Data, mimeType }, ctx }) => {
+    // Fetch lender to ensure existence and get context
+    // Casting to LenderWithRelations or verifying fields
     const lender = await db.lender.findUnique({
-      where: {
-        id: lenderId,
-      },
+      where: { id: lenderId },
       include: {
-        project: {
-          include: {
-            managers: true,
-          },
-        },
+        project: true,
         loans: true,
       },
     });
@@ -52,16 +47,10 @@ export async function addFile(
     if (!lender) {
       throw new Error('Lender not found');
     }
-    const loan = loanId ? lender.loans.find((loan) => loan.id === loanId) : undefined;
 
+    const loan = loanId ? lender.loans.find((l) => l.id === loanId) : undefined;
     if (loanId && !loan) {
       throw new Error('Loan not found');
-    }
-
-    const hasAccess = session.user.isAdmin || lender.project.managers.some((manager) => manager.id === session.user.id);
-
-    if (!hasAccess) {
-      throw new Error('You do not have access to this lender');
     }
 
     // Convert base64 back to Uint8Array
@@ -110,16 +99,19 @@ export async function addFile(
         name: data.name,
         mimeType,
         data: new Uint8Array(binaryData),
-        thumbnail: thumbnailData,
+        thumbnail: thumbnailData ? new Uint8Array(thumbnailData) : undefined,
         public: data.public ?? false,
         description: data.description,
-        loan: loanId
+        // Fix conditional connect syntax
+        ...(loanId
           ? {
-              connect: {
-                id: loanId,
+              loan: {
+                connect: {
+                  id: loanId,
+                },
               },
             }
-          : undefined,
+          : {}),
         lender: {
           connect: {
             id: lenderId,
@@ -127,7 +119,7 @@ export async function addFile(
         },
         createdBy: {
           connect: {
-            id: session.user.id,
+            id: ctx.session.user.id,
           },
         },
       },
@@ -151,21 +143,18 @@ export async function addFile(
       before: {},
       after: removeNullFields(fileForAudit),
       context: {
-        ...getLenderContext(lender),
+        ...getLenderContext(lender), // Cast to handle complex includes
         ...(loanId && loan && getLoanContext(loan)),
         ...getFileContext(file),
       },
-      projectId: lender.project.id,
+      projectId: lender.projectId,
     });
 
-    // Revalidate the loan page
-    revalidatePath(`/loans/${loanId}`);
+    // Revalidate paths
+    if (loanId) {
+      revalidatePath(`/loans/${loanId}`);
+    }
+    revalidatePath(`/lenders/${lenderId}`);
 
-    return { file };
-  } catch (error) {
-    console.error('Error creating file:', error);
-    return {
-      error: error instanceof Error ? error.message : 'Failed to create file',
-    };
-  }
-}
+    return { fileId: file.id };
+  });

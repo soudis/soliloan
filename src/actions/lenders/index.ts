@@ -1,5 +1,5 @@
-export { createLender } from './mutations/create-lender';
-export { revalidateLender } from './mutations/revalidate-lender';
-export { updateLender } from './mutations/update-lender';
-export { getLenderById } from './queries/get-lender';
-export { getLendersByProjectId } from './queries/get-lenders-by-project';
+export { createLenderAction } from './mutations/create-lender';
+export { deleteLenderAction } from './mutations/delete-lender';
+export { updateLenderAction } from './mutations/update-lender';
+export { getLenderAction } from './queries/get-lender';
+export { getLendersByProjectAction } from './queries/get-lenders-by-project';

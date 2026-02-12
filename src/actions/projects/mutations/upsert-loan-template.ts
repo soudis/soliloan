@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db';
 import { type LoanTemplateFormData, loanTemplateFormSchema } from '@/lib/schemas/configuration';
-import { configurationManageAction } from '@/lib/utils/safe-action';
+import { configurationAction } from '@/lib/utils/safe-action';
 import { omit } from 'lodash';
 
 export const upsertLoanTemplate = async (template: LoanTemplateFormData) => {
@@ -18,6 +18,6 @@ export const upsertLoanTemplate = async (template: LoanTemplateFormData) => {
   });
 };
 
-export const upsertLoanTemplateAction = configurationManageAction
+export const upsertLoanTemplateAction = configurationAction
   .inputSchema(loanTemplateFormSchema)
-  .action(async ({ ctx, parsedInput }) => upsertLoanTemplate(parsedInput));
+  .action(async ({ parsedInput }) => upsertLoanTemplate(parsedInput));

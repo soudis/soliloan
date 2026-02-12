@@ -7,8 +7,8 @@ import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
+import { getLoansByProjectAction } from '@/actions';
 import { getDashboardStats } from '@/actions/dashboard/get-dashboard-stats';
-import { getLoansByProjectId } from '@/actions/loans/queries/get-loans-by-project';
 import { LoanAmountDistributionChart } from '@/components/dashboard/loan-amount-distribution-chart';
 import { LoanStatusChart } from '@/components/dashboard/loan-status-chart';
 import { YearlyDataChart } from '@/components/dashboard/yearly-data-chart';
@@ -42,11 +42,11 @@ export default function DashboardPage() {
     queryKey: ['loans-by-project', selectedProject?.id],
     queryFn: async () => {
       if (!selectedProject) return null;
-      const result = await getLoansByProjectId(selectedProject.id);
-      if (result.error) {
-        throw new Error(result.error);
+      const result = await getLoansByProjectAction({ projectId: selectedProject.id });
+      if (result.serverError) {
+        throw new Error(result.serverError);
       }
-      return result.loans;
+      return result.data?.loans;
     },
     enabled: !!selectedProject,
   });

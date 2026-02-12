@@ -6,9 +6,9 @@ import { SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
-import { createView } from '@/actions';
-import { deleteView } from '@/actions/views';
-import { updateView } from '@/actions/views/mutations/update-view';
+import { createViewAction } from '@/actions/views/mutations/create-view';
+import { deleteViewAction } from '@/actions/views/mutations/delete-view';
+import { updateViewAction } from '@/actions/views/mutations/update-view';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -65,7 +65,7 @@ export function DataTableHeader<TData>({
     setIsSaving(true);
     try {
       // Use type assertion to satisfy the TypeScript compiler
-      const { error, view } = await createView({
+      const result = await createViewAction({
         name,
         type: viewType as ViewType,
         isDefault,
@@ -78,9 +78,11 @@ export function DataTableHeader<TData>({
         },
       });
 
-      if (error) {
-        throw new Error(error);
+      if (result?.serverError || result?.validationErrors) {
+        throw new Error(result.serverError || 'Saving failed');
       }
+
+      const view = result?.data?.view;
 
       // Refresh the view list
       queryClient.invalidateQueries({ queryKey: ['views', viewType] });
@@ -99,14 +101,14 @@ export function DataTableHeader<TData>({
   const handleViewDefault = async (viewId: string, isDefault: boolean) => {
     if (!viewType) return;
 
-    await updateView(viewId, { isDefault });
+    await updateViewAction({ viewId, data: { isDefault } });
     queryClient.invalidateQueries({ queryKey: ['views', viewType] });
   };
 
   const handleViewDelete = async (viewId: string) => {
     if (!viewType) return;
 
-    await deleteView(viewId);
+    await deleteViewAction({ viewId });
     queryClient.invalidateQueries({ queryKey: ['views', viewType] });
   };
 

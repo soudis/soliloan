@@ -3,7 +3,7 @@
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
 import { motion } from 'framer-motion';
-import { Pencil, Trash2, Wallet } from 'lucide-react';
+import { ArrowRightLeft, Files as FilesIcon, NotebookPen, Pencil, Receipt, Trash2, Wallet } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
@@ -16,7 +16,7 @@ import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { useLoanTabsStore } from '@/store/loan-tabs-store';
 import type { LoanWithCalculations } from '@/types/loans';
 
-import { deleteLoan } from '@/actions';
+import { deleteLoanAction } from '@/actions/loans';
 import { useRouter } from '@/i18n/navigation';
 import { useLenderLoanSelectionStore } from '@/store/lender-loan-selection-store';
 import { useProjects } from '@/store/projects-store';
@@ -24,11 +24,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-items';
 import { Files } from '../generic/files';
+import { Notes } from '../generic/notes';
 import { SectionCard } from '../generic/section-card';
 import { Button } from '../ui/button';
 import { BalanceTable } from './balance-table';
 import { LoanContractStatusBadge } from './loan-contract-status-badge';
-import { LoanNotes } from './loan-notes';
 import { LoanStatusBadge } from './loan-status-badge';
 import { LoanTransactions } from './loan-transactions';
 
@@ -82,10 +82,10 @@ export function LoanCard({ loan, className }: LoanCardProps) {
     const toastId = toast.loading(t('delete.loading'));
 
     try {
-      const result = await deleteLoan(loan.id);
+      const result = await deleteLoanAction({ loanId: loan.id });
 
-      if (result.error) {
-        toast.error(t(`errors.${result.error}`), {
+      if (result?.serverError || result?.validationErrors) {
+        toast.error(t(`errors.${result.serverError || 'Validation failed'}`), {
           id: toastId,
         });
       } else {
@@ -110,27 +110,10 @@ export function LoanCard({ loan, className }: LoanCardProps) {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="flex gap-2 justify-end mb-4">
-        <Button variant="outline" size="sm" onClick={() => router.push(`/loans/${loan.id}/edit`)}>
-          <Pencil className="h-4 w-4 mr-2" />
-          {commonT('ui.actions.edit')}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleDeleteClick}
-          className="text-destructive hover:text-destructive/90 border-destructive/50 hover:bg-destructive/5"
-        >
-          <Trash2 className="h-4 w-4 mr-2" />
-          {commonT('ui.actions.delete')}
-        </Button>
-      </div>
-
       <SectionCard
         className={className}
-        icon={<Wallet className="h-4 w-4 text-muted-foreground" />}
         title={
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div className="flex flex-row items-start justify-between w-full">
             <div className="space-y-1">
               <h3 className="text-lg font-semibold">
                 {t('table.loanNumberShort')} #{loan.loanNumber}
@@ -139,6 +122,26 @@ export function LoanCard({ loan, className }: LoanCardProps) {
                 <LoanContractStatusBadge loan={loan} />
                 <LoanStatusBadge status={loan.status} />
               </div>
+            </div>
+            <div className="flex gap-2 ml-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 w-9 p-0 md:h-auto md:w-auto md:px-3 md:py-1.5"
+                onClick={() => router.push(`/loans/${loan.id}/edit`)}
+              >
+                <Pencil className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">{commonT('ui.actions.edit')}</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDeleteClick}
+                className="h-9 w-9 p-0 md:h-auto md:w-auto md:px-3 md:py-1.5 text-destructive hover:text-destructive/90 border-destructive/50 hover:bg-destructive/5"
+              >
+                <Trash2 className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">{commonT('ui.actions.delete')}</span>
+              </Button>
             </div>
           </div>
         }
@@ -201,37 +204,43 @@ export function LoanCard({ loan, className }: LoanCardProps) {
           onValueChange={(value) => setActiveTab(loan.id, value as 'transactions' | 'files' | 'notes' | 'bookings')}
           className="mt-6"
         >
-          <TabsList className="w-full border-b border-border bg-transparent p-0 mt-4 flex justify-start gap-0 overflow-x-auto">
-            <TabsTrigger
-              value="transactions"
-              className="rounded-none border-b-2 border-transparent px-6 pt-1 pb-2 text-lg data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent shadow-none data-[state=active]:shadow-none cursor-pointer"
-            >
-              {t('table.transactions')}
+          <TabsList variant="modern" className="md:mt-4">
+            <TabsTrigger value="transactions" variant="modern" size="sm">
+              <ArrowRightLeft className="h-5 w-5 md:h-4 md:w-4" />
+              <span>{t('table.transactions')}</span>
             </TabsTrigger>
-            <TabsTrigger
-              value="bookings"
-              className="rounded-none border-b-2 border-transparent px-6 pt-1 pb-2 text-lg data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent shadow-none data-[state=active]:shadow-none cursor-pointer"
-            >
-              {t('table.bookings')}
+            <TabsTrigger value="bookings" variant="modern" size="sm">
+              <Receipt className="h-5 w-5 md:h-4 md:w-4" />
+              <span>{t('table.bookings')}</span>
             </TabsTrigger>
-            <TabsTrigger
-              value="files"
-              className="rounded-none border-b-2 border-transparent px-6 pt-1 pb-2   text-lg data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent shadow-none data-[state=active]:shadow-none cursor-pointer"
-            >
-              {t('table.files')}
+            <TabsTrigger value="files" variant="modern" size="sm">
+              <div className="relative">
+                <FilesIcon className="h-5 w-5 md:h-4 md:w-4" />
+                {loan.files && loan.files.length > 0 && (
+                  <span className="absolute -top-2 -right-3 md:hidden flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-[9px] border border-background">
+                    {loan.files.length}
+                  </span>
+                )}
+              </div>
+              <span>{t('table.files')}</span>
               {loan.files && loan.files.length > 0 && (
-                <Badge variant="secondary" className="ml-2">
+                <Badge variant="secondary" className="ml-2 hidden md:inline-flex h-5 px-1.5">
                   {loan.files.length}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger
-              value="notes"
-              className="rounded-none border-b-2 border-transparent px-6 pt-1 pb-2  text-lg data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent shadow-none data-[state=active]:shadow-none cursor-pointer"
-            >
-              {t('table.notes')}
+            <TabsTrigger value="notes" variant="modern" size="sm">
+              <div className="relative">
+                <NotebookPen className="h-5 w-5 md:h-4 md:w-4" />
+                {loan.notes && loan.notes.length > 0 && (
+                  <span className="absolute -top-2 -right-3 md:hidden flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-[9px] border border-background">
+                    {loan.notes.length}
+                  </span>
+                )}
+              </div>
+              <span>{t('table.notes')}</span>
               {loan.notes && loan.notes.length > 0 && (
-                <Badge variant="secondary" className="ml-2">
+                <Badge variant="secondary" className="ml-2 hidden md:inline-flex h-5 px-1.5">
                   {loan.notes.length}
                 </Badge>
               )}
@@ -251,7 +260,7 @@ export function LoanCard({ loan, className }: LoanCardProps) {
             <Files lenderId={loan.lender.id} loanId={loan.id} files={loan.files} />
           </TabsContent>
           <TabsContent value="notes">
-            <LoanNotes loanId={loan.id} notes={loan.notes} />
+            <Notes notes={loan.notes} loanId={loan.id} lenderId={loan.lender.id} />
           </TabsContent>
         </Tabs>
       </SectionCard>

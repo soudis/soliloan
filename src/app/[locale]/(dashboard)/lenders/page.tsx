@@ -6,7 +6,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { getLendersByProjectId } from '@/actions/lenders';
+import { getLendersByProjectAction } from '@/actions/lenders';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -37,11 +37,11 @@ export default function LendersPage() {
     queryKey: ['lenders', selectedProject?.id],
     queryFn: async () => {
       if (!selectedProject) return [];
-      const result = await getLendersByProjectId(selectedProject.id);
-      if (result.error) {
-        throw new Error(result.error);
+      const result = await getLendersByProjectAction({ projectId: selectedProject.id });
+      if (result.serverError) {
+        throw new Error(result.serverError);
       }
-      return result.lenders;
+      return result.data?.lenders;
     },
     enabled: !!selectedProject,
   });
@@ -243,7 +243,7 @@ export default function LendersPage() {
         showFilter={true}
         onRowClick={(row) => router.push(`/lenders/${row.id}`)}
         actions={(row) => (
-          <div className="flex items-center justify-end space-x-2">
+          <div className="flex items-center space-x-2">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>

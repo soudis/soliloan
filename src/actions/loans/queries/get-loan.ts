@@ -2,19 +2,16 @@
 
 import type { Loan } from '@prisma/client';
 
-import { auth } from '@/lib/auth';
 import { calculateLoanFields } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
+import { loanIdSchema } from '@/lib/schemas/common';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
+import { loanAction } from '@/lib/utils/safe-action';
 import type { LoanWithRelations } from '@/types/loans';
+import { z } from 'zod';
 
-export async function getLoanById(loanId: string, toDate?: Date) {
+async function getLoanById(loanId: string, date?: Date) {
   try {
-    const session = await auth();
-    if (!session) {
-      throw new Error('Unauthorized');
-    }
-
     // Fetch the loan
     const loan = await db.loan.findUnique({
       where: {
@@ -25,9 +22,11 @@ export async function getLoanById(loanId: string, toDate?: Date) {
           include: {
             project: {
               include: {
-                managers: true,
                 configuration: { select: { interestMethod: true } },
               },
+            },
+            notes: {
+              include: { createdBy: { select: { id: true, name: true } } },
             },
             user: {
               select: {
@@ -37,9 +36,6 @@ export async function getLoanById(loanId: string, toDate?: Date) {
                 lastLogin: true,
                 lastInvited: true,
               },
-            },
-            notes: {
-              include: { createdBy: { select: { id: true, name: true } } },
             },
             files: {
               select: {
@@ -59,7 +55,9 @@ export async function getLoanById(loanId: string, toDate?: Date) {
           },
         },
         transactions: true,
-        notes: { include: { createdBy: { select: { id: true, name: true } } } },
+        notes: {
+          include: { createdBy: { select: { id: true, name: true } } },
+        },
         files: {
           select: {
             id: true,
@@ -82,17 +80,11 @@ export async function getLoanById(loanId: string, toDate?: Date) {
       throw new Error('Loan not found');
     }
 
-    // Check if the user has access to the loan's project
-    const hasAccess = loan.lender.project.managers.some((manager) => manager.id === session.user.id);
-
-    if (!hasAccess) {
-      throw new Error('You do not have access to this loan');
-    }
-
     // Calculate virtual fields
+    // Ensure we pass the lender with parsed fields
     const loanWithCalculations = calculateLoanFields<Omit<LoanWithRelations, keyof Loan>>(
       parseAdditionalFields({ ...loan, lender: parseAdditionalFields(loan.lender) }),
-      { toDate },
+      { toDate: date },
     );
 
     return { loan: loanWithCalculations };
@@ -103,3 +95,9 @@ export async function getLoanById(loanId: string, toDate?: Date) {
     };
   }
 }
+
+export const getLoanAction = loanAction
+  .inputSchema(loanIdSchema.extend({ date: z.coerce.date().nullish() }))
+  .action(async ({ parsedInput: { loanId, date } }) => {
+    return getLoanById(loanId, date ?? undefined);
+  });

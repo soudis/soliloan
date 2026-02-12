@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
 import { toast } from 'sonner';
 
-import { getLenderById, updateLender } from '@/actions/lenders';
+import { getLenderAction, updateLenderAction } from '@/actions/lenders';
 import { LenderForm } from '@/components/lenders/lender-form';
 import { useRouter } from '@/i18n/navigation';
 
@@ -34,11 +34,11 @@ export default function EditLenderPage({
   } = useQuery({
     queryKey: ['lender', resolvedParams.lenderId],
     queryFn: async () => {
-      const result = await getLenderById(resolvedParams.lenderId);
-      if (result.error) {
-        throw new Error(result.error);
+      const result = await getLenderAction({ lenderId: resolvedParams.lenderId });
+      if (result.serverError) {
+        throw new Error(result.serverError);
       }
-      return result.lender;
+      return result.data?.lender;
     },
     enabled: !!resolvedParams.lenderId && !!session,
   });
@@ -66,10 +66,10 @@ export default function EditLenderPage({
       setError(null);
 
       // Update the lender using the server action
-      const result = await updateLender(resolvedParams.lenderId, data);
+      const result = await updateLenderAction({ lenderId: resolvedParams.lenderId, data });
 
-      if (result.error) {
-        throw new Error(result.error);
+      if (result?.serverError || result?.validationErrors) {
+        throw new Error(result.serverError || 'Validation failed');
       }
 
       // Show success message

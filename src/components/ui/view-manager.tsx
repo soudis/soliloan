@@ -90,7 +90,7 @@ export function ViewManager({ onViewSelect, onViewDelete, onViewDefault, views, 
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6"
-                onClick={(e) => handleDefault(view.id, view.isDefault ? false : true, e)}
+                onClick={(e) => handleDefault(view.id, !view.isDefault, e)}
               >
                 {view.isDefault ? (
                   <Star className="h-4 w-4 text-primary" />

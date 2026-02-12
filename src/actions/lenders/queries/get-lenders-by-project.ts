@@ -1,9 +1,11 @@
 'use server';
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { db } from '@/lib/db';
+import { projectIdSchema } from '@/lib/schemas/common';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
+import { projectAction } from '@/lib/utils/safe-action';
 
-export async function getLendersByProjectId(projectId: string) {
+async function getLendersByProjectId(projectId: string) {
   try {
     const lenders = await db.lender.findMany({
       where: {
@@ -84,3 +86,9 @@ export async function getLendersByProjectId(projectId: string) {
     };
   }
 }
+
+export const getLendersByProjectAction = projectAction
+  .inputSchema(projectIdSchema)
+  .action(async ({ parsedInput: { projectId } }) => {
+    return getLendersByProjectId(projectId);
+  });

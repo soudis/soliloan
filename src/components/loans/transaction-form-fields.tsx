@@ -7,11 +7,12 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
-import { getLoanById } from '@/actions';
+import { getLoanAction } from '@/actions';
 import { FormDatePicker } from '@/components/form/form-date-picker';
 import { FormSelect } from '@/components/form/form-select';
 import type { TransactionFormData } from '@/lib/schemas/transaction';
 
+import { toast } from 'sonner';
 import { FormNumberInput } from '../form/form-number-input';
 
 const formatter = new Intl.NumberFormat('de-DE', {
@@ -32,27 +33,33 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
 
   const { data: loanToDate, isLoading: isLoadingLoanToDate } = useQuery({
     queryKey: ['loan', loanId, date],
-    queryFn: () => getLoanById(loanId, (date ?? '') === '' ? new Date() : (date ?? new Date())),
+    queryFn: async () => {
+      const result = await getLoanAction({ loanId, date: (date ?? '') === '' ? new Date() : (date ?? new Date()) });
+      if (result?.serverError || result?.validationErrors) {
+        toast.error(result.serverError);
+      }
+      return result.data?.loan ?? null;
+    },
   });
 
   useEffect(() => {
-    if (loanToDate?.loan?.transactions.length === 0 && (type as string) === '') {
+    if (loanToDate?.transactions.length === 0 && (type as string) === '') {
       setValue('type', TransactionType.DEPOSIT);
     }
   }, [loanToDate, type, setValue]);
 
   useEffect(() => {
-    if (loanToDate?.loan && !isLoadingLoanToDate) {
+    if (loanToDate && !isLoadingLoanToDate) {
       if (type === TransactionType.DEPOSIT) {
         setMinAmount(0.01);
-        setMaxAmount(loanToDate.loan.amount);
+        setMaxAmount(loanToDate.amount);
       }
       if (type === TransactionType.WITHDRAWAL || type === TransactionType.NOTRECLAIMEDPARTIAL) {
-        setMaxAmount(loanToDate.loan.balance - 0.01);
+        setMaxAmount(loanToDate.balance - 0.01);
         setMinAmount(0.01);
       }
       if (type === TransactionType.INTERESTPAYMENT) {
-        setMaxAmount(Math.min(loanToDate.loan.interest + loanToDate.loan.interestPaid, loanToDate.loan.balance - 0.01));
+        setMaxAmount(Math.min(loanToDate.interest + loanToDate.interestPaid, loanToDate.balance - 0.01));
         setMinAmount(0.01);
       }
     }
@@ -60,16 +67,16 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
 
   useEffect(() => {
     if (
-      loanToDate?.loan &&
+      loanToDate &&
       !isLoadingLoanToDate &&
       !!date &&
       (type === TransactionType.TERMINATION || type === TransactionType.NOTRECLAIMED)
     ) {
-      setValue('amount', formatter.format(loanToDate.loan.balance) as unknown as number);
+      setValue('amount', formatter.format(loanToDate.balance) as unknown as number);
       setAmountCalculated(true);
     }
     if (
-      loanToDate?.loan &&
+      loanToDate &&
       amountCalculated &&
       type !== TransactionType.TERMINATION &&
       type !== TransactionType.NOTRECLAIMED
@@ -86,7 +93,7 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
   });
 
   const latestTransaction = useMemo(() => {
-    return loanToDate?.loan?.transactions.sort((a, b) => a.date.getTime() - b.date.getTime())[0];
+    return loanToDate?.transactions.sort((a, b) => a.date.getTime() - b.date.getTime())[0];
   }, [loanToDate]);
 
   return (
@@ -96,22 +103,18 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
         label={t('transactions.type')}
         placeholder={commonT('ui.form.selectPlaceholder')}
         options={[
-          createTypeOption(
-            TransactionType.DEPOSIT,
-            loanToDate?.loan && loanToDate.loan.deposits >= loanToDate.loan.amount,
-          ),
+          createTypeOption(TransactionType.DEPOSIT, !!loanToDate && loanToDate?.deposits >= loanToDate.amount),
           'divider',
-          createTypeOption(TransactionType.WITHDRAWAL, loanToDate?.loan && loanToDate.loan.balance <= 0),
-          createTypeOption(TransactionType.TERMINATION, loanToDate?.loan && loanToDate.loan.balance <= 0),
+          createTypeOption(TransactionType.WITHDRAWAL, !loanToDate || loanToDate?.balance <= 0),
+          createTypeOption(TransactionType.TERMINATION, !loanToDate || loanToDate?.balance <= 0),
           'divider',
           createTypeOption(
             TransactionType.INTERESTPAYMENT,
-            (loanToDate?.loan && loanToDate.loan.interest + loanToDate.loan.interestPaid <= 0) ||
-              (loanToDate?.loan && loanToDate.loan.balance <= 0),
+            !loanToDate || loanToDate.interest + loanToDate.interestPaid <= 0 || !loanToDate || loanToDate.balance <= 0,
           ),
           'divider',
-          createTypeOption(TransactionType.NOTRECLAIMEDPARTIAL, loanToDate?.loan && loanToDate.loan.balance <= 0),
-          createTypeOption(TransactionType.NOTRECLAIMED, loanToDate?.loan && loanToDate.loan.balance <= 0),
+          createTypeOption(TransactionType.NOTRECLAIMEDPARTIAL, !loanToDate || loanToDate.balance <= 0),
+          createTypeOption(TransactionType.NOTRECLAIMED, !loanToDate || loanToDate.balance <= 0),
         ]}
       />
 

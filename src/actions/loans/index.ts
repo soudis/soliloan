@@ -1,7 +1,7 @@
-export { addTransaction } from './mutations/add-transaction';
-export { deleteTransaction } from './mutations/delete-transaction';
-export { createLoan } from './mutations/create-loan';
-export { updateLoan } from './mutations/update-loan';
-export { deleteLoan } from './mutations/delete-loan';
-export { getLoanById } from './queries/get-loan';
-export { getLoansByProjectId } from './queries/get-loans-by-project';
+export { addTransactionAction } from './mutations/add-transaction';
+export { deleteTransactionAction } from './mutations/delete-transaction';
+export { createLoanAction } from './mutations/create-loan';
+export { updateLoanAction } from './mutations/update-loan';
+export { deleteLoanAction } from './mutations/delete-loan';
+export { getLoanAction } from './queries/get-loan';
+export { getLoansByProjectAction } from './queries/get-loans-by-project';

@@ -6,7 +6,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { getLoansByProjectId } from '@/actions/loans';
+import { getLoansByProjectAction } from '@/actions';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { useRouter } from '@/i18n/navigation';
@@ -37,11 +37,11 @@ export default function LoansPage() {
     queryKey: ['loans', selectedProject?.id],
     queryFn: async () => {
       if (!selectedProject) return [];
-      const result = await getLoansByProjectId(selectedProject.id);
-      if (result.error) {
-        throw new Error(result.error);
+      const result = await getLoansByProjectAction({ projectId: selectedProject.id });
+      if (result.serverError) {
+        throw new Error(result.serverError);
       }
-      return result.loans;
+      return result.data?.loans;
     },
     enabled: !!selectedProject,
   });
@@ -286,7 +286,7 @@ export default function LoansPage() {
         showFilter={true}
         onRowClick={(row) => router.push(`/lenders/${row.lender.id}?loanId=${row.id}`)}
         actions={(row) => (
-          <div className="flex items-center justify-end space-x-2">
+          <div className="flex items-center space-x-2">
             <Button
               variant="ghost"
               size="icon"

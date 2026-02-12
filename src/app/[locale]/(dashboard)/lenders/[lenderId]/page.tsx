@@ -3,18 +3,18 @@
 import { useQuery } from '@tanstack/react-query';
 import { use } from 'react';
 
-import { getLenderById } from '@/actions/lenders';
+import { getLenderAction } from '@/actions';
 import { LenderPage } from '@/components/lenders/lender-page';
 
 // Function to fetch lender data using the server action
 const fetchLender = async (lenderId: string) => {
-  const result = await getLenderById(lenderId);
+  const result = await getLenderAction({ lenderId });
 
-  if ('error' in result) {
-    throw new Error(result.error);
+  if (result.serverError) {
+    throw new Error(result.serverError);
   }
 
-  return result.lender;
+  return result.data?.lender;
 };
 
 export default function LenderDetailsPage({

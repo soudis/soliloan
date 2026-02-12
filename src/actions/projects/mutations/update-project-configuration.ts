@@ -3,22 +3,22 @@
 import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
-import { getProject } from '@/actions/projects/queries/get-project';
+import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
 import { createAuditEntry, getChangedFields, removeNullFields } from '@/lib/audit-trail';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { type ConfigurationFormData, configurationFormSchema } from '@/lib/schemas/configuration';
-import { projectManageAction } from '@/lib/utils/safe-action';
+import { projectAction } from '@/lib/utils/safe-action';
 import { z } from 'zod';
 
 export async function updateConfiguration(projectId: string, data: ConfigurationFormData) {
   const session = await auth();
   if (!session) {
-    throw new Error('Unauthorized');
+    throw new Error('error.unauthorized');
   }
 
   // Fetch the current project
-  const { project } = await getProject(projectId);
+  const { project } = await getProjectUnsafe(projectId);
 
   if (!project) {
     throw new Error('error.project.notFound');
@@ -26,8 +26,6 @@ export async function updateConfiguration(projectId: string, data: Configuration
 
   // Get the current configuration for audit trail
   const currentConfig = project.configuration;
-
-  console.log('data', data);
 
   // Update the project configuration
   const configuration = await db.configuration.update({
@@ -56,10 +54,10 @@ export async function updateConfiguration(projectId: string, data: Configuration
   // Revalidate the project configuration page
   revalidatePath('/configuration');
 
-  return getProject(projectId);
+  return getProjectUnsafe(projectId);
 }
 
-export const updateConfigurationAction = projectManageAction
+export const updateConfigurationAction = projectAction
   .inputSchema(
     z.object({
       projectId: z.string(),

@@ -8,7 +8,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { sendInvitationEmail } from '@/actions/users';
+import { deleteLenderAction } from '@/actions/lenders/mutations/delete-lender';
+import { sendInvitationEmailAction } from '@/actions/users';
 import { BalanceTable } from '@/components/loans/balance-table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -64,17 +65,21 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
     lender.interestError !== undefined;
 
   // Handle sending invitation email
+  // Handle sending invitation email
   const handleSendInvitation = async () => {
     if (!lender.user) return;
 
     setIsSendingInvitation(true);
     try {
-      const result = await sendInvitationEmail(lender.user.id, selectedProject?.name ?? '');
-      if (result.success) {
+      // We pass object compatible with schema: { lenderId: ... }
+      const result = await sendInvitationEmailAction({ lenderId: lender.id });
+      if (result?.data?.success) {
         toast.success(t('details.invitationSent'));
         queryClient.invalidateQueries({ queryKey: ['lender'] });
       } else {
-        toast.error(result.error || t('details.invitationError'));
+        // Safe action error handling
+        const errorMessage = result?.serverError || t('details.invitationError');
+        toast.error(errorMessage);
       }
     } catch (error) {
       console.error('Error sending invitation:', error);
@@ -92,10 +97,10 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
     const toastId = toast.loading(t('delete.loading'));
 
     try {
-      const result = await deleteLender(lender.id);
+      const result = await deleteLenderAction({ lenderId: lender.id });
 
-      if (result.error) {
-        toast.error(t(`errors.${result.error}`), {
+      if (result?.serverError || result?.validationErrors) {
+        toast.error(t('delete.error'), {
           id: toastId,
         });
       } else {
@@ -105,6 +110,12 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
         await queryClient.invalidateQueries({
           queryKey: ['lender', lender.id],
         });
+        // Redirect to lenders list? Usage implies staying on page or router push?
+        // Usually delete requires redirect if we are on detail page.
+        // But invalidation suggests we might stay or list updates.
+        // Let's assume list update or parent handles it.
+        // Actually router is used in edit button.
+        router.push('/lenders');
       }
     } catch (e) {
       toast.error(t('delete.error'), {

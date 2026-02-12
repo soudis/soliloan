@@ -422,6 +422,7 @@
   },
   "notes": {
     "createTitle": "Notiz erstellen",
+    "editTitle": "Notiz bearbeiten",
     "title": "Notizen",
     "add": "Notiz hinzufügen",
     "delete": "Notiz löschen",
@@ -437,7 +438,8 @@
     "public": "Öffentlich",
     "private": "Intern",
     "publicDescription": "Öffentliche Notizen sind für auch für Kreditgeber*innen sichtbar",
-    "noNotes": "Noch keine Notizen"
+    "noNotes": "Noch keine Notizen",
+    "loan": "Kredit"
   },
   "files": {
     "createTitle": "Datei hochladen",

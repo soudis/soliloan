@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
 import createIntlMiddleware from 'next-intl/middleware';
+import { type NextRequest, NextResponse } from 'next/server';
 
 import { LOCALES, routing } from './i18n/routing';
 import { auth } from './lib/auth';
@@ -21,7 +21,8 @@ export async function middleware(request: NextRequest) {
     if (!authRequest.auth && !isPublicPage) {
       // Redirect to login page if not authenticated and trying to access private page
       return NextResponse.redirect(new URL('/auth/login', authRequest.nextUrl.origin));
-    } else if (authRequest.auth && isPublicPage) {
+    }
+    if (authRequest.auth && isPublicPage) {
       // Redirect to root if authenticated and trying to access public page
       return NextResponse.redirect(new URL('/dashboard', authRequest.nextUrl.origin));
     }
@@ -41,9 +42,9 @@ export async function middleware(request: NextRequest) {
     // Transform Response to NextResponse to be able to get cookies
     const authNextResponse = NextResponse.next(authResponse);
 
-    authNextResponse.cookies.getAll().forEach((cookie) => {
+    for (const cookie of authNextResponse.cookies.getAll()) {
       i18nNextResponse.cookies.set(cookie);
-    });
+    }
   }
 
   return i18nNextResponse;

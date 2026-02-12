@@ -1,6 +1,6 @@
-import { DefaultJWT } from '@auth/core/jwt';
-import { DefaultUser } from '@auth/core/types';
-import { DefaultSession } from 'next-auth';
+import type { DefaultJWT } from '@auth/core/jwt';
+import type { DefaultUser } from '@auth/core/types';
+import type { DefaultSession } from 'next-auth';
 
 import type { AdapterUser as BaseAdapterUser } from 'next-auth/adapters';
 

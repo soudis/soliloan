@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
 import { toast } from 'sonner';
 
-import { getLoanById, updateLoan } from '@/actions/loans';
+import { getLoanAction, updateLoanAction } from '@/actions/loans';
 import { LoanForm } from '@/components/loans/loan-form';
 import { useRouter } from '@/i18n/navigation';
 import { getLenderName } from '@/lib/utils';
@@ -32,11 +32,11 @@ export default function EditLoanPage({
   const { data: loan, isLoading } = useQuery({
     queryKey: ['loan', resolvedParams.loanId],
     queryFn: async () => {
-      const result = await getLoanById(resolvedParams.loanId);
-      if (result.error) {
-        throw new Error(result.error);
+      const result = await getLoanAction({ loanId: resolvedParams.loanId });
+      if (result.serverError) {
+        throw new Error(result.serverError);
       }
-      return result.loan;
+      return result.data?.loan;
     },
     enabled: !!resolvedParams.loanId,
   });
@@ -59,19 +59,22 @@ export default function EditLoanPage({
       setError(null);
 
       // Update the loan using the server action
-      const result = await updateLoan(resolvedParams.loanId, data);
+      const result = await updateLoanAction({ loanId: resolvedParams.loanId, data });
 
-      if (result.error) {
-        throw new Error(result.error);
+      if (result?.serverError || result?.validationErrors) {
+        throw new Error(result.serverError || 'Validation failed');
       }
+
+      const updatedLoan = result?.data?.loan;
 
       // Show success message
       toast.success(t('edit.form.success'));
       // invalidate the loan query
-      queryClient.invalidateQueries({ queryKey: ['lender', result.loan?.lenderId] });
-
-      // Navigate back to the previous page using the router
-      router.push(`/lenders/${result.loan?.lenderId}?loanId=${result.loan?.id}`);
+      if (updatedLoan) {
+        queryClient.invalidateQueries({ queryKey: ['lender', updatedLoan.lenderId] });
+        // Navigate back to the previous page using the router
+        router.push(`/lenders/${updatedLoan.lenderId}?loanId=${updatedLoan.id}`);
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
       setError(error instanceof Error ? error.message : 'An unknown error occurred');

@@ -7,8 +7,8 @@ import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { getLenderById } from '@/actions/lenders';
-import { createLoan } from '@/actions/loans';
+import { getLenderAction } from '@/actions';
+import { createLoanAction } from '@/actions/loans';
 import { LoanForm } from '@/components/loans/loan-form';
 import { useRouter } from '@/i18n/navigation';
 import { getLenderName } from '@/lib/utils';
@@ -35,11 +35,11 @@ export default function NewLoanPage() {
     queryKey: ['lender', lenderId],
     queryFn: async () => {
       if (!lenderId) return null;
-      const result = await getLenderById(lenderId);
-      if (result.error) {
-        throw new Error(result.error);
+      const result = await getLenderAction({ lenderId });
+      if (result.serverError) {
+        throw new Error(result.serverError);
       }
-      return result.lender;
+      return result.data?.lender;
     },
     enabled: !!lenderId,
   });
@@ -60,27 +60,31 @@ export default function NewLoanPage() {
     try {
       setIsSubmitting(true);
       // Get the lender details first
-      const lenderResult = await getLenderById(data.lenderId);
-      if (lenderResult.error) {
-        throw new Error(lenderResult.error);
+      const lenderResult = await getLenderAction({ lenderId: data.lenderId });
+      if (lenderResult.serverError) {
+        throw new Error(lenderResult.serverError);
       }
 
-      if (!lenderResult.lender) {
+      if (!lenderResult.data?.lender) {
         throw new Error('Lender not found');
       }
 
       // Create the loan using the server action
-      const result = await createLoan(data);
+      const result = await createLoanAction({ ...data, lenderId: data.lenderId });
 
-      if (result.error) {
-        throw new Error(result.error);
+      if (result?.serverError || result?.validationErrors) {
+        throw new Error(result.serverError || 'Validation failed');
       }
+
+      const loan = result?.data?.loan;
 
       // Show success message
       toast.success(t('new.form.success'));
-      queryClient.invalidateQueries({ queryKey: ['lender', result.loan?.lenderId] });
-      // Redirect to the loans list page for this project
-      router.push(`/lenders/${result.loan?.lenderId}?loanId=${result.loan?.id}`);
+      if (loan) {
+        queryClient.invalidateQueries({ queryKey: ['lender', loan.lenderId] });
+        // Redirect to the loans list page for this project
+        router.push(`/lenders/${loan.lenderId}?loanId=${loan.id}`);
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
       setError(error instanceof Error ? error.message : 'An unknown error occurred');

@@ -2,7 +2,7 @@ import type { Configuration, File, Lender, Note, Project, User } from '@prisma/c
 
 import type { LoanWithRelations } from './loans';
 
-import type { getLenderById } from '@/actions';
+import type { getLenderAction } from '@/actions';
 import type { AdditionalFieldValues } from '@/lib/schemas/common';
 
 export type LenderWithRelations = Lender & {
@@ -22,4 +22,6 @@ export type LenderWithRelations = Lender & {
   additionalFields?: AdditionalFieldValues;
 };
 
-export type LenderWithCalculations = NonNullable<Awaited<ReturnType<typeof getLenderById>>['lender']>;
+export type LenderWithCalculations = NonNullable<
+  NonNullable<Awaited<ReturnType<typeof getLenderAction>>['data']>['lender']
+>;

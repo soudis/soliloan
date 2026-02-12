@@ -1,3 +1,2 @@
-export { revalidateProject } from './mutations/revalidate-project';
-export { getProject as getProjectConfiguration } from './queries/get-project';
-export { getProjects } from './queries/get-projects';
+export { getProjectAction, getProjectUnsafe } from './queries/get-project';
+export { getProjectsAction } from './queries/get-projects';

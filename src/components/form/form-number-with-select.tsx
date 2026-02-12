@@ -51,7 +51,7 @@ export function FormNumberWithSelect({
                   min={numberMin}
                   step={numberStep}
                   {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
                   className="rounded-r-none h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none border-r-0"
                 />
               </FormControl>

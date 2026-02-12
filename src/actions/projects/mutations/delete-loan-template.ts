@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db';
 import { type LoanTemplateFormData, loanTemplateFormSchema } from '@/lib/schemas/configuration';
-import { configurationManageAction } from '@/lib/utils/safe-action';
+import { configurationAction } from '@/lib/utils/safe-action';
 
 export const deleteLoanTemplate = async (template: LoanTemplateFormData) => {
   if (!template.id) {
@@ -16,6 +16,6 @@ export const deleteLoanTemplate = async (template: LoanTemplateFormData) => {
   });
 };
 
-export const deleteLoanTemplateAction = configurationManageAction
+export const deleteLoanTemplateAction = configurationAction
   .inputSchema(loanTemplateFormSchema)
-  .action(async ({ ctx, parsedInput }) => deleteLoanTemplate(parsedInput));
+  .action(async ({ parsedInput }) => deleteLoanTemplate(parsedInput));

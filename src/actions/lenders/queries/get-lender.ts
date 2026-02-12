@@ -3,11 +3,13 @@
 import { auth } from '@/lib/auth';
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { db } from '@/lib/db';
+import { lenderIdSchema } from '@/lib/schemas/common';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
+import { lenderAction } from '@/lib/utils/safe-action';
 
 // Define the type for the lender with included relations
 
-export async function getLenderById(lenderId: string) {
+async function getLenderById(lenderId: string) {
   try {
     const session = await auth();
     if (!session) {
@@ -22,7 +24,6 @@ export async function getLenderById(lenderId: string) {
       include: {
         project: {
           include: {
-            managers: true,
             configuration: { select: { interestMethod: true } },
           },
         },
@@ -81,13 +82,6 @@ export async function getLenderById(lenderId: string) {
       throw new Error('Lender not found');
     }
 
-    // Check if the user has access to the lender's project
-    const hasAccess = lender.project.managers.some((manager) => manager.id === session.user.id);
-
-    if (!hasAccess) {
-      throw new Error('You do not have access to this lender');
-    }
-
     // Calculate virtual fields
     const lenderWithCalculations = calculateLenderFields(
       parseAdditionalFields({ ...lender, loans: lender.loans.map((loan) => parseAdditionalFields(loan)) }),
@@ -101,3 +95,9 @@ export async function getLenderById(lenderId: string) {
     };
   }
 }
+
+export const getLenderAction = lenderAction
+  .inputSchema(lenderIdSchema)
+  .action(async ({ parsedInput: { lenderId } }) => {
+    return getLenderById(lenderId);
+  });

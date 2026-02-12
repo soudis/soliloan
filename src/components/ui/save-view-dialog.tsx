@@ -63,7 +63,7 @@ export function SaveViewDialog({ onSave, isLoading = false, disabled = false }: 
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <div className="text-right"></div>
+            <div className="text-right" />
             <div className="col-span-3 flex items-center space-x-2">
               <Checkbox
                 id="isDefault"

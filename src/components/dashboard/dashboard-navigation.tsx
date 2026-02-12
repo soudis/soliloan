@@ -25,7 +25,7 @@ export default function DashboardNavigation({
       <TopNav session={session} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={toggleSidebar} />
 
       <div className="flex h-[calc(100vh-4rem)]">
-        <SidebarNav isSidebarOpen={isSidebarOpen} />
+        <SidebarNav isSidebarOpen={isSidebarOpen} session={session} />
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

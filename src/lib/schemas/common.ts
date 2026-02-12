@@ -6,6 +6,13 @@ import { isValidIban } from '@/lib/utils/iban';
 import { NumberParser } from '../utils';
 import { validationError } from '../utils/validation';
 
+// Reusable ID Schemas
+export const idSchema = z.string().min(1, { message: 'validation.common.required' });
+export const projectIdSchema = z.object({ projectId: idSchema });
+export const lenderIdSchema = z.object({ lenderId: idSchema });
+export const loanIdSchema = z.object({ loanId: idSchema });
+export const transactionIdSchema = z.object({ transactionId: idSchema });
+
 // Generic number schemas
 export const createNumberSchema = (min?: number, errorMessage = 'validation.common.required') => {
   const parser = new NumberParser('de-DE');
@@ -61,11 +68,11 @@ export const optionalNumberSchema = createNumberSchema().optional().nullable();
 export const createDateSchema = (required = true) => {
   return required
     ? z.preprocess(
-        (val) => (val === '' ? null : new Date(val as string | Date)),
+        (val) => (val === '' || val === null ? null : new Date(val as string | Date)),
         z.date({ message: 'validation.common.date' }),
       )
     : z.preprocess(
-        (val) => (val === '' ? null : new Date(val as string | Date)),
+        (val) => (val === '' || val === null ? null : new Date(val as string | Date)),
         z.date({ message: 'validation.common.date' }).optional().nullable(),
       );
 };

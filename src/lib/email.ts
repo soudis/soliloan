@@ -45,7 +45,7 @@ export async function sendPasswordInvitationEmail(
   to: string,
   name: string,
   token: string,
-  locale: string = 'de',
+  locale: string,
   projectName: string,
 ) {
   const resetUrl = `${process.env.SOLILOAN_URL}/auth/set-password?token=${token}`;
@@ -73,7 +73,7 @@ export async function sendPasswordInvitationEmail(
  * @param locale User's preferred language (defaults to 'de')
  * @returns Promise with the result of the email sending
  */
-export async function sendPasswordResetEmail(to: string, name: string, token: string, locale: string = 'de') {
+export async function sendPasswordResetEmail(to: string, name: string, token: string, locale = 'de') {
   const resetUrl = `${process.env.SOLILOAN_URL}/auth/set-password?token=${token}`;
 
   // Import the email template dynamically to avoid SSR issues

@@ -4,18 +4,20 @@ import { Entity, Language, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 import { createAuditEntry, getChangedFields, getLenderContext } from '@/lib/audit-trail';
-import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import type { LenderFormData } from '@/lib/schemas/lender';
+import { lenderFormSchema } from '@/lib/schemas/lender';
 import { getLenderName } from '@/lib/utils';
+import { lenderAction } from '@/lib/utils/safe-action';
+import { z } from 'zod';
 
-export async function updateLender(lenderId: string, data: LenderFormData) {
-  try {
-    const session = await auth();
-    if (!session) {
-      throw new Error('Unauthorized');
-    }
-
+export const updateLenderAction = lenderAction
+  .inputSchema(
+    z.object({
+      lenderId: z.string(),
+      data: lenderFormSchema,
+    }),
+  )
+  .action(async ({ parsedInput: { lenderId, data } }) => {
     // Fetch the lender
     const lender = await db.lender.findUnique({
       where: {
@@ -24,7 +26,6 @@ export async function updateLender(lenderId: string, data: LenderFormData) {
       include: {
         project: {
           include: {
-            managers: true,
             configuration: true,
           },
         },
@@ -33,13 +34,6 @@ export async function updateLender(lenderId: string, data: LenderFormData) {
 
     if (!lender) {
       throw new Error('Lender not found');
-    }
-
-    // Check if the user has access to the lender's project
-    const hasAccess = lender.project.managers.some((manager) => manager.id === session.user.id);
-
-    if (!hasAccess) {
-      throw new Error('You do not have access to this lender');
     }
 
     // Update the lender
@@ -97,10 +91,4 @@ export async function updateLender(lenderId: string, data: LenderFormData) {
     revalidatePath(`/lenders/${updatedLender.id}`);
 
     return { success: true };
-  } catch (error) {
-    console.error('Error updating lender:', error);
-    return {
-      error: error instanceof Error ? error.message : 'Failed to update lender',
-    };
-  }
-}
+  });

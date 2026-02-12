@@ -1,4 +1,4 @@
-import { Entity, Operation } from '@prisma/client';
+import type { Entity, Operation } from '@prisma/client';
 
 import { auth } from '@/lib/auth';
 

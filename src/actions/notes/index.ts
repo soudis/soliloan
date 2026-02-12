@@ -1,2 +1,2 @@
-export { addNote } from './mutations/add-note';
-export { deleteNote } from './mutations/delete-note';
+export { createNoteAction } from './mutations/create-note';
+export { deleteNoteAction } from './mutations/delete-note';

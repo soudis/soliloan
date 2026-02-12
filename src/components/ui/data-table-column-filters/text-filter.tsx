@@ -1,4 +1,4 @@
-import { ColumnFilter } from '@tanstack/react-table';
+import type { ColumnFilter } from '@tanstack/react-table';
 
 import { Input } from '@/components/ui/input';
 
