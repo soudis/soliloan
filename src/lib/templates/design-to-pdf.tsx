@@ -33,10 +33,98 @@ function htmlToPlainText(html: string): string {
     .trim();
 }
 
-function processTextForPdf(html: string, sampleData: Record<string, unknown>): string {
-  const withTags = processTiptapContent(html);
-  const withData = processTemplate(withTags, sampleData as Record<string, any>);
-  return htmlToPlainText(withData);
+/** Inline style for a segment (react-pdf Text supports nested Text with fontWeight, fontStyle, textDecoration). */
+type TextSegmentStyle = {
+  fontWeight?: 'bold';
+  fontStyle?: 'italic';
+  textDecoration?: 'underline';
+};
+
+type TextSegment = { text: string; style?: TextSegmentStyle };
+
+/**
+ * Parse simple HTML (strong, b, em, i, u, br) into segments for nested react-pdf Text.
+ * React-pdf: "Text supports nesting of other Text or Link components to create inline styling."
+ */
+function htmlToTextSegments(html: string): TextSegment[] {
+  const decoded = html
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+  const parts = decoded.split(/(<strong>|<\/strong>|<b>|<\/b>|<em>|<\/em>|<i>|<\/i>|<u>|<\/u>|<br\s*\/?>)/gi);
+  const segments: TextSegment[] = [];
+  let bold = false;
+  let italic = false;
+  let underline = false;
+  for (const part of parts) {
+    const lower = part.toLowerCase();
+    if (lower === '<strong>' || lower === '<b>') {
+      bold = true;
+      continue;
+    }
+    if (lower === '</strong>' || lower === '</b>') {
+      bold = false;
+      continue;
+    }
+    if (lower === '<em>' || lower === '<i>') {
+      italic = true;
+      continue;
+    }
+    if (lower === '</em>' || lower === '</i>') {
+      italic = false;
+      continue;
+    }
+    if (lower === '<u>') {
+      underline = true;
+      continue;
+    }
+    if (lower === '</u>') {
+      underline = false;
+      continue;
+    }
+    if (/^<br\s*\/?>$/i.test(part)) {
+      segments.push({ text: '\n' });
+      continue;
+    }
+    if (part.length === 0) continue;
+    // Strip any remaining tags (e.g. span, p) so we don't show raw HTML
+    const text = part.replace(/<[^>]+>/g, '');
+    if (text.length === 0) continue;
+    // Omit fontStyle: 'italic' — react-pdf crashes (DataView out-of-bounds) when embedding italic Inter.
+    const style: TextSegmentStyle | undefined =
+      bold || underline
+        ? {
+            ...(bold && { fontWeight: 'bold' as const }),
+            ...(underline && { textDecoration: 'underline' as const }),
+          }
+        : undefined;
+    segments.push(style ? { text, style } : { text });
+  }
+  return segments;
+}
+
+/**
+ * Build children for a single react-pdf Text: plain strings and nested Text for styled segments.
+ * Caller wraps with: <Text style={baseStyle}>{...renderTextSegments(...)}</Text>
+ */
+function renderTextSegments(
+  segments: TextSegment[],
+  baseStyle: Record<string, unknown>,
+  PdfText: React.ComponentType<any>,
+): React.ReactNode[] {
+  if (segments.length === 0) return [' '];
+  return segments.map((seg, i) =>
+    seg.style
+      ? React.createElement(
+          PdfText,
+          { key: i, style: { ...baseStyle, ...seg.style } },
+          seg.text,
+        )
+      : seg.text,
+  );
 }
 
 const TABLE_CELL_VIEW_STYLE = { padding: 8, borderWidth: 1, borderColor: '#e4e4e7', flex: 1 as const };
@@ -247,7 +335,6 @@ export function renderDesignToPdfParts(
       case 'Text': {
         const raw = processTiptapContent((props?.text as string) || '');
         const withData = processTemplate(raw, data);
-        const plain = htmlToPlainText(withData);
         const fontSize = Number(props?.fontSize) || 16;
         const color = (props?.color as string) || '#000000';
         const textAlign = (props?.textAlign as 'left' | 'center' | 'right' | 'justify') || 'left';
@@ -260,13 +347,25 @@ export function renderDesignToPdfParts(
           return React.createElement(PdfText, {
             key: nodeId,
             style,
-            render: ({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) =>
-              withData
+            render: ({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) => {
+              const withNumbers = withData
                 .replace(/\{\{pageNumber\}\}/g, String(pageNumber))
-                .replace(/\{\{totalPages\}\}/g, String(totalPages)),
+                .replace(/\{\{totalPages\}\}/g, String(totalPages));
+              const segments = htmlToTextSegments(withNumbers);
+              return React.createElement(
+                PdfText,
+                { style },
+                ...renderTextSegments(segments, style, PdfText),
+              );
+            },
           });
         }
-        return React.createElement(PdfText, { key: nodeId, style }, plain || ' ');
+        const segments = htmlToTextSegments(withData);
+        return React.createElement(
+          PdfText,
+          { key: nodeId, style },
+          ...renderTextSegments(segments, style, PdfText),
+        );
       }
 
       case 'Image': {
@@ -291,14 +390,23 @@ export function renderDesignToPdfParts(
         const textAlign = (props?.textAlign as 'left' | 'center' | 'right' | 'justify') || 'left';
         const textStyle = { ...TABLE_TEXT_STYLE, textAlign };
 
+        const headerStyle = { ...textStyle, fontWeight: 600 };
         const rows: React.ReactNode[] = [];
         // Header row
         const headerCells = Array.from({ length: cols }, (_, c) => {
-          const content = processTextForPdf(headerTexts[c] || '', sampleData);
+          const withData = processTemplate(
+            processTiptapContent(headerTexts[c] || ''),
+            data,
+          );
+          const segments = htmlToTextSegments(withData);
           return React.createElement(
             View,
             { key: `h-${c}`, style: TABLE_HEADER_VIEW_STYLE },
-            React.createElement(PdfText, { style: { ...textStyle, fontWeight: 600 } }, content || ' '),
+            React.createElement(
+              PdfText,
+              { style: headerStyle },
+              ...renderTextSegments(segments, headerStyle, PdfText),
+            ),
           );
         });
         rows.push(
@@ -310,12 +418,16 @@ export function renderDesignToPdfParts(
           items.forEach((item, r) => {
             const cells = Array.from({ length: cols }, (_, c) => {
               const cellHtml = (cellTexts[0]?.[c] as string) || '';
-              const content = processTemplate(processTiptapContent(cellHtml), item);
-              const plain = htmlToPlainText(content);
+              const withData = processTemplate(processTiptapContent(cellHtml), item);
+              const segments = htmlToTextSegments(withData);
               return React.createElement(
                 View,
                 { key: `c-${r}-${c}`, style: TABLE_CELL_VIEW_STYLE },
-                React.createElement(PdfText, { style: textStyle }, plain || ' '),
+                React.createElement(
+                  PdfText,
+                  { style: textStyle },
+                  ...renderTextSegments(segments, textStyle, PdfText),
+                ),
               );
             });
             rows.push(React.createElement(View, { key: `row-${r}`, style: { flexDirection: 'row' } }, ...cells));
@@ -323,11 +435,19 @@ export function renderDesignToPdfParts(
         } else {
           for (let r = 0; r < rowCount; r++) {
             const cells = Array.from({ length: cols }, (_, c) => {
-              const content = processTextForPdf(cellTexts[r]?.[c] || '', sampleData);
+              const withData = processTemplate(
+                processTiptapContent(cellTexts[r]?.[c] || ''),
+                data,
+              );
+              const segments = htmlToTextSegments(withData);
               return React.createElement(
                 View,
                 { key: `c-${r}-${c}`, style: TABLE_CELL_VIEW_STYLE },
-                React.createElement(PdfText, { style: textStyle }, content || ' '),
+                React.createElement(
+                  PdfText,
+                  { style: textStyle },
+                  ...renderTextSegments(segments, textStyle, PdfText),
+                ),
               );
             });
             rows.push(React.createElement(View, { key: `row-${r}`, style: { flexDirection: 'row' } }, ...cells));

@@ -1,7 +1,11 @@
+import path from 'path';
+
 import { NextResponse } from 'next/server';
 import React from 'react';
 
 import { auth } from '@/lib/auth';
+
+const FONTS_DIR = path.join(process.cwd(), 'public', 'fonts');
 
 /**
  * POST /api/templates/pdf
@@ -27,17 +31,17 @@ export async function POST(request: Request) {
       await import('@react-pdf/renderer');
     const { renderDesignToPdfParts } = await import('@/lib/templates/design-to-pdf');
 
+    // Only register upright weights. Italic registration triggers a DataView out-of-bounds
+    // in react-pdf when embedding; italic text is rendered as normal in PDF to avoid the crash.
     Font.register({
       family: 'Inter',
       fonts: [
-        { src: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hjQ.ttf', fontWeight: 400 },
-        { src: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuI6fAZ9hjQ.ttf', fontWeight: 500 },
-        { src: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYAZ9hjQ.ttf', fontWeight: 600 },
-        { src: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYAZ9hjQ.ttf', fontWeight: 700 },
+        { src: path.join(FONTS_DIR, 'inter', 'inter-v20-latin-regular.ttf'), fontWeight: 400 },
+        { src: path.join(FONTS_DIR, 'inter', 'inter-v20-latin-500.ttf'), fontWeight: 500 },
+        { src: path.join(FONTS_DIR, 'inter', 'inter-v20-latin-600.ttf'), fontWeight: 600 },
+        { src: path.join(FONTS_DIR, 'inter', 'inter-v20-latin-700.ttf'), fontWeight: 700 },
       ],
     });
-
-    console.log('body.design', body.design);
 
     const parts = renderDesignToPdfParts(
       {
