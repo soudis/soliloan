@@ -38,6 +38,7 @@
     "noSampleRecords": "Keine Datensätze verfügbar",
     "showEditor": "Editor",
     "showPreview": "Vorschau",
+    "generatingPdf": "PDF wird erstellt…",
     "autoSaveActive": "Automatisches Speichern aktiv",
     "toolbox": {
       "title": "Blöcke",

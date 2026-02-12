@@ -9,8 +9,8 @@ import { toast } from 'sonner';
 import { updateTemplateAction } from '@/actions/templates/mutations/update-template';
 import { Button } from '@/components/ui/button';
 import { Loader2, Save } from 'lucide-react';
-import { EmailEditorComponent } from './email-editor';
 import { SampleDataSelector } from './sample-data-selector';
+import { TemplateEditorView } from './template-editor-view';
 
 interface TemplateEditorProps {
   template: {
@@ -83,20 +83,14 @@ export function TemplateEditor({ template, projectId }: TemplateEditorProps) {
 
       {/* Editor */}
       <div className="flex-1 min-h-0">
-        {template.type === 'EMAIL' ? (
-          <EmailEditorComponent
-            dataset={template.dataset}
-            projectId={effectiveProjectId ?? undefined}
-            initialDesign={template.designJson as object}
-            selectedRecordId={selectedRecordId}
-            onDesignChange={handleDesignChange}
-          />
-        ) : (
-          // Document editor placeholder - will be implemented later
-          <div className="flex items-center justify-center h-full bg-muted/50">
-            <p className="text-muted-foreground">{t('editor.documentEditorComingSoon')}</p>
-          </div>
-        )}
+        <TemplateEditorView
+          templateType={template.type}
+          dataset={template.dataset}
+          projectId={effectiveProjectId ?? undefined}
+          initialDesign={template.designJson as object}
+          selectedRecordId={selectedRecordId}
+          onDesignChange={handleDesignChange}
+        />
       </div>
     </div>
   );

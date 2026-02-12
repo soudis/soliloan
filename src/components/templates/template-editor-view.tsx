@@ -1,9 +1,9 @@
 'use client';
 
 import { Editor, Element, Frame, useEditor, useNode } from '@craftjs/core';
-import type { TemplateDataset } from '@prisma/client';
+import type { TemplateDataset, TemplateType } from '@prisma/client';
 import debounce from 'lodash.debounce';
-import { Eye, EyeOff, GripVertical } from 'lucide-react';
+import { Eye, EyeOff, GripVertical, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -20,6 +20,11 @@ import { SettingsPanel } from './settings-panel';
 import { Toolbox } from './toolbox';
 import { USER_COMPONENTS } from './user-components';
 import { Container } from './user-components/container';
+
+// ─── A4 dimensions ──────────────────────────────────────────────────────────
+// A4 = 210mm × 297mm. At 96 DPI: 1mm ≈ 3.7795px → 794px × 1123px
+const A4_WIDTH_PX = 794;
+const A4_MIN_HEIGHT_PX = 1123;
 
 /**
  * RenderNode handles the visual indicators (selection, hover) for components in the editor.
@@ -52,8 +57,6 @@ const RenderNode = ({ render }: { render: React.ReactNode }) => {
     <div
       ref={(ref) => {
         if (ref) {
-          // IMPORTANT: We only use connect(ref) here to enable selection and drop zones.
-          // We DO NOT call drag(ref) on the main wrapper to prevent selection/click interference.
           connect(ref);
         }
       }}
@@ -64,7 +67,6 @@ const RenderNode = ({ render }: { render: React.ReactNode }) => {
           <div className="absolute top-0 right-0 -translate-y-full bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-t-sm font-bold pointer-events-none z-20">
             {name}
           </div>
-          {/* Global Drag Handle - The ONLY way to move components */}
           <div
             ref={(ref) => {
               if (ref) drag(ref);
@@ -81,12 +83,15 @@ const RenderNode = ({ render }: { render: React.ReactNode }) => {
   );
 };
 
-// UI Components to separate concerns
+// ─── Topbar ──────────────────────────────────────────────────────────────────
+
 const EditorTopbar = ({
   isPreviewing,
+  isGeneratingPdf,
   togglePreview,
 }: {
   isPreviewing: boolean;
+  isGeneratingPdf: boolean;
   togglePreview: () => void;
 }) => {
   const t = useTranslations('templates.editor');
@@ -97,12 +102,19 @@ const EditorTopbar = ({
         <button
           type="button"
           onClick={togglePreview}
-          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+          disabled={isGeneratingPdf}
+          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
             isPreviewing ? 'bg-zinc-900 text-white hover:bg-zinc-800' : 'bg-white border text-zinc-700 hover:bg-zinc-50'
           }`}
         >
-          {isPreviewing ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-          {isPreviewing ? t('showEditor') : t('showPreview')}
+          {isGeneratingPdf ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : isPreviewing ? (
+            <EyeOff className="w-4 h-4" />
+          ) : (
+            <Eye className="w-4 h-4" />
+          )}
+          {isGeneratingPdf ? t('generatingPdf') : isPreviewing ? t('showEditor') : t('showPreview')}
         </button>
       </div>
 
@@ -114,35 +126,56 @@ const EditorTopbar = ({
   );
 };
 
-const EditorViewport = ({ isPreviewing, previewHtml }: { isPreviewing: boolean; previewHtml: string }) => {
+// ─── Viewport ────────────────────────────────────────────────────────────────
+
+const EditorViewport = ({
+  isPreviewing,
+  isDocument,
+}: {
+  isPreviewing: boolean;
+  isDocument: boolean;
+}) => {
   return (
     <div className="flex-1 bg-zinc-100 overflow-y-auto w-full h-full">
-      {/* Canvas Container - Using margin auto for centering instead of flexbox 
-          to prevent craft.js indicator position offset issues */}
       <div
-        className={`bg-white shadow-sm min-h-[600px] w-full max-w-[600px] flex flex-col relative mx-auto my-12 ${
+        className={`bg-white shadow-sm flex flex-col relative mx-auto my-12 ${
           isPreviewing ? 'invisible h-0 overflow-hidden' : ''
         }`}
+        style={
+          isDocument
+            ? { width: A4_WIDTH_PX, maxWidth: A4_WIDTH_PX, minHeight: A4_MIN_HEIGHT_PX }
+            : { width: '100%', maxWidth: 600, minHeight: 600 }
+        }
       >
+        {/* A4 page border for document mode */}
+        {isDocument && (
+          <div
+            className="pointer-events-none absolute inset-0 border border-zinc-300 z-[1]"
+            style={{ minHeight: A4_MIN_HEIGHT_PX }}
+          />
+        )}
         <Frame>
-          <Element is={Container} padding={40} background="#ffffff" canvas id="ROOT" />
+          <Element is={Container} padding={isDocument ? 56 : 40} background="#ffffff" canvas id="ROOT" />
         </Frame>
       </div>
     </div>
   );
 };
 
+// ─── Internal Editor ─────────────────────────────────────────────────────────
+
 const InternalEditor = ({
   isPreviewing,
   previewHtml,
+  isDocument,
 }: {
   isPreviewing: boolean;
   previewHtml: string;
+  isDocument: boolean;
 }) => {
   return (
     <div className="flex-1 flex overflow-hidden relative">
-      {/* Viewport is now at 0,0 of this relative container */}
-      <EditorViewport isPreviewing={isPreviewing} previewHtml={previewHtml} />
+      <EditorViewport isPreviewing={isPreviewing} isDocument={isDocument} />
 
       {/* Sidebar on the right */}
       {!isPreviewing && (
@@ -156,8 +189,8 @@ const InternalEditor = ({
         </div>
       )}
 
-      {/* Preview Layer overlaying the workspace */}
-      {isPreviewing && (
+      {/* Preview Layer — email only (document opens PDF in new tab) */}
+      {isPreviewing && !isDocument && (
         <div className="absolute inset-0 bg-zinc-100 p-8 flex flex-col items-center z-30">
           <div className="bg-white shadow-sm min-h-[600px] w-full max-w-[600px]">
             <iframe title="Email Preview" srcDoc={previewHtml} className="w-full h-full min-h-[600px] border-none" />
@@ -168,7 +201,36 @@ const InternalEditor = ({
   );
 };
 
-interface EmailEditorComponentProps {
+// ─── PDF generation helper (document templates) ──────────────────────────────
+
+/**
+ * Generate a PDF from the template HTML via the server-side API endpoint
+ * and open it in a new browser tab.
+ */
+const generateAndOpenPdf = async (html: string) => {
+  const response = await fetch('/api/templates/pdf', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ html }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(errorData?.details || `PDF generation failed (${response.status})`);
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+
+  // Revoke the object URL after a short delay to free memory
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+};
+
+// ─── Main component ──────────────────────────────────────────────────────────
+
+interface TemplateEditorViewProps {
+  templateType: TemplateType;
   dataset: TemplateDataset;
   projectId?: string;
   initialDesign?: string | object;
@@ -176,21 +238,25 @@ interface EmailEditorComponentProps {
   onDesignChange: (design: object, html: string) => void;
 }
 
-export function EmailEditorComponent({
+export function TemplateEditorView({
+  templateType,
   dataset,
   projectId,
   initialDesign,
   selectedRecordId,
   onDesignChange,
-}: EmailEditorComponentProps) {
+}: TemplateEditorViewProps) {
   const [mergeTagConfig, setMergeTagConfig] = useState<MergeTagConfig | null>(null);
   const [projectLogo, setProjectLogo] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [previewHtml, setPreviewHtml] = useState('');
   const [currentDesign, setCurrentDesign] = useState<object | null>(null);
   const [currentHtml, setCurrentHtml] = useState<string>('');
   const initializedRef = useRef(false);
+
+  const isDocument = templateType === 'DOCUMENT';
 
   const logoContextValue = useMemo(
     () => ({ projectLogo, appLogo: '/soliloan-logo.webp' }),
@@ -218,12 +284,7 @@ export function EmailEditorComponent({
     }
   }, [initialDesign]);
 
-  const togglePreview = async () => {
-    if (isPreviewing) {
-      setIsPreviewing(false);
-      return;
-    }
-
+  const resolvePreviewHtml = async (): Promise<string> => {
     let html = currentHtml;
     if (selectedRecordId) {
       try {
@@ -235,9 +296,32 @@ export function EmailEditorComponent({
         console.error('Preview error', e);
       }
     }
+    return html;
+  };
 
-    setPreviewHtml(html);
-    setIsPreviewing(true);
+  const togglePreview = async () => {
+    // For email: toggle the inline iframe preview overlay
+    if (!isDocument) {
+      if (isPreviewing) {
+        setIsPreviewing(false);
+        return;
+      }
+      const html = await resolvePreviewHtml();
+      setPreviewHtml(html);
+      setIsPreviewing(true);
+      return;
+    }
+
+    // For document: generate PDF via server API and open in a new tab
+    setIsGeneratingPdf(true);
+    try {
+      const html = await resolvePreviewHtml();
+      await generateAndOpenPdf(html);
+    } catch (e) {
+      console.error('PDF generation error', e);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   // Debounced update to the parent state to ensure editor stability
@@ -258,7 +342,7 @@ export function EmailEditorComponent({
 
   return (
     <div className="min-h-[700px] border rounded-lg overflow-hidden flex flex-col bg-white">
-      <EditorTopbar isPreviewing={isPreviewing} togglePreview={togglePreview} />
+      <EditorTopbar isPreviewing={isPreviewing} isGeneratingPdf={isGeneratingPdf} togglePreview={togglePreview} />
 
       <div className="flex-1 flex flex-col relative">
         <LogoProvider value={logoContextValue}>
@@ -274,7 +358,7 @@ export function EmailEditorComponent({
               }}
             >
               <EditorInitialWrapper initialDesign={initialDesign} />
-              <InternalEditor isPreviewing={isPreviewing} previewHtml={previewHtml} />
+              <InternalEditor isPreviewing={isPreviewing} previewHtml={previewHtml} isDocument={isDocument} />
             </Editor>
           </MergeTagConfigProvider>
         </LogoProvider>
