@@ -28,7 +28,7 @@ export default function DashboardNavigation({
         <SidebarNav isSidebarOpen={isSidebarOpen} session={session} />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <main className="flex-1 overflow-y-auto bg-background">
           <div className="container max-w-screen-xl mx-auto py-8 px-6">{children}</div>
         </main>
       </div>

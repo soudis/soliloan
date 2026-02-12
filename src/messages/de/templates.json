@@ -1,0 +1,110 @@
+{
+  "admin": {
+    "title": "Globale Vorlagen",
+    "description": "Verwalte globale E-Mail- und Dokumentvorlagen, die für alle Projekte verfügbar sind"
+  },
+  "project": {
+    "title": "Projektvorlagen",
+    "description": "Verwalte E-Mail- und Dokumentvorlagen für dieses Projekt"
+  },
+  "types": {
+    "email": "E-Mail",
+    "document": "Dokument"
+  },
+  "dialog": {
+    "trigger": "Neue Vorlage",
+    "title": "Neue Vorlage erstellen",
+    "description": "Erstelle eine neue E-Mail- oder Dokumentvorlage",
+    "submit": "Erstellen",
+    "created": "Vorlage erfolgreich erstellt",
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "z.B. Willkommens-E-Mail",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Kurze Beschreibung der Vorlage",
+      "type": "Typ",
+      "typePlaceholder": "Vorlagentyp auswählen",
+      "dataset": "Datensatz",
+      "datasetPlaceholder": "Datensatz auswählen"
+    }
+  },
+  "editor": {
+    "save": "Speichern",
+    "saved": "Vorlage gespeichert",
+    "noChanges": "Keine Änderungen zum Speichern",
+    "notFound": "Vorlage nicht gefunden",
+    "documentEditorComingSoon": "Der Dokument-Editor wird in Kürze verfügbar sein",
+    "selectSampleRecord": "{type} für Vorschau auswählen",
+    "noSampleRecords": "Keine Datensätze verfügbar",
+    "showEditor": "Editor",
+    "showPreview": "Vorschau",
+    "autoSaveActive": "Automatisches Speichern aktiv",
+    "toolbox": {
+      "title": "Blöcke",
+      "layout": "Layout",
+      "text": "Text",
+      "button": "Button",
+      "image": "Bild",
+      "loop": "Schleife"
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "delete": "Komponente löschen",
+      "noSelection": "Wähle eine Komponente aus, um ihre Einstellungen zu bearbeiten."
+    },
+    "components": {
+      "text": {
+        "defaultText": "Hier Text eingeben",
+        "fontSize": "Schriftgröße",
+        "textColor": "Textfarbe",
+        "insertPlaceholder": "Platzhalter einfügen"
+      },
+      "container": {
+        "dropHere": "Ziehe Komponenten hierher",
+        "padding": "Padding",
+        "backgroundColor": "Background Color",
+        "opacity": "Deckkraft"
+      },
+      "image": {
+        "imageUrl": "Bild URL",
+        "width": "Breite (e.g. 100%, 200px)"
+      },
+      "loop": {
+        "defaultLabel": "Datenschleife",
+        "loopKey": "Loop Key",
+        "displayName": "Anzeigename",
+        "placeholder": "z.B. loans"
+      },
+      "button": {
+        "defaultText": "Klick mich",
+        "buttonText": "Button Text",
+        "url": "URL",
+        "backgroundColor": "Hintergrundfarbe",
+        "textColor": "Textfarbe"
+      }
+    }
+  },
+  "list": {
+    "copy": "Kopie",
+    "global": "Global",
+    "duplicated": "Vorlage dupliziert",
+    "deleted": "Vorlage gelöscht",
+    "columns": {
+      "name": "Name",
+      "type": "Typ",
+      "dataset": "Datensatz",
+      "createdAt": "Erstellt am"
+    },
+    "actions": {
+      "edit": "Bearbeiten",
+      "duplicate": "Duplizieren",
+      "delete": "Löschen"
+    },
+    "deleteDialog": {
+      "title": "Vorlage löschen",
+      "description": "Möchtest du die Vorlage \"{name}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "cancel": "Abbrechen",
+      "confirm": "Löschen"
+    }
+  }
+}

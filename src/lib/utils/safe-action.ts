@@ -339,3 +339,78 @@ export const noteAction = managerAction
       },
     });
   });
+
+export const templateAction = managerAction
+  .inputSchema(
+    z.object({
+      templateId: z.string(),
+    }),
+  )
+  .use(async ({ next, ctx, clientInput }) => {
+    const { templateId } = clientInput as { templateId: string };
+
+    if (!templateId) {
+      throw new Error('error.template.notFound');
+    }
+
+    const template = await db.communicationTemplate.findUnique({
+      where: { id: templateId },
+      select: { projectId: true, isGlobal: true },
+    });
+
+    if (!template) {
+      throw new Error('error.template.notFound');
+    }
+
+    // Global templates require admin access
+    if (template.isGlobal) {
+      if (!ctx.session.user.isAdmin) {
+        throw new Error('error.template.notFound');
+      }
+      return next({
+        ctx: {
+          templateId,
+        },
+      });
+    }
+
+    // Admin can access all project templates
+    if (ctx.session.user.isAdmin) {
+      return next({
+        ctx: {
+          templateId,
+        },
+      });
+    }
+
+    // Check if user manages the project this template belongs to
+    if (!template.projectId) {
+      throw new Error('error.template.notFound');
+    }
+
+    const project = await db.project.count({
+      where: { id: template.projectId, managers: { some: { id: ctx.session.user.id } } },
+    });
+
+    if (project === 0) {
+      throw new Error('error.template.notFound');
+    }
+
+    return next({
+      ctx: {
+        templateId,
+      },
+    });
+  });
+
+// Admin-only action for global templates
+export const adminAction = authAction.use(async ({ next, ctx }) => {
+  if (!ctx.session.user.isAdmin) {
+    throw new Error('error.unauthorized');
+  }
+  return next({
+    ctx: {
+      session: ctx.session,
+    },
+  });
+});

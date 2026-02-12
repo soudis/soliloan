@@ -129,7 +129,8 @@ interface DataTableProps<TData, TValue> {
   showFilter?: boolean;
   columnFilters?: DataTableColumnFilters;
   defaultColumnVisibility?: VisibilityState;
-  viewType: ViewType;
+  viewType?: ViewType;
+  isLoading?: boolean;
   actions?: (row: TData) => React.ReactNode;
 }
 
@@ -143,6 +144,7 @@ export function DataTable<TData, TValue>({
   columnFilters = {},
   defaultColumnVisibility = {},
   viewType,
+  isLoading,
   actions,
 }: DataTableProps<TData, TValue>) {
   // Get the table store
@@ -159,15 +161,18 @@ export function DataTable<TData, TValue>({
     pageSize: 25,
   };
 
-  const columnVisibility = storedState?.columnVisibility ?? defaultColumnVisibility;
-  const globalFilter = storedState?.globalFilter ?? '';
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    storedState?.columnVisibility ?? defaultColumnVisibility,
+  );
+  const [globalFilter, setGlobalFilter] = useState<string>(storedState?.globalFilter ?? '');
 
   const [rowSelection, setRowSelection] = useState({});
 
-  const { data: views, isLoading } = useQuery({
+  const { data: views, isLoading: isViewsLoading } = useQuery({
     queryKey: ['views', viewType],
     queryFn: async () => {
-      const { views: fetchedViews, error } = await getViewsByType(viewType ?? 'LOAN');
+      if (!viewType) return [];
+      const { views: fetchedViews, error } = await getViewsByType(viewType);
       if (error) {
         return [];
       }
@@ -213,30 +218,49 @@ export function DataTable<TData, TValue>({
   const table = useReactTable({
     data,
     columns: allColumns,
-    onSortingChange: (updater) =>
-      setState(viewType, {
-        sorting: updater instanceof Function ? updater(sorting) : updater,
-      }),
-    onColumnFiltersChange: (updater) =>
-      setState(viewType, {
-        columnFilters: updater instanceof Function ? updater(columnFilterState) : updater,
-      }),
+    onSortingChange: (updater) => {
+      if (viewType) {
+        setState(viewType, {
+          sorting: updater instanceof Function ? updater(sorting) : updater,
+        });
+      }
+    },
+    onColumnFiltersChange: (updater) => {
+      if (viewType) {
+        setState(viewType, {
+          columnFilters: updater instanceof Function ? updater(columnFilterState) : updater,
+        });
+      }
+    },
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: (updater) =>
-      setState(viewType, {
-        columnVisibility: updater instanceof Function ? updater(columnVisibility) : updater,
-      }),
-    onGlobalFilterChange: (updater) =>
-      setState(viewType, {
-        globalFilter: updater instanceof Function ? updater(globalFilter) : updater,
-      }),
-    onPaginationChange: (updater) =>
-      setState(viewType, {
-        pagination: updater instanceof Function ? updater(pagination) : updater,
-      }),
+    onColumnVisibilityChange: (updater) => {
+      const next = updater instanceof Function ? updater(columnVisibility) : updater;
+      setColumnVisibility(next);
+      if (viewType) {
+        setState(viewType, {
+          columnVisibility: next,
+        });
+      }
+    },
+    onGlobalFilterChange: (updater) => {
+      const next = updater instanceof Function ? updater(globalFilter) : updater;
+      setGlobalFilter(next);
+      if (viewType) {
+        setState(viewType, {
+          globalFilter: next,
+        });
+      }
+    },
+    onPaginationChange: (updater) => {
+      if (viewType) {
+        setState(viewType, {
+          pagination: updater instanceof Function ? updater(pagination) : updater,
+        });
+      }
+    },
     onRowSelectionChange: setRowSelection,
 
     state: {
@@ -272,8 +296,12 @@ export function DataTable<TData, TValue>({
     enableGlobalFilter: true,
   });
 
-  if (isLoading || !views) {
-    return null;
+  if ((viewType && (isViewsLoading || !views)) || isLoading) {
+    return (
+      <div className="py-24 text-center text-muted-foreground">
+        {getState(viewType ?? 'LOAN')?.globalFilter ? 'Suchen...' : 'Laden...'}
+      </div>
+    );
   }
 
   return (
@@ -284,10 +312,10 @@ export function DataTable<TData, TValue>({
         showFilter={showFilter}
         columnFilters={columnFilters}
         defaultColumnVisibility={defaultColumnVisibility}
-        views={views}
+        views={views || []}
         viewType={viewType}
         hasActiveFilters={hasActiveFilters}
-        state={getState(viewType)}
+        state={viewType ? getState(viewType) : {}}
       />
 
       <DataTableBody table={table} onRowClick={onRowClick} />

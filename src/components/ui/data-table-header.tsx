@@ -34,11 +34,11 @@ interface DataTableHeaderProps<TData> {
       label?: string;
     };
   };
-  viewType: ViewType;
+  viewType?: ViewType;
   views: View[];
   hasActiveFilters: () => boolean;
   defaultColumnVisibility: VisibilityState;
-  state: ViewState;
+  state: Partial<ViewState>;
 }
 
 export function DataTableHeader<TData>({
@@ -139,11 +139,13 @@ export function DataTableHeader<TData>({
             <Input
               placeholder={t('globalFilter') || 'Search all columns...'}
               value={state.globalFilter || ''}
-              onChange={(event) =>
-                setState(viewType, {
-                  globalFilter: event.target.value,
-                })
-              }
+              onChange={(event) => {
+                if (viewType) {
+                  setState(viewType, {
+                    globalFilter: event.target.value,
+                  });
+                }
+              }}
               className="max-w-sm"
             />
           </div>
