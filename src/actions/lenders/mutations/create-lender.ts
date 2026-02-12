@@ -1,6 +1,6 @@
 'use server';
 
-import { type Country, Entity, Language, Operation } from '@prisma/client';
+import { type Country, Entity, Language, Operation, SoliLoansTheme } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 import { createAuditEntry, getLenderContext, removeNullFields } from '@/lib/audit-trail';
@@ -15,8 +15,15 @@ export const createLenderAction = projectAction.inputSchema(lenderFormSchema).ac
   // Optimization: we can just fetch language.
   const project = await db.project.findUnique({
     where: { id: data.projectId },
-    select: { configuration: { select: { userLanguage: true } } },
+    select: { configuration: { select: { userLanguage: true, userTheme: true } } },
   });
+
+  if (!project) throw new Error('error.project.notFound');
+  if (!project.configuration) throw new Error('error.configuration.notFound');
+  const configuration = project.configuration;
+
+  const userLanguage = configuration.userLanguage ?? Language.de;
+  const userTheme = configuration.userTheme ?? SoliLoansTheme.default;
 
   // Create the lender
   const lender = await db.lender.create({
@@ -44,7 +51,8 @@ export const createLenderAction = projectAction.inputSchema(lenderFormSchema).ac
             create: {
               email: data.email,
               name: getLenderName(data),
-              language: project?.configuration?.userLanguage ?? Language.de,
+              language: userLanguage,
+              theme: userTheme,
             },
           },
         },
