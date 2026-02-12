@@ -56,6 +56,8 @@ export async function POST(request: Request) {
       ? STRUCTURED_HEIGHT + parts.footerPadding * 2
       : 0;
 
+    // Header/footer are already full Container/PageHeader/PageFooter trees (with their own
+    // padding and border from the design). Only wrap in a fixed-position View — no extra padding/border.
     const pageChildren: React.ReactNode[] = [];
     if (parts.header) {
       pageChildren.push(
@@ -69,8 +71,6 @@ export async function POST(request: Request) {
               top: 0,
               left: 0,
               right: 0,
-              padding: parts.headerPadding,
-              ...parts.headerBorder,
             },
           },
           parts.header,
@@ -90,8 +90,6 @@ export async function POST(request: Request) {
               bottom: 0,
               left: 0,
               right: 0,
-              padding: parts.footerPadding,
-              ...parts.footerBorder,
             },
           },
           parts.footer,
