@@ -10,8 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "biome lint",
-    "docker:dev": "docker compose -f docker/compose.dev.yml --project-directory .",
-    "prisma:studio": "bash -c 'source <(grep -E \"^POSTGRES_\" .env) && DATABASE_URL=\"postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}\" prisma studio'"
+    "prisma:studio": "bash -c 'source <(grep -E \"^POSTGRES_\" .env) && DATABASE_URL=\"postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}\" prisma studio'",
     "format": "biome format src prisma",
     "docker:dev": "docker compose -f docker/compose.dev.yml --project-directory ."
   },
