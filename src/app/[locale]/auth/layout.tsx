@@ -1,10 +1,10 @@
-'use client';
+'use server';
 
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
-  const t = useTranslations('auth');
+export default async function AuthLayout({ children }: { children: React.ReactNode }) {
+  const t = await getTranslations('auth');
 
   return (
     <div className="min-h-screen">

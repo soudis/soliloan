@@ -1,3 +1,5 @@
+'use server';
+
 import DashboardNavigation from '@/components/dashboard/dashboard-navigation';
 import { auth } from '@/lib/auth';
 
