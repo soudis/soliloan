@@ -1,11 +1,10 @@
 'use client';
 
-import type { ButtonProps } from '@/components/ui/button';
+import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import type { ReactNode } from 'react';
 
-interface ActionButtonProps extends Omit<ButtonProps, 'onClick' | 'children'> {
+interface ActionButtonProps extends Omit<React.ComponentProps<'button'>, 'onClick' | 'children'> {
   icon: ReactNode;
   tooltip: string;
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;

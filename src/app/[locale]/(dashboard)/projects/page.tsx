@@ -12,14 +12,14 @@ import { ActionButton } from '@/components/ui/action-button';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { useRouter } from '@/i18n/navigation';
-import { createColumn, createEnumBadgeColumn, enumFilter } from '@/lib/table-column-utils';
+import { createColumn, createEnumBadgeColumn } from '@/lib/table-column-utils';
 import { useProjects } from '@/store/projects-store';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
 export default function ProjectsPage() {
   const { data: session } = useSession();
   const router = useRouter();
-  const { projects, isLoading, setSelectedProject } = useProjects();
+  const { projects, isLoading } = useProjects();
   const t = useTranslations('dashboard.projects');
   const configT = useTranslations('dashboard.configuration.table');
   const commonT = useTranslations('common');
@@ -72,14 +72,14 @@ export default function ProjectsPage() {
           if (!managers || managers.length === 0) return '';
           return managers.map((manager) => manager.name).join(', ');
         },
-        filterFn: (row, columnId, filterValue) => {
+        filterFn: (row, _, filterValue) => {
           const managers = row.original.managers;
           if (!managers || managers.length === 0) return false;
           const managerNames = managers.map((m) => m.name.toLowerCase()).join(' ');
           const searchValue = String(filterValue).toLowerCase();
           return managerNames.includes(searchValue);
         },
-        sortingFn: (rowA, rowB, columnId) => {
+        sortingFn: (rowA, rowB) => {
           const managersA = rowA.original.managers.map((m) => m.name).join(', ');
           const managersB = rowB.original.managers.map((m) => m.name).join(', ');
           return managersA.localeCompare(managersB);
@@ -270,7 +270,7 @@ export default function ProjectsPage() {
     configuration_country: {
       type: 'select' as const,
       label: configT('country'),
-      options: Object.entries(Country).map(([key, value]) => ({
+      options: Object.entries(Country).map(([_, value]) => ({
         label: commonT(`countries.${value.toLowerCase()}`),
         value: value,
       })),
@@ -302,7 +302,7 @@ export default function ProjectsPage() {
     configuration_lenderCountry: {
       type: 'select' as const,
       label: configT('lenderCountry'),
-      options: Object.entries(Country).map(([key, value]) => ({
+      options: Object.entries(Country).map(([_, value]) => ({
         label: commonT(`countries.${value.toLowerCase()}`),
         value: value,
       })),
@@ -363,8 +363,7 @@ export default function ProjectsPage() {
         viewType={ViewType.PROJECT}
         showFilter={true}
         onRowClick={(row) => {
-          setSelectedProject(row);
-          router.push('/configuration');
+          router.push(`/${row.id}/configuration`);
         }}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
@@ -372,8 +371,7 @@ export default function ProjectsPage() {
               icon={<Pencil className="h-4 w-4" />}
               tooltip={commonT('ui.actions.edit')}
               onClick={() => {
-                setSelectedProject(row);
-                router.push('/configuration');
+                router.push(`/${row.id}/configuration`);
               }}
             />
           </div>

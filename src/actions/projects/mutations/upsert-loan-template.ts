@@ -1,9 +1,9 @@
 'use server';
 
+import { omit } from 'lodash';
 import { db } from '@/lib/db';
 import { type LoanTemplateFormData, loanTemplateFormSchema } from '@/lib/schemas/configuration';
 import { configurationAction } from '@/lib/utils/safe-action';
-import { omit } from 'lodash';
 
 export const upsertLoanTemplate = async (template: LoanTemplateFormData) => {
   return await db.loanTemplate.upsert({

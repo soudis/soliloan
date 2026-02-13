@@ -1,18 +1,14 @@
 'use client';
 
-import { useRouter } from '@/i18n/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { TemplateDataset, TemplateType } from '@prisma/client';
+import { TemplateDataset } from '@prisma/client';
+import { Loader2, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-
 import { createGlobalTemplateAction, createTemplateAction } from '@/actions/templates/mutations/create-template';
-import { type CreateTemplateFormData, createTemplateSchema } from '@/lib/schemas/templates';
-import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
-
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -27,7 +23,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Plus } from 'lucide-react';
+import { useRouter } from '@/i18n/navigation';
+import { useProjectId } from '@/lib/hooks/use-project-id';
+import { type CreateTemplateFormData, createTemplateSchema } from '@/lib/schemas/templates';
+import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
 
 interface TemplateDialogProps {
   projectId?: string;
@@ -39,6 +38,7 @@ interface TemplateDialogProps {
 export function TemplateDialog({ projectId, isAdmin, onCreated, children }: TemplateDialogProps) {
   const t = useTranslations('templates');
   const router = useRouter();
+  const currentProjectId = useProjectId();
   const [open, setOpen] = useState(false);
 
   const form = useForm<CreateTemplateFormData>({
@@ -49,7 +49,7 @@ export function TemplateDialog({ projectId, isAdmin, onCreated, children }: Temp
       type: 'EMAIL',
       dataset: 'LENDER',
       projectId: projectId,
-      isGlobal: isAdmin && !projectId,
+      isGlobal: Boolean(isAdmin) && !projectId,
       designJson: {},
     },
   });
@@ -60,7 +60,9 @@ export function TemplateDialog({ projectId, isAdmin, onCreated, children }: Temp
   const isLoading = isCreating || isCreatingGlobal;
 
   const onSubmit = async (data: CreateTemplateFormData) => {
-    let result;
+    let result:
+      | Awaited<ReturnType<typeof createGlobalTemplateAction>>
+      | Awaited<ReturnType<typeof createTemplateAction>>;
 
     if (isAdmin && !projectId) {
       // Creating global template
@@ -75,7 +77,7 @@ export function TemplateDialog({ projectId, isAdmin, onCreated, children }: Temp
       // Creating project template
       result = await createTemplate({
         ...data,
-        projectId: projectId!,
+        projectId,
       });
     }
 
@@ -91,7 +93,7 @@ export function TemplateDialog({ projectId, isAdmin, onCreated, children }: Temp
       if (isAdmin && !projectId) {
         router.push(`/admin/templates/${result.data.id}`);
       } else {
-        router.push(`/configuration/templates/${result.data.id}`);
+        router.push(`/${currentProjectId}/configuration/templates/${result.data.id}`);
       }
     }
   };

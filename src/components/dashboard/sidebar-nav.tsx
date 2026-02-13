@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 
 import { ThemeSelector } from '@/components/theme-selector';
 import { Button } from '@/components/ui/button';
+import { useProjectId } from '@/lib/hooks/use-project-id';
 import { useAppStore } from '@/store';
 
 import { NavItem } from './nav-item';
@@ -21,8 +22,12 @@ export function SidebarNav({ isSidebarOpen, session }: SidebarNavProps) {
   const t = useTranslations('navigation');
   const commonT = useTranslations('common');
   const { toggleSidebar } = useAppStore();
+  const projectId = useProjectId();
 
   const isAdmin = session.user.isAdmin;
+
+  // Build project-scoped base path
+  const base = projectId ? `/${projectId}` : '';
 
   return (
     <>
@@ -46,11 +51,11 @@ export function SidebarNav({ isSidebarOpen, session }: SidebarNavProps) {
         <div className="h-full overflow-y-auto px-3 py-4 flex flex-col">
           <ProjectSelector />
           <nav className="space-y-2 flex-grow">
-            <NavItem href="/" icon={LayoutDashboard} label={t('dashboard')} />
-            <NavItem href="/lenders" icon={Users} label={t('lenders')} />
-            <NavItem href="/loans" icon={Wallet} label={t('loans')} />
-            <NavItem href="/logbook" icon={History} label={t('logbook')} />
-            <NavItem href="/configuration" icon={Settings} label={t('configuration')} />
+            <NavItem href={`${base}`} icon={LayoutDashboard} label={t('dashboard')} />
+            <NavItem href={`${base}/lenders`} icon={Users} label={t('lenders')} />
+            <NavItem href={`${base}/loans`} icon={Wallet} label={t('loans')} />
+            <NavItem href={`${base}/logbook`} icon={History} label={t('logbook')} />
+            <NavItem href={`${base}/configuration`} icon={Settings} label={t('configuration')} />
           </nav>
 
           {isAdmin && (

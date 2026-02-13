@@ -1,16 +1,13 @@
-import { deleteLoanTemplateAction } from '@/actions/projects/mutations/delete-loan-template';
-import { markLoanTemplateAsDefaultAction } from '@/actions/projects/mutations/mark-loan-template-default';
-import { upsertLoanTemplateAction } from '@/actions/projects/mutations/upsert-loan-template';
 import type { LoanTemplate } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { PlusCircle, Star, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useState } from 'react';
-import { useFieldArray, useFormContext } from 'react-hook-form';
 import { toast } from 'sonner';
+import { deleteLoanTemplateAction } from '@/actions/projects/mutations/delete-loan-template';
+import { markLoanTemplateAsDefaultAction } from '@/actions/projects/mutations/mark-loan-template-default';
 import { Button } from '../ui/button';
-import { FormControl, FormField, FormItem } from '../ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { LoanTemplateDialog } from './loan-template-dialog';
 
@@ -60,7 +57,7 @@ export function LoanTemplateTable({ configurationId, loanTemplates }: Props) {
         <TableBody>
           {loanTemplates
             .sort((a, b) => a.name.localeCompare(b.name))
-            .map((field, index) => (
+            .map((field) => (
               <TableRow key={field.id}>
                 <TableCell className="cursor-pointer" onClick={() => setOpenDialog(field.id)}>
                   {field.name}

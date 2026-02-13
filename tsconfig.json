@@ -16,7 +16,7 @@
     "plugins": [{ "name": "next" }],
     "paths": {
       "@/*": ["./src/*"],
-      "@prisma/client": ["./prisma/generated/prisma/client"],
+      "@prisma/client": ["./prisma/generated/prisma/client"]
     }
   },
   "include": [

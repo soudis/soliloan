@@ -14,6 +14,7 @@ import { BalanceTable } from '@/components/loans/balance-table';
 import { Button } from '@/components/ui/button';
 import { InfoItem } from '@/components/ui/info-item';
 import { useRouter } from '@/i18n/navigation';
+import { useProjectId } from '@/lib/hooks/use-project-id';
 import { useScreenSize } from '@/lib/hooks/use-screensize';
 import { hasAdditionalFields } from '@/lib/utils/additional-fields';
 import { formatAddressPlace } from '@/lib/utils/format';
@@ -34,6 +35,7 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
   const locale = useLocale();
   const { selectedProject } = useProjects();
   const router = useRouter();
+  const projectId = useProjectId();
   const queryClient = useQueryClient();
   const dateLocale = locale === 'de' ? de : enUS;
   const [isSendingInvitation, setIsSendingInvitation] = useState(false);
@@ -114,7 +116,7 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
         // But invalidation suggests we might stay or list updates.
         // Let's assume list update or parent handles it.
         // Actually router is used in edit button.
-        router.push('/lenders');
+        router.push(`/${projectId}/lenders`);
       }
     } catch (e) {
       toast.error(t('delete.error'), {
@@ -126,7 +128,7 @@ export function LenderInfoCard({ lender }: LenderInfoCardProps) {
 
   const buttons = (
     <div className="flex gap-2 ml-auto">
-      <Button variant="outline" size="sm" onClick={() => router.push(`/lenders/${lender.id}/edit`)}>
+      <Button variant="outline" size="sm" onClick={() => router.push(`/${projectId}/lenders/${lender.id}/edit`)}>
         <Pencil className="h-4 w-4 mr-2" />
         {commonT('ui.actions.edit')}
       </Button>

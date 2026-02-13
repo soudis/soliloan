@@ -91,9 +91,7 @@ async function getConfigData(projectId: string): Promise<Record<string, string>>
     zip: c.zip ?? '',
     place: c.place ?? '',
     country: c.country ?? '',
-    fullAddress: [c.street, c.addon, `${c.zip ?? ''} ${c.place ?? ''}`.trim()]
-      .filter(Boolean)
-      .join(', '),
+    fullAddress: [c.street, c.addon, `${c.zip ?? ''} ${c.place ?? ''}`.trim()].filter(Boolean).join(', '),
     iban: c.iban ?? '',
     bic: c.bic ?? '',
   };

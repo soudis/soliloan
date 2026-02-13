@@ -1,5 +1,7 @@
 'use client';
 
+import { ChevronDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,8 +13,6 @@ import { useRouter } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import type { LenderWithCalculations } from '@/types/lenders';
 import type { LoanWithCalculations } from '@/types/loans';
-import { ChevronDown } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import { LoanSelectorItem } from './loan-selector-item';
 import { LoanSelectorItemRow } from './loan-selector-item-row';
 

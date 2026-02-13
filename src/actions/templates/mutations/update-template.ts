@@ -26,8 +26,8 @@ export const updateTemplateAction = templateAction
 
     if (template.isGlobal) {
       revalidatePath('/admin/templates');
-    } else {
-      revalidatePath('/configuration');
+    } else if (template.projectId) {
+      revalidatePath(`/${template.projectId}/configuration`);
     }
 
     return { id: template.id };

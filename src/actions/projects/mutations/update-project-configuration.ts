@@ -51,7 +51,7 @@ export async function updateConfiguration(projectId: string, data: Configuration
   }
 
   // Revalidate the project configuration page
-  revalidatePath('/configuration');
+  revalidatePath(`/${projectId}/configuration`);
 
   return getProjectUnsafe(projectId);
 }

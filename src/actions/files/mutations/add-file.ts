@@ -152,9 +152,9 @@ export const addFileAction = lenderAction
 
     // Revalidate paths
     if (loanId) {
-      revalidatePath(`/loans/${loanId}`);
+      revalidatePath(`/${lender.projectId}/lenders/${lenderId}`);
     }
-    revalidatePath(`/lenders/${lenderId}`);
+    revalidatePath(`/${lender.projectId}/lenders/${lenderId}`);
 
     return { fileId: file.id };
   });

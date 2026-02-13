@@ -1,7 +1,5 @@
-'use server';
-
 import { redirect } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { getTemplateAction } from '@/actions/templates/queries/get-template';
 import { TemplateEditor } from '@/components/templates/template-editor';
 import { auth } from '@/lib/auth';
@@ -13,7 +11,7 @@ interface PageProps {
 export default async function AdminTemplateEditorPage({ params }: PageProps) {
   const { id } = await params;
   const session = await auth();
-  const t = useTranslations('templates');
+  const t = await getTranslations('templates');
 
   // Redirect non-admins
   if (!session?.user?.isAdmin) {

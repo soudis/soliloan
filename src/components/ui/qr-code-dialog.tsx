@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import GiroCode from 'react-girocode';
+import { Girocode } from 'react-girocode';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
@@ -29,7 +29,7 @@ export function QRCodeDialog({ open, onOpenChange, iban, bic, recipientName, amo
             <p className="text-sm text-muted-foreground">{t('description')}</p>
           </div>
           <div className="bg-white p-4 rounded-md">
-            <GiroCode iban={iban} bic={bic} recipient={recipientName} amount={amount} text={purpose} />
+            <Girocode iban={iban} bic={bic} recipient={recipientName} amount={amount} text={purpose} />
           </div>
           <div className="mt-4 text-center">
             <p className="text-sm font-medium">{recipientName}</p>

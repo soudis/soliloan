@@ -1,11 +1,11 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db';
 import { sendPasswordInvitationEmail } from '@/lib/email';
 import { lenderIdSchema } from '@/lib/schemas/common';
 import { generateToken } from '@/lib/token';
 import { lenderAction } from '@/lib/utils/safe-action';
-import { revalidatePath } from 'next/cache';
 
 /**
  * Send an invitation email to a user to set their password
@@ -20,7 +20,9 @@ export const sendInvitationEmailAction = lenderAction
       include: {
         user: true,
         project: {
-          select: { name: true },
+          include: {
+            configuration: true,
+          },
         },
       },
     });
@@ -30,9 +32,6 @@ export const sendInvitationEmailAction = lenderAction
     }
 
     if (!lender.user || !lender.email) {
-      // Logic assumes user exists if we are inviting them to set password via this flow?
-      // Or maybe we create user? The original code fetched user by ID.
-      // LenderInfoCard checks if (lender.user).
       throw new Error('User not found for this lender');
     }
 
@@ -61,11 +60,11 @@ export const sendInvitationEmailAction = lenderAction
       user.name || lender.firstName || 'User',
       token,
       user.language || 'de',
-      lender.project.name,
+      lender.project.configuration.name,
     );
 
     // Revalidate the lender page to update the lastInvited timestamp
-    revalidatePath(`/lenders/${lenderId}`);
+    revalidatePath(`/${lender.project.id}/lenders/${lenderId}`);
 
     return { success: true };
   });

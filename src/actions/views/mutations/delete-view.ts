@@ -7,8 +7,8 @@ import { db } from '@/lib/db';
 import { authAction } from '@/lib/utils/safe-action';
 
 export const deleteViewAction = authAction
-  .schema(z.object({ viewId: z.string() }))
-  .action(async ({ parsedInput: { viewId }, ctx }) => {
+  .schema(z.object({ viewId: z.string(), projectId: z.string().optional() }))
+  .action(async ({ parsedInput: { viewId, projectId }, ctx }) => {
     // Fetch the view
     const view = await db.view.findUnique({
       where: {
@@ -33,7 +33,10 @@ export const deleteViewAction = authAction
     });
 
     // Revalidate the view
-    revalidatePath(`/${view.type.toLowerCase()}`);
+    const typePath = view.type.toLowerCase();
+    if (projectId) {
+      revalidatePath(`/${projectId}/${typePath}`);
+    }
 
     return { success: true };
   });

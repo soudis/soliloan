@@ -47,7 +47,7 @@ export const processTemplate = (template: string, currentData: Record<string, an
   result = loopReplacementResult;
 
   // Improved tag regex to support optional spaces and broader key characters (e.g. {{ project-name }})
-  const tagRegex = /\{\{\s*([a-zA-Z0-9.\-_#\/]+)\s*\}\}/g;
+  const tagRegex = /\{\{\s*([a-zA-Z0-9.\-_#/]+)\s*\}\}/g;
   result = result.replace(tagRegex, (match, path) => {
     if (path.startsWith('#') || path.startsWith('/')) return match;
     const parts = path.split('.');

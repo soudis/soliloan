@@ -8,10 +8,10 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { updateConfigurationAction } from '@/actions/projects/mutations/update-project-configuration';
 import { usePathname, useRouter } from '@/i18n/navigation';
+import { useProjectId } from '@/lib/hooks/use-project-id';
 import type { ConfigurationFormData } from '@/lib/schemas/configuration';
 import { convertEmptyToNull } from '@/lib/utils/form';
 import { type ConfigurationTabValue, useConfigurationTabsStore } from '@/store/configuration-tabs-store';
-import { useProjects } from '@/store/projects-store';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ConfigurationFormGeneral } from './configuration-form-general';
@@ -29,7 +29,7 @@ export const ConfigurationPage = ({ project }: Props) => {
   const setActiveTab = useConfigurationTabsStore((state) => state.setActiveTab);
   const [error, setError] = useState<string | null>(null);
   const pathname = usePathname();
-  const { setSelectedProject } = useProjects();
+  const projectId = useProjectId();
   const searchParams = useSearchParams();
   const [initialized, setInitialized] = useState(false);
   const router = useRouter();
@@ -42,9 +42,9 @@ export const ConfigurationPage = ({ project }: Props) => {
     if (tab && project && !initialized && router) {
       setActiveTab(project.id, tab as ConfigurationTabValue);
       setInitialized(true);
-      router.replace('/configuration');
+      router.replace(`/${projectId}/configuration`);
     }
-  }, [project, tab, setActiveTab, initialized, router]);
+  }, [project, tab, setActiveTab, initialized, router, projectId]);
 
   const handleSubmit = async (data: Partial<ConfigurationFormData>) => {
     setError(null);
@@ -60,9 +60,6 @@ export const ConfigurationPage = ({ project }: Props) => {
     if (result.serverError) {
       setError(result.serverError);
     } else if (result.data?.project) {
-      // Update the project store with the new configuration
-      setSelectedProject({ ...result.data.project, managers: project.managers });
-
       // Show success message
       toast.success(t('form.success'));
       router.replace(pathname, { scroll: true });

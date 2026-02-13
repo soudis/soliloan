@@ -1,11 +1,10 @@
 'use server';
 
-import { auth } from '@/lib/auth';
+import { omit } from 'lodash';
+import moment from 'moment';
 import { db } from '@/lib/db';
 import { parseAdditionalFieldConfig } from '@/lib/utils/additional-fields';
 import { managerAction } from '@/lib/utils/safe-action';
-import { omit } from 'lodash';
-import moment from 'moment';
 
 async function getProjects(userId?: string) {
   // Fetch all projects for the user

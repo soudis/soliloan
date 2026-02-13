@@ -2,13 +2,13 @@
 
 import { useNode } from '@craftjs/core';
 import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
 import type { ReactNode } from 'react';
+import { useMemo } from 'react';
 
 import {
+  BORDER_STYLE_OPTIONS,
   type BorderProps,
   type BorderStyle,
-  BORDER_STYLE_OPTIONS,
   buildBorderStyle,
 } from '@/lib/templates/border-utils';
 
@@ -147,7 +147,9 @@ export const PageHeaderSettings = () => {
             <label key={side} className="flex items-center gap-1.5 text-xs">
               <input
                 type="checkbox"
-                checked={Boolean(({ borderTop, borderRight, borderBottom, borderLeft } as Record<string, boolean>)[side])}
+                checked={Boolean(
+                  ({ borderTop, borderRight, borderBottom, borderLeft } as Record<string, boolean>)[side],
+                )}
                 onChange={(e) =>
                   setProp((props: PageHeaderProps) => {
                     (props as Record<string, boolean>)[side] = e.target.checked;

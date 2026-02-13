@@ -10,12 +10,10 @@ import { addFileAction } from '@/actions/files/mutations/add-file';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
-import { fileSchema } from '@/lib/schemas/file';
-
-import { FileFormFields } from './file-form-fields';
-
 import type { FileFormData } from '@/lib/schemas/file';
+import { fileSchema } from '@/lib/schemas/file';
 import type { LoanWithCalculations } from '@/types/loans';
+import { FileFormFields } from './file-form-fields';
 
 interface FileDialogProps {
   lenderId: string;

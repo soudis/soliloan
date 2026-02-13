@@ -50,10 +50,7 @@ export const deleteNoteAction = noteAction
     });
 
     // Revalidate paths
-    revalidatePath(`/lenders/${note.lenderId}`);
-    if (note.loanId) {
-      revalidatePath(`/loans/${note.loanId}`);
-    }
+    revalidatePath(`/${note.lender.projectId}/lenders/${note.lenderId}`);
 
     return { success: true };
   });

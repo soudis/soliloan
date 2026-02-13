@@ -1,10 +1,11 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { type LoanTemplateFormData, loanTemplateFormSchema } from '@/lib/schemas/configuration';
+import { idObjectSchema } from '@/lib/schemas/common';
+import type { LoanTemplateFormData } from '@/lib/schemas/configuration';
 import { configurationAction } from '@/lib/utils/safe-action';
 
-export const deleteLoanTemplate = async (template: LoanTemplateFormData) => {
+export const deleteLoanTemplate = async (template: Pick<LoanTemplateFormData, 'id'>) => {
   if (!template.id) {
     throw new Error('error.invalidParameters');
   }
@@ -17,5 +18,5 @@ export const deleteLoanTemplate = async (template: LoanTemplateFormData) => {
 };
 
 export const deleteLoanTemplateAction = configurationAction
-  .inputSchema(loanTemplateFormSchema)
+  .inputSchema(idObjectSchema)
   .action(async ({ parsedInput }) => deleteLoanTemplate(parsedInput));

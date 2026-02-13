@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { useRouter } from '@/i18n/navigation';
+import { useProjectId } from '@/lib/hooks/use-project-id';
 import { cn } from '@/lib/utils';
 import { useLenderLoanSelectionStore } from '@/store/lender-loan-selection-store';
 import type { LenderWithCalculations } from '@/types/lenders';
@@ -23,6 +24,7 @@ export const LenderLoansTab = ({ lender }: Props) => {
   }, [lender.loans, selectedLoanId]);
 
   const router = useRouter();
+  const projectId = useProjectId();
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -43,7 +45,7 @@ export const LenderLoansTab = ({ lender }: Props) => {
               ? 'w-full py-12 flex-col gap-2'
               : 'w-full lg:w-auto lg:flex-1 h-12 lg:h-auto flex-row gap-2 lg:self-stretch lg:min-h-0',
           )}
-          onClick={() => router.push(`/loans/new?lenderId=${lender.id}`)}
+          onClick={() => router.push(`/${projectId}/loans/new?lenderId=${lender.id}`)}
         >
           <Plus className={cn(lender.loans.length === 0 ? 'h-10 w-10' : 'h-5 w-5')} />
           <span className="font-medium text-sm">{tCommon('terms.loan')}</span>

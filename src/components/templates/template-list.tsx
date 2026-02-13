@@ -1,18 +1,16 @@
 'use client';
 
-import type { TemplateDataset, TemplateType } from '@prisma/client';
+import type { CommunicationTemplate } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Copy, Edit, FileText, Mail, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
+import { useState } from 'react';
 import { toast } from 'sonner';
-
 import { deleteTemplateAction } from '@/actions/templates/mutations/delete-template';
 import { duplicateTemplateAction } from '@/actions/templates/mutations/duplicate-template';
 import { getTemplatesAction } from '@/actions/templates/queries/get-templates';
-import { useRouter } from '@/i18n/navigation';
-import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
@@ -22,8 +20,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { ColumnDef } from '@tanstack/react-table';
-import { useState } from 'react';
+import { useRouter } from '@/i18n/navigation';
+import { useProjectId } from '@/lib/hooks/use-project-id';
+import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
+import type { CommunicationTemplateWithProject } from '@/types/templates';
 import { ConfirmDialog } from '../generic/confirm-dialog';
 
 interface TemplateListProps {
@@ -32,25 +32,12 @@ interface TemplateListProps {
   includeGlobal?: boolean;
 }
 
-type Template = {
-  id: string;
-  name: string;
-  description: string | null;
-  type: TemplateType;
-  dataset: TemplateDataset;
-  isGlobal: boolean;
-  projectId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  project: { id: string; name: string } | null;
-  createdBy: { id: string; name: string };
-};
-
 export function TemplateList({ projectId, isAdmin, includeGlobal = false }: TemplateListProps) {
   const t = useTranslations('templates');
   const router = useRouter();
+  const currentProjectId = useProjectId();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
+  const [templateToDelete, setTemplateToDelete] = useState<Pick<CommunicationTemplate, 'id' | 'name'> | null>(null);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['templates', projectId, isAdmin, includeGlobal],
@@ -64,18 +51,18 @@ export function TemplateList({ projectId, isAdmin, includeGlobal = false }: Temp
     },
   });
 
-  const { executeAsync: deleteTemplate, isExecuting: isDeleting } = useAction(deleteTemplateAction);
+  const { executeAsync: deleteTemplate } = useAction(deleteTemplateAction);
   const { executeAsync: duplicateTemplate } = useAction(duplicateTemplateAction);
 
-  const handleEdit = (template: Template) => {
+  const handleEdit = (template: Pick<CommunicationTemplate, 'id' | 'name' | 'isGlobal'>) => {
     if (isAdmin && template.isGlobal) {
       router.push(`/admin/templates/${template.id}`);
     } else {
-      router.push(`/configuration/templates/${template.id}`);
+      router.push(`/${currentProjectId}/configuration/templates/${template.id}`);
     }
   };
 
-  const handleDuplicate = async (template: Template) => {
+  const handleDuplicate = async (template: Pick<CommunicationTemplate, 'id' | 'name'>) => {
     const result = await duplicateTemplate({
       id: template.id,
       name: `${template.name} (${t('list.copy')})`,
@@ -90,7 +77,7 @@ export function TemplateList({ projectId, isAdmin, includeGlobal = false }: Temp
     }
   };
 
-  const handleDeleteClick = (template: Template) => {
+  const handleDeleteClick = (template: Pick<CommunicationTemplate, 'id' | 'name'>) => {
     setTemplateToDelete(template);
     setDeleteDialogOpen(true);
   };
@@ -113,7 +100,7 @@ export function TemplateList({ projectId, isAdmin, includeGlobal = false }: Temp
     setTemplateToDelete(null);
   };
 
-  const columns: ColumnDef<Template>[] = [
+  const columns: ColumnDef<CommunicationTemplateWithProject>[] = [
     {
       accessorKey: 'name',
       header: t('list.columns.name'),

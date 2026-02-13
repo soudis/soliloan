@@ -80,5 +80,6 @@ globs: **/*.tsx, **/*.ts, src/**/*.ts, src/**/*.tsx
 - Show loading states during form submission
 
 ## State Management
-- use zustand for state management
+- use nuqs for state managment where possible
+- if nuqs is not feasible use zustand for state management
 - Implement proper loading states 

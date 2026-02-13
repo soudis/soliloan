@@ -11,11 +11,12 @@ interface ProjectLogoProps {
 
 export function ProjectLogo({ project, className, showPlaceholder = true }: ProjectLogoProps) {
   const logo = project?.configuration?.logo;
-  const name = project?.name || '';
+  const name = project?.configuration?.name ?? '';
 
   if (logo) {
     // optimize: check if logo is base64 or url. If url, we might need next/image, but img is safer for dynamic sources without config.
     // Assuming base64 or direct ref.
+    // biome-ignore lint/performance/noImgElement: needed
     return <img src={logo} alt={`${name} logo`} className={cn('object-contain', className)} />;
   }
 

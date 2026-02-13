@@ -1,4 +1,11 @@
-import { DurationType, type InterestMethod, PaymentType, Prisma, TerminationType, TransactionType } from '@prisma/client';
+import {
+  DurationType,
+  type InterestMethod,
+  PaymentType,
+  Prisma,
+  TerminationType,
+  TransactionType,
+} from '@prisma/client';
 import { omit } from 'lodash';
 import moment, { type Moment } from 'moment';
 
@@ -137,7 +144,7 @@ export const calculateLoanPerYear = (
     let interestBaseAmount = currentYear.interestBaseAmount;
     // calculate interest for new transactions of year
     let interest = new Prisma.Decimal(0);
-    let terminationDate = undefined;
+    let terminationDate;
     // biome-ignore lint/complexity/noForEach: <explanation>
     transactions
       .filter((transaction) => moment(transaction.date).year() === year)

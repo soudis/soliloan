@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { InfoItem } from '@/components/ui/info-item';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from '@/i18n/navigation';
+import { useProjectId } from '@/lib/hooks/use-project-id';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { useLenderLoanSelectionStore } from '@/store/lender-loan-selection-store';
 import { useLoanTabsStore } from '@/store/loan-tabs-store';
@@ -43,6 +44,7 @@ export function LoanCard({ loan, className }: LoanCardProps) {
   const { getActiveTab, setActiveTab } = useLoanTabsStore();
   const activeTab = getActiveTab(loan.id);
   const router = useRouter();
+  const projectId = useProjectId();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const { setSelectedLoanId } = useLenderLoanSelectionStore();
   const queryClient = useQueryClient();
@@ -124,7 +126,7 @@ export function LoanCard({ loan, className }: LoanCardProps) {
                 variant="outline"
                 size="sm"
                 className="h-9 w-9 p-0 md:h-auto md:w-auto md:px-3 md:py-1.5"
-                onClick={() => router.push(`/loans/${loan.id}/edit`)}
+                onClick={() => router.push(`/${projectId}/loans/${loan.id}/edit`)}
               >
                 <Pencil className="h-4 w-4 md:mr-2" />
                 <span className="hidden md:inline">{commonT('ui.actions.edit')}</span>

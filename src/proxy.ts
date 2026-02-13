@@ -1,5 +1,5 @@
-import createIntlMiddleware from 'next-intl/middleware';
 import { type NextRequest, NextResponse } from 'next/server';
+import createIntlMiddleware from 'next-intl/middleware';
 
 import { LOCALES, routing } from './i18n/routing';
 import { auth } from './lib/auth';
@@ -24,9 +24,9 @@ export async function proxy(request: NextRequest) {
     }
     if (authRequest.auth && isPublicPage) {
       // Redirect to root if authenticated and trying to access public page
-      return NextResponse.redirect(new URL('/dashboard', authRequest.nextUrl.origin));
+      return NextResponse.redirect(new URL('/', authRequest.nextUrl.origin));
     }
-  })(request, {});
+  })(request, { params: Promise.resolve({}) });
 
   // Return response other than 200 to redirect properly
   if (authResponse?.status !== 200) {

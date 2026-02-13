@@ -1,8 +1,7 @@
 import { getTranslations } from 'next-intl/server';
-import { auth } from '../auth';
-
 import { createSafeActionClient } from 'next-safe-action';
 import { z } from 'zod';
+import { auth } from '../auth';
 import { db } from '../db';
 
 export const actionClient = createSafeActionClient({
@@ -38,7 +37,6 @@ export const managerAction = authAction.use(async ({ next, ctx }) => {
     },
   });
 });
-
 
 export const projectAction = managerAction
   .inputSchema(

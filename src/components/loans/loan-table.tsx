@@ -1,12 +1,10 @@
 'use client';
 
 import { ContractStatus, InterestMethod, TerminationType } from '@prisma/client';
-import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { getLoansByProjectAction } from '@/actions';
 import { ActionButton } from '@/components/ui/action-button';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
@@ -24,28 +22,20 @@ import {
   createPercentageColumn,
   createTerminationModalitiesColumn,
 } from '@/lib/table-column-utils';
-import { useProjects } from '@/store/projects-store';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
+import type { ProjectWithConfiguration } from '@/types/projects';
 
-export default function LoansPage() {
+interface LoanTableProps {
+  loans: LoanWithRelations[];
+  project: ProjectWithConfiguration;
+  projectId: string;
+}
+
+export function LoanTable({ loans, project, projectId }: LoanTableProps) {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const router = useRouter();
-  const { selectedProject } = useProjects();
   const locale = useLocale();
-
-  const { data: loans = [], isLoading: loading } = useQuery({
-    queryKey: ['loans', selectedProject?.id],
-    queryFn: async () => {
-      if (!selectedProject) return [];
-      const result = await getLoansByProjectAction({ projectId: selectedProject.id });
-      if (result.serverError) {
-        throw new Error(result.serverError);
-      }
-      return result.data?.loans;
-    },
-    enabled: !!selectedProject,
-  });
 
   const columns: ColumnDef<LoanWithRelations>[] = [
     createNumberColumn<LoanWithRelations>('loanNumber', 'table.loanNumber', t, locale),
@@ -134,7 +124,7 @@ export default function LoansPage() {
       },
     ),
     ...createAdditionalFieldsColumns<LoanWithRelations>(
-      selectedProject?.configuration.loanAdditionalFields,
+      project.configuration.loanAdditionalFields,
       'additionalFields',
       t,
       locale,
@@ -231,7 +221,7 @@ export default function LoansPage() {
         value: value,
       })),
     },
-    ...createAdditionalFieldFilters('additionalFields', selectedProject?.configuration.loanAdditionalFields),
+    ...createAdditionalFieldFilters('additionalFields', project.configuration.loanAdditionalFields),
   };
 
   // Define default column visibility
@@ -254,25 +244,14 @@ export default function LoansPage() {
     status: true,
     altInterestMethod: false,
     contractStatus: true,
-    ...createAdditionalFieldDefaultColumnVisibility(
-      'additionalFields',
-      selectedProject?.configuration.loanAdditionalFields,
-    ),
+    ...createAdditionalFieldDefaultColumnVisibility('additionalFields', project.configuration.loanAdditionalFields),
   };
-
-  if (!selectedProject) {
-    return null;
-  }
-
-  if (loading) {
-    return null;
-  }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">{t('title')}</h1>
-        <Button onClick={() => router.push('/loans/new')}>
+        <Button onClick={() => router.push(`/${projectId}/loans/new`)}>
           <Plus className="mr-2 h-4 w-4" />
           {t('new.title')}
         </Button>
@@ -285,14 +264,14 @@ export default function LoansPage() {
         defaultColumnVisibility={defaultColumnVisibility}
         viewType="LOAN"
         showFilter={true}
-        onRowClick={(row) => router.push(`/lenders/${row.lender.id}?loanId=${row.id}`)}
+        onRowClick={(row) => router.push(`/${projectId}/lenders/${row.lender.id}?loanId=${row.id}`)}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
             <ActionButton
               icon={<Pencil className="h-4 w-4" />}
               tooltip={commonT('ui.actions.edit')}
               onClick={() => {
-                router.push(`/loans/${row.id}/edit`);
+                router.push(`/${projectId}/loans/${row.id}/edit`);
               }}
             />
           </div>

@@ -1,8 +1,15 @@
-import type { Entity, Operation } from '@prisma/client';
-
+import type {
+  Configuration,
+  Entity,
+  File,
+  Lender,
+  Loan,
+  Note,
+  Operation,
+  PrismaClient,
+  Transaction,
+} from '@prisma/client';
 import { auth } from '@/lib/auth';
-
-import type { Configuration, File, Lender, Loan, Note, PrismaClient, Transaction } from '@prisma/client';
 
 type EntityData = Configuration | Lender | Loan | Transaction | Note | Partial<File>;
 

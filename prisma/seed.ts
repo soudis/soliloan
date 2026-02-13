@@ -1,6 +1,6 @@
 import 'dotenv/config';
-import { InterestMethod, Language, PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { InterestMethod, Language, PrismaClient } from '@prisma/client';
 
 import { hashPassword } from '@/lib/utils/password';
 
@@ -37,8 +37,8 @@ async function main() {
             slug: 'dev-gmbh',
             configuration: {
               create: {
-                name: "Development GmbH",
-                interestMethod: InterestMethod.ACT_360_COMPOUND
+                name: 'Development GmbH',
+                interestMethod: InterestMethod.ACT_360_COMPOUND,
               },
             },
             managers: { connect: { id: user.id } },

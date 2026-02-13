@@ -17,7 +17,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { type ViewState, useTableStore } from '@/store/table-store';
+import { useProjectId } from '@/lib/hooks/use-project-id';
+import { useTableStore, type ViewState } from '@/store/table-store';
 
 import { DataTableColumnFilters } from './data-table-column-filters';
 import { SaveViewDialog } from './save-view-dialog';
@@ -52,6 +53,7 @@ export function DataTableHeader<TData>({
   hasActiveFilters,
   state,
 }: DataTableHeaderProps<TData>) {
+  const projectId = useProjectId();
   const t = useTranslations('dataTable');
   const [showColumnFilters, setShowColumnFilters] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -76,6 +78,7 @@ export function DataTableHeader<TData>({
             pageSize: state.pagination?.pageSize ?? 25,
           },
         },
+        ...(projectId && { projectId }),
       });
 
       if (result?.serverError || result?.validationErrors) {
@@ -101,14 +104,14 @@ export function DataTableHeader<TData>({
   const handleViewDefault = async (viewId: string, isDefault: boolean) => {
     if (!viewType) return;
 
-    await updateViewAction({ viewId, data: { isDefault } });
+    await updateViewAction({ viewId, data: { isDefault }, ...(projectId && { projectId }) });
     queryClient.invalidateQueries({ queryKey: ['views', viewType] });
   };
 
   const handleViewDelete = async (viewId: string) => {
     if (!viewType) return;
 
-    await deleteViewAction({ viewId });
+    await deleteViewAction({ viewId, ...(projectId && { projectId }) });
     queryClient.invalidateQueries({ queryKey: ['views', viewType] });
   };
 

@@ -117,13 +117,7 @@ function renderTextSegments(
 ): React.ReactNode[] {
   if (segments.length === 0) return [' '];
   return segments.map((seg, i) =>
-    seg.style
-      ? React.createElement(
-          PdfText,
-          { key: i, style: { ...baseStyle, ...seg.style } },
-          seg.text,
-        )
-      : seg.text,
+    seg.style ? React.createElement(PdfText, { key: i, style: { ...baseStyle, ...seg.style } }, seg.text) : seg.text,
   );
 }
 
@@ -200,9 +194,11 @@ export function renderDesignToPdfParts(
   const nodes = getNodesMapFromDesign(design);
   const { Document: _Doc, Page: _Page, View, Text: PdfText, Image: PdfImage } = components;
 
-  const rootNode = nodes.ROOT ?? Object.values(nodes).find(
-    (n: any) => n?.linkedNodes?.PAGE_HEADER && n?.linkedNodes?.BODY && n?.linkedNodes?.PAGE_FOOTER,
-  );
+  const rootNode =
+    nodes.ROOT ??
+    Object.values(nodes).find(
+      (n: any) => n?.linkedNodes?.PAGE_HEADER && n?.linkedNodes?.BODY && n?.linkedNodes?.PAGE_FOOTER,
+    );
   if (!rootNode) {
     return {
       header: null,
@@ -245,12 +241,15 @@ export function renderDesignToPdfParts(
 
   const data = sampleData as Record<string, any>;
 
-  const renderNode = (nodeId: string, context: { isHeaderOrFooter: boolean } = { isHeaderOrFooter: false }): React.ReactNode => {
+  const renderNode = (
+    nodeId: string,
+    context: { isHeaderOrFooter: boolean } = { isHeaderOrFooter: false },
+  ): React.ReactNode => {
     const node = nodes[nodeId];
     if (!node) return null;
 
     const { type, props, nodes: nodeChildren } = node;
-    const name = typeof type === 'string' ? type : (type as any)?.resolvedName ?? (type as any)?.name;
+    const name = typeof type === 'string' ? type : ((type as any)?.resolvedName ?? (type as any)?.name);
     const childIdsList: string[] = nodeChildren || [];
 
     const children = childIdsList.map((cid) => renderNode(cid, context));
@@ -338,9 +337,8 @@ export function renderDesignToPdfParts(
         const fontSize = Number(props?.fontSize) || 16;
         const color = (props?.color as string) || '#000000';
         const textAlign = (props?.textAlign as 'left' | 'center' | 'right' | 'justify') || 'left';
-        const hasPagePlaceholder = context.isHeaderOrFooter && (
-          withData.includes('{{pageNumber}}') || withData.includes('{{totalPages}}')
-        );
+        const hasPagePlaceholder =
+          context.isHeaderOrFooter && (withData.includes('{{pageNumber}}') || withData.includes('{{totalPages}}'));
         const style = { fontSize, color, textAlign, fontFamily: 'Inter' as const };
 
         if (hasPagePlaceholder) {
@@ -352,25 +350,17 @@ export function renderDesignToPdfParts(
                 .replace(/\{\{pageNumber\}\}/g, String(pageNumber))
                 .replace(/\{\{totalPages\}\}/g, String(totalPages));
               const segments = htmlToTextSegments(withNumbers);
-              return React.createElement(
-                PdfText,
-                { style },
-                ...renderTextSegments(segments, style, PdfText),
-              );
+              return React.createElement(PdfText, { style }, ...renderTextSegments(segments, style, PdfText));
             },
           });
         }
         const segments = htmlToTextSegments(withData);
-        return React.createElement(
-          PdfText,
-          { key: nodeId, style },
-          ...renderTextSegments(segments, style, PdfText),
-        );
+        return React.createElement(PdfText, { key: nodeId, style }, ...renderTextSegments(segments, style, PdfText));
       }
 
       case 'Image': {
         const useLogo = props?.useLogoSource === true;
-        const src = useLogo && logoUrl ? logoUrl : ((props?.src as string) || '');
+        const src = useLogo && logoUrl ? logoUrl : (props?.src as string) || '';
         const width = (props?.width as string) || '100%';
         if (!src) return null;
         return React.createElement(PdfImage, {
@@ -394,24 +384,15 @@ export function renderDesignToPdfParts(
         const rows: React.ReactNode[] = [];
         // Header row
         const headerCells = Array.from({ length: cols }, (_, c) => {
-          const withData = processTemplate(
-            processTiptapContent(headerTexts[c] || ''),
-            data,
-          );
+          const withData = processTemplate(processTiptapContent(headerTexts[c] || ''), data);
           const segments = htmlToTextSegments(withData);
           return React.createElement(
             View,
             { key: `h-${c}`, style: TABLE_HEADER_VIEW_STYLE },
-            React.createElement(
-              PdfText,
-              { style: headerStyle },
-              ...renderTextSegments(segments, headerStyle, PdfText),
-            ),
+            React.createElement(PdfText, { style: headerStyle }, ...renderTextSegments(segments, headerStyle, PdfText)),
           );
         });
-        rows.push(
-          React.createElement(View, { key: 'header-row', style: { flexDirection: 'row' } }, ...headerCells),
-        );
+        rows.push(React.createElement(View, { key: 'header-row', style: { flexDirection: 'row' } }, ...headerCells));
 
         if (isDynamic && Array.isArray(data[loopKey])) {
           const items = data[loopKey] as Record<string, any>[];
@@ -423,11 +404,7 @@ export function renderDesignToPdfParts(
               return React.createElement(
                 View,
                 { key: `c-${r}-${c}`, style: TABLE_CELL_VIEW_STYLE },
-                React.createElement(
-                  PdfText,
-                  { style: textStyle },
-                  ...renderTextSegments(segments, textStyle, PdfText),
-                ),
+                React.createElement(PdfText, { style: textStyle }, ...renderTextSegments(segments, textStyle, PdfText)),
               );
             });
             rows.push(React.createElement(View, { key: `row-${r}`, style: { flexDirection: 'row' } }, ...cells));
@@ -435,30 +412,19 @@ export function renderDesignToPdfParts(
         } else {
           for (let r = 0; r < rowCount; r++) {
             const cells = Array.from({ length: cols }, (_, c) => {
-              const withData = processTemplate(
-                processTiptapContent(cellTexts[r]?.[c] || ''),
-                data,
-              );
+              const withData = processTemplate(processTiptapContent(cellTexts[r]?.[c] || ''), data);
               const segments = htmlToTextSegments(withData);
               return React.createElement(
                 View,
                 { key: `c-${r}-${c}`, style: TABLE_CELL_VIEW_STYLE },
-                React.createElement(
-                  PdfText,
-                  { style: textStyle },
-                  ...renderTextSegments(segments, textStyle, PdfText),
-                ),
+                React.createElement(PdfText, { style: textStyle }, ...renderTextSegments(segments, textStyle, PdfText)),
               );
             });
             rows.push(React.createElement(View, { key: `row-${r}`, style: { flexDirection: 'row' } }, ...cells));
           }
         }
 
-        return React.createElement(
-          View,
-          { key: nodeId, style: { width: '100%', marginVertical: 16 } },
-          ...rows,
-        );
+        return React.createElement(View, { key: nodeId, style: { width: '100%', marginVertical: 16 } }, ...rows);
       }
 
       case 'Button':
@@ -509,7 +475,11 @@ export function renderDesignToPdfParts(
           },
         },
         ...bodyChildren.map((child, i) =>
-          React.createElement(View, { key: i, style: { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 } }, child),
+          React.createElement(
+            View,
+            { key: i, style: { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 } },
+            child,
+          ),
         ),
       );
     } else if (bodyLayout === 'grid') {
@@ -528,7 +498,11 @@ export function renderDesignToPdfParts(
           },
         },
         ...bodyChildren.map((child, i) =>
-          React.createElement(View, { key: i, style: { flexGrow: 0, flexShrink: 0, flexBasis: basisPct, minWidth: 0 } }, child),
+          React.createElement(
+            View,
+            { key: i, style: { flexGrow: 0, flexShrink: 0, flexBasis: basisPct, minWidth: 0 } },
+            child,
+          ),
         ),
       );
     } else {

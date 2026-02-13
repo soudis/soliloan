@@ -5,14 +5,12 @@ import { getTranslations } from 'next-intl/server';
 
 import { db } from '@/lib/db';
 import {
+  buildLoopTags,
+  buildMergeTagValue,
   DATASET_CONFIGS,
-  LENDER_FIELDS,
-  LOAN_FIELDS,
   LOOP_DEFINITIONS,
   NOTE_FIELDS,
   TRANSACTION_FIELDS,
-  buildLoopTags,
-  buildMergeTagValue,
 } from '@/lib/templates/merge-tags';
 
 export type MergeTagField = {
@@ -51,7 +49,11 @@ type AdditionalFieldDef = {
 /**
  * Get merge tag configuration for a dataset with translated labels
  */
-export async function getMergeTagConfigAction(dataset: TemplateDataset, projectId?: string, templateType?: TemplateType): Promise<MergeTagConfig> {
+export async function getMergeTagConfigAction(
+  dataset: TemplateDataset,
+  projectId?: string,
+  templateType?: TemplateType,
+): Promise<MergeTagConfig> {
   const t = await getTranslations('fields');
 
   const config = DATASET_CONFIGS[dataset];

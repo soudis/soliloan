@@ -1,6 +1,6 @@
 'use server';
 
-import { Entity, Operation, PaymentType, TransactionType } from '@prisma/client';
+import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 import { createAuditEntry, getLenderContext, getLoanContext, removeNullFields } from '@/lib/audit-trail';
@@ -56,8 +56,9 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
     projectId: loan.lender.projectId,
   });
 
-  // Revalidate the lender page
-  revalidatePath(`/lenders/${data.lenderId}`);
+  // Revalidate the lender page and loans page
+  revalidatePath(`/${loan.lender.projectId}/lenders/${data.lenderId}`);
+  revalidatePath(`/${loan.lender.projectId}/loans`);
 
   return { loan };
 });

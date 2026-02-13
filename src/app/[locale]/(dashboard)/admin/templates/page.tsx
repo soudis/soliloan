@@ -1,11 +1,10 @@
 'use client';
 
-import { redirect } from '@/i18n/navigation';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
-
 import { TemplateDialog } from '@/components/templates/template-dialog';
 import { TemplateList } from '@/components/templates/template-list';
+import { redirect } from '@/i18n/navigation';
 
 export default function AdminTemplatesPage() {
   const { data: session } = useSession();

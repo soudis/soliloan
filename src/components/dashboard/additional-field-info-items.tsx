@@ -1,12 +1,15 @@
+import { useLocale } from 'next-intl';
 import type { AdditionalFieldConfig, AdditionalFieldValues } from '@/lib/schemas/common';
 import { formatAdditionalFieldValue } from '@/lib/utils/additional-fields';
-import { useLocale } from 'next-intl';
 import { InfoItem } from '../ui/info-item';
 
 export const AdditionalFieldInfoItems = ({
   additionalFields,
   configuration,
-}: { additionalFields: AdditionalFieldValues; configuration?: AdditionalFieldConfig[] }) => {
+}: {
+  additionalFields: AdditionalFieldValues;
+  configuration?: AdditionalFieldConfig[];
+}) => {
   const locale = useLocale();
   return (
     <>

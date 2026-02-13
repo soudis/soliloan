@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useRouter } from '@/i18n/navigation';
+import { useProjectId } from '@/lib/hooks/use-project-id';
 import { getLenderName } from '@/lib/utils';
 import { useLenderLoanSelectionStore } from '@/store/lender-loan-selection-store';
 import { type LenderTabValue, useLenderTabsStore } from '@/store/lender-tabs-store';
@@ -30,17 +31,18 @@ export const LenderPage = ({ lender }: Props) => {
   const { setSelectedLoanId } = useLenderLoanSelectionStore();
   const [initialized, setInitialized] = useState(false);
   const router = useRouter();
+  const projectId = useProjectId();
 
   const loanId = searchParams.get('loanId');
 
   useEffect(() => {
-    if (loanId && lender && !initialized && router) {
+    if (loanId && lender && !initialized && router && projectId) {
       setSelectedLoanId(lender.id, loanId);
       setActiveTab(lender.id, 'loans');
       setInitialized(true);
-      router.replace(`/lenders/${lender.id}`);
+      router.replace(`/${projectId}/lenders/${lender.id}`);
     }
-  }, [lender, loanId, setSelectedLoanId, setActiveTab, initialized, router]);
+  }, [lender, loanId, setSelectedLoanId, setActiveTab, initialized, router, projectId]);
 
   return (
     <Tabs

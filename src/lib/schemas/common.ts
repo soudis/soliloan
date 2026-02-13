@@ -8,6 +8,7 @@ import { validationError } from '../utils/validation';
 
 // Reusable ID Schemas
 export const idSchema = z.string().min(1, { message: 'validation.common.required' });
+export const idObjectSchema = z.object({ id: idSchema });
 export const projectIdSchema = z.object({ projectId: idSchema });
 export const lenderIdSchema = z.object({ lenderId: idSchema });
 export const loanIdSchema = z.object({ loanId: idSchema });
@@ -260,12 +261,12 @@ export const additionalFieldConfigSchema = z
     id: z.string(),
     name: z.string().min(1, { message: 'validation.common.required' }),
     type: additionalFieldTypeEnum,
-    numberFormat: additionalNumberFormatEnum,
+    numberFormat: additionalNumberFormatEnum.nullable().optional(),
     selectOptions: z.array(z.string()),
-    defaultValue: z.preprocess(
-      (val) => (val?.toString() === 'clear' ? '' : val?.toString()),
-      z.string().nullable().optional(),
-    ),
+    defaultValue: z
+      .preprocess((val) => (val?.toString() === 'clear' ? '' : val?.toString()), z.string().nullable().optional())
+      .nullable()
+      .optional(),
     required: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {

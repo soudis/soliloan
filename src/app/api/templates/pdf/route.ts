@@ -1,6 +1,5 @@
-import path from 'path';
-
 import { NextResponse } from 'next/server';
+import path from 'path';
 import React from 'react';
 
 import { auth } from '@/lib/auth';
@@ -27,8 +26,15 @@ export async function POST(request: Request) {
       return new NextResponse('Missing or invalid "design" in body', { status: 400 });
     }
 
-    const { Document, Font, Page, View, Image: PdfImage, Text: PdfText, renderToBuffer } =
-      await import('@react-pdf/renderer');
+    const {
+      Document,
+      Font,
+      Page,
+      View,
+      Image: PdfImage,
+      Text: PdfText,
+      renderToBuffer,
+    } = await import('@react-pdf/renderer');
     const { renderDesignToPdfParts } = await import('@/lib/templates/design-to-pdf');
 
     // Only register upright weights. Italic registration triggers a DataView out-of-bounds
@@ -55,12 +61,8 @@ export async function POST(request: Request) {
     // Reserve space so body doesn't overlap fixed header/footer. Use ~one line height
     // so the gap matches the editor (header height ≈ padding*2 + line).
     const LINE_HEIGHT = 16;
-    const paddingTop = parts.header
-      ? parts.headerPadding * 2 + LINE_HEIGHT
-      : 0;
-    const paddingBottom = parts.footer
-      ? parts.footerPadding * 2 + LINE_HEIGHT
-      : 0;
+    const paddingTop = parts.header ? parts.headerPadding * 2 + LINE_HEIGHT : 0;
+    const paddingBottom = parts.footer ? parts.footerPadding * 2 + LINE_HEIGHT : 0;
 
     // Header/footer are already full Container/PageHeader/PageFooter trees (with their own
     // padding and border from the design). Only wrap in a fixed-position View — no extra padding/border.
@@ -131,9 +133,9 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('PDF generation error', error);
-    return new NextResponse(
-      JSON.stringify({ error: 'PDF generation failed', details: String(error) }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
-    );
+    return new NextResponse(JSON.stringify({ error: 'PDF generation failed', details: String(error) }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }

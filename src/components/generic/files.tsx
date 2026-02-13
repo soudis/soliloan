@@ -3,8 +3,8 @@
 import type { File } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { Download, FileIcon, FileText, Image as ImageIcon, Lock, Plus, Trash2, Unlock } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 

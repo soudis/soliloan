@@ -1,9 +1,8 @@
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
 import type { ClassValue } from 'clsx';
+import { clsx } from 'clsx';
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
+import { twMerge } from 'tailwind-merge';
 
 /** Shape used by getLenderName - avoids importing Prisma in client-bundled utils */
 type LenderNameFields = {

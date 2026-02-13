@@ -2,12 +2,11 @@
 
 import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
-
+import { z } from 'zod';
 import { createAuditEntry, getChangedFields, getLenderContext, getLoanContext } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
 import { loanFormSchema } from '@/lib/schemas/loan';
 import { loanAction } from '@/lib/utils/safe-action';
-import { z } from 'zod';
 
 export const updateLoanAction = loanAction
   .inputSchema(
@@ -84,8 +83,9 @@ export const updateLoanAction = loanAction
       });
     }
 
-    // Revalidate the lender page
-    revalidatePath(`/lenders/${loan.lenderId}`);
+    // Revalidate the lender page and loans page
+    revalidatePath(`/${loan.lender.projectId}/lenders/${loan.lenderId}`);
+    revalidatePath(`/${loan.lender.projectId}/loans`);
 
     return { loan: updatedLoan };
   });

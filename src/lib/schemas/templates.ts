@@ -7,15 +7,15 @@ import { z } from 'zod';
 export const templateBaseSchema = z.object({
   name: z.string().min(1, 'error.template.nameRequired').max(100),
   description: z.string().max(500).nullable().optional(),
-  type: z.nativeEnum(TemplateType),
-  dataset: z.nativeEnum(TemplateDataset),
+  type: z.enum(TemplateType),
+  dataset: z.enum(TemplateDataset),
 });
 
 // Create template schema
 export const createTemplateSchema = templateBaseSchema.extend({
   projectId: z.string().optional(), // If not provided, will be global (admin only)
-  isGlobal: z.boolean().optional().default(false),
-  designJson: z.record(z.string(), z.any()).optional().default({}),
+  isGlobal: z.boolean().nullable().optional(),
+  designJson: z.record(z.string(), z.any()).nullable().optional(),
 });
 
 export type CreateTemplateFormData = z.infer<typeof createTemplateSchema>;
@@ -57,8 +57,8 @@ export type GetTemplateFormData = z.infer<typeof getTemplateSchema>;
 // Get templates list schema
 export const getTemplatesSchema = z.object({
   projectId: z.string().optional(),
-  type: z.nativeEnum(TemplateType).optional(),
-  dataset: z.nativeEnum(TemplateDataset).optional(),
+  type: z.enum(TemplateType).optional(),
+  dataset: z.enum(TemplateDataset).optional(),
   isGlobal: z.boolean().optional(),
   includeGlobal: z.boolean().optional().default(false), // Include global templates in project query
 });

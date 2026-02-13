@@ -3,13 +3,13 @@
 import { useNode } from '@craftjs/core';
 import { ArrowDown, ArrowRight, Grid3X3 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import {
+  BORDER_STYLE_OPTIONS,
   type BorderProps,
   type BorderStyle,
-  BORDER_STYLE_OPTIONS,
   buildBorderStyle,
 } from '@/lib/templates/border-utils';
 
@@ -74,11 +74,7 @@ const rgbaToString = (r: number, g: number, b: number, a: number): string => {
 };
 
 /** Build the inline style object for the container based on layout mode */
-const buildLayoutStyle = (
-  layout: LayoutMode,
-  gap: number,
-  gridColumns: number,
-): React.CSSProperties => {
+const buildLayoutStyle = (layout: LayoutMode, gap: number, gridColumns: number): React.CSSProperties => {
   switch (layout) {
     case 'horizontal':
       return {
@@ -383,7 +379,9 @@ export const ContainerSettings = () => {
             <label key={side} className="flex items-center gap-1.5 text-xs">
               <input
                 type="checkbox"
-                checked={Boolean(({ borderTop, borderRight, borderBottom, borderLeft } as Record<string, boolean>)[side])}
+                checked={Boolean(
+                  ({ borderTop, borderRight, borderBottom, borderLeft } as Record<string, boolean>)[side],
+                )}
                 onChange={(e) =>
                   setProp((props: ContainerProps) => {
                     (props as Record<string, boolean>)[side] = e.target.checked;

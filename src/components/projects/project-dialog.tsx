@@ -1,20 +1,19 @@
 'use client';
 
-import { useRouter } from '@/i18n/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-
 import { createProjectAction } from '@/actions/projects';
 import { FormField } from '@/components/form/form-field';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
-import { projectFormSchema } from '@/lib/schemas/project';
+import { useRouter } from '@/i18n/navigation';
 import type { ProjectFormData } from '@/lib/schemas/project';
+import { projectFormSchema } from '@/lib/schemas/project';
 import { useProjects } from '@/store/projects-store';
 
 interface ProjectDialogProps {
@@ -57,9 +56,8 @@ export function ProjectDialog({ open, onOpenChange }: ProjectDialogProps) {
         // Refetch projects and wait for completion, then set selected project
         await queryClient.refetchQueries({ queryKey: ['projects'] });
 
-        // Set the created project as selected and navigate to configuration
-        setSelectedProject(createdProject);
-        router.push('/configuration');
+        // Navigate to the new project's configuration
+        router.push(`/${createdProject.id}/configuration`);
 
         onOpenChange(false);
         form.reset();

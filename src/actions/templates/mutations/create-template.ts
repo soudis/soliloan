@@ -1,8 +1,6 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-
-import { connect } from 'node:http2';
 import { db } from '@/lib/db';
 import { createTemplateSchema } from '@/lib/schemas/templates';
 import { adminAction, projectAction } from '@/lib/utils/safe-action';
@@ -38,7 +36,7 @@ export const createTemplateAction = projectAction
     });
 
     if (!data.isGlobal && data.projectId) {
-      revalidatePath('/configuration');
+      revalidatePath(`/${data.projectId}/configuration`);
     } else {
       revalidatePath('/admin/templates');
     }

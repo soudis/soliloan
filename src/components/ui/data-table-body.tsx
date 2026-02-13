@@ -1,4 +1,4 @@
-import { type Table as TanstackTable, flexRender } from '@tanstack/react-table';
+import { flexRender, type Table as TanstackTable } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';

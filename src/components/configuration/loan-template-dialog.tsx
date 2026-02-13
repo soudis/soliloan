@@ -1,22 +1,20 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { DurationType, type LoanTemplate, TerminationType } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { useAction } from 'next-safe-action/hooks';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
+import { upsertLoanTemplateAction } from '@/actions/projects/mutations/upsert-loan-template';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
-
-import { upsertLoanTemplateAction } from '@/actions/projects/mutations/upsert-loan-template';
 import { loanTemplateFormSchema } from '@/lib/schemas/configuration';
 import { convertEmptyToNull } from '@/lib/utils/form';
-import { useHookFormAction } from '@next-safe-action/adapter-react-hook-form/hooks';
-import { DurationType, type LoanTemplate, TerminationType } from '@prisma/client';
-import { useAction } from 'next-safe-action/hooks';
 import { LoanTemplateFormFields } from './loan-template-form-fields';
 
 type Props = {
@@ -66,7 +64,7 @@ export function LoanTemplateDialog({ configurationId, initialValues, open, onOpe
     },
   });
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  // biome-ignore lint/correctness/useExhaustiveDependencies: needed
   useEffect(() => {
     resetAction();
     form.reset({
@@ -104,6 +102,8 @@ export function LoanTemplateDialog({ configurationId, initialValues, open, onOpe
                   configurationId,
                   name: values.name,
                   terminationType: values.terminationType,
+                  endDate: values.endDate,
+                  terminationDate: values.terminationDate,
                 });
               })(event);
             }}
