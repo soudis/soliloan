@@ -75,7 +75,7 @@ export const ConfigurationPage = ({ project }: Props) => {
   return (
     <Tabs value={activeTab} onValueChange={(value) => setActiveTab(project.id, value as ConfigurationTabValue)}>
       <div className="mb-6 mr-10">
-        <h1 className="text-3xl font-bold whitespace-nowrap">{project.name}</h1>
+        <h1 className="text-3xl font-bold whitespace-nowrap">{project.configuration.name}</h1>
       </div>
       <TabsList variant="modern">
         <TabsTrigger value="general" variant="modern">

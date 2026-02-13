@@ -53,20 +53,19 @@ export const inNumberRangeFilter: FilterFn<unknown> = (row, columnId, filterValu
   // Convert the row value to a number
   const rowValue = Number(value);
 
+  let result = true;
   // Check if the number is within the range
   if (filterValue[0] !== null && filterValue[1] !== null) {
-    return rowValue >= filterValue[0] && rowValue <= filterValue[1];
-  }
-  if (filterValue[0] !== null) {
+    result = rowValue >= filterValue[0] && rowValue <= filterValue[1];
+  } else if (filterValue[0] !== null) {
     // Only min value is set
-    return rowValue >= filterValue[0];
-  }
-  if (filterValue[1] !== null) {
+    result = rowValue >= filterValue[0];
+  } else if (filterValue[1] !== null) {
     // Only max value is set
-    return rowValue <= filterValue[1];
+    result = rowValue <= filterValue[1];
   }
 
-  return true;
+  return result;
 };
 
 // Define the custom date filter function for date range filtering
@@ -80,28 +79,28 @@ export const dateRangeFilter: FilterFn<unknown> = (row, columnId, filterValue) =
   // Convert the row value to a Date object
   const rowDate = new Date(value);
 
+  let result = true;
+
   // Check if the date is within the range
   if (filterValue[0] && filterValue[1]) {
     const startDate = new Date(filterValue[0]);
     const endDate = new Date(filterValue[1]);
     // Set end date to end of day to include the entire day
     endDate.setUTCHours(23, 59, 59, 999);
-    return rowDate >= startDate && rowDate <= endDate;
-  }
-  if (filterValue[0]) {
+    result = rowDate >= startDate && rowDate <= endDate;
+  } else if (filterValue[0]) {
     // Only start date is set
     const startDate = new Date(filterValue[0]);
-    return rowDate >= startDate;
-  }
-  if (filterValue[1]) {
+    result = rowDate >= startDate;
+  } else if (filterValue[1]) {
     // Only end date is set
     const endDate = new Date(filterValue[1]);
     // Set end date to end of day to include the entire day
     endDate.setUTCHours(23, 59, 59, 999);
-    return rowDate <= endDate;
+    result = rowDate <= endDate;
   }
 
-  return true;
+  return result;
 };
 
 // Define the column meta type to include the fixed property

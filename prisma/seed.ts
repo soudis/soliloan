@@ -1,11 +1,11 @@
-import { Language, PrismaClient } from '@prisma/client';
+import { InterestMethod, Language, PrismaClient } from "@prisma/client";
 
 import { hashPassword } from '@/lib/utils/password';
 
 const prisma = new PrismaClient();
 async function main() {
   if (process.env.SOLILOAN_ADMIN_EMAIL && process.env.SOLILOAN_ADMIN_PASSWORD) {
-    const passwordHasehd = hashPassword(process.env.SOLILOAN_ADMIN_PASSWORD);
+    const passwordHashed = hashPassword(process.env.SOLILOAN_ADMIN_PASSWORD);
     const user = await prisma.user.upsert({
       where: { email: process.env.SOLILOAN_ADMIN_EMAIL },
       update: {
@@ -16,7 +16,7 @@ async function main() {
         emailVerified: new Date(),
         language: (process.env.SOLILOAN_DEFAULT_LANGUAGE ?? Language.de) as Language,
         name: 'Admin',
-        password: passwordHasehd,
+        password: passwordHashed,
         isAdmin: true,
       },
     });
@@ -30,11 +30,10 @@ async function main() {
         await prisma.project.create({
           data: {
             slug: 'dev-gmbh',
-            name: 'Development GmbH',
             configuration: {
               create: {
-                interestMethod: 'E30_360_COMPOUND',
-                name: 'Development GmbH',
+                name: "Development GmbH",
+                interestMethod: InterestMethod.ACT_360_COMPOUND
               },
             },
             managers: { connect: { id: user.id } },

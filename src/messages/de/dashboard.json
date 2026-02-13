@@ -54,7 +54,22 @@
     "title": "Projekte",
     "description": "Verwalte deine Projekte und Kredite",
     "details": "Erstelle und verwalte deine Projekte, konfiguriere Einstellungen und verfolge den Fortschritt.",
-    "viewProjects": "Projekte anzeigen"
+    "viewProjects": "Projekte anzeigen",
+    "table": {
+      "name": "Name",
+      "slug": "Kurzname",
+      "managers": "Verwalter*innen"
+    },
+    "new": {
+      "title": "Neues Projekt"
+    },
+    "create": {
+      "title": "Neues Projekt erstellen",
+      "name": "Projektname",
+      "namePlaceholder": "Geben Sie den Projektnamen ein",
+      "success": "Projekt erfolgreich erstellt",
+      "error": "Fehler beim Erstellen des Projekts"
+    }
   },
   "lenders": {
     "title": "Kreditgeber*innen",
@@ -336,6 +351,24 @@
       "loans": "Kredite",
       "templates": "Vorlagen",
       "files": "Downloads"
+    },
+    "table": {
+      "name": "Name",
+      "email": "E-Mail",
+      "telNo": "Telefon",
+      "website": "Webseite",
+      "street": "Straße",
+      "addon": "Adresszusatz",
+      "zip": "PLZ",
+      "place": "Ort",
+      "iban": "IBAN",
+      "bic": "BIC",
+      "country": "Land",
+      "userLanguage": "Benutzer*in Sprache",
+      "userTheme": "Design",
+      "lenderSalutation": "Kreditgeber*in Anrede",
+      "lenderCountry": "Kreditgeber*in Land",
+      "interestMethod": "Zinsmethode"
     },
     "form": {
       "generalInfo": "Allgemeine Informationen",

@@ -9,5 +9,10 @@
     "date": "Bitte ein gültiges Datum eingeben",
     "addressComplete": "Bitte eingeben",
     "boolean": "Falschwer Wert"
+  },
+  "project": {
+    "name": {
+      "atLeastOneNonSpecialChar": "Der Name muss mindestens einen Buchstaben oder eine Zahl enthalten"
+    }
   }
 }

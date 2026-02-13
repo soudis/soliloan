@@ -29,5 +29,10 @@
     "created": "Ein neuer Kreditgeber {lenderName} wurde erstellt",
     "updated": "Der Kreditgeber {lenderName} wurde aktualisiert",
     "deleted": "Der Kreditgeber {lenderName} wurde gelöscht"
+  },
+  "project": {
+    "created": "Ein Projekt wurde erstellt",
+    "updated": "Ein Projekt wurde aktualisiert",
+    "deleted": "Ein Projekt wurde gelöscht"
   }
 }

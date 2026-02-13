@@ -39,6 +39,20 @@ export const managerAction = authAction.use(async ({ next, ctx }) => {
   });
 });
 
+export const adminAction = actionClient.use(async ({ next }) => {
+  const session = await auth();
+
+  if (!session?.user.isAdmin) {
+    throw new Error('error.unauthorized');
+  }
+
+  return next({
+    ctx: {
+      session,
+    },
+  });
+});
+
 export const projectAction = managerAction
   .inputSchema(
     z.object({
