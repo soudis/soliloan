@@ -1,16 +1,15 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
-
 import { Form } from '@/components/ui/form';
 import { FormActions } from '@/components/ui/form-actions';
 import { FormLayout } from '@/components/ui/form-layout';
-import { configurationFormGeneralSchema, configurationFormSchema } from '@/lib/schemas/configuration';
 
 import type { ConfigurationFormGeneralData } from '@/lib/schemas/configuration';
+import { configurationFormGeneralSchema } from '@/lib/schemas/configuration';
 import { useProjects } from '@/store/projects-store';
-import { useTranslations } from 'next-intl';
 import { ConfigurationFormFieldsGeneral } from './configuration-form-fields-general';
 
 type Props = {

@@ -3,7 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
-import { BarChart3, Info, Key, Mail, Pencil, Trash2, User, User2 } from 'lucide-react';
+import { BarChart3, Info, Key, Mail, Pencil, Trash2, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -12,7 +12,6 @@ import { deleteLenderAction } from '@/actions/lenders/mutations/delete-lender';
 import { sendInvitationEmailAction } from '@/actions/users';
 import { BalanceTable } from '@/components/loans/balance-table';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { InfoItem } from '@/components/ui/info-item';
 import { useRouter } from '@/i18n/navigation';
 import { useScreenSize } from '@/lib/hooks/use-screensize';

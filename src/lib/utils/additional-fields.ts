@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 import {
   type AdditionalFieldConfig,
   AdditionalFieldType,
@@ -30,61 +30,58 @@ export const parseAdditionalFields = <T extends { additionalFields?: unknown }>(
   };
 };
 export const validateAdditionalFields =
-  (name: string, config?: AdditionalFieldConfig[]) =>
-  (
-    data: {
-      [name]?: AdditionalFieldValues;
-    },
-    ctx: z.RefinementCtx,
-  ) => {
-    if (config) {
-      for (const field of config) {
-        if (field.type === AdditionalFieldType.SELECT) {
-          if (
-            data[name]?.[field.name] &&
-            !field.selectOptions.includes(data[name]?.[field.name] ?? '') &&
-            (field.required || data[name]?.[field.name] !== '')
-          ) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: 'validation.common.required',
-              path: [name, field.name],
-            });
-          }
-        }
-        if (field.type === AdditionalFieldType.DATE) {
-          if (
-            data[name]?.[field.name] &&
-            !createDateSchema(field.required).safeParse(data[name]?.[field.name]).success &&
-            (field.required || data[name]?.[field.name] !== '')
-          ) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: 'validation.common.date',
-              path: [name, field.name],
-            });
-          }
-        }
-        if (field.type === AdditionalFieldType.NUMBER) {
-          if (
-            data[name]?.[field.name] &&
-            !createNumberSchema().safeParse(data[name]?.[field.name]).success &&
-            (field.required || data[name]?.[field.name] !== '')
-          ) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: 'validation.common.required',
-              path: [name, field.name],
-            });
-          }
-        }
-        if (field.required && (!data[name]?.[field.name] || data[name]?.[field.name] === '')) {
+  (name: string, config?: AdditionalFieldConfig[]) => (data: unknown, ctx: z.RefinementCtx) => {
+    if (!config) return;
+    if (!data || typeof data !== 'object' || !(name in data)) return;
+    const fieldValues = (data as Record<string, AdditionalFieldValues | undefined>)[name];
+    if (fieldValues === null || fieldValues === undefined) return;
+    if (typeof fieldValues !== 'object' || Array.isArray(fieldValues)) return;
+    for (const field of config) {
+      if (field.type === AdditionalFieldType.SELECT) {
+        if (
+          fieldValues[field.name] &&
+          !field.selectOptions.includes(fieldValues[field.name] ?? '') &&
+          (field.required || fieldValues[field.name] !== '')
+        ) {
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: 'custom',
             message: 'validation.common.required',
             path: [name, field.name],
           });
         }
+      }
+      if (field.type === AdditionalFieldType.DATE) {
+        if (
+          fieldValues[field.name] &&
+          !createDateSchema(field.required).safeParse(fieldValues[field.name]).success &&
+          (field.required || fieldValues[field.name] !== '')
+        ) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'validation.common.date',
+            path: [name, field.name],
+          });
+        }
+      }
+      if (field.type === AdditionalFieldType.NUMBER) {
+        if (
+          fieldValues[field.name] &&
+          !createNumberSchema().safeParse(fieldValues[field.name]).success &&
+          (field.required || fieldValues[field.name] !== '')
+        ) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'validation.common.required',
+            path: [name, field.name],
+          });
+        }
+      }
+      if (field.required && (!fieldValues[field.name] || fieldValues[field.name] === '')) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'validation.common.required',
+          path: [name, field.name],
+        });
       }
     }
   };

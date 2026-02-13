@@ -16,7 +16,7 @@ export const validateTermination = (data: LoanTerminationData, ctx: z.Refinement
   if (data.terminationType === 'ENDDATE') {
     if (!data.endDate) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: 'validation.common.required',
         path: ['endDate'],
       });
@@ -24,14 +24,14 @@ export const validateTermination = (data: LoanTerminationData, ctx: z.Refinement
   } else if (data.terminationType === 'TERMINATION') {
     if (!data.terminationPeriod) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: 'validation.common.required',
         path: ['terminationPeriod'],
       });
     }
     if (!data.terminationPeriodType) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: 'validation.common.required',
         path: ['terminationPeriodType'],
       });
@@ -39,14 +39,14 @@ export const validateTermination = (data: LoanTerminationData, ctx: z.Refinement
   } else if (data.terminationType === 'DURATION') {
     if (!data.duration) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: 'validation.common.required',
         path: ['duration'],
       });
     }
     if (!data.durationType) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: 'validation.common.required',
         path: ['durationType'],
       });

@@ -1,11 +1,9 @@
 'use client';
 
+import { Language, LenderRequiredField, Salutation, SoliLoansTheme } from '@prisma/client';
 import { useTranslations } from 'next-intl';
-
 import { FormCountrySelect } from '@/components/form/form-country-select';
 import { FormSection } from '@/components/ui/form-section';
-
-import { Language, LenderRequiredField, Salutation, SoliLoansTheme } from '@prisma/client';
 import { FormFieldConfigurator } from '../form/form-field-configurator';
 import { FormMultiSelect } from '../form/form-multi-select';
 import { FormSelect } from '../form/form-select';

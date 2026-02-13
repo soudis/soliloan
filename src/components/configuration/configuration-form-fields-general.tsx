@@ -7,14 +7,11 @@ import { FormCountrySelect } from '@/components/form/form-country-select';
 import { FormField } from '@/components/form/form-field';
 import { FormIbanInput } from '@/components/form/form-iban-input';
 import { FormSection } from '@/components/ui/form-section';
-
-import { LogoInput } from './logo-input';
-
 import type { ConfigurationFormGeneralData } from '@/lib/schemas/configuration';
+import { LogoInput } from './logo-input';
 
 export function ConfigurationFormFieldsGeneral() {
   const t = useTranslations('dashboard.configuration');
-  const commonT = useTranslations('common');
 
   const form = useFormContext<ConfigurationFormGeneralData>();
 

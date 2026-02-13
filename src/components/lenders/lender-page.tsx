@@ -1,19 +1,18 @@
 'use client';
 
+import { Files as FilesIcon, NotebookPen, User, Wallet } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { getLenderName } from '@/lib/utils';
 import { useLenderLoanSelectionStore } from '@/store/lender-loan-selection-store';
 import { type LenderTabValue, useLenderTabsStore } from '@/store/lender-tabs-store';
 import type { LenderWithCalculations } from '@/types/lenders';
-import { useTranslations } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { Badge } from '../ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-
-import { Files as FilesIcon, NotebookPen, User, Wallet } from 'lucide-react';
 import { Files } from '../generic/files';
 import { Notes } from '../generic/notes';
+import { Badge } from '../ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { LenderInfoCard } from './lender-info-card';
 import { LenderLoansTab } from './lender-loans-tab';
 
@@ -28,7 +27,7 @@ export const LenderPage = ({ lender }: Props) => {
   const setActiveTab = useLenderTabsStore((state) => state.setActiveTab);
 
   const searchParams = useSearchParams();
-  const { getSelectedLoanId, setSelectedLoanId } = useLenderLoanSelectionStore();
+  const { setSelectedLoanId } = useLenderLoanSelectionStore();
   const [initialized, setInitialized] = useState(false);
   const router = useRouter();
 

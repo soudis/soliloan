@@ -1,4 +1,4 @@
-import { InterestMethod, Language, LenderRequiredField, SoliLoansTheme, TerminationType } from '@prisma/client';
+import { InterestMethod, Language, LenderRequiredField, SoliLoansTheme } from '@prisma/client';
 import { z } from 'zod';
 import {
   additionalFieldConfigSchema,

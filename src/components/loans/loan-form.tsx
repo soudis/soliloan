@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { DurationType } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import type { ZodSchema } from 'zod';
 import { getLendersByProjectAction } from '@/actions/lenders';
 import { Form } from '@/components/ui/form';
 import { FormActions } from '@/components/ui/form-actions';
@@ -52,10 +51,7 @@ export function LoanForm({
     enabled: !!selectedProject,
   });
 
-  let schema: ZodSchema;
-  schema = loanFormSchema;
-
-  schema = schema.superRefine(
+  const schema = loanFormSchema.superRefine(
     validateAdditionalFields('additionalFields', selectedProject?.configuration.loanAdditionalFields),
   );
 
