@@ -1,8 +1,8 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { LoanStatus } from '@/types/loans';
-import { useTranslations } from 'next-intl';
 
 interface LoanStatusBadgeProps {
   status: LoanStatus;

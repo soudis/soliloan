@@ -2,14 +2,13 @@
 
 import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
-
+import { z } from 'zod';
 import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
-import { createAuditEntry, getChangedFields, removeNullFields } from '@/lib/audit-trail';
+import { createAuditEntry, getChangedFields } from '@/lib/audit-trail';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { type ConfigurationFormData, configurationFormSchema } from '@/lib/schemas/configuration';
 import { projectAction } from '@/lib/utils/safe-action';
-import { z } from 'zod';
 
 export async function updateConfiguration(projectId: string, data: ConfigurationFormData) {
   const session = await auth();

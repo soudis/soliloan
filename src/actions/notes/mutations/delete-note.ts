@@ -9,7 +9,7 @@ import { db } from '@/lib/db';
 import { noteAction } from '@/lib/utils/safe-action';
 
 export const deleteNoteAction = noteAction
-  .schema(
+  .inputSchema(
     z.object({
       noteId: z.string(),
     }),

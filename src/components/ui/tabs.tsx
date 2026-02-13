@@ -12,7 +12,7 @@ const tabsListVariants = cva('inline-flex items-center justify-center text-muted
   variants: {
     variant: {
       default: 'h-10 rounded-md bg-transparent p-0 mt-4 flex justify-start gap-0',
-      modern: 'h-auto p-1 bg-muted rounded-xl gap-1 mt-4 flex justify-start',
+      modern: 'h-auto p-1 bg-muted rounded-md gap-1 mt-4 flex justify-start',
     },
   },
   defaultVariants: {

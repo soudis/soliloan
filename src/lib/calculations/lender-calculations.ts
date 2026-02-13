@@ -1,12 +1,11 @@
-import type { Lender } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma, type Lender } from '@prisma/client';
 import { omit } from 'lodash';
 
 import type { CalculationOptions } from '@/types/calculation';
 import type { LenderWithRelations } from '@/types/lenders';
 
 import { LoanStatus } from '@/types/loans';
-import { loansSorter } from '../utils';
+import { loansSorter } from '../utils/sorters';
 import { calculateLoanFields } from './loan-calculations';
 
 export function calculateLenderFields(lender: LenderWithRelations, options: CalculationOptions = {}) {
@@ -48,11 +47,11 @@ export function calculateLenderFields(lender: LenderWithRelations, options: Calc
   }
 
   sums.interestRate =
-    sums.interestRate > 0 && sums.amount > 0 ? new Decimal(sums.interestRate).div(sums.amount).toNumber() : 0;
+    sums.interestRate > 0 && sums.amount > 0 ? new Prisma.Decimal(sums.interestRate).div(new Prisma.Decimal(sums.amount)).toNumber() : 0;
 
   sums.balanceInterestRate =
     sums.balanceInterestRate > 0 && sums.balance > 0
-      ? new Decimal(sums.balanceInterestRate).div(sums.balance).toNumber()
+      ? new Prisma.Decimal(sums.balanceInterestRate).div(new Prisma.Decimal(sums.balance)).toNumber()
       : 0;
 
   return {

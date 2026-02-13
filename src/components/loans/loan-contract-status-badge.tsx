@@ -1,5 +1,5 @@
-import type { LoanWithCalculations } from '@/types/loans';
 import { useTranslations } from 'next-intl';
+import type { LoanWithCalculations } from '@/types/loans';
 import { Badge } from '../ui/badge';
 
 export const LoanContractStatusBadge = ({ loan }: { loan: LoanWithCalculations }) => {

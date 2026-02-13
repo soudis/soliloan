@@ -1,7 +1,5 @@
 import { InterestMethod, Language, LenderRequiredField, SoliLoansTheme, TerminationType } from '@prisma/client';
 import { z } from 'zod';
-
-import type { ResolverOptions } from 'react-hook-form';
 import {
   additionalFieldConfigSchema,
   addressSchema,
@@ -36,7 +34,7 @@ export const loanTemplateFormSchema = z
     name: z.string().min(1, { message: 'validation.common.required' }),
     isDefault: z.coerce.boolean().default(false),
     // Termination Information
-    ...loanTerminationSchema.omit({ terminationDate: true }).shape,
+    ...loanTerminationSchema.shape,
     minInterestRate: optionalNumberSchema,
     maxInterestRate: optionalNumberSchema,
     minAmount: optionalNumberSchema,

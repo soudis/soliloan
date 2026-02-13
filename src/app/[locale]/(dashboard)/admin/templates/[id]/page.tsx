@@ -1,22 +1,18 @@
-'use client';
+'use server';
 
-import { redirect } from '@/i18n/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { use } from 'react';
-
 import { getTemplateAction } from '@/actions/templates/queries/get-template';
 import { TemplateEditor } from '@/components/templates/template-editor';
-import { Loader2 } from 'lucide-react';
+import { auth } from '@/lib/auth';
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-export default function AdminTemplateEditorPage({ params }: PageProps) {
-  const { id } = use(params);
-  const { data: session } = useSession();
+export default async function AdminTemplateEditorPage({ params }: PageProps) {
+  const { id } = await params;
+  const session = await auth();
   const t = useTranslations('templates');
 
   // Redirect non-admins
@@ -24,21 +20,7 @@ export default function AdminTemplateEditorPage({ params }: PageProps) {
     redirect('/');
   }
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['template', id],
-    queryFn: async () => {
-      const result = await getTemplateAction({ id });
-      return result?.data?.template;
-    },
-  });
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  const { data } = await getTemplateAction({ id });
 
   if (!data) {
     return (
@@ -52,13 +34,13 @@ export default function AdminTemplateEditorPage({ params }: PageProps) {
     <div className="h-screen flex flex-col">
       <TemplateEditor
         template={{
-          id: data.id,
-          name: data.name,
-          type: data.type,
-          dataset: data.dataset,
-          designJson: data.designJson,
-          projectId: data.projectId,
-          isGlobal: data.isGlobal,
+          id: data.template.id,
+          name: data.template.name,
+          type: data.template.type,
+          dataset: data.template.dataset,
+          designJson: data.template.designJson,
+          projectId: data.template.projectId,
+          isGlobal: data.template.isGlobal,
         }}
       />
     </div>

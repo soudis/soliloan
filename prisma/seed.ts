@@ -1,8 +1,13 @@
-import { InterestMethod, Language, PrismaClient } from "@prisma/client";
+import 'dotenv/config';
+import { InterestMethod, Language, PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 import { hashPassword } from '@/lib/utils/password';
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+});
+const prisma = new PrismaClient({ adapter });
 async function main() {
   if (process.env.SOLILOAN_ADMIN_EMAIL && process.env.SOLILOAN_ADMIN_PASSWORD) {
     const passwordHashed = hashPassword(process.env.SOLILOAN_ADMIN_PASSWORD);

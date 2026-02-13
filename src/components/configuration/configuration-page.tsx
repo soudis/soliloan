@@ -28,13 +28,13 @@ type Props = {
 export const ConfigurationPage = ({ project }: Props) => {
   const t = useTranslations('dashboard.configuration');
   const commonT = useTranslations('common');
-  const { getActiveTab, setActiveTab } = useConfigurationTabsStore();
+  const activeTab = useConfigurationTabsStore((state) => state.activeTabs[project.id]);
+  const setActiveTab = useConfigurationTabsStore((state) => state.setActiveTab);
   const [error, setError] = useState<string | null>(null);
   const pathname = usePathname();
   const { setSelectedProject } = useProjects();
   const searchParams = useSearchParams();
   const [initialized, setInitialized] = useState(false);
-  const activeTab = getActiveTab(project.id);
   const router = useRouter();
 
   const { executeAsync: updateConfiguration, isExecuting } = useAction(updateConfigurationAction);
@@ -64,7 +64,7 @@ export const ConfigurationPage = ({ project }: Props) => {
       setError(result.serverError);
     } else if (result.data?.project) {
       // Update the project store with the new configuration
-      setSelectedProject(result.data.project);
+      setSelectedProject({ ...result.data.project, managers: project.managers });
 
       // Show success message
       toast.success(t('form.success'));

@@ -17,6 +17,7 @@ services:
     environment:
       - NODE_ENV=development
       - AUTH_URL=https://soliloan.localhost
+      - DATABASE_URL=${DATABASE_URL:?}
       # File Watching Optimierung für Docker auf Mac
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
@@ -24,4 +25,4 @@ services:
     volumes:
       - ./:/app:cached
       - /app/node_modules
-    command: /bin/sh -c "pnpm install && pnpm prisma db push && pnpm prisma db seed && pnpm dev"
+    command: /bin/sh -c "pnpm install && pnpm prisma db push --accept-data-loss && pnpm prisma db seed && pnpm dev"

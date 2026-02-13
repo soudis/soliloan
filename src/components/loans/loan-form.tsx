@@ -4,22 +4,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { DurationType } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-
+import type { ZodSchema } from 'zod';
 import { getLendersByProjectAction } from '@/actions/lenders';
 import { Form } from '@/components/ui/form';
 import { FormActions } from '@/components/ui/form-actions';
 import { FormLayout } from '@/components/ui/form-layout';
-import { loanFormSchema } from '@/lib/schemas/loan';
-import { emptyStringToNull, formatNumber } from '@/lib/utils';
-import { useProjects } from '@/store/projects-store';
-import type { LoanWithRelations } from '@/types/loans';
-
-import { LoanFormFields } from './loan-form-fields';
-
 import type { AdditionalFieldValues } from '@/lib/schemas/common';
 import type { LoanFormData } from '@/lib/schemas/loan';
+import { loanFormSchema } from '@/lib/schemas/loan';
+import { emptyStringToNull, formatNumber } from '@/lib/utils';
 import { additionalFieldDefaults, validateAdditionalFields } from '@/lib/utils/additional-fields';
-import type { ZodSchema } from 'zod';
+import { useProjects } from '@/store/projects-store';
+import type { LoanWithRelations } from '@/types/loans';
+import { LoanFormFields } from './loan-form-fields';
 
 interface LoanFormProps {
   title: string;

@@ -8,7 +8,7 @@ const PUBLIC_PAGES = ['/auth/login', '/auth/forgot-password', '/auth/register', 
 
 const handleI18nRouting = createIntlMiddleware(routing);
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Handle authentication
   // ---
   const authResponse = await auth(async (authRequest) => {

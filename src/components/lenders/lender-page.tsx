@@ -24,12 +24,12 @@ type Props = {
 export const LenderPage = ({ lender }: Props) => {
   const t = useTranslations('dashboard.lenders.lenderPage');
   const commonT = useTranslations('common');
-  const { getActiveTab, setActiveTab } = useLenderTabsStore();
+  const activeTab = useLenderTabsStore((state) => state.activeTabs[lender.id] ?? 'lender');
+  const setActiveTab = useLenderTabsStore((state) => state.setActiveTab);
 
   const searchParams = useSearchParams();
   const { getSelectedLoanId, setSelectedLoanId } = useLenderLoanSelectionStore();
   const [initialized, setInitialized] = useState(false);
-  const activeTab = getActiveTab(lender.id);
   const router = useRouter();
 
   const loanId = searchParams.get('loanId');

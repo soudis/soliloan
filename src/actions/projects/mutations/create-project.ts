@@ -1,16 +1,14 @@
 'use server';
 
 import { Entity, InterestMethod, Operation } from '@prisma/client';
+import { merge } from 'lodash';
 import { revalidatePath } from 'next/cache';
-
 import type { Session } from 'next-auth';
-
 import { createAuditEntry, removeNullFields } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
 import type { ProjectFormData } from '@/lib/schemas/project';
 import { projectFormSchema } from '@/lib/schemas/project';
 import { adminAction } from '@/lib/utils/safe-action';
-import { merge } from 'lodash';
 
 export const createProjectAction = adminAction.inputSchema(projectFormSchema).action(async ({ ctx, parsedInput }) => {
   return await createProject(parsedInput, ctx.session);

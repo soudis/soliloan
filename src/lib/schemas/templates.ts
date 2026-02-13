@@ -15,7 +15,7 @@ export const templateBaseSchema = z.object({
 export const createTemplateSchema = templateBaseSchema.extend({
   projectId: z.string().optional(), // If not provided, will be global (admin only)
   isGlobal: z.boolean().optional().default(false),
-  designJson: z.record(z.any()).optional().default({}),
+  designJson: z.record(z.string(), z.any()).optional().default({}),
 });
 
 export type CreateTemplateFormData = z.infer<typeof createTemplateSchema>;
@@ -25,7 +25,7 @@ export const updateTemplateSchema = z.object({
   templateId: z.string(),
   name: z.string().min(1).max(100).optional(),
   description: z.string().max(500).nullable().optional(),
-  designJson: z.record(z.any()).optional(),
+  designJson: z.record(z.string(), z.any()).optional(),
   htmlContent: z.string().nullable().optional(),
 });
 

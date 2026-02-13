@@ -5,12 +5,11 @@ import {
   type AdditionalFieldValues,
   AdditionalNumberFormat,
   additionalFieldConfigArraySchema,
-  additionalFieldConfigSchema,
   additionalFieldValuesSchema,
   createDateSchema,
   createNumberSchema,
 } from '../schemas/common';
-import { NumberParser, formatCurrency, formatDate, formatNumber, formatPercentage } from '../utils';
+import { formatCurrency, formatDate, formatNumber, formatPercentage, NumberParser } from '../utils';
 
 export const additionalFieldDefaults = (config: AdditionalFieldConfig[], values: AdditionalFieldValues) => {
   const defaults: AdditionalFieldValues = {};

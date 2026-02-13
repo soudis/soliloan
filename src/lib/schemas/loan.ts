@@ -56,7 +56,7 @@ export const validateTermination = (data: LoanTerminationData, ctx: z.Refinement
 
 export const loanTerminationSchema = z.object({
   // Termination Information
-  terminationType: z.nativeEnum(TerminationType),
+  terminationType: z.enum(TerminationType),
   endDate: createDateSchema(false),
   terminationDate: createDateSchema(false),
   terminationPeriod: optionalNumberSchema,

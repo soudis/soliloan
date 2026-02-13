@@ -35,7 +35,7 @@ export function LoanDropdown({ loans, selectedLoanId, onSelectLoan, lender, simp
         <Button
           variant="outline"
           className={cn(
-            'flex items-center justify-between w-full h-auto rounded-xl p-3 border border-border bg-card hover:bg-muted data-[state=open]:bg-muted data-[state=open]:border-primary cursor-pointer lg:min-w-[320px] text-left',
+            'flex items-center justify-between w-full h-auto rounded-md p-3 border border-border bg-card hover:bg-muted data-[state=open]:bg-muted data-[state=open]:border-primary cursor-pointer lg:min-w-[320px] text-left',
             simple && 'rounded-md p-2',
           )}
         >
@@ -47,7 +47,7 @@ export function LoanDropdown({ loans, selectedLoanId, onSelectLoan, lender, simp
                   <div className="h-full border-l border-border mx-2" />
                   <ChevronDown className="ml-1 h-3 w-3 flex-shrink-0 opacity-75" />
                   {loans.length > 0 && (
-                    <span className="flex items-center justify-center text-xs font-normal bg-muted text-muted-foreground rounded-xl px-1 py-0.5 mb-4">
+                    <span className="flex items-center justify-center text-xs font-normal bg-muted text-muted-foreground rounded-md px-1 py-0.5 mb-4">
                       {loans.length}
                     </span>
                   )}

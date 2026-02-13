@@ -38,7 +38,7 @@ export const LenderLoansTab = ({ lender }: Props) => {
         <Button
           variant="outline"
           className={cn(
-            'border-dashed rounded-xl flex items-center justify-center transition-all cursor-pointer',
+            'border-dashed rounded-md flex items-center justify-center transition-all cursor-pointer',
             lender.loans.length === 0
               ? 'w-full py-12 flex-col gap-2'
               : 'w-full lg:w-auto lg:flex-1 h-12 lg:h-auto flex-row gap-2 lg:self-stretch lg:min-h-0',
