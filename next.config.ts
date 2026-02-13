@@ -2,7 +2,7 @@ import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['bcrypt'],
+  serverExternalPackages: ['bcrypt', '@react-pdf/renderer', 'react-pdf-html'],
 };
 
 const withNextIntl = createNextIntlPlugin();

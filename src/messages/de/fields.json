@@ -1,0 +1,107 @@
+{
+  "lender": {
+    "lenderNumber": "Konto-Nr.",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "fullName": "Vollständiger Name",
+    "organisationName": "Organisation",
+    "type": "Typ",
+    "salutation": "Anrede",
+    "salutationText": "Anredetext",
+    "titlePrefix": "Titel (vorangestellt)",
+    "titleSuffix": "Titel (nachgestellt)",
+    "street": "Straße",
+    "addon": "Adresszusatz",
+    "zip": "PLZ",
+    "place": "Ort",
+    "country": "Land",
+    "fullAddress": "Vollständige Adresse",
+    "email": "E-Mail",
+    "telNo": "Telefon",
+    "iban": "IBAN",
+    "bic": "BIC",
+    "balance": "Kontostand",
+    "interest": "Zinsen",
+    "deposits": "Einzahlungen",
+    "withdrawals": "Auszahlungen",
+    "interestPaid": "Ausgezahlte Zinsen",
+    "interestError": "Zinsfehler",
+    "notReclaimed": "Nicht zurückgefordert",
+    "amount": "Gesamtbetrag",
+    "interestRate": "Durchschn. Zinssatz",
+    "balanceInterestRate": "Gewichteter Zinssatz",
+    "totalLoans": "Anzahl Darlehen",
+    "activeLoans": "Aktive Darlehen"
+  },
+  "loan": {
+    "loanNumber": "Darlehens-Nr.",
+    "amount": "Darlehensbetrag",
+    "interestRate": "Zinssatz",
+    "signDate": "Vertragsdatum",
+    "endDate": "Enddatum",
+    "terminationDate": "Kündigungsdatum",
+    "terminationType": "Kündigungsart",
+    "contractStatus": "Vertragsstatus",
+    "status": "Status",
+    "balance": "Kontostand",
+    "interest": "Zinsen",
+    "deposits": "Einzahlungen",
+    "withdrawals": "Auszahlungen",
+    "interestPaid": "Ausgezahlte Zinsen",
+    "interestError": "Zinsfehler",
+    "notReclaimed": "Nicht zurückgefordert",
+    "repaidDate": "Rückzahlungsdatum",
+    "repayDate": "Fälligkeitsdatum",
+    "isTerminated": "Gekündigt"
+  },
+  "transaction": {
+    "type": "Typ",
+    "amount": "Betrag",
+    "date": "Datum",
+    "paymentType": "Zahlungsart"
+  },
+  "note": {
+    "text": "Text",
+    "createdAt": "Erstellt am",
+    "createdByName": "Erstellt von",
+    "public": "Öffentlich"
+  },
+  "config": {
+    "name": "Projektname",
+    "email": "E-Mail",
+    "telNo": "Telefon",
+    "website": "Website",
+    "street": "Straße",
+    "addon": "Adresszusatz",
+    "zip": "PLZ",
+    "place": "Ort",
+    "country": "Land",
+    "fullAddress": "Vollständige Adresse",
+    "iban": "IBAN",
+    "bic": "BIC"
+  },
+  "page": {
+    "pageNumber": "Seitennummer",
+    "totalPages": "Gesamtseiten"
+  },
+  "project": {
+    "name": "Projektname",
+    "slug": "Projekt-ID"
+  },
+  "loops": {
+    "loans": "Für jedes Darlehen",
+    "transactions": "Für jede Transaktion",
+    "notes": "Für jede Notiz",
+    "lenders": "Für jeden Darlehensgeber"
+  },
+  "categories": {
+    "config": "Projekt-Konfiguration",
+    "lender": "Darlehensgeber",
+    "loan": "Darlehen",
+    "transaction": "Transaktion",
+    "note": "Notiz",
+    "page": "Seite",
+    "loops": "Schleifen",
+    "additional": "Zusatzfelder"
+  }
+}

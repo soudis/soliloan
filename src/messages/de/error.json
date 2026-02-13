@@ -21,5 +21,9 @@
   },
   "note": {
     "notFound": "Notiz nicht gefunden."
+  },
+  "template": {
+    "notFound": "Vorlage nicht gefunden."
   }
+
 }

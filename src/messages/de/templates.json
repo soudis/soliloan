@@ -1,0 +1,179 @@
+{
+  "admin": {
+    "title": "Globale Vorlagen",
+    "description": "Verwalte globale E-Mail- und Dokumentvorlagen, die für alle Projekte verfügbar sind"
+  },
+  "project": {
+    "title": "Projektvorlagen",
+    "description": "Verwalte E-Mail- und Dokumentvorlagen für dieses Projekt"
+  },
+  "types": {
+    "email": "E-Mail",
+    "document": "Dokument"
+  },
+  "dialog": {
+    "trigger": "Neue Vorlage",
+    "title": "Neue Vorlage erstellen",
+    "description": "Erstelle eine neue E-Mail- oder Dokumentvorlage",
+    "submit": "Erstellen",
+    "created": "Vorlage erfolgreich erstellt",
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "z.B. Willkommens-E-Mail",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Kurze Beschreibung der Vorlage",
+      "type": "Typ",
+      "typePlaceholder": "Vorlagentyp auswählen",
+      "dataset": "Datensatz",
+      "datasetPlaceholder": "Datensatz auswählen"
+    }
+  },
+  "editor": {
+    "save": "Speichern",
+    "saved": "Vorlage gespeichert",
+    "noChanges": "Keine Änderungen zum Speichern",
+    "notFound": "Vorlage nicht gefunden",
+    "documentEditorComingSoon": "Der Dokument-Editor wird in Kürze verfügbar sein",
+    "selectSampleRecord": "{type} für Vorschau auswählen",
+    "noSampleRecords": "Keine Datensätze verfügbar",
+    "showEditor": "Editor",
+    "showPreview": "Vorschau",
+    "generatingPdf": "PDF wird erstellt…",
+    "autoSaveActive": "Automatisches Speichern aktiv",
+    "toolbox": {
+      "title": "Blöcke",
+      "layout": "Layout",
+      "text": "Text",
+      "button": "Button",
+      "image": "Bild",
+      "table": "Tabelle"
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "delete": "Komponente löschen",
+      "noSelection": "Wähle eine Komponente aus, um ihre Einstellungen zu bearbeiten."
+    },
+    "components": {
+      "text": {
+        "defaultText": "Hier Text eingeben",
+        "fontSize": "Schriftgröße",
+        "textColor": "Textfarbe",
+        "textAlign": "Textausrichtung",
+        "insertPlaceholder": "Platzhalter einfügen"
+      },
+      "container": {
+        "dropHere": "Ziehe Komponenten hierher",
+        "layout": "Layout",
+        "layout_vertical": "Vertikal (untereinander)",
+        "layout_horizontal": "Horizontal (nebeneinander)",
+        "layout_grid": "Raster",
+        "gap": "Abstand (px)",
+        "gridColumns": "Raster-Spalten",
+        "padding": "Padding",
+        "backgroundColor": "Hintergrundfarbe",
+        "opacity": "Deckkraft",
+        "border": "Rahmen",
+        "borderTop": "Oben",
+        "borderRight": "Rechts",
+        "borderBottom": "Unten",
+        "borderLeft": "Links",
+        "borderColor": "Rahmenfarbe",
+        "borderStyle": "Rahmenstil",
+        "borderWidth": "Rahmenstärke (px)",
+        "borderStyle_solid": "Durchgezogen",
+        "borderStyle_dashed": "Gestrichelt",
+        "borderStyle_dotted": "Gepunktet",
+        "borderStyle_double": "Doppelt"
+      },
+      "image": {
+        "imageUrl": "Bild URL",
+        "width": "Breite (e.g. 100%, 200px)",
+        "tabUrl": "URL",
+        "tabUpload": "Hochladen",
+        "tabLogo": "Logo",
+        "uploadImage": "Bild hochladen",
+        "clickToUpload": "Klicke zum Hochladen",
+        "logoProjectHint": "Verwendet das Logo aus der Projekt-Konfiguration.",
+        "logoAppHint": "Kein Projekt-Logo konfiguriert. Es wird das App-Logo verwendet."
+      },
+      "table": {
+        "loopKey": "Datenquelle",
+        "staticTable": "Statische Tabelle (kein Loop)",
+        "displayName": "Anzeigename",
+        "columns": "Spalten",
+        "rows": "Zeilen",
+        "defaultHeader": "Spalte",
+        "dynamicHint": "Zeilen werden dynamisch aus der Datenquelle generiert.",
+        "staticHint": "Die Tabelle hat eine feste Anzahl an Zeilen.",
+        "cellSelected": "Klicke in der Zelle auf die gewünschte Stelle und füge dann einen Platzhalter ein.",
+        "clickCellHint": "Klicke auf eine Zelle, um Platzhalter einzufügen."
+      },
+      "button": {
+        "defaultText": "Klick mich",
+        "buttonText": "Button Text",
+        "url": "URL",
+        "backgroundColor": "Hintergrundfarbe",
+        "textColor": "Textfarbe"
+      },
+      "pageHeader": {
+        "label": "Kopfzeile",
+        "dropHere": "Kopfzeile: Komponenten hierher ziehen",
+        "padding": "Padding",
+        "backgroundColor": "Hintergrundfarbe",
+        "border": "Rahmen",
+        "borderTop": "Oben",
+        "borderRight": "Rechts",
+        "borderBottom": "Unten",
+        "borderLeft": "Links",
+        "borderColor": "Rahmenfarbe",
+        "borderStyle": "Rahmenstil",
+        "borderWidth": "Rahmenstärke (px)",
+        "borderStyle_solid": "Durchgezogen",
+        "borderStyle_dashed": "Gestrichelt",
+        "borderStyle_dotted": "Gepunktet",
+        "borderStyle_double": "Doppelt"
+      },
+      "pageFooter": {
+        "label": "Fußzeile",
+        "dropHere": "Fußzeile: Komponenten hierher ziehen",
+        "padding": "Padding",
+        "backgroundColor": "Hintergrundfarbe",
+        "border": "Rahmen",
+        "borderTop": "Oben",
+        "borderRight": "Rechts",
+        "borderBottom": "Unten",
+        "borderLeft": "Links",
+        "borderColor": "Rahmenfarbe",
+        "borderStyle": "Rahmenstil",
+        "borderWidth": "Rahmenstärke (px)",
+        "borderStyle_solid": "Durchgezogen",
+        "borderStyle_dashed": "Gestrichelt",
+        "borderStyle_dotted": "Gepunktet",
+        "borderStyle_double": "Doppelt"
+      }
+    }
+  },
+  "list": {
+    "copy": "Kopie",
+    "global": "Global",
+    "duplicated": "Vorlage dupliziert",
+    "deleted": "Vorlage gelöscht",
+    "columns": {
+      "name": "Name",
+      "type": "Typ",
+      "dataset": "Datensatz",
+      "createdAt": "Erstellt am"
+    },
+    "actions": {
+      "edit": "Bearbeiten",
+      "duplicate": "Duplizieren",
+      "delete": "Löschen"
+    },
+    "deleteDialog": {
+      "title": "Vorlage löschen",
+      "description": "Möchtest du die Vorlage \"{name}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "cancel": "Abbrechen",
+      "confirm": "Löschen"
+    }
+  }
+}

@@ -19,6 +19,7 @@ import { FileText, Files as FilesIcon, Settings2, User, Wallet } from 'lucide-re
 import { toast } from 'sonner';
 import { ConfigurationFormLender } from './configuration-form-lender';
 import { ConfigurationFormLoans } from './configuration-form-loans';
+import { ProjectTemplatesTab } from './project-templates-tab';
 
 type Props = {
   project: ProjectWithConfiguration;
@@ -123,7 +124,9 @@ export const ConfigurationPage = ({ project }: Props) => {
           error={error}
         />
       </TabsContent>
-      <TabsContent value="templates">Templates</TabsContent>
+      <TabsContent value="templates">
+        <ProjectTemplatesTab projectId={project.id} />
+      </TabsContent>
       <TabsContent value="files">Files</TabsContent>
     </Tabs>
   );

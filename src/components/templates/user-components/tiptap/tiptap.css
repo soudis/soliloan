@@ -1,0 +1,72 @@
+/* TipTap Editor Styles */
+
+.tiptap-editor {
+  min-height: 1em;
+  cursor: text;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+.tiptap-editor:focus {
+  outline: none;
+}
+
+.tiptap-editor p {
+  margin: 0;
+}
+
+/* Merge Tag Styling — inline text with {{ }} brackets */
+.merge-tag-wrapper {
+  display: inline;
+}
+
+.merge-tag,
+.merge-tag-pill {
+  display: inline !important;
+  vertical-align: baseline !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background-color: transparent !important;
+  color: #6d28d9 !important;
+  border-radius: 0 !important;
+  font-size: inherit !important;
+  font-weight: 500 !important;
+  font-family: inherit !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  line-height: inherit !important;
+  border: none !important;
+}
+
+.merge-tag-pill:hover {
+  color: #5b21b6 !important;
+  text-decoration: underline;
+}
+
+/* Selection styling */
+.tiptap-editor::selection,
+.tiptap-editor *::selection {
+  background-color: #93c5fd;
+}
+
+/* Formatting styles */
+.tiptap-editor strong {
+  font-weight: bold;
+}
+
+.tiptap-editor em {
+  font-style: italic;
+}
+
+.tiptap-editor u {
+  text-decoration: underline;
+}
+
+/* Placeholder styling (if needed) */
+.tiptap-editor .is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
+}
