@@ -1,7 +1,6 @@
 'use server';
 
 import type { ViewType } from '@prisma/client';
-import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 import { db } from '@/lib/db';
@@ -16,7 +15,7 @@ export const updateViewAction = authAction
       data: viewFormSchema.partial(),
     }),
   )
-  .action(async ({ parsedInput: { viewId, projectId, data }, ctx }) => {
+  .action(async ({ parsedInput: { viewId, data }, ctx }) => {
     // Fetch the view
     const view = await db.view.findUnique({
       where: {
@@ -55,12 +54,6 @@ export const updateViewAction = authAction
         type: data.type as ViewType | undefined,
       },
     });
-
-    // Revalidate the view
-    const typePath = view.type.toLowerCase();
-    if (projectId) {
-      revalidatePath(`/${projectId}/${typePath}`);
-    }
 
     return { view: updatedView };
   });

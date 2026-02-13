@@ -1,12 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import type { TableState } from '@tanstack/react-table';
 import { useEffect } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getProjectsAction } from '@/actions/projects/queries/get-projects';
 import type { ProjectWithConfiguration } from '@/types/projects';
-
-export type ViewState = Partial<TableState> & { selectedView?: string };
 
 type ProjectsStore = {
   selectedProjectId: string | null;

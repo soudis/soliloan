@@ -3,8 +3,8 @@
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
 import { useLocale, useTranslations } from 'next-intl';
+import { parseAsString, useQueryState } from 'nuqs';
 import { cn, formatCurrency, formatPercentage } from '@/lib/utils';
-import { useLenderLoanSelectionStore } from '@/store/lender-loan-selection-store';
 import type { LoanWithCalculations } from '@/types/loans';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 
@@ -18,7 +18,7 @@ export function LoanSelectorItemRow({ loan, highlightActive = true }: LoanSelect
   const dateLocale = locale === 'de' ? de : enUS;
   const tCommon = useTranslations('common');
   const tLoan = useTranslations('dashboard.loans');
-  const { getSelectedLoanId } = useLenderLoanSelectionStore();
+  const [loanId] = useQueryState('loanId', parseAsString);
 
   const amountStr = formatCurrency(loan.amount);
   const interestRateStr = `${formatPercentage(loan.interestRate)}%`;
@@ -57,7 +57,7 @@ export function LoanSelectorItemRow({ loan, highlightActive = true }: LoanSelect
     <div
       className={cn(
         'border-b border-border w-full',
-        getSelectedLoanId(loan.lender.id) === loan.id && highlightActive && 'bg-muted',
+        loanId === loan.id && highlightActive && 'bg-muted',
       )}
     >
       {loanNumberAndBadgeCell}

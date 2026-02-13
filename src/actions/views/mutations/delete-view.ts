@@ -1,6 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 import { db } from '@/lib/db';
@@ -8,7 +7,7 @@ import { authAction } from '@/lib/utils/safe-action';
 
 export const deleteViewAction = authAction
   .schema(z.object({ viewId: z.string(), projectId: z.string().optional() }))
-  .action(async ({ parsedInput: { viewId, projectId }, ctx }) => {
+  .action(async ({ parsedInput: { viewId }, ctx }) => {
     // Fetch the view
     const view = await db.view.findUnique({
       where: {
@@ -31,12 +30,6 @@ export const deleteViewAction = authAction
         id: viewId,
       },
     });
-
-    // Revalidate the view
-    const typePath = view.type.toLowerCase();
-    if (projectId) {
-      revalidatePath(`/${projectId}/${typePath}`);
-    }
 
     return { success: true };
   });

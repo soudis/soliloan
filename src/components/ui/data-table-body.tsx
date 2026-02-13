@@ -7,9 +7,10 @@ import { cn } from '@/lib/utils';
 interface DataTableBodyProps<TData> {
   table: TanstackTable<TData>;
   onRowClick?: (row: TData) => void;
+  hasBulkSelect?: boolean;
 }
 
-export function DataTableBody<TData>({ table, onRowClick }: DataTableBodyProps<TData>) {
+export function DataTableBody<TData>({ table, onRowClick, hasBulkSelect }: DataTableBodyProps<TData>) {
   const t = useTranslations('dataTable');
 
   return (
@@ -43,7 +44,11 @@ export function DataTableBody<TData>({ table, onRowClick }: DataTableBodyProps<T
                 key={row.id}
                 data-state={row.getIsSelected() && 'selected'}
                 className={cn('group/row transition-colors', onRowClick ? 'cursor-pointer' : '')}
-                onClick={() => onRowClick?.(row.original)}
+                onClick={(e) => {
+                  // Prevent row click when clicking the bulk select checkbox
+                  if (hasBulkSelect && (e.target as HTMLElement).closest('[data-bulk-select]')) return;
+                  onRowClick?.(row.original);
+                }}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell

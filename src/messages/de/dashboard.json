@@ -87,6 +87,12 @@
       "error": "Fehler beim Löschen der Kreditgeber*in.",
       "loading": "Kreditgeber*in wird gelöscht..."
     },
+    "bulkDelete": {
+      "confirmTitle": "Kreditgeber*innen löschen?",
+      "confirmDescription": "Sind Sie sicher, dass Sie {count} Kreditgeber*innen löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "success": "Kreditgeber*innen erfolgreich gelöscht.",
+      "error": "Fehler beim Löschen der Kreditgeber*innen."
+    },
     "lenderPage": {
       "tabs": {
         "lender": "Kreditgeber*in",
@@ -337,6 +343,12 @@
       "success": "Kredit erfolgreich gelöscht.",
       "error": "Fehler beim Löschen des Kredits.",
       "loading": "Kredit wird gelöscht..."
+    },
+    "bulkDelete": {
+      "confirmTitle": "Kredite löschen?",
+      "confirmDescription": "Sind Sie sicher, dass Sie {count} Kredite löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "success": "Kredite erfolgreich gelöscht.",
+      "error": "Fehler beim Löschen der Kredite."
     },
     "errors": {
       "notFound": "Kredit nicht gefunden.",

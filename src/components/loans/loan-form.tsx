@@ -13,8 +13,8 @@ import type { LoanFormData } from '@/lib/schemas/loan';
 import { loanFormSchema } from '@/lib/schemas/loan';
 import { emptyStringToNull, formatNumber } from '@/lib/utils';
 import { additionalFieldDefaults, validateAdditionalFields } from '@/lib/utils/additional-fields';
-import { useProjects } from '@/store/projects-store';
 import type { LoanWithRelations } from '@/types/loans';
+import type { ProjectWithConfiguration } from '@/types/projects';
 import { LoanFormFields } from './loan-form-fields';
 
 interface LoanFormProps {
@@ -26,9 +26,11 @@ interface LoanFormProps {
   initialData?: Partial<LoanWithRelations>;
   isLoading?: boolean;
   error?: string | null;
+  project: ProjectWithConfiguration;
 }
 
 export function LoanForm({
+  project,
   title,
   submitButtonText,
   submittingButtonText,
@@ -38,21 +40,17 @@ export function LoanForm({
   isLoading,
   error,
 }: LoanFormProps) {
-  const { selectedProject } = useProjects();
-
   const { data: lenders = [], isLoading: isLoadingLenders } = useQuery({
-    queryKey: ['lenders', selectedProject?.id],
+    queryKey: ['lenders', project.id],
     queryFn: async () => {
-      if (!selectedProject) return [];
-      const { data: fetchedLenders, serverError } = await getLendersByProjectAction({ projectId: selectedProject.id });
+      const { data: fetchedLenders, serverError } = await getLendersByProjectAction({ projectId: project.id });
       if (serverError) throw new Error(serverError);
       return fetchedLenders?.lenders || [];
     },
-    enabled: !!selectedProject,
   });
 
   const schema = loanFormSchema.superRefine(
-    validateAdditionalFields('additionalFields', selectedProject?.configuration.loanAdditionalFields),
+    validateAdditionalFields('additionalFields', project.configuration.loanAdditionalFields),
   );
 
   // Create base default values that apply to all termination types
@@ -71,7 +69,7 @@ export function LoanForm({
     duration: initialData?.duration || '',
     durationType: initialData?.durationType || DurationType.YEARS,
     additionalFields: additionalFieldDefaults(
-      selectedProject?.configuration?.loanAdditionalFields || [],
+      project.configuration.loanAdditionalFields || [],
       (initialData?.additionalFields as AdditionalFieldValues | undefined) || {},
     ),
   };
@@ -80,10 +78,6 @@ export function LoanForm({
     resolver: zodResolver(schema),
     defaultValues: defaultValues,
   });
-
-  if (!selectedProject) {
-    return null;
-  }
 
   if (isLoadingLenders) {
     return null;

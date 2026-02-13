@@ -12,12 +12,14 @@ import {
   type VisibilityState,
 } from '@tanstack/react-table';
 import { Settings } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { getViewsByType } from '@/actions/views';
-import { useTableStore } from '@/store/table-store';
+import { useTableUrlState } from '@/lib/hooks/use-table-url-state';
 
+import { Checkbox } from './checkbox';
 import { DataTableBody } from './data-table-body';
+import { DataTableBulkBar } from './data-table-bulk-bar';
 import { DataTableHeader } from './data-table-header';
 import { DataTablePagination } from './data-table-pagination';
 
@@ -119,6 +121,13 @@ export type DataTableColumnFilters = {
   };
 };
 
+export interface BulkAction {
+  label: string;
+  icon?: React.ReactNode;
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  onClick: (ids: string[]) => void | Promise<void>;
+}
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -131,6 +140,8 @@ interface DataTableProps<TData, TValue> {
   viewType?: ViewType;
   isLoading?: boolean;
   actions?: (row: TData) => React.ReactNode;
+  bulkActions?: BulkAction[];
+  getRowId?: (row: TData) => string;
 }
 
 export function DataTable<TData, TValue>({
@@ -145,28 +156,9 @@ export function DataTable<TData, TValue>({
   viewType,
   isLoading,
   actions,
+  bulkActions,
+  getRowId = (row) => (row as Record<string, unknown>).id as string,
 }: DataTableProps<TData, TValue>) {
-  // Get the table store
-  const { getState, setState } = useTableStore();
-
-  // Initialize state from store if viewType is provided
-  const storedState = viewType ? getState(viewType) : null;
-
-  const sorting = storedState?.sorting ?? [];
-  const columnFilterState = storedState?.columnFilters ?? [];
-
-  const pagination = storedState?.pagination ?? {
-    pageIndex: 0,
-    pageSize: 25,
-  };
-
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    storedState?.columnVisibility ?? defaultColumnVisibility,
-  );
-  const [globalFilter, setGlobalFilter] = useState<string>(storedState?.globalFilter ?? '');
-
-  const [rowSelection, setRowSelection] = useState({});
-
   const { data: views, isLoading: isViewsLoading } = useQuery({
     queryKey: ['views', viewType],
     queryFn: async () => {
@@ -179,6 +171,31 @@ export function DataTable<TData, TValue>({
     },
     enabled: !!viewType,
   });
+
+  // Get table state from URL — views are passed so the hook can diff against the selected view's baseline
+  const { state: tableState, setState: setTableState } = useTableUrlState({
+    defaultColumnVisibility,
+    views: views ?? [],
+  });
+
+  const sorting = tableState.sorting;
+  const columnFilterState = tableState.columnFilters;
+
+  const pagination = {
+    pageIndex: tableState.pageIndex,
+    pageSize: tableState.pageSize,
+  };
+
+  const columnVisibility = tableState.columnVisibility;
+  const globalFilter = tableState.globalFilter;
+
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+
+  // Clear selection when data changes (e.g., after bulk delete + revalidation)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally reset selection when data reference changes
+  useEffect(() => {
+    setRowSelection({});
+  }, [data]);
 
   // Function to check if any filters are active
   const hasActiveFilters = () => {
@@ -197,39 +214,84 @@ export function DataTable<TData, TValue>({
     return hasColumnFilters;
   };
 
-  // Add actions column if actions prop is provided
-  const allColumns = [...columns];
-  if (actions) {
-    allColumns.push({
-      id: 'actions',
-      header: () => (
-        <div className="flex h-full w-full items-center justify-center">
-          <Settings className="h-4 w-4" />
-        </div>
-      ),
-      cell: ({ row }) => <div className="flex items-center justify-center">{actions(row.original)}</div>,
-      meta: {
-        fixed: true,
-      },
-    });
-  }
+  const hasBulkActions = !!bulkActions?.length;
+
+  // Build columns with optional checkbox select and actions columns
+  const allColumns = useMemo(() => {
+    const cols: ColumnDef<TData, TValue>[] = [];
+
+    if (hasBulkActions) {
+      cols.push({
+        id: 'select',
+        header: ({ table }) => (
+          <div className="flex items-center justify-center px-1" data-bulk-select>
+            <Checkbox
+              checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
+              onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+              aria-label="Select all"
+            />
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div className="flex items-center justify-center px-1" data-bulk-select>
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label="Select row"
+            />
+          </div>
+        ),
+        enableSorting: false,
+        enableHiding: false,
+        meta: {
+          fixed: false,
+        },
+      });
+    }
+
+    cols.push(...columns);
+
+    if (actions) {
+      cols.push({
+        id: 'actions',
+        header: () => (
+          <div className="flex h-full w-full items-center justify-center">
+            <Settings className="h-4 w-4" />
+          </div>
+        ),
+        cell: ({ row }) => <div className="flex items-center justify-center">{actions(row.original)}</div>,
+        meta: {
+          fixed: true,
+        },
+      });
+    }
+    return cols;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columns, actions, hasBulkActions]);
+
+  // Compute selected row IDs for bulk actions
+  const selectedIds = useMemo(() => {
+    return Object.keys(rowSelection).filter((key) => rowSelection[key]);
+  }, [rowSelection]);
+
+  const handleBulkComplete = () => {
+    setRowSelection({});
+  };
 
   const table = useReactTable({
     data,
     columns: allColumns,
+    getRowId: (row) => getRowId(row),
+    enableRowSelection: hasBulkActions,
     onSortingChange: (updater) => {
-      if (viewType) {
-        setState(viewType, {
-          sorting: updater instanceof Function ? updater(sorting) : updater,
-        });
-      }
+      setTableState({
+        sorting: updater instanceof Function ? updater(sorting) : updater,
+      });
     },
     onColumnFiltersChange: (updater) => {
-      if (viewType) {
-        setState(viewType, {
-          columnFilters: updater instanceof Function ? updater(columnFilterState) : updater,
-        });
-      }
+      setTableState({
+        columnFilters: updater instanceof Function ? updater(columnFilterState) : updater,
+      });
     },
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -237,28 +299,18 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: (updater) => {
       const next = updater instanceof Function ? updater(columnVisibility) : updater;
-      setColumnVisibility(next);
-      if (viewType) {
-        setState(viewType, {
-          columnVisibility: next,
-        });
-      }
+      setTableState({ columnVisibility: next });
     },
     onGlobalFilterChange: (updater) => {
       const next = updater instanceof Function ? updater(globalFilter) : updater;
-      setGlobalFilter(next);
-      if (viewType) {
-        setState(viewType, {
-          globalFilter: next,
-        });
-      }
+      setTableState({ globalFilter: next });
     },
     onPaginationChange: (updater) => {
-      if (viewType) {
-        setState(viewType, {
-          pagination: updater instanceof Function ? updater(pagination) : updater,
-        });
-      }
+      const resolved = updater instanceof Function ? updater(pagination) : updater;
+      setTableState({
+        pageIndex: resolved.pageIndex,
+        pageSize: resolved.pageSize,
+      });
     },
     onRowSelectionChange: setRowSelection,
 
@@ -298,7 +350,7 @@ export function DataTable<TData, TValue>({
   if ((viewType && (isViewsLoading || !views)) || isLoading) {
     return (
       <div className="py-24 text-center text-muted-foreground">
-        {getState(viewType ?? 'LOAN')?.globalFilter ? 'Suchen...' : 'Laden...'}
+        {tableState.globalFilter ? 'Suchen...' : 'Laden...'}
       </div>
     );
   }
@@ -314,10 +366,20 @@ export function DataTable<TData, TValue>({
         views={views || []}
         viewType={viewType}
         hasActiveFilters={hasActiveFilters}
-        state={viewType ? getState(viewType) : {}}
+        tableState={tableState}
+        setTableState={setTableState}
       />
 
-      <DataTableBody table={table} onRowClick={onRowClick} />
+      {bulkActions && selectedIds.length > 0 && (
+        <DataTableBulkBar
+          selectedCount={selectedIds.length}
+          selectedIds={selectedIds}
+          bulkActions={bulkActions}
+          onComplete={handleBulkComplete}
+        />
+      )}
+
+      <DataTableBody table={table} onRowClick={onRowClick} hasBulkSelect={hasBulkActions} />
 
       {showPagination && <DataTablePagination table={table} />}
     </div>

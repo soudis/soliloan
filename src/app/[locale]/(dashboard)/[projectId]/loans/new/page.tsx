@@ -1,4 +1,4 @@
-import { getLenderAction } from '@/actions';
+import { getLenderAction, getProjectUnsafe } from '@/actions';
 import { NewLoanClient } from '@/components/loans/new-loan-client';
 
 interface PageProps {
@@ -10,13 +10,15 @@ export default async function NewLoanPage({ params, searchParams }: PageProps) {
   const { projectId } = await params;
   const { lenderId } = await searchParams;
 
+  const projectResult = await getProjectUnsafe(projectId);
+
   let lender = null;
   if (lenderId) {
-    const result = await getLenderAction({ lenderId });
-    if (!result.serverError && result.data?.lender) {
-      lender = result.data.lender;
+    const lenderResult = await getLenderAction({ lenderId });
+    if (!lenderResult.serverError && lenderResult.data?.lender) {
+      lender = lenderResult.data.lender;
     }
   }
 
-  return <NewLoanClient projectId={projectId} lender={lender} lenderId={lenderId} />;
+  return <NewLoanClient project={projectResult.project} lender={lender} lenderId={lenderId} />;
 }

@@ -7,5 +7,9 @@
   "to": "bis",
   "globalFilter": "In allen Spalten suchen...",
   "startDate": "Startdatum",
-  "endDate": "Enddatum"
+  "endDate": "Enddatum",
+  "bulkBar": {
+    "selected": "{count} ausgewählt",
+    "deselect": "Auswahl aufheben"
+  }
 }

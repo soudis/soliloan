@@ -10,14 +10,15 @@ import { useRouter } from '@/i18n/navigation';
 import type { LoanFormData } from '@/lib/schemas/loan';
 import { getLenderName } from '@/lib/utils';
 import type { LenderWithCalculations } from '@/types/lenders';
+import type { ProjectWithConfiguration } from '@/types/projects';
 
 interface NewLoanClientProps {
-  projectId: string;
+  project: ProjectWithConfiguration;
   lender?: LenderWithCalculations | null;
   lenderId?: string | null;
 }
 
-export function NewLoanClient({ projectId, lender, lenderId }: NewLoanClientProps) {
+export function NewLoanClient({ project, lender, lenderId }: NewLoanClientProps) {
   const router = useRouter();
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
@@ -48,7 +49,7 @@ export function NewLoanClient({ projectId, lender, lenderId }: NewLoanClientProp
 
       toast.success(t('new.form.success'));
       if (loan) {
-        router.push(`/${projectId}/lenders/${loan.lenderId}?loanId=${loan.id}`);
+        router.push(`/${project.id}/lenders/${loan.lenderId}?loanId=${loan.id}`);
       }
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -73,6 +74,7 @@ export function NewLoanClient({ projectId, lender, lenderId }: NewLoanClientProp
 
   return (
     <LoanForm
+      project={project}
       title={title}
       submitButtonText={commonT('ui.actions.create')}
       submittingButtonText={commonT('ui.actions.creating')}
