@@ -12,12 +12,14 @@ import {
   type VisibilityState,
 } from '@tanstack/react-table';
 import { Settings } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { getViewsByType } from '@/actions/views';
 import { useTableUrlState } from '@/lib/hooks/use-table-url-state';
 
+import { Checkbox } from './checkbox';
 import { DataTableBody } from './data-table-body';
+import { DataTableBulkBar } from './data-table-bulk-bar';
 import { DataTableHeader } from './data-table-header';
 import { DataTablePagination } from './data-table-pagination';
 
@@ -119,6 +121,13 @@ export type DataTableColumnFilters = {
   };
 };
 
+export interface BulkAction {
+  label: string;
+  icon?: React.ReactNode;
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  onClick: (ids: string[]) => void | Promise<void>;
+}
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -131,6 +140,8 @@ interface DataTableProps<TData, TValue> {
   viewType?: ViewType;
   isLoading?: boolean;
   actions?: (row: TData) => React.ReactNode;
+  bulkActions?: BulkAction[];
+  getRowId?: (row: TData) => string;
 }
 
 export function DataTable<TData, TValue>({
@@ -145,6 +156,8 @@ export function DataTable<TData, TValue>({
   viewType,
   isLoading,
   actions,
+  bulkActions,
+  getRowId = (row) => (row as Record<string, unknown>).id as string,
 }: DataTableProps<TData, TValue>) {
   const { data: views, isLoading: isViewsLoading } = useQuery({
     queryKey: ['views', viewType],
@@ -176,7 +189,13 @@ export function DataTable<TData, TValue>({
   const columnVisibility = tableState.columnVisibility;
   const globalFilter = tableState.globalFilter;
 
-  const [rowSelection, setRowSelection] = useState({});
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+
+  // Clear selection when data changes (e.g., after bulk delete + revalidation)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally reset selection when data reference changes
+  useEffect(() => {
+    setRowSelection({});
+  }, [data]);
 
   // Function to check if any filters are active
   const hasActiveFilters = () => {
@@ -195,26 +214,75 @@ export function DataTable<TData, TValue>({
     return hasColumnFilters;
   };
 
-  // Add actions column if actions prop is provided
-  const allColumns = [...columns];
-  if (actions) {
-    allColumns.push({
-      id: 'actions',
-      header: () => (
-        <div className="flex h-full w-full items-center justify-center">
-          <Settings className="h-4 w-4" />
-        </div>
-      ),
-      cell: ({ row }) => <div className="flex items-center justify-center">{actions(row.original)}</div>,
-      meta: {
-        fixed: true,
-      },
-    });
-  }
+  const hasBulkActions = !!bulkActions?.length;
+
+  // Build columns with optional checkbox select and actions columns
+  const allColumns = useMemo(() => {
+    const cols: ColumnDef<TData, TValue>[] = [];
+
+    if (hasBulkActions) {
+      cols.push({
+        id: 'select',
+        header: ({ table }) => (
+          <div className="flex items-center justify-center px-1" data-bulk-select>
+            <Checkbox
+              checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
+              onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+              aria-label="Select all"
+            />
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div className="flex items-center justify-center px-1" data-bulk-select>
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label="Select row"
+            />
+          </div>
+        ),
+        enableSorting: false,
+        enableHiding: false,
+        meta: {
+          fixed: false,
+        },
+      });
+    }
+
+    cols.push(...columns);
+
+    if (actions) {
+      cols.push({
+        id: 'actions',
+        header: () => (
+          <div className="flex h-full w-full items-center justify-center">
+            <Settings className="h-4 w-4" />
+          </div>
+        ),
+        cell: ({ row }) => <div className="flex items-center justify-center">{actions(row.original)}</div>,
+        meta: {
+          fixed: true,
+        },
+      });
+    }
+    return cols;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columns, actions, hasBulkActions]);
+
+  // Compute selected row IDs for bulk actions
+  const selectedIds = useMemo(() => {
+    return Object.keys(rowSelection).filter((key) => rowSelection[key]);
+  }, [rowSelection]);
+
+  const handleBulkComplete = () => {
+    setRowSelection({});
+  };
 
   const table = useReactTable({
     data,
     columns: allColumns,
+    getRowId: (row) => getRowId(row),
+    enableRowSelection: hasBulkActions,
     onSortingChange: (updater) => {
       setTableState({
         sorting: updater instanceof Function ? updater(sorting) : updater,
@@ -302,7 +370,16 @@ export function DataTable<TData, TValue>({
         setTableState={setTableState}
       />
 
-      <DataTableBody table={table} onRowClick={onRowClick} />
+      {bulkActions && selectedIds.length > 0 && (
+        <DataTableBulkBar
+          selectedCount={selectedIds.length}
+          selectedIds={selectedIds}
+          bulkActions={bulkActions}
+          onComplete={handleBulkComplete}
+        />
+      )}
+
+      <DataTableBody table={table} onRowClick={onRowClick} hasBulkSelect={hasBulkActions} />
 
       {showPagination && <DataTablePagination table={table} />}
     </div>

@@ -2,11 +2,17 @@
 
 import { Salutation } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Pencil, Plus } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useAction } from 'next-safe-action/hooks';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
+import { bulkDeleteLendersAction } from '@/actions/lenders';
+import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { ActionButton } from '@/components/ui/action-button';
 import { Button } from '@/components/ui/button';
+import type { BulkAction } from '@/components/ui/data-table';
 import { DataTable } from '@/components/ui/data-table';
 import { useRouter } from '@/i18n/navigation';
 import {
@@ -35,6 +41,31 @@ export function LenderTable({ lenders, project, projectId }: LenderTableProps) {
   const tLoans = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const locale = useLocale();
+
+  const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  const { execute: executeBulkDelete } = useAction(bulkDeleteLendersAction, {
+    onSuccess: () => {
+      toast.success(t('bulkDelete.success'));
+      setBulkDeleteIds([]);
+    },
+    onError: ({ error }) => {
+      toast.error(error.serverError ?? t('bulkDelete.error'));
+    },
+  });
+
+  const bulkActions: BulkAction[] = [
+    {
+      label: commonT('ui.actions.delete'),
+      icon: <Trash2 className="h-4 w-4" />,
+      variant: 'destructive',
+      onClick: (ids) => {
+        setBulkDeleteIds(ids);
+        setIsConfirmOpen(true);
+      },
+    },
+  ];
 
   const columns: ColumnDef<LenderWithRelations>[] = [
     createColumn<LenderWithRelations>(
@@ -221,6 +252,7 @@ export function LenderTable({ lenders, project, projectId }: LenderTableProps) {
         viewType="LENDER"
         showFilter={true}
         onRowClick={(row) => router.push(`/${projectId}/lenders/${row.id}`)}
+        bulkActions={bulkActions}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
             <ActionButton
@@ -240,6 +272,16 @@ export function LenderTable({ lenders, project, projectId }: LenderTableProps) {
             />
           </div>
         )}
+      />
+
+      <ConfirmDialog
+        open={isConfirmOpen}
+        onOpenChange={setIsConfirmOpen}
+        title={t('bulkDelete.confirmTitle')}
+        description={t('bulkDelete.confirmDescription', { count: bulkDeleteIds.length })}
+        onConfirm={() => {
+          executeBulkDelete({ projectId, lenderIds: bulkDeleteIds });
+        }}
       />
     </div>
   );
