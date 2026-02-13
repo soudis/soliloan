@@ -116,7 +116,6 @@ export function LoanTemplateDialog({ configurationId, initialValues, open, onOpe
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  console.log('cancel');
                   onOpenChange(false);
                 }}
               >

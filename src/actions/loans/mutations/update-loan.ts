@@ -18,8 +18,6 @@ export const updateLoanAction = loanAction
   .action(async ({ parsedInput: { loanId, data } }) => {
     // Fetch the loan
 
-    console.log(data.terminationDate);
-
     const loan = await db.loan.findUnique({
       where: {
         id: loanId,

@@ -34,8 +34,6 @@ export async function updateConfiguration(projectId: string, data: Configuration
     data,
   });
 
-  console.log('configuration', configuration);
-
   // Create audit trail entry
   const { before, after } = getChangedFields(currentConfig, configuration);
   if (Object.keys(before).length > 0) {

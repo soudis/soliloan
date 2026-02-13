@@ -22,8 +22,6 @@ export function LoanTemplateTable({ configurationId, loanTemplates }: Props) {
   const queryClient = useQueryClient();
   const [openDialog, setOpenDialog] = useState<string | null>(null);
 
-  console.log('openDialog', openDialog);
-
   const { executeAsync: markLoanTemplateAsDefault } = useAction(markLoanTemplateAsDefaultAction, {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
@@ -99,7 +97,6 @@ export function LoanTemplateTable({ configurationId, loanTemplates }: Props) {
                   initialValues={field}
                   open={openDialog === field.id}
                   onOpenChange={(o) => {
-                    console.log('onOpenChange', o, openDialog, o === true ? field.id : null);
                     setOpenDialog(o === true ? field.id : '');
                   }}
                 />

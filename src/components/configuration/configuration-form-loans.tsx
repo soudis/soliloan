@@ -41,7 +41,6 @@ export function ConfigurationFormLoans({ onSubmit, hasHistoricTransactions, init
 
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
-      console.log('data', data);
       await onSubmit(data);
     } catch (error) {
       console.error('Error submitting form:', error);

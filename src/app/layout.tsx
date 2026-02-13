@@ -8,16 +8,22 @@ import { Providers } from './providers';
 const inter = localFont({
   src: '../fonts/Inter-VariableFont_opsz,wght.ttf',
   variable: '--font-inter',
+  display: 'swap',
+  preload: true,
 });
 
 const comfortaa = localFont({
   src: '../fonts/Comfortaa-VariableFont_wght.ttf',
   variable: '--font-comfortaa',
+  display: 'swap',
+  preload: true,
 });
 
 const roboto = localFont({
   src: '../fonts/RobotoMono-VariableFont_wght.ttf',
   variable: '--font-mono',
+  display: 'swap',
+  preload: true,
 });
 
 export const metadata: Metadata = {

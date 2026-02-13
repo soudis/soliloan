@@ -13,15 +13,7 @@ export const createTemplateAction = projectAction
     if (data.isGlobal && !ctx.session.user.isAdmin) {
       throw new Error('error.unauthorized');
     }
-    console.log('user id', ctx.session.user.id);
-    console.log('data', data);
-    console.log('isGlobal', data.isGlobal);
-    console.log('projectId', data.projectId);
-    console.log('name', data.name);
-    console.log('description', data.description);
-    console.log('type', data.type);
-    console.log('dataset', data.dataset);
-    console.log('designJson', data.designJson);
+
     const template = await db.communicationTemplate.create({
       data: {
         name: data.name,
