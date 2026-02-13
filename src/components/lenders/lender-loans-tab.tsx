@@ -1,11 +1,11 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { parseAsString, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
 import { cn } from '@/lib/utils';
-import { useLenderLoanSelectionStore } from '@/store/lender-loan-selection-store';
 import type { LenderWithCalculations } from '@/types/lenders';
 import { LoanCard } from '../loans/loan-card';
 import { Button } from '../ui/button';
@@ -16,8 +16,8 @@ type Props = {
 };
 
 export const LenderLoansTab = ({ lender }: Props) => {
-  const { getSelectedLoanId, setSelectedLoanId } = useLenderLoanSelectionStore();
-  const selectedLoanId = getSelectedLoanId(lender.id) ?? lender.loans[0]?.id;
+  const [loanId, setLoanId] = useQueryState('loanId', parseAsString);
+  const selectedLoanId = loanId ?? lender.loans[0]?.id;
   const tCommon = useTranslations('common');
   const selectedLoan = useMemo(() => {
     return lender.loans.find((loan) => loan.id === selectedLoanId);
@@ -33,7 +33,7 @@ export const LenderLoansTab = ({ lender }: Props) => {
           <LoanDropdown
             loans={lender.loans}
             selectedLoanId={selectedLoanId}
-            onSelectLoan={(loanId) => setSelectedLoanId(lender.id, loanId ?? undefined)}
+            onSelectLoan={(id) => setLoanId(id ?? null)}
             lender={lender}
           />
         </div>

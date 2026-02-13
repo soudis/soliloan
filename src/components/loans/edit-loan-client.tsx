@@ -10,13 +10,14 @@ import { useRouter } from '@/i18n/navigation';
 import type { LoanFormData } from '@/lib/schemas/loan';
 import { getLenderName } from '@/lib/utils';
 import type { LoanWithRelations } from '@/types/loans';
+import type { ProjectWithConfiguration } from '@/types/projects';
 
 interface EditLoanClientProps {
   loan: LoanWithRelations;
-  projectId: string;
+  project: ProjectWithConfiguration;
 }
 
-export function EditLoanClient({ loan, projectId }: EditLoanClientProps) {
+export function EditLoanClient({ loan, project }: EditLoanClientProps) {
   const router = useRouter();
   const t = useTranslations('dashboard.loans');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,7 +38,7 @@ export function EditLoanClient({ loan, projectId }: EditLoanClientProps) {
 
       toast.success(t('edit.form.success'));
       if (updatedLoan) {
-        router.push(`/${projectId}/lenders/${updatedLoan.lenderId}?loanId=${updatedLoan.id}`);
+        router.push(`/${project.id}/lenders/${updatedLoan.lenderId}?loanId=${updatedLoan.id}`);
       }
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -50,6 +51,7 @@ export function EditLoanClient({ loan, projectId }: EditLoanClientProps) {
 
   return (
     <LoanForm
+      project={project}
       title={t('edit.title', { lenderName: getLenderName(loan.lender) })}
       submitButtonText={t('edit.form.submit')}
       submittingButtonText={t('edit.form.submitting')}

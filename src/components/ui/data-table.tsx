@@ -15,7 +15,7 @@ import { Settings } from 'lucide-react';
 import { useState } from 'react';
 
 import { getViewsByType } from '@/actions/views';
-import { useTableStore } from '@/store/table-store';
+import { useTableUrlState } from '@/lib/hooks/use-table-url-state';
 
 import { DataTableBody } from './data-table-body';
 import { DataTableHeader } from './data-table-header';
@@ -146,27 +146,6 @@ export function DataTable<TData, TValue>({
   isLoading,
   actions,
 }: DataTableProps<TData, TValue>) {
-  // Get the table store
-  const { getState, setState } = useTableStore();
-
-  // Initialize state from store if viewType is provided
-  const storedState = viewType ? getState(viewType) : null;
-
-  const sorting = storedState?.sorting ?? [];
-  const columnFilterState = storedState?.columnFilters ?? [];
-
-  const pagination = storedState?.pagination ?? {
-    pageIndex: 0,
-    pageSize: 25,
-  };
-
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    storedState?.columnVisibility ?? defaultColumnVisibility,
-  );
-  const [globalFilter, setGlobalFilter] = useState<string>(storedState?.globalFilter ?? '');
-
-  const [rowSelection, setRowSelection] = useState({});
-
   const { data: views, isLoading: isViewsLoading } = useQuery({
     queryKey: ['views', viewType],
     queryFn: async () => {
@@ -179,6 +158,25 @@ export function DataTable<TData, TValue>({
     },
     enabled: !!viewType,
   });
+
+  // Get table state from URL — views are passed so the hook can diff against the selected view's baseline
+  const { state: tableState, setState: setTableState } = useTableUrlState({
+    defaultColumnVisibility,
+    views: views ?? [],
+  });
+
+  const sorting = tableState.sorting;
+  const columnFilterState = tableState.columnFilters;
+
+  const pagination = {
+    pageIndex: tableState.pageIndex,
+    pageSize: tableState.pageSize,
+  };
+
+  const columnVisibility = tableState.columnVisibility;
+  const globalFilter = tableState.globalFilter;
+
+  const [rowSelection, setRowSelection] = useState({});
 
   // Function to check if any filters are active
   const hasActiveFilters = () => {
@@ -218,18 +216,14 @@ export function DataTable<TData, TValue>({
     data,
     columns: allColumns,
     onSortingChange: (updater) => {
-      if (viewType) {
-        setState(viewType, {
-          sorting: updater instanceof Function ? updater(sorting) : updater,
-        });
-      }
+      setTableState({
+        sorting: updater instanceof Function ? updater(sorting) : updater,
+      });
     },
     onColumnFiltersChange: (updater) => {
-      if (viewType) {
-        setState(viewType, {
-          columnFilters: updater instanceof Function ? updater(columnFilterState) : updater,
-        });
-      }
+      setTableState({
+        columnFilters: updater instanceof Function ? updater(columnFilterState) : updater,
+      });
     },
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -237,28 +231,18 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: (updater) => {
       const next = updater instanceof Function ? updater(columnVisibility) : updater;
-      setColumnVisibility(next);
-      if (viewType) {
-        setState(viewType, {
-          columnVisibility: next,
-        });
-      }
+      setTableState({ columnVisibility: next });
     },
     onGlobalFilterChange: (updater) => {
       const next = updater instanceof Function ? updater(globalFilter) : updater;
-      setGlobalFilter(next);
-      if (viewType) {
-        setState(viewType, {
-          globalFilter: next,
-        });
-      }
+      setTableState({ globalFilter: next });
     },
     onPaginationChange: (updater) => {
-      if (viewType) {
-        setState(viewType, {
-          pagination: updater instanceof Function ? updater(pagination) : updater,
-        });
-      }
+      const resolved = updater instanceof Function ? updater(pagination) : updater;
+      setTableState({
+        pageIndex: resolved.pageIndex,
+        pageSize: resolved.pageSize,
+      });
     },
     onRowSelectionChange: setRowSelection,
 
@@ -298,7 +282,7 @@ export function DataTable<TData, TValue>({
   if ((viewType && (isViewsLoading || !views)) || isLoading) {
     return (
       <div className="py-24 text-center text-muted-foreground">
-        {getState(viewType ?? 'LOAN')?.globalFilter ? 'Suchen...' : 'Laden...'}
+        {tableState.globalFilter ? 'Suchen...' : 'Laden...'}
       </div>
     );
   }
@@ -314,7 +298,8 @@ export function DataTable<TData, TValue>({
         views={views || []}
         viewType={viewType}
         hasActiveFilters={hasActiveFilters}
-        state={viewType ? getState(viewType) : {}}
+        tableState={tableState}
+        setTableState={setTableState}
       />
 
       <DataTableBody table={table} onRowClick={onRowClick} />

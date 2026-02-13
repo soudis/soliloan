@@ -15,9 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
-import { useLenderLoanSelectionStore } from '@/store/lender-loan-selection-store';
-import { useLoanTabsStore } from '@/store/loan-tabs-store';
 import { useProjects } from '@/store/projects-store';
+import { parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs';
 import type { LoanWithCalculations } from '@/types/loans';
 import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-items';
 import { Files } from '../generic/files';
@@ -41,12 +40,14 @@ export function LoanCard({ loan, className }: LoanCardProps) {
   const dateLocale = locale === 'de' ? de : enUS;
 
   const { selectedProject } = useProjects();
-  const { getActiveTab, setActiveTab } = useLoanTabsStore();
-  const activeTab = getActiveTab(loan.id);
+  const [activeTab, setActiveTab] = useQueryState(
+    'loanTab',
+    parseAsStringLiteral(['transactions', 'files', 'notes', 'bookings'] as const).withDefault('transactions'),
+  );
+  const [, setLoanId] = useQueryState('loanId', parseAsString);
   const router = useRouter();
   const projectId = useProjectId();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const { setSelectedLoanId } = useLenderLoanSelectionStore();
   const queryClient = useQueryClient();
   const getTerminationModalities = () => {
     switch (loan.terminationType) {
@@ -95,8 +96,8 @@ export function LoanCard({ loan, className }: LoanCardProps) {
         });
         // Adjust selection after deletion
         const remainingLoans = loan.lender.loans?.filter((l) => l.id !== loan.id) || [];
-        const newSelectedLoanId = remainingLoans.length > 0 ? remainingLoans[0].id : '';
-        setSelectedLoanId(loan.lender.id, newSelectedLoanId);
+        const newSelectedLoanId = remainingLoans.length > 0 ? remainingLoans[0].id : null;
+        setLoanId(newSelectedLoanId);
       }
     } catch (e) {
       toast.error(t('delete.error'), {
@@ -199,7 +200,7 @@ export function LoanCard({ loan, className }: LoanCardProps) {
         </div>
         <Tabs
           value={activeTab}
-          onValueChange={(value) => setActiveTab(loan.id, value as 'transactions' | 'files' | 'notes' | 'bookings')}
+          onValueChange={(value) => setActiveTab(value as 'transactions' | 'files' | 'notes' | 'bookings')}
           className="mt-6"
         >
           <TabsList variant="modern" className="md:mt-4">

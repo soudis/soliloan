@@ -1,11 +1,13 @@
+'use client';
+
 import type { View, ViewType } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Table, VisibilityState } from '@tanstack/react-table';
 import { isEqual } from 'lodash';
 import { SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useAction } from 'next-safe-action/hooks';
 import { useMemo, useState } from 'react';
-
 import { createViewAction } from '@/actions/views/mutations/create-view';
 import { deleteViewAction } from '@/actions/views/mutations/delete-view';
 import { updateViewAction } from '@/actions/views/mutations/update-view';
@@ -18,8 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { useProjectId } from '@/lib/hooks/use-project-id';
-import { useTableStore, type ViewState } from '@/store/table-store';
-
+import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
 import { DataTableColumnFilters } from './data-table-column-filters';
 import { SaveViewDialog } from './save-view-dialog';
 import { ViewManager } from './view-manager';
@@ -39,7 +40,8 @@ interface DataTableHeaderProps<TData> {
   views: View[];
   hasActiveFilters: () => boolean;
   defaultColumnVisibility: VisibilityState;
-  state: Partial<ViewState>;
+  tableState: TableUrlState;
+  setTableState: SetTableUrlState;
 }
 
 export function DataTableHeader<TData>({
@@ -51,14 +53,18 @@ export function DataTableHeader<TData>({
   viewType,
   views,
   hasActiveFilters,
-  state,
+  tableState,
+  setTableState,
 }: DataTableHeaderProps<TData>) {
   const projectId = useProjectId();
   const t = useTranslations('dataTable');
   const [showColumnFilters, setShowColumnFilters] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const { setState } = useTableStore();
   const queryClient = useQueryClient();
+
+  const { executeAsync: executeCreateView } = useAction(createViewAction);
+  const { executeAsync: executeUpdateView } = useAction(updateViewAction);
+  const { executeAsync: executeDeleteView } = useAction(deleteViewAction);
 
   // Function to save the current view
   const handleSaveView = async (name: string, isDefault: boolean) => {
@@ -66,16 +72,19 @@ export function DataTableHeader<TData>({
 
     setIsSaving(true);
     try {
-      // Use type assertion to satisfy the TypeScript compiler
-      const result = await createViewAction({
+      const result = await executeCreateView({
         name,
         type: viewType as ViewType,
         isDefault,
         data: {
-          ...state,
+          sorting: tableState.sorting,
+          columnFilters: tableState.columnFilters,
+          columnVisibility: tableState.columnVisibility,
+          globalFilter: tableState.globalFilter,
+          pageSize: tableState.pageSize,
           pagination: {
             pageIndex: 0,
-            pageSize: state.pagination?.pageSize ?? 25,
+            pageSize: tableState.pageSize,
           },
         },
         ...(projectId && { projectId }),
@@ -88,10 +97,14 @@ export function DataTableHeader<TData>({
       const view = result?.data?.view;
 
       // Refresh the view list
-      queryClient.invalidateQueries({ queryKey: ['views', viewType] });
+      await queryClient.invalidateQueries({ queryKey: ['views', viewType] });
       if (view) {
-        setState(viewType, {
+        // Select the new view — since the saved data matches current state,
+        // all URL overrides will be cleared by the hook's diff logic.
+        setTableState({
           selectedView: view.id,
+          pageIndex: 0,
+          pageSize: tableState.pageSize,
         });
       }
     } catch (err) {
@@ -104,19 +117,20 @@ export function DataTableHeader<TData>({
   const handleViewDefault = async (viewId: string, isDefault: boolean) => {
     if (!viewType) return;
 
-    await updateViewAction({ viewId, data: { isDefault }, ...(projectId && { projectId }) });
+    await executeUpdateView({ viewId, data: { isDefault }, ...(projectId && { projectId }) });
     queryClient.invalidateQueries({ queryKey: ['views', viewType] });
   };
 
   const handleViewDelete = async (viewId: string) => {
     if (!viewType) return;
 
-    await deleteViewAction({ viewId, ...(projectId && { projectId }) });
+    await executeDeleteView({ viewId });
     queryClient.invalidateQueries({ queryKey: ['views', viewType] });
   };
 
   const viewDirty = useMemo(() => {
-    const view = (views.find((view) => view.id === state.selectedView)?.data as Partial<ViewState>) ?? {
+    // biome-ignore lint/suspicious/noExplicitAny: view data is stored as JSON
+    const viewData = (views.find((v) => v.id === tableState.selectedView)?.data as any) ?? {
       selectedView: '',
       columnVisibility: defaultColumnVisibility,
       sorting: [],
@@ -126,13 +140,13 @@ export function DataTableHeader<TData>({
     };
 
     return (
-      state.globalFilter !== view.globalFilter ||
-      state.pagination?.pageSize !== view.pagination?.pageSize ||
-      !isEqual(state.columnVisibility, view.columnVisibility) ||
-      !isEqual(state.sorting, view.sorting) ||
-      !isEqual(state.columnFilters, view.columnFilters)
+      tableState.globalFilter !== (viewData.globalFilter ?? '') ||
+      tableState.pageSize !== (viewData.pagination?.pageSize ?? viewData.pageSize ?? 25) ||
+      !isEqual(tableState.columnVisibility, viewData.columnVisibility ?? defaultColumnVisibility) ||
+      !isEqual(tableState.sorting, viewData.sorting ?? []) ||
+      !isEqual(tableState.columnFilters, viewData.columnFilters ?? [])
     );
-  }, [views, state, defaultColumnVisibility]);
+  }, [views, tableState, defaultColumnVisibility]);
 
   return (
     <>
@@ -141,13 +155,9 @@ export function DataTableHeader<TData>({
           <div className="flex items-center gap-4">
             <Input
               placeholder={t('globalFilter') || 'Search all columns...'}
-              value={state.globalFilter || ''}
+              value={tableState.globalFilter}
               onChange={(event) => {
-                if (viewType) {
-                  setState(viewType, {
-                    globalFilter: event.target.value,
-                  });
-                }
+                setTableState({ globalFilter: event.target.value });
               }}
               className="max-w-sm"
             />
@@ -159,18 +169,19 @@ export function DataTableHeader<TData>({
               <ViewManager
                 viewDirty={viewDirty}
                 views={views}
-                state={state}
+                state={tableState}
                 onViewDefault={handleViewDefault}
                 onViewSelect={(view) => {
                   if (view === null) {
-                    // Reset to default state
-                    setState(viewType, {
+                    // Reset to default — the hook will clear all URL overrides since they match the baseline
+                    setTableState({
                       selectedView: '',
                       columnVisibility: defaultColumnVisibility,
                       sorting: [],
                       columnFilters: [],
                       globalFilter: '',
-                      pagination: { pageIndex: 0, pageSize: 25 },
+                      pageIndex: 0,
+                      pageSize: 25,
                     });
                     return;
                   }
@@ -183,15 +194,19 @@ export function DataTableHeader<TData>({
                     columnFilters,
                     globalFilter,
                     pageSize,
-                    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+                    pagination,
+                    // biome-ignore lint/suspicious/noExplicitAny: view data is stored as JSON
                   } = view.data as any;
-                  setState(viewType, {
+                  // Set the view — the hook diffs against the new view's baseline and only
+                  // keeps URL params that differ, so selecting a view yields a clean URL.
+                  setTableState({
                     selectedView: view.id,
-                    columnVisibility,
-                    sorting,
-                    columnFilters,
-                    globalFilter,
-                    pagination: { pageIndex: 0, pageSize: pageSize ?? 25 },
+                    columnVisibility: columnVisibility ?? defaultColumnVisibility,
+                    sorting: sorting ?? [],
+                    columnFilters: columnFilters ?? [],
+                    globalFilter: globalFilter ?? '',
+                    pageIndex: 0,
+                    pageSize: pagination?.pageSize ?? pageSize ?? 25,
                   });
                 }}
                 onViewDelete={handleViewDelete}
@@ -240,7 +255,7 @@ export function DataTableHeader<TData>({
         </div>
       </div>
       {showColumnFilters && viewType && Object.keys(columnFilters).length > 0 && (
-        <DataTableColumnFilters state={state} columnFilters={columnFilters} viewType={viewType} />
+        <DataTableColumnFilters tableState={tableState} setTableState={setTableState} columnFilters={columnFilters} />
       )}
     </>
   );

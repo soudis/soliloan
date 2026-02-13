@@ -4,8 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
-import type { ViewState } from '@/store/table-store';
-
+import type { TableUrlState } from '@/lib/hooks/use-table-url-state';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu';
 
 interface ViewManagerProps {
@@ -13,7 +12,7 @@ interface ViewManagerProps {
   onViewDelete?: (viewId: string) => Promise<void>;
   onViewDefault?: (viewId: string, isDefault: boolean) => Promise<void>;
   views: View[];
-  state: ViewState;
+  state: TableUrlState;
   viewDirty: boolean;
 }
 
@@ -28,17 +27,23 @@ export function ViewManager({ onViewSelect, onViewDelete, onViewDefault, views, 
     onViewSelectRef.current = onViewSelect;
   }, [onViewSelect]);
 
+  // Track whether we've initialized the view on first render
+  const initializedRef = useRef(false);
+
   useEffect(() => {
-    if (views) {
+    if (views && views.length > 0 && !initializedRef.current && !state.selectedView) {
+      initializedRef.current = true;
       // Find default view if it exists
-      if (state.selectedView === 'init') {
-        const defaultView = views.find((view: View) => view.isDefault);
-        if (defaultView) {
-          onViewSelectRef.current(defaultView);
-        } else {
-          onViewSelectRef.current(null); // This will trigger the default view
-        }
+      const defaultView = views.find((view: View) => view.isDefault);
+      if (defaultView) {
+        onViewSelectRef.current(defaultView);
+      } else {
+        onViewSelectRef.current(null); // This will trigger the default state
       }
+    }
+    // Also mark as initialized if a view is already selected via URL
+    if (state.selectedView) {
+      initializedRef.current = true;
     }
   }, [views, state.selectedView]);
 
