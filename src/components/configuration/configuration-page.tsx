@@ -7,7 +7,6 @@ import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { updateConfigurationAction } from '@/actions/projects/mutations/update-project-configuration';
-import { usePathname, useRouter } from '@/i18n/navigation';
 import type { ConfigurationFormData } from '@/lib/schemas/configuration';
 import { convertEmptyToNull } from '@/lib/utils/form';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -30,8 +29,6 @@ export const ConfigurationPage = ({ project }: Props) => {
     parseAsStringLiteral(['general', 'lender', 'loans', 'templates', 'files'] as const).withDefault('general'),
   );
   const [error, setError] = useState<string | null>(null);
-  const pathname = usePathname();
-  const router = useRouter();
 
   const { executeAsync: updateConfiguration, isExecuting } = useAction(updateConfigurationAction);
 
@@ -49,7 +46,6 @@ export const ConfigurationPage = ({ project }: Props) => {
     } else if (result.data?.project) {
       // Show success message
       toast.success(t('form.success'));
-      router.replace(pathname, { scroll: true });
     }
   };
 

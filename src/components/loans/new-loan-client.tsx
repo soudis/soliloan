@@ -49,7 +49,7 @@ export function NewLoanClient({ project, lender, lenderId }: NewLoanClientProps)
 
       toast.success(t('new.form.success'));
       if (loan) {
-        router.push(`/${project.id}/lenders/${loan.lenderId}?loanId=${loan.id}`);
+        router.push(`/${project.id}/lenders/${loan.lenderId}?tab=loans&loanId=${loan.id}`);
       }
     } catch (error) {
       console.error('Error submitting form:', error);

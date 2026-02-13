@@ -38,7 +38,7 @@ export function EditLoanClient({ loan, project }: EditLoanClientProps) {
 
       toast.success(t('edit.form.success'));
       if (updatedLoan) {
-        router.push(`/${project.id}/lenders/${updatedLoan.lenderId}?loanId=${updatedLoan.id}`);
+        router.push(`/${project.id}/lenders/${updatedLoan.lenderId}?tab=loans&loanId=${updatedLoan.id}`);
       }
     } catch (error) {
       console.error('Error submitting form:', error);
