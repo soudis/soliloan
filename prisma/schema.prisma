@@ -109,7 +109,6 @@ model Configuration {
 model Project {
   id              String         @id @default(cuid())
   slug            String         @unique
-  name            String
   configurationId String         @unique
   changes         Change[]
   lenders         Lender[]
@@ -215,7 +214,7 @@ enum Operation {
 }
 
 enum Entity {
-  configuration
+  project
   lender
   loan
   transaction
@@ -272,6 +271,7 @@ enum ViewType {
   LENDER
   LOAN
   LOGBOOK
+  PROJECT
 }
 
 enum TerminationType {

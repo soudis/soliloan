@@ -1,4 +1,3 @@
-import type { Lender, Loan } from '@prisma/client';
 import type { ColumnDef, Row, VisibilityState } from '@tanstack/react-table';
 
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +29,12 @@ export function enumFilter<T>(row: Row<T>, columnId: string, filterValue: unknow
 // Define the custom filter function type
 export type FilterFn = 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'compoundText' | 'numberRange' | 'enum';
 
+// Convert accessorKey to column ID by replacing dots with underscores
+// Without this TanStack would change the the column id internally and accessing with accessorKey would not work.
+export function accessorKeyToColumnId(accessorKey: string): string {
+  return accessorKey.replaceAll('.', '_');
+}
+
 type ColumnConfig<T> = ColumnDef<T> & {
   accessorKey: string;
   header?: string | undefined;
@@ -43,6 +48,7 @@ export function createColumn<T>(config: ColumnConfig<T>, t: (key: string) => str
     ...config,
     header: ({ column }) =>
       config.header ? <DataTableColumnHeader column={column} title={t(config.header)} /> : undefined,
+    filterFn: config.filterFn || 'includesString',
     sortingFn:
       config.sortingFn ||
       ((rowA, rowB, columnId) => {
@@ -174,12 +180,14 @@ export function createEnumBadgeColumn<T>(
   commonT: (key: string) => string,
   getBadgeVariant?: (value: string) => 'default' | 'secondary' | 'destructive' | 'outline',
 ): ColumnDef<T> {
+  const columnId = accessorKeyToColumnId(accessorKey);
   return createColumn<T>(
     {
       accessorKey,
+      id: columnId,
       header: headerKey,
       cell: ({ row }) => {
-        const value = row.getValue(accessorKey) as string;
+        const value = row.getValue(columnId) as string;
         if (!value) return '';
 
         const enumText = commonT(`${enumPrefix}.${value}`);
@@ -197,7 +205,15 @@ export function createEnumBadgeColumn<T>(
       sortingFn: (rowA, rowB, columnId) => {
         const a = rowA.getValue(columnId) as string;
         const b = rowB.getValue(columnId) as string;
-        return a.localeCompare(b);
+
+        if (!a && !b) return 0;
+        if (!a) return 1;
+        if (!b) return -1;
+
+        const aLocal = commonT(`${enumPrefix}.${a}`);
+        const bLocal = commonT(`${enumPrefix}.${b}`);
+
+        return aLocal.localeCompare(bLocal);
       },
     },
     t,

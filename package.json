@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "biome lint",
-    "format": "biome format src",
+    "format": "biome format src prisma",
     "docker:dev": "docker compose -f docker/compose.dev.yml --project-directory ."
   },
   "dependencies": {

@@ -17,7 +17,11 @@ services:
     environment:
       - NODE_ENV=development
       - AUTH_URL=https://soliloan.localhost
+      # File Watching Optimierung für Docker auf Mac
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
     volumes:
-      - ./:/app
+      - ./:/app:cached
       - /app/node_modules
     command: /bin/sh -c "pnpm install && pnpm prisma db push && pnpm prisma db seed && pnpm dev"

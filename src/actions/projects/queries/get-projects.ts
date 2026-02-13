@@ -20,6 +20,7 @@ async function getProjects(userId?: string) {
       },
     }),
     include: {
+      managers: true,
       configuration: {
         include: {
           loanTemplates: true,
@@ -30,7 +31,9 @@ async function getProjects(userId?: string) {
       },
     },
     orderBy: {
-      name: 'asc',
+      configuration: {
+        name: 'asc',
+      },
     },
   });
 

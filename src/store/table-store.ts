@@ -27,6 +27,7 @@ export const useTableStore = create<TableStore>()((set, get) => ({
     LENDER: defaultTableState,
     LOAN: defaultTableState,
     LOGBOOK: defaultTableState,
+    PROJECT: defaultTableState,
   },
   setState: (viewType, newState) =>
     set((state) => ({

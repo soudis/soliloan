@@ -105,6 +105,17 @@ export function LogbookTable({ changes }: LogbookTableProps) {
           });
         }
         break;
+      case 'project':
+        if (change.operation === 'CREATE') {
+          return t('project.created');
+        }
+        if (change.operation === 'UPDATE') {
+          return t('project.updated');
+        }
+        if (change.operation === 'DELETE') {
+          return t('project.deleted');
+        }
+        break;
     }
     return t('unknownChange');
   };

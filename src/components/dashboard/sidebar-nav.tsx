@@ -1,6 +1,6 @@
 'use client';
 
-import { History, LayoutDashboard, LogOut, Settings, Users, Wallet } from 'lucide-react';
+import { Box, History, LayoutDashboard, LogOut, Settings, Users, Wallet } from 'lucide-react';
 import type { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
@@ -21,6 +21,8 @@ export function SidebarNav({ isSidebarOpen, session }: SidebarNavProps) {
   const t = useTranslations('navigation');
   const commonT = useTranslations('common');
   const { toggleSidebar } = useAppStore();
+
+  const isAdmin = session.user.isAdmin;
 
   return (
     <>
@@ -50,6 +52,17 @@ export function SidebarNav({ isSidebarOpen, session }: SidebarNavProps) {
             <NavItem href="/logbook" icon={History} label={t('logbook')} />
             <NavItem href="/configuration" icon={Settings} label={t('configuration')} />
           </nav>
+
+          {isAdmin && (
+            <nav>
+              <div className="pt-4 border-t pb-2">
+                <span className="text-sm font-medium">{t('administration')}</span>
+                <div className="pt-1">
+                  <NavItem href="/projects" icon={Box} label={t('projects')} />
+                </div>
+              </div>
+            </nav>
+          )}
 
           {/* Theme Selector at the bottom of the sidebar */}
           <div className="mt-auto pt-4 border-t space-y-4">
