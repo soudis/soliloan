@@ -1,9 +1,7 @@
 import type { Configuration, File, Lender, Note, Project, User } from '@prisma/client';
-
-import type { LoanWithRelations } from './loans';
-
 import type { getLenderAction } from '@/actions';
 import type { AdditionalFieldValues } from '@/lib/schemas/common';
+import type { LoanWithRelations } from './loans';
 
 export type LenderWithRelations = Lender & {
   notes: (Note & {

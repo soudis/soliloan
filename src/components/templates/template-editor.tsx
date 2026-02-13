@@ -1,14 +1,13 @@
 'use client';
 
 import type { TemplateDataset, TemplateType } from '@prisma/client';
+import { Loader2, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-
 import { updateTemplateAction } from '@/actions/templates/mutations/update-template';
 import { Button } from '@/components/ui/button';
-import { Loader2, Save } from 'lucide-react';
 import { SampleDataSelector } from './sample-data-selector';
 import { TemplateEditorView } from './template-editor-view';
 
@@ -46,7 +45,7 @@ export function TemplateEditor({ template, projectId }: TemplateEditorProps) {
 
     const result = await updateTemplate({
       templateId: template.id,
-      designJson: pendingDesign,
+      designJson: pendingDesign as Record<string, unknown>,
       htmlContent: pendingHtml,
     });
 

@@ -1,25 +1,22 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { Note } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-
+import z from 'zod';
 import { createNoteAction } from '@/actions/notes/mutations/create-note';
 import { updateNoteAction } from '@/actions/notes/mutations/update-note';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
-import { noteSchema } from '@/lib/schemas/note';
-
-import { NoteFormFields } from './note-form-fields';
-
 import type { NoteFormData } from '@/lib/schemas/note';
+import { noteSchema } from '@/lib/schemas/note';
 import type { LoanWithCalculations } from '@/types/loans';
-import type { Note } from '@prisma/client';
-import { useEffect } from 'react';
-import z from 'zod';
+import { NoteFormFields } from './note-form-fields';
 
 interface NoteDialogProps {
   lenderId: string;

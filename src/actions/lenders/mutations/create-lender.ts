@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 
 import { createAuditEntry, getLenderContext, removeNullFields } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
-import { type LenderFormData, lenderFormSchema } from '@/lib/schemas/lender';
+import { lenderFormSchema } from '@/lib/schemas/lender';
 import { getLenderName } from '@/lib/utils';
 import { projectAction } from '@/lib/utils/safe-action';
 
@@ -69,7 +69,7 @@ export const createLenderAction = projectAction.schema(lenderFormSchema).action(
   });
 
   // Revalidate the lenders page
-  revalidatePath(`/lenders/${data.projectId}`);
+  revalidatePath(`/${data.projectId}/lenders`);
 
   return { id: lender.id };
 });

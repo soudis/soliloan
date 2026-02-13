@@ -1,12 +1,18 @@
-import { DurationType, type InterestMethod, PaymentType, TerminationType, TransactionType } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
+import {
+  DurationType,
+  type InterestMethod,
+  PaymentType,
+  Prisma,
+  TerminationType,
+  TransactionType,
+} from '@prisma/client';
 import { omit } from 'lodash';
 import moment, { type Moment } from 'moment';
 
 import type { CalculationOptions } from '@/types/calculation';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
 
-import { transactionSorter } from '../utils';
+import { transactionSorter } from '../utils/sorters';
 
 export const isRepaid = (loan: LoanWithRelations, toDate: Date) => {
   // check if all money was paid back until given date
@@ -52,8 +58,8 @@ const getBaseDays = (method: InterestMethod, date: Moment) => {
 export const calculateInterestDaily = (
   fromDateParameter: Moment | undefined,
   toDateParameter: Moment | undefined,
-  amount: Decimal,
-  rate: Decimal,
+  amount: Prisma.Decimal,
+  rate: Prisma.Decimal,
   interestMethod: InterestMethod,
 ) => {
   const fromDate = fromDateParameter ? fromDateParameter : moment(toDateParameter).startOf('year');
@@ -79,7 +85,7 @@ export const calculateInterestDaily = (
   } else {
     interestDays = toDate.diff(fromDate, 'days');
   }
-  return new Decimal(amount)
+  return new Prisma.Decimal(amount)
     .times(rate)
     .dividedBy(100)
     .times(interestDays)
@@ -118,15 +124,15 @@ export const calculateLoanPerYear = (
   const years = [
     {
       year: firstYear,
-      begin: new Decimal(0),
-      withdrawals: new Decimal(0),
-      deposits: new Decimal(0),
-      notReclaimed: new Decimal(0),
-      interest: new Decimal(0),
-      interestPaid: new Decimal(0),
-      interestBaseAmount: new Decimal(0), // to calculate with no compound methods
-      end: new Decimal(0),
-      interestError: new Decimal(0),
+      begin: new Prisma.Decimal(0),
+      withdrawals: new Prisma.Decimal(0),
+      deposits: new Prisma.Decimal(0),
+      notReclaimed: new Prisma.Decimal(0),
+      interest: new Prisma.Decimal(0),
+      interestPaid: new Prisma.Decimal(0),
+      interestBaseAmount: new Prisma.Decimal(0), // to calculate with no compound methods
+      end: new Prisma.Decimal(0),
+      interestError: new Prisma.Decimal(0),
     },
   ];
   for (let year = firstYear; year <= lastYear; year++) {
@@ -134,11 +140,11 @@ export const calculateLoanPerYear = (
     if (!currentYear) {
       throw new Error('CURRENT_YEAR_NOT_FOUND');
     }
-    let amount = new Decimal(currentYear.begin);
+    let amount = new Prisma.Decimal(currentYear.begin);
     let interestBaseAmount = currentYear.interestBaseAmount;
     // calculate interest for new transactions of year
-    let interest = new Decimal(0);
-    let terminationDate = undefined;
+    let interest = new Prisma.Decimal(0);
+    let terminationDate;
     // biome-ignore lint/complexity/noForEach: <explanation>
     transactions
       .filter((transaction) => moment(transaction.date).year() === year)
@@ -149,14 +155,14 @@ export const calculateLoanPerYear = (
             interestBaseAmount = interestBaseAmount.plus(transaction.amount);
             if (amount.lessThanOrEqualTo(1)) {
               terminationDate = moment(transaction.date);
-              interestBaseAmount = new Decimal(0);
+              interestBaseAmount = new Prisma.Decimal(0);
             } else {
               interest = interest.plus(
                 calculateInterestDaily(
                   moment(transaction.date),
                   year === lastYear ? toDate : undefined,
-                  new Decimal(transaction.amount),
-                  new Decimal(loan.interestRate),
+                  new Prisma.Decimal(transaction.amount),
+                  new Prisma.Decimal(loan.interestRate),
                   method,
                 ),
               );
@@ -188,33 +194,33 @@ export const calculateLoanPerYear = (
           undefined,
           terminationDate ?? toDate,
           currentYear.interestBaseAmount,
-          new Decimal(loan.interestRate),
+          new Prisma.Decimal(loan.interestRate),
           method,
         ),
       );
     } else {
       interest = interest.plus(currentYear.interestBaseAmount.times(loan.interestRate).dividedBy(100));
     }
-    currentYear.interest = new Decimal(interest.toFixed(2));
-    currentYear.end = new Decimal(amount.plus(currentYear.interest).toFixed(2));
+    currentYear.interest = new Prisma.Decimal(interest.toFixed(2));
+    currentYear.end = new Prisma.Decimal(amount.plus(currentYear.interest).toFixed(2));
     if (year !== lastYear) {
       years.push({
-        end: new Decimal(0),
+        end: new Prisma.Decimal(0),
         year: year + 1,
-        begin: new Decimal(currentYear.end),
-        withdrawals: new Decimal(0),
-        deposits: new Decimal(0),
-        notReclaimed: new Decimal(0),
-        interest: new Decimal(0),
-        interestPaid: new Decimal(0),
+        begin: new Prisma.Decimal(currentYear.end),
+        withdrawals: new Prisma.Decimal(0),
+        deposits: new Prisma.Decimal(0),
+        notReclaimed: new Prisma.Decimal(0),
+        interest: new Prisma.Decimal(0),
+        interestPaid: new Prisma.Decimal(0),
         interestBaseAmount: interestBaseAmount.plus(compound ? currentYear.interest : 0),
-        interestError: new Decimal(0),
+        interestError: new Prisma.Decimal(0),
       });
     } else if (terminationDate && loan.transactions.at(-1)?.id !== currentTransactionId && !currentYear.end.equals(0)) {
       // if contract is terminated and there are small rounding numbers from the past correct interest to adjust to a zero end value
       currentYear.interestError = currentYear.interest.minus(currentYear.end);
       currentYear.interest = currentYear.interest.minus(currentYear.end);
-      currentYear.end = new Decimal(0);
+      currentYear.end = new Prisma.Decimal(0);
     }
   }
   return years.map((year) => ({
@@ -252,14 +258,14 @@ const calculateNumbersToDate = (
         interestError: total.interestError.plus(entry.interestError),
       }),
       {
-        balance: new Decimal(0),
-        withdrawals: new Decimal(0),
-        deposits: new Decimal(0),
-        notReclaimed: new Decimal(0),
-        interestPaid: new Decimal(0),
-        interest: new Decimal(0),
-        interestOfYear: new Decimal(0),
-        interestError: new Decimal(0),
+        balance: new Prisma.Decimal(0),
+        withdrawals: new Prisma.Decimal(0),
+        deposits: new Prisma.Decimal(0),
+        notReclaimed: new Prisma.Decimal(0),
+        interestPaid: new Prisma.Decimal(0),
+        interest: new Prisma.Decimal(0),
+        interestOfYear: new Prisma.Decimal(0),
+        interestError: new Prisma.Decimal(0),
       },
     ),
     perYear,

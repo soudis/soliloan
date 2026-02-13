@@ -1,16 +1,25 @@
 'use client';
 
-import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
 import { useNode } from '@craftjs/core';
 import { EditorContent } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
-import { AlignCenter, AlignJustify, AlignLeft, AlignRight, Bold, Italic, PlusCircle, Underline as UnderlineIcon } from 'lucide-react';
+import {
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
+  Bold,
+  Italic,
+  PlusCircle,
+  Underline as UnderlineIcon,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
+import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
 import { useMergeTagConfig } from '../merge-tag-context';
 import { MergeTagDropdown } from '../merge-tag-dropdown';
 import { editorRegistry, useEditorRegistry } from './tiptap/editor-registry';
-import { TextEditorProvider, useTextEditor } from './tiptap/text-editor-context';
+import { TextEditorProvider } from './tiptap/text-editor-context';
 import { useTiptapEditor } from './tiptap/use-tiptap-editor';
 import './tiptap/tiptap.css';
 

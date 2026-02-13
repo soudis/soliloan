@@ -1,6 +1,5 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -8,44 +7,33 @@ import { toast } from 'sonner';
 import { createLenderAction } from '@/actions/lenders';
 import { LenderForm } from '@/components/lenders/lender-form';
 import { useRouter } from '@/i18n/navigation';
-
 import type { LenderFormData } from '@/lib/schemas/lender';
-import { useProjects } from '@/store/projects-store';
 
-export default function NewLenderPage() {
-  const { data: session } = useSession();
+interface NewLenderClientProps {
+  projectId: string;
+}
+
+export function NewLenderClient({ projectId }: NewLenderClientProps) {
   const router = useRouter();
-  const { selectedProject } = useProjects();
   const t = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!session) {
-    return null;
-  }
-
-  if (!selectedProject) {
-    return null;
-  }
-
   const handleSubmit = async (data: LenderFormData) => {
     try {
       setIsSubmitting(true);
 
-      // Create the lender using the server action
-      const result = await createLenderAction({ ...data, projectId: selectedProject.id });
+      const result = await createLenderAction({ ...data, projectId });
 
       if (result?.serverError || result?.validationErrors) {
         throw new Error(result.serverError || 'Validation failed');
       }
 
-      // Show success message
       toast.success(t('new.form.success'));
 
-      // Redirect to the lenders list page for this project
       if (result?.data?.id) {
-        router.push(`/lenders/${result.data.id}`);
+        router.push(`/${projectId}/lenders/${result.data.id}`);
       }
     } catch (error) {
       console.error('Error submitting form:', error);

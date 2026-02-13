@@ -64,8 +64,8 @@ export const deleteTransactionAction = transactionAction
       },
     });
 
-    // Revalidate the loan page
-    revalidatePath(`/loans/${transaction.loanId}`);
+    // Revalidate the lender page (loans are viewed within lender detail)
+    revalidatePath(`/${transaction.loan.lender.projectId}/lenders/${transaction.loan.lenderId}`);
 
     return { success: true };
   });

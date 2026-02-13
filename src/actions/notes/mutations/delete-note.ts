@@ -9,7 +9,7 @@ import { db } from '@/lib/db';
 import { noteAction } from '@/lib/utils/safe-action';
 
 export const deleteNoteAction = noteAction
-  .schema(
+  .inputSchema(
     z.object({
       noteId: z.string(),
     }),
@@ -50,10 +50,7 @@ export const deleteNoteAction = noteAction
     });
 
     // Revalidate paths
-    revalidatePath(`/lenders/${note.lenderId}`);
-    if (note.loanId) {
-      revalidatePath(`/loans/${note.loanId}`);
-    }
+    revalidatePath(`/${note.lender.projectId}/lenders/${note.lenderId}`);
 
     return { success: true };
   });

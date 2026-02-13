@@ -1,11 +1,7 @@
 import DashboardNavigation from '@/components/dashboard/dashboard-navigation';
 import { auth } from '@/lib/auth';
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 
   return (

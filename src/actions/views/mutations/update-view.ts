@@ -12,10 +12,11 @@ export const updateViewAction = authAction
   .schema(
     z.object({
       viewId: z.string(),
+      projectId: z.string().optional(),
       data: viewFormSchema.partial(),
     }),
   )
-  .action(async ({ parsedInput: { viewId, data }, ctx }) => {
+  .action(async ({ parsedInput: { viewId, projectId, data }, ctx }) => {
     // Fetch the view
     const view = await db.view.findUnique({
       where: {
@@ -56,7 +57,10 @@ export const updateViewAction = authAction
     });
 
     // Revalidate the view
-    revalidatePath(`/${view.type.toLowerCase()}`);
+    const typePath = view.type.toLowerCase();
+    if (projectId) {
+      revalidatePath(`/${projectId}/${typePath}`);
+    }
 
     return { view: updatedView };
   });

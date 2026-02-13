@@ -3,13 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import {
   type ColumnDef,
   type FilterFn,
-  type RowData,
-  type VisibilityState,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type RowData,
   useReactTable,
+  type VisibilityState,
 } from '@tanstack/react-table';
 import { Settings } from 'lucide-react';
 import { useState } from 'react';

@@ -1,7 +1,7 @@
-import type { LoanTerminationData } from '@/lib/schemas/loan';
 import { DurationType, TerminationType } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { useFormContext } from 'react-hook-form';
+import type { LoanTerminationData } from '@/lib/schemas/loan';
 import { FormDatePicker } from '../form/form-date-picker';
 import { FormNumberWithSelect } from '../form/form-number-with-select';
 import { FormSelect } from '../form/form-select';

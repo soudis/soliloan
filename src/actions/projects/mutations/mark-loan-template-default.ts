@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { type LoanTemplateFormData, loanTemplateFormSchema } from '@/lib/schemas/configuration';
 import { configurationAction } from '@/lib/utils/safe-action';
 
-export const markLoanTemplateAsDefault = async (template: LoanTemplateFormData) => {
+export const markLoanTemplateAsDefault = async (template: Pick<LoanTemplateFormData, 'id' | 'configurationId'>) => {
   if (!template.id) {
     throw new Error('error.invalidParameters');
   }
@@ -25,5 +25,5 @@ export const markLoanTemplateAsDefault = async (template: LoanTemplateFormData) 
 };
 
 export const markLoanTemplateAsDefaultAction = configurationAction
-  .inputSchema(loanTemplateFormSchema)
+  .inputSchema(loanTemplateFormSchema.pick({ id: true, configurationId: true }))
   .action(async ({ ctx, parsedInput }) => markLoanTemplateAsDefault(parsedInput));

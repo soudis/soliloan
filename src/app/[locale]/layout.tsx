@@ -1,5 +1,5 @@
-import { NextIntlClientProvider } from 'next-intl';
 import { notFound } from 'next/navigation';
+import { NextIntlClientProvider } from 'next-intl';
 
 import { Toaster } from '@/components/ui/sonner';
 import { LOCALES } from '@/i18n/routing';

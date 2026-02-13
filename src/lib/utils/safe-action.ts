@@ -1,8 +1,7 @@
 import { getTranslations } from 'next-intl/server';
-import { auth } from '../auth';
-
 import { createSafeActionClient } from 'next-safe-action';
 import { z } from 'zod';
+import { auth } from '../auth';
 import { db } from '../db';
 
 export const actionClient = createSafeActionClient({
@@ -35,20 +34,6 @@ export const managerAction = authAction.use(async ({ next, ctx }) => {
   return next({
     ctx: {
       session: ctx.session,
-    },
-  });
-});
-
-export const adminAction = actionClient.use(async ({ next }) => {
-  const session = await auth();
-
-  if (!session?.user.isAdmin) {
-    throw new Error('error.unauthorized');
-  }
-
-  return next({
-    ctx: {
-      session,
     },
   });
 });

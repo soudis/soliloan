@@ -1,13 +1,12 @@
 'use client';
 
 import { PlusCircle, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-
 import { Button } from '@/components/ui/button';
 import { FormControl, FormField as FormFieldWrapper, FormItem } from '@/components/ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat } from '@/lib/schemas/common';
-import { useTranslations } from 'next-intl';
 import { FormCheckbox } from './form-checkbox';
 import { FormChipInput } from './form-chip-input';
 import { FormDatePicker } from './form-date-picker';

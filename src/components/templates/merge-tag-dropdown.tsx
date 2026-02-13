@@ -1,7 +1,7 @@
 'use client';
 
-import type { MergeTagConfig, MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
 import { useTranslations } from 'next-intl';
+import type { MergeTagConfig, MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
 
 export function MergeTagDropdown({
   isOpen,

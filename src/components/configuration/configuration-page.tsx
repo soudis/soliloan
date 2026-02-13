@@ -1,22 +1,20 @@
 'use client';
 
-import { usePathname, useRouter } from '@/i18n/navigation';
-import { useTranslations } from 'next-intl';
+import { Files as FilesIcon, FileText, Settings2, User, Wallet } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useAction } from 'next-safe-action/hooks';
 import { useEffect, useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-
+import { toast } from 'sonner';
+import { updateConfigurationAction } from '@/actions/projects/mutations/update-project-configuration';
+import { usePathname, useRouter } from '@/i18n/navigation';
+import { useProjectId } from '@/lib/hooks/use-project-id';
 import type { ConfigurationFormData } from '@/lib/schemas/configuration';
+import { convertEmptyToNull } from '@/lib/utils/form';
 import { type ConfigurationTabValue, useConfigurationTabsStore } from '@/store/configuration-tabs-store';
 import type { ProjectWithConfiguration } from '@/types/projects';
-import { useAction } from 'next-safe-action/hooks';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ConfigurationFormGeneral } from './configuration-form-general';
-
-import { updateConfigurationAction } from '@/actions/projects/mutations/update-project-configuration';
-import { convertEmptyToNull } from '@/lib/utils/form';
-import { useProjects } from '@/store/projects-store';
-import { FileText, Files as FilesIcon, Settings2, User, Wallet } from 'lucide-react';
-import { toast } from 'sonner';
 import { ConfigurationFormLender } from './configuration-form-lender';
 import { ConfigurationFormLoans } from './configuration-form-loans';
 import { ProjectTemplatesTab } from './project-templates-tab';
@@ -27,14 +25,13 @@ type Props = {
 
 export const ConfigurationPage = ({ project }: Props) => {
   const t = useTranslations('dashboard.configuration');
-  const commonT = useTranslations('common');
-  const { getActiveTab, setActiveTab } = useConfigurationTabsStore();
+  const activeTab = useConfigurationTabsStore((state) => state.activeTabs[project.id] ?? 'general');
+  const setActiveTab = useConfigurationTabsStore((state) => state.setActiveTab);
   const [error, setError] = useState<string | null>(null);
   const pathname = usePathname();
-  const { setSelectedProject } = useProjects();
+  const projectId = useProjectId();
   const searchParams = useSearchParams();
   const [initialized, setInitialized] = useState(false);
-  const activeTab = getActiveTab(project.id);
   const router = useRouter();
 
   const { executeAsync: updateConfiguration, isExecuting } = useAction(updateConfigurationAction);
@@ -45,9 +42,9 @@ export const ConfigurationPage = ({ project }: Props) => {
     if (tab && project && !initialized && router) {
       setActiveTab(project.id, tab as ConfigurationTabValue);
       setInitialized(true);
-      router.replace('/configuration');
+      router.replace(`/${projectId}/configuration`);
     }
-  }, [project, tab, setActiveTab, initialized, router]);
+  }, [project, tab, setActiveTab, initialized, router, projectId]);
 
   const handleSubmit = async (data: Partial<ConfigurationFormData>) => {
     setError(null);
@@ -63,9 +60,6 @@ export const ConfigurationPage = ({ project }: Props) => {
     if (result.serverError) {
       setError(result.serverError);
     } else if (result.data?.project) {
-      // Update the project store with the new configuration
-      setSelectedProject(result.data.project);
-
       // Show success message
       toast.success(t('form.success'));
       router.replace(pathname, { scroll: true });

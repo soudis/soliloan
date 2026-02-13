@@ -4,13 +4,7 @@ import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
-import {
-  createAuditEntry,
-  getFileContext,
-  getLenderContext,
-  getLoanContext,
-  removeNullFields,
-} from '@/lib/audit-trail';
+import { createAuditEntry, getLenderContext, getLoanContext, removeNullFields } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
 import { noteSchema } from '@/lib/schemas/note';
 import { lenderAction } from '@/lib/utils/safe-action';
@@ -86,9 +80,9 @@ export const createNoteAction = lenderAction
 
     // Revalidate paths
     if (loanId) {
-      revalidatePath(`/loans/${loanId}`);
+      revalidatePath(`/${lender.projectId}/lenders/${lenderId}`);
     }
-    revalidatePath(`/lenders/${lenderId}`);
+    revalidatePath(`/${lender.projectId}/lenders/${lenderId}`);
 
     return { note };
   });

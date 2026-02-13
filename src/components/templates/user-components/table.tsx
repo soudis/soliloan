@@ -1,12 +1,21 @@
 'use client';
 
-import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
 import { useNode } from '@craftjs/core';
 import { EditorContent } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
-import { AlignCenter, AlignJustify, AlignLeft, AlignRight, Bold, Italic, PlusCircle, Underline as UnderlineIcon } from 'lucide-react';
+import {
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
+  Bold,
+  Italic,
+  PlusCircle,
+  Underline as UnderlineIcon,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
 
 import { useMergeTagConfig } from '../merge-tag-context';
 import { MergeTagDropdown } from '../merge-tag-dropdown';
@@ -73,7 +82,15 @@ interface TiptapCellProps {
   textAlign?: TextAlign;
 }
 
-const TiptapCell = ({ cellId, content, onChange, isHeader, editable, onFocus, textAlign = 'left' }: TiptapCellProps) => {
+const TiptapCell = ({
+  cellId,
+  content,
+  onChange,
+  isHeader,
+  editable,
+  onFocus,
+  textAlign = 'left',
+}: TiptapCellProps) => {
   const editor = useTiptapEditor({
     content,
     onUpdate: onChange,
@@ -112,10 +129,7 @@ const TiptapCell = ({ cellId, content, onChange, isHeader, editable, onFocus, te
   }, [editor, cellId, onFocus]);
 
   return (
-    <div
-      className={`px-2 py-1.5 min-h-[1.5em] text-sm ${isHeader ? 'font-semibold' : ''}`}
-      style={{ textAlign }}
-    >
+    <div className={`px-2 py-1.5 min-h-[1.5em] text-sm ${isHeader ? 'font-semibold' : ''}`} style={{ textAlign }}>
       {editor && editable && (
         <BubbleMenu
           editor={editor}
@@ -277,10 +291,7 @@ export const Table = ({
             {Array.from({ length: columns }).map((_, colIdx) => {
               const cellId = buildCellId(nodeId, 'header', 0, colIdx);
               return (
-                <th
-                  key={cellId}
-                  className="border-r border-zinc-200 last:border-r-0 text-left"
-                >
+                <th key={cellId} className="border-r border-zinc-200 last:border-r-0 text-left">
                   <TiptapCell
                     cellId={cellId}
                     content={headerTexts[colIdx] ?? ''}
@@ -303,10 +314,7 @@ export const Table = ({
               {Array.from({ length: columns }).map((_, colIdx) => {
                 const cellId = buildCellId(nodeId, 'cell', rowIdx, colIdx);
                 return (
-                  <td
-                    key={cellId}
-                    className="border-r border-zinc-200 last:border-r-0"
-                  >
+                  <td key={cellId} className="border-r border-zinc-200 last:border-r-0">
                     <TiptapCell
                       cellId={cellId}
                       content={cellTexts[rowIdx]?.[colIdx] ?? ''}
@@ -447,9 +455,7 @@ export const TableSettings = () => {
             </option>
           ))}
         </select>
-        <p className="text-[11px] text-muted-foreground">
-          {isDynamic ? t('dynamicHint') : t('staticHint')}
-        </p>
+        <p className="text-[11px] text-muted-foreground">{isDynamic ? t('dynamicHint') : t('staticHint')}</p>
       </div>
 
       {/* Display name (only for dynamic) */}

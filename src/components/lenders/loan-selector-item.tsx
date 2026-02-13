@@ -1,9 +1,8 @@
 'use client';
 
+import { useLocale, useTranslations } from 'next-intl';
 import { formatCurrency, formatDate, formatPercentage } from '@/lib/utils';
 import type { LoanWithCalculations } from '@/types/loans';
-
-import { useLocale, useTranslations } from 'next-intl';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 
 interface LoanSelectorItemProps {

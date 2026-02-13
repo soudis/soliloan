@@ -1,27 +1,24 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
-import { motion } from 'framer-motion';
-import { ArrowRightLeft, Files as FilesIcon, NotebookPen, Pencil, Receipt, Trash2, Wallet } from 'lucide-react';
+import { ArrowRightLeft, Files as FilesIcon, NotebookPen, Pencil, Receipt, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
-
+import { toast } from 'sonner';
+import { deleteLoanAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { InfoItem } from '@/components/ui/info-item';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { formatCurrency, formatPercentage } from '@/lib/utils';
-import { useLoanTabsStore } from '@/store/loan-tabs-store';
-import type { LoanWithCalculations } from '@/types/loans';
-
-import { deleteLoanAction } from '@/actions/loans';
 import { useRouter } from '@/i18n/navigation';
+import { useProjectId } from '@/lib/hooks/use-project-id';
+import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { useLenderLoanSelectionStore } from '@/store/lender-loan-selection-store';
+import { useLoanTabsStore } from '@/store/loan-tabs-store';
 import { useProjects } from '@/store/projects-store';
-import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import type { LoanWithCalculations } from '@/types/loans';
 import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-items';
 import { Files } from '../generic/files';
 import { Notes } from '../generic/notes';
@@ -47,6 +44,7 @@ export function LoanCard({ loan, className }: LoanCardProps) {
   const { getActiveTab, setActiveTab } = useLoanTabsStore();
   const activeTab = getActiveTab(loan.id);
   const router = useRouter();
+  const projectId = useProjectId();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const { setSelectedLoanId } = useLenderLoanSelectionStore();
   const queryClient = useQueryClient();
@@ -128,7 +126,7 @@ export function LoanCard({ loan, className }: LoanCardProps) {
                 variant="outline"
                 size="sm"
                 className="h-9 w-9 p-0 md:h-auto md:w-auto md:px-3 md:py-1.5"
-                onClick={() => router.push(`/loans/${loan.id}/edit`)}
+                onClick={() => router.push(`/${projectId}/loans/${loan.id}/edit`)}
               >
                 <Pencil className="h-4 w-4 md:mr-2" />
                 <span className="hidden md:inline">{commonT('ui.actions.edit')}</span>
@@ -148,7 +146,7 @@ export function LoanCard({ loan, className }: LoanCardProps) {
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <InfoItem
                 label={t('table.signDate')}
                 value={format(new Date(loan.signDate), 'PPP', {

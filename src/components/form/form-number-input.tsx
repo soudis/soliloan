@@ -5,6 +5,7 @@ import { useFormContext } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { NumberParser } from '@/lib/utils';
+
 interface FormNumberInputProps {
   name: string;
   label?: string;

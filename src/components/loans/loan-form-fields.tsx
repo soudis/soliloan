@@ -1,19 +1,17 @@
 'use client';
 
-import { ContractStatus, DurationType, type Lender, TerminationType } from '@prisma/client';
-import { useTranslations } from 'next-intl';
+import { ContractStatus, type Lender } from '@prisma/client';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useFormContext } from 'react-hook-form';
 
 import { FormDatePicker } from '@/components/form/form-date-picker';
 import { FormNumberInput } from '@/components/form/form-number-input';
-import { FormNumberWithSelect } from '@/components/form/form-number-with-select';
 import { FormSelect } from '@/components/form/form-select';
 import { LenderCombobox } from '@/components/loans/lender-combobox';
 import { FormSection } from '@/components/ui/form-section';
-import { useProjects } from '@/store/projects-store';
-
 import type { LoanFormData } from '@/lib/schemas/loan';
+import { useProjects } from '@/store/projects-store';
 import { FormAdditionalFields } from '../form/form-additional-fields';
 import { TerminationFormFields } from './termination-form-fields';
 

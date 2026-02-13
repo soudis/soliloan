@@ -1,5 +1,5 @@
 import { Body, Button, Container, Head, Heading, Html, Link, Preview, Section, Text } from '@react-email/components';
-import { AbstractIntlMessages, createTranslator } from 'next-intl';
+import { createTranslator } from 'next-intl';
 import type * as React from 'react';
 
 interface PasswordInvitationEmailProps {

@@ -5,7 +5,7 @@ import { viewTypeEnum } from './common';
 export const viewFormSchema = z.object({
   name: z.string().min(1, { message: 'validation.common.required' }),
   type: viewTypeEnum,
-  data: z.record(z.any()),
+  data: z.record(z.string(), z.any()),
   isDefault: z.boolean().default(false),
 });
 

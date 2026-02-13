@@ -1,19 +1,19 @@
 'use client';
 
+import { Files as FilesIcon, NotebookPen, User, Wallet } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 import { useRouter } from '@/i18n/navigation';
+import { useProjectId } from '@/lib/hooks/use-project-id';
 import { getLenderName } from '@/lib/utils';
 import { useLenderLoanSelectionStore } from '@/store/lender-loan-selection-store';
 import { type LenderTabValue, useLenderTabsStore } from '@/store/lender-tabs-store';
 import type { LenderWithCalculations } from '@/types/lenders';
-import { useTranslations } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { Badge } from '../ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-
-import { Files as FilesIcon, NotebookPen, User, Wallet } from 'lucide-react';
 import { Files } from '../generic/files';
 import { Notes } from '../generic/notes';
+import { Badge } from '../ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { LenderInfoCard } from './lender-info-card';
 import { LenderLoansTab } from './lender-loans-tab';
 
@@ -24,24 +24,25 @@ type Props = {
 export const LenderPage = ({ lender }: Props) => {
   const t = useTranslations('dashboard.lenders.lenderPage');
   const commonT = useTranslations('common');
-  const { getActiveTab, setActiveTab } = useLenderTabsStore();
+  const activeTab = useLenderTabsStore((state) => state.activeTabs[lender.id] ?? 'lender');
+  const setActiveTab = useLenderTabsStore((state) => state.setActiveTab);
 
   const searchParams = useSearchParams();
-  const { getSelectedLoanId, setSelectedLoanId } = useLenderLoanSelectionStore();
+  const { setSelectedLoanId } = useLenderLoanSelectionStore();
   const [initialized, setInitialized] = useState(false);
-  const activeTab = getActiveTab(lender.id);
   const router = useRouter();
+  const projectId = useProjectId();
 
   const loanId = searchParams.get('loanId');
 
   useEffect(() => {
-    if (loanId && lender && !initialized && router) {
+    if (loanId && lender && !initialized && router && projectId) {
       setSelectedLoanId(lender.id, loanId);
       setActiveTab(lender.id, 'loans');
       setInitialized(true);
-      router.replace(`/lenders/${lender.id}`);
+      router.replace(`/${projectId}/lenders/${lender.id}`);
     }
-  }, [lender, loanId, setSelectedLoanId, setActiveTab, initialized, router]);
+  }, [lender, loanId, setSelectedLoanId, setActiveTab, initialized, router, projectId]);
 
   return (
     <Tabs

@@ -2,7 +2,7 @@
 
 import { Entity, Operation, TransactionType } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
-
+import { z } from 'zod';
 import {
   createAuditEntry,
   getLenderContext,
@@ -13,7 +13,6 @@ import {
 import { db } from '@/lib/db';
 import { transactionFormSchema } from '@/lib/schemas/transaction';
 import { loanAction } from '@/lib/utils/safe-action';
-import { z } from 'zod';
 
 // We need to extend the combined schema properly
 export const addTransactionAction = loanAction
@@ -85,8 +84,8 @@ export const addTransactionAction = loanAction
       projectId: loan.lender.projectId,
     });
 
-    // Revalidate the loan page
-    revalidatePath(`/loans/${loanId}`);
+    // Revalidate the lender page (loans are viewed within lender detail)
+    revalidatePath(`/${loan.lender.projectId}/lenders/${loan.lenderId}`);
 
     return { transaction };
   });

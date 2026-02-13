@@ -8,6 +8,7 @@ import { validationError } from '../utils/validation';
 
 // Reusable ID Schemas
 export const idSchema = z.string().min(1, { message: 'validation.common.required' });
+export const idObjectSchema = z.object({ id: idSchema });
 export const projectIdSchema = z.object({ projectId: idSchema });
 export const lenderIdSchema = z.object({ lenderId: idSchema });
 export const loanIdSchema = z.object({ loanId: idSchema });
@@ -100,28 +101,28 @@ export const validateAddressOptional = (
     (data.addon && data.addon !== '');
   if (hasAnyField && (!data.street || data.street === '')) {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       message: 'validation.common.addressComplete',
       path: ['street'],
     });
   }
   if (hasAnyField && (!data.zip || data.zip === '')) {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       message: 'validation.common.addressComplete',
       path: ['zip'],
     });
   }
   if (hasAnyField && (!data.place || data.place === '')) {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       message: 'validation.common.addressComplete',
       path: ['place'],
     });
   }
   if (hasAnyField && (!data.country || data.country === null)) {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       message: 'validation.common.addressComplete',
       path: ['country'],
     });
@@ -140,28 +141,28 @@ export const validateAddressRequired = (
 ) => {
   if (!data.street || data.street === '') {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       message: 'validation.common.required',
       path: ['street'],
     });
   }
   if (!data.zip || data.zip === '') {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       message: 'validation.common.required',
       path: ['zip'],
     });
   }
   if (!data.place || data.place === '') {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       message: 'validation.common.required',
       path: ['place'],
     });
   }
   if (!data.country || data.country === null) {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       message: 'validation.common.required',
       path: ['country'],
     });
@@ -178,7 +179,7 @@ export const validateFieldRequired =
   ) => {
     if (!data[field] || data[field] === '') {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: 'validation.common.required',
         path: [field],
       });
@@ -260,20 +261,20 @@ export const additionalFieldConfigSchema = z
     id: z.string(),
     name: z.string().min(1, { message: 'validation.common.required' }),
     type: additionalFieldTypeEnum,
-    numberFormat: additionalNumberFormatEnum,
+    numberFormat: additionalNumberFormatEnum.nullable().optional(),
     selectOptions: z.array(z.string()),
-    defaultValue: z.preprocess(
-      (val) => (val?.toString() === 'clear' ? '' : val?.toString()),
-      z.string().nullable().optional(),
-    ),
+    defaultValue: z
+      .preprocess((val) => (val?.toString() === 'clear' ? '' : val?.toString()), z.string().nullable().optional())
+      .nullable()
+      .optional(),
     required: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
     if (data.type === AdditionalFieldType.SELECT && (!data.selectOptions || data.selectOptions.length === 0)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'validation.common.required', path: ['selectOptions'] });
+      ctx.addIssue({ code: 'custom', message: 'validation.common.required', path: ['selectOptions'] });
     }
     if (data.type === AdditionalFieldType.NUMBER && !data.numberFormat) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'validation.common.required', path: ['numberFormat'] });
+      ctx.addIssue({ code: 'custom', message: 'validation.common.required', path: ['numberFormat'] });
     }
     if (
       data.type === AdditionalFieldType.NUMBER &&
@@ -281,7 +282,7 @@ export const additionalFieldConfigSchema = z
       data.defaultValue !== '' &&
       !createNumberSchema().safeParse(data.defaultValue).success
     ) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'validation.common.number', path: ['defaultValue'] });
+      ctx.addIssue({ code: 'custom', message: 'validation.common.number', path: ['defaultValue'] });
     }
     if (
       data.type === AdditionalFieldType.BOOLEAN &&
@@ -290,7 +291,7 @@ export const additionalFieldConfigSchema = z
       data.defaultValue !== 'true' &&
       data.defaultValue !== 'false'
     ) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'validation.common.boolean', path: ['defaultValue'] });
+      ctx.addIssue({ code: 'custom', message: 'validation.common.boolean', path: ['defaultValue'] });
     }
     if (
       data.type === AdditionalFieldType.SELECT &&
@@ -298,7 +299,7 @@ export const additionalFieldConfigSchema = z
       data.defaultValue !== '' &&
       !data.selectOptions.includes(data.defaultValue)
     ) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'validation.common.required', path: ['defaultValue'] });
+      ctx.addIssue({ code: 'custom', message: 'validation.common.required', path: ['defaultValue'] });
     }
   });
 

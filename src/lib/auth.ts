@@ -1,11 +1,9 @@
 import { PrismaAdapter } from '@auth/prisma-adapter';
-import { PrismaClient } from '@prisma/client';
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
+import { db } from './db';
 import { verifyPassword } from './utils/password';
-
-const db = new PrismaClient();
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
@@ -50,17 +48,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async session({ session, user, token }) {
+    async session({ session, token }) {
       return {
         ...session,
         user: {
           ...session.user,
-          ...token.user,
+          ...(token.user && typeof token.user === 'object' ? token.user : {}),
         },
       };
     },
 
-    async jwt({ session, token, user, account }) {
+    async jwt({ token, user, account }) {
       if (account && account.type === 'credentials') {
         //(2)
         token.user = user;

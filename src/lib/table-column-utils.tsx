@@ -1,9 +1,9 @@
+import type { Lender, Loan } from '@prisma/client';
 import type { ColumnDef, Row, VisibilityState } from '@tanstack/react-table';
-
 import { Badge } from '@/components/ui/badge';
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { NumberParser, formatCurrency, getLenderName } from '@/lib/utils';
+import { formatCurrency, getLenderName, NumberParser } from '@/lib/utils';
 import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat } from './schemas/common';
 
 // Define the custom filter function for compound text fields

@@ -20,8 +20,8 @@ export const deleteTemplateAction = templateAction
 
     if (template.isGlobal) {
       revalidatePath('/admin/templates');
-    } else {
-      revalidatePath('/configuration');
+    } else if (template.projectId) {
+      revalidatePath(`/${template.projectId}/configuration`);
     }
 
     return { success: true };

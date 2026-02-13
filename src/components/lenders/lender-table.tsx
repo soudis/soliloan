@@ -1,12 +1,10 @@
 'use client';
 
 import { Salutation } from '@prisma/client';
-import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { getLendersByProjectAction } from '@/actions/lenders';
 import { ActionButton } from '@/components/ui/action-button';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
@@ -22,29 +20,21 @@ import {
   createLenderEnumBadgeColumn,
   createLenderNameColumn,
 } from '@/lib/table-column-utils';
-import { useProjects } from '@/store/projects-store';
 import type { LenderWithRelations } from '@/types/lenders';
+import type { ProjectWithConfiguration } from '@/types/projects';
 
-export default function LendersPage() {
+interface LenderTableProps {
+  lenders: LenderWithRelations[];
+  project: ProjectWithConfiguration;
+  projectId: string;
+}
+
+export function LenderTable({ lenders, project, projectId }: LenderTableProps) {
   const router = useRouter();
-  const { selectedProject } = useProjects();
   const t = useTranslations('dashboard.lenders');
   const tLoans = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const locale = useLocale();
-
-  const { data: lenders = [], isLoading: loading } = useQuery({
-    queryKey: ['lenders', selectedProject?.id],
-    queryFn: async () => {
-      if (!selectedProject) return [];
-      const result = await getLendersByProjectAction({ projectId: selectedProject.id });
-      if (result.serverError) {
-        throw new Error(result.serverError);
-      }
-      return result.data?.lenders;
-    },
-    enabled: !!selectedProject,
-  });
 
   const columns: ColumnDef<LenderWithRelations>[] = [
     createColumn<LenderWithRelations>(
@@ -96,7 +86,7 @@ export default function LendersPage() {
     ),
 
     ...createAdditionalFieldsColumns<LenderWithRelations>(
-      selectedProject?.configuration.lenderAdditionalFields,
+      project.configuration.lenderAdditionalFields,
       'additionalFields',
       t,
       locale,
@@ -162,7 +152,7 @@ export default function LendersPage() {
         value: value,
       })),
     },
-    ...createAdditionalFieldFilters('additionalFields', selectedProject?.configuration.lenderAdditionalFields),
+    ...createAdditionalFieldFilters('additionalFields', project.configuration.lenderAdditionalFields),
     amount: {
       type: 'number' as const,
       label: tLoans('table.amount'),
@@ -210,25 +200,14 @@ export default function LendersPage() {
     notReclaimed: false,
     interest: false,
     interestPaid: false,
-    ...createAdditionalFieldDefaultColumnVisibility(
-      'additionalFields',
-      selectedProject?.configuration.lenderAdditionalFields,
-    ),
+    ...createAdditionalFieldDefaultColumnVisibility('additionalFields', project.configuration.lenderAdditionalFields),
   };
-
-  if (!selectedProject) {
-    return null;
-  }
-
-  if (loading) {
-    return null;
-  }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">{t('title')}</h1>
-        <Button onClick={() => router.push('/lenders/new')}>
+        <Button onClick={() => router.push(`/${projectId}/lenders/new`)}>
           <Plus className="mr-2 h-4 w-4" />
           {t('new.title')}
         </Button>
@@ -241,7 +220,7 @@ export default function LendersPage() {
         defaultColumnVisibility={defaultColumnVisibility}
         viewType="LENDER"
         showFilter={true}
-        onRowClick={(row) => router.push(`/lenders/${row.id}`)}
+        onRowClick={(row) => router.push(`/${projectId}/lenders/${row.id}`)}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
             <ActionButton
@@ -249,14 +228,14 @@ export default function LendersPage() {
               tooltip={commonT('ui.actions.createLoan')}
               srOnly={commonT('ui.actions.createLoan')}
               onClick={() => {
-                router.push(`/loans/new?lenderId=${row.id}`);
+                router.push(`/${projectId}/loans/new?lenderId=${row.id}`);
               }}
             />
             <ActionButton
               icon={<Pencil className="h-4 w-4" />}
               tooltip={commonT('ui.actions.edit')}
               onClick={() => {
-                router.push(`/lenders/${row.id}/edit`);
+                router.push(`/${projectId}/lenders/${row.id}/edit`);
               }}
             />
           </div>

@@ -9,7 +9,6 @@ import { FormControl, FormField as FormFieldWrapper, FormItem, FormLabel } from 
 import type { FileFormData } from '@/lib/schemas/file';
 import type { LoanWithCalculations } from '@/types/loans';
 import { LoanDropdown } from '../lenders/loan-dropdown';
-import { LoanCombobox } from '../loans/loan-combobox';
 
 type FileFormFieldsProps = {
   loans?: LoanWithCalculations[];

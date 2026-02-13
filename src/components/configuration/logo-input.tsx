@@ -1,8 +1,8 @@
 'use client';
 
 import { Trash2, Upload } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 

@@ -30,7 +30,7 @@ export const Image = ({
   const { projectLogo, appLogo } = useLogo();
 
   // Resolve the actual image source
-  const resolvedSrc = useLogoSource ? (projectLogo || appLogo) : src;
+  const resolvedSrc = useLogoSource ? projectLogo || appLogo : src;
 
   return (
     <div
@@ -118,16 +118,19 @@ export const ImageSettings = () => {
 
   return (
     <div className="space-y-4 p-4">
-      <Tabs defaultValue={defaultTab} onValueChange={(val) => {
-        // When switching away from logo tab, disable logo source
-        if (val !== 'logo' && useLogoSource) {
-          handleDeselectLogo();
-        }
-        // When switching to logo tab, enable logo source
-        if (val === 'logo' && !useLogoSource) {
-          handleSelectLogo();
-        }
-      }}>
+      <Tabs
+        defaultValue={defaultTab}
+        onValueChange={(val) => {
+          // When switching away from logo tab, disable logo source
+          if (val !== 'logo' && useLogoSource) {
+            handleDeselectLogo();
+          }
+          // When switching to logo tab, enable logo source
+          if (val === 'logo' && !useLogoSource) {
+            handleSelectLogo();
+          }
+        }}
+      >
         <TabsList variant="modern" className="mt-0">
           <TabsTrigger variant="modern" size="sm" value="url">
             {t('tabUrl')}
@@ -163,13 +166,7 @@ export const ImageSettings = () => {
         <TabsContent value="upload" className="mt-3">
           <div className="space-y-2">
             <label className="text-xs font-medium">{t('uploadImage')}</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-              ref={fileInputRef}
-            />
+            <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" ref={fileInputRef} />
 
             {isBase64 && !useLogoSource ? (
               <div className="space-y-2">
@@ -184,9 +181,7 @@ export const ImageSettings = () => {
                     <X className="w-3 h-3" />
                   </button>
                 </div>
-                {fileName && (
-                  <p className="text-xs text-muted-foreground truncate">{fileName}</p>
-                )}
+                {fileName && <p className="text-xs text-muted-foreground truncate">{fileName}</p>}
               </div>
             ) : (
               <button

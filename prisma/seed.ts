@@ -1,8 +1,13 @@
-import { InterestMethod, Language, PrismaClient } from "@prisma/client";
+import 'dotenv/config';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { InterestMethod, Language, PrismaClient } from '@prisma/client';
 
 import { hashPassword } from '@/lib/utils/password';
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+});
+const prisma = new PrismaClient({ adapter });
 async function main() {
   if (process.env.SOLILOAN_ADMIN_EMAIL && process.env.SOLILOAN_ADMIN_PASSWORD) {
     const passwordHashed = hashPassword(process.env.SOLILOAN_ADMIN_PASSWORD);
@@ -32,8 +37,8 @@ async function main() {
             slug: 'dev-gmbh',
             configuration: {
               create: {
-                name: "Development GmbH",
-                interestMethod: InterestMethod.ACT_360_COMPOUND
+                name: 'Development GmbH',
+                interestMethod: InterestMethod.ACT_360_COMPOUND,
               },
             },
             managers: { connect: { id: user.id } },

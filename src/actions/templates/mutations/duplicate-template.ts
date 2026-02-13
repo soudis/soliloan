@@ -63,8 +63,8 @@ export const duplicateTemplateAction = authAction
 
     if (isGlobal) {
       revalidatePath('/admin/templates');
-    } else {
-      revalidatePath('/configuration');
+    } else if (data.projectId) {
+      revalidatePath(`/${data.projectId}/configuration`);
     }
 
     return { id: newTemplate.id };

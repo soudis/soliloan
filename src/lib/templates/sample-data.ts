@@ -1,9 +1,9 @@
 // Server-side utilities for template sample data
 
+import type { Country, Lender, Salutation, TemplateDataset } from '@prisma/client';
 import { db } from '@/lib/db';
 import type { LenderWithRelations } from '@/types/lenders';
 import type { LoanWithRelations } from '@/types/loans';
-import type { Country, Lender, Loan, Salutation, TemplateDataset } from '@prisma/client';
 
 /**
  * Get sample lenders for preview selection

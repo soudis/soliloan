@@ -38,14 +38,14 @@ export const lenderFormSchema = z
     if (data.type === 'PERSON') {
       if (!data.firstName) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: 'validation.common.required',
           path: ['firstName'],
         });
       }
       if (!data.lastName) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: 'validation.common.required',
           path: ['lastName'],
         });
@@ -53,7 +53,7 @@ export const lenderFormSchema = z
     } else if (data.type === 'ORGANISATION') {
       if (!data.organisationName) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: 'validation.common.required',
           path: ['organisationName'],
         });

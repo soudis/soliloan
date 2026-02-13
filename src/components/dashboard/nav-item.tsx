@@ -15,6 +15,7 @@ interface NavItemProps {
 
 export function NavItem({ href, icon: Icon, label }: NavItemProps) {
   const pathname = usePathname();
+  // Match active state by checking if the current pathname ends with or contains the href segment
   const isActive = pathname === href || pathname.startsWith(`${href}/`);
   const { toggleSidebar } = useAppStore();
 

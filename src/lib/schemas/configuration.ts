@@ -1,7 +1,5 @@
-import { InterestMethod, Language, LenderRequiredField, SoliLoansTheme, TerminationType } from '@prisma/client';
+import { InterestMethod, Language, LenderRequiredField, SoliLoansTheme } from '@prisma/client';
 import { z } from 'zod';
-
-import type { ResolverOptions } from 'react-hook-form';
 import {
   additionalFieldConfigSchema,
   addressSchema,
@@ -36,7 +34,7 @@ export const loanTemplateFormSchema = z
     name: z.string().min(1, { message: 'validation.common.required' }),
     isDefault: z.coerce.boolean().default(false),
     // Termination Information
-    ...loanTerminationSchema.omit({ terminationDate: true }).shape,
+    ...loanTerminationSchema.shape,
     minInterestRate: optionalNumberSchema,
     maxInterestRate: optionalNumberSchema,
     minAmount: optionalNumberSchema,
@@ -50,7 +48,7 @@ export const configurationFormGeneralSchema = configurationFormGeneralShape.supe
 export const configurationFormLenderSchema = z.object({
   userLanguage: selectEnumRequired(Language).nullable().optional(),
   userTheme: selectEnumRequired(SoliLoansTheme).nullable().optional(),
-  lenderRequiredFields: z.array(z.nativeEnum(LenderRequiredField)).default([]).optional(),
+  lenderRequiredFields: z.array(z.enum(LenderRequiredField)).default([]).optional(),
   lenderSalutation: salutationEnumOptional.nullable().optional(),
   lenderCountry: countryEnum.nullable().optional(),
   lenderAdditionalFields: z.array(additionalFieldConfigSchema).default([]).optional(),
@@ -58,7 +56,7 @@ export const configurationFormLenderSchema = z.object({
 
 export const configurationFormLoanSchema = z.object({
   interestMethod: interestMethodEnumRequired,
-  altInterestMethods: z.array(z.nativeEnum(InterestMethod)).default([]).optional(),
+  altInterestMethods: z.array(z.enum(InterestMethod)).default([]).optional(),
   loanAdditionalFields: z.array(additionalFieldConfigSchema).default([]).optional(),
 });
 

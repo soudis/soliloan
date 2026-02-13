@@ -1,5 +1,3 @@
-import { USER_COMPONENTS } from '@/components/templates/user-components';
-
 /**
  * Process tiptap HTML content: strip <p> wrappers, convert merge-tag spans
  * back to {{tag}} mustache syntax, and flatten redundant braces.
@@ -21,7 +19,8 @@ const processTiptapContent = (html: string): string => {
   return withMergeTags.replace(/\{\{+\s*([^}]*?)\s*\}+/g, '{{$1}}');
 };
 
-const EMAIL_FONT_FAMILY = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+const EMAIL_FONT_FAMILY =
+  "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
 /** Build inline CSS string for border from component props (for HTML output). */
 const borderPropsToCss = (props: Record<string, unknown> | null | undefined): string => {
@@ -85,7 +84,8 @@ export const generateEmailHtml = (nodes: Record<string, any>) => {
         // For email compatibility: vertical uses simple block, horizontal uses table cells,
         // grid uses a table-based N-column layout
         if (layout === 'horizontal') {
-          const tableStyle = `width: 100%; padding: ${pad}px; background-color: ${bgColor}; border-spacing: ${gap}px; ${borderCss}`.trim();
+          const tableStyle =
+            `width: 100%; padding: ${pad}px; background-color: ${bgColor}; border-spacing: ${gap}px; ${borderCss}`.trim();
           return `<table style="${tableStyle}" cellpadding="0" cellspacing="${gap}"><tr><td style="vertical-align: top;">${content.replace(/<\/div>\s*<div/g, `</div></td><td style="vertical-align: top;"><div`)}</td></tr></table>`;
         }
         if (layout === 'grid') {
@@ -94,12 +94,7 @@ export const generateEmailHtml = (nodes: Record<string, any>) => {
         }
         const verticalStyle = `padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
         return `<div style="${verticalStyle}">${
-          gap > 0
-            ? content.replace(
-                /(<\/div>)(\s*<)/g,
-                `$1<div style="height: ${gap}px;"></div>$2`,
-              )
-            : content
+          gap > 0 ? content.replace(/(<\/div>)(\s*<)/g, `$1<div style="height: ${gap}px;"></div>$2`) : content
         }</div>`;
       }
 
@@ -127,7 +122,7 @@ export const generateEmailHtml = (nodes: Record<string, any>) => {
         const cellTexts: string[][] = props.cellTexts || [[]];
         const loopKey = props.loopKey || '';
         const isDynamic = loopKey.length > 0;
-        const rowCount = isDynamic ? 1 : (props.rows || 1);
+        const rowCount = isDynamic ? 1 : props.rows || 1;
         const tableTextAlign = props.textAlign || 'left';
 
         // Build header row — process tiptap HTML in each cell
@@ -224,9 +219,11 @@ export const generateDocumentParts = (
     borderWidth: number;
   } | null;
 } => {
-  const rootNode = nodes.ROOT ?? Object.values(nodes).find(
-    (n: any) => n?.linkedNodes?.PAGE_HEADER && n?.linkedNodes?.BODY && n?.linkedNodes?.PAGE_FOOTER,
-  );
+  const rootNode =
+    nodes.ROOT ??
+    Object.values(nodes).find(
+      (n: any) => n?.linkedNodes?.PAGE_HEADER && n?.linkedNodes?.BODY && n?.linkedNodes?.PAGE_FOOTER,
+    );
   if (!rootNode) {
     return {
       headerHtml: '',
@@ -303,7 +300,8 @@ export const generateDocumentParts = (
               `<div style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0;">${renderNode(childId)}</div>`,
           );
           const inner = flexChildren.join('');
-          const flexStyle = `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+          const flexStyle =
+            `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
           return `<div style="${flexStyle}">${inner}</div>`;
         }
         if (layout === 'grid') {
@@ -315,15 +313,14 @@ export const generateDocumentParts = (
               `<div style="flex-grow: 0; flex-shrink: 0; flex-basis: ${basisPct}; min-width: 0;">${renderNode(childId)}</div>`,
           );
           const inner = flexChildren.join('');
-          const flexStyle = `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+          const flexStyle =
+            `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
           return `<div style="${flexStyle}">${inner}</div>`;
         }
         // vertical (default)
         const verticalStyle = `padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
         return `<div style="${verticalStyle}">${
-          gap > 0
-            ? content.replace(/(<\/div>)(\s*<)/g, `$1<div style="height: ${gap}px;"></div>$2`)
-            : content
+          gap > 0 ? content.replace(/(<\/div>)(\s*<)/g, `$1<div style="height: ${gap}px;"></div>$2`) : content
         }</div>`;
       }
 
@@ -345,7 +342,7 @@ export const generateDocumentParts = (
         const cellTexts: string[][] = props.cellTexts || [[]];
         const loopKey = props.loopKey || '';
         const isDynamic = loopKey.length > 0;
-        const rowCount = isDynamic ? 1 : (props.rows || 1);
+        const rowCount = isDynamic ? 1 : props.rows || 1;
         const tableTextAlign = props.textAlign || 'left';
 
         let headerCells = '';
@@ -398,7 +395,8 @@ export const generateDocumentParts = (
       (childId: string) =>
         `<div style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0;">${renderNode(childId)}</div>`,
     );
-    const flexStyle = `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${bodyGap}px; padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
+    const flexStyle =
+      `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${bodyGap}px; padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
     bodyContentHtml = `<div style="${flexStyle}">${flexChildren.join('')}</div>`;
   } else if (bodyLayout === 'grid') {
     const gapPx = bodyGap;
@@ -407,11 +405,13 @@ export const generateDocumentParts = (
       (childId: string) =>
         `<div style="flex-grow: 0; flex-shrink: 0; flex-basis: ${basisPct}; min-width: 0;">${renderNode(childId)}</div>`,
     );
-    const flexStyle = `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${bodyGap}px; padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
+    const flexStyle =
+      `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${bodyGap}px; padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
     bodyContentHtml = `<div style="${flexStyle}">${flexChildren.join('')}</div>`;
   } else {
     const bodyContent = bodyChildren.map((childId: string) => renderNode(childId)).join('');
-    const verticalStyle = `padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
+    const verticalStyle =
+      `padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
     bodyContentHtml = `<div style="${verticalStyle}">${
       bodyGap > 0
         ? bodyContent.replace(/(<\/div>)(\s*<)/g, `$1<div style="height: ${bodyGap}px;"></div>$2`)

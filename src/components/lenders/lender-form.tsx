@@ -2,8 +2,8 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LenderRequiredField, LenderType } from '@prisma/client';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-
 import { Form } from '@/components/ui/form';
 import { FormActions } from '@/components/ui/form-actions';
 import { FormLayout } from '@/components/ui/form-layout';
@@ -13,16 +13,12 @@ import {
   validateAddressRequired,
   validateFieldRequired,
 } from '@/lib/schemas/common';
-import { lenderFormSchema } from '@/lib/schemas/lender';
-import { useProjects } from '@/store/projects-store';
-
-import { LenderFormFields } from './lender-form-fields';
-
 import type { LenderFormData } from '@/lib/schemas/lender';
+import { lenderFormSchema } from '@/lib/schemas/lender';
 import { additionalFieldDefaults, validateAdditionalFields } from '@/lib/utils/additional-fields';
+import { useProjects } from '@/store/projects-store';
 import type { LenderWithRelations } from '@/types/lenders';
-import { useEffect, useMemo } from 'react';
-import type { ZodSchema } from 'zod';
+import { LenderFormFields } from './lender-form-fields';
 
 interface LenderFormProps {
   title: string;
@@ -49,24 +45,20 @@ export function LenderForm({
 
   const initialType = initialData?.type || LenderType.PERSON;
 
-  let schema: ZodSchema;
-  schema = lenderFormSchema;
-
-  if (selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.address)) {
-    schema = schema.superRefine(validateAddressRequired);
-  } else {
-    schema = schema.superRefine(validateAddressOptional);
-  }
-  if (selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.email)) {
-    schema = schema.superRefine(validateFieldRequired('email'));
-  }
-  if (selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.telNo)) {
-    schema = schema.superRefine(validateFieldRequired('telNo'));
-  }
-
-  schema = schema.superRefine(
-    validateAdditionalFields('additionalFields', selectedProject?.configuration?.lenderAdditionalFields),
-  );
+  const schema = lenderFormSchema.superRefine((data, ctx) => {
+    if (selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.address)) {
+      validateAddressRequired(data as Record<string, string | null | undefined>, ctx);
+    } else {
+      validateAddressOptional(data as Record<string, string | null | undefined>, ctx);
+    }
+    if (selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.email)) {
+      validateFieldRequired('email')(data as { email?: string | null }, ctx);
+    }
+    if (selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.telNo)) {
+      validateFieldRequired('telNo')(data as { telNo?: string | null }, ctx);
+    }
+    validateAdditionalFields('additionalFields', selectedProject?.configuration?.lenderAdditionalFields)(data, ctx);
+  });
 
   const defaultValues = useMemo(() => {
     return {

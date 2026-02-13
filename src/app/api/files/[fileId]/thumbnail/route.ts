@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 
-export async function GET(request: Request, { params }: { params: Promise<{ fileId: string }> }) {
+export async function GET(_: Request, { params }: { params: Promise<{ fileId: string }> }) {
   try {
     const session = await auth();
     if (!session) {

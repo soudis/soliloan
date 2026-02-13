@@ -3,8 +3,9 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 
-export async function GET(request: Request, { params }: { params: { fileId: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ fileId: string }> }) {
   try {
+    const { fileId } = await params;
     const session = await auth();
     if (!session) {
       return new NextResponse('Unauthorized', { status: 401 });
@@ -13,7 +14,7 @@ export async function GET(request: Request, { params }: { params: { fileId: stri
     // Fetch the file
     const file = await db.file.findUnique({
       where: {
-        id: params.fileId,
+        id: fileId,
       },
       include: {
         lender: {

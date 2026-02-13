@@ -4,9 +4,8 @@ import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAppStore } from '@/store';
-
 import type { ColorScheme } from '@/store';
+import { useAppStore } from '@/store';
 
 const themes: { value: ColorScheme; label: string }[] = [
   { value: 'default', label: 'Default' },

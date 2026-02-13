@@ -2,15 +2,14 @@
 
 import { Editor, Element, Frame, useEditor, useNode } from '@craftjs/core';
 import type { TemplateDataset, TemplateType } from '@prisma/client';
+import { isEmpty } from 'lodash';
 import debounce from 'lodash.debounce';
 import { Eye, EyeOff, GripVertical, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
-
-import { type MergeTagConfig, getMergeTagConfigAction } from '@/actions/templates/queries/get-merge-tags';
+import { getMergeTagConfigAction, type MergeTagConfig } from '@/actions/templates/queries/get-merge-tags';
 import { getProjectLogoAction } from '@/actions/templates/queries/get-project-logo';
 import { getMergeTagValuesAction } from '@/actions/templates/queries/get-sample-data';
-
 import {
   generateDocumentParts,
   generateEmailHtml,
@@ -18,7 +17,6 @@ import {
   getNodesMapFromSerialized,
 } from '@/lib/templates/email-generator';
 import { processTemplate } from '@/lib/templates/template-processor';
-import { isEmpty } from 'lodash';
 import { LogoProvider } from './logo-context';
 import { MergeTagConfigProvider } from './merge-tag-context';
 import { SettingsPanel } from './settings-panel';
@@ -144,13 +142,7 @@ const EditorTopbar = ({
 
 // ─── Viewport ────────────────────────────────────────────────────────────────
 
-const EditorViewport = ({
-  isPreviewing,
-  isDocument,
-}: {
-  isPreviewing: boolean;
-  isDocument: boolean;
-}) => {
+const EditorViewport = ({ isPreviewing, isDocument }: { isPreviewing: boolean; isDocument: boolean }) => {
   return (
     <div className="flex-1 bg-zinc-100 overflow-y-auto w-full h-full">
       <div
@@ -296,10 +288,7 @@ export function TemplateEditorView({
 
   const isDocument = templateType === 'DOCUMENT';
 
-  const logoContextValue = useMemo(
-    () => ({ projectLogo, appLogo: '/soliloan-logo.webp' }),
-    [projectLogo],
-  );
+  const logoContextValue = useMemo(() => ({ projectLogo, appLogo: '/soliloan-logo.webp' }), [projectLogo]);
 
   useEffect(() => {
     setIsMounted(true);
