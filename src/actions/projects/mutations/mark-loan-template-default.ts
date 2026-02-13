@@ -1,7 +1,8 @@
 'use server';
 
+import { z } from 'zod';
 import { db } from '@/lib/db';
-import { type LoanTemplateFormData, loanTemplateFormSchema } from '@/lib/schemas/configuration';
+import type { LoanTemplateFormData } from '@/lib/schemas/configuration';
 import { configurationAction } from '@/lib/utils/safe-action';
 
 export const markLoanTemplateAsDefault = async (template: Pick<LoanTemplateFormData, 'id' | 'configurationId'>) => {
@@ -25,5 +26,5 @@ export const markLoanTemplateAsDefault = async (template: Pick<LoanTemplateFormD
 };
 
 export const markLoanTemplateAsDefaultAction = configurationAction
-  .inputSchema(loanTemplateFormSchema.pick({ id: true, configurationId: true }))
-  .action(async ({ ctx, parsedInput }) => markLoanTemplateAsDefault(parsedInput));
+  .inputSchema(z.object({ id: z.string(), configurationId: z.string() }))
+  .action(async ({ parsedInput }) => markLoanTemplateAsDefault(parsedInput));
