@@ -95,8 +95,9 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
     <div ref={cardRef} className="scroll-mt-24 rounded-lg border bg-card text-card-foreground shadow-sm">
       {/* Collapsible header */}
       <div className="flex w-full items-center p-4 gap-2">
-        <button
-          type="button"
+        {/** biome-ignore lint/a11y/noStaticElementInteractions: needed */}
+        {/** biome-ignore lint/a11y/useKeyWithClickEvents: needed */}
+        <div
           onClick={() => setIsOpen((prev) => !prev)}
           className="flex flex-row items-center justify-between text-left cursor-pointer w-full"
         >
@@ -149,7 +150,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
               )}
             />
           </div>
-        </button>
+        </div>
       </div>
 
       {/* Expandable content */}
