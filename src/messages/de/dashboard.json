@@ -99,6 +99,14 @@
         "loans": "Kredite",
         "files": "Dateien",
         "notes": "Notizen"
+      },
+      "sections": {
+        "contact": "Kontakt",
+        "financials": "Finanzen",
+        "loans": "Kredite",
+        "notesFiles": "Notizen & Dateien",
+        "notes": "Notizen",
+        "files": "Dateien"
       }
     },
     "table": {
@@ -270,7 +278,8 @@
       "activeLoans": "Kredite (aktiv)",
       "interestRateAvg": "Zinssatz (durchschnittlich)",
       "amountTotal": "Kredithöhe (gesamt)",
-      "for": "zu"
+      "for": "zu",
+      "statistics": "Übersicht"
     },
     "new": {
       "title": "Kredit erstellen",

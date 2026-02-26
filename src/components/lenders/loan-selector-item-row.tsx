@@ -54,7 +54,7 @@ export function LoanSelectorItemRow({ loan, highlightActive = true }: LoanSelect
   );
 
   return (
-    <div className={cn('border-b border-border w-full', loanId === loan.id && highlightActive && 'bg-muted')}>
+    <div className={cn('border-b border-border w-full p-2', loanId === loan.id && highlightActive && 'bg-muted')}>
       {loanNumberAndBadgeCell}
       {detailsCell}
     </div>

@@ -3,7 +3,6 @@
 import type { File } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { Download, FileIcon, FileText, Image as ImageIcon, Lock, Plus, Trash2, Unlock } from 'lucide-react';
-import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -107,11 +106,11 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
   return (
     <>
       <div className="mt-6">
-        <div className="mt-2 grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6 auto-rows-fr">
+        <div className="mt-2 grid grid-cols-1 gap-4 auto-rows-fr">
           {files.map((file) => (
             <div
               key={file.id}
-              className="relative group rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 h-full flex overflow-hidden"
+              className="min-h-[120px] relative group rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 h-full flex overflow-hidden"
               style={{
                 backgroundColor: file.public ? 'hsl(48, 100%, 96%)' : 'hsl(210, 100%, 96%)',
                 border: '1px solid rgba(0,0,0,0.05)',
@@ -119,12 +118,11 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
             >
               {hasThumbnail(file.mimeType) && !imageErrors[file.id] ? (
                 <div className="relative w-32 flex-shrink-0">
-                  <Image
+                  {/** biome-ignore lint/performance/noImgElement: needed */}
+                  <img
                     src={`/api/files/${file.id}/thumbnail`}
                     alt={file.name}
-                    fill
-                    className="object-cover"
-                    sizes="128px"
+                    className="absolute inset-0 w-full h-full object-cover"
                     onError={() => handleImageError(file.id)}
                   />
                 </div>
@@ -201,11 +199,7 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
             </div>
           ))}
 
-          <Button
-            variant="outline"
-            className="h-full min-h-[150px] flex flex-col items-center justify-center p-6 border-dashed"
-            onClick={() => setIsFileDialogOpen(true)}
-          >
+          <Button variant="outline" className="w-full border-dashed py-6" onClick={() => setIsFileDialogOpen(true)}>
             <Plus className="h-8 w-8 mb-2" />
             <span className="text-sm">{t('add')}</span>
           </Button>

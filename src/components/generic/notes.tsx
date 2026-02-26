@@ -55,11 +55,11 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
   return (
     <>
       <div className="mt-6">
-        <div className="mt-2 columns-1 sm:columns-2 gap-6">
+        <div className="mt-2 columns-1 gap-6">
           {notes.map((note) => (
             <div
               key={note.id}
-              className="relative group rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow duration-200 break-inside-avoid mb-6 flex flex-col min-h-[150px]"
+              className="min-h-[120px] relative group rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow duration-200 break-inside-avoid mb-4 flex flex-col"
               style={{
                 backgroundColor: note.public ? 'hsl(48, 100%, 96%)' : 'hsl(210, 100%, 96%)',
                 border: '1px solid rgba(0,0,0,0.05)',
@@ -136,7 +136,7 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
 
           <Button
             variant="outline"
-            className="w-full break-inside-avoid flex flex-col items-center justify-center p-6 border-dashed min-h-[150px]"
+            className="w-full border-dashed py-6"
             onClick={() => {
               setEditingNote(undefined);
               setIsNoteDialogOpen(true);
