@@ -9,19 +9,26 @@ import { FormLayout } from '@/components/ui/form-layout';
 
 import type { ConfigurationFormLoanData } from '@/lib/schemas/configuration';
 import { configurationFormLoanSchema } from '@/lib/schemas/configuration';
-import { useProjects } from '@/store/projects-store';
+import type { ProjectWithConfiguration } from '@/types/projects';
 import { ConfigurationFormFieldsLoans } from './configuration-form-fields-loans';
 
 type Props = {
   onSubmit: (data: ConfigurationFormLoanData) => Promise<void>;
   hasHistoricTransactions?: boolean;
+  project: ProjectWithConfiguration;
   initialData?: ConfigurationFormLoanData;
   isLoading?: boolean;
   error?: string | null;
 };
 
-export function ConfigurationFormLoans({ onSubmit, hasHistoricTransactions, initialData, isLoading, error }: Props) {
-  const { selectedProject } = useProjects();
+export function ConfigurationFormLoans({
+  onSubmit,
+  project,
+  hasHistoricTransactions,
+  initialData,
+  isLoading,
+  error,
+}: Props) {
   const t = useTranslations('dashboard.configuration');
 
   const defaultValues = {
@@ -35,10 +42,6 @@ export function ConfigurationFormLoans({ onSubmit, hasHistoricTransactions, init
     defaultValues,
   });
 
-  if (!selectedProject) {
-    return null;
-  }
-
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
       await onSubmit(data);
@@ -51,7 +54,7 @@ export function ConfigurationFormLoans({ onSubmit, hasHistoricTransactions, init
     <FormLayout error={error}>
       <Form {...form}>
         <form onSubmit={handleSubmit}>
-          <ConfigurationFormFieldsLoans hasHistoricTransactions={hasHistoricTransactions} />
+          <ConfigurationFormFieldsLoans hasHistoricTransactions={hasHistoricTransactions} project={project} />
 
           <FormActions
             submitButtonText={t('form.submit')}

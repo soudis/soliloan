@@ -12,16 +12,16 @@ const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <NuqsAdapter>
-      <SessionProvider>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+    <SessionProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <NuqsAdapter>
             {children}
             <Toaster />
-          </ThemeProvider>
-          <ReactQueryDevtools initialIsOpen={false} />
-        </QueryClientProvider>
-      </SessionProvider>
-    </NuqsAdapter>
+          </NuqsAdapter>
+        </ThemeProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </SessionProvider>
   );
 }

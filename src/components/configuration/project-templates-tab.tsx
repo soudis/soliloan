@@ -1,23 +1,16 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-
 import { TemplateDialog } from '@/components/templates/template-dialog';
 import { TemplateList } from '@/components/templates/template-list';
+import type { ProjectWithConfiguration } from '@/types/projects';
 
 interface ProjectTemplatesTabProps {
-  projectId: string;
+  project: ProjectWithConfiguration;
 }
 
-export function ProjectTemplatesTab({ projectId }: ProjectTemplatesTabProps) {
+export function ProjectTemplatesTab({ project }: ProjectTemplatesTabProps) {
   const t = useTranslations('templates');
-  const queryClient = useQueryClient();
-
-  const handleCreated = () => {
-    queryClient.invalidateQueries({ queryKey: ['templates', projectId] });
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -25,10 +18,10 @@ export function ProjectTemplatesTab({ projectId }: ProjectTemplatesTabProps) {
           <h2 className="text-xl font-semibold">{t('project.title')}</h2>
           <p className="text-sm text-muted-foreground">{t('project.description')}</p>
         </div>
-        <TemplateDialog projectId={projectId} onCreated={handleCreated} />
+        <TemplateDialog projectId={project.id} />
       </div>
 
-      <TemplateList projectId={projectId} includeGlobal />
+      <TemplateList project={project} includeGlobal />
     </div>
   );
 }

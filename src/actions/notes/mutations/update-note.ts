@@ -18,7 +18,7 @@ export const updateNoteAction = lenderAction
       data: noteSchema,
     }),
   )
-  .action(async ({ parsedInput: { noteId, lenderId, loanId, data }, ctx }) => {
+  .action(async ({ parsedInput: { noteId, lenderId, loanId, data } }) => {
     // Fetch the existing note
     const existingNote = await db.note.findUnique({
       where: { id: noteId },

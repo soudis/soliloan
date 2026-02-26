@@ -9,7 +9,7 @@ import { lenderFormSchema } from '@/lib/schemas/lender';
 import { getLenderName } from '@/lib/utils';
 import { projectAction } from '@/lib/utils/safe-action';
 
-export const createLenderAction = projectAction.schema(lenderFormSchema).action(async ({ parsedInput: data, ctx }) => {
+export const createLenderAction = projectAction.inputSchema(lenderFormSchema).action(async ({ parsedInput: data }) => {
   // Determine language (fetch project configuration if not available in context or data)
   // projectAction doesn't fetch valid project structure by default, so we might need to fetch language.
   // Optimization: we can just fetch language.

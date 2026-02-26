@@ -3,7 +3,7 @@
 import { InterestMethod } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { FormSection } from '@/components/ui/form-section';
-import { useProjects } from '@/store/projects-store';
+import type { ProjectWithConfiguration } from '@/types/projects';
 import { FormFieldConfigurator } from '../form/form-field-configurator';
 import { FormMultiSelect } from '../form/form-multi-select';
 import { FormSelect } from '../form/form-select';
@@ -11,17 +11,12 @@ import { LoanTemplateTable } from './loan-template-table';
 
 interface ConfigurationFormFieldsLoansProps {
   hasHistoricTransactions?: boolean;
+  project: ProjectWithConfiguration;
 }
 
-export function ConfigurationFormFieldsLoans({ hasHistoricTransactions }: ConfigurationFormFieldsLoansProps) {
+export function ConfigurationFormFieldsLoans({ hasHistoricTransactions, project }: ConfigurationFormFieldsLoansProps) {
   const t = useTranslations('dashboard.configuration');
   const commonT = useTranslations('common');
-  const { selectedProject } = useProjects();
-  const configurationId = selectedProject?.configurationId;
-
-  if (!configurationId) {
-    return null;
-  }
 
   return (
     <>
@@ -51,8 +46,8 @@ export function ConfigurationFormFieldsLoans({ hasHistoricTransactions }: Config
         </FormSection>
         <FormSection title={t('form.loanTemplates.loanTemplates')}>
           <LoanTemplateTable
-            configurationId={configurationId}
-            loanTemplates={selectedProject.configuration.loanTemplates}
+            configurationId={project.configuration.id}
+            loanTemplates={project.configuration.loanTemplates}
           />
         </FormSection>
       </div>

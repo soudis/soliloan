@@ -2,9 +2,8 @@
 
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
-import type { BulkAction } from './data-table';
 import { Button } from './button';
+import type { BulkAction } from './data-table';
 
 interface DataTableBulkBarProps {
   selectedCount: number;
@@ -18,9 +17,7 @@ export function DataTableBulkBar({ selectedCount, selectedIds, bulkActions, onCo
 
   return (
     <div className="flex items-center gap-3 rounded-md border bg-muted/50 px-4 py-2 mb-2">
-      <span className="text-sm text-muted-foreground">
-        {t('bulkBar.selected', { count: selectedCount })}
-      </span>
+      <span className="text-sm text-muted-foreground">{t('bulkBar.selected', { count: selectedCount })}</span>
 
       <div className="flex items-center gap-2">
         {bulkActions.map((action) => (

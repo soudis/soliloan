@@ -61,8 +61,12 @@ export function MergeTagDropdown({
 
   return (
     <>
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: needed */}
-      <div className="fixed inset-0 z-[9998]" onMouseDown={(e) => e.preventDefault()} onClick={onClose} />
+      <button
+        type="button"
+        className="fixed inset-0 z-[9998]"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={onClose}
+      />
       <div
         className="fixed z-[9999] bg-zinc-800 border border-zinc-600 rounded-lg shadow-xl max-h-80 overflow-y-auto min-w-64"
         style={{ top: position.top, left: position.left }}

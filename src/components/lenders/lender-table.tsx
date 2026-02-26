@@ -1,11 +1,11 @@
 'use client';
 
-import { Salutation } from '@prisma/client';
+import { Salutation, type View } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { toast } from 'sonner';
 
 import { bulkDeleteLendersAction } from '@/actions/lenders';
@@ -32,10 +32,11 @@ import type { ProjectWithConfiguration } from '@/types/projects';
 interface LenderTableProps {
   lenders: LenderWithRelations[];
   project: ProjectWithConfiguration;
+  views: View[];
   projectId: string;
 }
 
-export function LenderTable({ lenders, project, projectId }: LenderTableProps) {
+export function LenderTable({ lenders, project, projectId, views }: LenderTableProps) {
   const router = useRouter();
   const t = useTranslations('dashboard.lenders');
   const tLoans = useTranslations('dashboard.loans');
@@ -244,35 +245,38 @@ export function LenderTable({ lenders, project, projectId }: LenderTableProps) {
         </Button>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={lenders}
-        columnFilters={columnFilters}
-        defaultColumnVisibility={defaultColumnVisibility}
-        viewType="LENDER"
-        showFilter={true}
-        onRowClick={(row) => router.push(`/${projectId}/lenders/${row.id}`)}
-        bulkActions={bulkActions}
-        actions={(row) => (
-          <div className="flex items-center justify-end space-x-2">
-            <ActionButton
-              icon={<Plus className="h-4 w-4" />}
-              tooltip={commonT('ui.actions.createLoan')}
-              srOnly={commonT('ui.actions.createLoan')}
-              onClick={() => {
-                router.push(`/${projectId}/loans/new?lenderId=${row.id}`);
-              }}
-            />
-            <ActionButton
-              icon={<Pencil className="h-4 w-4" />}
-              tooltip={commonT('ui.actions.edit')}
-              onClick={() => {
-                router.push(`/${projectId}/lenders/${row.id}/edit`);
-              }}
-            />
-          </div>
-        )}
-      />
+      <Suspense fallback={<div>Loading...</div>}>
+        <DataTable
+          columns={columns}
+          data={lenders}
+          columnFilters={columnFilters}
+          defaultColumnVisibility={defaultColumnVisibility}
+          viewType="LENDER"
+          views={views}
+          showFilter={true}
+          onRowClick={(row) => router.push(`/${projectId}/lenders/${row.id}`)}
+          bulkActions={bulkActions}
+          actions={(row) => (
+            <div className="flex items-center justify-end space-x-2">
+              <ActionButton
+                icon={<Plus className="h-4 w-4" />}
+                tooltip={commonT('ui.actions.createLoan')}
+                srOnly={commonT('ui.actions.createLoan')}
+                onClick={() => {
+                  router.push(`/${projectId}/loans/new?lenderId=${row.id}`);
+                }}
+              />
+              <ActionButton
+                icon={<Pencil className="h-4 w-4" />}
+                tooltip={commonT('ui.actions.edit')}
+                onClick={() => {
+                  router.push(`/${projectId}/lenders/${row.id}/edit`);
+                }}
+              />
+            </div>
+          )}
+        />
+      </Suspense>
 
       <ConfirmDialog
         open={isConfirmOpen}

@@ -1,5 +1,5 @@
+import path from 'node:path';
 import { NextResponse } from 'next/server';
-import path from 'path';
 import React from 'react';
 
 import { auth } from '@/lib/auth';

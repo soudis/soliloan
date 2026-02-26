@@ -8,7 +8,7 @@ import { viewFormSchema } from '@/lib/schemas/view';
 import { authAction } from '@/lib/utils/safe-action';
 
 export const createViewAction = authAction
-  .schema(viewFormSchema.extend({ projectId: z.string().optional() }))
+  .inputSchema(viewFormSchema.extend({ projectId: z.string().optional() }))
   .action(async ({ parsedInput: data, ctx }) => {
     if (data.isDefault) {
       await db.view.updateMany({

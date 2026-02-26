@@ -95,6 +95,7 @@ export const ConfigurationPage = ({ project }: Props) => {
       <TabsContent value="loans">
         <ConfigurationFormLoans
           onSubmit={handleSubmit}
+          project={project}
           hasHistoricTransactions={project.hasHistoricTransactions}
           initialData={project.configuration}
           isLoading={isExecuting}
@@ -102,7 +103,7 @@ export const ConfigurationPage = ({ project }: Props) => {
         />
       </TabsContent>
       <TabsContent value="templates">
-        <ProjectTemplatesTab projectId={project.id} />
+        <ProjectTemplatesTab project={project} />
       </TabsContent>
       <TabsContent value="files">Files</TabsContent>
     </Tabs>

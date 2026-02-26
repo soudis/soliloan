@@ -1,5 +1,4 @@
-import type { ViewType } from '@prisma/client';
-import { useQuery } from '@tanstack/react-query';
+import type { View, ViewType } from '@prisma/client';
 import {
   type ColumnDef,
   type FilterFn,
@@ -13,8 +12,6 @@ import {
 } from '@tanstack/react-table';
 import { Settings } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-
-import { getViewsByType } from '@/actions/views';
 import { useTableUrlState } from '@/lib/hooks/use-table-url-state';
 
 import { Checkbox } from './checkbox';
@@ -141,6 +138,7 @@ interface DataTableProps<TData, TValue> {
   isLoading?: boolean;
   actions?: (row: TData) => React.ReactNode;
   bulkActions?: BulkAction[];
+  views?: View[];
   getRowId?: (row: TData) => string;
 }
 
@@ -154,24 +152,12 @@ export function DataTable<TData, TValue>({
   columnFilters = {},
   defaultColumnVisibility = {},
   viewType,
+  views,
   isLoading,
   actions,
   bulkActions,
   getRowId = (row) => (row as Record<string, unknown>).id as string,
 }: DataTableProps<TData, TValue>) {
-  const { data: views, isLoading: isViewsLoading } = useQuery({
-    queryKey: ['views', viewType],
-    queryFn: async () => {
-      if (!viewType) return [];
-      const { views: fetchedViews, error } = await getViewsByType(viewType);
-      if (error) {
-        return [];
-      }
-      return fetchedViews;
-    },
-    enabled: !!viewType,
-  });
-
   // Get table state from URL — views are passed so the hook can diff against the selected view's baseline
   const { state: tableState, setState: setTableState } = useTableUrlState({
     defaultColumnVisibility,
@@ -347,7 +333,7 @@ export function DataTable<TData, TValue>({
     enableGlobalFilter: true,
   });
 
-  if ((viewType && (isViewsLoading || !views)) || isLoading) {
+  if (isLoading) {
     return (
       <div className="py-24 text-center text-muted-foreground">
         {tableState.globalFilter ? 'Suchen...' : 'Laden...'}

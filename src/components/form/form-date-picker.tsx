@@ -54,8 +54,8 @@ export function FormDatePicker({ name, label, placeholder = 'Pick a date', disab
                   )}
                   <div className="ml-auto flex items-center gap-1">
                     {field.value && field.value !== '' && (
-                      // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
-                      <div
+                      <button
+                        type="button"
                         className="flex h-4 w-4 items-center justify-center rounded-sm opacity-50 hover:bg-accent hover:opacity-100"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -63,7 +63,7 @@ export function FormDatePicker({ name, label, placeholder = 'Pick a date', disab
                         }}
                       >
                         <X className="h-3 w-3" />
-                      </div>
+                      </button>
                     )}
                     <CalendarIcon className="h-4 w-4 opacity-50" />
                   </div>

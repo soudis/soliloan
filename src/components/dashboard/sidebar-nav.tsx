@@ -33,7 +33,9 @@ export function SidebarNav({ isSidebarOpen, session }: SidebarNavProps) {
     <>
       {/* Backdrop for mobile */}
       {isSidebarOpen && (
-        <div
+        <button
+          type="button"
+          aria-label="Close sidebar"
           className="fixed inset-0 z-20 bg-background/80 backdrop-blur-sm md:hidden"
           onClick={toggleSidebar}
           onKeyDown={(e) => {

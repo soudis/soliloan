@@ -1,6 +1,6 @@
 'use client';
 
-import { ContractStatus, InterestMethod, TerminationType } from '@prisma/client';
+import { ContractStatus, InterestMethod, TerminationType, type View, ViewType } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -35,9 +35,10 @@ interface LoanTableProps {
   loans: LoanWithRelations[];
   project: ProjectWithConfiguration;
   projectId: string;
+  views: View[];
 }
 
-export function LoanTable({ loans, project, projectId }: LoanTableProps) {
+export function LoanTable({ loans, project, projectId, views }: LoanTableProps) {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const router = useRouter();
@@ -293,7 +294,8 @@ export function LoanTable({ loans, project, projectId }: LoanTableProps) {
         data={loans}
         columnFilters={columnFilters}
         defaultColumnVisibility={defaultColumnVisibility}
-        viewType="LOAN"
+        viewType={ViewType.LOAN}
+        views={views}
         showFilter={true}
         onRowClick={(row) => router.push(`/${projectId}/lenders/${row.lender.id}?loanId=${row.id}`)}
         bulkActions={bulkActions}

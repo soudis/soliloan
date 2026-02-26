@@ -23,7 +23,7 @@ export function FormFieldConfigurator({ name }: FormFieldConfiguratorProps) {
   const t = useTranslations('common.ui.additionalFields');
   const { watch } = form;
   // Use useFieldArray to manage the fields
-  const { fields, append, remove, update } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name,
   });

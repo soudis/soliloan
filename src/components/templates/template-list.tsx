@@ -1,7 +1,6 @@
 'use client';
 
 import type { CommunicationTemplate } from '@prisma/client';
-import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Copy, Edit, FileText, Mail, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -10,7 +9,6 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { deleteTemplateAction } from '@/actions/templates/mutations/delete-template';
 import { duplicateTemplateAction } from '@/actions/templates/mutations/duplicate-template';
-import { getTemplatesAction } from '@/actions/templates/queries/get-templates';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
@@ -23,33 +21,22 @@ import {
 import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
 import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
+import type { ProjectWithConfiguration } from '@/types/projects';
 import type { CommunicationTemplateWithProject } from '@/types/templates';
 import { ConfirmDialog } from '../generic/confirm-dialog';
 
 interface TemplateListProps {
-  projectId?: string;
+  project: ProjectWithConfiguration;
   isAdmin?: boolean;
   includeGlobal?: boolean;
 }
 
-export function TemplateList({ projectId, isAdmin, includeGlobal = false }: TemplateListProps) {
+export function TemplateList({ project, isAdmin, includeGlobal = false }: TemplateListProps) {
   const t = useTranslations('templates');
   const router = useRouter();
   const currentProjectId = useProjectId();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<Pick<CommunicationTemplate, 'id' | 'name'> | null>(null);
-
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['templates', projectId, isAdmin, includeGlobal],
-    queryFn: async () => {
-      const result = await getTemplatesAction({
-        projectId,
-        isGlobal: isAdmin ? true : undefined,
-        includeGlobal: !isAdmin && includeGlobal,
-      });
-      return result?.data?.templates ?? [];
-    },
-  });
 
   const { executeAsync: deleteTemplate } = useAction(deleteTemplateAction);
   const { executeAsync: duplicateTemplate } = useAction(duplicateTemplateAction);
@@ -66,14 +53,13 @@ export function TemplateList({ projectId, isAdmin, includeGlobal = false }: Temp
     const result = await duplicateTemplate({
       id: template.id,
       name: `${template.name} (${t('list.copy')})`,
-      projectId: projectId,
+      projectId: project.id,
     });
 
     if (result?.serverError) {
       toast.error(result.serverError);
     } else {
       toast.success(t('list.duplicated'));
-      refetch();
     }
   };
 
@@ -93,7 +79,6 @@ export function TemplateList({ projectId, isAdmin, includeGlobal = false }: Temp
       toast.error(result.serverError);
     } else {
       toast.success(t('list.deleted'));
-      refetch();
     }
 
     setDeleteDialogOpen(false);
@@ -165,7 +150,16 @@ export function TemplateList({ projectId, isAdmin, includeGlobal = false }: Temp
 
   return (
     <>
-      <DataTable columns={columns} data={data ?? []} isLoading={isLoading} />
+      <DataTable
+        columns={columns}
+        data={
+          project.templates.map((template) => ({
+            ...template,
+            project: { id: project.id, configuration: { name: project.configuration.name } },
+            createdBy: template.createdBy,
+          })) ?? []
+        }
+      />
 
       <ConfirmDialog
         open={deleteDialogOpen}

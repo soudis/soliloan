@@ -1,4 +1,4 @@
-import type { Configuration, LoanTemplate, Project, User } from '@prisma/client';
+import type { CommunicationTemplate, Configuration, LoanTemplate, Project, User } from '@prisma/client';
 import type { AdditionalFieldConfig } from '@/lib/schemas/common';
 
 export type ProjectWithConfiguration = Project & {
@@ -9,4 +9,7 @@ export type ProjectWithConfiguration = Project & {
     loanAdditionalFields: AdditionalFieldConfig[];
     loanTemplates: LoanTemplate[];
   };
+  templates: (CommunicationTemplate & {
+    createdBy: Pick<User, 'id' | 'name'>;
+  })[];
 };

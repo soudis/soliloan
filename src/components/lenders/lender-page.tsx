@@ -36,11 +36,7 @@ export const LenderPage = ({ lender }: Props) => {
   }, [loanId, setActiveTab]);
 
   return (
-    <Tabs
-      value={activeTab}
-      onValueChange={(value) => setActiveTab(value as LenderTabValue)}
-      className="mt-0"
-    >
+    <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as LenderTabValue)} className="mt-0">
       <div className="mb-6 mr-10">
         <h1 className="text-3xl font-bold whitespace-nowrap">{getLenderName(lender)}</h1>
         <p className="text-muted-foreground text-sm whitespace-nowrap">

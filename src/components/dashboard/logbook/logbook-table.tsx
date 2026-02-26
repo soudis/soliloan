@@ -1,6 +1,6 @@
 'use client';
 
-import { type Change, ViewType } from '@prisma/client';
+import { type Change, type View, ViewType } from '@prisma/client';
 import type { ColumnDef, Row } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -15,9 +15,10 @@ import { createColumn } from '@/lib/table-column-utils';
 
 interface LogbookTableProps {
   changes: Change[];
+  views: View[];
 }
 
-export function LogbookTable({ changes }: LogbookTableProps) {
+export function LogbookTable({ changes, views }: LogbookTableProps) {
   const t = useTranslations('logbook');
   const [selectedChange, setSelectedChange] = useState<Change | null>(null);
 
@@ -235,6 +236,7 @@ export function LogbookTable({ changes }: LogbookTableProps) {
         showColumnVisibility={false}
         showFilter={true}
         viewType={ViewType.LOGBOOK}
+        views={views}
         columnFilters={columnFilters}
       />
 

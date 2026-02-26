@@ -23,6 +23,16 @@ export async function getProjectUnsafe(projectId: string) {
         include: { loans: { include: { transactions: true } } },
       },
       managers: true,
+      templates: {
+        include: {
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
     },
   });
 

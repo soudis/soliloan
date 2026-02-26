@@ -9,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useRouter } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import type { LenderWithCalculations } from '@/types/lenders';
 import type { LoanWithCalculations } from '@/types/loans';
@@ -24,11 +23,10 @@ interface LoanDropdownProps {
   simple?: boolean;
 }
 
-export function LoanDropdown({ loans, selectedLoanId, onSelectLoan, lender, simple = false }: LoanDropdownProps) {
+export function LoanDropdown({ loans, selectedLoanId, onSelectLoan, simple = false }: LoanDropdownProps) {
   const selectedLoan = loans.find((loan) => loan.id === selectedLoanId);
   const tLoan = useTranslations('dashboard.loans');
   const tCommon = useTranslations('common');
-  const router = useRouter();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

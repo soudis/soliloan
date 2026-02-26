@@ -97,6 +97,7 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
 
   const [rawState, setRawState] = useQueryStates(tableParsers, {
     history: 'replace',
+    shallow: true,
   });
 
   // Compute the baseline from the selected view (or defaults)
@@ -188,7 +189,10 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
         raw.pageSize = update.pageSize !== effectiveBaseline.pageSize ? update.pageSize : null;
       }
 
-      setRawState(raw);
+      setRawState(raw, {
+        shallow: true,
+        history: 'replace',
+      });
     },
     [baseline, views, defaultColumnVisibility, setRawState],
   );

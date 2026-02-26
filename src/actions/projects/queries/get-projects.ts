@@ -28,6 +28,16 @@ async function getProjects(userId?: string) {
       lenders: {
         include: { loans: { include: { transactions: true } } },
       },
+      templates: {
+        include: {
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
     },
     orderBy: {
       configuration: {

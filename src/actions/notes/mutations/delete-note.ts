@@ -14,7 +14,7 @@ export const deleteNoteAction = noteAction
       noteId: z.string(),
     }),
   )
-  .action(async ({ parsedInput: { noteId }, ctx }) => {
+  .action(async ({ parsedInput: { noteId } }) => {
     // Fetch the note with context info
     const note = await db.note.findUnique({
       where: {

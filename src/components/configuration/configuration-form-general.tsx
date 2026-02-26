@@ -9,7 +9,6 @@ import { FormLayout } from '@/components/ui/form-layout';
 
 import type { ConfigurationFormGeneralData } from '@/lib/schemas/configuration';
 import { configurationFormGeneralSchema } from '@/lib/schemas/configuration';
-import { useProjects } from '@/store/projects-store';
 import { ConfigurationFormFieldsGeneral } from './configuration-form-fields-general';
 
 type Props = {
@@ -20,7 +19,6 @@ type Props = {
 };
 
 export function ConfigurationFormGeneral({ onSubmit, initialData, isLoading, error }: Props) {
-  const { selectedProject } = useProjects();
   const t = useTranslations('dashboard.configuration');
 
   const defaultValues = {
@@ -42,10 +40,6 @@ export function ConfigurationFormGeneral({ onSubmit, initialData, isLoading, err
     resolver: zodResolver(configurationFormGeneralSchema),
     defaultValues,
   });
-
-  if (!selectedProject) {
-    return null;
-  }
 
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
