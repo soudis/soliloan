@@ -8,7 +8,11 @@
     "numberMin": "Bitte eine Zahl größer oder gleich {min} eingeben",
     "date": "Bitte ein gültiges Datum eingeben",
     "addressComplete": "Bitte eingeben",
-    "boolean": "Falschwer Wert"
+    "boolean": "Falschwer Wert",
+    "url": "Bitte eine gültige URL eingeben"
+  },
+  "migration": {
+    "httpsRequired": "Nur HTTPS-URLs sind erlaubt"
   },
   "project": {
     "name": {
