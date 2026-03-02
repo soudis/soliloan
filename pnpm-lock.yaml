@@ -110,6 +110,9 @@ importers:
       '@tiptap/starter-kit':
         specifier: ^3.19.0
         version: 3.19.0
+      adm-zip:
+        specifier: ^0.5.16
+        version: 0.5.16
       bcrypt:
         specifier: ^6.0.0
         version: 6.0.0
@@ -225,6 +228,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4.1.18
         version: 4.1.18
+      '@types/adm-zip':
+        specifier: ^0.5.7
+        version: 0.5.7
       '@types/bcrypt':
         specifier: ^6.0.0
         version: 6.0.0
@@ -2039,6 +2045,9 @@ packages:
   '@tiptap/starter-kit@3.19.0':
     resolution: {integrity: sha512-dTCkHEz+Y8ADxX7h+xvl6caAj+3nII/wMB1rTQchSuNKqJTOrzyUsCWm094+IoZmLT738wANE0fRIgziNHs/ug==}
 
+  '@types/adm-zip@0.5.7':
+    resolution: {integrity: sha512-DNEs/QvmyRLurdQPChqq0Md4zGvPwHerAJYWk9l2jCbD1VPpnzRJorOdiq4zsw09NFbYnhfsoEhWtxIzXpn2yw==}
+
   '@types/bcrypt@6.0.0':
     resolution: {integrity: sha512-/oJGukuH3D2+D+3H4JWLaAsJ/ji86dhRidzZ/Od7H/i8g+aCmvkeCc6Ni/f9uxGLSQVCRZkX2/lqEFG2BvWtlQ==}
 
@@ -2082,6 +2091,10 @@ packages:
 
   abs-svg-path@0.1.1:
     resolution: {integrity: sha512-d8XPSGjfyzlXC3Xx891DJRyZfqk5JU0BJrDQcsWomFIV1/BIzPW5HDH5iDdWpqWaav0YVIEzT1RHTwWr0FFshA==}
+
+  adm-zip@0.5.16:
+    resolution: {integrity: sha512-TGw5yVi4saajsSEgz25grObGHEUaDrniwvA2qwSC060KfqGPdglhvPMA2lPIoxs3PQIItj2iag35fONcQqgUaQ==}
+    engines: {node: '>=12.0'}
 
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
@@ -4955,6 +4968,10 @@ snapshots:
       '@tiptap/extensions': 3.19.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0)
       '@tiptap/pm': 3.19.0
 
+  '@types/adm-zip@0.5.7':
+    dependencies:
+      '@types/node': 25.2.3
+
   '@types/bcrypt@6.0.0':
     dependencies:
       '@types/node': 25.2.3
@@ -4997,6 +5014,8 @@ snapshots:
   '@types/use-sync-external-store@0.0.6': {}
 
   abs-svg-path@0.1.1: {}
+
+  adm-zip@0.5.16: {}
 
   argparse@2.0.1: {}
 

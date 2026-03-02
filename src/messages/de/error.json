@@ -27,5 +27,12 @@
   },
   "template": {
     "notFound": "Vorlage nicht gefunden."
+  },
+  "migration": {
+    "fetchFailed": "Datenpaket konnte nicht von der DKP-v1 API heruntergeladen werden. Bitte URL und Token prüfen.",
+    "noDatabaseJson": "Das ZIP-Archiv enthält keine database.json Datei.",
+    "invalidDataPackage": "Das Datenpaket ist ungültig (fehlende Tabellen).",
+    "noProjectJson": "Das Datenpaket enthält keine project.json. Bitte DKP-v1 auf die neueste Version aktualisieren.",
+    "noProjectId": "Die project.json enthält keine gültige Projekt-ID (projectid)."
   }
 }
