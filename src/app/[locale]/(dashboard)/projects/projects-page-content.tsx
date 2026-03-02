@@ -3,7 +3,7 @@
 import type { View } from '@prisma/client';
 import { Country, InterestMethod, Language, Salutation, SoliLoansTheme, ViewType } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Pencil, Plus } from 'lucide-react';
+import { Import, Pencil, Plus } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -347,10 +347,16 @@ export function ProjectsPageContent({ views, projects }: ProjectsPageContentProp
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">{t('title')}</h1>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t('new.title')}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => router.push('/projects/migrate-new')}>
+            <Import className="mr-2 h-4 w-4" />
+            {t('migrate.button')}
+          </Button>
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t('new.title')}
+          </Button>
+        </div>
       </div>
 
       <ProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />

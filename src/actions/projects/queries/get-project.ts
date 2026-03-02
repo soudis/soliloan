@@ -3,10 +3,11 @@
 import { omit } from 'lodash';
 import moment from 'moment';
 import { db } from '@/lib/db';
+import { projectIdSchema } from '@/lib/schemas/common';
 import { parseAdditionalFieldConfig } from '@/lib/utils/additional-fields';
-import type { ProjectWithConfiguration } from '@/types/projects';
+import { projectAction } from '@/lib/utils/safe-action';
 
-export async function getProjectUnsafe(projectId: string): Promise<{ project: ProjectWithConfiguration }> {
+export async function getProjectUnsafe(projectId: string) {
   // Fetch the project
   const project = await db.project.findUnique({
     where: {
@@ -22,7 +23,6 @@ export async function getProjectUnsafe(projectId: string): Promise<{ project: Pr
       lenders: {
         include: { loans: { include: { transactions: true } } },
       },
-      managers: true,
       templates: {
         include: {
           createdBy: {
@@ -40,7 +40,7 @@ export async function getProjectUnsafe(projectId: string): Promise<{ project: Pr
     throw new Error('error.project.notFound');
   }
 
-  const projectWithConfiguration: ProjectWithConfiguration = {
+  return {
     ...omit(project, ['lenders']),
     hasHistoricTransactions: project.lenders.some((lender) =>
       lender.loans.some(
@@ -53,8 +53,6 @@ export async function getProjectUnsafe(projectId: string): Promise<{ project: Pr
       loanAdditionalFields: parseAdditionalFieldConfig(project.configuration.loanAdditionalFields) ?? [],
     },
   };
-
-  return { project: projectWithConfiguration };
 }
 
 export const getProjectAction = projectAction
