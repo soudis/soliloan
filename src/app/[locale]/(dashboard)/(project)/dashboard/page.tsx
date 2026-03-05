@@ -1,15 +1,16 @@
-import { getLoansByProjectAction } from '@/actions';
 import { getDashboardStats } from '@/actions/dashboard/get-dashboard-stats';
+import { getLoansByProjectUnsafe } from '@/actions/loans/queries/get-loans-by-project';
 import { DashboardContent } from '@/components/dashboard/dashboard-content';
 import { auth } from '@/lib/auth';
-import type { LoanWithRelations } from '@/types/loans';
+import { searchParamsCache } from '@/lib/params';
+import type { LoanWithCalculations } from '@/types/loans';
 
 interface PageProps {
-  params: Promise<{ projectId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 // Calculate loan amount distribution on the server
-function calculateLoanAmountDistribution(loans: LoanWithRelations[]) {
+function calculateLoanAmountDistribution(loans: LoanWithCalculations[]) {
   const ranges = [
     { min: 0, max: 1000, label: '0 - 1,000' },
     { min: 1001, max: 5000, label: '1,001 - 5,000' },
@@ -38,18 +39,18 @@ function calculateLoanAmountDistribution(loans: LoanWithRelations[]) {
   return distribution.filter((item) => item.count > 0);
 }
 
-export default async function DashboardPage({ params }: PageProps) {
-  const { projectId } = await params;
+export default async function DashboardPage({ searchParams }: PageProps) {
+  const { projectId } = searchParamsCache.parse(await searchParams);
   const session = await auth();
 
   const [statsResult, loansResult] = await Promise.all([
     getDashboardStats(projectId),
-    getLoansByProjectAction({ projectId }),
+    getLoansByProjectUnsafe(projectId),
   ]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const statsData = statsResult.error ? null : (statsResult.stats ?? null);
-  const loans = loansResult.data?.loans ?? [];
+  const loans = loansResult.loans ?? [];
   const loansDistribution = calculateLoanAmountDistribution(loans);
 
   return (
@@ -58,7 +59,6 @@ export default async function DashboardPage({ params }: PageProps) {
       loansDistribution={loansDistribution}
       loans={loans}
       userName={session?.user?.name || 'User'}
-      projectId={projectId}
     />
   );
 }

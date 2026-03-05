@@ -3,16 +3,18 @@
 import type { Session } from 'next-auth';
 
 import { useAppStore } from '@/store';
-
+import type { ProjectWithConfiguration } from '@/types/projects';
 import { SidebarNav } from './sidebar-nav';
 import { TopNav } from './top-nav';
 
 export default function DashboardNavigation({
   children,
   session,
+  projects,
 }: {
   children: React.ReactNode;
   session: Session | null;
+  projects: ProjectWithConfiguration[];
 }) {
   const { isSidebarOpen, toggleSidebar } = useAppStore();
 
@@ -25,7 +27,7 @@ export default function DashboardNavigation({
       <TopNav session={session} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={toggleSidebar} />
 
       <div className="flex h-[calc(100vh-4rem)]">
-        <SidebarNav isSidebarOpen={isSidebarOpen} session={session} />
+        <SidebarNav isSidebarOpen={isSidebarOpen} session={session} projects={projects} />
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto bg-background">

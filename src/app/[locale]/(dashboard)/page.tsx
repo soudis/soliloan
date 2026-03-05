@@ -1,21 +1,25 @@
 import { redirect } from 'next/navigation';
 
-import { getProjectsAction } from '@/actions/projects/queries/get-projects';
+import { getProjects } from '@/actions/projects/queries/get-projects';
 import { auth } from '@/lib/auth';
 
-export default async function DashboardRootPage() {
+interface DashboardRootPageProps {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function DashboardRootPage({ params }: DashboardRootPageProps) {
   const session = await auth();
 
   if (!session) {
     redirect('/auth/login');
   }
 
-  // Get the user's projects and redirect to the first one
-  const result = await getProjectsAction();
-  const projects = result?.data?.projects ?? [];
+  const result = await getProjects();
+  const projects = result?.projects ?? [];
 
   if (projects.length > 0) {
-    redirect(`/${projects[0].id}`);
+    const { locale } = await params;
+    redirect(`/${locale}/dashboard?projectId=${projects[0].id}`);
   }
 
   // If no projects exist, redirect to projects page (for admins) or show empty state

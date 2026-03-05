@@ -11,21 +11,21 @@ import { sendInvitationEmailAction } from '@/actions/users';
 import { InfoItem } from '@/components/ui/info-item';
 import { hasAdditionalFields } from '@/lib/utils/additional-fields';
 import { formatAddressPlace } from '@/lib/utils/format';
-import { useProjects } from '@/store/projects-store';
-import type { LenderWithCalculations } from '@/types/lenders';
+import type { LenderDetailsWithCalculations } from '@/types/lenders';
 import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-items';
 import { SectionCard } from '../generic/section-card';
+import { useProject } from '../providers/project-provider';
 import { Button } from '../ui/button';
 
 interface LenderContactSectionProps {
-  lender: LenderWithCalculations;
+  lender: LenderDetailsWithCalculations;
 }
 
 export function LenderContactSection({ lender }: LenderContactSectionProps) {
   const t = useTranslations('dashboard.lenders');
   const locale = useLocale();
   const dateLocale = locale === 'de' ? de : enUS;
-  const { selectedProject } = useProjects();
+  const { project } = useProject();
   const queryClient = useQueryClient();
   const [isSendingInvitation, setIsSendingInvitation] = useState(false);
 
@@ -39,7 +39,7 @@ export function LenderContactSection({ lender }: LenderContactSectionProps) {
   const hasBankingInfo = lender.iban || lender.bic;
   const showAdditionalFields = hasAdditionalFields(
     lender.additionalFields,
-    selectedProject?.configuration.lenderAdditionalFields,
+    project.configuration.lenderAdditionalFields,
   );
 
   const handleSendInvitation = async () => {
@@ -115,7 +115,7 @@ export function LenderContactSection({ lender }: LenderContactSectionProps) {
               <div className="grid grid-cols-1 gap-3">
                 <AdditionalFieldInfoItems
                   additionalFields={lender.additionalFields}
-                  configuration={selectedProject?.configuration.lenderAdditionalFields}
+                  configuration={project.configuration.lenderAdditionalFields}
                 />
               </div>
             </SectionCard>

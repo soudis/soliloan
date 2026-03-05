@@ -364,7 +364,7 @@ export function ProjectsPageContent({ views, projects }: ProjectsPageContentProp
         views={views}
         showFilter={true}
         onRowClick={(row) => {
-          router.push(`/${row.id}/configuration`);
+          router.push(`/configuration?projectId=${row.id}`);
         }}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
@@ -372,7 +372,7 @@ export function ProjectsPageContent({ views, projects }: ProjectsPageContentProp
               icon={<Pencil className="h-4 w-4" />}
               tooltip={commonT('ui.actions.edit')}
               onClick={() => {
-                router.push(`/${row.id}/configuration`);
+                router.push(`/configuration?projectId=${row.id}`);
               }}
             />
           </div>

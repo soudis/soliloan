@@ -2,11 +2,12 @@
 
 import { calculateLoanFields } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
+import { sanitizeLoan } from '@/lib/sanitation/sanitize-loan';
 import { projectIdSchema } from '@/lib/schemas/common';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { projectAction } from '@/lib/utils/safe-action';
 
-async function getLoansByProjectUnsafe(projectId: string) {
+export async function getLoansByProjectUnsafe(projectId: string) {
   try {
     const loans = await db.loan.findMany({
       where: {
@@ -76,7 +77,7 @@ async function getLoansByProjectUnsafe(projectId: string) {
 
     // Calculate virtual fields for each loan
     const loansWithCalculations = loans.map((loan) =>
-      calculateLoanFields(parseAdditionalFields({ ...loan, lender: parseAdditionalFields(loan.lender) })),
+      sanitizeLoan(calculateLoanFields(parseAdditionalFields({ ...loan, lender: parseAdditionalFields(loan.lender) }))),
     );
 
     return { loans: loansWithCalculations };

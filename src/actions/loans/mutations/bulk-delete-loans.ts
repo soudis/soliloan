@@ -54,12 +54,12 @@ export const bulkDeleteLoansAction = projectAction
     });
 
     // Revalidate the loans page
-    revalidatePath(`/${projectId}/loans`);
+    revalidatePath('/loans');
 
     // Also revalidate affected lender pages
     const uniqueLenderIds = [...new Set(loans.map((l) => l.lenderId))];
     for (const lenderId of uniqueLenderIds) {
-      revalidatePath(`/${projectId}/lenders/${lenderId}`);
+      revalidatePath(`/lenders/${lenderId}`);
     }
 
     return { success: true, deletedCount: loans.length };

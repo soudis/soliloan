@@ -41,7 +41,6 @@ const ALIGN_OPTIONS: { value: TextAlign; icon: typeof AlignLeft }[] = [
 
 export const Text = ({ text, fontSize = 16, color = '#000000', textAlign = 'left' }: TextProps) => {
   const {
-    connectors: { connect },
     actions: { setProp },
     selected,
     id,
@@ -203,7 +202,6 @@ export const TextSettings = () => {
     fontSize,
     color,
     textAlign,
-    text,
     id,
   } = useNode((node) => ({
     fontSize: node.data.props.fontSize,
@@ -291,7 +289,9 @@ export const TextSettings = () => {
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-medium block">{t('textAlign')}</label>
+        <label className="text-xs font-medium block" htmlFor="textAlign">
+          {t('textAlign')}
+        </label>
         <div className="flex gap-1">
           {ALIGN_OPTIONS.map(({ value, icon: Icon }) => (
             <button
@@ -323,7 +323,7 @@ export const TextSettings = () => {
             // and potentially reset the cursor position.
             e.preventDefault();
           }}
-          onClick={(e) => {
+          onClick={(_) => {
             const rect = buttonRef.current?.getBoundingClientRect();
             if (rect) {
               setDropdownPos({ top: rect.bottom + 5, left: rect.left - 100 });

@@ -42,7 +42,7 @@ export const deleteLenderAction = lenderAction.schema(lenderIdSchema).action(asy
   });
 
   // Revalidate the project lenders page
-  revalidatePath(`/${lender.projectId}/lenders`);
+  revalidatePath('/lenders');
 
   return { success: true };
 });

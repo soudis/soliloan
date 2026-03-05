@@ -3,11 +3,11 @@
 import { BarChart3 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { BalanceTable } from '@/components/loans/balance-table';
-import type { LenderWithCalculations } from '@/types/lenders';
+import type { LenderDetailsWithCalculations } from '@/types/lenders';
 import { SectionCard } from '../generic/section-card';
 
 interface LenderFinancialsSectionProps {
-  lender: LenderWithCalculations;
+  lender: LenderDetailsWithCalculations;
 }
 
 export function LenderFinancialsSection({ lender }: LenderFinancialsSectionProps) {
@@ -29,10 +29,7 @@ export function LenderFinancialsSection({ lender }: LenderFinancialsSectionProps
     <div id="financials" className="scroll-mt-24">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {hasStats && (
-          <SectionCard
-            title={t('table.statistics')}
-            icon={<BarChart3 className="h-4 w-4 text-muted-foreground" />}
-          >
+          <SectionCard title={t('table.statistics')} icon={<BarChart3 className="h-4 w-4 text-muted-foreground" />}>
             <BalanceTable totals={lender} variant="statistics" />
           </SectionCard>
         )}

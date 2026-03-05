@@ -4,11 +4,11 @@ import { getLenderAction } from '@/actions';
 import { EditLenderClient } from '@/components/lenders/edit-lender-client';
 
 interface PageProps {
-  params: Promise<{ projectId: string; lenderId: string }>;
+  params: Promise<{ lenderId: string }>;
 }
 
 export default async function EditLenderPage({ params }: PageProps) {
-  const { projectId, lenderId } = await params;
+  const { lenderId } = await params;
 
   const result = await getLenderAction({ lenderId });
 
@@ -16,5 +16,5 @@ export default async function EditLenderPage({ params }: PageProps) {
     notFound();
   }
 
-  return <EditLenderClient lender={result.data.lender} projectId={projectId} />;
+  return <EditLenderClient lender={result.data.lender} />;
 }

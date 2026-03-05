@@ -43,6 +43,7 @@ export const Image = ({
       style={{ width }}
     >
       {/* biome-ignore lint/a11y/useAltText: needed */}
+      {/** biome-ignore lint/performance/noImgElement: needed */}
       <img src={resolvedSrc} style={{ width: '100%', height: 'auto', display: 'block' }} />
     </div>
   );
@@ -165,13 +166,16 @@ export const ImageSettings = () => {
 
         <TabsContent value="upload" className="mt-3">
           <div className="space-y-2">
-            <label className="text-xs font-medium">{t('uploadImage')}</label>
+            <label className="text-xs font-medium" htmlFor="uploadImage">
+              {t('uploadImage')}
+            </label>
             <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" ref={fileInputRef} />
 
             {isBase64 && !useLogoSource ? (
               <div className="space-y-2">
                 <div className="relative border rounded overflow-hidden">
                   {/* biome-ignore lint/a11y/useAltText: preview */}
+                  {/** biome-ignore lint/performance/noImgElement: needed */}
                   <img src={src} className="w-full h-auto" />
                   <button
                     type="button"
@@ -200,6 +204,7 @@ export const ImageSettings = () => {
           <div className="space-y-3">
             <div className="border rounded overflow-hidden bg-zinc-50 p-4 flex items-center justify-center">
               {/* biome-ignore lint/a11y/useAltText: preview */}
+              {/** biome-ignore lint/performance/noImgElement: needed */}
               <img src={resolvedLogo} className="max-h-24 max-w-full object-contain" />
             </div>
             <p className="text-[11px] text-muted-foreground">

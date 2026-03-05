@@ -4,7 +4,7 @@ import { getLenderAction } from '@/actions';
 import { LenderPage } from '@/components/lenders/lender-page';
 
 interface PageProps {
-  params: Promise<{ projectId: string; lenderId: string }>;
+  params: Promise<{ lenderId: string }>;
 }
 
 export default async function LenderDetailsPage({ params }: PageProps) {

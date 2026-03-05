@@ -74,10 +74,9 @@ interface DashboardContentProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   loans: LoanWithCalculations[];
   userName: string;
-  projectId: string;
 }
 
-export function DashboardContent({ statsData, loansDistribution, loans, userName, projectId }: DashboardContentProps) {
+export function DashboardContent({ statsData, loansDistribution, loans, userName }: DashboardContentProps) {
   const t = useTranslations('dashboard');
 
   return (
@@ -228,7 +227,7 @@ export function DashboardContent({ statsData, loansDistribution, loans, userName
           <h2 className="mb-2 text-xl font-semibold">{t('lenders.title')}</h2>
           <p className="mb-4 text-sm text-muted-foreground">{t('lenders.description')}</p>
           <Button asChild variant="outline" className="w-full">
-            <Link href={`/${projectId}/lenders`}>{t('lenders.viewLenders')}</Link>
+            <Link href="/lenders">{t('lenders.viewLenders')}</Link>
           </Button>
         </div>
 
@@ -239,7 +238,7 @@ export function DashboardContent({ statsData, loansDistribution, loans, userName
           <h2 className="mb-2 text-xl font-semibold">{t('loans.title')}</h2>
           <p className="mb-4 text-sm text-muted-foreground">{t('loans.details')}</p>
           <Button asChild variant="outline" className="w-full">
-            <Link href={`/${projectId}/loans`}>{t('loans.viewLoans')}</Link>
+            <Link href="/loans">{t('loans.viewLoans')}</Link>
           </Button>
         </div>
       </div>

@@ -10,7 +10,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { deleteNoteAction } from '@/actions/notes/mutations/delete-note';
-import type { LoanWithCalculations } from '@/types/loans';
+import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { Button } from '../ui/button';
 import { ConfirmDialog } from './confirm-dialog';
 import { NoteDialog } from './note-dialog';
@@ -22,7 +22,7 @@ interface NotesProps {
       name: string | null;
     };
   })[];
-  loans?: LoanWithCalculations[];
+  loans?: LoanDetailsWithCalculations[];
   loanId?: string;
   lenderId: string;
 }

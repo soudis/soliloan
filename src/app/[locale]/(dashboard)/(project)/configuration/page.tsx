@@ -1,13 +1,14 @@
 import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
 import { ConfigurationPage } from '@/components/configuration/configuration-page';
 import { db } from '@/lib/db';
+import { searchParamsCache } from '@/lib/params';
 
 interface PageProps {
-  params: Promise<{ projectId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function ConfigPage({ params }: PageProps) {
-  const { projectId } = await params;
+export default async function ConfigPage({ searchParams }: PageProps) {
+  const { projectId } = searchParamsCache.parse(await searchParams);
 
   const result = await getProjectUnsafe(projectId);
   const projectWithManagers = await db.project.findUnique({
@@ -16,7 +17,7 @@ export default async function ConfigPage({ params }: PageProps) {
   });
 
   const project = {
-    ...result.project,
+    ...result,
     managers: projectWithManagers?.managers ?? [],
   };
 

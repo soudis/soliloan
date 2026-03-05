@@ -26,7 +26,7 @@ import type { CommunicationTemplateWithProject } from '@/types/templates';
 import { ConfirmDialog } from '../generic/confirm-dialog';
 
 interface TemplateListProps {
-  project: ProjectWithConfiguration;
+  project?: ProjectWithConfiguration | null;
   isAdmin?: boolean;
   includeGlobal?: boolean;
 }
@@ -44,12 +44,13 @@ export function TemplateList({ project, isAdmin, includeGlobal = false }: Templa
   const handleEdit = (template: Pick<CommunicationTemplate, 'id' | 'name' | 'isGlobal'>) => {
     if (isAdmin && template.isGlobal) {
       router.push(`/admin/templates/${template.id}`);
-    } else {
-      router.push(`/${currentProjectId}/configuration/templates/${template.id}`);
+    } else if (currentProjectId) {
+      router.push(`/configuration/templates/${template.id}`);
     }
   };
 
   const handleDuplicate = async (template: Pick<CommunicationTemplate, 'id' | 'name'>) => {
+    if (!project) return;
     const result = await duplicateTemplate({
       id: template.id,
       name: `${template.name} (${t('list.copy')})`,
@@ -152,13 +153,13 @@ export function TemplateList({ project, isAdmin, includeGlobal = false }: Templa
     <>
       <DataTable
         columns={columns}
-        data={
-          project.templates.map((template) => ({
-            ...template,
-            project: { id: project.id, configuration: { name: project.configuration.name } },
-            createdBy: template.createdBy,
-          })) ?? []
-        }
+        data={(project?.templates ?? []).map((template) => ({
+          ...template,
+          project: project
+            ? { id: project.id, configuration: { name: project.configuration.name } }
+            : { id: '', configuration: { name: '' } },
+          createdBy: template.createdBy,
+        }))}
       />
 
       <ConfirmDialog

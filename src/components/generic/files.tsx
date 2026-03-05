@@ -10,14 +10,14 @@ import { toast } from 'sonner';
 import { deleteFileAction } from '@/actions/files/mutations/delete-file';
 
 import { formatDate } from '@/lib/utils';
-import type { LoanWithCalculations } from '@/types/loans';
+import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { Button } from '../ui/button';
 import { ConfirmDialog } from './confirm-dialog';
 import { FileDialog } from './file-dialog';
 
 interface FilesProps {
-  files: LoanWithCalculations['files'];
-  loans?: LoanWithCalculations[];
+  files: LoanDetailsWithCalculations['files'];
+  loans?: LoanDetailsWithCalculations[];
   loanId?: string;
   lenderId: string;
 }

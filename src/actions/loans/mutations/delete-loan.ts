@@ -43,9 +43,9 @@ export const deleteLoanAction = loanAction.inputSchema(loanIdSchema).action(asyn
   });
 
   // Revalidate the lender page
-  revalidatePath(`/${loan.lender.projectId}/lenders/${loan.lenderId}`);
+  revalidatePath(`/lenders/${loan.lenderId}`);
   // Revalidate the loans page for the project
-  revalidatePath(`/${loan.lender.projectId}/loans`);
+  revalidatePath('/loans');
 
   return { success: true };
 });

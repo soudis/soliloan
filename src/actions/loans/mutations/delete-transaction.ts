@@ -65,7 +65,7 @@ export const deleteTransactionAction = transactionAction
     });
 
     // Revalidate the lender page (loans are viewed within lender detail)
-    revalidatePath(`/${transaction.loan.lender.projectId}/lenders/${transaction.loan.lenderId}`);
+    revalidatePath(`/lenders/${transaction.loan.lenderId}`);
 
     return { success: true };
   });

@@ -5,7 +5,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { bulkDeleteLendersAction } from '@/actions/lenders';
@@ -26,22 +26,21 @@ import {
   createLenderEnumBadgeColumn,
   createLenderNameColumn,
 } from '@/lib/table-column-utils';
-import type { LenderWithRelations } from '@/types/lenders';
-import type { ProjectWithConfiguration } from '@/types/projects';
+import type { LenderWithCalculations } from '@/types/lenders';
+import { useProject } from '../providers/project-provider';
 
 interface LenderTableProps {
-  lenders: LenderWithRelations[];
-  project: ProjectWithConfiguration;
+  lenders: LenderWithCalculations[];
   views: View[];
-  projectId: string;
 }
 
-export function LenderTable({ lenders, project, projectId, views }: LenderTableProps) {
+export function LenderTable({ lenders, views }: LenderTableProps) {
   const router = useRouter();
   const t = useTranslations('dashboard.lenders');
   const tLoans = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const locale = useLocale();
+  const { project } = useProject();
 
   const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -68,8 +67,8 @@ export function LenderTable({ lenders, project, projectId, views }: LenderTableP
     },
   ];
 
-  const columns: ColumnDef<LenderWithRelations>[] = [
-    createColumn<LenderWithRelations>(
+  const columns: ColumnDef<LenderWithCalculations>[] = [
+    createColumn<LenderWithCalculations>(
       {
         accessorKey: 'lenderNumber',
         header: 'table.lenderNumber',
@@ -77,9 +76,9 @@ export function LenderTable({ lenders, project, projectId, views }: LenderTableP
       t,
     ),
 
-    createLenderNameColumn<LenderWithRelations>(t),
+    createLenderNameColumn<LenderWithCalculations>(t),
 
-    createLenderEnumBadgeColumn<LenderWithRelations>(
+    createLenderEnumBadgeColumn<LenderWithCalculations>(
       'type',
       'table.type',
       'enums.lender.type',
@@ -88,7 +87,7 @@ export function LenderTable({ lenders, project, projectId, views }: LenderTableP
       () => 'outline',
     ),
 
-    createColumn<LenderWithRelations>(
+    createColumn<LenderWithCalculations>(
       {
         accessorKey: 'email',
         header: 'table.email',
@@ -96,7 +95,7 @@ export function LenderTable({ lenders, project, projectId, views }: LenderTableP
       t,
     ),
 
-    createColumn<LenderWithRelations>(
+    createColumn<LenderWithCalculations>(
       {
         accessorKey: 'telNo',
         header: 'table.telNo',
@@ -104,11 +103,11 @@ export function LenderTable({ lenders, project, projectId, views }: LenderTableP
       t,
     ),
 
-    createLenderAddressColumn<LenderWithRelations>(t),
+    createLenderAddressColumn<LenderWithCalculations>(t),
 
-    createLenderBankingColumn<LenderWithRelations>(t),
+    createLenderBankingColumn<LenderWithCalculations>(t),
 
-    createLenderEnumBadgeColumn<LenderWithRelations>(
+    createLenderEnumBadgeColumn<LenderWithCalculations>(
       'salutation',
       'table.salutation',
       'enums.lender.salutation',
@@ -117,26 +116,26 @@ export function LenderTable({ lenders, project, projectId, views }: LenderTableP
       () => 'outline',
     ),
 
-    ...createAdditionalFieldsColumns<LenderWithRelations>(
+    ...createAdditionalFieldsColumns<LenderWithCalculations>(
       project.configuration.lenderAdditionalFields,
       'additionalFields',
       t,
       locale,
     ),
 
-    createCurrencyColumn<LenderWithRelations>('amount', 'table.amount', tLoans, locale),
+    createCurrencyColumn<LenderWithCalculations>('amount', 'table.amount', tLoans, locale),
 
-    createCurrencyColumn<LenderWithRelations>('balance', 'table.balance', tLoans, locale),
+    createCurrencyColumn<LenderWithCalculations>('balance', 'table.balance', tLoans, locale),
 
-    createCurrencyColumn<LenderWithRelations>('deposits', 'table.deposits', tLoans, locale),
+    createCurrencyColumn<LenderWithCalculations>('deposits', 'table.deposits', tLoans, locale),
 
-    createCurrencyColumn<LenderWithRelations>('withdrawals', 'table.withdrawals', tLoans, locale),
+    createCurrencyColumn<LenderWithCalculations>('withdrawals', 'table.withdrawals', tLoans, locale),
 
-    createCurrencyColumn<LenderWithRelations>('notReclaimed', 'table.notReclaimed', tLoans, locale),
+    createCurrencyColumn<LenderWithCalculations>('notReclaimed', 'table.notReclaimed', tLoans, locale),
 
-    createCurrencyColumn<LenderWithRelations>('interest', 'table.interest', tLoans, locale),
+    createCurrencyColumn<LenderWithCalculations>('interest', 'table.interest', tLoans, locale),
 
-    createCurrencyColumn<LenderWithRelations>('interestPaid', 'table.interestPaid', tLoans, locale),
+    createCurrencyColumn<LenderWithCalculations>('interestPaid', 'table.interestPaid', tLoans, locale),
   ];
 
   // Define column filters based on data types
@@ -239,44 +238,42 @@ export function LenderTable({ lenders, project, projectId, views }: LenderTableP
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">{t('title')}</h1>
-        <Button onClick={() => router.push(`/${projectId}/lenders/new`)}>
+        <Button onClick={() => router.push('/lenders/new')}>
           <Plus className="mr-2 h-4 w-4" />
           {t('new.title')}
         </Button>
       </div>
 
-      <Suspense fallback={<div>Loading...</div>}>
-        <DataTable
-          columns={columns}
-          data={lenders}
-          columnFilters={columnFilters}
-          defaultColumnVisibility={defaultColumnVisibility}
-          viewType="LENDER"
-          views={views}
-          showFilter={true}
-          onRowClick={(row) => router.push(`/${projectId}/lenders/${row.id}`)}
-          bulkActions={bulkActions}
-          actions={(row) => (
-            <div className="flex items-center justify-end space-x-2">
-              <ActionButton
-                icon={<Plus className="h-4 w-4" />}
-                tooltip={commonT('ui.actions.createLoan')}
-                srOnly={commonT('ui.actions.createLoan')}
-                onClick={() => {
-                  router.push(`/${projectId}/loans/new?lenderId=${row.id}`);
-                }}
-              />
-              <ActionButton
-                icon={<Pencil className="h-4 w-4" />}
-                tooltip={commonT('ui.actions.edit')}
-                onClick={() => {
-                  router.push(`/${projectId}/lenders/${row.id}/edit`);
-                }}
-              />
-            </div>
-          )}
-        />
-      </Suspense>
+      <DataTable
+        columns={columns}
+        data={lenders}
+        columnFilters={columnFilters}
+        defaultColumnVisibility={defaultColumnVisibility}
+        viewType="LENDER"
+        views={views}
+        showFilter={true}
+        onRowClick={(row) => router.push(`/lenders/${row.id}`)}
+        bulkActions={bulkActions}
+        actions={(row) => (
+          <div className="flex items-center justify-end space-x-2">
+            <ActionButton
+              icon={<Plus className="h-4 w-4" />}
+              tooltip={commonT('ui.actions.createLoan')}
+              srOnly={commonT('ui.actions.createLoan')}
+              onClick={() => {
+                router.push(`/loans/new?lenderId=${row.id}`);
+              }}
+            />
+            <ActionButton
+              icon={<Pencil className="h-4 w-4" />}
+              tooltip={commonT('ui.actions.edit')}
+              onClick={() => {
+                router.push(`/lenders/${row.id}/edit`);
+              }}
+            />
+          </div>
+        )}
+      />
 
       <ConfirmDialog
         open={isConfirmOpen}
@@ -284,7 +281,7 @@ export function LenderTable({ lenders, project, projectId, views }: LenderTableP
         title={t('bulkDelete.confirmTitle')}
         description={t('bulkDelete.confirmDescription', { count: bulkDeleteIds.length })}
         onConfirm={() => {
-          executeBulkDelete({ projectId, lenderIds: bulkDeleteIds });
+          executeBulkDelete({ projectId: project.id, lenderIds: bulkDeleteIds });
         }}
       />
     </div>

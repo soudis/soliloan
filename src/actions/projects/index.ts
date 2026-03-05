@@ -1,3 +1,3 @@
 export { createProjectAction } from './mutations/create-project';
-export { getProjectAction, getProjectUnsafe } from './queries/get-project';
-export { getProjectsAction } from './queries/get-projects';
+export { getProjectUnsafe } from './queries/get-project';
+export { getProjects } from './queries/get-projects';

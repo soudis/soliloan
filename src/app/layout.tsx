@@ -33,16 +33,18 @@ export const metadata: Metadata = {
   description: 'Direktkreditplattform',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
   params,
 }: Readonly<{
   children: React.ReactNode;
-  params?: { locale?: string };
+  params: Promise<Record<string, string | undefined>>;
 }>) {
+  const resolved = await params;
+  const locale = typeof resolved?.locale === 'string' ? resolved.locale : 'de';
   return (
     <html
-      lang={params?.locale || 'en'}
+      lang={locale}
       suppressHydrationWarning
       className={`${inter.className} ${inter.variable} ${comfortaa.variable} ${roboto.variable}`}
     >

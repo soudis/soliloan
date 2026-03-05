@@ -3,20 +3,18 @@
 import { Plus, Wallet } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
-import { useProjectId } from '@/lib/hooks/use-project-id';
-import type { LenderWithCalculations } from '@/types/lenders';
+import type { LenderDetailsWithCalculations } from '@/types/lenders';
 import { Button } from '../ui/button';
 import { LoanAccordionCard } from './loan-accordion-card';
 
 interface LenderLoansSectionProps {
-  lender: LenderWithCalculations;
+  lender: LenderDetailsWithCalculations;
 }
 
 export function LenderLoansSection({ lender }: LenderLoansSectionProps) {
   const commonT = useTranslations('common');
   const t = useTranslations('dashboard.lenders.lenderPage');
   const router = useRouter();
-  const projectId = useProjectId();
 
   const autoExpand = lender.loans.length <= 2;
 
@@ -37,7 +35,7 @@ export function LenderLoansSection({ lender }: LenderLoansSectionProps) {
         <Button
           variant="outline"
           className="w-full border-dashed py-6"
-          onClick={() => router.push(`/${projectId}/loans/new?lenderId=${lender.id}`)}
+          onClick={() => router.push(`/loans/new?lenderId=${lender.id}`)}
         >
           <Plus className="h-5 w-5 mr-2" />
           {commonT('terms.loan')}

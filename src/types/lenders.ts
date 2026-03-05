@@ -1,5 +1,6 @@
 import type { Configuration, File, Lender, Note, Project, User } from '@prisma/client';
-import type { getLenderAction } from '@/actions';
+import type { calculateLenderFields } from '@/lib/calculations/lender-calculations';
+import type { sanitizeLender } from '@/lib/sanitation/sanitize-lender';
 import type { AdditionalFieldValues } from '@/lib/schemas/common';
 import type { LoanWithRelations } from './loans';
 
@@ -20,6 +21,5 @@ export type LenderWithRelations = Lender & {
   additionalFields?: AdditionalFieldValues;
 };
 
-export type LenderWithCalculations = NonNullable<
-  NonNullable<Awaited<ReturnType<typeof getLenderAction>>['data']>['lender']
->;
+export type LenderWithCalculations = ReturnType<typeof sanitizeLender>;
+export type LenderDetailsWithCalculations = ReturnType<typeof calculateLenderFields>;

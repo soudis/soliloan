@@ -3,13 +3,16 @@ import { getTranslations } from 'next-intl/server';
 
 import { getTemplateAction } from '@/actions/templates/queries/get-template';
 import { TemplateEditor } from '@/components/templates/template-editor';
+import { searchParamsCache } from '@/lib/params';
 
 interface PageProps {
-  params: Promise<{ projectId: string; id: string }>;
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function ProjectTemplateEditorPage({ params }: PageProps) {
-  const { projectId, id } = await params;
+export default async function ProjectTemplateEditorPage({ params, searchParams }: PageProps) {
+  const { id } = await params;
+  const { projectId } = searchParamsCache.parse(await searchParams);
   const t = await getTranslations('templates');
 
   const { data } = await getTemplateAction({ id });
@@ -24,7 +27,7 @@ export default async function ProjectTemplateEditorPage({ params }: PageProps) {
 
   // Redirect if template doesn't belong to this project and isn't global
   if (data.template.projectId !== projectId && !data.template.isGlobal) {
-    redirect(`/${projectId}/configuration?tab=templates`);
+    redirect(`/configuration?tab=templates`);
   }
 
   return (

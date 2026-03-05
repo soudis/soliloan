@@ -8,14 +8,13 @@ import { updateLenderAction } from '@/actions/lenders';
 import { LenderForm } from '@/components/lenders/lender-form';
 import { useRouter } from '@/i18n/navigation';
 import type { LenderFormData } from '@/lib/schemas/lender';
-import type { LenderWithCalculations } from '@/types/lenders';
+import type { LenderDetailsWithCalculations } from '@/types/lenders';
 
 interface EditLenderClientProps {
-  lender: LenderWithCalculations;
-  projectId: string;
+  lender: LenderDetailsWithCalculations;
 }
 
-export function EditLenderClient({ lender, projectId }: EditLenderClientProps) {
+export function EditLenderClient({ lender }: EditLenderClientProps) {
   const router = useRouter();
   const t = useTranslations('dashboard.lenders');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,7 +32,7 @@ export function EditLenderClient({ lender, projectId }: EditLenderClientProps) {
       }
 
       toast.success(t('edit.form.success'));
-      router.push(`/${projectId}/lenders/${lender.id}`);
+      router.push(`/lenders/${lender.id}`);
     } catch (error) {
       console.error('Error submitting form:', error);
       setError(error instanceof Error ? error.message : 'An unknown error occurred');

@@ -71,7 +71,7 @@ export const updateNoteAction = lenderAction
     });
 
     // Revalidate paths
-    revalidatePath(`/${lender.projectId}/lenders/${lenderId}`);
+    revalidatePath(`/lenders/${lenderId}`);
 
     return { note };
   });

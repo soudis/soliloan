@@ -1,21 +1,14 @@
-import { usePathname } from 'next/navigation';
+'use client';
+
+import { useQueryState } from 'nuqs';
+
+import { PROJECT_ID_KEY, projectIdParser } from '@/lib/params';
 
 /**
- * Extracts the projectId from the current URL pathname.
- * The URL pattern is: /[locale]/[projectId]/...
- * Returns null if no projectId segment is found.
+ * Reads projectId from the URL search params (nuqs).
+ * Returns null when not set or empty.
  */
 export function useProjectId(): string | null {
-  const pathname = usePathname();
-  // pathname is like /de/[projectId]/lenders/...
-  // Split and get the second segment (after locale)
-  const segments = pathname.split('/').filter(Boolean);
-  // segments[0] = locale (e.g. 'de')
-  // segments[1] = projectId (if in a project-scoped route)
-  // Known non-project routes at segments[1]: 'projects', 'admin'
-  const NON_PROJECT_SEGMENTS = ['projects', 'admin'];
-  if (segments.length >= 2 && !NON_PROJECT_SEGMENTS.includes(segments[1])) {
-    return segments[1];
-  }
-  return null;
+  const [projectId] = useQueryState(PROJECT_ID_KEY, projectIdParser);
+  return projectId && projectId.length > 0 ? projectId : null;
 }

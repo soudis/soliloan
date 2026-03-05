@@ -14,7 +14,6 @@ import { Form } from '@/components/ui/form';
 import { useRouter } from '@/i18n/navigation';
 import type { ProjectFormData } from '@/lib/schemas/project';
 import { projectFormSchema } from '@/lib/schemas/project';
-import { useProjects } from '@/store/projects-store';
 
 interface ProjectDialogProps {
   open: boolean;
@@ -30,7 +29,6 @@ export function ProjectDialog({ open, onOpenChange }: ProjectDialogProps) {
   const commonT = useTranslations('common');
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { setSelectedProject } = useProjects();
 
   const form = useForm<ProjectFormData>({
     resolver: zodResolver(projectFormSchema),

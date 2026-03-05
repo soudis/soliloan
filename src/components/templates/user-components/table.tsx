@@ -226,6 +226,7 @@ export const Table = ({
 
   // Store the active cell ID on the craft.js node custom data so the settings panel can read it
   useEffect(() => {
+    // biome-ignore lint/suspicious/noExplicitAny: needed
     setProp((props: any) => {
       props._activeCellId = activeCellId;
     });
@@ -310,7 +311,13 @@ export const Table = ({
         {/* Body rows */}
         <tbody>
           {Array.from({ length: displayRows }).map((_, rowIdx) => (
-            <tr key={`row-${rowIdx}`} className="border-b border-zinc-200 last:border-b-0">
+            <tr
+              key={`row-${
+                // biome-ignore lint/suspicious/noArrayIndexKey: needed
+                rowIdx
+              }`}
+              className="border-b border-zinc-200 last:border-b-0"
+            >
               {Array.from({ length: columns }).map((_, colIdx) => {
                 const cellId = buildCellId(nodeId, 'cell', rowIdx, colIdx);
                 return (
@@ -360,7 +367,6 @@ export const TableSettings = () => {
     rows,
     textAlign,
     activeCellId,
-    nodeId,
   } = useNode((node) => ({
     loopKey: node.data.props.loopKey as string,
     label: node.data.props.label as string,
@@ -514,7 +520,9 @@ export const TableSettings = () => {
 
       {/* Text alignment */}
       <div className="space-y-2">
-        <label className="text-xs font-medium">{tText('textAlign')}</label>
+        <label className="text-xs font-medium" htmlFor="textAlign">
+          {tText('textAlign')}
+        </label>
         <div className="flex gap-1">
           {ALIGN_OPTIONS.map(({ value, icon: Icon }) => (
             <button

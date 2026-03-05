@@ -1,11 +1,12 @@
 'use server';
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { db } from '@/lib/db';
+import { sanitizeLender } from '@/lib/sanitation/sanitize-lender';
 import { projectIdSchema } from '@/lib/schemas/common';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { projectAction } from '@/lib/utils/safe-action';
 
-async function getLendersByProjectId(projectId: string) {
+export async function getLendersByProjectIdUnsafe(projectId: string) {
   try {
     const lenders = await db.lender.findMany({
       where: {
@@ -73,8 +74,10 @@ async function getLendersByProjectId(projectId: string) {
 
     // Calculate virtual fields for each lender
     const lendersWithCalculations = lenders.map((lender) =>
-      calculateLenderFields(
-        parseAdditionalFields({ ...lender, loans: lender.loans.map((loan) => parseAdditionalFields(loan)) }),
+      sanitizeLender(
+        calculateLenderFields(
+          parseAdditionalFields({ ...lender, loans: lender.loans.map((loan) => parseAdditionalFields(loan)) }),
+        ),
       ),
     );
 
@@ -90,5 +93,5 @@ async function getLendersByProjectId(projectId: string) {
 export const getLendersByProjectAction = projectAction
   .inputSchema(projectIdSchema)
   .action(async ({ parsedInput: { projectId } }) => {
-    return getLendersByProjectId(projectId);
+    return getLendersByProjectIdUnsafe(projectId);
   });

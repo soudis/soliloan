@@ -63,7 +63,7 @@ export const deleteFileAction = fileAction
     });
 
     // Revalidate paths
-    revalidatePath(`/${file.lender.projectId}/lenders/${file.lenderId}`);
+    revalidatePath(`/lenders/${file.lenderId}`);
 
     return { success: true };
   });

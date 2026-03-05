@@ -9,8 +9,8 @@ import { FormNumberInput } from '@/components/form/form-number-input';
 import { FormSelect } from '@/components/form/form-select';
 import { LenderCombobox } from '@/components/loans/lender-combobox';
 import { FormSection } from '@/components/ui/form-section';
-import { useProjects } from '@/store/projects-store';
 import { FormAdditionalFields } from '../form/form-additional-fields';
+import { useProject } from '../providers/project-provider';
 import { TerminationFormFields } from './termination-form-fields';
 
 interface LoanFormFieldsProps {
@@ -23,7 +23,7 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
   const searchParams = useSearchParams();
 
   const preselectedLenderId = searchParams.get('lenderId');
-  const { selectedProject } = useProjects();
+  const { project } = useProject();
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -83,16 +83,16 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
       </FormSection>
 
       {/* Additional Information Section */}
-      {((selectedProject?.configuration.loanAdditionalFields.length ?? 0) > 0 ||
-        (selectedProject?.configuration.altInterestMethods.length ?? 0) > 0) && (
+      {((project.configuration.loanAdditionalFields.length ?? 0) > 0 ||
+        (project.configuration.altInterestMethods.length ?? 0) > 0) && (
         <FormSection title={t('new.form.additionalInfo')}>
-          {(selectedProject?.configuration.altInterestMethods.length ?? 0) > 0 && (
+          {(project.configuration.altInterestMethods.length ?? 0) > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormSelect
                 name="altInterestMethod"
                 label={t('new.form.altInterestMethod')}
-                placeholder={`${commonT(`enums.interestMethod.${selectedProject?.configuration.interestMethod}`)} (${commonT('default')})`}
-                options={(selectedProject?.configuration.altInterestMethods ?? []).map((key) => ({
+                placeholder={`${commonT(`enums.interestMethod.${project.configuration.interestMethod}`)} (${commonT('default')})`}
+                options={(project.configuration.altInterestMethods ?? []).map((key) => ({
                   value: key,
                   label: commonT(`enums.interestMethod.${key}`),
                 }))}
@@ -100,10 +100,7 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
             </div>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormAdditionalFields
-              config={selectedProject?.configuration.loanAdditionalFields}
-              name="additionalFields"
-            />
+            <FormAdditionalFields config={project.configuration.loanAdditionalFields} name="additionalFields" />
           </div>
         </FormSection>
       )}

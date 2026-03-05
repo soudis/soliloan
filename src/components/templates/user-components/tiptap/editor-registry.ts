@@ -47,6 +47,7 @@ class EditorRegistry {
 
   private notify(id: string) {
     if (this.listeners.has(id)) {
+      // biome-ignore lint/suspicious/useIterableCallbackReturn: we need to use the callback function
       this.listeners.get(id)?.forEach((cb) => cb());
     }
   }

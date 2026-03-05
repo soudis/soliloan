@@ -2,12 +2,12 @@
 
 import { Files as FilesIcon, NotebookPen } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { LenderWithCalculations } from '@/types/lenders';
+import type { LenderDetailsWithCalculations } from '@/types/lenders';
 import { Files } from '../generic/files';
 import { Notes } from '../generic/notes';
 
 interface LenderNotesFilesSectionProps {
-  lender: LenderWithCalculations;
+  lender: LenderDetailsWithCalculations;
 }
 
 export function LenderNotesFilesSection({ lender }: LenderNotesFilesSectionProps) {

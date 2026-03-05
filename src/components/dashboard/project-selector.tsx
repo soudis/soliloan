@@ -1,62 +1,26 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { ChevronsUpDown, Loader2 } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { ChevronsUpDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
-import { getProjectsAction } from '@/actions/projects/queries/get-projects';
+import { useQueryState } from 'nuqs';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
-import { useRouter } from '@/i18n/navigation';
-import { useProjectId } from '@/lib/hooks/use-project-id';
+import { PROJECT_ID_KEY, projectIdParser } from '@/lib/params';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { ProjectLogo } from './project-logo';
 
-export default function ProjectSelector() {
+export default function ProjectSelector({ projects }: { projects: ProjectWithConfiguration[] }) {
   const t = useTranslations('navigation');
-  const router = useRouter();
-  const pathname = usePathname();
-  const currentProjectId = useProjectId();
-
-  const { data: response, isLoading } = useQuery({
-    queryKey: ['projects'],
-    queryFn: () => getProjectsAction(),
+  const [projectId, setProjectId] = useQueryState(PROJECT_ID_KEY, {
+    ...projectIdParser,
+    shallow: false,
   });
+  const currentProjectId = projectId && projectId.length > 0 ? projectId : null;
 
-  const projects = response?.data?.projects ?? [];
   const selectedProject = projects.find((p) => p.id === currentProjectId) ?? null;
-
-  // Auto-redirect to first project if on a non-project route
-  useEffect(() => {
-    if (projects.length > 0 && !currentProjectId) {
-      router.replace(`/${projects[0].id}`);
-    }
-  }, [projects, currentProjectId, router]);
-
-  if (isLoading || !response) {
-    return (
-      <div className="flex items-center justify-center p-4">
-        <Loader2 className="h-4 w-4 animate-spin" />
-      </div>
-    );
-  }
-
-  const { data, serverError } = response ?? {};
-
-  if (serverError || !data?.projects) {
-    console.error(response);
-    throw new Error(serverError);
-  }
 
   const handleProjectChange = (newProjectId: string) => {
     if (newProjectId === currentProjectId) return;
-
-    // Extract the sub-path after the current projectId and navigate to the same sub-path
-    // on the new project. Pathname is like /de/[projectId]/lenders/...
-    const segments = pathname.split('/').filter(Boolean);
-    // segments[0] = locale, segments[1] = projectId, segments[2+] = sub-path
-    const subPath = currentProjectId && segments.length > 2 ? `/${segments.slice(2).join('/')}` : '';
-    router.push(`/${newProjectId}${subPath}`);
+    setProjectId(newProjectId);
   };
 
   return (
@@ -74,7 +38,7 @@ export default function ProjectSelector() {
           </div>
         </SelectTrigger>
         <SelectContent>
-          {data.projects.map((project: ProjectWithConfiguration) => (
+          {projects.map((project: ProjectWithConfiguration) => (
             <SelectItem key={project.id} value={project.id}>
               <div className="flex items-center gap-3">
                 <ProjectLogo project={project} className="h-6 w-6 rounded-md" />

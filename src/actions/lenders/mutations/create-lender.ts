@@ -69,7 +69,7 @@ export const createLenderAction = projectAction.inputSchema(lenderFormSchema).ac
   });
 
   // Revalidate the lenders page
-  revalidatePath(`/${data.projectId}/lenders`);
+  revalidatePath('/lenders');
 
   return { id: lender.id };
 });

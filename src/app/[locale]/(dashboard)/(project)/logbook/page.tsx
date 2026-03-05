@@ -2,15 +2,16 @@ import { ViewType } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { getViewsByType } from '@/actions';
 import { LogbookTable } from '@/components/dashboard/logbook/logbook-table';
+import { searchParamsCache } from '@/lib/params';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 
 interface PageProps {
-  params: Promise<{ projectId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function LogbookPage({ params }: PageProps) {
-  const { projectId } = await params;
+export default async function LogbookPage({ searchParams }: PageProps) {
+  const { projectId } = searchParamsCache.parse(await searchParams);
   const session = await auth();
   if (!session) {
     throw new Error('Unauthorized');

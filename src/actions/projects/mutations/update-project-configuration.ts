@@ -17,7 +17,7 @@ export async function updateConfiguration(projectId: string, data: Configuration
   }
 
   // Fetch the current project
-  const { project } = await getProjectUnsafe(projectId);
+  const project = await getProjectUnsafe(projectId);
 
   if (!project) {
     throw new Error('error.project.notFound');
@@ -49,7 +49,7 @@ export async function updateConfiguration(projectId: string, data: Configuration
   }
 
   // Revalidate the project configuration page
-  revalidatePath(`/${projectId}/configuration`);
+  revalidatePath('/configuration');
 
   return getProjectUnsafe(projectId);
 }

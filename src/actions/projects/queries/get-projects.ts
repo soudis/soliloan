@@ -2,11 +2,13 @@
 
 import { omit } from 'lodash';
 import moment from 'moment';
+import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { parseAdditionalFieldConfig } from '@/lib/utils/additional-fields';
-import { managerAction } from '@/lib/utils/safe-action';
 
-async function getProjects(userId?: string) {
+export async function getProjects() {
+  const session = await auth();
+  const userId = session?.user.isAdmin ? undefined : session?.user.id;
   // Fetch all projects for the user
   const projects = await db.project.findMany({
     ...(userId && {
@@ -62,7 +64,3 @@ async function getProjects(userId?: string) {
     })),
   };
 }
-
-export const getProjectsAction = managerAction.action(async ({ ctx }) => {
-  return await getProjects(ctx.session.user.isAdmin ? undefined : ctx.session.user.id);
-});

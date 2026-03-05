@@ -7,7 +7,6 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { deleteLenderAction } from '@/actions/lenders/mutations/delete-lender';
 import { useRouter } from '@/i18n/navigation';
-import { useProjectId } from '@/lib/hooks/use-project-id';
 import { getLenderName } from '@/lib/utils';
 import type { LenderWithCalculations } from '@/types/lenders';
 import { ConfirmDialog } from '../generic/confirm-dialog';
@@ -22,7 +21,6 @@ export function LenderPageHeader({ lender }: LenderPageHeaderProps) {
   const commonT = useTranslations('common');
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const router = useRouter();
-  const projectId = useProjectId();
   const queryClient = useQueryClient();
 
   const handleDeleteLender = async () => {
@@ -36,7 +34,7 @@ export function LenderPageHeader({ lender }: LenderPageHeaderProps) {
       } else {
         toast.success(t('delete.success'), { id: toastId });
         await queryClient.invalidateQueries({ queryKey: ['lender', lender.id] });
-        router.push(`/${projectId}/lenders`);
+        router.push('/lenders');
       }
     } catch (e) {
       toast.error(t('delete.error'), { id: toastId });
@@ -58,7 +56,7 @@ export function LenderPageHeader({ lender }: LenderPageHeaderProps) {
           variant="outline"
           size="sm"
           className="h-9 w-9 p-0 sm:h-auto sm:w-auto sm:px-3 sm:py-1.5"
-          onClick={() => router.push(`/${projectId}/lenders/${lender.id}/edit`)}
+          onClick={() => router.push(`/lenders/${lender.id}/edit`)}
         >
           <Pencil className="h-4 w-4 sm:mr-2" />
           <span className="hidden sm:inline">{commonT('ui.actions.edit')}</span>

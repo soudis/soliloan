@@ -1,6 +1,6 @@
 import type { Configuration, File, Lender, Loan, Note, Project, Transaction, User } from '@prisma/client';
-
-import type { getLenderAction } from '@/actions';
+import type { calculateLoanFields } from '@/lib/calculations/loan-calculations';
+import type { sanitizeLoan } from '@/lib/sanitation/sanitize-loan';
 import type { AdditionalFieldValues } from '@/lib/schemas/common';
 
 export enum LoanStatus {
@@ -35,6 +35,6 @@ export type LoanWithRelations = Loan & {
   additionalFields?: AdditionalFieldValues;
 };
 
-export type LoanWithCalculations = NonNullable<
-  NonNullable<Awaited<ReturnType<typeof getLenderAction>>['data']>['lender']
->['loans'][0];
+export type LoanWithCalculations = ReturnType<typeof sanitizeLoan>;
+export type LoanDetailsWithCalculations = ReturnType<typeof calculateLoanFields>;
+export type LoanIdentifier = Pick<LoanDetailsWithCalculations, 'id' | 'loanNumber' | 'status'>;

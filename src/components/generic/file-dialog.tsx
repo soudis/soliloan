@@ -12,13 +12,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Form } from '@/components/ui/form';
 import type { FileFormData } from '@/lib/schemas/file';
 import { fileSchema } from '@/lib/schemas/file';
-import type { LoanWithCalculations } from '@/types/loans';
+import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { FileFormFields } from './file-form-fields';
 
 interface FileDialogProps {
   lenderId: string;
   loanId?: string;
-  loans?: LoanWithCalculations[];
+  loans?: LoanDetailsWithCalculations[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }

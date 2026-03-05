@@ -57,8 +57,8 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
   });
 
   // Revalidate the lender page and loans page
-  revalidatePath(`/${loan.lender.projectId}/lenders/${data.lenderId}`);
-  revalidatePath(`/${loan.lender.projectId}/loans`);
+  revalidatePath(`/lenders/${data.lenderId}`);
+  revalidatePath('/loans');
 
   return { loan };
 });

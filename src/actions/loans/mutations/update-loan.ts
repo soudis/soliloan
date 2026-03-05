@@ -82,8 +82,8 @@ export const updateLoanAction = loanAction
     }
 
     // Revalidate the lender page and loans page
-    revalidatePath(`/${loan.lender.projectId}/lenders/${loan.lenderId}`);
-    revalidatePath(`/${loan.lender.projectId}/loans`);
+    revalidatePath(`/lenders/${loan.lenderId}`);
+    revalidatePath('/loans');
 
     return { loan: updatedLoan };
   });

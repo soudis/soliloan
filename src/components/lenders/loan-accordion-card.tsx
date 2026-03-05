@@ -12,18 +12,17 @@ import { deleteLoanAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { InfoItem } from '@/components/ui/info-item';
 import { useRouter } from '@/i18n/navigation';
-import { useProjectId } from '@/lib/hooks/use-project-id';
 import { cn, formatCurrency, formatPercentage } from '@/lib/utils';
-import { useProjects } from '@/store/projects-store';
-import type { LoanWithCalculations } from '@/types/loans';
+import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-items';
 import { BalanceTable } from '../loans/balance-table';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 import { LoanTransactions } from '../loans/loan-transactions';
+import { useProject } from '../providers/project-provider';
 import { Button } from '../ui/button';
 
 interface LoanAccordionCardProps {
-  loan: LoanWithCalculations;
+  loan: LoanDetailsWithCalculations;
   defaultOpen?: boolean;
 }
 
@@ -32,9 +31,8 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
   const commonT = useTranslations('common');
   const locale = useLocale();
   const dateLocale = locale === 'de' ? de : enUS;
-  const { selectedProject } = useProjects();
+  const { project } = useProject();
   const router = useRouter();
-  const projectId = useProjectId();
   const queryClient = useQueryClient();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [loanId] = useQueryState('loanId', parseAsString);
@@ -125,7 +123,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
               className="h-8 w-8"
               onClick={(e) => {
                 e.stopPropagation();
-                router.push(`/${projectId}/loans/${loan.id}/edit`);
+                router.push(`/loans/${loan.id}/edit`);
               }}
             >
               <Pencil className="h-3.5 w-3.5" />
@@ -198,7 +196,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
               <div className="grid grid-cols-2 gap-3">
                 <AdditionalFieldInfoItems
                   additionalFields={loan.additionalFields}
-                  configuration={selectedProject?.configuration.loanAdditionalFields}
+                  configuration={project.configuration.loanAdditionalFields}
                 />
               </div>
             </div>

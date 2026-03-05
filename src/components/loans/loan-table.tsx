@@ -28,11 +28,11 @@ import {
   createPercentageColumn,
   createTerminationModalitiesColumn,
 } from '@/lib/table-column-utils';
-import { LoanStatus, type LoanWithRelations } from '@/types/loans';
+import { LoanStatus, type LoanWithCalculations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
 interface LoanTableProps {
-  loans: LoanWithRelations[];
+  loans: LoanWithCalculations[];
   project: ProjectWithConfiguration;
   projectId: string;
   views: View[];
@@ -69,14 +69,14 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
     },
   ];
 
-  const columns: ColumnDef<LoanWithRelations>[] = [
-    createNumberColumn<LoanWithRelations>('loanNumber', 'table.loanNumber', t, locale),
+  const columns: ColumnDef<LoanWithCalculations>[] = [
+    createNumberColumn<LoanWithCalculations>('loanNumber', 'table.loanNumber', t, locale),
 
-    createColumn<LoanWithRelations>(
+    createColumn<LoanWithCalculations>(
       {
         accessorKey: 'lenderNumber',
         header: 'table.lenderNumber',
-        accessorFn: (row: LoanWithRelations) => row.lender?.lenderNumber,
+        accessorFn: (row: LoanWithCalculations) => row.lender?.lenderNumber,
         cell: ({ row }) => {
           const value = row.original.lender?.lenderNumber || 0;
           return value.toFixed(0);
@@ -85,27 +85,27 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
       t,
     ),
 
-    createLenderColumn<LoanWithRelations>(t),
+    createLenderColumn<LoanWithCalculations>(t),
 
-    createDateColumn<LoanWithRelations>('signDate', 'table.signDate', t),
+    createDateColumn<LoanWithCalculations>('signDate', 'table.signDate', t),
 
-    createCurrencyColumn<LoanWithRelations>('amount', 'table.amount', t, locale),
+    createCurrencyColumn<LoanWithCalculations>('amount', 'table.amount', t, locale),
 
-    createCurrencyColumn<LoanWithRelations>('balance', 'table.balance', t, locale),
+    createCurrencyColumn<LoanWithCalculations>('balance', 'table.balance', t, locale),
 
-    createCurrencyColumn<LoanWithRelations>('deposits', 'table.deposits', t, locale),
+    createCurrencyColumn<LoanWithCalculations>('deposits', 'table.deposits', t, locale),
 
-    createCurrencyColumn<LoanWithRelations>('withdrawals', 'table.withdrawals', t, locale),
+    createCurrencyColumn<LoanWithCalculations>('withdrawals', 'table.withdrawals', t, locale),
 
-    createCurrencyColumn<LoanWithRelations>('notReclaimed', 'table.notReclaimed', t, locale),
+    createCurrencyColumn<LoanWithCalculations>('notReclaimed', 'table.notReclaimed', t, locale),
 
-    createPercentageColumn<LoanWithRelations>('interestRate', 'table.interestRate', t, locale),
+    createPercentageColumn<LoanWithCalculations>('interestRate', 'table.interestRate', t, locale),
 
-    createCurrencyColumn<LoanWithRelations>('interest', 'table.interest', t, locale),
+    createCurrencyColumn<LoanWithCalculations>('interest', 'table.interest', t, locale),
 
-    createCurrencyColumn<LoanWithRelations>('interestPaid', 'table.interestPaid', t, locale),
+    createCurrencyColumn<LoanWithCalculations>('interestPaid', 'table.interestPaid', t, locale),
 
-    createEnumBadgeColumn<LoanWithRelations>(
+    createEnumBadgeColumn<LoanWithCalculations>(
       'terminationType',
       'table.terminationType',
       'enums.loan.terminationType',
@@ -114,11 +114,11 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
       () => 'outline',
     ),
 
-    createTerminationModalitiesColumn<LoanWithRelations>(t, commonT),
+    createTerminationModalitiesColumn<LoanWithCalculations>(t, commonT),
 
-    createDateColumn<LoanWithRelations>('repayDate', 'table.repayDate', t),
+    createDateColumn<LoanWithCalculations>('repayDate', 'table.repayDate', t),
 
-    createEnumBadgeColumn<LoanWithRelations>('status', 'table.status', 'enums.loan.status', t, commonT, (value) => {
+    createEnumBadgeColumn<LoanWithCalculations>('status', 'table.status', 'enums.loan.status', t, commonT, (value) => {
       switch (value) {
         case 'ACTIVE':
           return 'default';
@@ -131,7 +131,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
       }
     }),
 
-    createEnumBadgeColumn<LoanWithRelations>(
+    createEnumBadgeColumn<LoanWithCalculations>(
       'altInterestMethod',
       'table.altInterestMethod',
       'enums.interestMethod',
@@ -140,7 +140,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
       () => 'outline',
     ),
 
-    createEnumBadgeColumn<LoanWithRelations>(
+    createEnumBadgeColumn<LoanWithCalculations>(
       'contractStatus',
       'table.contractStatus',
       'enums.loan.contractStatus',
@@ -155,7 +155,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
         }
       },
     ),
-    ...createAdditionalFieldsColumns<LoanWithRelations>(
+    ...createAdditionalFieldsColumns<LoanWithCalculations>(
       project.configuration.loanAdditionalFields,
       'additionalFields',
       t,
@@ -283,7 +283,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">{t('title')}</h1>
-        <Button onClick={() => router.push(`/${projectId}/loans/new`)}>
+        <Button onClick={() => router.push('/loans/new')}>
           <Plus className="mr-2 h-4 w-4" />
           {t('new.title')}
         </Button>
@@ -297,7 +297,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
         viewType={ViewType.LOAN}
         views={views}
         showFilter={true}
-        onRowClick={(row) => router.push(`/${projectId}/lenders/${row.lender.id}?loanId=${row.id}`)}
+        onRowClick={(row) => router.push(`/lenders/${row.lender.id}?loanId=${row.id}`)}
         bulkActions={bulkActions}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-2">
@@ -305,7 +305,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
               icon={<Pencil className="h-4 w-4" />}
               tooltip={commonT('ui.actions.edit')}
               onClick={() => {
-                router.push(`/${projectId}/loans/${row.id}/edit`);
+                router.push(`/loans/${row.id}/edit`);
               }}
             />
           </div>

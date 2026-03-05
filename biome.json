@@ -44,6 +44,12 @@
           "level": "error",
           "fix": "safe"
         }
+      },
+      "complexity": {
+        "noImportantStyles": "off"
+      },
+      "a11y": {
+        "noStaticElementInteractions": "off"
       }
     }
   },

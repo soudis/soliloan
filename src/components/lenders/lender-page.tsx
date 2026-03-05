@@ -3,16 +3,16 @@
 import { BarChart3, Files as FilesIcon, User, Wallet } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
-import type { LenderWithCalculations } from '@/types/lenders';
+import type { LenderDetailsWithCalculations } from '@/types/lenders';
 import { LenderContactSection } from './lender-contact-section';
 import { LenderFinancialsSection } from './lender-financials-section';
 import { LenderLoansSection } from './lender-loans-section';
 import { LenderNotesFilesSection } from './lender-notes-files-section';
 import { LenderPageHeader } from './lender-page-header';
-import { SectionNavBar, SectionNavSidebar, type SectionNavItem } from './section-nav';
+import { SectionNavBar, type SectionNavItem, SectionNavSidebar } from './section-nav';
 
 type Props = {
-  lender: LenderWithCalculations;
+  lender: LenderDetailsWithCalculations;
 };
 
 export const LenderPage = ({ lender }: Props) => {

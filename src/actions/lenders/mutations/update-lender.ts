@@ -87,8 +87,8 @@ export const updateLenderAction = lenderAction
     }
 
     // Revalidate the lenders page
-    revalidatePath(`/${lender.projectId}/lenders/${updatedLender.id}`);
-    revalidatePath(`/${lender.projectId}/lenders`);
+    revalidatePath(`/lenders/${updatedLender.id}`);
+    revalidatePath('/lenders');
 
     return { success: true };
   });

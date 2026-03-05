@@ -7,27 +7,22 @@ import { useTranslations } from 'next-intl';
 
 import { ThemeSelector } from '@/components/theme-selector';
 import { Button } from '@/components/ui/button';
-import { useProjectId } from '@/lib/hooks/use-project-id';
 import { useAppStore } from '@/store';
-
+import type { ProjectWithConfiguration } from '@/types/projects';
 import { NavItem } from './nav-item';
 import ProjectSelector from './project-selector';
 
 interface SidebarNavProps {
   isSidebarOpen: boolean;
   session: Session;
+  projects: ProjectWithConfiguration[];
 }
 
-export function SidebarNav({ isSidebarOpen, session }: SidebarNavProps) {
+export function SidebarNav({ isSidebarOpen, session, projects }: SidebarNavProps) {
   const t = useTranslations('navigation');
   const commonT = useTranslations('common');
   const { toggleSidebar } = useAppStore();
-  const projectId = useProjectId();
-
   const isAdmin = session.user.isAdmin;
-
-  // Build project-scoped base path
-  const base = projectId ? `/${projectId}` : '';
 
   return (
     <>
@@ -51,13 +46,13 @@ export function SidebarNav({ isSidebarOpen, session }: SidebarNavProps) {
         } fixed inset-y-0 left-0 z-30 w-64 transform border-r bg-background transition duration-300 ease-in-out md:relative md:translate-x-0`}
       >
         <div className="h-full overflow-y-auto px-3 py-4 flex flex-col">
-          <ProjectSelector />
+          <ProjectSelector projects={projects} />
           <nav className="space-y-2 flex-grow">
-            <NavItem href={`${base}`} icon={LayoutDashboard} label={t('dashboard')} />
-            <NavItem href={`${base}/lenders`} icon={Users} label={t('lenders')} />
-            <NavItem href={`${base}/loans`} icon={Wallet} label={t('loans')} />
-            <NavItem href={`${base}/logbook`} icon={History} label={t('logbook')} />
-            <NavItem href={`${base}/configuration`} icon={Settings} label={t('configuration')} />
+            <NavItem href="/dashboard" icon={LayoutDashboard} label={t('dashboard')} />
+            <NavItem href="/lenders" icon={Users} label={t('lenders')} />
+            <NavItem href="/loans" icon={Wallet} label={t('loans')} />
+            <NavItem href="/logbook" icon={History} label={t('logbook')} />
+            <NavItem href="/configuration" icon={Settings} label={t('configuration')} />
           </nav>
 
           {isAdmin && (

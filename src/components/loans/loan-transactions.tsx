@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { deleteTransactionAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { cn, formatCurrency } from '@/lib/utils';
-import { LoanStatus, type LoanWithCalculations } from '@/types/loans';
+import { type LoanDetailsWithCalculations, LoanStatus } from '@/types/loans';
 
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
@@ -24,7 +24,7 @@ const PAGE_SIZE = 10;
 interface LoanTransactionsProps {
   loanId: string;
   transactions: Transaction[];
-  loan: LoanWithCalculations;
+  loan: LoanDetailsWithCalculations;
 }
 
 export function LoanTransactions({ loanId, transactions, loan }: LoanTransactionsProps) {

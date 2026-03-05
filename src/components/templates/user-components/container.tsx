@@ -264,7 +264,9 @@ export const ContainerSettings = () => {
     <div className="space-y-4 p-4">
       {/* Layout mode */}
       <div className="space-y-2">
-        <label className="text-xs font-medium">{t('layout')}</label>
+        <label className="text-xs font-medium" htmlFor="layout">
+          {t('layout')}
+        </label>
         <div className="flex gap-2">
           {LAYOUT_OPTIONS.map((opt) => (
             <LayoutButton
@@ -373,7 +375,9 @@ export const ContainerSettings = () => {
 
       {/* Border */}
       <div className="space-y-2">
-        <label className="text-xs font-medium">{t('border')}</label>
+        <label className="text-xs font-medium" htmlFor="border">
+          {t('border')}
+        </label>
         <div className="flex flex-wrap gap-2">
           {(['borderTop', 'borderRight', 'borderBottom', 'borderLeft'] as const).map((side) => (
             <label key={side} className="flex items-center gap-1.5 text-xs">

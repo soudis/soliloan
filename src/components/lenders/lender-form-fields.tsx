@@ -12,25 +12,25 @@ import { FormSelect } from '@/components/form/form-select';
 import { FormSection } from '@/components/ui/form-section';
 
 import type { LenderFormData } from '@/lib/schemas/lender';
-import { useProjects } from '@/store/projects-store';
+import { useProject } from '../providers/project-provider';
 
 export function LenderFormFields() {
   const t = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
 
   const form = useFormContext<LenderFormData>();
-  const { selectedProject } = useProjects();
+  const { project } = useProject();
 
   const type = form.watch('type');
 
   const salutation = form.watch('salutation');
 
-  if (!selectedProject) {
+  if (!project) {
     return null;
   }
-  const isAddressRequired = selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.address);
-  const isEmailRequired = selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.email);
-  const isTelNoRequired = selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.telNo);
+  const isAddressRequired = project.configuration.lenderRequiredFields.includes(LenderRequiredField.address);
+  const isEmailRequired = project.configuration.lenderRequiredFields.includes(LenderRequiredField.email);
+  const isTelNoRequired = project.configuration.lenderRequiredFields.includes(LenderRequiredField.telNo);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -160,13 +160,10 @@ export function LenderFormFields() {
       </FormSection>
 
       {/* Additional Information Section */}
-      {selectedProject?.configuration.lenderAdditionalFields.length > 0 && (
+      {project.configuration.lenderAdditionalFields.length > 0 && (
         <FormSection title={t('new.form.additionalInfo')}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormAdditionalFields
-              config={selectedProject?.configuration.lenderAdditionalFields}
-              name="additionalFields"
-            />
+            <FormAdditionalFields config={project.configuration.lenderAdditionalFields} name="additionalFields" />
           </div>
         </FormSection>
       )}

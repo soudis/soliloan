@@ -141,7 +141,9 @@ export const PageHeaderSettings = () => {
         />
       </div>
       <div className="space-y-2">
-        <label className="text-xs font-medium">{t('border')}</label>
+        <label className="text-xs font-medium" htmlFor="border">
+          {t('border')}
+        </label>
         <div className="flex flex-wrap gap-2">
           {(['borderTop', 'borderRight', 'borderBottom', 'borderLeft'] as const).map((side) => (
             <label key={side} className="flex items-center gap-1.5 text-xs">

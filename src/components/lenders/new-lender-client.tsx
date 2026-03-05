@@ -33,7 +33,7 @@ export function NewLenderClient({ projectId }: NewLenderClientProps) {
       toast.success(t('new.form.success'));
 
       if (result?.data?.id) {
-        router.push(`/${projectId}/lenders/${result.data.id}`);
+        router.push(`/lenders/${result.data.id}`);
       }
     } catch (error) {
       console.error('Error submitting form:', error);

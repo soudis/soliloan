@@ -7,11 +7,11 @@ import { FormField } from '@/components/form/form-field';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FormControl, FormField as FormFieldWrapper, FormItem, FormLabel } from '@/components/ui/form';
 import type { FileFormData } from '@/lib/schemas/file';
-import type { LoanWithCalculations } from '@/types/loans';
+import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { LoanDropdown } from '../lenders/loan-dropdown';
 
 type FileFormFieldsProps = {
-  loans?: LoanWithCalculations[];
+  loans?: LoanDetailsWithCalculations[];
   loanId?: string;
 };
 

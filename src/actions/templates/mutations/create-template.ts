@@ -28,7 +28,7 @@ export const createTemplateAction = projectAction
     });
 
     if (!data.isGlobal && data.projectId) {
-      revalidatePath(`/${data.projectId}/configuration`);
+      revalidatePath('/configuration');
     } else {
       revalidatePath('/admin/templates');
     }

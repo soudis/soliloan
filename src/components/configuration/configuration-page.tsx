@@ -43,7 +43,7 @@ export const ConfigurationPage = ({ project }: Props) => {
 
     if (result.serverError) {
       setError(result.serverError);
-    } else if (result.data?.project) {
+    } else {
       // Show success message
       toast.success(t('form.success'));
     }

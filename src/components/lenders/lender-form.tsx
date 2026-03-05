@@ -16,8 +16,8 @@ import {
 import type { LenderFormData } from '@/lib/schemas/lender';
 import { lenderFormSchema } from '@/lib/schemas/lender';
 import { additionalFieldDefaults, validateAdditionalFields } from '@/lib/utils/additional-fields';
-import { useProjects } from '@/store/projects-store';
 import type { LenderWithRelations } from '@/types/lenders';
+import { useProject } from '../providers/project-provider';
 import { LenderFormFields } from './lender-form-fields';
 
 interface LenderFormProps {
@@ -41,30 +41,30 @@ export function LenderForm({
   isLoading,
   error,
 }: LenderFormProps) {
-  const { selectedProject } = useProjects();
+  const { project } = useProject();
 
   const initialType = initialData?.type || LenderType.PERSON;
 
   const schema = lenderFormSchema.superRefine((data, ctx) => {
-    if (selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.address)) {
+    if (project.configuration.lenderRequiredFields.includes(LenderRequiredField.address)) {
       validateAddressRequired(data as Record<string, string | null | undefined>, ctx);
     } else {
       validateAddressOptional(data as Record<string, string | null | undefined>, ctx);
     }
-    if (selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.email)) {
+    if (project.configuration.lenderRequiredFields.includes(LenderRequiredField.email)) {
       validateFieldRequired('email')(data as { email?: string | null }, ctx);
     }
-    if (selectedProject?.configuration?.lenderRequiredFields.includes(LenderRequiredField.telNo)) {
+    if (project.configuration.lenderRequiredFields.includes(LenderRequiredField.telNo)) {
       validateFieldRequired('telNo')(data as { telNo?: string | null }, ctx);
     }
-    validateAdditionalFields('additionalFields', selectedProject?.configuration?.lenderAdditionalFields)(data, ctx);
+    validateAdditionalFields('additionalFields', project.configuration.lenderAdditionalFields)(data, ctx);
   });
 
   const defaultValues = useMemo(() => {
     return {
       type: initialType,
-      salutation: initialData?.salutation || selectedProject?.configuration?.lenderSalutation || '',
-      projectId: selectedProject?.id || '',
+      salutation: initialData?.salutation || project.configuration.lenderSalutation || '',
+      projectId: project.id || '',
       // Contact Information
       email: initialData?.email || '',
       telNo: initialData?.telNo || '',
@@ -73,7 +73,7 @@ export function LenderForm({
       addon: initialData?.addon || '',
       zip: initialData?.zip || '',
       place: initialData?.place || '',
-      country: initialData?.country || selectedProject?.configuration?.lenderCountry || '',
+      country: initialData?.country || project.configuration.lenderCountry || '',
       // Banking Information
       iban: initialData?.iban || '',
       bic: initialData?.bic || '',
@@ -84,12 +84,12 @@ export function LenderForm({
       titleSuffix: initialData?.titleSuffix || '',
       organisationName: initialData?.organisationName || '',
       additionalFields: additionalFieldDefaults(
-        selectedProject?.configuration?.lenderAdditionalFields || [],
+        project.configuration.lenderAdditionalFields || [],
         (initialData?.additionalFields as AdditionalFieldValues | undefined) || {},
       ),
       // Include any other fields from initialData that might not be explicitly handled
     };
-  }, [initialData, initialType, selectedProject]);
+  }, [initialData, initialType, project]);
 
   const form = useForm({
     resolver: zodResolver(schema),
@@ -100,7 +100,7 @@ export function LenderForm({
     form.reset(defaultValues);
   }, [defaultValues, form]);
 
-  if (!selectedProject) {
+  if (!project) {
     return null;
   }
 
