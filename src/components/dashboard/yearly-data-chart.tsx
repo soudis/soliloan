@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  BarController,
   BarElement,
   CategoryScale,
   type ChartData,
@@ -20,7 +21,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
 
 // Register ChartJS components
-ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  BarController,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+);
 
 interface YearlyDataItem {
   year: number;
