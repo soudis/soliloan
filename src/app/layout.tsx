@@ -33,6 +33,8 @@ export const metadata: Metadata = {
   description: 'Direktkreditplattform',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function RootLayout({
   children,
   params,
