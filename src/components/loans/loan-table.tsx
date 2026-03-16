@@ -85,9 +85,9 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
       t,
     ),
 
-    createLenderColumn<LoanWithCalculations>(t),
-
     createDateColumn<LoanWithCalculations>('signDate', 'table.signDate', t),
+
+    createLenderColumn<LoanWithCalculations>(t),
 
     createCurrencyColumn<LoanWithCalculations>('amount', 'table.amount', t, locale),
 
@@ -275,7 +275,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
     repayDate: false,
     status: true,
     altInterestMethod: false,
-    contractStatus: true,
+    contractStatus: false,
     ...createAdditionalFieldDefaultColumnVisibility('additionalFields', project.configuration.loanAdditionalFields),
   };
 
