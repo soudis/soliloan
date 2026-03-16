@@ -31,7 +31,7 @@ export function LoanCombobox({
   // Format lender options for the combobox
   const lenderOptions = loans.map((loan) => ({
     value: loan.id,
-    label: loan.loanNumber.toString(),
+    label: loan.loanNumber,
     customContent: <LoanSelectorItemRow loan={loan} highlightActive={false} />,
   }));
 

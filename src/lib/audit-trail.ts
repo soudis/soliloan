@@ -25,7 +25,7 @@ export interface AuditContext {
   };
   loan?: {
     id: string;
-    loanNumber: number;
+    loanNumber: string;
   };
   transaction?: {
     type: string;

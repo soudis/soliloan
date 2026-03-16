@@ -122,7 +122,7 @@ model Project {
 
 model Lender {
   id               String            @id @default(cuid())
-  lenderNumber     Int               @unique @default(autoincrement())
+  lenderNumber     String            @db.VarChar(50)
   projectId        String
   type             LenderType
   salutation       Salutation
@@ -146,11 +146,13 @@ model Lender {
   loans            Loan[]
   notes            Note[]
   additionalFields Json?
+
+  @@unique([projectId, lenderNumber])
 }
 
 model Loan {
   id                    String              @id @default(cuid())
-  loanNumber            Int                 @unique @default(autoincrement())
+  loanNumber            String              @db.VarChar(50)
   lenderId              String
   signDate              DateTime
   terminationType       TerminationType

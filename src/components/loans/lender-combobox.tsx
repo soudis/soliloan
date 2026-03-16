@@ -7,7 +7,7 @@ import { FormCombobox } from '@/components/form/form-combobox';
 
 interface Lender {
   id: string;
-  lenderNumber: number;
+  lenderNumber: string;
   type: 'PERSON' | 'ORGANISATION';
   firstName: string | null;
   lastName: string | null;

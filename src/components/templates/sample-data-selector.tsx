@@ -48,7 +48,7 @@ export function SampleDataSelector({ dataset, projectId, value, onChange }: Samp
 
     if (dataset === 'LENDER') {
       const lender = record as {
-        lenderNumber: number;
+        lenderNumber: string;
         firstName?: string | null;
         lastName?: string | null;
         organisationName?: string | null;
@@ -63,7 +63,7 @@ export function SampleDataSelector({ dataset, projectId, value, onChange }: Samp
 
     if (dataset === 'LOAN') {
       const loan = record as {
-        loanNumber: number;
+        loanNumber: string;
         amount: number;
         lender: { firstName?: string | null; lastName?: string | null; organisationName?: string | null; type: string };
       };

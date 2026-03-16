@@ -7,6 +7,7 @@ import { createAuditEntry, getLenderContext, removeNullFields } from '@/lib/audi
 import { db } from '@/lib/db';
 import { lenderFormSchema } from '@/lib/schemas/lender';
 import { getLenderName } from '@/lib/utils';
+import { getNextLenderNumber } from '@/lib/utils/numbering';
 import { projectAction } from '@/lib/utils/safe-action';
 
 export const createLenderAction = projectAction.inputSchema(lenderFormSchema).action(async ({ parsedInput: data }) => {
@@ -25,44 +26,48 @@ export const createLenderAction = projectAction.inputSchema(lenderFormSchema).ac
   const userLanguage = configuration.userLanguage ?? Language.de;
   const userTheme = configuration.userTheme ?? SoliLoansTheme.default;
 
-  // Create the lender
-  const lender = await db.lender.create({
-    data: {
-      type: data.type,
-      salutation: data.salutation,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      organisationName: data.organisationName,
-      titlePrefix: data.titlePrefix,
-      titleSuffix: data.titleSuffix,
-      street: data.street,
-      addon: data.addon,
-      zip: data.zip,
-      place: data.place,
-      country: data.country as Country,
-      telNo: data.telNo,
-      iban: data.iban,
-      bic: data.bic,
-      additionalFields: data.additionalFields ?? {},
-      ...(data.email && {
-        user: {
-          connectOrCreate: {
-            where: { email: data.email },
-            create: {
-              email: data.email,
-              name: getLenderName(data),
-              language: userLanguage,
-              theme: userTheme,
+  const lender = await db.$transaction(async (tx) => {
+    const nextLenderNumber = await getNextLenderNumber(tx, data.projectId);
+
+    return tx.lender.create({
+      data: {
+        lenderNumber: nextLenderNumber,
+        type: data.type,
+        salutation: data.salutation,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        organisationName: data.organisationName,
+        titlePrefix: data.titlePrefix,
+        titleSuffix: data.titleSuffix,
+        street: data.street,
+        addon: data.addon,
+        zip: data.zip,
+        place: data.place,
+        country: data.country as Country,
+        telNo: data.telNo,
+        iban: data.iban,
+        bic: data.bic,
+        additionalFields: data.additionalFields ?? {},
+        ...(data.email && {
+          user: {
+            connectOrCreate: {
+              where: { email: data.email },
+              create: {
+                email: data.email,
+                name: getLenderName(data),
+                language: userLanguage,
+                theme: userTheme,
+              },
             },
           },
-        },
-      }),
-      project: {
-        connect: {
-          id: data.projectId,
+        }),
+        project: {
+          connect: {
+            id: data.projectId,
+          },
         },
       },
-    },
+    });
   });
 
   // Create audit trail entry

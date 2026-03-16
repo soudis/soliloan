@@ -123,7 +123,7 @@ export async function getMergeTagValuesAction(
       config,
       lender: {
         ...lender,
-        lenderNumber: String(lender.lenderNumber),
+        lenderNumber: lender.lenderNumber,
         fullName: getLenderName(lender),
         type: lender.type === 'PERSON' ? 'Person' : 'Organisation',
         salutation: lender.salutation === 'FORMAL' ? 'Formell' : 'Persönlich',
@@ -150,7 +150,7 @@ export async function getMergeTagValuesAction(
       loans: (lender.loans || []).map((loan) => ({
         loan: {
           ...loan,
-          loanNumber: String(loan.loanNumber),
+          loanNumber: loan.loanNumber,
           amount: formatCurrency(loan.amount, locale),
           interestRate: formatPercentage(loan.interestRate, locale),
           signDate: formatDate(loan.signDate, locale),
@@ -211,7 +211,7 @@ export async function getMergeTagValuesAction(
       config,
       lender: {
         ...lender,
-        lenderNumber: String(lender.lenderNumber),
+        lenderNumber: lender.lenderNumber,
         fullName: getLenderName(lender),
         type: lender.type === 'PERSON' ? 'Person' : 'Organisation',
         salutation: lender.salutation === 'FORMAL' ? 'Formell' : 'Persönlich',
@@ -225,7 +225,7 @@ export async function getMergeTagValuesAction(
       },
       loan: {
         ...loan,
-        loanNumber: String(loan.loanNumber),
+        loanNumber: loan.loanNumber,
         amount: formatCurrency(loan.amount, locale),
         interestRate: formatPercentage(loan.interestRate, locale),
         signDate: formatDate(loan.signDate, locale),

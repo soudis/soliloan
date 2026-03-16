@@ -95,7 +95,7 @@ export type FieldType = 'string' | 'number' | 'date' | 'boolean' | 'currency' | 
 
 export const FIELD_TYPES: Record<string, FieldType> = {
   // Lender
-  'lender.lenderNumber': 'number',
+  'lender.lenderNumber': 'string',
   'lender.firstName': 'string',
   'lender.lastName': 'string',
   'lender.fullName': 'string',
@@ -128,7 +128,7 @@ export const FIELD_TYPES: Record<string, FieldType> = {
   'lender.totalLoans': 'number',
   'lender.activeLoans': 'number',
   // Loan
-  'loan.loanNumber': 'number',
+  'loan.loanNumber': 'string',
   'loan.amount': 'currency',
   'loan.interestRate': 'percent',
   'loan.signDate': 'date',

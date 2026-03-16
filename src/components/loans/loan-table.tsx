@@ -24,7 +24,6 @@ import {
   createDateColumn,
   createEnumBadgeColumn,
   createLenderColumn,
-  createNumberColumn,
   createPercentageColumn,
   createTerminationModalitiesColumn,
 } from '@/lib/table-column-utils';
@@ -70,17 +69,19 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
   ];
 
   const columns: ColumnDef<LoanWithCalculations>[] = [
-    createNumberColumn<LoanWithCalculations>('loanNumber', 'table.loanNumber', t, locale),
+    createColumn<LoanWithCalculations>(
+      {
+        accessorKey: 'loanNumber',
+        header: 'table.loanNumber',
+      },
+      t,
+    ),
 
     createColumn<LoanWithCalculations>(
       {
         accessorKey: 'lenderNumber',
         header: 'table.lenderNumber',
         accessorFn: (row: LoanWithCalculations) => row.lender?.lenderNumber,
-        cell: ({ row }) => {
-          const value = row.original.lender?.lenderNumber || 0;
-          return value.toFixed(0);
-        },
       },
       t,
     ),

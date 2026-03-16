@@ -277,7 +277,7 @@ export function generateLenderMergeTagValues(lender: Lender): Record<string, unk
       organisationName: lender.organisationName ?? '',
       email: lender.email ?? '',
       salutationText: getSalutationText(lender.salutation, lender.firstName, lender.lastName),
-      lenderNumber: String(lender.lenderNumber),
+      lenderNumber: lender.lenderNumber,
       telNo: lender.telNo ?? '',
       address: {
         street: lender.street ?? '',
@@ -311,7 +311,7 @@ export function generateLoanMergeTagValues(loan: LoanWithRelations): Record<stri
   return {
     ...lenderValues,
     loan: {
-      loanNumber: String(loan.loanNumber),
+      loanNumber: loan.loanNumber,
       amount: formatCurrency(loan.amount),
       amountRaw: String(loan.amount),
       interestRate: formatPercent(loan.interestRate),
