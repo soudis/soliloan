@@ -16,6 +16,7 @@ import {
   mapInterestMethod,
   mapLenderNames,
   mapLenderType,
+  mapMembershipStatus,
   mapPaymentType,
   mapSalutation,
   mapTerminationPeriodType,
@@ -81,6 +82,12 @@ async function loadLogoFromPackage(tempDir: string, logoPath: string | undefined
   const ext = extname(relativePath).toLowerCase();
   const mimeType = EXTENSION_MIME_MAP[ext] ?? 'image/png';
   return `data:${mimeType};base64,${fileData.toString('base64')}`;
+}
+
+function getUserName(user: { id: number; first_name?: string | null; last_name?: string | null }): string {
+  const firstName = user.first_name?.trim() ?? '';
+  const lastName = user.last_name?.trim() ?? '';
+  return [firstName, lastName].filter((part) => part.length > 0).join(' ') || `user-${user.id}`;
 }
 
 export async function fetchAndExtractDataPackage(
@@ -158,8 +165,8 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
           {
             id: 'membership_status',
             name: 'Mitgliedsstatus',
-            type: 'text',
-            selectOptions: [] as string[],
+            type: 'select',
+            selectOptions: ['Nicht definiert', 'Mitglied', 'Extern'],
             required: false,
           },
           {
@@ -240,11 +247,9 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
           if (userEmail) {
             const existingUser = await tx.user.findUnique({ where: { email: userEmail } });
             if (!existingUser) {
-              const userName =
-                user.logon_id || [user.first_name, user.last_name].filter(Boolean).join(' ') || `user-${user.id}`;
               await tx.user.create({
                 data: {
-                  name: userName,
+                  name: getUserName(user),
                   email: userEmail,
                   password: user.passwordHashed,
                   language: 'de',
@@ -256,12 +261,9 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
           }
 
           const additionalFields: Record<string, string> = {
-            membership_status: user.membership_status ?? '',
+            membership_status: mapMembershipStatus(user.membership_status),
             relationship: user.relationship ?? '',
           };
-          if (!emailLinked && userEmail) {
-            additionalFields.imported_email = userEmail;
-          }
 
           const lenderType = mapLenderType(user.type, warnings, user.id);
           const { firstName, lastName, organisationName } = mapLenderNames(lenderType, user);

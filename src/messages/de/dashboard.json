@@ -587,7 +587,8 @@
         "legacyId": "Alte ID",
         "newNumber": "Neue Nummer",
         "newId": "Neue ID"
-      }
+      },
+      "downloadReport": "Report herunterladen"
     }
   }
 }

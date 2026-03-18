@@ -163,6 +163,13 @@ export function mapPaymentType(value: string | null | undefined): PaymentType {
   }
 }
 
+export function mapMembershipStatus(value: string | null | undefined): string {
+  const lower = (value ?? '').toLowerCase();
+  if (lower === 'member') return 'Mitglied';
+  if (lower === 'extern') return 'Extern';
+  return 'Nicht definiert';
+}
+
 export function mapLenderNames(
   lenderType: LenderType,
   user: { first_name: string; last_name: string },

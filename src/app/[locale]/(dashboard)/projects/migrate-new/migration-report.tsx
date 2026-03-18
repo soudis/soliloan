@@ -1,9 +1,11 @@
 'use client';
 
-import { AlertCircle, CheckCircle2, ChevronDown, ChevronRight } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ChevronDown, ChevronRight, Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
+import { Button } from '@/components/ui/button';
+import { formatMigrationReportAsPlainText } from '@/lib/migration/format-report';
 import type { MigrationReport } from '@/lib/migration/types';
 
 interface MigrationReportViewProps {
@@ -42,6 +44,21 @@ function CollapsibleSection({
 
 export function MigrationReportView({ report }: MigrationReportViewProps) {
   const t = useTranslations('dashboard.migration');
+
+  const handleDownload = useCallback(() => {
+    const text = formatMigrationReportAsPlainText(report, t);
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const now = new Date();
+    const ts = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `migration-report-${report.projectSlug ?? 'unknown'}-${ts}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [report, t]);
 
   if (!report.success) {
     return (
@@ -151,6 +168,11 @@ export function MigrationReportView({ report }: MigrationReportViewProps) {
           </ul>
         </CollapsibleSection>
       )}
+
+      <Button variant="outline" onClick={handleDownload}>
+        <Download className="mr-2 h-4 w-4" />
+        {t('report.downloadReport')}
+      </Button>
     </div>
   );
 }
