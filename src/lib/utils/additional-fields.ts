@@ -14,7 +14,7 @@ import { formatCurrency, formatDate, formatNumber, formatPercentage, NumberParse
 export const additionalFieldDefaults = (config: AdditionalFieldConfig[], values: AdditionalFieldValues) => {
   const defaults: AdditionalFieldValues = {};
   for (const field of config) {
-    defaults[field.name] = values?.[field.name] ?? field.defaultValue ?? '';
+    defaults[field.id] = values?.[field.id] ?? field.defaultValue ?? '';
   }
   return defaults;
 };
@@ -39,55 +39,55 @@ export const validateAdditionalFields =
     for (const field of config) {
       if (field.type === AdditionalFieldType.SELECT) {
         if (
-          fieldValues[field.name] &&
-          !field.selectOptions.includes(fieldValues[field.name] ?? '') &&
-          (field.required || fieldValues[field.name] !== '')
+          fieldValues[field.id] &&
+          !field.selectOptions.includes(fieldValues[field.id] ?? '') &&
+          (field.required || fieldValues[field.id] !== '')
         ) {
           ctx.addIssue({
             code: 'custom',
             message: 'validation.common.required',
-            path: [name, field.name],
+            path: [name, field.id],
           });
         }
       }
       if (field.type === AdditionalFieldType.DATE) {
         if (
-          fieldValues[field.name] &&
-          !createDateSchema(field.required).safeParse(fieldValues[field.name]).success &&
-          (field.required || fieldValues[field.name] !== '')
+          fieldValues[field.id] &&
+          !createDateSchema(field.required).safeParse(fieldValues[field.id]).success &&
+          (field.required || fieldValues[field.id] !== '')
         ) {
           ctx.addIssue({
             code: 'custom',
             message: 'validation.common.date',
-            path: [name, field.name],
+            path: [name, field.id],
           });
         }
       }
       if (field.type === AdditionalFieldType.NUMBER) {
         if (
-          fieldValues[field.name] &&
-          !createNumberSchema().safeParse(fieldValues[field.name]).success &&
-          (field.required || fieldValues[field.name] !== '')
+          fieldValues[field.id] &&
+          !createNumberSchema().safeParse(fieldValues[field.id]).success &&
+          (field.required || fieldValues[field.id] !== '')
         ) {
           ctx.addIssue({
             code: 'custom',
             message: 'validation.common.required',
-            path: [name, field.name],
+            path: [name, field.id],
           });
         }
       }
-      if (field.required && (!fieldValues[field.name] || fieldValues[field.name] === '')) {
+      if (field.required && (!fieldValues[field.id] || fieldValues[field.id] === '')) {
         ctx.addIssue({
           code: 'custom',
           message: 'validation.common.required',
-          path: [name, field.name],
+          path: [name, field.id],
         });
       }
     }
   };
 
 export const hasAdditionalFields = (values: AdditionalFieldValues, config?: AdditionalFieldConfig[]) => {
-  return config && config.length > 0 && config.some((field) => values?.[field.name] && values?.[field.name] !== '');
+  return config && config.length > 0 && config.some((field) => values?.[field.id] && values?.[field.id] !== '');
 };
 
 export const formatAdditionalFieldValue = (

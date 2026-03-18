@@ -15,12 +15,12 @@ export const AdditionalFieldInfoItems = ({
     <>
       {configuration?.map(
         (field) =>
-          additionalFields?.[field.name] &&
-          additionalFields[field.name] !== '' && (
+          additionalFields?.[field.id] &&
+          additionalFields[field.id] !== '' && (
             <InfoItem
               key={field.id}
               label={field.name}
-              value={formatAdditionalFieldValue(additionalFields?.[field.name], field, locale)}
+              value={formatAdditionalFieldValue(additionalFields?.[field.id], field, locale)}
             />
           ),
       )}
