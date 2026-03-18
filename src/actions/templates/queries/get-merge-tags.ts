@@ -41,6 +41,7 @@ export type MergeTagConfig = {
 };
 
 type AdditionalFieldDef = {
+  id: string;
   name: string;
   type: string;
   label?: string;
@@ -165,9 +166,9 @@ export async function getMergeTagConfigAction(
       if (Array.isArray(lenderAddFields)) {
         for (const field of lenderAddFields) {
           additionalFields.lender.push({
-            key: `lender.additionalFields.${field.name}`,
+            key: `lender.additionalFields.${field.id}`,
             label: field.label || field.name,
-            value: `{{lender.additionalFields.${field.name}}}`,
+            value: `{{lender.additionalFields.${field.id}}}`,
             entity: 'lender',
           });
         }
@@ -178,9 +179,9 @@ export async function getMergeTagConfigAction(
       if (Array.isArray(loanAddFields)) {
         for (const field of loanAddFields) {
           additionalFields.loan.push({
-            key: `loan.additionalFields.${field.name}`,
+            key: `loan.additionalFields.${field.id}`,
             label: field.label || field.name,
-            value: `{{loan.additionalFields.${field.name}}}`,
+            value: `{{loan.additionalFields.${field.id}}}`,
             entity: 'loan',
           });
         }
