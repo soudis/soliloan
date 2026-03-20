@@ -10,12 +10,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "biome lint",
+    "export:email-templates": "tsx scripts/export-email-templates.ts",
     "prisma:generate": "prisma generate",
     "prisma:studio": "bash -c 'source <(grep -E \"^POSTGRES_\" .env) && DATABASE_URL=\"postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}\" prisma studio'",
     "format": "biome format src prisma",
     "format:fix": "biome format src prisma --write",
     "typecheck": "tsc --noEmit",
-    "docker:dev": "docker compose -f docker/compose.dev.yml --project-directory ."
+    "docker:dev": "docker compose -f docker/compose.dev.yml --project-directory .",
+    "docker:dev:up": "docker compose -f docker/compose.dev.yml --project-directory . up --no-attach mailhog"
   },
   "dependencies": {
     "@auth/core": "^0.41.1",

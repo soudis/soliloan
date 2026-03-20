@@ -34,7 +34,7 @@ export type UpdateTemplateFormData = z.infer<typeof updateTemplateSchema>;
 
 // Delete template schema
 export const deleteTemplateSchema = z.object({
-  id: z.string(),
+  templateId: z.string(),
 });
 
 export type DeleteTemplateFormData = z.infer<typeof deleteTemplateSchema>;

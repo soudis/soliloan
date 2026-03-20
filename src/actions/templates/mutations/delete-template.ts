@@ -10,16 +10,16 @@ export const deleteTemplateAction = templateAction
   .inputSchema(deleteTemplateSchema)
   .action(async ({ parsedInput: data }) => {
     const existing = await db.communicationTemplate.findUnique({
-      where: { id: data.id },
-      select: { isSystem: true },
+      where: { id: data.templateId },
+      select: { isSystem: true, projectId: true },
     });
 
-    if (existing?.isSystem) {
+    if (existing?.isSystem && !existing.projectId) {
       throw new Error('error.template.systemCannotDelete');
     }
 
     const template = await db.communicationTemplate.delete({
-      where: { id: data.id },
+      where: { id: data.templateId },
       select: {
         id: true,
         projectId: true,

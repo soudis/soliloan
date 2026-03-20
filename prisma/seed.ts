@@ -1,6 +1,8 @@
 import 'dotenv/config';
+import { mkdir, readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { InterestMethod, Language, PrismaClient, TemplateDataset } from '@prisma/client';
+import { InterestMethod, Language, PrismaClient, TemplateDataset, type Prisma } from '@prisma/client';
 
 import { hashPassword } from '@/lib/utils/password';
 
@@ -8,6 +10,7 @@ const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
 });
 const prisma = new PrismaClient({ adapter });
+const SYSTEM_TEMPLATE_DESIGNS_DIR = path.join(process.cwd(), 'prisma', 'system-template-designs');
 
 const SYSTEM_TEMPLATES = [
   {
@@ -47,8 +50,26 @@ const SYSTEM_TEMPLATES = [
   },
 ];
 
+async function loadSystemTemplateDesign(systemKey: string): Promise<Prisma.InputJsonValue> {
+  const filePath = path.join(SYSTEM_TEMPLATE_DESIGNS_DIR, `${systemKey}.json`);
+
+  try {
+    const fileContent = await readFile(filePath, 'utf8');
+    return JSON.parse(fileContent) as Prisma.InputJsonValue;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return {};
+    }
+    throw error;
+  }
+}
+
 async function seedSystemTemplates(adminUserId: string) {
+  await mkdir(SYSTEM_TEMPLATE_DESIGNS_DIR, { recursive: true });
+
   for (const tpl of SYSTEM_TEMPLATES) {
+    const designJson = await loadSystemTemplateDesign(tpl.systemKey);
+
     // cannot use upsert because of the unique constraint on systemKey and projectId and prisma does not support unique on null values, while postgres does
     const exists = await prisma.communicationTemplate.findFirst({
       where: {
@@ -64,7 +85,7 @@ async function seedSystemTemplates(adminUserId: string) {
           description: tpl.description,
           type: tpl.type,
           dataset: tpl.dataset,
-          designJson: {},
+          designJson,
           isGlobal: true,
           isSystem: true,
           createdBy: { connect: { id: adminUserId } },

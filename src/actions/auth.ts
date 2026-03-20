@@ -18,7 +18,7 @@ export async function setPassword(token: string, password: string) {
     // Find the user with the given reset token
     const user = await db.user.findFirst({
       where: {
-        passwordResetToken: token,
+        OR: [{ passwordResetToken: token }, { inviteToken: token }],
       },
     });
 
@@ -39,6 +39,7 @@ export async function setPassword(token: string, password: string) {
     await db.user.update({
       where: { id: user.id },
       data: {
+        inviteToken: null,
         password: hashedPassword,
         passwordResetToken: null,
         passwordResetTokenExpiresAt: null,
