@@ -37,8 +37,25 @@ const borderPropsToCss = (props: Record<string, unknown> | null | undefined): st
 };
 
 /**
+ * Resolve a potentially relative image src to an absolute URL so images
+ * work in email clients outside the app.
+ */
+const resolveImageSrc = (src: string): string => {
+  if (!src) return src;
+  if (src.startsWith('data:') || src.startsWith('http://') || src.startsWith('https://')) {
+    return src;
+  }
+  const baseUrl = (process.env.SOLILOAN_URL || '').replace(/\/+$/, '');
+  if (!baseUrl) return src;
+  const path = src.startsWith('/') ? src : `/${src}`;
+  return `${baseUrl}${path}`;
+};
+
+const EMAIL_MAX_WIDTH = 600;
+
+/**
  * Wrap raw body HTML in a full HTML document with the Inter font loaded,
- * matching the editor's appearance.
+ * a light gray background, and a centered max-width container.
  */
 const wrapInDocument = (bodyHtml: string): string => {
   return `<!DOCTYPE html>
@@ -48,11 +65,15 @@ const wrapInDocument = (bodyHtml: string): string => {
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-  body { margin: 0; padding: 0; font-family: ${EMAIL_FONT_FAMILY}; -webkit-font-smoothing: antialiased; }
+  body { margin: 0; padding: 0; font-family: ${EMAIL_FONT_FAMILY}; -webkit-font-smoothing: antialiased; background-color: #f4f4f5; }
   * { box-sizing: border-box; }
 </style>
 </head>
-<body>${bodyHtml}</body>
+<body style="margin: 0; padding: 0; background-color: #f4f4f5;">
+  <div style="max-width: ${EMAIL_MAX_WIDTH}px; margin: 0 auto; background-color: #ffffff;">
+    ${bodyHtml}
+  </div>
+</body>
 </html>`;
 };
 
@@ -118,7 +139,7 @@ export const generateEmailHtml = (nodes: Record<string, any>) => {
       }
 
       case 'Image':
-        return `<img src="${props.src}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" />`;
+        return `<img src="${resolveImageSrc(props.src)}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" />`;
 
       case 'Table': {
         const cols = props.columns || 3;
@@ -129,7 +150,6 @@ export const generateEmailHtml = (nodes: Record<string, any>) => {
         const rowCount = isDynamic ? 1 : props.rows || 1;
         const tableTextAlign = props.textAlign || 'left';
 
-        // Build header row — process tiptap HTML in each cell
         let headerCells = '';
         for (let c = 0; c < cols; c++) {
           const cellContent = processTiptapContent(headerTexts[c] || '');
@@ -137,7 +157,6 @@ export const generateEmailHtml = (nodes: Record<string, any>) => {
         }
         const headerRow = `<tr>${headerCells}</tr>`;
 
-        // Build body rows — process tiptap HTML in each cell
         let bodyRows = '';
         for (let r = 0; r < rowCount; r++) {
           let cells = '';
@@ -341,7 +360,7 @@ export const generateDocumentParts = (
       }
 
       case 'Image':
-        return `<img src="${props.src}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" />`;
+        return `<img src="${resolveImageSrc(props.src)}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" />`;
 
       case 'Table': {
         const cols = props.columns || 3;

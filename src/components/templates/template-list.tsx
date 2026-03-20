@@ -73,7 +73,7 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
     if (!templateToDelete) return;
 
     const result = await deleteTemplate({
-      id: templateToDelete.id,
+      templateId: templateToDelete.id,
     });
 
     if (result?.serverError) {
@@ -146,7 +146,7 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
                 {t('list.actions.duplicate')}
               </DropdownMenuItem>
             ) : null}
-            {!row.original.isSystem && (
+            {(!row.original.isSystem || project) && (
               <DropdownMenuItem onClick={() => handleDeleteClick(row.original)} className="text-destructive">
                 <Trash2 className="h-4 w-4 mr-2" />
                 {t('list.actions.delete')}

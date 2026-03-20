@@ -122,6 +122,7 @@
     "platform": "Plattform",
     "page": "Seite",
     "loops": "Schleifen",
-    "additional": "Zusatzfelder"
+    "additional": "Zusatzfelder",
+    "project": "Projekt"
   }
 }
