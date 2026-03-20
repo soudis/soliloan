@@ -13,9 +13,10 @@ export const templateBaseSchema = z.object({
 
 // Create template schema
 export const createTemplateSchema = templateBaseSchema.extend({
-  projectId: z.string().optional(), // If not provided, will be global (admin only)
+  projectId: z.string().optional(),
   isGlobal: z.boolean().nullable().optional(),
   designJson: z.record(z.string(), z.any()).nullable().optional(),
+  sourceTemplateId: z.string().optional(),
 });
 
 export type CreateTemplateFormData = z.infer<typeof createTemplateSchema>;
@@ -60,7 +61,34 @@ export const getTemplatesSchema = z.object({
   type: z.enum(TemplateType).optional(),
   dataset: z.enum(TemplateDataset).optional(),
   isGlobal: z.boolean().optional(),
-  includeGlobal: z.boolean().optional().default(false), // Include global templates in project query
+  isSystem: z.boolean().optional(),
+  includeGlobal: z.boolean().optional().default(false),
 });
 
 export type GetTemplatesFormData = z.infer<typeof getTemplatesSchema>;
+
+// --- Predefined Craft Blocks ---
+
+export const createPredefinedBlockSchema = z.object({
+  name: z.string().min(1, 'error.predefinedBlock.nameRequired').max(100),
+  description: z.string().max(500).nullable().optional(),
+  designJson: z.record(z.string(), z.any()),
+  datasets: z.array(z.enum(TemplateDataset)).min(1, 'error.predefinedBlock.datasetsRequired'),
+  visibility: z.enum(['PROJECT_MANAGERS', 'ADMIN_ONLY']).default('PROJECT_MANAGERS'),
+  projectId: z.string().nullable().optional(),
+});
+
+export type CreatePredefinedBlockFormData = z.infer<typeof createPredefinedBlockSchema>;
+
+export const listPredefinedBlocksSchema = z.object({
+  dataset: z.enum(TemplateDataset),
+  projectId: z.string().nullable().optional(),
+});
+
+export type ListPredefinedBlocksFormData = z.infer<typeof listPredefinedBlocksSchema>;
+
+export const deletePredefinedBlockSchema = z.object({
+  id: z.string(),
+});
+
+export type DeletePredefinedBlockFormData = z.infer<typeof deletePredefinedBlockSchema>;

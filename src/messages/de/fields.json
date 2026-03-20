@@ -67,6 +67,19 @@
     "createdByName": "Erstellt von",
     "public": "Öffentlich"
   },
+  "user": {
+    "name": "Name",
+    "email": "E-Mail"
+  },
+  "latestTransaction": {
+    "type": "Typ (letzte Transaktion)",
+    "amount": "Betrag (letzte Transaktion)",
+    "date": "Datum (letzte Transaktion)",
+    "paymentType": "Zahlungsart (letzte Transaktion)"
+  },
+  "lenderYearly": {
+    "year": "Jahr"
+  },
   "config": {
     "name": "Projektname",
     "email": "E-Mail",
@@ -85,6 +98,9 @@
     "pageNumber": "Seitennummer",
     "totalPages": "Gesamtseiten"
   },
+  "platform": {
+    "name": "Plattformname"
+  },
   "project": {
     "name": "Projektname",
     "slug": "Projekt-ID"
@@ -97,10 +113,14 @@
   },
   "categories": {
     "config": "Projekt-Konfiguration",
+    "user": "Benutzer",
     "lender": "Darlehensgeber",
     "loan": "Darlehen",
+    "latestTransaction": "Letzte Transaktion",
+    "lenderYearly": "Jährliche Daten",
     "transaction": "Transaktion",
     "note": "Notiz",
+    "platform": "Plattform",
     "page": "Seite",
     "loops": "Schleifen",
     "additional": "Zusatzfelder"

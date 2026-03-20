@@ -9,9 +9,20 @@ import { adminAction, projectAction } from '@/lib/utils/safe-action';
 export const createTemplateAction = projectAction
   .inputSchema(createTemplateSchema)
   .action(async ({ parsedInput: data, ctx }) => {
-    // If isGlobal is true but user is not admin, reject
     if (data.isGlobal && !ctx.session.user.isAdmin) {
       throw new Error('error.unauthorized');
+    }
+
+    let designJson = data.designJson ?? {};
+
+    if (data.sourceTemplateId) {
+      const source = await db.communicationTemplate.findUnique({
+        where: { id: data.sourceTemplateId },
+        select: { designJson: true, htmlContent: true, isGlobal: true, isSystem: true },
+      });
+      if (source?.isGlobal && !source.isSystem) {
+        designJson = (source.designJson as Record<string, unknown>) ?? {};
+      }
     }
 
     const template = await db.communicationTemplate.create({
@@ -20,7 +31,7 @@ export const createTemplateAction = projectAction
         description: data.description ?? null,
         type: data.type,
         dataset: data.dataset,
-        designJson: data.designJson ?? {},
+        designJson,
         isGlobal: data.isGlobal ?? false,
         project: data.isGlobal ? undefined : { connect: { id: data.projectId } },
         createdBy: { connect: { id: ctx.session.user.id } },

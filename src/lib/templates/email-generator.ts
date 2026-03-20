@@ -79,23 +79,22 @@ export const generateEmailHtml = (nodes: Record<string, any>) => {
         const gridCols = props.gridColumns || 2;
         const bgColor = props.background || 'transparent';
         const pad = props.padding || 0;
+        const justify = props.justifyContent || 'flex-start';
+        const align = props.alignItems || 'stretch';
         const borderCss = borderPropsToCss(props);
 
-        // For email compatibility: vertical uses simple block, horizontal uses table cells,
-        // grid uses a table-based N-column layout
         if (layout === 'horizontal') {
-          const tableStyle =
-            `width: 100%; padding: ${pad}px; background-color: ${bgColor}; border-spacing: ${gap}px; ${borderCss}`.trim();
-          return `<table style="${tableStyle}" cellpadding="0" cellspacing="${gap}"><tr><td style="vertical-align: top;">${content.replace(/<\/div>\s*<div/g, `</div></td><td style="vertical-align: top;"><div`)}</td></tr></table>`;
+          const flexStyle =
+            `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+          return `<div style="${flexStyle}">${content}</div>`;
         }
         if (layout === 'grid') {
           const divStyle = `padding: ${pad}px; background-color: ${bgColor}; ${borderCss}`.trim();
           return `<div style="${divStyle}"><!--[if mso]><table style="width:100%;border-spacing:${gap}px;" cellpadding="0"><tr><![endif]--><div style="display: grid; grid-template-columns: repeat(${gridCols}, 1fr); gap: ${gap}px;">${content}</div><!--[if mso]></tr></table><![endif]--></div>`;
         }
-        const verticalStyle = `padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
-        return `<div style="${verticalStyle}">${
-          gap > 0 ? content.replace(/(<\/div>)(\s*<)/g, `$1<div style="height: ${gap}px;"></div>$2`) : content
-        }</div>`;
+        const verticalStyle =
+          `display: flex; flex-direction: column; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+        return `<div style="${verticalStyle}">${content}</div>`;
       }
 
       case 'Text': {
@@ -104,14 +103,19 @@ export const generateEmailHtml = (nodes: Record<string, any>) => {
         return `<div style="font-family: ${EMAIL_FONT_FAMILY}; font-size: ${props.fontSize || 16}px; color: ${props.color || '#000000'}; margin: 0; line-height: 1.5; text-align: ${textAlign};">${finalContent}</div>`;
       }
 
-      case 'Button':
+      case 'Button': {
+        const btnUrl =
+          props.useSystemUrl && props.systemUrlKey
+            ? `{{system.${props.systemUrlKey}}}`
+            : props.url || '#';
         return `
           <div style="margin: 10px 0;">
-            <a href="${props.url || '#'}" style="font-family: ${EMAIL_FONT_FAMILY}; background-color: ${props.background || '#2563eb'}; color: ${props.color || '#ffffff'}; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold;">
+            <a href="${btnUrl}" style="font-family: ${EMAIL_FONT_FAMILY}; background-color: ${props.background || '#2563eb'}; color: ${props.color || '#ffffff'}; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold;">
               ${props.text || 'Button'}
             </a>
           </div>
         `;
+      }
 
       case 'Image':
         return `<img src="${props.src}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" />`;
@@ -290,10 +294,10 @@ export const generateDocumentParts = (
         const gridCols = Math.max(1, props.gridColumns || 2);
         const bgColor = props.background || 'transparent';
         const pad = props.padding || 0;
+        const justify = props.justifyContent || 'flex-start';
+        const align = props.alignItems || 'stretch';
         const borderCss = borderPropsToCss(props);
 
-        // Document PDF: use flexbox so react-pdf-html / react-pdf respect layout (no grid/table support).
-        // Use longhand flex-grow/flex-shrink/flex-basis so react-pdf-html passes them through; flex shorthand may not be applied.
         if (layout === 'horizontal') {
           const flexChildren = (nodeChildren || []).map(
             (childId: string) =>
@@ -301,11 +305,10 @@ export const generateDocumentParts = (
           );
           const inner = flexChildren.join('');
           const flexStyle =
-            `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+            `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
           return `<div style="${flexStyle}">${inner}</div>`;
         }
         if (layout === 'grid') {
-          // Simulate grid with flex: row wrap + fixed basis per cell (react-pdf has no CSS Grid)
           const gapPx = gap;
           const basisPct = gridCols > 1 ? `calc((100% - ${(gridCols - 1) * gapPx}px) / ${gridCols})` : '100%';
           const flexChildren = (nodeChildren || []).map(
@@ -318,10 +321,9 @@ export const generateDocumentParts = (
           return `<div style="${flexStyle}">${inner}</div>`;
         }
         // vertical (default)
-        const verticalStyle = `padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
-        return `<div style="${verticalStyle}">${
-          gap > 0 ? content.replace(/(<\/div>)(\s*<)/g, `$1<div style="height: ${gap}px;"></div>$2`) : content
-        }</div>`;
+        const verticalStyle =
+          `display: flex; flex-direction: column; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+        return `<div style="${verticalStyle}">${content}</div>`;
       }
 
       case 'Text': {
@@ -330,8 +332,13 @@ export const generateDocumentParts = (
         return `<div style="font-family: ${EMAIL_FONT_FAMILY}; font-size: ${props.fontSize || 16}px; color: ${props.color || '#000000'}; margin: 0; line-height: 1.5; text-align: ${textAlign};">${finalContent}</div>`;
       }
 
-      case 'Button':
-        return `<div style="margin: 10px 0;"><a href="${props.url || '#'}" style="font-family: ${EMAIL_FONT_FAMILY}; background-color: ${props.background || '#2563eb'}; color: ${props.color || '#ffffff'}; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold;">${props.text || 'Button'}</a></div>`;
+      case 'Button': {
+        const docBtnUrl =
+          props.useSystemUrl && props.systemUrlKey
+            ? `{{system.${props.systemUrlKey}}}`
+            : props.url || '#';
+        return `<div style="margin: 10px 0;"><a href="${docBtnUrl}" style="font-family: ${EMAIL_FONT_FAMILY}; background-color: ${props.background || '#2563eb'}; color: ${props.color || '#ffffff'}; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold;">${props.text || 'Button'}</a></div>`;
+      }
 
       case 'Image':
         return `<img src="${props.src}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" />`;
@@ -385,6 +392,8 @@ export const generateDocumentParts = (
   const bodyGridCols = Math.max(1, bodyNode?.props?.gridColumns ?? 2);
   const bodyPadding = bodyNode?.props?.padding ?? 56;
   const bodyBg = bodyNode?.props?.background ?? '#ffffff';
+  const bodyJustify = bodyNode?.props?.justifyContent ?? 'flex-start';
+  const bodyAlign = bodyNode?.props?.alignItems ?? 'stretch';
   const bodyBorderCss = borderPropsToCss(bodyNode?.props ?? {});
 
   let bodyContentHtml: string;
@@ -396,7 +405,7 @@ export const generateDocumentParts = (
         `<div style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0;">${renderNode(childId)}</div>`,
     );
     const flexStyle =
-      `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${bodyGap}px; padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
+      `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${bodyGap}px; justify-content: ${bodyJustify}; align-items: ${bodyAlign}; padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
     bodyContentHtml = `<div style="${flexStyle}">${flexChildren.join('')}</div>`;
   } else if (bodyLayout === 'grid') {
     const gapPx = bodyGap;
@@ -411,12 +420,8 @@ export const generateDocumentParts = (
   } else {
     const bodyContent = bodyChildren.map((childId: string) => renderNode(childId)).join('');
     const verticalStyle =
-      `padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
-    bodyContentHtml = `<div style="${verticalStyle}">${
-      bodyGap > 0
-        ? bodyContent.replace(/(<\/div>)(\s*<)/g, `$1<div style="height: ${bodyGap}px;"></div>$2`)
-        : bodyContent
-    }</div>`;
+      `display: flex; flex-direction: column; gap: ${bodyGap}px; justify-content: ${bodyJustify}; align-items: ${bodyAlign}; padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
+    bodyContentHtml = `<div style="${verticalStyle}">${bodyContent}</div>`;
   }
 
   // Border config for PDF header/footer (native View styles, since we render them as Text/View not HTML)

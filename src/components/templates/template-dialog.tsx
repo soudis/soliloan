@@ -5,10 +5,11 @@ import { TemplateDataset } from '@prisma/client';
 import { Loader2, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { createGlobalTemplateAction, createTemplateAction } from '@/actions/templates/mutations/create-template';
+import { getTemplatesAction } from '@/actions/templates/queries/get-templates';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -27,6 +28,7 @@ import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
 import { type CreateTemplateFormData, createTemplateSchema } from '@/lib/schemas/templates';
 import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
+import type { GlobalTemplateListItem } from '@/types/templates';
 
 interface TemplateDialogProps {
   projectId?: string;
@@ -35,11 +37,23 @@ interface TemplateDialogProps {
   children?: React.ReactNode;
 }
 
+const NONE_VALUE = '__none__';
+
 export function TemplateDialog({ projectId, isAdmin, onCreated, children }: TemplateDialogProps) {
   const t = useTranslations('templates');
   const router = useRouter();
   const currentProjectId = useProjectId();
   const [open, setOpen] = useState(false);
+  const [globalTemplates, setGlobalTemplates] = useState<GlobalTemplateListItem[]>([]);
+
+  const isProjectLevel = !!projectId;
+
+  useEffect(() => {
+    if (!open || !isProjectLevel) return;
+    getTemplatesAction({ isGlobal: true, isSystem: false }).then((result) => {
+      setGlobalTemplates((result?.data?.templates ?? []) as GlobalTemplateListItem[]);
+    });
+  }, [open, isProjectLevel]);
 
   const form = useForm<CreateTemplateFormData>({
     resolver: zodResolver(createTemplateSchema),
@@ -51,8 +65,16 @@ export function TemplateDialog({ projectId, isAdmin, onCreated, children }: Temp
       projectId: projectId,
       isGlobal: Boolean(isAdmin) && !projectId,
       designJson: {},
+      sourceTemplateId: undefined,
     },
   });
+
+  const watchedDataset = form.watch('dataset');
+  const watchedType = form.watch('type');
+
+  const filteredGlobalTemplates = globalTemplates.filter(
+    (tpl) => tpl.dataset === watchedDataset && tpl.type === watchedType,
+  );
 
   const { executeAsync: createTemplate, isExecuting: isCreating } = useAction(createTemplateAction);
   const { executeAsync: createGlobalTemplate, isExecuting: isCreatingGlobal } = useAction(createGlobalTemplateAction);
@@ -65,7 +87,6 @@ export function TemplateDialog({ projectId, isAdmin, onCreated, children }: Temp
       | Awaited<ReturnType<typeof createTemplateAction>>;
 
     if (isAdmin && !projectId) {
-      // Creating global template
       result = await createGlobalTemplate({
         name: data.name,
         description: data.description,
@@ -74,9 +95,9 @@ export function TemplateDialog({ projectId, isAdmin, onCreated, children }: Temp
         designJson: data.designJson,
       });
     } else {
-      // Creating project template
       result = await createTemplate({
         ...data,
+        sourceTemplateId: data.sourceTemplateId || undefined,
         projectId,
       });
     }
@@ -89,7 +110,6 @@ export function TemplateDialog({ projectId, isAdmin, onCreated, children }: Temp
       form.reset();
       onCreated?.();
 
-      // Navigate to editor
       if (isAdmin && !projectId) {
         router.push(`/admin/templates/${result.data.id}`);
       } else {
@@ -194,6 +214,39 @@ export function TemplateDialog({ projectId, isAdmin, onCreated, children }: Temp
                 </FormItem>
               )}
             />
+
+            {isProjectLevel && filteredGlobalTemplates.length > 0 && (
+              <FormField
+                control={form.control}
+                name="sourceTemplateId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('dialog.fields.sourceTemplate')}</FormLabel>
+                    <Select
+                      onValueChange={(v) => field.onChange(v === NONE_VALUE ? undefined : v)}
+                      value={field.value ?? NONE_VALUE}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('dialog.fields.sourceTemplatePlaceholder')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value={NONE_VALUE}>
+                          {t('dialog.fields.sourceTemplateNone')}
+                        </SelectItem>
+                        {filteredGlobalTemplates.map((tpl) => (
+                          <SelectItem key={tpl.id} value={tpl.id}>
+                            {tpl.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <DialogFooter>
               <Button type="submit" disabled={isLoading}>

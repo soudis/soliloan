@@ -25,8 +25,20 @@
       "type": "Typ",
       "typePlaceholder": "Vorlagentyp auswählen",
       "dataset": "Datensatz",
-      "datasetPlaceholder": "Datensatz auswählen"
+      "datasetPlaceholder": "Datensatz auswählen",
+      "sourceTemplate": "Vorlage als Basis",
+      "sourceTemplatePlaceholder": "Globale Vorlage auswählen",
+      "sourceTemplateNone": "Keine (leere Vorlage)"
     }
+  },
+  "systemDialog": {
+    "trigger": "Systemvorlage anpassen",
+    "title": "Systemvorlage anpassen",
+    "description": "Wähle eine Systemvorlage aus, die als projektspezifische Vorlage kopiert und angepasst werden kann.",
+    "noTemplates": "Keine Systemvorlagen verfügbar.",
+    "submit": "Vorlage kopieren",
+    "cancel": "Abbrechen",
+    "copied": "Systemvorlage wurde als Projektvorlage kopiert"
   },
   "editor": {
     "save": "Speichern",
@@ -42,11 +54,16 @@
     "autoSaveActive": "Automatisches Speichern aktiv",
     "toolbox": {
       "title": "Blöcke",
+      "tabBasic": "Basis",
+      "tabPredefined": "Vordefiniert",
       "layout": "Layout",
       "text": "Text",
       "button": "Button",
       "image": "Bild",
-      "table": "Tabelle"
+      "table": "Tabelle",
+      "predefinedEmpty": "Keine vordefinierten Blöcke für diesen Vorlagentyp vorhanden.",
+      "predefinedLoading": "Blöcke werden geladen…",
+      "predefinedDeleted": "Block gelöscht"
     },
     "settings": {
       "title": "Einstellungen",
@@ -67,6 +84,17 @@
         "layout_vertical": "Vertikal (untereinander)",
         "layout_horizontal": "Horizontal (nebeneinander)",
         "layout_grid": "Raster",
+        "distribution": "Verteilung",
+        "justify_flex-start": "Anfang",
+        "justify_center": "Zentriert",
+        "justify_flex-end": "Ende",
+        "justify_space-between": "Gleichmäßig verteilt",
+        "justify_space-around": "Mit Abstand",
+        "alignment": "Ausrichtung",
+        "align_flex-start": "Anfang",
+        "align_center": "Zentriert",
+        "align_flex-end": "Ende",
+        "align_stretch": "Strecken",
         "gap": "Abstand (px)",
         "gridColumns": "Raster-Spalten",
         "padding": "Padding",
@@ -83,7 +111,22 @@
         "borderStyle_solid": "Durchgezogen",
         "borderStyle_dashed": "Gestrichelt",
         "borderStyle_dotted": "Gepunktet",
-        "borderStyle_double": "Doppelt"
+        "borderStyle_double": "Doppelt",
+        "saveAsBlock": "Als Block speichern",
+        "saveAsBlockTitle": "Vordefinierten Block erstellen",
+        "blockName": "Name",
+        "blockNamePlaceholder": "z.B. Kopfzeile",
+        "blockDescription": "Beschreibung",
+        "blockDescriptionPlaceholder": "Kurze Beschreibung des Blocks",
+        "blockDatasets": "Kompatible Datensätze",
+        "blockDatasetsHint": "Der Block wird nur für Vorlagen mit diesen Datensätzen angezeigt.",
+        "blockVisibility": "Sichtbarkeit",
+        "blockVisibilityAll": "Alle Projektmanager",
+        "blockVisibilityAdmin": "Nur Administratoren",
+        "blockSave": "Block speichern",
+        "blockSaving": "Wird gespeichert…",
+        "blockSaved": "Block wurde gespeichert",
+        "blockSaveError": "Fehler beim Speichern des Blocks"
       },
       "image": {
         "imageUrl": "Bild URL",
@@ -111,7 +154,17 @@
       "button": {
         "defaultText": "Klick mich",
         "buttonText": "Button Text",
+        "insertPlaceholder": "Platzhalter einfügen",
         "url": "URL",
+        "useSystemUrl": "System-URL verwenden",
+        "systemUrlKey": "System-Link",
+        "systemUrlKeyPlaceholder": "Link auswählen…",
+        "systemUrlKeys": {
+          "passwordReset": "Passwort zurücksetzen",
+          "emailVerification": "E-Mail bestätigen",
+          "invitation": "Einladung annehmen",
+          "login": "Anmelden"
+        },
         "backgroundColor": "Hintergrundfarbe",
         "textColor": "Textfarbe"
       },
@@ -156,6 +209,7 @@
   "list": {
     "copy": "Kopie",
     "global": "Global",
+    "system": "System",
     "duplicated": "Vorlage dupliziert",
     "deleted": "Vorlage gelöscht",
     "columns": {
