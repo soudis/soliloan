@@ -27,11 +27,11 @@ import { ConfirmDialog } from '../generic/confirm-dialog';
 
 interface TemplateListProps {
   project?: ProjectWithConfiguration | null;
+  templates?: CommunicationTemplateWithProject[];
   isAdmin?: boolean;
-  includeGlobal?: boolean;
 }
 
-export function TemplateList({ project, isAdmin, includeGlobal = false }: TemplateListProps) {
+export function TemplateList({ project, templates: externalTemplates, isAdmin }: TemplateListProps) {
   const t = useTranslations('templates');
   const router = useRouter();
   const currentProjectId = useProjectId();
@@ -98,7 +98,12 @@ export function TemplateList({ project, isAdmin, includeGlobal = false }: Templa
             <FileText className="h-4 w-4 text-muted-foreground" />
           )}
           <span className="font-medium">{row.original.name}</span>
-          {row.original.isGlobal && (
+          {row.original.isSystem && (
+            <Badge variant="default" className="text-xs">
+              {t('list.system')}
+            </Badge>
+          )}
+          {row.original.isGlobal && !row.original.isSystem && (
             <Badge variant="secondary" className="text-xs">
               {t('list.global')}
             </Badge>
@@ -135,14 +140,18 @@ export function TemplateList({ project, isAdmin, includeGlobal = false }: Templa
               <Edit className="h-4 w-4 mr-2" />
               {t('list.actions.edit')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDuplicate(row.original)}>
-              <Copy className="h-4 w-4 mr-2" />
-              {t('list.actions.duplicate')}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDeleteClick(row.original)} className="text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" />
-              {t('list.actions.delete')}
-            </DropdownMenuItem>
+            {project ? (
+              <DropdownMenuItem onClick={() => handleDuplicate(row.original)}>
+                <Copy className="h-4 w-4 mr-2" />
+                {t('list.actions.duplicate')}
+              </DropdownMenuItem>
+            ) : null}
+            {!row.original.isSystem && (
+              <DropdownMenuItem onClick={() => handleDeleteClick(row.original)} className="text-destructive">
+                <Trash2 className="h-4 w-4 mr-2" />
+                {t('list.actions.delete')}
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       ),
@@ -153,13 +162,16 @@ export function TemplateList({ project, isAdmin, includeGlobal = false }: Templa
     <>
       <DataTable
         columns={columns}
-        data={(project?.templates ?? []).map((template) => ({
-          ...template,
-          project: project
-            ? { id: project.id, configuration: { name: project.configuration.name } }
-            : { id: '', configuration: { name: '' } },
-          createdBy: template.createdBy,
-        }))}
+        data={
+          externalTemplates ??
+          (project?.templates ?? []).map((template) => ({
+            ...template,
+            project: project
+              ? { id: project.id, configuration: { name: project.configuration.name } }
+              : { id: '', configuration: { name: '' } },
+            createdBy: template.createdBy,
+          }))
+        }
       />
 
       <ConfirmDialog

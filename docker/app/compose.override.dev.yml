@@ -25,3 +25,11 @@ services:
       - ./:/app:cached
       - /app/node_modules
     command: /bin/sh -c "pnpm install && pnpm prisma db push --accept-data-loss && pnpm prisma db seed && pnpm dev"
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - backend_network

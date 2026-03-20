@@ -22,9 +22,10 @@ interface TemplateEditorProps {
     isGlobal: boolean;
   };
   projectId?: string;
+  isAdmin?: boolean;
 }
 
-export function TemplateEditor({ template, projectId }: TemplateEditorProps) {
+export function TemplateEditor({ template, projectId, isAdmin = false }: TemplateEditorProps) {
   const t = useTranslations('templates');
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
   const [pendingDesign, setPendingDesign] = useState<object | null>(null);
@@ -86,6 +87,8 @@ export function TemplateEditor({ template, projectId }: TemplateEditorProps) {
           templateType={template.type}
           dataset={template.dataset}
           projectId={effectiveProjectId ?? undefined}
+          isAdmin={isAdmin}
+          isGlobalTemplate={template.isGlobal}
           initialDesign={template.designJson as object}
           selectedRecordId={selectedRecordId}
           onDesignChange={handleDesignChange}

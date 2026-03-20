@@ -40,6 +40,7 @@ export default async function AdminTemplateEditorPage({ params }: PageProps) {
           projectId: data.template.projectId,
           isGlobal: data.template.isGlobal,
         }}
+        isAdmin
       />
     </div>
   );

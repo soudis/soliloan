@@ -97,6 +97,12 @@ async function getConfigData(projectId: string): Promise<Record<string, string>>
   };
 }
 
+function getPlatformData() {
+  return {
+    name: process.env.NEXT_PUBLIC_SOLILOAN_PROJECT_NAME ?? 'SoliLoan',
+  };
+}
+
 /**
  * Get merge tag values for preview replacement
  * Uses the same calculations as the actual data fetching to ensure consistency
@@ -120,6 +126,7 @@ export async function getMergeTagValuesAction(
 
     // Format all fields for easy access
     const formattedResult = {
+      platform: getPlatformData(),
       config,
       lender: {
         ...lender,
@@ -207,7 +214,14 @@ export async function getMergeTagValuesAction(
     const resolvedProjectId = projectId || lender.project?.id;
     const config = resolvedProjectId ? await getConfigData(resolvedProjectId) : {};
 
+    // Compute latest transaction by date
+    const sortedTransactions = [...(loan.transactions || [])].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+    const latest = sortedTransactions[0];
+
     return {
+      platform: getPlatformData(),
       config,
       lender: {
         ...lender,
@@ -243,6 +257,14 @@ export async function getMergeTagValuesAction(
         repayDate: loan.repayDate ? formatDate(loan.repayDate, locale) : '',
         isTerminated: loan.isTerminated ? 'Ja' : 'Nein',
       },
+      latestTransaction: latest
+        ? {
+            type: latest.type,
+            amount: formatCurrency(latest.amount, locale),
+            date: formatDate(latest.date, locale),
+            paymentType: latest.paymentType,
+          }
+        : { type: '', amount: '', date: '', paymentType: '' },
       transactions: (loan.transactions || []).map((t) => ({
         transaction: {
           ...t,
@@ -251,6 +273,108 @@ export async function getMergeTagValuesAction(
         },
       })),
       notes: (loan.notes || []).map((n) => ({
+        note: {
+          ...n,
+          createdAt: formatDate(n.createdAt, locale),
+          'createdBy.name': n.createdBy?.name || '',
+        },
+      })),
+    };
+  }
+
+  if (dataset === 'USER') {
+    const user = await db.user.findUnique({
+      where: { id: recordId },
+      select: { name: true, email: true },
+    });
+    if (!user) return null;
+    return {
+      platform: getPlatformData(),
+      user: {
+        name: user.name ?? '',
+        email: user.email ?? '',
+      },
+    };
+  }
+
+  if (dataset === 'LENDER_YEARLY') {
+    const result = await getLenderAction({ lenderId: recordId });
+    if (!result?.data || 'error' in result.data) return null;
+
+    const lender = result.data.lender;
+    const resolvedProjectId = projectId || lender.project?.id;
+    const config = resolvedProjectId ? await getConfigData(resolvedProjectId) : {};
+    const currentYear = new Date().getFullYear();
+
+    return {
+      platform: getPlatformData(),
+      config,
+      lenderYearly: {
+        year: String(currentYear),
+      },
+      lender: {
+        ...lender,
+        lenderNumber: lender.lenderNumber,
+        fullName: getLenderName(lender),
+        type: lender.type === 'PERSON' ? 'Person' : 'Organisation',
+        salutation: lender.salutation === 'FORMAL' ? 'Formell' : 'Persönlich',
+        salutationText:
+          lender.salutation === 'FORMAL'
+            ? `Sehr geehrte(r) ${lender.firstName ?? ''} ${lender.lastName ?? ''}`.trim()
+            : `Liebe(r) ${lender.firstName ?? ''}`.trim(),
+        fullAddress: [lender.street, lender.addon, `${lender.zip ?? ''} ${lender.place ?? ''}`.trim()]
+          .filter(Boolean)
+          .join(', '),
+        balance: formatCurrency(lender.balance, locale),
+        interest: formatCurrency(lender.interest, locale),
+        deposits: formatCurrency(lender.deposits, locale),
+        withdrawals: formatCurrency(lender.withdrawals, locale),
+        interestPaid: formatCurrency(lender.interestPaid, locale),
+        interestError: formatCurrency(lender.interestError, locale),
+        notReclaimed: formatCurrency(lender.notReclaimed, locale),
+        amount: formatCurrency(lender.amount, locale),
+        interestRate: formatPercentage(lender.interestRate, locale),
+        balanceInterestRate: formatPercentage(lender.balanceInterestRate, locale),
+        totalLoans: String(lender.totalLoans),
+        activeLoans: String(lender.activeLoans),
+      },
+      loans: (lender.loans || []).map((loan) => ({
+        loan: {
+          ...loan,
+          loanNumber: loan.loanNumber,
+          amount: formatCurrency(loan.amount, locale),
+          interestRate: formatPercentage(loan.interestRate, locale),
+          signDate: formatDate(loan.signDate, locale),
+          endDate: formatDate(loan.endDate, locale),
+          terminationDate: formatDate(loan.terminationDate, locale),
+          contractStatus: loan.contractStatus === 'COMPLETED' ? 'Abgeschlossen' : 'Laufend',
+          balance: formatCurrency(loan.balance, locale),
+          interest: formatCurrency(loan.interest, locale),
+          deposits: formatCurrency(loan.deposits, locale),
+          withdrawals: formatCurrency(loan.withdrawals, locale),
+          interestPaid: formatCurrency(loan.interestPaid, locale),
+          interestError: formatCurrency(loan.interestError, locale),
+          notReclaimed: formatCurrency(loan.notReclaimed, locale),
+          repaidDate: loan.repaidDate ? formatDate(loan.repaidDate, locale) : '',
+          repayDate: loan.repayDate ? formatDate(loan.repayDate, locale) : '',
+          isTerminated: loan.isTerminated ? 'Ja' : 'Nein',
+          transactions: (loan.transactions || []).map((t) => ({
+            transaction: {
+              ...t,
+              amount: formatCurrency(t.amount, locale),
+              date: formatDate(t.date, locale),
+            },
+          })),
+          notes: (loan.notes || []).map((n) => ({
+            note: {
+              ...n,
+              createdAt: formatDate(n.createdAt, locale),
+              'createdBy.name': n.createdBy?.name || '',
+            },
+          })),
+        },
+      })),
+      notes: (lender.notes || []).map((n) => ({
         note: {
           ...n,
           createdAt: formatDate(n.createdAt, locale),

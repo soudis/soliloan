@@ -17,6 +17,7 @@ import {
   getNodesMapFromSerialized,
 } from '@/lib/templates/email-generator';
 import { processTemplate } from '@/lib/templates/template-processor';
+import { EditorMetadataProvider } from './editor-context';
 import { LogoProvider } from './logo-context';
 import { MergeTagConfigProvider } from './merge-tag-context';
 import { SettingsPanel } from './settings-panel';
@@ -255,6 +256,8 @@ interface TemplateEditorViewProps {
   templateType: TemplateType;
   dataset: TemplateDataset;
   projectId?: string;
+  isAdmin?: boolean;
+  isGlobalTemplate?: boolean;
   initialDesign?: string | object;
   selectedRecordId: string | null;
   onDesignChange: (design: object, html: string) => void;
@@ -264,6 +267,8 @@ export function TemplateEditorView({
   templateType,
   dataset,
   projectId,
+  isAdmin = false,
+  isGlobalTemplate = false,
   initialDesign,
   selectedRecordId,
   onDesignChange,
@@ -441,27 +446,36 @@ export function TemplateEditorView({
       <EditorTopbar isPreviewing={isPreviewing} isGeneratingPdf={isGeneratingPdf} togglePreview={togglePreview} />
 
       <div className="flex-1 flex flex-col relative">
-        <LogoProvider value={logoContextValue}>
-          <MergeTagConfigProvider value={mergeTagConfig}>
-            <Editor
-              resolver={USER_COMPONENTS}
-              onNodesChange={debouncedDesignChange}
-              onRender={(props) => <RenderNode {...props} />}
-              enabled={true}
-              indicator={{
-                success: '#22c55e',
-                error: '#ef4444',
-              }}
-            >
-              <EditorInitialWrapper initialDesign={initialDesign} />
-              <DocumentPartsRefSetter
-                getLatestDocumentPartsRef={getLatestDocumentPartsRef}
-                getLatestEmailHtmlRef={getLatestEmailHtmlRef}
-              />
-              <InternalEditor isPreviewing={isPreviewing} previewHtml={previewHtml} isDocument={isDocument} />
-            </Editor>
-          </MergeTagConfigProvider>
-        </LogoProvider>
+        <EditorMetadataProvider
+          value={{
+            dataset,
+            projectId: projectId ?? null,
+            isAdmin,
+            isGlobalTemplate,
+          }}
+        >
+          <LogoProvider value={logoContextValue}>
+            <MergeTagConfigProvider value={mergeTagConfig}>
+              <Editor
+                resolver={USER_COMPONENTS}
+                onNodesChange={debouncedDesignChange}
+                onRender={(props) => <RenderNode {...props} />}
+                enabled={true}
+                indicator={{
+                  success: '#22c55e',
+                  error: '#ef4444',
+                }}
+              >
+                <EditorInitialWrapper initialDesign={initialDesign} />
+                <DocumentPartsRefSetter
+                  getLatestDocumentPartsRef={getLatestDocumentPartsRef}
+                  getLatestEmailHtmlRef={getLatestEmailHtmlRef}
+                />
+                <InternalEditor isPreviewing={isPreviewing} previewHtml={previewHtml} isDocument={isDocument} />
+              </Editor>
+            </MergeTagConfigProvider>
+          </LogoProvider>
+        </EditorMetadataProvider>
       </div>
     </div>
   );

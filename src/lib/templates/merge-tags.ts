@@ -71,8 +71,20 @@ export const TRANSACTION_FIELDS = ['type', 'amount', 'date', 'paymentType'] as c
 // Note fields from Prisma schema
 export const NOTE_FIELDS = ['text', 'createdAt', 'createdByName', 'public'] as const;
 
+// User fields from Prisma schema
+export const USER_FIELDS = ['name', 'email'] as const;
+
+// Latest transaction fields (top-level on LOAN dataset)
+export const LATEST_TRANSACTION_FIELDS = ['type', 'amount', 'date', 'paymentType'] as const;
+
+// Lender yearly fields (year-scoped aggregates)
+export const LENDER_YEARLY_FIELDS = ['year'] as const;
+
 // Project fields
 export const PROJECT_FIELDS = ['name', 'slug'] as const;
+
+// Platform fields (global, available on all datasets)
+export const PLATFORM_FIELDS = ['name'] as const;
 
 // Configuration fields (project configuration: company info, address, banking)
 export const CONFIGURATION_FIELDS = [
@@ -157,6 +169,18 @@ export const FIELD_TYPES: Record<string, FieldType> = {
   'note.createdAt': 'date',
   'note.createdByName': 'string',
   'note.public': 'boolean',
+  // User
+  'user.name': 'string',
+  'user.email': 'string',
+  // Latest Transaction (top-level on LOAN dataset)
+  'latestTransaction.type': 'enum',
+  'latestTransaction.amount': 'currency',
+  'latestTransaction.date': 'date',
+  'latestTransaction.paymentType': 'enum',
+  // Lender Yearly
+  'lenderYearly.year': 'number',
+  // Platform
+  'platform.name': 'string',
   // Configuration
   'config.name': 'string',
   'config.email': 'string',
@@ -226,10 +250,18 @@ export type DatasetConfig = {
 };
 
 export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
+  USER: {
+    topLevelFields: [
+      { entity: 'user', fields: USER_FIELDS },
+      { entity: 'platform', fields: PLATFORM_FIELDS },
+    ],
+    loops: [],
+  },
   LENDER: {
     topLevelFields: [
       { entity: 'lender', fields: LENDER_FIELDS },
       { entity: 'config', fields: CONFIGURATION_FIELDS },
+      { entity: 'platform', fields: PLATFORM_FIELDS },
     ],
     loops: ['loans', 'notes'],
   },
@@ -237,7 +269,9 @@ export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
     topLevelFields: [
       { entity: 'loan', fields: LOAN_FIELDS },
       { entity: 'lender', fields: LENDER_FIELDS },
+      { entity: 'latestTransaction', fields: LATEST_TRANSACTION_FIELDS },
       { entity: 'config', fields: CONFIGURATION_FIELDS },
+      { entity: 'platform', fields: PLATFORM_FIELDS },
     ],
     loops: ['transactions', 'notes'],
   },
@@ -245,6 +279,7 @@ export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
     topLevelFields: [
       { entity: 'project', fields: PROJECT_FIELDS },
       { entity: 'config', fields: CONFIGURATION_FIELDS },
+      { entity: 'platform', fields: PLATFORM_FIELDS },
     ],
     loops: ['lenders'],
   },
@@ -252,8 +287,18 @@ export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
     topLevelFields: [
       { entity: 'project', fields: PROJECT_FIELDS },
       { entity: 'config', fields: CONFIGURATION_FIELDS },
+      { entity: 'platform', fields: PLATFORM_FIELDS },
     ],
     loops: ['lenders'],
+  },
+  LENDER_YEARLY: {
+    topLevelFields: [
+      { entity: 'lender', fields: LENDER_FIELDS },
+      { entity: 'lenderYearly', fields: LENDER_YEARLY_FIELDS },
+      { entity: 'config', fields: CONFIGURATION_FIELDS },
+      { entity: 'platform', fields: PLATFORM_FIELDS },
+    ],
+    loops: ['loans', 'notes'],
   },
 };
 
@@ -275,6 +320,8 @@ export function buildLoopTags(loopKey: string): { start: string; end: string } {
  */
 export function getDatasetDisplayName(dataset: TemplateDataset): string {
   switch (dataset) {
+    case 'USER':
+      return 'Benutzer';
     case 'LENDER':
       return 'Darlehensgeber';
     case 'LOAN':
@@ -283,6 +330,8 @@ export function getDatasetDisplayName(dataset: TemplateDataset): string {
       return 'Projekt';
     case 'PROJECT_YEARLY':
       return 'Projekt (Jahresübersicht)';
+    case 'LENDER_YEARLY':
+      return 'Kontomitteilung (jährlich)';
     default:
       return dataset;
   }

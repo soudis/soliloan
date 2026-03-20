@@ -26,7 +26,8 @@
     "notFound": "Notiz nicht gefunden."
   },
   "template": {
-    "notFound": "Vorlage nicht gefunden."
+    "notFound": "Vorlage nicht gefunden.",
+    "systemCannotDelete": "Systemvorlagen können nicht gelöscht werden."
   },
   "migration": {
     "fetchFailed": "Datenpaket konnte nicht von der DKP-v1 API heruntergeladen werden. Bitte URL und Token prüfen.",

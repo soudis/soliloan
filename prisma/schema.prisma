@@ -61,6 +61,7 @@ model User {
   views         View[]
   managerOf     Project[]      @relation("ProjectManager")
   templates     CommunicationTemplate[]
+  predefinedBlocks PredefinedCraftBlock[]
 }
 
 model LoanTemplate {
@@ -118,6 +119,7 @@ model Project {
   configuration   Configuration  @relation(fields: [configurationId], references: [id], onDelete: Cascade)
   managers        User[]         @relation("ProjectManager")
   templates       CommunicationTemplate[]
+  predefinedBlocks PredefinedCraftBlock[]
 }
 
 model Lender {
@@ -219,10 +221,32 @@ enum TemplateType {
 }
 
 enum TemplateDataset {
+  USER
   LENDER
   LOAN
   PROJECT
   PROJECT_YEARLY
+  LENDER_YEARLY
+}
+
+enum PredefinedBlockVisibility {
+  PROJECT_MANAGERS
+  ADMIN_ONLY
+}
+
+model PredefinedCraftBlock {
+  id          String                    @id @default(cuid())
+  name        String
+  description String?
+  designJson  Json
+  datasets    TemplateDataset[]
+  visibility  PredefinedBlockVisibility  @default(PROJECT_MANAGERS)
+  projectId   String?
+  project     Project?                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+  createdById String
+  createdBy   User                      @relation(fields: [createdById], references: [id])
 }
 
 model CommunicationTemplate {
@@ -234,12 +258,19 @@ model CommunicationTemplate {
   designJson  Json
   htmlContent String?
   isGlobal    Boolean         @default(false)
+  isSystem    Boolean         @default(false)
+  systemKey   String?
   projectId   String?
   project     Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   createdById String
   createdBy   User            @relation(fields: [createdById], references: [id])
+
+  // One row per (systemKey, project): project overrides share the same key as the global row (projectId null).
+  // PostgreSQL treats NULL as distinct in multi-column UNIQUE, so a partial index in migrations enforces
+  // at most one global system template per systemKey.
+  @@unique([systemKey, projectId])
 }
 
 enum Operation {

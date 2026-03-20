@@ -56,6 +56,9 @@ export const duplicateTemplateAction = authAction
         designJson: sourceTemplate.designJson ?? {},
         htmlContent: sourceTemplate.htmlContent,
         isGlobal,
+        // Project-level copy of a system template keeps the same key for lookup (global fallback + override).
+        systemKey: data.projectId ? sourceTemplate.systemKey : undefined,
+        isSystem: data.projectId ? sourceTemplate.isSystem : sourceTemplate.isSystem,
         project: data.projectId ? { connect: { id: data.projectId } } : undefined,
         createdBy: { connect: { id: ctx.session.user.id } },
       },

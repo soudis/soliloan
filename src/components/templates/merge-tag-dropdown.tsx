@@ -20,24 +20,41 @@ export function MergeTagDropdown({
 
   if (!isOpen || !config) return null;
 
-  const lenderFields = config.topLevelFields.filter((f) => f.entity === 'lender');
-  const loanFields = config.topLevelFields.filter((f) => f.entity === 'loan');
-  const configFields = config.topLevelFields.filter((f) => f.entity === 'config');
-  const pageFields = config.topLevelFields.filter((f) => f.entity === 'page');
+  const ENTITY_COLORS: Record<string, string> = {
+    page: '#e0f2f1',
+    platform: '#fce4ec',
+    config: '#f3e5f5',
+    lender: '#e3f2fd',
+    loan: '#fff3e0',
+    latestTransaction: '#fff8e1',
+    user: '#ede7f6',
+    lenderYearly: '#e8eaf6',
+    project: '#e0f7fa',
+  };
+  const DEFAULT_COLOR = '#f5f5f5';
+
+  // Group top-level fields by entity, preserving order of first appearance
+  const entityOrder: string[] = [];
+  const entityMap = new Map<string, MergeTagField[]>();
+  for (const field of config.topLevelFields) {
+    if (!entityMap.has(field.entity)) {
+      entityOrder.push(field.entity);
+      entityMap.set(field.entity, []);
+    }
+    entityMap.get(field.entity)?.push(field);
+  }
 
   const groups: { label: string; items: (MergeTagField | MergeTagLoop)[]; color: string; isLoop?: boolean }[] = [];
 
-  if (pageFields.length > 0) {
-    groups.push({ label: t('categories.page'), items: pageFields, color: '#e0f2f1' });
-  }
-  if (configFields.length > 0) {
-    groups.push({ label: t('categories.config'), items: configFields, color: '#f3e5f5' });
-  }
-  if (lenderFields.length > 0) {
-    groups.push({ label: t('categories.lender'), items: lenderFields, color: '#e3f2fd' });
-  }
-  if (loanFields.length > 0) {
-    groups.push({ label: t('categories.loan'), items: loanFields, color: '#fff3e0' });
+  for (const entity of entityOrder) {
+    const fields = entityMap.get(entity) ?? [];
+    if (fields.length > 0) {
+      groups.push({
+        label: t(`categories.${entity}`),
+        items: fields,
+        color: ENTITY_COLORS[entity] ?? DEFAULT_COLOR,
+      });
+    }
   }
 
   if (config.loops.length > 0) {
