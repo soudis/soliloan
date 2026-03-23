@@ -8,8 +8,21 @@ import { db } from '@/lib/db';
 import { loanFormSchema } from '@/lib/schemas/loan';
 import { lenderAction } from '@/lib/utils/safe-action';
 
+async function getNextLoanNumber(projectId: string): Promise<number> {
+  const result = await db.loan.aggregate({
+    where: { lender: { projectId } },
+    _max: { loanNumber: true },
+  });
+  return (result._max.loanNumber ?? 0) + 1;
+}
+
 export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(async ({ parsedInput: data }) => {
-  // Create the loan
+  const lender = await db.lender.findUniqueOrThrow({
+    where: { id: data.lenderId },
+    select: { projectId: true },
+  });
+
+  const nextLoanNumber = await getNextLoanNumber(lender.projectId);
 
   const loan = await db.loan.create({
     data: {
@@ -18,7 +31,7 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
           id: data.lenderId,
         },
       },
-      // loanNumber is autoincrement
+      loanNumber: nextLoanNumber,
       signDate: data.signDate ?? new Date(),
       amount: data.amount,
       interestRate: data.interestRate,

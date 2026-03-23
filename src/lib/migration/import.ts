@@ -141,9 +141,6 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
   const { tempDir, data, projectInfo } = await fetchAndExtractDataPackage(input.baseUrl, input.accessToken);
 
   try {
-    const projectCount = await db.project.count();
-    const numberOffset = projectCount * 10000;
-
     const logo = await loadLogoFromPackage(tempDir, projectInfo.logo_select ?? projectInfo.logo);
 
     const result = await db.$transaction(
@@ -270,7 +267,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
 
           const lender = await tx.lender.create({
             data: {
-              lenderNumber: numberOffset + user.id,
+              lenderNumber: user.id,
               projectId: project.id,
               type: lenderType,
               salutation: mapSalutation(user.salutation, warnings, user.id),
@@ -296,7 +293,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
             entity: 'lender',
             legacyId: user.id,
             newId: lender.id,
-            displayNumber: numberOffset + user.id,
+            displayNumber: user.id,
           });
           lenderCount++;
         }
@@ -361,7 +358,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
 
           const loan = await tx.loan.create({
             data: {
-              loanNumber: numberOffset + contract.id,
+              loanNumber: contract.id,
               lenderId,
               signDate,
               terminationType,
@@ -382,7 +379,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
             entity: 'loan',
             legacyId: contract.id,
             newId: loan.id,
-            displayNumber: numberOffset + contract.id,
+            displayNumber: contract.id,
           });
           loanCount++;
         }
