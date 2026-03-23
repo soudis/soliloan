@@ -6,6 +6,7 @@ import {
   addressSchema,
   bankingSchema,
   contactSchema,
+  optionalIntSchema,
   salutationEnumRequired,
   selectEnumRequired,
 } from './common';
@@ -14,6 +15,7 @@ import {
 export const lenderFormSchema = z
   .object({
     // General Information
+    lenderNumber: optionalIntSchema,
     type: selectEnumRequired(LenderType),
     salutation: salutationEnumRequired,
     firstName: z.string().nullable().optional(),

@@ -26,6 +26,10 @@ export function NewLenderClient({ projectId }: NewLenderClientProps) {
 
       const result = await createLenderAction({ ...data, projectId });
 
+      if (result?.data?.fieldErrors) {
+        return result.data.fieldErrors;
+      }
+
       if (result?.serverError || result?.validationErrors) {
         throw new Error(result.serverError || 'Validation failed');
       }

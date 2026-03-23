@@ -14,7 +14,11 @@ import { FormSection } from '@/components/ui/form-section';
 import type { LenderFormData } from '@/lib/schemas/lender';
 import { useProject } from '../providers/project-provider';
 
-export function LenderFormFields() {
+interface LenderFormFieldsProps {
+  isEditMode?: boolean;
+}
+
+export function LenderFormFields({ isEditMode = false }: LenderFormFieldsProps) {
   const t = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
 
@@ -36,6 +40,14 @@ export function LenderFormFields() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {/* General Information Section */}
       <FormSection title={t('new.form.generalInfo')}>
+        <FormField
+          name="lenderNumber"
+          label={t('new.form.lenderNumber')}
+          placeholder={t('new.form.lenderNumberPlaceholder')}
+          type="number"
+          disabled={isEditMode}
+        />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormSelect
             name="type"

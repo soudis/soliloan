@@ -154,6 +154,8 @@
       "form": {
         "requiredFields": "Erforderliche Felder",
         "generalInfo": "Allgemeine Informationen",
+        "lenderNumber": "Konto-Nr.",
+        "lenderNumberPlaceholder": "Automatisch",
         "type": "Typ",
         "typePlaceholder": "Typ auswählen",
         "salutation": "Anrede",
@@ -292,6 +294,8 @@
       "form": {
         "loadingLenders": "Kreditgeber*innen werden geladen...",
         "generalInfo": "Allgemeine Informationen",
+        "loanNumber": "Kreditnummer",
+        "loanNumberPlaceholder": "Automatisch",
         "lender": "Kreditgeber*in",
         "lenderPlaceholder": "Kreditgeber*in auswählen",
         "signDate": "Datum",

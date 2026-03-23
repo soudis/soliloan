@@ -34,7 +34,7 @@
     "activeLoans": "Aktive Darlehen"
   },
   "loan": {
-    "loanNumber": "Darlehens-Nr.",
+    "loanNumber": "Kreditnummer",
     "amount": "Darlehensbetrag",
     "interestRate": "Zinssatz",
     "signDate": "Vertragsdatum",

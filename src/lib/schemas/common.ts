@@ -65,6 +65,15 @@ export const requiredNumberSchema = createNumberSchema().refine((value) => value
 });
 export const optionalNumberSchema = createNumberSchema().optional().nullable();
 
+// Accepts '' (empty input) or a positive integer. Transforms '' to null.
+// Uses '' instead of null as the empty-state because React treats null as
+// uncontrolled, which causes warnings when the input later receives a value.
+export const optionalIntSchema = z
+  .union([z.literal(''), z.coerce.number().int().min(1)])
+  .transform((v) => (v === '' ? null : v))
+  .nullable()
+  .optional();
+
 // Generic date schemas
 export const createDateSchema = (required = true) => {
   return required

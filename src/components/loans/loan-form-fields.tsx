@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { FormDatePicker } from '@/components/form/form-date-picker';
+import { FormField } from '@/components/form/form-field';
 import { FormNumberInput } from '@/components/form/form-number-input';
 import { FormSelect } from '@/components/form/form-select';
 import { LenderCombobox } from '@/components/loans/lender-combobox';
@@ -15,9 +16,10 @@ import { TerminationFormFields } from './termination-form-fields';
 
 interface LoanFormFieldsProps {
   lenders: Lender[];
+  isEditMode?: boolean;
 }
 
-export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
+export function LoanFormFields({ lenders, isEditMode = false }: LoanFormFieldsProps) {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const searchParams = useSearchParams();
@@ -29,6 +31,14 @@ export function LoanFormFields({ lenders }: LoanFormFieldsProps) {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {/* General Information Section */}
       <FormSection title={t('new.form.generalInfo')}>
+        <FormField
+          name="loanNumber"
+          label={t('new.form.loanNumber')}
+          placeholder={t('new.form.loanNumberPlaceholder')}
+          type="number"
+          disabled={isEditMode}
+        />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <LenderCombobox
             name="lenderId"

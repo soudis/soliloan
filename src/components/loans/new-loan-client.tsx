@@ -29,7 +29,6 @@ export function NewLoanClient({ project, lender, lenderId }: NewLoanClientProps)
     try {
       setIsSubmitting(true);
 
-      // Get the lender details first
       const lenderResult = await getLenderAction({ lenderId: data.lenderId });
       if (lenderResult.serverError) {
         throw new Error(lenderResult.serverError);
@@ -40,6 +39,10 @@ export function NewLoanClient({ project, lender, lenderId }: NewLoanClientProps)
       }
 
       const result = await createLoanAction({ ...data, lenderId: data.lenderId });
+
+      if (result?.data?.fieldErrors) {
+        return result.data.fieldErrors;
+      }
 
       if (result?.serverError || result?.validationErrors) {
         throw new Error(result.serverError || 'Validation failed');

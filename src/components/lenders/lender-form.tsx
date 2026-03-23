@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LenderRequiredField, LenderType } from '@prisma/client';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { Form } from '@/components/ui/form';
 import { FormActions } from '@/components/ui/form-actions';
@@ -25,7 +25,7 @@ interface LenderFormProps {
   submitButtonText: string;
   submittingButtonText: string;
   cancelButtonText: string;
-  onSubmit: (data: LenderFormData) => Promise<void>;
+  onSubmit: (data: LenderFormData) => Promise<Record<string, string> | undefined>;
   initialData?: Partial<LenderWithRelations>;
   isLoading?: boolean;
   error?: string | null;
@@ -60,8 +60,11 @@ export function LenderForm({
     validateAdditionalFields('additionalFields', project.configuration.lenderAdditionalFields)(data, ctx);
   });
 
+  const isEditMode = !!initialData?.id;
+
   const defaultValues = useMemo(() => {
     return {
+      lenderNumber: initialData?.lenderNumber ?? '',
       type: initialType,
       salutation: initialData?.salutation || project.configuration.lenderSalutation || '',
       projectId: project.id || '',
@@ -94,21 +97,19 @@ export function LenderForm({
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues,
+    values: defaultValues,
   });
-
-  useEffect(() => {
-    form.reset(defaultValues);
-  }, [defaultValues, form]);
 
   if (!project) {
     return null;
   }
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    try {
-      await onSubmit(data);
-    } catch (error) {
-      console.error('Error submitting form:', error);
+    const fieldErrors = await onSubmit(data);
+    if (fieldErrors) {
+      for (const [field, message] of Object.entries(fieldErrors)) {
+        form.setError(field as keyof LenderFormData, { type: 'server', message });
+      }
     }
   });
 
@@ -116,7 +117,7 @@ export function LenderForm({
     <FormLayout title={title} error={error}>
       <Form {...form}>
         <form onSubmit={handleSubmit}>
-          <LenderFormFields />
+          <LenderFormFields isEditMode={isEditMode} />
           <FormActions
             submitButtonText={submitButtonText}
             submittingButtonText={submittingButtonText}

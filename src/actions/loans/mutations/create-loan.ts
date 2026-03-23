@@ -22,7 +22,15 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
     select: { projectId: true },
   });
 
-  const nextLoanNumber = await getNextLoanNumber(lender.projectId);
+  const loanNumber = data.loanNumber ?? (await getNextLoanNumber(lender.projectId));
+
+  if (data.loanNumber) {
+    const existing = await db.loan.findFirst({
+      where: { loanNumber: data.loanNumber, lender: { projectId: lender.projectId } },
+      select: { id: true },
+    });
+    if (existing) return { fieldErrors: { loanNumber: 'error.loan.numberAlreadyExists' } };
+  }
 
   const loan = await db.loan.create({
     data: {
@@ -31,7 +39,7 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
           id: data.lenderId,
         },
       },
-      loanNumber: nextLoanNumber,
+      loanNumber,
       signDate: data.signDate ?? new Date(),
       amount: data.amount,
       interestRate: data.interestRate,

@@ -22,7 +22,7 @@ interface LoanFormProps {
   submitButtonText: string;
   submittingButtonText: string;
   cancelButtonText: string;
-  onSubmit: (data: LoanFormData) => Promise<void>;
+  onSubmit: (data: LoanFormData) => Promise<Record<string, string> | undefined>;
   initialData?: Partial<LoanWithRelations>;
   isLoading?: boolean;
   error?: string | null;
@@ -53,8 +53,10 @@ export function LoanForm({
     validateAdditionalFields('additionalFields', project.configuration.loanAdditionalFields),
   );
 
-  // Create base default values that apply to all termination types
+  const isEditMode = !!initialData?.id;
+
   const defaultValues = {
+    loanNumber: initialData?.loanNumber ?? '',
     lenderId: initialData?.lenderId || '',
     signDate: initialData?.signDate || '',
     amount: formatNumber(initialData?.amount) || ('' as const),
@@ -84,15 +86,15 @@ export function LoanForm({
   }
 
   const handleSubmit = form.handleSubmit(async (formData: LoanFormData) => {
-    try {
-      // Convert empty strings to null
-      const processedData = Object.fromEntries(
-        Object.entries(formData).map(([key, value]) => [key, emptyStringToNull(value)]),
-      ) as LoanFormData;
+    const processedData = Object.fromEntries(
+      Object.entries(formData).map(([key, value]) => [key, emptyStringToNull(value)]),
+    ) as LoanFormData;
 
-      await onSubmit(processedData);
-    } catch (error) {
-      console.error('Error submitting form:', error);
+    const fieldErrors = await onSubmit(processedData);
+    if (fieldErrors) {
+      for (const [field, message] of Object.entries(fieldErrors)) {
+        form.setError(field as keyof LoanFormData, { type: 'server', message });
+      }
     }
   });
 
@@ -100,7 +102,7 @@ export function LoanForm({
     <FormLayout title={title} error={error}>
       <Form {...form}>
         <form onSubmit={handleSubmit}>
-          <LoanFormFields lenders={lenders} />
+          <LoanFormFields lenders={lenders} isEditMode={isEditMode} />
 
           <FormActions
             submitButtonText={submitButtonText}

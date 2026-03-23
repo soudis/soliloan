@@ -7,6 +7,7 @@ import {
   createDateSchema,
   createNumberSchemaRequired,
   interestMethodEnum,
+  optionalIntSchema,
   optionalNumberSchema,
   periodTypeEnum,
 } from './common';
@@ -68,6 +69,7 @@ export const loanTerminationSchema = z.object({
 export const loanFormSchema = z
   .object({
     // General Information
+    loanNumber: optionalIntSchema,
     lenderId: z.string().min(1, { message: 'validation.common.required' }),
     signDate: createDateSchema(true),
     amount: createNumberSchemaRequired(0.01),

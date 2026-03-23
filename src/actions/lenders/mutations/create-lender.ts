@@ -30,11 +30,19 @@ export const createLenderAction = projectAction.inputSchema(lenderFormSchema).ac
   const userLanguage = configuration.userLanguage ?? Language.de;
   const userTheme = configuration.userTheme ?? SoliLoansTheme.default;
 
-  const nextLenderNumber = await getNextLenderNumber(data.projectId);
+  const lenderNumber = data.lenderNumber ?? (await getNextLenderNumber(data.projectId));
+
+  if (data.lenderNumber) {
+    const existing = await db.lender.findFirst({
+      where: { lenderNumber: data.lenderNumber, projectId: data.projectId },
+      select: { id: true },
+    });
+    if (existing) return { fieldErrors: { lenderNumber: 'error.lender.numberAlreadyExists' } };
+  }
 
   const lender = await db.lender.create({
     data: {
-      lenderNumber: nextLenderNumber,
+      lenderNumber,
       type: data.type,
       salutation: data.salutation,
       firstName: data.firstName,
