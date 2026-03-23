@@ -3,17 +3,18 @@
 import { omit } from 'lodash';
 import moment from 'moment';
 import { db } from '@/lib/db';
+import { projectIdSchema } from '@/lib/schemas/common';
 import { parseAdditionalFieldConfig } from '@/lib/utils/additional-fields';
+import { projectAction } from '@/lib/utils/safe-action';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
-export async function getProjectUnsafe(projectId: string): Promise<{ project: ProjectWithConfiguration }> {
+export async function getProjectUnsafe(projectId: string): Promise<ProjectWithConfiguration> {
   // Fetch the project
   const project = await db.project.findUnique({
     where: {
       id: projectId,
     },
     include: {
-      managers: true,
       configuration: {
         include: {
           loanTemplates: true,
@@ -53,7 +54,7 @@ export async function getProjectUnsafe(projectId: string): Promise<{ project: Pr
       loanAdditionalFields: parseAdditionalFieldConfig(project.configuration.loanAdditionalFields) ?? [],
     },
   };
-  return { project: projectWithConfiguration };
+  return projectWithConfiguration;
 }
 
 export const getProjectAction = projectAction
