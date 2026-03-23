@@ -15,7 +15,6 @@ export async function getProjectUnsafe(projectId: string): Promise<ProjectWithCo
       id: projectId,
     },
     include: {
-      managers: true,
       configuration: {
         include: {
           loanTemplates: true,
