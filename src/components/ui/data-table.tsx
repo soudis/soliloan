@@ -112,7 +112,7 @@ declare module '@tanstack/react-table' {
 
 export type DataTableColumnFilters = {
   [key: string]: {
-    type: 'text' | 'select' | 'number' | 'date';
+    type: 'text' | 'select' | 'multi-select' | 'number' | 'date';
     options?: { label: string; value: string }[];
     label?: string;
   };

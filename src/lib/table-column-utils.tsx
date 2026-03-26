@@ -1,5 +1,6 @@
 import type { Lender, Loan } from '@prisma/client';
 import type { ColumnDef, Row, VisibilityState } from '@tanstack/react-table';
+import moment from 'moment';
 import { Badge } from '@/components/ui/badge';
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
@@ -21,6 +22,12 @@ export function compoundTextFilter<T>(row: Row<T>, columnId: string, filterValue
 // Define the custom filter function for enum fields
 export function enumFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
   const value = row.getValue(columnId);
+
+  // Support single- and multi-select enum filters.
+  if (Array.isArray(filterValue)) {
+    if (filterValue.length === 0) return true;
+    return filterValue.includes(String(value));
+  }
 
   // For enum fields, we do an exact match
   return value === filterValue || filterValue === '';
@@ -551,11 +558,54 @@ export function createLenderColumn<
   );
 }
 
+type TerminationModalitiesData = Pick<
+  Loan,
+  'terminationType' | 'signDate' | 'endDate' | 'duration' | 'durationType' | 'terminationPeriod' | 'terminationPeriodType'
+>;
+
+export function formatTerminationModalities(
+  data: TerminationModalitiesData,
+  commonT: (key: string, values?: Record<string, string>) => string,
+  formatDate?: (date: Date) => string,
+): string {
+  const { terminationType } = data;
+  if (!terminationType) return '-';
+
+  const defaultFormatDate = (d: Date) => (Number.isNaN(d.getTime()) ? '-' : d.toLocaleDateString('de-DE'));
+  const durationUnitLabel = (unit: string) =>
+    unit === 'MONTHS' ? commonT('enums.loan.durationUnit.MONTHS') : commonT('enums.loan.durationUnit.YEARS');
+
+  switch (terminationType) {
+    case 'ENDDATE': {
+      if (!data.endDate) return '-';
+      const date = new Date(data.endDate);
+      const formatted = (formatDate ?? defaultFormatDate)(date);
+      return commonT('enums.loan.terminationModalities.ENDDATE', { date: formatted || '-' });
+    }
+    case 'DURATION': {
+      if (!data.duration || !data.durationType) return '-';
+      const duration = `${data.duration} ${durationUnitLabel(data.durationType)}`;
+      const calculatedEndDate = moment(data.signDate)
+        .add(data.duration, data.durationType === 'MONTHS' ? 'months' : 'years')
+        .toDate();
+      const formatted = (formatDate ?? defaultFormatDate)(calculatedEndDate);
+      return commonT('enums.loan.terminationModalities.DURATION', { duration, date: formatted || '-' });
+    }
+    case 'TERMINATION': {
+      if (!data.terminationPeriod || !data.terminationPeriodType) return '-';
+      const duration = `${data.terminationPeriod} ${durationUnitLabel(data.terminationPeriodType)}`;
+      return commonT('enums.loan.terminationModalities.TERMINATION', { duration });
+    }
+    default:
+      return '-';
+  }
+}
+
 // Create a termination modalities column
 export function createTerminationModalitiesColumn<
   T extends Pick<
     Loan,
-    'terminationType' | 'endDate' | 'duration' | 'durationType' | 'terminationPeriod' | 'terminationPeriodType'
+    'terminationType' | 'signDate' | 'endDate' | 'duration' | 'durationType' | 'terminationPeriod' | 'terminationPeriodType'
   >,
 >(t: (key: string) => string, commonT: (key: string) => string): ColumnDef<T> {
   return createColumn<T>(
@@ -563,63 +613,8 @@ export function createTerminationModalitiesColumn<
       id: 'terminationModalities',
       accessorKey: 'terminationModalities',
       header: 'table.terminationModalities',
-      accessorFn: (row: T) => {
-        const terminationType = row.terminationType;
-
-        if (terminationType === 'ENDDATE' && row.endDate) {
-          try {
-            const date = new Date(row.endDate);
-            const formattedDate = Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
-            return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${formattedDate}`;
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          } catch (e) {
-            return commonT(`enums.loan.terminationType.${terminationType}`);
-          }
-        } else if (terminationType === 'DURATION' && row.duration && row.durationType) {
-          const durationType =
-            row.durationType === 'MONTHS'
-              ? commonT('enums.loan.durationUnit.MONTHS')
-              : commonT('enums.loan.durationUnit.YEARS');
-          return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${row.duration} ${durationType}`;
-        } else if (terminationType === 'TERMINATION' && row.terminationPeriod && row.terminationPeriodType) {
-          const periodType =
-            row.terminationPeriodType === 'MONTHS'
-              ? commonT('enums.loan.durationUnit.MONTHS')
-              : commonT('enums.loan.durationUnit.YEARS');
-          return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${row.terminationPeriod} ${periodType}`;
-        }
-
-        return commonT(`enums.loan.terminationType.${terminationType}`);
-      },
-      cell: ({ row }) => {
-        const loan = row.original;
-        const terminationType = loan.terminationType;
-
-        if (terminationType === 'ENDDATE' && loan.endDate) {
-          try {
-            const date = new Date(loan.endDate);
-            const formattedDate = Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
-            return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${formattedDate}`;
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          } catch (e) {
-            return commonT(`enums.loan.terminationType.${terminationType}`);
-          }
-        } else if (terminationType === 'DURATION' && loan.duration && loan.durationType) {
-          const durationType =
-            loan.durationType === 'MONTHS'
-              ? commonT('enums.loan.durationUnit.MONTHS')
-              : commonT('enums.loan.durationUnit.YEARS');
-          return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${loan.duration} ${durationType}`;
-        } else if (terminationType === 'TERMINATION' && loan.terminationPeriod && loan.terminationPeriodType) {
-          const periodType =
-            loan.terminationPeriodType === 'MONTHS'
-              ? commonT('enums.loan.durationUnit.MONTHS')
-              : commonT('enums.loan.durationUnit.YEARS');
-          return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${loan.terminationPeriod} ${periodType}`;
-        }
-
-        return commonT(`enums.loan.terminationType.${terminationType}`);
-      },
+      accessorFn: (row: T) => formatTerminationModalities(row, commonT),
+      cell: ({ row }) => formatTerminationModalities(row.original, commonT),
       filterFn: compoundTextFilter,
     },
     t,

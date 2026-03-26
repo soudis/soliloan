@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 interface FormNumberWithSelectProps {
   numberName: string;
   selectName: string;
-  numberLabel: string;
+  numberLabel?: string;
   selectLabel?: string;
   numberPlaceholder?: string;
   selectPlaceholder?: string;
@@ -34,10 +34,12 @@ export function FormNumberWithSelect({
   const form = useFormContext();
   return (
     <div className={cn('space-y-2', className)}>
-      <div className="flex items-center justify-between">
-        <Label>{numberLabel}</Label>
-        <Label className="text-muted-foreground">{selectLabel}</Label>
-      </div>
+      {(numberLabel || selectLabel) && (
+        <div className="flex items-center justify-between">
+          <Label>{numberLabel}</Label>
+          <Label className="text-muted-foreground">{selectLabel}</Label>
+        </div>
+      )}
       <div className="flex">
         <FormField
           control={form.control}
@@ -51,7 +53,10 @@ export function FormNumberWithSelect({
                   min={numberMin}
                   step={numberStep}
                   {...field}
-                  onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    field.onChange(next === '' ? '' : Number.parseFloat(next));
+                  }}
                   className="rounded-r-none h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none border-r-0"
                 />
               </FormControl>
@@ -63,7 +68,7 @@ export function FormNumberWithSelect({
           control={form.control}
           name={selectName}
           render={({ field }) => (
-            <FormItem className="w-[120px]">
+            <FormItem className="w-[110px]">
               <FormControl>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <CustomSelectTrigger className="rounded-l-none h-10">

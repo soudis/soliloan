@@ -31,7 +31,7 @@ interface DataTableHeaderProps<TData> {
   showFilter?: boolean;
   columnFilters?: {
     [key: string]: {
-      type: 'text' | 'select' | 'number' | 'date';
+      type: 'text' | 'select' | 'multi-select' | 'number' | 'date';
       options?: { label: string; value: string }[];
       label?: string;
     };

@@ -214,7 +214,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
       label: t('table.interestPaid'),
     },
     terminationType: {
-      type: 'select' as const,
+      type: 'multi-select' as const,
       label: t('table.terminationType'),
       options: Object.entries(TerminationType).map(([key, value]) => ({
         label: commonT(`enums.loan.terminationType.${key}`),
