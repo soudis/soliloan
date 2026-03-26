@@ -514,7 +514,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
       warnings,
       idMappings,
       skippedFiles,
-      unmappedFields: ['user.account_notification_type', 'user.lastLogin / user.loginCount'],
+      unmappedFields: ['user.lastLogin / user.loginCount'],
     };
   } finally {
     await rm(tempDir, { recursive: true, force: true }).catch(() => {});
