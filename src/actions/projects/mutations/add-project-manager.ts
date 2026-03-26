@@ -63,7 +63,7 @@ export const addProjectManagerAction = projectAction
 
     if (!user) {
       const password = 'test12345xy';
-      const passwordHashed = hashPassword(password);
+      const passwordHashed = await hashPassword(password);
       const invitationToken = generateInviteToken();
 
       if (!project.configuration) throw new Error('error.configuration.notFound');
