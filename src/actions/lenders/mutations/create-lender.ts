@@ -58,6 +58,7 @@ export const createLenderAction = projectAction.inputSchema(lenderFormSchema).ac
       telNo: data.telNo,
       iban: data.iban,
       bic: data.bic,
+      notificationType: data.notificationType,
       additionalFields: data.additionalFields ?? {},
       ...(data.email && {
         user: {

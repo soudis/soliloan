@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LenderRequiredField, LenderType } from '@prisma/client';
+import { LenderRequiredField, LenderType, NotificationType } from '@prisma/client';
 import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { Form } from '@/components/ui/form';
@@ -80,6 +80,8 @@ export function LenderForm({
       // Banking Information
       iban: initialData?.iban || '',
       bic: initialData?.bic || '',
+      // Notification
+      notificationType: initialData?.notificationType || NotificationType.ONLINE,
       // Additional Information
       firstName: initialData?.firstName || '',
       lastName: initialData?.lastName || '',

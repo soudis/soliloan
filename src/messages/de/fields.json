@@ -20,6 +20,7 @@
     "telNo": "Telefon",
     "iban": "IBAN",
     "bic": "BIC",
+    "notificationType": "Erhalt Kontomitteilung per",
     "balance": "Kontostand",
     "interest": "Zinsen",
     "deposits": "Einzahlungen",

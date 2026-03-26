@@ -121,6 +121,7 @@
       "address": "Adresse",
       "banking": "Bankverbindung",
       "salutation": "Anrede",
+      "notificationType": "Erhalt Kontomitteilung",
       "actions": "Aktionen",
       "filterByName": "Nach Namen filtern..."
     },
@@ -131,6 +132,7 @@
       "lenderInfo": "Kreditgeber*in",
       "address": "Adresse",
       "banking": "Bankverbindung",
+      "notificationType": "Erhalt Kontomitteilung per",
       "loans": "Kredite",
       "error": "Fehler beim Laden der Kreditgeber*innen-Daten",
       "noContactInfo": "Keine Kontaktinformationen verfügbar",
@@ -170,6 +172,7 @@
         "contactInfo": "Kontaktinformationen",
         "email": "E-Mail",
         "telNo": "Telefonnummer",
+        "notificationType": "Erhalt Kontomitteilung per",
         "street": "Straße, Hausnummer, ...",
         "addon": "Adresszusatz",
         "zip": "PLZ",

@@ -4,6 +4,7 @@ import {
   DurationType,
   InterestMethod,
   LenderType,
+  NotificationType,
   PaymentType,
   Salutation,
   TerminationType,
@@ -186,6 +187,19 @@ export function mapLenderNames(
     lastName: emptyToNull(user.last_name),
     organisationName: null,
   };
+}
+
+export function mapNotificationType(value: string | null | undefined): NotificationType {
+  switch (value?.toLowerCase()) {
+    case 'online':
+      return NotificationType.ONLINE;
+    case 'e-mail':
+      return NotificationType.EMAIL;
+    case 'post':
+      return NotificationType.POST;
+    default:
+      return NotificationType.ONLINE;
+  }
 }
 
 export function generateSlug(name: string): string {

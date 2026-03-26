@@ -1,6 +1,6 @@
 'use client';
 
-import { Salutation, type View } from '@prisma/client';
+import { NotificationType, Salutation, type View } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -116,6 +116,15 @@ export function LenderTable({ lenders, views }: LenderTableProps) {
       () => 'outline',
     ),
 
+    createLenderEnumBadgeColumn<LenderWithCalculations>(
+      'notificationType',
+      'table.notificationType',
+      'enums.lender.notificationType',
+      t,
+      commonT,
+      () => 'outline',
+    ),
+
     ...createAdditionalFieldsColumns<LenderWithCalculations>(
       project.configuration.lenderAdditionalFields,
       'additionalFields',
@@ -183,6 +192,14 @@ export function LenderTable({ lenders, views }: LenderTableProps) {
         value: value,
       })),
     },
+    notificationType: {
+      type: 'select' as const,
+      label: t('table.notificationType'),
+      options: Object.entries(NotificationType).map(([key, value]) => ({
+        label: commonT(`enums.lender.notificationType.${key}`),
+        value: value,
+      })),
+    },
     ...createAdditionalFieldFilters('additionalFields', project.configuration.lenderAdditionalFields),
     amount: {
       type: 'number' as const,
@@ -224,6 +241,7 @@ export function LenderTable({ lenders, views }: LenderTableProps) {
     address: false,
     banking: false,
     salutation: false,
+    notificationType: false,
     amount: false,
     balance: true,
     deposits: false,

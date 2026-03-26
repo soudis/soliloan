@@ -134,6 +134,11 @@
         "address": "Adresse",
         "email": "E-Mail",
         "telNo": "Telefonnummer"
+      },
+      "notificationType": {
+        "ONLINE": "Online",
+        "EMAIL": "E-Mail",
+        "POST": "Post"
       }
     },
     "loan": {

@@ -17,6 +17,7 @@ import {
   mapLenderNames,
   mapLenderType,
   mapMembershipStatus,
+  mapNotificationType,
   mapPaymentType,
   mapSalutation,
   mapTerminationPeriodType,
@@ -284,6 +285,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
               email: emailLinked ? userEmail : null,
               iban: emptyToNull(user.IBAN),
               bic: emptyToNull(user.BIC),
+              notificationType: mapNotificationType(user.account_notification_type),
               additionalFields,
             },
           });

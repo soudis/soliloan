@@ -1,6 +1,6 @@
 'use client';
 
-import { LenderRequiredField, LenderType, Salutation } from '@prisma/client';
+import { LenderRequiredField, LenderType, NotificationType, Salutation } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { useFormContext } from 'react-hook-form';
 
@@ -159,6 +159,18 @@ export function LenderFormFields({ isEditMode = false }: LenderFormFieldsProps) 
               clearable
             />
           </div>
+        </div>
+
+        <div className="pt-4">
+          <FormSelect
+            name="notificationType"
+            label={`${t('new.form.notificationType')} *`}
+            placeholder={commonT('ui.form.selectPlaceholder')}
+            options={Object.entries(NotificationType).map(([key, value]) => ({
+              value,
+              label: commonT(`enums.lender.notificationType.${key}`),
+            }))}
+          />
         </div>
       </FormSection>
 

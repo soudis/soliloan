@@ -140,6 +140,7 @@ model Lender {
   email            String?
   iban             String?
   bic              String?
+  notificationType NotificationType @default(ONLINE)
   files            File[]
   user             User?             @relation(fields: [email], references: [email])
   project          Project           @relation(fields: [projectId], references: [id])
@@ -396,6 +397,12 @@ enum Country {
   IE
   PT
   GR
+}
+
+enum NotificationType {
+  ONLINE
+  EMAIL
+  POST
 }
 
 enum LenderRequiredField {
