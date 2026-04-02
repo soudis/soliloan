@@ -1,7 +1,19 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { MergeTagConfig, MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+type MergeTagItem = MergeTagField | MergeTagLoop;
+type MergeTagGroup = {
+  key: string;
+  label: string;
+  items: MergeTagItem[];
+};
+
+const isLoop = (item: MergeTagItem): item is MergeTagLoop => 'startTag' in item;
 
 export function MergeTagDropdown({
   isOpen,
@@ -12,69 +24,101 @@ export function MergeTagDropdown({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (item: MergeTagField | MergeTagLoop) => void;
+  onSelect: (item: MergeTagItem) => void;
   config: MergeTagConfig;
   position: { top: number; left: number };
 }) {
-  const t = useTranslations('fields');
+  const tFields = useTranslations('fields');
+  const tMergeTags = useTranslations('templates.editor.mergeTags');
 
-  if (!isOpen || !config) return null;
+  const groups = useMemo<MergeTagGroup[]>(() => {
+    const entityOrder: string[] = [];
+    const entityMap = new Map<string, MergeTagField[]>();
 
-  const ENTITY_COLORS: Record<string, string> = {
-    page: '#e0f2f1',
-    platform: '#fce4ec',
-    config: '#f3e5f5',
-    lender: '#e3f2fd',
-    loan: '#fff3e0',
-    latestTransaction: '#fff8e1',
-    user: '#ede7f6',
-    lenderYearly: '#e8eaf6',
-    project: '#e0f7fa',
-  };
-  const DEFAULT_COLOR = '#f5f5f5';
+    for (const field of config.topLevelFields) {
+      if (!entityMap.has(field.entity)) {
+        entityOrder.push(field.entity);
+        entityMap.set(field.entity, []);
+      }
 
-  // Group top-level fields by entity, preserving order of first appearance
-  const entityOrder: string[] = [];
-  const entityMap = new Map<string, MergeTagField[]>();
-  for (const field of config.topLevelFields) {
-    if (!entityMap.has(field.entity)) {
-      entityOrder.push(field.entity);
-      entityMap.set(field.entity, []);
+      entityMap.get(field.entity)?.push(field);
     }
-    entityMap.get(field.entity)?.push(field);
-  }
 
-  const groups: { label: string; items: (MergeTagField | MergeTagLoop)[]; color: string; isLoop?: boolean }[] = [];
+    const nextGroups: MergeTagGroup[] = entityOrder
+      .map((entity) => ({
+        key: `entity:${entity}`,
+        label: tFields(`categories.${entity}`),
+        items: entityMap.get(entity) ?? [],
+      }))
+      .filter((group) => group.items.length > 0);
 
-  for (const entity of entityOrder) {
-    const fields = entityMap.get(entity) ?? [];
-    if (fields.length > 0) {
-      groups.push({
-        label: t(`categories.${entity}`),
-        items: fields,
-        color: ENTITY_COLORS[entity] ?? DEFAULT_COLOR,
+    if (config.additionalFields.lender.length > 0) {
+      nextGroups.push({
+        key: 'additional:lender',
+        label: `${tFields('categories.lender')} ${tMergeTags('additionalFieldsSuffix')}`,
+        items: config.additionalFields.lender,
       });
     }
-  }
 
-  if (config.loops.length > 0) {
-    groups.push({
-      label: t('categories.loops'),
-      items: config.loops,
-      color: '#bbdefb',
-      isLoop: true,
+    if (config.additionalFields.loan.length > 0) {
+      nextGroups.push({
+        key: 'additional:loan',
+        label: `${tFields('categories.loan')} ${tMergeTags('additionalFieldsSuffix')}`,
+        items: config.additionalFields.loan,
+      });
+    }
+
+    if (config.loops.length > 0) {
+      nextGroups.push({
+        key: 'loops',
+        label: tFields('categories.loops'),
+        items: config.loops,
+      });
+    }
+
+    for (const loop of config.loops) {
+      if (loop.childFields.length > 0) {
+        nextGroups.push({
+          key: `loop-fields:${loop.key}`,
+          label: `${loop.label} ${tMergeTags('childFieldsSuffix')}`,
+          items: loop.childFields,
+        });
+      }
+    }
+
+    return nextGroups;
+  }, [config, tFields, tMergeTags]);
+
+  const [selectedGroupKey, setSelectedGroupKey] = useState('');
+  const [selectedItemKey, setSelectedItemKey] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setSelectedGroupKey((currentGroupKey) => {
+      if (groups.length === 0) return '';
+      return groups.some((group) => group.key === currentGroupKey) ? currentGroupKey : groups[0].key;
     });
-  }
+  }, [groups, isOpen]);
 
-  for (const loop of config.loops) {
-    if (loop.childFields.length > 0) {
-      groups.push({
-        label: `${loop.label} Felder`,
-        items: loop.childFields,
-        color: '#e8f5e9',
-      });
+  const selectedGroup = groups.find((group) => group.key === selectedGroupKey);
+
+  useEffect(() => {
+    if (!selectedGroup) {
+      setSelectedItemKey('');
+      return;
     }
-  }
+
+    setSelectedItemKey((currentItemKey) => {
+      return selectedGroup.items.some((item) => item.key === currentItemKey)
+        ? currentItemKey
+        : (selectedGroup.items[0]?.key ?? '');
+    });
+  }, [selectedGroup]);
+
+  const selectedItem = selectedGroup?.items.find((item) => item.key === selectedItemKey);
+
+  if (!isOpen) return null;
 
   return (
     <>
@@ -85,35 +129,63 @@ export function MergeTagDropdown({
         onClick={onClose}
       />
       <div
-        className="fixed z-[9999] bg-zinc-800 border border-zinc-600 rounded-lg shadow-xl max-h-80 overflow-y-auto min-w-64"
+        className="fixed z-[9999] w-80 rounded-lg border bg-background p-4 shadow-xl"
         style={{ top: position.top, left: position.left }}
       >
-        {groups.map((group) => (
-          <div key={group.label}>
-            <div className="px-3 py-2 text-xs font-bold text-zinc-400 bg-zinc-900 sticky top-0">{group.label}</div>
-            {group.items.map((item) => (
-              <button
-                type="button"
-                key={item.key}
-                onMouseDown={(e) => {
-                  // Prevent button from taking focus
-                  e.preventDefault();
-                }}
-                className="w-full px-3 py-1.5 text-left text-sm text-zinc-200 hover:bg-zinc-700 flex items-center gap-2"
-                onClick={() => {
-                  onSelect(item);
-                  onClose();
-                }}
-              >
-                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: group.color }} />
-                <span>
-                  {item.label}
-                  {group.isLoop && <span className="ml-2 text-[10px] text-zinc-500 font-mono">(Schleife)</span>}
-                </span>
-              </button>
-            ))}
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium text-foreground">{tMergeTags('groupLabel')}</p>
+            <Select value={selectedGroupKey || undefined} onValueChange={setSelectedGroupKey}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={tMergeTags('groupPlaceholder')} />
+              </SelectTrigger>
+              <SelectContent className="z-[10000]">
+                {groups.map((group) => (
+                  <SelectItem key={group.key} value={group.key}>
+                    {group.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        ))}
+
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium text-foreground">{tMergeTags('fieldLabel')}</p>
+            <Select
+              value={selectedItemKey || undefined}
+              onValueChange={setSelectedItemKey}
+              disabled={!selectedGroup || selectedGroup.items.length === 0}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={tMergeTags('fieldPlaceholder')} />
+              </SelectTrigger>
+              <SelectContent className="z-[10000]">
+                {selectedGroup?.items.map((item) => (
+                  <SelectItem key={item.key} value={item.key}>
+                    {item.label}
+                    {isLoop(item) ? ` (${tMergeTags('loopSuffix')})` : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button
+            type="button"
+            className="w-full"
+            disabled={!selectedItem}
+            onMouseDown={(e) => {
+              e.preventDefault();
+            }}
+            onClick={() => {
+              if (!selectedItem) return;
+              onSelect(selectedItem);
+              onClose();
+            }}
+          >
+            {tMergeTags('insert')}
+          </Button>
+        </div>
       </div>
     </>
   );

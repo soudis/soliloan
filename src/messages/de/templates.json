@@ -52,6 +52,16 @@
     "showPreview": "Vorschau",
     "generatingPdf": "PDF wird erstellt…",
     "autoSaveActive": "Automatisches Speichern aktiv",
+    "mergeTags": {
+      "groupLabel": "Gruppe",
+      "groupPlaceholder": "Gruppe auswählen",
+      "fieldLabel": "Feld",
+      "fieldPlaceholder": "Feld auswählen",
+      "insert": "Einfügen",
+      "loopSuffix": "Schleife",
+      "childFieldsSuffix": "Felder",
+      "additionalFieldsSuffix": "Zusatzfelder"
+    },
     "toolbox": {
       "title": "Blöcke",
       "tabBasic": "Basis",
