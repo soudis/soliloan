@@ -311,7 +311,7 @@ export function TemplateEditorView({
         setCurrentDesign(designData);
         if (isDocument) {
           const nodes = getNodesMapFromDesign(designData as Record<string, unknown>);
-          const parts = generateDocumentParts(nodes);
+          const parts = generateDocumentParts(nodes, { logoUrl: projectLogo });
           setCurrentHtml(parts.bodyHtml);
           setCurrentHeaderHtml(parts.headerHtml);
           setCurrentFooterHtml(parts.footerHtml);
@@ -319,13 +319,13 @@ export function TemplateEditorView({
           setCurrentFooterPadding(parts.footerPadding);
         } else {
           const nodes = getNodesMapFromDesign(designData as Record<string, unknown>);
-          setCurrentHtml(generateEmailHtml(nodes));
+          setCurrentHtml(generateEmailHtml(nodes, { logoUrl: projectLogo }));
         }
       } catch (e) {
         console.error('Error initializing design state', e);
       }
     }
-  }, [initialDesign, isDocument]);
+  }, [initialDesign, isDocument, projectLogo]);
 
   const resolvePreviewHtml = async (): Promise<{
     html: string;
@@ -423,7 +423,7 @@ export function TemplateEditorView({
         setCurrentDesign(parsed);
 
         if (isDocument) {
-          const parts = generateDocumentParts(nodes);
+          const parts = generateDocumentParts(nodes, { logoUrl: projectLogo });
           setCurrentHtml(parts.bodyHtml);
           setCurrentHeaderHtml(parts.headerHtml);
           setCurrentFooterHtml(parts.footerHtml);
@@ -431,12 +431,12 @@ export function TemplateEditorView({
           setCurrentFooterPadding(parts.footerPadding);
           onDesignChange(parsed, parts.bodyHtml);
         } else {
-          const html = generateEmailHtml(nodes);
+          const html = generateEmailHtml(nodes, { logoUrl: projectLogo });
           setCurrentHtml(html);
           onDesignChange(parsed, html);
         }
       }, 500),
-    [onDesignChange, isDocument],
+    [onDesignChange, isDocument, projectLogo],
   );
 
   if (!isMounted) return null;
@@ -470,6 +470,7 @@ export function TemplateEditorView({
                 <DocumentPartsRefSetter
                   getLatestDocumentPartsRef={getLatestDocumentPartsRef}
                   getLatestEmailHtmlRef={getLatestEmailHtmlRef}
+                  logoUrl={projectLogo}
                 />
                 <InternalEditor isPreviewing={isPreviewing} previewHtml={previewHtml} isDocument={isDocument} />
               </Editor>
@@ -531,9 +532,11 @@ type DocumentParts = {
 const DocumentPartsRefSetter = ({
   getLatestDocumentPartsRef,
   getLatestEmailHtmlRef,
+  logoUrl,
 }: {
   getLatestDocumentPartsRef: React.MutableRefObject<(() => DocumentParts) | null>;
   getLatestEmailHtmlRef: React.MutableRefObject<(() => string) | null>;
+  logoUrl?: string | null;
 }) => {
   const { query } = useEditor();
 
@@ -541,7 +544,7 @@ const DocumentPartsRefSetter = ({
     const getDocumentParts = (): DocumentParts => {
       const serialized = query.serialize();
       const nodes = getNodesMapFromSerialized(serialized);
-      const parts = generateDocumentParts(nodes);
+      const parts = generateDocumentParts(nodes, { logoUrl });
       let design: Record<string, unknown> | undefined;
       try {
         design = JSON.parse(serialized) as Record<string, unknown>;
@@ -562,7 +565,7 @@ const DocumentPartsRefSetter = ({
     const getEmailHtml = (): string => {
       const serialized = query.serialize();
       const nodes = getNodesMapFromSerialized(serialized);
-      return generateEmailHtml(nodes);
+      return generateEmailHtml(nodes, { logoUrl });
     };
     getLatestDocumentPartsRef.current = getDocumentParts;
     getLatestEmailHtmlRef.current = getEmailHtml;
@@ -570,7 +573,7 @@ const DocumentPartsRefSetter = ({
       getLatestDocumentPartsRef.current = null;
       getLatestEmailHtmlRef.current = null;
     };
-  }, [query, getLatestDocumentPartsRef, getLatestEmailHtmlRef]);
+  }, [query, getLatestDocumentPartsRef, getLatestEmailHtmlRef, logoUrl]);
 
   return null;
 };

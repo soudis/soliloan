@@ -2,6 +2,7 @@ import { render } from '@react-email/render';
 import nodemailer from 'nodemailer';
 import React from 'react';
 
+import { db } from '@/lib/db';
 import { renderSystemEmailTemplate, resolveSystemTemplate } from '@/lib/templates/resolve-system-template';
 
 const SOLILOAN_URL = (process.env.SOLILOAN_URL ?? '').replace(/\/+$/, '');
@@ -91,7 +92,23 @@ async function sendSystemTemplateEmail({
   const template = await resolveSystemTemplate(systemKey, projectId);
   if (!template) return false;
 
-  const html = renderSystemEmailTemplate(template.designJson, mergeData);
+  let logoUrl: string | null = null;
+  const configLogo = (mergeData.config as { logo?: unknown } | undefined)?.logo;
+  if (typeof configLogo === 'string' && configLogo.length > 0) {
+    logoUrl = configLogo;
+  } else if (projectId) {
+    const project = await db.project.findUnique({
+      where: { id: projectId },
+      select: {
+        configuration: {
+          select: { logo: true },
+        },
+      },
+    });
+    logoUrl = project?.configuration?.logo ?? null;
+  }
+
+  const html = renderSystemEmailTemplate(template.designJson, mergeData, { logoUrl });
   if (!html) return false;
 
   await sendRawEmail(to, subject, html);

@@ -37,11 +37,14 @@ export async function resolveSystemTemplate(systemKey: string, projectId?: strin
 export function renderSystemEmailTemplate(
   designJson: unknown,
   data: Record<string, unknown>,
+  options?: {
+    logoUrl?: string | null;
+  },
 ): string | null {
   const nodes = getNodesMapFromDesign(designJson as Record<string, unknown>);
   if (!nodes || Object.keys(nodes).length === 0) return null;
 
-  const rawHtml = generateEmailHtml(nodes);
+  const rawHtml = generateEmailHtml(nodes, options);
   if (!rawHtml || rawHtml.trim().length === 0) return null;
 
   // biome-ignore lint/suspicious/noExplicitAny: processTemplate uses Record<string, any>

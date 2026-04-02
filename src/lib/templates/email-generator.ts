@@ -51,6 +51,21 @@ const resolveImageSrc = (src: string): string => {
   return `${baseUrl}${path}`;
 };
 
+const DEFAULT_APP_LOGO_SRC = '/soliloan-logo.webp';
+
+const resolveTemplateImageSrc = ({
+  src,
+  useLogoSource,
+  logoUrl,
+}: {
+  src?: string;
+  useLogoSource?: boolean;
+  logoUrl?: string | null;
+}): string => {
+  const rawSrc = useLogoSource ? logoUrl || DEFAULT_APP_LOGO_SRC : src || '';
+  return resolveImageSrc(rawSrc);
+};
+
 const EMAIL_MAX_WIDTH = 600;
 
 /**
@@ -77,7 +92,12 @@ const wrapInDocument = (bodyHtml: string): string => {
 </html>`;
 };
 
-export const generateEmailHtml = (nodes: Record<string, any>) => {
+export const generateEmailHtml = (
+  nodes: Record<string, any>,
+  options?: {
+    logoUrl?: string | null;
+  },
+) => {
   const rootNode = nodes.ROOT;
   if (!rootNode) return '';
 
@@ -139,7 +159,11 @@ export const generateEmailHtml = (nodes: Record<string, any>) => {
       }
 
       case 'Image':
-        return `<img src="${resolveImageSrc(props.src)}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" />`;
+        return `<img src="${resolveTemplateImageSrc({
+          src: props.src,
+          useLogoSource: props.useLogoSource,
+          logoUrl: options?.logoUrl,
+        })}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" />`;
 
       case 'Table': {
         const cols = props.columns || 3;
@@ -217,6 +241,9 @@ export const getNodesMapFromDesign = (design: Record<string, unknown> | null | u
  */
 export const generateDocumentParts = (
   nodes: Record<string, any>,
+  options?: {
+    logoUrl?: string | null;
+  },
 ): {
   headerHtml: string;
   bodyHtml: string;
@@ -281,7 +308,7 @@ export const generateDocumentParts = (
   if (!hasDocumentStructure) {
     return {
       headerHtml: '',
-      bodyHtml: generateEmailHtml(nodes),
+      bodyHtml: generateEmailHtml(nodes, options),
       footerHtml: '',
       headerPadding: 0,
       footerPadding: 0,
@@ -360,7 +387,11 @@ export const generateDocumentParts = (
       }
 
       case 'Image':
-        return `<img src="${resolveImageSrc(props.src)}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" />`;
+        return `<img src="${resolveTemplateImageSrc({
+          src: props.src,
+          useLogoSource: props.useLogoSource,
+          logoUrl: options?.logoUrl,
+        })}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" />`;
 
       case 'Table': {
         const cols = props.columns || 3;
