@@ -9,7 +9,7 @@ import {
   createDateSchema,
   createNumberSchema,
 } from '../schemas/common';
-import { formatCurrency, formatDate, formatNumber, formatPercentage, NumberParser } from '../utils';
+import { formatCurrency, formatDateLong, formatNumber, formatPercentage, NumberParser } from '../utils';
 
 export const additionalFieldDefaults = (config: AdditionalFieldConfig[], values: AdditionalFieldValues) => {
   const defaults: AdditionalFieldValues = {};
@@ -99,7 +99,7 @@ export const formatAdditionalFieldValue = (
     return '';
   }
   if (config.type === AdditionalFieldType.DATE) {
-    return formatDate(value, locale);
+    return formatDateLong(value, locale);
   }
   if (config.type === AdditionalFieldType.NUMBER) {
     const parser = new NumberParser(locale);

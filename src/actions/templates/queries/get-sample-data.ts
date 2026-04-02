@@ -5,7 +5,7 @@ import type { TemplateDataset } from '@prisma/client';
 import { getLenderAction } from '@/actions/lenders/queries/get-lender';
 import { getLoanAction } from '@/actions/loans/queries/get-loan';
 import { db } from '@/lib/db';
-import { formatCurrency, formatDate, formatPercentage, getLenderName } from '@/lib/utils';
+import { formatCurrency, formatDateLong, formatPercentage, getLenderName } from '@/lib/utils';
 
 /**
  * Get sample lenders for preview selection (simplified view)
@@ -153,9 +153,9 @@ export async function getMergeTagValuesAction(
           loanNumber: String(loan.loanNumber),
           amount: formatCurrency(loan.amount, locale),
           interestRate: formatPercentage(loan.interestRate, locale),
-          signDate: formatDate(loan.signDate, locale),
-          endDate: formatDate(loan.endDate, locale),
-          terminationDate: formatDate(loan.terminationDate, locale),
+          signDate: formatDateLong(loan.signDate, locale),
+          endDate: formatDateLong(loan.endDate, locale),
+          terminationDate: formatDateLong(loan.terminationDate, locale),
           contractStatus: loan.contractStatus === 'COMPLETED' ? 'Abgeschlossen' : 'Laufend',
           balance: formatCurrency(loan.balance, locale),
           interest: formatCurrency(loan.interest, locale),
@@ -164,20 +164,20 @@ export async function getMergeTagValuesAction(
           interestPaid: formatCurrency(loan.interestPaid, locale),
           interestError: formatCurrency(loan.interestError, locale),
           notReclaimed: formatCurrency(loan.notReclaimed, locale),
-          repaidDate: loan.repaidDate ? formatDate(loan.repaidDate, locale) : '',
-          repayDate: loan.repayDate ? formatDate(loan.repayDate, locale) : '',
+          repaidDate: loan.repaidDate ? formatDateLong(loan.repaidDate, locale) : '',
+          repayDate: loan.repayDate ? formatDateLong(loan.repayDate, locale) : '',
           isTerminated: loan.isTerminated ? 'Ja' : 'Nein',
           transactions: (loan.transactions || []).map((t) => ({
             transaction: {
               ...t,
               amount: formatCurrency(t.amount, locale),
-              date: formatDate(t.date, locale),
+              date: formatDateLong(t.date, locale),
             },
           })),
           notes: (loan.notes || []).map((n) => ({
             note: {
               ...n,
-              createdAt: formatDate(n.createdAt, locale),
+              createdAt: formatDateLong(n.createdAt, locale),
               'createdBy.name': n.createdBy?.name || '',
             },
           })),
@@ -186,7 +186,7 @@ export async function getMergeTagValuesAction(
       notes: (lender.notes || []).map((n) => ({
         note: {
           ...n,
-          createdAt: formatDate(n.createdAt, locale),
+          createdAt: formatDateLong(n.createdAt, locale),
           'createdBy.name': n.createdBy?.name || '',
         },
       })),
@@ -228,9 +228,9 @@ export async function getMergeTagValuesAction(
         loanNumber: String(loan.loanNumber),
         amount: formatCurrency(loan.amount, locale),
         interestRate: formatPercentage(loan.interestRate, locale),
-        signDate: formatDate(loan.signDate, locale),
-        endDate: formatDate(loan.endDate, locale),
-        terminationDate: formatDate(loan.terminationDate, locale),
+        signDate: formatDateLong(loan.signDate, locale),
+        endDate: formatDateLong(loan.endDate, locale),
+        terminationDate: formatDateLong(loan.terminationDate, locale),
         contractStatus: loan.contractStatus === 'COMPLETED' ? 'Abgeschlossen' : 'Laufend',
         balance: formatCurrency(loan.balance, locale),
         interest: formatCurrency(loan.interest, locale),
@@ -239,21 +239,21 @@ export async function getMergeTagValuesAction(
         interestPaid: formatCurrency(loan.interestPaid, locale),
         interestError: formatCurrency(loan.interestError, locale),
         notReclaimed: formatCurrency(loan.notReclaimed, locale),
-        repaidDate: loan.repaidDate ? formatDate(loan.repaidDate, locale) : '',
-        repayDate: loan.repayDate ? formatDate(loan.repayDate, locale) : '',
+        repaidDate: loan.repaidDate ? formatDateLong(loan.repaidDate, locale) : '',
+        repayDate: loan.repayDate ? formatDateLong(loan.repayDate, locale) : '',
         isTerminated: loan.isTerminated ? 'Ja' : 'Nein',
       },
       transactions: (loan.transactions || []).map((t) => ({
         transaction: {
           ...t,
           amount: formatCurrency(t.amount, locale),
-          date: formatDate(t.date, locale),
+          date: formatDateLong(t.date, locale),
         },
       })),
       notes: (loan.notes || []).map((n) => ({
         note: {
           ...n,
-          createdAt: formatDate(n.createdAt, locale),
+          createdAt: formatDateLong(n.createdAt, locale),
           'createdBy.name': n.createdBy?.name || '',
         },
       })),

@@ -1,6 +1,5 @@
 'use client';
 
-import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
 import { Calendar as CalendarIcon, X } from 'lucide-react';
 import { useLocale } from 'next-intl';
@@ -8,7 +7,7 @@ import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { cn } from '@/lib/utils';
+import { cn, formatDateLong } from '@/lib/utils';
 
 import { Button } from '../ui/button';
 import { Calendar } from '../ui/calendar';
@@ -47,11 +46,7 @@ export function FormDatePicker({ name, label, placeholder = 'Pick a date', disab
                   variant="outline"
                   className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}
                 >
-                  {field.value && field.value !== '' ? (
-                    format(field.value, 'PPP', { locale: dateLocale })
-                  ) : (
-                    <span>{placeholder}</span>
-                  )}
+                  {field.value && field.value !== '' ? formatDateLong(field.value, locale) : <span>{placeholder}</span>}
                   <div className="ml-auto flex items-center gap-1">
                     {field.value && field.value !== '' && (
                       <button

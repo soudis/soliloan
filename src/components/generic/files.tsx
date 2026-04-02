@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 
 import { deleteFileAction } from '@/actions/files/mutations/delete-file';
 
-import { formatDate } from '@/lib/utils';
+import { formatDateLong } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { Button } from '../ui/button';
 import { ConfirmDialog } from './confirm-dialog';
@@ -170,7 +170,7 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
                   )}
                   {file.createdAt && (
                     <div className="flex items-center text-xs text-muted-foreground">
-                      {formatDate(file.createdAt, locale)}
+                      {formatDateLong(file.createdAt, locale)}
                     </div>
                   )}
                   <div className="text-xs text-muted-foreground">• {file.createdBy.name}</div>

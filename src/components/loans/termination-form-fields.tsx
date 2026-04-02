@@ -8,7 +8,7 @@ import { useFormContext } from 'react-hook-form';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { cn, formatDate } from '@/lib/utils';
+import { cn, formatDateLong } from '@/lib/utils';
 import { FormDatePicker } from '../form/form-date-picker';
 import { FormNumberWithSelect } from '../form/form-number-with-select';
 
@@ -167,7 +167,7 @@ export const TerminationFormFields = ({ hideTerminationDate }: Props) => {
                         <CalendarDays className="h-4 w-4" aria-hidden="true" />
                         <span>
                           {t('new.form.contractEndCalculated', {
-                            date: formatDate(calculatedEndDate, locale),
+                            date: formatDateLong(calculatedEndDate, locale),
                           })}
                         </span>
                       </p>

@@ -1,12 +1,11 @@
 'use client';
 
 import { DurationType } from '@prisma/client';
-import { format } from 'date-fns';
+import { useQueryClient } from '@tanstack/react-query';
 import { de, enUS } from 'date-fns/locale';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import moment from 'moment';
 import { useLocale, useTranslations } from 'next-intl';
-import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -22,7 +21,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
+import { cn, formatDateLong } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 
 interface TerminationDialogProps {
@@ -99,7 +98,7 @@ export function TerminationDialog({ loan, open, onOpenChange }: TerminationDialo
                   className={cn('w-full pl-3 text-left font-normal', !terminationDate && 'text-muted-foreground')}
                 >
                   {terminationDate ? (
-                    format(terminationDate, 'PPP', { locale: dateLocale })
+                    formatDateLong(terminationDate, locale)
                   ) : (
                     <span>{t('terminationDatePlaceholder')}</span>
                   )}
@@ -125,7 +124,7 @@ export function TerminationDialog({ loan, open, onOpenChange }: TerminationDialo
 
           {calculatedEndDate && (
             <p className="text-sm text-muted-foreground">
-              {t('contractEnd', { date: format(calculatedEndDate, 'PPP', { locale: dateLocale }) })}
+              {t('contractEnd', { date: formatDateLong(calculatedEndDate, locale) })}
             </p>
           )}
         </div>

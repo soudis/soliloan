@@ -63,18 +63,44 @@ export function formatNumber(
   }).format(amount);
 }
 
-export function formatDate(date: Date | string | null | undefined, locale: string): string {
-  if (!date) {
-    return '';
-  }
-  return format(date, 'PPP', { locale: locale === 'de' ? de : enUS });
+function toValidDate(input: Date | string): Date | null {
+  const date = input instanceof Date ? input : new Date(input);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
+
+function getDateFnsLocale(locale: string) {
+  return locale === 'de' ? de : enUS;
+}
+
+export function formatDateLong(date: Date | string | null | undefined, locale: string): string {
+  if (!date) return '';
+  const valid = toValidDate(date);
+  if (!valid) return '';
+  return format(valid, 'PPP', { locale: getDateFnsLocale(locale) });
+}
+
+export function formatDateShort(date: Date | string | null | undefined, locale: string): string {
+  if (!date) return '';
+  const valid = toValidDate(date);
+  if (!valid) return '';
+  return format(valid, 'PP', { locale: getDateFnsLocale(locale) });
+}
+
+export function formatDateTimeLong(date: Date | string | null | undefined, locale: string): string {
+  if (!date) return '';
+  const valid = toValidDate(date);
+  if (!valid) return '';
+  return format(valid, 'PPP p', { locale: getDateFnsLocale(locale) });
+}
+
+// Backwards compatible: existing code expects formatDate() to be the long form.
+export const formatDate = formatDateLong;
 
 export class NumberParser {
   private groupSymbol: string;
   private decimalSymbol: string;
 
-  constructor(private readonly locale: string) {
+  constructor(locale: string) {
     const parts = Intl.NumberFormat(locale).formatToParts(1111.11);
     this.groupSymbol = parts.find((part) => part.type === 'group')?.value ?? '.';
     this.decimalSymbol = parts.find((part) => part.type === 'decimal')?.value ?? ',';
