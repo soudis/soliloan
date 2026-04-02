@@ -42,10 +42,10 @@ export async function POST(request: Request) {
     Font.register({
       family: 'Inter',
       fonts: [
-        { src: path.join(FONTS_DIR, 'inter', 'inter-v20-latin-regular.ttf'), fontWeight: 400 },
-        { src: path.join(FONTS_DIR, 'inter', 'inter-v20-latin-500.ttf'), fontWeight: 500 },
-        { src: path.join(FONTS_DIR, 'inter', 'inter-v20-latin-600.ttf'), fontWeight: 600 },
-        { src: path.join(FONTS_DIR, 'inter', 'inter-v20-latin-700.ttf'), fontWeight: 700 },
+        { src: path.join(FONTS_DIR, 'inter-v20-latin-regular.ttf'), fontWeight: 400 },
+        { src: path.join(FONTS_DIR, 'inter-v20-latin-500.ttf'), fontWeight: 500 },
+        { src: path.join(FONTS_DIR, 'inter-v20-latin-600.ttf'), fontWeight: 600 },
+        { src: path.join(FONTS_DIR, 'inter-v20-latin-700.ttf'), fontWeight: 700 },
       ],
     });
 
