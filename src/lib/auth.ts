@@ -35,11 +35,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { id: user.id },
           data: { lastLogin: new Date() },
         });
+        const isAdmin = user.isAdmin ?? false;
+        const isManager = user.managerOf.length > 0 || isAdmin;
 
         return {
           ...user,
-          isAdmin: user.isAdmin ?? false,
-          isManager: user.managerOf.length > 0,
+          isAdmin: isAdmin,
+          isManager: isManager,
           managerOf: user.managerOf.map((u) => u.id),
           loanedToProjects: [...new Set(user.lenders.map((l) => l.projectId))],
           language: user.language ?? process.env.DIRECTLOAN_DEFAULT_LANGUAGE ?? 'de',

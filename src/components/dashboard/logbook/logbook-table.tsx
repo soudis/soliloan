@@ -111,6 +111,14 @@ export function LogbookTable({ changes, views }: LogbookTableProps) {
           return t('project.created');
         }
         if (change.operation === 'UPDATE') {
+          if (context.managerAction === 'added' && context.manager) {
+            const label = (context.manager.email ?? context.manager.name) || t('unknownUser');
+            return t('project.managerAdded', { email: label });
+          }
+          if (context.managerAction === 'removed' && context.manager) {
+            const label = (context.manager.email ?? context.manager.name) || t('unknownUser');
+            return t('project.managerRemoved', { email: label });
+          }
           return t('project.updated');
         }
         if (change.operation === 'DELETE') {
