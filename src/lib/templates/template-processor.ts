@@ -1,4 +1,13 @@
-export const processTemplate = (template: string, currentData: Record<string, any>): string => {
+const hasOwnValue = (data: Record<string, unknown>, key: string) => Object.hasOwn(data, key);
+
+const createLoopScope = (
+  parentData: Record<string, unknown>,
+  item: Record<string, unknown>,
+): Record<string, unknown> => {
+  return Object.assign(Object.create(parentData), item);
+};
+
+export const processTemplate = (template: string, currentData: Record<string, unknown>): string => {
   let result = template;
   const loopStartRegex = /\{\{#(\w+)\}\}/g;
   let loopMatch: RegExpExecArray | null;
@@ -34,9 +43,14 @@ export const processTemplate = (template: string, currentData: Record<string, an
     if (foundEndIdx !== -1) {
       loopReplacementResult += template.substring(lastEnd, startIdx);
       const innerContent = template.substring(startIdx + loopMatch[0].length, foundEndIdx);
-      const items = currentData[key];
+      const items = hasOwnValue(currentData, key) ? currentData[key] : undefined;
       if (Array.isArray(items)) {
-        loopReplacementResult += items.map((item: any) => processTemplate(innerContent, item)).join('');
+        loopReplacementResult += items
+          .map((item) => {
+            if (!item || typeof item !== 'object') return '';
+            return processTemplate(innerContent, createLoopScope(currentData, item as Record<string, unknown>));
+          })
+          .join('');
       }
       lastEnd = foundEndIdx + endTag.length;
       loopStartRegex.lastIndex = lastEnd;
@@ -51,9 +65,10 @@ export const processTemplate = (template: string, currentData: Record<string, an
   result = result.replace(tagRegex, (match, path) => {
     if (path.startsWith('#') || path.startsWith('/')) return match;
     const parts = path.split('.');
-    let value = currentData;
+    let value: unknown = currentData;
     for (const part of parts) {
-      value = value?.[part];
+      if (!value || typeof value !== 'object') return match;
+      value = (value as Record<string, unknown>)[part];
     }
     return value !== undefined && value !== null ? String(value) : match;
   });

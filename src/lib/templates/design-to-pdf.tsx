@@ -142,6 +142,11 @@ type TableCellStyle = {
 };
 type TemplateScope = Record<string, unknown>;
 
+const hasOwnScopeValue = (scopeData: TemplateScope, key: string) => Object.hasOwn(scopeData, key);
+
+const createChildScope = (parentScope: TemplateScope, childScope: TemplateScope): TemplateScope =>
+  Object.assign(Object.create(parentScope), childScope);
+
 const DEFAULT_TABLE_HEADER_FONT_SIZE = 13;
 const DEFAULT_TABLE_BODY_FONT_SIZE = 14;
 const DEFAULT_TABLE_TEXT_COLOR = '#000000';
@@ -231,9 +236,11 @@ const getContainerLoopItems = (
   if (!props || NON_LOOPABLE_CONTAINER_IDS.has(nodeId)) return null;
   const loopKey = typeof props.loopKey === 'string' ? props.loopKey : '';
   if (!loopKey) return null;
-  const rawValue = scopeData[loopKey];
+  const rawValue = hasOwnScopeValue(scopeData, loopKey) ? scopeData[loopKey] : undefined;
   if (!Array.isArray(rawValue)) return [];
-  return rawValue.filter((item): item is TemplateScope => typeof item === 'object' && item !== null);
+  return rawValue
+    .filter((item): item is TemplateScope => typeof item === 'object' && item !== null)
+    .map((item) => createChildScope(scopeData, item));
 };
 
 const buildTableOuterBorderPdfStyle = (borderConfig: ReturnType<typeof getTableBorderConfig>): Record<string, unknown> => {
@@ -574,8 +581,8 @@ export function renderDesignToPdfParts(
         );
         const bodyRowsHeight = Array.from({ length: templateRowCount }, (_, rowIndex) => {
           const rowData =
-            isDynamic && Array.isArray(scopeData[loopKey])
-              ? ((scopeData[loopKey][rowIndex] as TemplateScope | undefined) ?? {})
+            isDynamic && hasOwnScopeValue(scopeData, loopKey) && Array.isArray(scopeData[loopKey])
+              ? createChildScope(scopeData, ((scopeData[loopKey][rowIndex] as TemplateScope | undefined) ?? {}))
               : scopeData;
           return estimateTableRowHeight(
             cellTexts[rowIndex] || [],
@@ -817,12 +824,13 @@ export function renderDesignToPdfParts(
         });
         rows.push(React.createElement(View, { key: 'header-row', style: { flexDirection: 'row' } }, ...headerCells));
 
-        if (isDynamic && Array.isArray(scopeData[loopKey])) {
+        if (isDynamic && hasOwnScopeValue(scopeData, loopKey) && Array.isArray(scopeData[loopKey])) {
           const items = scopeData[loopKey] as TemplateScope[];
           items.forEach((item, r) => {
+            const rowScope = createChildScope(scopeData, item);
             const cells = Array.from({ length: cols }, (_, c) => {
               const cellHtml = (cellTexts[0]?.[c] as string) || '';
-              const withData = processTemplate(processTiptapContent(cellHtml), item);
+              const withData = processTemplate(processTiptapContent(cellHtml), rowScope);
               const segments = htmlToTextSegments(withData);
               const cellStyle = resolveTableCellStyle(cellStyles[0]?.[c], false, textAlign);
               const textStyle = {
