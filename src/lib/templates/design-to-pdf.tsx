@@ -139,6 +139,8 @@ function renderTextSegments(
 const TABLE_CELL_VIEW_STYLE = { padding: 8, borderWidth: 1, borderColor: '#e4e4e7', flex: 1 as const };
 const TABLE_HEADER_VIEW_STYLE = { ...TABLE_CELL_VIEW_STYLE, backgroundColor: '#fafafa' };
 const TABLE_TEXT_STYLE = { fontSize: 12, fontFamily: 'Inter' as const };
+const PDF_PAGE_WIDTH = 595;
+const TEXT_LINE_HEIGHT_MULTIPLIER = 1.5;
 
 /** Build react-pdf border style from component props */
 function borderPropsToPdfStyle(props: Record<string, unknown> | null | undefined): Record<string, unknown> {
@@ -192,7 +194,7 @@ export type PdfComponents = {
 
 /**
  * Renders the design tree (ROOT → PAGE_HEADER, BODY, PAGE_FOOTER) into react-pdf elements.
- * Returns { header, body, footer, headerPadding, footerPadding, headerBorder, footerBorder }
+ * Returns { header, body, footer, headerPadding, footerPadding, headerBorder, footerBorder, headerHeight, footerHeight }
  * so the route can compose Page with fixed header/footer and padding.
  */
 export function renderDesignToPdfParts(
@@ -204,6 +206,8 @@ export function renderDesignToPdfParts(
   footer: React.ReactNode;
   headerPadding: number;
   footerPadding: number;
+  headerHeight: number;
+  footerHeight: number;
   headerBorder: Record<string, unknown>;
   footerBorder: Record<string, unknown>;
 } {
@@ -223,6 +227,8 @@ export function renderDesignToPdfParts(
       footer: null,
       headerPadding: 0,
       footerPadding: 0,
+      headerHeight: 0,
+      footerHeight: 0,
       headerBorder: {},
       footerBorder: {},
     };
@@ -251,12 +257,130 @@ export function renderDesignToPdfParts(
       footer: null,
       headerPadding: 0,
       footerPadding: 0,
+      headerHeight: 0,
+      footerHeight: 0,
       headerBorder: {},
       footerBorder: {},
     };
   }
 
   const data = sampleData as Record<string, any>;
+
+  const parseDimension = (value: unknown, relativeTo: number): number | null => {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value !== 'string') return null;
+
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    if (trimmed.endsWith('%')) {
+      const pct = Number.parseFloat(trimmed.slice(0, -1));
+      return Number.isFinite(pct) ? (relativeTo * pct) / 100 : null;
+    }
+    const numeric = Number.parseFloat(trimmed.replace(/px$/i, ''));
+    return Number.isFinite(numeric) ? numeric : null;
+  };
+
+  const getVerticalBorderWidth = (props: Record<string, unknown> | null | undefined): number => {
+    if (!props || typeof props !== 'object') return 0;
+    const borderWidth = Number(props.borderWidth) || 1;
+    return (props.borderTop === true ? borderWidth : 0) + (props.borderBottom === true ? borderWidth : 0);
+  };
+
+  const estimateTextHeight = (textHtml: string, fontSize: number, availableWidth: number): number => {
+    const plainText = htmlToPlainText(textHtml);
+    const lineHeight = fontSize * TEXT_LINE_HEIGHT_MULTIPLIER;
+    const safeWidth = Math.max(availableWidth, fontSize * 4);
+    const approxCharsPerLine = Math.max(1, Math.floor(safeWidth / (fontSize * 0.55)));
+    const sourceLines = plainText.length > 0 ? plainText.split('\n') : [' '];
+    const lineCount = sourceLines.reduce((sum, line) => {
+      const chars = Math.max(line.trim().length, 1);
+      return sum + Math.max(1, Math.ceil(chars / approxCharsPerLine));
+    }, 0);
+    return lineCount * lineHeight;
+  };
+
+  const estimateNodeHeight = (
+    nodeId: string,
+    availableWidth: number,
+    context: { isHeaderOrFooter: boolean } = { isHeaderOrFooter: false },
+  ): number => {
+    const node = nodes[nodeId];
+    if (!node) return 0;
+
+    const { type, props, nodes: nodeChildren } = node;
+    const name = typeof type === 'string' ? type : ((type as any)?.resolvedName ?? (type as any)?.name);
+    const childIdsList: string[] = nodeChildren || [];
+
+    switch (name) {
+      case 'Container':
+      case 'PageHeader':
+      case 'PageFooter': {
+        const layout = (props?.layout as string) || 'vertical';
+        const gap = Number(props?.gap) || 0;
+        const gridCols = Math.max(1, Number(props?.gridColumns) || 2);
+        const pad = Number(props?.padding) || 0;
+        const borderHeight = getVerticalBorderWidth(props);
+        const innerWidth = Math.max(availableWidth - pad * 2, 80);
+
+        if (childIdsList.length === 0) {
+          return pad * 2 + borderHeight;
+        }
+
+        if (layout === 'horizontal') {
+          const childWidth = Math.max((innerWidth - gap * Math.max(childIdsList.length - 1, 0)) / childIdsList.length, 40);
+          const childHeights = childIdsList.map((childId) => estimateNodeHeight(childId, childWidth, context));
+          return pad * 2 + borderHeight + Math.max(...childHeights);
+        }
+
+        if (layout === 'grid') {
+          const childWidth = Math.max((innerWidth - gap * Math.max(gridCols - 1, 0)) / gridCols, 40);
+          const childHeights = childIdsList.map((childId) => estimateNodeHeight(childId, childWidth, context));
+          let totalHeight = 0;
+          for (let index = 0; index < childHeights.length; index += gridCols) {
+            totalHeight += Math.max(...childHeights.slice(index, index + gridCols));
+          }
+          const rowCount = Math.ceil(childHeights.length / gridCols);
+          return pad * 2 + borderHeight + totalHeight + gap * Math.max(rowCount - 1, 0);
+        }
+
+        const childHeights = childIdsList.map((childId) => estimateNodeHeight(childId, innerWidth, context));
+        return pad * 2 + borderHeight + childHeights.reduce((sum, height) => sum + height, 0) + gap * Math.max(childHeights.length - 1, 0);
+      }
+
+      case 'Text': {
+        const raw = processTiptapContent((props?.text as string) || '');
+        const withData = processTemplate(raw, data);
+        const fontSize = Number(props?.fontSize) || 16;
+        return estimateTextHeight(withData, fontSize, availableWidth);
+      }
+
+      case 'Image': {
+        const resolvedWidth = parseDimension(props?.width, availableWidth) ?? Math.min(availableWidth, 180);
+        const estimatedHeight = Math.max(24, Math.min(resolvedWidth / 3, 96));
+        return estimatedHeight + 16;
+      }
+
+      case 'Table': {
+        const cols = Math.max(1, Number(props?.columns) || 3);
+        const loopKey = (props?.loopKey as string) || '';
+        const isDynamic = loopKey.length > 0;
+        const staticRows = Math.max(1, Number(props?.rows) || 1);
+        const dynamicRows = isDynamic && Array.isArray(data[loopKey]) ? data[loopKey].length : 0;
+        const rowCount = 1 + (isDynamic ? Math.max(dynamicRows, 1) : staticRows);
+        const fontSize = TABLE_TEXT_STYLE.fontSize;
+        const rowHeight = fontSize * TEXT_LINE_HEIGHT_MULTIPLIER + TABLE_CELL_VIEW_STYLE.padding * 2 + 2;
+        return rowCount * rowHeight + 32 + Math.max(0, cols - 1) * 0;
+      }
+
+      case 'Button':
+        return 0;
+
+      case 'Canvas':
+      case 'Element':
+      default:
+        return childIdsList.reduce((sum, childId) => sum + estimateNodeHeight(childId, availableWidth, context), 0);
+    }
+  };
 
   const renderNode = (
     nodeId: string,
@@ -459,6 +583,8 @@ export function renderDesignToPdfParts(
 
   const headerPadding = Number(nodes[headerNodeId]?.props?.padding) ?? 16;
   const footerPadding = Number(nodes[footerNodeId]?.props?.padding) ?? 16;
+  const headerHeight = Math.max(headerPadding * 2 + 16, estimateNodeHeight(headerNodeId, PDF_PAGE_WIDTH, { isHeaderOrFooter: true }));
+  const footerHeight = Math.max(footerPadding * 2 + 16, estimateNodeHeight(footerNodeId, PDF_PAGE_WIDTH, { isHeaderOrFooter: true }));
   const headerBorder = borderPropsToPdfStyle(nodes[headerNodeId]?.props);
   const footerBorder = borderPropsToPdfStyle(nodes[footerNodeId]?.props);
 
@@ -545,6 +671,8 @@ export function renderDesignToPdfParts(
     footer,
     headerPadding,
     footerPadding,
+    headerHeight,
+    footerHeight,
     headerBorder,
     footerBorder,
   };

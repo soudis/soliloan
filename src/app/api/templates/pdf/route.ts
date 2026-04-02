@@ -120,11 +120,11 @@ export async function POST(request: Request) {
       { Document, Page, View, Text: PdfText, Image: PdfImage },
     );
 
-    // Reserve space so body doesn't overlap fixed header/footer. Use ~one line height
-    // so the gap matches the editor (header height ≈ padding*2 + line).
-    const LINE_HEIGHT = 16;
-    const paddingTop = parts.header ? parts.headerPadding * 2 + LINE_HEIGHT : 0;
-    const paddingBottom = parts.footer ? parts.footerPadding * 2 + LINE_HEIGHT : 0;
+    // Reserve space so body doesn't overlap fixed header/footer.
+    // The header/footer view is content-sized; this padding is our best estimate
+    // of that content height so the body starts below it.
+    const paddingTop = parts.header ? Math.ceil(parts.headerHeight) : 0;
+    const paddingBottom = parts.footer ? Math.ceil(parts.footerHeight) : 0;
 
     // Header/footer are already full Container/PageHeader/PageFooter trees (with their own
     // padding and border from the design). Only wrap in a fixed-position View — no extra padding/border.
