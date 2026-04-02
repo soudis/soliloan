@@ -22,6 +22,116 @@ const processTiptapContent = (html: string): string => {
 const EMAIL_FONT_FAMILY =
   "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
+type TableTextAlign = 'left' | 'center' | 'right' | 'justify';
+type TableBorderStyle = 'solid' | 'dashed' | 'dotted' | 'double';
+type TableCellStyle = {
+  fontSize?: number;
+  color?: string;
+  textAlign?: TableTextAlign;
+};
+
+const DEFAULT_TABLE_HEADER_FONT_SIZE = 13;
+const DEFAULT_TABLE_BODY_FONT_SIZE = 14;
+const DEFAULT_TABLE_TEXT_COLOR = '#000000';
+
+const normalizeTableColumnWidths = (columnWidths: unknown, columns: number): number[] => {
+  if (columns <= 0) return [];
+  const rawValues = Array.from({ length: columns }, (_, index) => {
+    const value = Number((columnWidths as number[] | undefined)?.[index]);
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  });
+  const total = rawValues.reduce((sum, value) => sum + value, 0);
+  if (total <= 0) {
+    return Array.from({ length: columns }, () => 100 / columns);
+  }
+  return rawValues.map((value) => (value / total) * 100);
+};
+
+const resolveTableCellStyle = (
+  style: TableCellStyle | undefined,
+  isHeader: boolean,
+  fallbackAlign: TableTextAlign,
+): Required<TableCellStyle> => ({
+  fontSize: style?.fontSize ?? (isHeader ? DEFAULT_TABLE_HEADER_FONT_SIZE : DEFAULT_TABLE_BODY_FONT_SIZE),
+  color: style?.color ?? DEFAULT_TABLE_TEXT_COLOR,
+  textAlign: style?.textAlign ?? fallbackAlign,
+});
+
+const getTableBorderConfig = (props: Record<string, any>) => ({
+  borderTop: props.borderTop !== false,
+  borderRight: props.borderRight !== false,
+  borderBottom: props.borderBottom !== false,
+  borderLeft: props.borderLeft !== false,
+  borderColor: (props.borderColor as string) ?? '#e4e4e7',
+  borderStyle: (props.borderStyle as TableBorderStyle) ?? 'solid',
+  borderWidth: Number(props.borderWidth) || 1,
+});
+
+const buildTableOuterBorderCss = (borderConfig: ReturnType<typeof getTableBorderConfig>): string => {
+  const declarations: string[] = [];
+  if (borderConfig.borderTop) {
+    declarations.push(
+      `border-top: ${borderConfig.borderWidth}px ${borderConfig.borderStyle} ${borderConfig.borderColor}`,
+    );
+  }
+  if (borderConfig.borderRight) {
+    declarations.push(
+      `border-right: ${borderConfig.borderWidth}px ${borderConfig.borderStyle} ${borderConfig.borderColor}`,
+    );
+  }
+  if (borderConfig.borderBottom) {
+    declarations.push(
+      `border-bottom: ${borderConfig.borderWidth}px ${borderConfig.borderStyle} ${borderConfig.borderColor}`,
+    );
+  }
+  if (borderConfig.borderLeft) {
+    declarations.push(
+      `border-left: ${borderConfig.borderWidth}px ${borderConfig.borderStyle} ${borderConfig.borderColor}`,
+    );
+  }
+  return declarations.join('; ');
+};
+
+const buildHtmlTableCellStyle = ({
+  isHeader,
+  style,
+  width,
+  showRightBorder,
+  showBottomBorder,
+  borderConfig,
+}: {
+  isHeader: boolean;
+  style: Required<TableCellStyle>;
+  width: number;
+  showRightBorder: boolean;
+  showBottomBorder: boolean;
+  borderConfig: ReturnType<typeof getTableBorderConfig>;
+}): string => {
+  const declarations = [
+    `font-family: ${EMAIL_FONT_FAMILY}`,
+    `font-size: ${style.fontSize}px`,
+    `color: ${style.color}`,
+    `text-align: ${style.textAlign}`,
+    `padding: 8px 12px`,
+    `width: ${width}%`,
+    'vertical-align: top',
+  ];
+  if (isHeader) {
+    declarations.push('font-weight: 600', 'background-color: #fafafa');
+  }
+  if (showRightBorder) {
+    declarations.push(
+      `border-right: ${borderConfig.borderWidth}px ${borderConfig.borderStyle} ${borderConfig.borderColor}`,
+    );
+  }
+  if (showBottomBorder) {
+    declarations.push(
+      `border-bottom: ${borderConfig.borderWidth}px ${borderConfig.borderStyle} ${borderConfig.borderColor}`,
+    );
+  }
+  return declarations.join('; ');
+};
+
 /** Build inline CSS string for border from component props (for HTML output). */
 const borderPropsToCss = (props: Record<string, unknown> | null | undefined): string => {
   if (!props || typeof props !== 'object') return '';
@@ -33,7 +143,7 @@ const borderPropsToCss = (props: Record<string, unknown> | null | undefined): st
   if (props.borderRight === true) parts.push(`border-right: ${width}px ${style} ${color}`);
   if (props.borderBottom === true) parts.push(`border-bottom: ${width}px ${style} ${color}`);
   if (props.borderLeft === true) parts.push(`border-left: ${width}px ${style} ${color}`);
-  return parts.length ? parts.join('; ') + ';' : '';
+  return parts.length ? `${parts.join('; ')};` : '';
 };
 
 /**
@@ -169,15 +279,32 @@ export const generateEmailHtml = (
         const cols = props.columns || 3;
         const headerTexts: string[] = props.headerTexts || [];
         const cellTexts: string[][] = props.cellTexts || [[]];
+        const headerStyles: TableCellStyle[] = props.headerStyles || [];
+        const cellStyles: TableCellStyle[][] = props.cellStyles || [];
         const loopKey = props.loopKey || '';
         const isDynamic = loopKey.length > 0;
         const rowCount = isDynamic ? 1 : props.rows || 1;
-        const tableTextAlign = props.textAlign || 'left';
+        const tableTextAlign = (props.textAlign as TableTextAlign) || 'left';
+        const columnWidths = normalizeTableColumnWidths(props.columnWidths, cols);
+        const borderConfig = getTableBorderConfig(props);
+        const showVerticalGrid = borderConfig.borderLeft || borderConfig.borderRight;
+        const showHorizontalGrid = borderConfig.borderTop || borderConfig.borderBottom;
+        const colgroup = `<colgroup>${columnWidths
+          .map((width) => `<col style="width: ${width}%;" />`)
+          .join('')}</colgroup>`;
 
         let headerCells = '';
         for (let c = 0; c < cols; c++) {
           const cellContent = processTiptapContent(headerTexts[c] || '');
-          headerCells += `<th style="font-family: ${EMAIL_FONT_FAMILY}; border: 1px solid #e4e4e7; padding: 8px 12px; text-align: ${tableTextAlign}; font-weight: 600; background-color: #fafafa;">${cellContent}</th>`;
+          const cellStyle = resolveTableCellStyle(headerStyles[c], true, tableTextAlign);
+          headerCells += `<th style="${buildHtmlTableCellStyle({
+            isHeader: true,
+            style: cellStyle,
+            width: columnWidths[c] ?? 100 / cols,
+            showRightBorder: showVerticalGrid && c < cols - 1,
+            showBottomBorder: showHorizontalGrid,
+            borderConfig,
+          })}">${cellContent}</th>`;
         }
         const headerRow = `<tr>${headerCells}</tr>`;
 
@@ -186,12 +313,20 @@ export const generateEmailHtml = (
           let cells = '';
           for (let c = 0; c < cols; c++) {
             const cellContent = processTiptapContent(cellTexts[r]?.[c] || '');
-            cells += `<td style="font-family: ${EMAIL_FONT_FAMILY}; border: 1px solid #e4e4e7; padding: 8px 12px; text-align: ${tableTextAlign};">${cellContent}</td>`;
+            const cellStyle = resolveTableCellStyle(cellStyles[r]?.[c], false, tableTextAlign);
+            cells += `<td style="${buildHtmlTableCellStyle({
+              isHeader: false,
+              style: cellStyle,
+              width: columnWidths[c] ?? 100 / cols,
+              showRightBorder: showVerticalGrid && c < cols - 1,
+              showBottomBorder: showHorizontalGrid && (isDynamic || r < rowCount - 1),
+              borderConfig,
+            })}">${cellContent}</td>`;
           }
           bodyRows += `<tr>${cells}</tr>`;
         }
 
-        const tableHtml = `<table style="width: 100%; border-collapse: collapse; margin: 16px 0;"><thead>${headerRow}</thead><tbody>${isDynamic ? `{{#${loopKey}}}` : ''}${bodyRows}${isDynamic ? `{{/${loopKey}}}` : ''}</tbody></table>`;
+        const tableHtml = `<table style="width: 100%; border-collapse: collapse; table-layout: fixed; margin: 16px 0; ${buildTableOuterBorderCss(borderConfig)}">${colgroup}<thead>${headerRow}</thead><tbody>${isDynamic ? `{{#${loopKey}}}` : ''}${bodyRows}${isDynamic ? `{{/${loopKey}}}` : ''}</tbody></table>`;
         return tableHtml;
       }
 
@@ -397,15 +532,32 @@ export const generateDocumentParts = (
         const cols = props.columns || 3;
         const headerTexts: string[] = props.headerTexts || [];
         const cellTexts: string[][] = props.cellTexts || [[]];
+        const headerStyles: TableCellStyle[] = props.headerStyles || [];
+        const cellStyles: TableCellStyle[][] = props.cellStyles || [];
         const loopKey = props.loopKey || '';
         const isDynamic = loopKey.length > 0;
         const rowCount = isDynamic ? 1 : props.rows || 1;
-        const tableTextAlign = props.textAlign || 'left';
+        const tableTextAlign = (props.textAlign as TableTextAlign) || 'left';
+        const columnWidths = normalizeTableColumnWidths(props.columnWidths, cols);
+        const borderConfig = getTableBorderConfig(props);
+        const showVerticalGrid = borderConfig.borderLeft || borderConfig.borderRight;
+        const showHorizontalGrid = borderConfig.borderTop || borderConfig.borderBottom;
+        const colgroup = `<colgroup>${columnWidths
+          .map((width) => `<col style="width: ${width}%;" />`)
+          .join('')}</colgroup>`;
 
         let headerCells = '';
         for (let c = 0; c < cols; c++) {
           const cellContent = processTiptapContent(headerTexts[c] || '');
-          headerCells += `<th style="font-family: ${EMAIL_FONT_FAMILY}; border: 1px solid #e4e4e7; padding: 8px 12px; text-align: ${tableTextAlign}; font-weight: 600; background-color: #fafafa;">${cellContent}</th>`;
+          const cellStyle = resolveTableCellStyle(headerStyles[c], true, tableTextAlign);
+          headerCells += `<th style="${buildHtmlTableCellStyle({
+            isHeader: true,
+            style: cellStyle,
+            width: columnWidths[c] ?? 100 / cols,
+            showRightBorder: showVerticalGrid && c < cols - 1,
+            showBottomBorder: showHorizontalGrid,
+            borderConfig,
+          })}">${cellContent}</th>`;
         }
         const headerRow = `<tr>${headerCells}</tr>`;
 
@@ -414,12 +566,20 @@ export const generateDocumentParts = (
           let cells = '';
           for (let c = 0; c < cols; c++) {
             const cellContent = processTiptapContent(cellTexts[r]?.[c] || '');
-            cells += `<td style="font-family: ${EMAIL_FONT_FAMILY}; border: 1px solid #e4e4e7; padding: 8px 12px; text-align: ${tableTextAlign};">${cellContent}</td>`;
+            const cellStyle = resolveTableCellStyle(cellStyles[r]?.[c], false, tableTextAlign);
+            cells += `<td style="${buildHtmlTableCellStyle({
+              isHeader: false,
+              style: cellStyle,
+              width: columnWidths[c] ?? 100 / cols,
+              showRightBorder: showVerticalGrid && c < cols - 1,
+              showBottomBorder: showHorizontalGrid && (isDynamic || r < rowCount - 1),
+              borderConfig,
+            })}">${cellContent}</td>`;
           }
           bodyRows += `<tr>${cells}</tr>`;
         }
 
-        return `<table style="width: 100%; border-collapse: collapse; margin: 16px 0;"><thead>${headerRow}</thead><tbody>${isDynamic ? `{{#${loopKey}}}` : ''}${bodyRows}${isDynamic ? `{{/${loopKey}}}` : ''}</tbody></table>`;
+        return `<table style="width: 100%; border-collapse: collapse; table-layout: fixed; margin: 16px 0; ${buildTableOuterBorderCss(borderConfig)}">${colgroup}<thead>${headerRow}</thead><tbody>${isDynamic ? `{{#${loopKey}}}` : ''}${bodyRows}${isDynamic ? `{{/${loopKey}}}` : ''}</tbody></table>`;
       }
 
       default:

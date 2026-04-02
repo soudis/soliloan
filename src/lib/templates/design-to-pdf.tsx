@@ -72,7 +72,6 @@ function htmlToTextSegments(html: string): TextSegment[] {
   const parts = decoded.split(/(<strong>|<\/strong>|<b>|<\/b>|<em>|<\/em>|<i>|<\/i>|<u>|<\/u>|<br\s*\/?>)/gi);
   const segments: TextSegment[] = [];
   let bold = false;
-  let italic = false;
   let underline = false;
   for (const part of parts) {
     const lower = part.toLowerCase();
@@ -85,11 +84,9 @@ function htmlToTextSegments(html: string): TextSegment[] {
       continue;
     }
     if (lower === '<em>' || lower === '<i>') {
-      italic = true;
       continue;
     }
     if (lower === '</em>' || lower === '</i>') {
-      italic = false;
       continue;
     }
     if (lower === '<u>') {
@@ -136,9 +133,21 @@ function renderTextSegments(
   );
 }
 
-const TABLE_CELL_VIEW_STYLE = { padding: 8, borderWidth: 1, borderColor: '#e4e4e7', flex: 1 as const };
-const TABLE_HEADER_VIEW_STYLE = { ...TABLE_CELL_VIEW_STYLE, backgroundColor: '#fafafa' };
-const TABLE_TEXT_STYLE = { fontSize: 12, fontFamily: 'Inter' as const };
+type TableTextAlign = 'left' | 'center' | 'right' | 'justify';
+type TableBorderStyle = 'solid' | 'dashed' | 'dotted' | 'double';
+type TableCellStyle = {
+  fontSize?: number;
+  color?: string;
+  textAlign?: TableTextAlign;
+};
+
+const DEFAULT_TABLE_HEADER_FONT_SIZE = 13;
+const DEFAULT_TABLE_BODY_FONT_SIZE = 14;
+const DEFAULT_TABLE_TEXT_COLOR = '#000000';
+const CSS_PX_TO_PDF_PT = 72 / 96;
+const pxToPdfPt = (px: number): number => px * CSS_PX_TO_PDF_PT;
+const TABLE_CELL_PADDING_VERTICAL = pxToPdfPt(8);
+const TABLE_CELL_PADDING_HORIZONTAL = pxToPdfPt(12);
 const PDF_PAGE_WIDTH = 595;
 const TEXT_LINE_HEIGHT_MULTIPLIER = 1.5;
 
@@ -171,6 +180,101 @@ function borderPropsToPdfStyle(props: Record<string, unknown> | null | undefined
   }
   return out;
 }
+
+const normalizeTableColumnWidths = (columnWidths: unknown, columns: number): number[] => {
+  if (columns <= 0) return [];
+  const rawValues = Array.from({ length: columns }, (_, index) => {
+    const value = Number((columnWidths as number[] | undefined)?.[index]);
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  });
+  const total = rawValues.reduce((sum, value) => sum + value, 0);
+  if (total <= 0) {
+    return Array.from({ length: columns }, () => 100 / columns);
+  }
+  return rawValues.map((value) => (value / total) * 100);
+};
+
+const resolveTableCellStyle = (
+  style: TableCellStyle | undefined,
+  isHeader: boolean,
+  fallbackAlign: TableTextAlign,
+): Required<TableCellStyle> => ({
+  fontSize: style?.fontSize ?? (isHeader ? DEFAULT_TABLE_HEADER_FONT_SIZE : DEFAULT_TABLE_BODY_FONT_SIZE),
+  color: style?.color ?? DEFAULT_TABLE_TEXT_COLOR,
+  textAlign: style?.textAlign ?? fallbackAlign,
+});
+
+const getTableBorderConfig = (props: Record<string, any>) => ({
+  borderTop: props.borderTop !== false,
+  borderRight: props.borderRight !== false,
+  borderBottom: props.borderBottom !== false,
+  borderLeft: props.borderLeft !== false,
+  borderColor: (props.borderColor as string) ?? '#e4e4e7',
+  borderStyle: (props.borderStyle as TableBorderStyle) ?? 'solid',
+  borderWidth: Number(props.borderWidth) || 1,
+});
+
+const buildTableOuterBorderPdfStyle = (borderConfig: ReturnType<typeof getTableBorderConfig>): Record<string, unknown> => {
+  const style: Record<string, unknown> = {};
+  if (borderConfig.borderTop) {
+    style.borderTopWidth = borderConfig.borderWidth;
+    style.borderTopStyle = borderConfig.borderStyle;
+    style.borderTopColor = borderConfig.borderColor;
+  }
+  if (borderConfig.borderRight) {
+    style.borderRightWidth = borderConfig.borderWidth;
+    style.borderRightStyle = borderConfig.borderStyle;
+    style.borderRightColor = borderConfig.borderColor;
+  }
+  if (borderConfig.borderBottom) {
+    style.borderBottomWidth = borderConfig.borderWidth;
+    style.borderBottomStyle = borderConfig.borderStyle;
+    style.borderBottomColor = borderConfig.borderColor;
+  }
+  if (borderConfig.borderLeft) {
+    style.borderLeftWidth = borderConfig.borderWidth;
+    style.borderLeftStyle = borderConfig.borderStyle;
+    style.borderLeftColor = borderConfig.borderColor;
+  }
+  return style;
+};
+
+const buildPdfTableCellViewStyle = ({
+  width,
+  showRightBorder,
+  showBottomBorder,
+  backgroundColor,
+  borderConfig,
+}: {
+  width: number;
+  showRightBorder: boolean;
+  showBottomBorder: boolean;
+  backgroundColor?: string;
+  borderConfig: ReturnType<typeof getTableBorderConfig>;
+}): Record<string, unknown> => {
+  const style: Record<string, unknown> = {
+    width: `${width}%`,
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: `${width}%`,
+    paddingVertical: TABLE_CELL_PADDING_VERTICAL,
+    paddingHorizontal: TABLE_CELL_PADDING_HORIZONTAL,
+  };
+  if (backgroundColor) {
+    style.backgroundColor = backgroundColor;
+  }
+  if (showRightBorder) {
+    style.borderRightWidth = borderConfig.borderWidth;
+    style.borderRightStyle = borderConfig.borderStyle;
+    style.borderRightColor = borderConfig.borderColor;
+  }
+  if (showBottomBorder) {
+    style.borderBottomWidth = borderConfig.borderWidth;
+    style.borderBottomStyle = borderConfig.borderStyle;
+    style.borderBottomColor = borderConfig.borderColor;
+  }
+  return style;
+};
 
 export type DesignToPdfOptions = {
   /** Design JSON (editor serialize output or stored design) */
@@ -350,7 +454,7 @@ export function renderDesignToPdfParts(
       case 'Text': {
         const raw = processTiptapContent((props?.text as string) || '');
         const withData = processTemplate(raw, data);
-        const fontSize = Number(props?.fontSize) || 16;
+        const fontSize = pxToPdfPt(Number(props?.fontSize) || 16);
         return estimateTextHeight(withData, fontSize, availableWidth);
       }
 
@@ -362,14 +466,57 @@ export function renderDesignToPdfParts(
 
       case 'Table': {
         const cols = Math.max(1, Number(props?.columns) || 3);
+        const headerTexts: string[] = (props?.headerTexts as string[]) || [];
+        const cellTexts: string[][] = (props?.cellTexts as string[][]) || [[]];
+        const headerStyles: TableCellStyle[] = (props?.headerStyles as TableCellStyle[]) || [];
+        const cellStyles: TableCellStyle[][] = (props?.cellStyles as TableCellStyle[][]) || [];
         const loopKey = (props?.loopKey as string) || '';
         const isDynamic = loopKey.length > 0;
         const staticRows = Math.max(1, Number(props?.rows) || 1);
         const dynamicRows = isDynamic && Array.isArray(data[loopKey]) ? data[loopKey].length : 0;
-        const rowCount = 1 + (isDynamic ? Math.max(dynamicRows, 1) : staticRows);
-        const fontSize = TABLE_TEXT_STYLE.fontSize;
-        const rowHeight = fontSize * TEXT_LINE_HEIGHT_MULTIPLIER + TABLE_CELL_VIEW_STYLE.padding * 2 + 2;
-        return rowCount * rowHeight + 32 + Math.max(0, cols - 1) * 0;
+        const templateRowCount = isDynamic ? 1 : staticRows;
+        const renderedRowCount = isDynamic ? Math.max(dynamicRows, 1) : staticRows;
+        const borderConfig = getTableBorderConfig(props ?? {});
+        const columnWidths = normalizeTableColumnWidths(props?.columnWidths, cols);
+        const horizontalBorderHeight = borderConfig.borderTop || borderConfig.borderBottom ? borderConfig.borderWidth : 0;
+
+        const estimateTableRowHeight = (
+          rowValues: string[],
+          rowStyleResolver: (colIndex: number) => Required<TableCellStyle>,
+          rowData: Record<string, any>,
+        ): number => {
+          const cellHeights = Array.from({ length: cols }, (_, colIndex) => {
+            const cellStyle = rowStyleResolver(colIndex);
+            const columnWidth = columnWidths[colIndex] ?? 100 / cols;
+            const availableCellWidth = Math.max((availableWidth * columnWidth) / 100 - TABLE_CELL_PADDING_HORIZONTAL * 2, 40);
+            const raw = processTemplate(processTiptapContent(rowValues[colIndex] || ''), rowData);
+            return estimateTextHeight(raw, pxToPdfPt(cellStyle.fontSize), availableCellWidth);
+          });
+          return Math.max(...cellHeights, pxToPdfPt(DEFAULT_TABLE_BODY_FONT_SIZE)) + TABLE_CELL_PADDING_VERTICAL * 2 + horizontalBorderHeight;
+        };
+
+        const headerHeight = estimateTableRowHeight(
+          headerTexts,
+          (colIndex) => resolveTableCellStyle(headerStyles[colIndex], true, ((props?.textAlign as TableTextAlign) || 'left')),
+          data,
+        );
+        const bodyRowsHeight = Array.from({ length: templateRowCount }, (_, rowIndex) => {
+          const rowData = isDynamic && Array.isArray(data[loopKey]) ? (data[loopKey][rowIndex] ?? {}) : data;
+          return estimateTableRowHeight(
+            cellTexts[rowIndex] || [],
+            (colIndex) =>
+              resolveTableCellStyle(
+                isDynamic ? cellStyles[0]?.[colIndex] : cellStyles[rowIndex]?.[colIndex],
+                false,
+                ((props?.textAlign as TableTextAlign) || 'left'),
+              ),
+            rowData,
+          );
+        }).reduce((sum, height) => sum + height, 0);
+
+        const outerBorderHeight =
+          (borderConfig.borderTop ? borderConfig.borderWidth : 0) + (borderConfig.borderBottom ? borderConfig.borderWidth : 0);
+        return headerHeight + bodyRowsHeight * Math.max(1, renderedRowCount / templateRowCount) + outerBorderHeight + 32;
       }
 
       case 'Button':
@@ -475,7 +622,7 @@ export function renderDesignToPdfParts(
       case 'Text': {
         const raw = processTiptapContent((props?.text as string) || '');
         const withData = processTemplate(raw, data);
-        const fontSize = Number(props?.fontSize) || 16;
+        const fontSize = pxToPdfPt(Number(props?.fontSize) || 16);
         const color = (props?.color as string) || '#000000';
         const textAlign = (props?.textAlign as 'left' | 'center' | 'right' | 'justify') || 'left';
         const hasPagePlaceholder =
@@ -516,21 +663,41 @@ export function renderDesignToPdfParts(
         const cols = Math.max(1, Number(props?.columns) || 3);
         const headerTexts: string[] = (props?.headerTexts as string[]) || [];
         const cellTexts: string[][] = (props?.cellTexts as string[][]) || [[]];
+        const headerStyles: TableCellStyle[] = (props?.headerStyles as TableCellStyle[]) || [];
+        const cellStyles: TableCellStyle[][] = (props?.cellStyles as TableCellStyle[][]) || [];
         const loopKey = (props?.loopKey as string) || '';
         const isDynamic = loopKey.length > 0;
         const rowCount = isDynamic ? 1 : Math.max(1, Number(props?.rows) || 1);
-        const textAlign = (props?.textAlign as 'left' | 'center' | 'right' | 'justify') || 'left';
-        const textStyle = { ...TABLE_TEXT_STYLE, textAlign };
-
-        const headerStyle = { ...textStyle, fontWeight: 600 };
+        const textAlign = (props?.textAlign as TableTextAlign) || 'left';
+        const borderConfig = getTableBorderConfig(props ?? {});
+        const columnWidths = normalizeTableColumnWidths(props?.columnWidths, cols);
+        const showVerticalGrid = borderConfig.borderLeft || borderConfig.borderRight;
+        const showHorizontalGrid = borderConfig.borderTop || borderConfig.borderBottom;
         const rows: React.ReactNode[] = [];
         // Header row
         const headerCells = Array.from({ length: cols }, (_, c) => {
           const withData = processTemplate(processTiptapContent(headerTexts[c] || ''), data);
           const segments = htmlToTextSegments(withData);
+          const cellStyle = resolveTableCellStyle(headerStyles[c], true, textAlign);
+          const textStyle = {
+            fontSize: pxToPdfPt(cellStyle.fontSize),
+            color: cellStyle.color,
+            textAlign: cellStyle.textAlign,
+            fontFamily: 'Inter' as const,
+          };
+          const headerStyle = { ...textStyle, fontWeight: 600 as const };
           return React.createElement(
             View,
-            { key: `h-${c}`, style: TABLE_HEADER_VIEW_STYLE },
+            {
+              key: `h-${c}`,
+              style: buildPdfTableCellViewStyle({
+                width: columnWidths[c] ?? 100 / cols,
+                showRightBorder: showVerticalGrid && c < cols - 1,
+                showBottomBorder: showHorizontalGrid,
+                backgroundColor: '#fafafa',
+                borderConfig,
+              }),
+            },
             React.createElement(PdfText, { style: headerStyle }, ...renderTextSegments(segments, headerStyle, PdfText)),
           );
         });
@@ -543,9 +710,24 @@ export function renderDesignToPdfParts(
               const cellHtml = (cellTexts[0]?.[c] as string) || '';
               const withData = processTemplate(processTiptapContent(cellHtml), item);
               const segments = htmlToTextSegments(withData);
+              const cellStyle = resolveTableCellStyle(cellStyles[0]?.[c], false, textAlign);
+              const textStyle = {
+                fontSize: pxToPdfPt(cellStyle.fontSize),
+                color: cellStyle.color,
+                textAlign: cellStyle.textAlign,
+                fontFamily: 'Inter' as const,
+              };
               return React.createElement(
                 View,
-                { key: `c-${r}-${c}`, style: TABLE_CELL_VIEW_STYLE },
+                {
+                  key: `c-${r}-${c}`,
+                  style: buildPdfTableCellViewStyle({
+                    width: columnWidths[c] ?? 100 / cols,
+                    showRightBorder: showVerticalGrid && c < cols - 1,
+                    showBottomBorder: showHorizontalGrid && r < items.length - 1,
+                    borderConfig,
+                  }),
+                },
                 React.createElement(PdfText, { style: textStyle }, ...renderTextSegments(segments, textStyle, PdfText)),
               );
             });
@@ -556,9 +738,24 @@ export function renderDesignToPdfParts(
             const cells = Array.from({ length: cols }, (_, c) => {
               const withData = processTemplate(processTiptapContent(cellTexts[r]?.[c] || ''), data);
               const segments = htmlToTextSegments(withData);
+              const cellStyle = resolveTableCellStyle(cellStyles[r]?.[c], false, textAlign);
+              const textStyle = {
+                fontSize: pxToPdfPt(cellStyle.fontSize),
+                color: cellStyle.color,
+                textAlign: cellStyle.textAlign,
+                fontFamily: 'Inter' as const,
+              };
               return React.createElement(
                 View,
-                { key: `c-${r}-${c}`, style: TABLE_CELL_VIEW_STYLE },
+                {
+                  key: `c-${r}-${c}`,
+                  style: buildPdfTableCellViewStyle({
+                    width: columnWidths[c] ?? 100 / cols,
+                    showRightBorder: showVerticalGrid && c < cols - 1,
+                    showBottomBorder: showHorizontalGrid && r < rowCount - 1,
+                    borderConfig,
+                  }),
+                },
                 React.createElement(PdfText, { style: textStyle }, ...renderTextSegments(segments, textStyle, PdfText)),
               );
             });
@@ -566,7 +763,18 @@ export function renderDesignToPdfParts(
           }
         }
 
-        return React.createElement(View, { key: nodeId, style: { width: '100%', marginVertical: 16 } }, ...rows);
+        return React.createElement(
+          View,
+          {
+            key: nodeId,
+            style: {
+              width: '100%',
+              marginVertical: 16,
+              ...buildTableOuterBorderPdfStyle(borderConfig),
+            },
+          },
+          ...rows,
+        );
       }
 
       case 'Button':
