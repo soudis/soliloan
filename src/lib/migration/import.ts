@@ -4,10 +4,10 @@ import { tmpdir } from 'node:os';
 import { extname, join } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import type { PrismaClient } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 import { InterestMethod } from '@prisma/client';
 import AdmZip from 'adm-zip';
-
+import { isAfter } from 'date-fns';
 import {
   emptyToNull,
   ensureUniqueSlug,
@@ -145,8 +145,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
     const logo = await loadLogoFromPackage(tempDir, projectInfo.logo_select ?? projectInfo.logo);
 
     const result = await db.$transaction(
-      // biome-ignore lint/suspicious/noExplicitAny: Prisma interactive transaction callback type
-      async (tx: any) => {
+      async (tx: Prisma.TransactionClient) => {
         // 1. Create Project + Configuration
         const slug = await ensureUniqueSlug(projectInfo.projectid, tx);
         const defaults = projectInfo.defaults;
@@ -243,17 +242,28 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
           let emailLinked = false;
 
           if (userEmail) {
-            const existingUser = await tx.user.findUnique({ where: { email: userEmail } });
+            const existingUser = await tx.user.findUnique({
+              select: { id: true, lastLogin: true },
+              where: { email: userEmail },
+            });
             if (!existingUser) {
               await tx.user.create({
                 data: {
                   name: getUserName(user),
                   email: userEmail,
                   password: user.passwordHashed,
+                  lastLogin: user.lastLogin ? new Date(user.lastLogin) : undefined,
                   language: 'de',
                   theme: 'default',
                 },
               });
+            } else if (user.lastLogin) {
+              if (!existingUser.lastLogin || isAfter(new Date(user.lastLogin), existingUser.lastLogin)) {
+                await tx.user.update({
+                  where: { id: existingUser.id },
+                  data: { lastLogin: new Date(user.lastLogin) },
+                });
+              }
             }
             emailLinked = true;
           }
@@ -483,7 +493,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
             data: {
               name: file.filename,
               mimeType: file.mime,
-              data: fileData,
+              data: new Uint8Array(fileData),
               public: file.public === 1,
               description: emptyToNull(file.description),
               lenderId,
