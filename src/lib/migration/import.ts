@@ -327,9 +327,12 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
         for (const contract of data.contract) {
           const lenderId = userToLenderMap.get(contract.user_id);
           if (!lenderId) {
-            throw new Error(
-              `Migration abgebrochen: Contract #${contract.id} referenziert User #${contract.user_id}, der nicht im Datenpaket existiert.`,
-            );
+            warnings.push({
+              entity: 'contract',
+              legacyId: contract.id,
+              message: `User #${contract.user_id} nicht im Datenpaket gefunden -> Vertrag #${contract.id} wird übersprungen`,
+            });
+            continue;
           }
 
           let signDate: Date;
@@ -516,6 +519,9 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
       skippedFiles,
       unmappedFields: ['user.lastLogin / user.loginCount'],
     };
+  } catch (error) {
+    console.error(error);
+    throw error;
   } finally {
     await rm(tempDir, { recursive: true, force: true }).catch(() => {});
   }
