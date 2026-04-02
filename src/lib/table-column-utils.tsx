@@ -4,7 +4,7 @@ import moment from 'moment';
 import { Badge } from '@/components/ui/badge';
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { formatCurrency, getLenderName, NumberParser } from '@/lib/utils';
+import { formatCurrency, formatDateShort, getLenderName, NumberParser } from '@/lib/utils';
 import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat } from './schemas/common';
 
 // Define the custom filter function for compound text fields
@@ -86,11 +86,13 @@ export function createNumberColumn<T>(
       accessorKey,
       header: headerKey,
       cell: ({ row }) => {
-        return row.getValue(accessorKey) !== null &&
+        const value =
+          row.getValue(accessorKey) !== null &&
           row.getValue(accessorKey) !== undefined &&
           row.getValue(accessorKey) !== ''
-          ? parser.parse(row.getValue(accessorKey) as string)
-          : '';
+            ? parser.parse(row.getValue(accessorKey) as string)
+            : '';
+        return <div className="tabular-nums">{value}</div>;
       },
     },
     t,
@@ -116,7 +118,7 @@ export function createCurrencyColumn<T>(
       align: 'right',
       cell: ({ row }) => {
         const value = parser.parse(row.getValue(accessorKey) as string) || 0;
-        return <div className="text-right">{formatCurrency(value)}</div>;
+        return <div className="text-right tabular-nums">{formatCurrency(value)}</div>;
       },
     },
     t,
@@ -132,6 +134,7 @@ export function createDateColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,
   t: (key: string) => string,
+  locale?: string,
 ): ColumnDef<T> {
   return createColumn<T>(
     {
@@ -140,13 +143,7 @@ export function createDateColumn<T>(
       cell: ({ row }) => {
         const dateStr = row.getValue(accessorKey) as string;
         if (!dateStr) return '';
-        try {
-          const date = new Date(dateStr);
-          return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (e) {
-          return '';
-        }
+        return <div className="tabular-nums">{formatDateShort(dateStr, locale ?? 'de')}</div>;
       },
     },
     t,
@@ -167,7 +164,7 @@ export function createPercentageColumn<T>(
       header: headerKey,
       cell: ({ row }) => {
         const value = parser.parse(row.getValue(accessorKey) as string) || 0;
-        return <div className="text-right">{`${value.toFixed(2)}%`}</div>;
+        return <div className="text-right tabular-nums">{`${value.toFixed(2)}%`}</div>;
       },
     },
     t,
@@ -413,7 +410,7 @@ export function createAdditionalFieldsColumns<T>(
   return (config?.map((field) => {
     if (field.type === AdditionalFieldType.DATE) {
       return {
-        ...createDateColumn<T>(`${accessorKey}.${field.id}`, undefined, t),
+        ...createDateColumn<T>(`${accessorKey}.${field.id}`, undefined, t, locale),
         header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
         id: `${accessorKey}.${field.id}`,
       };

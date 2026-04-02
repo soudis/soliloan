@@ -85,7 +85,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
       t,
     ),
 
-    createDateColumn<LoanWithCalculations>('signDate', 'table.signDate', t),
+    createDateColumn<LoanWithCalculations>('signDate', 'table.signDate', t, locale),
 
     createLenderColumn<LoanWithCalculations>(t),
 
@@ -116,7 +116,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
 
     createTerminationModalitiesColumn<LoanWithCalculations>(t, commonT),
 
-    createDateColumn<LoanWithCalculations>('repayDate', 'table.repayDate', t),
+    createDateColumn<LoanWithCalculations>('repayDate', 'table.repayDate', t, locale),
 
     createEnumBadgeColumn<LoanWithCalculations>('status', 'table.status', 'enums.loan.status', t, commonT, (value) => {
       switch (value) {

@@ -72,6 +72,12 @@ function getDateFnsLocale(locale: string) {
   return locale === 'de' ? de : enUS;
 }
 
+function getShortDatePattern(locale: string) {
+  // Force leading zeros but keep locale-specific ordering/separators.
+  // Keep this intentionally small: we currently support `de` and `en`.
+  return locale === 'de' ? 'dd.MM.yyyy' : 'MM/dd/yyyy';
+}
+
 export function formatDateLong(date: Date | string | null | undefined, locale: string): string {
   if (!date) return '';
   const valid = toValidDate(date);
@@ -83,7 +89,7 @@ export function formatDateShort(date: Date | string | null | undefined, locale: 
   if (!date) return '';
   const valid = toValidDate(date);
   if (!valid) return '';
-  return format(valid, 'PP', { locale: getDateFnsLocale(locale) });
+  return format(valid, getShortDatePattern(locale), { locale: getDateFnsLocale(locale) });
 }
 
 export function formatDateTimeLong(date: Date | string | null | undefined, locale: string): string {
