@@ -90,6 +90,10 @@
       },
       "container": {
         "dropHere": "Ziehe Komponenten hierher",
+        "loopKey": "Datenquelle",
+        "staticContainer": "Statischer Container (kein Loop)",
+        "dynamicHint": "Der Container wird fuer jedes Element der Datenquelle wiederholt.",
+        "staticHint": "Der Container wird genau einmal gerendert.",
         "layout": "Layout",
         "layout_vertical": "Vertikal (untereinander)",
         "layout_horizontal": "Horizontal (nebeneinander)",

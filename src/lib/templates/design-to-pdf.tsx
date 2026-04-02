@@ -140,6 +140,7 @@ type TableCellStyle = {
   color?: string;
   textAlign?: TableTextAlign;
 };
+type TemplateScope = Record<string, unknown>;
 
 const DEFAULT_TABLE_HEADER_FONT_SIZE = 13;
 const DEFAULT_TABLE_BODY_FONT_SIZE = 14;
@@ -150,6 +151,7 @@ const TABLE_CELL_PADDING_VERTICAL = pxToPdfPt(8);
 const TABLE_CELL_PADDING_HORIZONTAL = pxToPdfPt(12);
 const PDF_PAGE_WIDTH = 595;
 const TEXT_LINE_HEIGHT_MULTIPLIER = 1.5;
+const NON_LOOPABLE_CONTAINER_IDS = new Set(['ROOT', 'BODY', 'PAGE_HEADER', 'PAGE_FOOTER']);
 
 /** Build react-pdf border style from component props */
 function borderPropsToPdfStyle(props: Record<string, unknown> | null | undefined): Record<string, unknown> {
@@ -213,6 +215,26 @@ const getTableBorderConfig = (props: Record<string, any>) => ({
   borderStyle: (props.borderStyle as TableBorderStyle) ?? 'solid',
   borderWidth: Number(props.borderWidth) || 1,
 });
+
+const getComponentName = (type: unknown): string | undefined => {
+  if (typeof type === 'string') return type;
+  if (!type || typeof type !== 'object') return undefined;
+  const candidate = type as { resolvedName?: string; name?: string };
+  return candidate.resolvedName || candidate.name;
+};
+
+const getContainerLoopItems = (
+  nodeId: string,
+  props: Record<string, unknown> | null | undefined,
+  scopeData: TemplateScope,
+): TemplateScope[] | null => {
+  if (!props || NON_LOOPABLE_CONTAINER_IDS.has(nodeId)) return null;
+  const loopKey = typeof props.loopKey === 'string' ? props.loopKey : '';
+  if (!loopKey) return null;
+  const rawValue = scopeData[loopKey];
+  if (!Array.isArray(rawValue)) return [];
+  return rawValue.filter((item): item is TemplateScope => typeof item === 'object' && item !== null);
+};
 
 const buildTableOuterBorderPdfStyle = (borderConfig: ReturnType<typeof getTableBorderConfig>): Record<string, unknown> => {
   const style: Record<string, unknown> = {};
@@ -368,7 +390,7 @@ export function renderDesignToPdfParts(
     };
   }
 
-  const data = sampleData as Record<string, any>;
+  const data = sampleData as TemplateScope;
 
   const parseDimension = (value: unknown, relativeTo: number): number | null => {
     if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -403,17 +425,57 @@ export function renderDesignToPdfParts(
     return lineCount * lineHeight;
   };
 
+  const getNodeInstanceCount = (nodeId: string, scopeData: TemplateScope): number => {
+    const node = nodes[nodeId];
+    if (!node) return 0;
+    const componentName = getComponentName(node.type);
+    if (componentName !== 'Container') return 1;
+    const loopItems = getContainerLoopItems(nodeId, node.props as Record<string, unknown> | undefined, scopeData);
+    if (loopItems === null) return 1;
+    return loopItems.length;
+  };
+
+  const estimateNodeHeights = (
+    nodeId: string,
+    availableWidth: number,
+    context: { isHeaderOrFooter: boolean } = { isHeaderOrFooter: false },
+    scopeData: TemplateScope = data,
+  ): number[] => {
+    const node = nodes[nodeId];
+    if (!node) return [];
+    const componentName = getComponentName(node.type);
+    if (componentName === 'Container') {
+      const loopItems = getContainerLoopItems(nodeId, node.props as Record<string, unknown> | undefined, scopeData);
+      if (loopItems !== null) {
+        return loopItems.map((item) => estimateNodeHeight(nodeId, availableWidth, context, item, true));
+      }
+    }
+    return [estimateNodeHeight(nodeId, availableWidth, context, scopeData, false)];
+  };
+
   const estimateNodeHeight = (
     nodeId: string,
     availableWidth: number,
     context: { isHeaderOrFooter: boolean } = { isHeaderOrFooter: false },
+    scopeData: TemplateScope = data,
+    skipLoopExpansion = false,
   ): number => {
     const node = nodes[nodeId];
     if (!node) return 0;
 
     const { type, props, nodes: nodeChildren } = node;
-    const name = typeof type === 'string' ? type : ((type as any)?.resolvedName ?? (type as any)?.name);
+    const name = getComponentName(type);
     const childIdsList: string[] = nodeChildren || [];
+
+    if (!skipLoopExpansion && name === 'Container') {
+      const loopItems = getContainerLoopItems(nodeId, props as Record<string, unknown> | undefined, scopeData);
+      if (loopItems !== null) {
+        return loopItems.reduce(
+          (sum, item) => sum + estimateNodeHeight(nodeId, availableWidth, context, item, true),
+          0,
+        );
+      }
+    }
 
     switch (name) {
       case 'Container':
@@ -431,14 +493,24 @@ export function renderDesignToPdfParts(
         }
 
         if (layout === 'horizontal') {
-          const childWidth = Math.max((innerWidth - gap * Math.max(childIdsList.length - 1, 0)) / childIdsList.length, 40);
-          const childHeights = childIdsList.map((childId) => estimateNodeHeight(childId, childWidth, context));
+          const childCount = Math.max(
+            1,
+            childIdsList.reduce((sum, childId) => sum + getNodeInstanceCount(childId, scopeData), 0),
+          );
+          const childWidth = Math.max((innerWidth - gap * Math.max(childCount - 1, 0)) / childCount, 40);
+          const childHeights = childIdsList.flatMap((childId) => estimateNodeHeights(childId, childWidth, context, scopeData));
+          if (childHeights.length === 0) {
+            return pad * 2 + borderHeight;
+          }
           return pad * 2 + borderHeight + Math.max(...childHeights);
         }
 
         if (layout === 'grid') {
           const childWidth = Math.max((innerWidth - gap * Math.max(gridCols - 1, 0)) / gridCols, 40);
-          const childHeights = childIdsList.map((childId) => estimateNodeHeight(childId, childWidth, context));
+          const childHeights = childIdsList.flatMap((childId) => estimateNodeHeights(childId, childWidth, context, scopeData));
+          if (childHeights.length === 0) {
+            return pad * 2 + borderHeight;
+          }
           let totalHeight = 0;
           for (let index = 0; index < childHeights.length; index += gridCols) {
             totalHeight += Math.max(...childHeights.slice(index, index + gridCols));
@@ -447,13 +519,13 @@ export function renderDesignToPdfParts(
           return pad * 2 + borderHeight + totalHeight + gap * Math.max(rowCount - 1, 0);
         }
 
-        const childHeights = childIdsList.map((childId) => estimateNodeHeight(childId, innerWidth, context));
+        const childHeights = childIdsList.flatMap((childId) => estimateNodeHeights(childId, innerWidth, context, scopeData));
         return pad * 2 + borderHeight + childHeights.reduce((sum, height) => sum + height, 0) + gap * Math.max(childHeights.length - 1, 0);
       }
 
       case 'Text': {
         const raw = processTiptapContent((props?.text as string) || '');
-        const withData = processTemplate(raw, data);
+        const withData = processTemplate(raw, scopeData);
         const fontSize = pxToPdfPt(Number(props?.fontSize) || 16);
         return estimateTextHeight(withData, fontSize, availableWidth);
       }
@@ -473,7 +545,7 @@ export function renderDesignToPdfParts(
         const loopKey = (props?.loopKey as string) || '';
         const isDynamic = loopKey.length > 0;
         const staticRows = Math.max(1, Number(props?.rows) || 1);
-        const dynamicRows = isDynamic && Array.isArray(data[loopKey]) ? data[loopKey].length : 0;
+        const dynamicRows = isDynamic && Array.isArray(scopeData[loopKey]) ? scopeData[loopKey].length : 0;
         const templateRowCount = isDynamic ? 1 : staticRows;
         const renderedRowCount = isDynamic ? Math.max(dynamicRows, 1) : staticRows;
         const borderConfig = getTableBorderConfig(props ?? {});
@@ -498,10 +570,13 @@ export function renderDesignToPdfParts(
         const headerHeight = estimateTableRowHeight(
           headerTexts,
           (colIndex) => resolveTableCellStyle(headerStyles[colIndex], true, ((props?.textAlign as TableTextAlign) || 'left')),
-          data,
+          scopeData,
         );
         const bodyRowsHeight = Array.from({ length: templateRowCount }, (_, rowIndex) => {
-          const rowData = isDynamic && Array.isArray(data[loopKey]) ? (data[loopKey][rowIndex] ?? {}) : data;
+          const rowData =
+            isDynamic && Array.isArray(scopeData[loopKey])
+              ? ((scopeData[loopKey][rowIndex] as TemplateScope | undefined) ?? {})
+              : scopeData;
           return estimateTableRowHeight(
             cellTexts[rowIndex] || [],
             (colIndex) =>
@@ -525,22 +600,57 @@ export function renderDesignToPdfParts(
       case 'Canvas':
       case 'Element':
       default:
-        return childIdsList.reduce((sum, childId) => sum + estimateNodeHeight(childId, availableWidth, context), 0);
+        return childIdsList.reduce(
+          (sum, childId) =>
+            sum + estimateNodeHeights(childId, availableWidth, context, scopeData).reduce((innerSum, height) => innerSum + height, 0),
+          0,
+        );
     }
+  };
+
+  const renderNodeInstances = (
+    nodeId: string,
+    context: { isHeaderOrFooter: boolean } = { isHeaderOrFooter: false },
+    scopeData: TemplateScope = data,
+  ): React.ReactNode[] => {
+    const node = nodes[nodeId];
+    if (!node) return [];
+    const componentName = getComponentName(node.type);
+    if (componentName === 'Container') {
+      const loopItems = getContainerLoopItems(nodeId, node.props as Record<string, unknown> | undefined, scopeData);
+      if (loopItems !== null) {
+        return loopItems.map((item, index) => renderNode(nodeId, context, item, `${nodeId}-loop-${index}`, true));
+      }
+    }
+    return [renderNode(nodeId, context, scopeData, nodeId, false)];
   };
 
   const renderNode = (
     nodeId: string,
     context: { isHeaderOrFooter: boolean } = { isHeaderOrFooter: false },
+    scopeData: TemplateScope = data,
+    keyOverride?: string,
+    skipLoopExpansion = false,
   ): React.ReactNode => {
     const node = nodes[nodeId];
     if (!node) return null;
 
     const { type, props, nodes: nodeChildren } = node;
-    const name = typeof type === 'string' ? type : ((type as any)?.resolvedName ?? (type as any)?.name);
+    const name = getComponentName(type);
     const childIdsList: string[] = nodeChildren || [];
 
-    const children = childIdsList.map((cid) => renderNode(cid, context));
+    if (!skipLoopExpansion && name === 'Container') {
+      const loopItems = getContainerLoopItems(nodeId, props as Record<string, unknown> | undefined, scopeData);
+      if (loopItems !== null) {
+        return React.createElement(
+          React.Fragment,
+          { key: keyOverride ?? nodeId },
+          ...loopItems.map((item, index) => renderNode(nodeId, context, item, `${nodeId}-loop-${index}`, true)),
+        );
+      }
+    }
+
+    const children = childIdsList.flatMap((cid) => renderNodeInstances(cid, context, scopeData));
 
     switch (name) {
       case 'Container':
@@ -564,7 +674,7 @@ export function renderDesignToPdfParts(
           return React.createElement(
             View,
             {
-              key: nodeId,
+              key: keyOverride ?? nodeId,
               style: {
                 ...baseStyle,
                 flexDirection: 'row',
@@ -589,7 +699,7 @@ export function renderDesignToPdfParts(
           return React.createElement(
             View,
             {
-              key: nodeId,
+              key: keyOverride ?? nodeId,
               style: {
                 ...baseStyle,
                 flexDirection: 'row',
@@ -612,7 +722,7 @@ export function renderDesignToPdfParts(
         return React.createElement(
           View,
           {
-            key: nodeId,
+            key: keyOverride ?? nodeId,
             style: baseStyle,
           },
           ...children,
@@ -621,7 +731,7 @@ export function renderDesignToPdfParts(
 
       case 'Text': {
         const raw = processTiptapContent((props?.text as string) || '');
-        const withData = processTemplate(raw, data);
+        const withData = processTemplate(raw, scopeData);
         const fontSize = pxToPdfPt(Number(props?.fontSize) || 16);
         const color = (props?.color as string) || '#000000';
         const textAlign = (props?.textAlign as 'left' | 'center' | 'right' | 'justify') || 'left';
@@ -631,7 +741,7 @@ export function renderDesignToPdfParts(
 
         if (hasPagePlaceholder) {
           return React.createElement(PdfText, {
-            key: nodeId,
+            key: keyOverride ?? nodeId,
             style,
             render: ({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) => {
               const withNumbers = withData
@@ -643,7 +753,11 @@ export function renderDesignToPdfParts(
           });
         }
         const segments = htmlToTextSegments(withData);
-        return React.createElement(PdfText, { key: nodeId, style }, ...renderTextSegments(segments, style, PdfText));
+        return React.createElement(
+          PdfText,
+          { key: keyOverride ?? nodeId, style },
+          ...renderTextSegments(segments, style, PdfText),
+        );
       }
 
       case 'Image': {
@@ -653,7 +767,7 @@ export function renderDesignToPdfParts(
         const width = (props?.width as string) || '100%';
         if (!src) return null;
         return React.createElement(PdfImage, {
-          key: nodeId,
+          key: keyOverride ?? nodeId,
           src,
           style: { width, maxWidth: '100%', marginVertical: 8 },
         });
@@ -676,7 +790,7 @@ export function renderDesignToPdfParts(
         const rows: React.ReactNode[] = [];
         // Header row
         const headerCells = Array.from({ length: cols }, (_, c) => {
-          const withData = processTemplate(processTiptapContent(headerTexts[c] || ''), data);
+          const withData = processTemplate(processTiptapContent(headerTexts[c] || ''), scopeData);
           const segments = htmlToTextSegments(withData);
           const cellStyle = resolveTableCellStyle(headerStyles[c], true, textAlign);
           const textStyle = {
@@ -703,8 +817,8 @@ export function renderDesignToPdfParts(
         });
         rows.push(React.createElement(View, { key: 'header-row', style: { flexDirection: 'row' } }, ...headerCells));
 
-        if (isDynamic && Array.isArray(data[loopKey])) {
-          const items = data[loopKey] as Record<string, any>[];
+        if (isDynamic && Array.isArray(scopeData[loopKey])) {
+          const items = scopeData[loopKey] as TemplateScope[];
           items.forEach((item, r) => {
             const cells = Array.from({ length: cols }, (_, c) => {
               const cellHtml = (cellTexts[0]?.[c] as string) || '';
@@ -736,8 +850,8 @@ export function renderDesignToPdfParts(
         } else {
           for (let r = 0; r < rowCount; r++) {
             const cells = Array.from({ length: cols }, (_, c) => {
-              const withData = processTemplate(processTiptapContent(cellTexts[r]?.[c] || ''), data);
-              const segments = htmlToTextSegments(withData);
+              const withScopedData = processTemplate(processTiptapContent(cellTexts[r]?.[c] || ''), scopeData);
+              const segments = htmlToTextSegments(withScopedData);
               const cellStyle = resolveTableCellStyle(cellStyles[r]?.[c], false, textAlign);
               const textStyle = {
                 fontSize: pxToPdfPt(cellStyle.fontSize),
@@ -766,7 +880,7 @@ export function renderDesignToPdfParts(
         return React.createElement(
           View,
           {
-            key: nodeId,
+            key: keyOverride ?? nodeId,
             style: {
               width: '100%',
               marginVertical: 16,
@@ -782,10 +896,10 @@ export function renderDesignToPdfParts(
 
       case 'Canvas':
       case 'Element':
-        return React.createElement(React.Fragment, { key: nodeId }, ...children);
+        return React.createElement(React.Fragment, { key: keyOverride ?? nodeId }, ...children);
 
       default:
-        return React.createElement(React.Fragment, { key: nodeId }, ...children);
+        return React.createElement(React.Fragment, { key: keyOverride ?? nodeId }, ...children);
     }
   };
 
@@ -811,7 +925,7 @@ export function renderDesignToPdfParts(
   if (bodyChildIds.length === 0) {
     bodyContent = null;
   } else {
-    const bodyChildren = bodyChildIds.map((id) => renderNode(id));
+    const bodyChildren = bodyChildIds.flatMap((id) => renderNodeInstances(id));
     if (bodyLayout === 'horizontal') {
       bodyContent = React.createElement(
         View,

@@ -23,6 +23,7 @@ import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useMergeTagConfig } from '../merge-tag-context';
 import { createPredefinedBlockAction } from '@/actions/templates/mutations/create-predefined-block';
 import { useEditorMetadata } from '@/components/templates/editor-context';
 import {
@@ -47,6 +48,7 @@ type FlexJustify = 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'spa
 type FlexAlign = 'flex-start' | 'flex-end' | 'center' | 'stretch';
 
 interface ContainerProps extends BorderProps {
+  loopKey?: string;
   padding?: number;
   background?: string;
   layout?: LayoutMode;
@@ -216,13 +218,11 @@ const LAYOUT_OPTIONS: { value: LayoutMode; icon: typeof ArrowDown }[] = [
 ];
 
 const LayoutButton = ({
-  value,
   icon: Icon,
   isActive,
   label,
   onClick,
 }: {
-  value: LayoutMode;
   icon: typeof ArrowDown;
   isActive: boolean;
   label: string;
@@ -297,9 +297,11 @@ export const ContainerSettings = () => {
   const t = useTranslations('templates.editor.components.container');
   const { query } = useEditor();
   const editorMeta = useEditorMetadata();
+  const config = useMergeTagConfig();
   const {
     actions: { setProp },
     nodeId,
+    loopKey,
     padding,
     background,
     layout,
@@ -316,6 +318,7 @@ export const ContainerSettings = () => {
     borderWidth,
   } = useNode((node) => ({
     nodeId: node.id,
+    loopKey: (node.data.props.loopKey as string) ?? '',
     padding: node.data.props.padding,
     background: node.data.props.background,
     layout: (node.data.props.layout as LayoutMode) ?? 'vertical',
@@ -340,6 +343,7 @@ export const ContainerSettings = () => {
   const [isSavingBlock, setIsSavingBlock] = useState(false);
 
   const isStructural = ['ROOT', 'PAGE_HEADER', 'BODY', 'PAGE_FOOTER'].includes(nodeId);
+  const availableLoops = config?.loops ?? [];
 
   const handleSaveAsBlock = useCallback(async () => {
     if (!blockName.trim()) return;
@@ -407,6 +411,32 @@ export const ContainerSettings = () => {
 
   return (
     <div className="space-y-4 p-4">
+      {!isStructural && (
+        <div className="space-y-2">
+          <label className="text-xs font-medium" htmlFor="containerLoopKey">
+            {t('loopKey')}
+          </label>
+          <select
+            id="containerLoopKey"
+            value={loopKey}
+            onChange={(e) =>
+              setProp((props: ContainerProps) => {
+                props.loopKey = e.target.value;
+              })
+            }
+            className="w-full px-2 py-1.5 border rounded text-sm bg-white"
+          >
+            <option value="">{t('staticContainer')}</option>
+            {availableLoops.map((loop) => (
+              <option key={loop.key} value={loop.key}>
+                {loop.label}
+              </option>
+            ))}
+          </select>
+          <p className="text-[11px] text-muted-foreground">{loopKey ? t('dynamicHint') : t('staticHint')}</p>
+        </div>
+      )}
+
       {/* Layout mode */}
       <div className="space-y-2">
         <label className="text-xs font-medium" htmlFor="layout">
@@ -416,7 +446,6 @@ export const ContainerSettings = () => {
           {LAYOUT_OPTIONS.map((opt) => (
             <LayoutButton
               key={opt.value}
-              value={opt.value}
               icon={opt.icon}
               isActive={layout === opt.value}
               label={t(`layout_${opt.value}`)}
@@ -811,6 +840,7 @@ function SaveAsBlockDialog({
 Container.craft = {
   isCanvas: true,
   props: {
+    loopKey: '',
     padding: 20,
     background: 'transparent',
     layout: 'vertical' as LayoutMode,

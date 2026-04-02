@@ -132,6 +132,11 @@ const buildHtmlTableCellStyle = ({
   return declarations.join('; ');
 };
 
+const wrapWithLoop = (html: string, loopKey: string | undefined): string => {
+  if (!loopKey) return html;
+  return `{{#${loopKey}}}${html}{{/${loopKey}}}`;
+};
+
 /** Build inline CSS string for border from component props (for HTML output). */
 const borderPropsToCss = (props: Record<string, unknown> | null | undefined): string => {
   if (!props || typeof props !== 'object') return '';
@@ -233,19 +238,23 @@ export const generateEmailHtml = (
         const justify = props.justifyContent || 'flex-start';
         const align = props.alignItems || 'stretch';
         const borderCss = borderPropsToCss(props);
+        const loopKey = props.loopKey || '';
 
         if (layout === 'horizontal') {
           const flexStyle =
             `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
-          return `<div style="${flexStyle}">${content}</div>`;
+          return wrapWithLoop(`<div style="${flexStyle}">${content}</div>`, loopKey);
         }
         if (layout === 'grid') {
           const divStyle = `padding: ${pad}px; background-color: ${bgColor}; ${borderCss}`.trim();
-          return `<div style="${divStyle}"><!--[if mso]><table style="width:100%;border-spacing:${gap}px;" cellpadding="0"><tr><![endif]--><div style="display: grid; grid-template-columns: repeat(${gridCols}, 1fr); gap: ${gap}px;">${content}</div><!--[if mso]></tr></table><![endif]--></div>`;
+          return wrapWithLoop(
+            `<div style="${divStyle}"><!--[if mso]><table style="width:100%;border-spacing:${gap}px;" cellpadding="0"><tr><![endif]--><div style="display: grid; grid-template-columns: repeat(${gridCols}, 1fr); gap: ${gap}px;">${content}</div><!--[if mso]></tr></table><![endif]--></div>`,
+            loopKey,
+          );
         }
         const verticalStyle =
           `display: flex; flex-direction: column; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
-        return `<div style="${verticalStyle}">${content}</div>`;
+        return wrapWithLoop(`<div style="${verticalStyle}">${content}</div>`, loopKey);
       }
 
       case 'Text': {
@@ -478,6 +487,7 @@ export const generateDocumentParts = (
         const justify = props.justifyContent || 'flex-start';
         const align = props.alignItems || 'stretch';
         const borderCss = borderPropsToCss(props);
+        const loopKey = componentName === 'Container' ? props.loopKey || '' : '';
 
         if (layout === 'horizontal') {
           const flexChildren = (nodeChildren || []).map(
@@ -487,7 +497,7 @@ export const generateDocumentParts = (
           const inner = flexChildren.join('');
           const flexStyle =
             `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
-          return `<div style="${flexStyle}">${inner}</div>`;
+          return wrapWithLoop(`<div style="${flexStyle}">${inner}</div>`, loopKey);
         }
         if (layout === 'grid') {
           const gapPx = gap;
@@ -499,12 +509,12 @@ export const generateDocumentParts = (
           const inner = flexChildren.join('');
           const flexStyle =
             `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
-          return `<div style="${flexStyle}">${inner}</div>`;
+          return wrapWithLoop(`<div style="${flexStyle}">${inner}</div>`, loopKey);
         }
         // vertical (default)
         const verticalStyle =
           `display: flex; flex-direction: column; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
-        return `<div style="${verticalStyle}">${content}</div>`;
+        return wrapWithLoop(`<div style="${verticalStyle}">${content}</div>`, loopKey);
       }
 
       case 'Text': {
