@@ -3,7 +3,6 @@ import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
 import { db } from './db';
-import { verifyPassword } from './utils/password';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
@@ -28,8 +27,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             lenders: true,
           },
         });
-        if (!user || !user.password || !verifyPassword(credentials.password as string, user.password)) {
+
+        if (!user) {
           throw new Error('User not found');
+        }
+
+        if (!user.password) {
+          throw new Error('User has no password');
+        }
+
+        const { verifyPassword } = await import('./utils/password');
+        const isValid = await verifyPassword(credentials.password as string, user.password);
+
+        if (!isValid) {
+          throw new Error('Invalid password');
         }
         await db.user.update({
           where: { id: user.id },

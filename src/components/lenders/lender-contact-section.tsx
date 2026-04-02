@@ -23,6 +23,7 @@ interface LenderContactSectionProps {
 
 export function LenderContactSection({ lender }: LenderContactSectionProps) {
   const t = useTranslations('dashboard.lenders');
+  const commonT = useTranslations('common');
   const locale = useLocale();
   const dateLocale = locale === 'de' ? de : enUS;
   const { project } = useProject();
@@ -73,6 +74,10 @@ export function LenderContactSection({ lender }: LenderContactSectionProps) {
                 {lender.telNo && <InfoItem label={t('table.telNo')} value={lender.telNo} showCopyButton />}
               </>
             )}
+            <InfoItem
+              label={t('details.notificationType')}
+              value={commonT(`enums.lender.notificationType.${lender.notificationType}`)}
+            />
             {hasAddressInfo && (
               <InfoItem
                 label={t('details.address')}

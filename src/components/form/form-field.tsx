@@ -11,6 +11,7 @@ interface FormFieldProps {
   type?: string;
   multiline?: boolean;
   required?: boolean;
+  disabled?: boolean;
 }
 
 export function FormField({
@@ -20,6 +21,7 @@ export function FormField({
   type = 'text',
   multiline = false,
   required = false,
+  disabled = false,
 }: FormFieldProps) {
   const form = useFormContext();
   return (
@@ -31,9 +33,9 @@ export function FormField({
           {label && <FormLabel>{label}</FormLabel>}
           <FormControl>
             {multiline ? (
-              <Textarea placeholder={placeholder} {...field} required={required} />
+              <Textarea placeholder={placeholder} {...field} required={required} disabled={disabled} />
             ) : (
-              <Input type={type} placeholder={placeholder} {...field} required={required} />
+              <Input type={type} placeholder={placeholder} {...field} required={required} disabled={disabled} />
             )}
           </FormControl>
           <FormMessage />

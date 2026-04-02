@@ -122,7 +122,7 @@ model Project {
 
 model Lender {
   id               String            @id @default(cuid())
-  lenderNumber     Int               @unique @default(autoincrement())
+  lenderNumber     Int
   projectId        String
   type             LenderType
   salutation       Salutation
@@ -140,6 +140,7 @@ model Lender {
   email            String?
   iban             String?
   bic              String?
+  notificationType NotificationType @default(ONLINE)
   files            File[]
   user             User?             @relation(fields: [email], references: [email])
   project          Project           @relation(fields: [projectId], references: [id])
@@ -150,7 +151,7 @@ model Lender {
 
 model Loan {
   id                    String              @id @default(cuid())
-  loanNumber            Int                 @unique @default(autoincrement())
+  loanNumber            Int
   lenderId              String
   signDate              DateTime
   terminationType       TerminationType
@@ -396,6 +397,12 @@ enum Country {
   IE
   PT
   GR
+}
+
+enum NotificationType {
+  ONLINE
+  EMAIL
+  POST
 }
 
 enum LenderRequiredField {

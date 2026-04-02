@@ -25,7 +25,7 @@ export function FormAdditionalFields({ config, name }: FormAdditionalFieldsProps
   return (
     <>
       {config.map((fieldConfig) => {
-        const fieldName = `${name}.${fieldConfig.name}`;
+        const fieldName = `${name}.${fieldConfig.id}`;
         const isRequired = fieldConfig.required;
         const label = isRequired ? `${fieldConfig.name} *` : fieldConfig.name;
 

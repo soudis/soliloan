@@ -63,7 +63,14 @@ export function FormFieldConfigurator({ name }: FormFieldConfiguratorProps) {
       render={() => (
         <FormItem className="space-y-3">
           <FormControl>
-            <div>
+            <div
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  (e.target as HTMLElement).blur();
+                }
+              }}
+            >
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -152,6 +159,7 @@ export function FormFieldConfigurator({ name }: FormFieldConfiguratorProps) {
                         </TableCell>
                         <TableCell className="align-top">
                           <Button
+                            type="button"
                             variant="ghost"
                             size="icon"
                             onClick={() => remove(index)}

@@ -1,4 +1,4 @@
-import { LenderType } from '@prisma/client';
+import { LenderType, NotificationType } from '@prisma/client';
 import { z } from 'zod';
 
 import {
@@ -6,6 +6,7 @@ import {
   addressSchema,
   bankingSchema,
   contactSchema,
+  optionalIntSchema,
   salutationEnumRequired,
   selectEnumRequired,
 } from './common';
@@ -14,6 +15,7 @@ import {
 export const lenderFormSchema = z
   .object({
     // General Information
+    lenderNumber: optionalIntSchema,
     type: selectEnumRequired(LenderType),
     salutation: salutationEnumRequired,
     firstName: z.string().nullable().optional(),
@@ -28,6 +30,9 @@ export const lenderFormSchema = z
 
     // Banking Information
     ...bankingSchema.shape,
+
+    // Notification
+    notificationType: selectEnumRequired(NotificationType),
 
     // Additional Information
     additionalFields: additionalFieldValuesSchema.default({}).optional().nullable(),

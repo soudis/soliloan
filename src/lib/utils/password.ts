@@ -1,9 +1,11 @@
-import { SHA256 } from 'crypto-js';
+import bcrypt from 'bcryptjs';
 
-export function hashPassword(password: string) {
-  return SHA256(password).toString();
+const SALT_ROUNDS = 12;
+
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, SALT_ROUNDS);
 }
 
-export function verifyPassword(password: string, hashedPassword: string) {
-  return hashPassword(password) === hashedPassword;
+export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+  return bcrypt.compare(password, hashedPassword);
 }

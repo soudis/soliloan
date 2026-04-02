@@ -406,31 +406,31 @@ export function createAdditionalFieldsColumns<T>(
   return (config?.map((field) => {
     if (field.type === AdditionalFieldType.DATE) {
       return {
-        ...createDateColumn<T>(`${accessorKey}.${field.name}`, undefined, t),
+        ...createDateColumn<T>(`${accessorKey}.${field.id}`, undefined, t),
         header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
-        id: `${accessorKey}.${field.name}`,
+        id: `${accessorKey}.${field.id}`,
       };
     }
 
     if (field.type === AdditionalFieldType.NUMBER) {
       if (field.numberFormat === AdditionalNumberFormat.MONEY) {
         return {
-          ...createCurrencyColumn<T>(`${accessorKey}.${field.name}`, undefined, t, locale),
+          ...createCurrencyColumn<T>(`${accessorKey}.${field.id}`, undefined, t, locale),
           header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
-          id: `${accessorKey}.${field.name}`,
+          id: `${accessorKey}.${field.id}`,
         };
       }
       if (field.numberFormat === AdditionalNumberFormat.PERCENT) {
         return {
-          ...createPercentageColumn<T>(`${accessorKey}.${field.name}`, undefined, t, locale),
+          ...createPercentageColumn<T>(`${accessorKey}.${field.id}`, undefined, t, locale),
           header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
-          id: `${accessorKey}.${field.name}`,
+          id: `${accessorKey}.${field.id}`,
         };
       }
       return {
-        ...createNumberColumn<T>(`${accessorKey}.${field.name}`, undefined, t, locale),
+        ...createNumberColumn<T>(`${accessorKey}.${field.id}`, undefined, t, locale),
         header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
-        id: `${accessorKey}.${field.name}`,
+        id: `${accessorKey}.${field.id}`,
       };
     }
 
@@ -438,9 +438,9 @@ export function createAdditionalFieldsColumns<T>(
       return {
         ...createColumn<T>(
           {
-            accessorKey: `${accessorKey}.${field.name}`,
+            accessorKey: `${accessorKey}.${field.id}`,
             cell: ({ row }) => {
-              const value = row.getValue(`${accessorKey}.${field.name}`) as string;
+              const value = row.getValue(`${accessorKey}.${field.id}`) as string;
               if (!value) return '';
               return <Badge variant="outline">{value}</Badge>;
             },
@@ -448,7 +448,7 @@ export function createAdditionalFieldsColumns<T>(
           },
           t,
         ),
-        id: `${accessorKey}.${field.name}`,
+        id: `${accessorKey}.${field.id}`,
         header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
       };
     }
@@ -456,9 +456,9 @@ export function createAdditionalFieldsColumns<T>(
     return {
       ...createColumn<T>(
         {
-          accessorKey: `${accessorKey}.${field.name}`,
+          accessorKey: `${accessorKey}.${field.id}`,
           header: undefined,
-          id: `${accessorKey}.${field.name}`,
+          id: `${accessorKey}.${field.id}`,
         },
         t,
       ),
@@ -474,7 +474,7 @@ export function createAdditionalFieldDefaultColumnVisibility<T>(
   const defaultColumnVisibility: VisibilityState = {};
   // biome-ignore lint/complexity/noForEach: <explanation>
   config?.forEach((field) => {
-    defaultColumnVisibility[`${accessorKey}.${field.name}`] = false;
+    defaultColumnVisibility[`${accessorKey}.${field.id}`] = false;
   });
   return defaultColumnVisibility;
 }
@@ -487,26 +487,26 @@ export function createAdditionalFieldFilters<T>(
   // biome-ignore lint/complexity/noForEach: <explanation>
   config?.forEach((field) => {
     if (field.type === AdditionalFieldType.TEXT) {
-      filters[`${accessorKey}.${field.name}`] = {
+      filters[`${accessorKey}.${field.id}`] = {
         type: 'text' as const,
         label: field.name,
       };
     }
     if (field.type === AdditionalFieldType.SELECT) {
-      filters[`${accessorKey}.${field.name}`] = {
+      filters[`${accessorKey}.${field.id}`] = {
         type: 'select' as const,
         label: field.name,
         options: field.selectOptions.map((option) => ({ label: option, value: option })),
       };
     }
     if (field.type === AdditionalFieldType.DATE) {
-      filters[`${accessorKey}.${field.name}`] = {
+      filters[`${accessorKey}.${field.id}`] = {
         type: 'date' as const,
         label: field.name,
       };
     }
     if (field.type === AdditionalFieldType.NUMBER) {
-      filters[`${accessorKey}.${field.name}`] = {
+      filters[`${accessorKey}.${field.id}`] = {
         type: 'number' as const,
         label: field.name,
       };

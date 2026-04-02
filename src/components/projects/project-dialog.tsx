@@ -55,7 +55,7 @@ export function ProjectDialog({ open, onOpenChange }: ProjectDialogProps) {
         await queryClient.refetchQueries({ queryKey: ['projects'] });
 
         // Navigate to the new project's configuration
-        router.push(`/${createdProject.id}/configuration`);
+        router.push(`/configuration?projectId=${createdProject.id}`);
 
         onOpenChange(false);
         form.reset();

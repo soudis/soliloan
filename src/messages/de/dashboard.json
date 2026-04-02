@@ -69,6 +69,9 @@
       "namePlaceholder": "Geben Sie den Projektnamen ein",
       "success": "Projekt erfolgreich erstellt",
       "error": "Fehler beim Erstellen des Projekts"
+    },
+    "migrate": {
+      "button": "Projekt migrieren"
     }
   },
   "lenders": {
@@ -118,6 +121,7 @@
       "address": "Adresse",
       "banking": "Bankverbindung",
       "salutation": "Anrede",
+      "notificationType": "Erhalt Kontomitteilung",
       "actions": "Aktionen",
       "filterByName": "Nach Namen filtern..."
     },
@@ -128,6 +132,7 @@
       "lenderInfo": "Kreditgeber*in",
       "address": "Adresse",
       "banking": "Bankverbindung",
+      "notificationType": "Erhalt Kontomitteilung per",
       "loans": "Kredite",
       "error": "Fehler beim Laden der Kreditgeber*innen-Daten",
       "noContactInfo": "Keine Kontaktinformationen verfügbar",
@@ -151,6 +156,8 @@
       "form": {
         "requiredFields": "Erforderliche Felder",
         "generalInfo": "Allgemeine Informationen",
+        "lenderNumber": "Konto-Nr.",
+        "lenderNumberPlaceholder": "Automatisch",
         "type": "Typ",
         "typePlaceholder": "Typ auswählen",
         "salutation": "Anrede",
@@ -165,6 +172,7 @@
         "contactInfo": "Kontaktinformationen",
         "email": "E-Mail",
         "telNo": "Telefonnummer",
+        "notificationType": "Erhalt Kontomitteilung per",
         "street": "Straße, Hausnummer, ...",
         "addon": "Adresszusatz",
         "zip": "PLZ",
@@ -233,8 +241,8 @@
       "lenderNumber": "Kreditgeber*in Nummer",
       "lenderName": "Kreditgeber*in",
       "lender": "Kreditgeber*in",
-      "amount": "Kredithöhe",
-      "balance": "Kontostand",
+      "amount": "Vertragswert",
+      "balance": "Aushaftend",
       "balanceShort": "Stand:",
       "interestRate": "Zinssatz",
       "interest": "Zinsen",
@@ -289,6 +297,8 @@
       "form": {
         "loadingLenders": "Kreditgeber*innen werden geladen...",
         "generalInfo": "Allgemeine Informationen",
+        "loanNumber": "Kreditnummer",
+        "loanNumberPlaceholder": "Automatisch",
         "lender": "Kreditgeber*in",
         "lenderPlaceholder": "Kreditgeber*in auswählen",
         "signDate": "Datum",
@@ -547,5 +557,45 @@
       "confirmDescription": "Bist du sicher, dass du die Datei \"{name}\" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden."
     }
   },
-  "noData": "Keine Daten verfügbar"
+  "noData": "Keine Daten verfügbar",
+  "migration": {
+    "title": "Migrationsassistent",
+    "description": "Importiere Daten aus einer bestehenden DKP-v1 Installation. Die Daten werden über die DKP-v1 API heruntergeladen und in ein neues Projekt importiert.",
+    "newMigration": "Neue Migration",
+    "form": {
+      "baseUrl": "Basis-URL",
+      "accessToken": "Zugangstoken",
+      "submit": "Migration starten",
+      "migrating": "Migration läuft..."
+    },
+    "error": {
+      "unknown": "Ein unbekannter Fehler ist aufgetreten"
+    },
+    "report": {
+      "success": "Migration erfolgreich",
+      "failed": "Migration fehlgeschlagen",
+      "rolledBack": "Alle Änderungen wurden zurückgerollt. Es wurden keine Daten importiert.",
+      "projectCreated": "Projekt \"{slug}\" wurde erstellt.",
+      "summary": "Zusammenfassung",
+      "warnings": "Warnungen",
+      "idMappings": "ID-Zuordnungen",
+      "unmappedFields": "Nicht migrierte Felder",
+      "skippedFiles": "{count} Dateien übersprungen (nicht ref_table='user')",
+      "counts": {
+        "admins": "Admins",
+        "lenders": "Kreditgeber*innen",
+        "loans": "Kredite",
+        "transactions": "Buchungen",
+        "files": "Dateien",
+        "notes": "Notizen"
+      },
+      "table": {
+        "entity": "Entität",
+        "legacyId": "Alte ID",
+        "newNumber": "Neue Nummer",
+        "newId": "Neue ID"
+      },
+      "downloadReport": "Report herunterladen"
+    }
+  }
 }

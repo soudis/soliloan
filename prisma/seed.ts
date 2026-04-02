@@ -10,7 +10,7 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter });
 async function main() {
   if (process.env.SOLILOAN_ADMIN_EMAIL && process.env.SOLILOAN_ADMIN_PASSWORD) {
-    const passwordHashed = hashPassword(process.env.SOLILOAN_ADMIN_PASSWORD);
+    const passwordHashed = await hashPassword(process.env.SOLILOAN_ADMIN_PASSWORD);
     const user = await prisma.user.upsert({
       where: { email: process.env.SOLILOAN_ADMIN_EMAIL },
       update: {

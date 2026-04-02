@@ -17,15 +17,24 @@
     "managerNotFound": "Die ausgewählte Verwalter*in gehört nicht zu diesem Projekt."
   },
   "lender": {
-    "notFound": "Kreditgeber*in nicht gefunden."
+    "notFound": "Kreditgeber*in nicht gefunden.",
+    "numberAlreadyExists": "Diese Kontonummer ist in diesem Projekt bereits vergeben."
   },
   "loan": {
-    "notFound": "Kredit nicht gefunden."
+    "notFound": "Kredit nicht gefunden.",
+    "numberAlreadyExists": "Diese Kreditnummer ist in diesem Projekt bereits vergeben."
   },
   "note": {
     "notFound": "Notiz nicht gefunden."
   },
   "template": {
     "notFound": "Vorlage nicht gefunden."
+  },
+  "migration": {
+    "fetchFailed": "Datenpaket konnte nicht von der DKP-v1 API heruntergeladen werden. Bitte URL und Token prüfen.",
+    "noDatabaseJson": "Das ZIP-Archiv enthält keine database.json Datei.",
+    "invalidDataPackage": "Das Datenpaket ist ungültig (fehlende Tabellen).",
+    "noProjectJson": "Das Datenpaket enthält keine project.json. Bitte DKP-v1 auf die neueste Version aktualisieren.",
+    "noProjectId": "Die project.json enthält keine gültige Projekt-ID (projectid)."
   }
 }

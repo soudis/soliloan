@@ -126,7 +126,7 @@ const FormMessage = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<
     const parsedError = parseValidationError(error?.message);
     const body = error
       ? String(
-          parsedError || error?.message?.startsWith('validation.')
+          parsedError || error?.message?.startsWith('validation.') || error?.message?.startsWith('error.')
             ? t(parsedError?.message ?? error.message, parsedError?.params)
             : error.message,
         )

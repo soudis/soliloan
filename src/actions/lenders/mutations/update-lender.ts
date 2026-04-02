@@ -56,6 +56,7 @@ export const updateLenderAction = lenderAction
         telNo: data.telNo,
         iban: data.iban,
         bic: data.bic,
+        notificationType: data.notificationType,
         additionalFields: data.additionalFields ?? {},
         ...(data.email && {
           user: {

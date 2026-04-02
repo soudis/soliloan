@@ -33,7 +33,7 @@ export async function setPassword(token: string, password: string) {
     }
 
     // Hash the new password
-    const hashedPassword = hashPassword(password);
+    const hashedPassword = await hashPassword(password);
 
     // Update the user's password and clear the reset token
     await db.user.update({

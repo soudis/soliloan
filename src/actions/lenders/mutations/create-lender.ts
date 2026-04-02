@@ -9,10 +9,15 @@ import { lenderFormSchema } from '@/lib/schemas/lender';
 import { getLenderName } from '@/lib/utils';
 import { projectAction } from '@/lib/utils/safe-action';
 
+async function getNextLenderNumber(projectId: string): Promise<number> {
+  const result = await db.lender.aggregate({
+    where: { projectId },
+    _max: { lenderNumber: true },
+  });
+  return (result._max.lenderNumber ?? 0) + 1;
+}
+
 export const createLenderAction = projectAction.inputSchema(lenderFormSchema).action(async ({ parsedInput: data }) => {
-  // Determine language (fetch project configuration if not available in context or data)
-  // projectAction doesn't fetch valid project structure by default, so we might need to fetch language.
-  // Optimization: we can just fetch language.
   const project = await db.project.findUnique({
     where: { id: data.projectId },
     select: { configuration: { select: { userLanguage: true, userTheme: true } } },
@@ -25,9 +30,19 @@ export const createLenderAction = projectAction.inputSchema(lenderFormSchema).ac
   const userLanguage = configuration.userLanguage ?? Language.de;
   const userTheme = configuration.userTheme ?? SoliLoansTheme.default;
 
-  // Create the lender
+  const lenderNumber = data.lenderNumber ?? (await getNextLenderNumber(data.projectId));
+
+  if (data.lenderNumber) {
+    const existing = await db.lender.findFirst({
+      where: { lenderNumber: data.lenderNumber, projectId: data.projectId },
+      select: { id: true },
+    });
+    if (existing) return { fieldErrors: { lenderNumber: 'error.lender.numberAlreadyExists' } };
+  }
+
   const lender = await db.lender.create({
     data: {
+      lenderNumber,
       type: data.type,
       salutation: data.salutation,
       firstName: data.firstName,
@@ -43,6 +58,7 @@ export const createLenderAction = projectAction.inputSchema(lenderFormSchema).ac
       telNo: data.telNo,
       iban: data.iban,
       bic: data.bic,
+      notificationType: data.notificationType,
       additionalFields: data.additionalFields ?? {},
       ...(data.email && {
         user: {

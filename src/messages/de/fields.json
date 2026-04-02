@@ -20,6 +20,7 @@
     "telNo": "Telefon",
     "iban": "IBAN",
     "bic": "BIC",
+    "notificationType": "Erhalt Kontomitteilung per",
     "balance": "Kontostand",
     "interest": "Zinsen",
     "deposits": "Einzahlungen",
@@ -34,7 +35,7 @@
     "activeLoans": "Aktive Darlehen"
   },
   "loan": {
-    "loanNumber": "Darlehens-Nr.",
+    "loanNumber": "Kreditnummer",
     "amount": "Darlehensbetrag",
     "interestRate": "Zinssatz",
     "signDate": "Vertragsdatum",
