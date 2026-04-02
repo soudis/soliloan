@@ -22,6 +22,7 @@ import { useMergeTagConfig } from '../merge-tag-context';
 import { MergeTagDropdown } from '../merge-tag-dropdown';
 import { editorRegistry, useEditorRegistry } from './tiptap/editor-registry';
 import { useTiptapEditor } from './tiptap/use-tiptap-editor';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import './tiptap/tiptap.css';
 
 type TextAlign = 'left' | 'center' | 'right' | 'justify';
@@ -753,284 +754,307 @@ export const TableSettings = () => {
 
   return (
     <div className="space-y-4 p-4">
-      {/* Data source selector */}
-      <div className="space-y-2">
-        <label className="text-xs font-medium" htmlFor="loopKey">
-          {t('loopKey')}
-        </label>
-        <select
-          id="loopKey"
-          value={loopKey}
-          onChange={(e) => handleLoopKeyChange(e.target.value)}
-          className="w-full px-2 py-1.5 border rounded text-sm bg-white"
-        >
-          <option value="">{t('staticTable')}</option>
-          {availableLoops.map((loop) => (
-            <option key={loop.key} value={loop.key}>
-              {loop.label}
-            </option>
-          ))}
-        </select>
-        <p className="text-[11px] text-muted-foreground">{isDynamic ? t('dynamicHint') : t('staticHint')}</p>
-      </div>
+      <Tabs defaultValue="data">
+        <TabsList variant="modern" className="mt-0">
+          <TabsTrigger variant="modern" size="sm" value="data">
+            {t('tabData')}
+          </TabsTrigger>
+          <TabsTrigger variant="modern" size="sm" value="structure">
+            {t('tabStructure')}
+          </TabsTrigger>
+          <TabsTrigger variant="modern" size="sm" value="style">
+            {t('tabStyle')}
+          </TabsTrigger>
+          <TabsTrigger variant="modern" size="sm" value="cell">
+            {t('tabCell')}
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Display name (only for dynamic) */}
-      {isDynamic && (
-        <div className="space-y-2">
-          <label className="text-xs font-medium" htmlFor="label">
-            {t('displayName')}
-          </label>
-          <input
-            id="label"
-            type="text"
-            value={label}
-            onChange={(e) =>
-              setProp((props: ResolvedTableProps) => {
-                props.label = e.target.value;
-              })
-            }
-            className="w-full px-2 py-1 border rounded text-sm"
-          />
-        </div>
-      )}
+        <TabsContent value="data" className="mt-3 space-y-4">
+          <div className="space-y-2">
+            <label className="text-xs font-medium" htmlFor="loopKey">
+              {t('loopKey')}
+            </label>
+            <select
+              id="loopKey"
+              value={loopKey}
+              onChange={(e) => handleLoopKeyChange(e.target.value)}
+              className="w-full px-2 py-1.5 border rounded text-sm bg-white"
+            >
+              <option value="">{t('staticTable')}</option>
+              {availableLoops.map((loop) => (
+                <option key={loop.key} value={loop.key}>
+                  {loop.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-muted-foreground">{isDynamic ? t('dynamicHint') : t('staticHint')}</p>
+          </div>
 
-      {/* Columns */}
-      <div className="space-y-2">
-        <label className="text-xs font-medium" htmlFor="columns">
-          {t('columns')}
-        </label>
-        <input
-          id="columns"
-          type="number"
-          min={1}
-          max={10}
-          value={columns}
-          onChange={(e) => handleColumnsChange(Number(e.target.value))}
-          className="w-full px-2 py-1 border rounded text-sm"
-        />
-      </div>
-
-      {/* Rows (only for static tables) */}
-      {!isDynamic && (
-        <div className="space-y-2">
-          <label className="text-xs font-medium" htmlFor="rows">
-            {t('rows')}
-          </label>
-          <input
-            id="rows"
-            type="number"
-            min={1}
-            max={50}
-            value={rows}
-            onChange={(e) => handleRowsChange(Number(e.target.value))}
-            className="w-full px-2 py-1 border rounded text-sm"
-          />
-        </div>
-      )}
-
-      <div className="space-y-2">
-        <p className="text-xs font-medium">{t('columnWidths')}</p>
-        <div className="grid grid-cols-2 gap-2">
-          {columnWidthControls.map((column) => (
-            <div key={column.id} className="space-y-1">
-              <label className="text-[11px] text-zinc-600" htmlFor={column.inputId}>
-                {t('columnWidthLabel', { column: column.colIdx + 1 })}
+          {isDynamic && (
+            <div className="space-y-2">
+              <label className="text-xs font-medium" htmlFor="label">
+                {t('displayName')}
               </label>
               <input
-                id={column.inputId}
-                type="number"
-                min={1}
-                step={0.1}
-                value={column.value}
+                id="label"
+                type="text"
+                value={label}
                 onChange={(e) =>
                   setProp((props: ResolvedTableProps) => {
-                    const nextWidths = resizeColumnWidths(props.columnWidths ?? [], props.columns, 100 / props.columns);
-                    nextWidths[column.colIdx] = Math.max(1, Number(e.target.value) || 1);
-                    props.columnWidths = nextWidths;
+                    props.label = e.target.value;
                   })
                 }
                 className="w-full px-2 py-1 border rounded text-sm"
               />
             </div>
-          ))}
-        </div>
-        <p className="text-[11px] text-muted-foreground">{t('columnWidthHint')}</p>
-      </div>
+          )}
+        </TabsContent>
 
-      <div className="space-y-2">
-        <p className="text-xs font-medium">{t('border')}</p>
-        <div className="flex flex-wrap gap-2">
-          {(['borderTop', 'borderRight', 'borderBottom', 'borderLeft'] as const).map((side) => (
-            <label key={side} className="flex items-center gap-1.5 text-xs">
-              <input
-                type="checkbox"
-                checked={getBorderSideValue({ borderTop, borderRight, borderBottom, borderLeft }, side)}
-                onChange={(e) =>
-                  setProp((props: ResolvedTableProps) => {
-                    setBorderSideValue(props, side, e.target.checked);
-                  })
-                }
-                className="rounded border-zinc-300"
-              />
-              {t(side)}
-            </label>
-          ))}
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
-            <label className="text-[11px] text-zinc-600" htmlFor="tableBorderColor">
-              {t('borderColor')}
+        <TabsContent value="structure" className="mt-3 space-y-4">
+          <div className="space-y-2">
+            <label className="text-xs font-medium" htmlFor="columns">
+              {t('columns')}
             </label>
             <input
-              id="tableBorderColor"
-              type="color"
-              value={borderColor}
-              onChange={(e) =>
-                setProp((props: ResolvedTableProps) => {
-                  props.borderColor = e.target.value;
-                })
-              }
-              className="w-full h-7 rounded border"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[11px] text-zinc-600" htmlFor="tableBorderWidth">
-              {t('borderWidth')}
-            </label>
-            <input
-              id="tableBorderWidth"
+              id="columns"
               type="number"
               min={1}
-              max={20}
-              value={borderWidth}
-              onChange={(e) =>
-                setProp((props: ResolvedTableProps) => {
-                  props.borderWidth = Math.max(1, Number(e.target.value) || 1);
-                })
-              }
+              max={10}
+              value={columns}
+              onChange={(e) => handleColumnsChange(Number(e.target.value))}
               className="w-full px-2 py-1 border rounded text-sm"
             />
           </div>
-        </div>
-        <div className="space-y-1">
-          <label className="text-[11px] text-zinc-600" htmlFor="tableBorderStyle">
-            {t('borderStyle')}
-          </label>
-          <select
-            id="tableBorderStyle"
-            value={borderStyle}
-            onChange={(e) =>
-              setProp((props: ResolvedTableProps) => {
-                props.borderStyle = e.target.value as BorderStyle;
-              })
-            }
-            className="w-full px-2 py-1 border rounded text-sm"
-          >
-            {BORDER_STYLE_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {t(`borderStyle_${option}`)}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
 
-      {/* Selected cell styles */}
-      <div className="space-y-2">
-        <div className="space-y-1">
-          <p className="text-xs font-medium">{t('selectedCellSettings')}</p>
-          <p className="text-[11px] text-muted-foreground">
-            {activeCell
-              ? activeCell.type === 'header'
-                ? t('selectedHeader', { column: activeCell.col + 1 })
-                : t('selectedCell', { row: activeCell.row + 1, column: activeCell.col + 1 })
-              : t('noCellSelected')}
-          </p>
-        </div>
+          {!isDynamic && (
+            <div className="space-y-2">
+              <label className="text-xs font-medium" htmlFor="rows">
+                {t('rows')}
+              </label>
+              <input
+                id="rows"
+                type="number"
+                min={1}
+                max={50}
+                value={rows}
+                onChange={(e) => handleRowsChange(Number(e.target.value))}
+                className="w-full px-2 py-1 border rounded text-sm"
+              />
+            </div>
+          )}
 
-        <div className="space-y-2">
-          <label className="text-xs font-medium block" htmlFor="activeCellFontSize">
-            {tText('fontSize')}
-          </label>
-          <input
-            id="activeCellFontSize"
-            type="number"
-            min={8}
-            max={72}
-            disabled={!activeCellStyle}
-            value={activeCellStyle?.fontSize ?? ''}
-            onChange={(e) =>
-              updateActiveCellStyle({
-                fontSize:
-                  Number.parseInt(e.target.value, 10) ||
-                  (activeCell?.type === 'header' ? DEFAULT_HEADER_FONT_SIZE : DEFAULT_BODY_FONT_SIZE),
-              })
-            }
-            className="w-full px-2 py-1 border rounded text-sm disabled:opacity-50"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-xs font-medium block" htmlFor="activeCellColor">
-            {tText('textColor')}
-          </label>
-          <input
-            id="activeCellColor"
-            type="color"
-            disabled={!activeCellStyle}
-            value={activeCellStyle?.color ?? DEFAULT_TEXT_COLOR}
-            onChange={(e) => updateActiveCellStyle({ color: e.target.value })}
-            className="w-full h-8 p-0 border rounded disabled:opacity-50"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-xs font-medium block">{tText('textAlign')}</p>
-          <div className="flex gap-1">
-            {ALIGN_OPTIONS.map(({ value, icon: Icon }) => (
-              <button
-                key={value}
-                type="button"
-                disabled={!activeCellStyle}
-                onClick={() => updateActiveCellStyle({ textAlign: value })}
-                className={`flex items-center justify-center p-2 rounded-md border transition-colors disabled:opacity-50 ${
-                  activeCellStyle?.textAlign === value
-                    ? 'bg-zinc-900 text-white border-zinc-900'
-                    : 'bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400 hover:text-zinc-700'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-              </button>
-            ))}
+          <div className="space-y-2">
+            <p className="text-xs font-medium">{t('columnWidths')}</p>
+            <div className="grid grid-cols-2 gap-2">
+              {columnWidthControls.map((column) => (
+                <div key={column.id} className="space-y-1">
+                  <label className="text-[11px] text-zinc-600" htmlFor={column.inputId}>
+                    {t('columnWidthLabel', { column: column.colIdx + 1 })}
+                  </label>
+                  <input
+                    id={column.inputId}
+                    type="number"
+                    min={1}
+                    step={0.1}
+                    value={column.value}
+                    onChange={(e) =>
+                      setProp((props: ResolvedTableProps) => {
+                        const nextWidths = resizeColumnWidths(
+                          props.columnWidths ?? [],
+                          props.columns,
+                          100 / props.columns,
+                        );
+                        nextWidths[column.colIdx] = Math.max(1, Number(e.target.value) || 1);
+                        props.columnWidths = nextWidths;
+                      })
+                    }
+                    className="w-full px-2 py-1 border rounded text-sm"
+                  />
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground">{t('columnWidthHint')}</p>
           </div>
-        </div>
-      </div>
+        </TabsContent>
 
-      {/* Insert placeholder / merge tag (targets the focused cell) */}
-      <div className="pt-4 border-t">
-        <p className="text-[11px] text-muted-foreground mb-2">
-          {activeCellId ? t('cellSelected') : t('clickCellHint')}
-        </p>
-        <button
-          ref={buttonRef}
-          type="button"
-          disabled={!activeCellId}
-          onMouseDown={(e) => {
-            e.preventDefault();
-          }}
-          onClick={() => {
-            const rect = buttonRef.current?.getBoundingClientRect();
-            if (rect) {
-              setDropdownPos({ top: rect.bottom + 5, left: rect.left - 100 });
-              setDropdownOpen(true);
-            }
-          }}
-          className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-medium bg-zinc-900 text-white rounded-md hover:bg-zinc-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <PlusCircle className="w-3 h-3" />
-          {tText('insertPlaceholder')}
-        </button>
-      </div>
+        <TabsContent value="style" className="mt-3 space-y-4">
+          <div className="space-y-2">
+            <p className="text-xs font-medium">{t('border')}</p>
+            <div className="flex flex-wrap gap-2">
+              {(['borderTop', 'borderRight', 'borderBottom', 'borderLeft'] as const).map((side) => (
+                <label key={side} className="flex items-center gap-1.5 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={getBorderSideValue({ borderTop, borderRight, borderBottom, borderLeft }, side)}
+                    onChange={(e) =>
+                      setProp((props: ResolvedTableProps) => {
+                        setBorderSideValue(props, side, e.target.checked);
+                      })
+                    }
+                    className="rounded border-zinc-300"
+                  />
+                  {t(side)}
+                </label>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <label className="text-[11px] text-zinc-600" htmlFor="tableBorderColor">
+                  {t('borderColor')}
+                </label>
+                <input
+                  id="tableBorderColor"
+                  type="color"
+                  value={borderColor}
+                  onChange={(e) =>
+                    setProp((props: ResolvedTableProps) => {
+                      props.borderColor = e.target.value;
+                    })
+                  }
+                  className="w-full h-7 rounded border"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[11px] text-zinc-600" htmlFor="tableBorderWidth">
+                  {t('borderWidth')}
+                </label>
+                <input
+                  id="tableBorderWidth"
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={borderWidth}
+                  onChange={(e) =>
+                    setProp((props: ResolvedTableProps) => {
+                      props.borderWidth = Math.max(1, Number(e.target.value) || 1);
+                    })
+                  }
+                  className="w-full px-2 py-1 border rounded text-sm"
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[11px] text-zinc-600" htmlFor="tableBorderStyle">
+                {t('borderStyle')}
+              </label>
+              <select
+                id="tableBorderStyle"
+                value={borderStyle}
+                onChange={(e) =>
+                  setProp((props: ResolvedTableProps) => {
+                    props.borderStyle = e.target.value as BorderStyle;
+                  })
+                }
+                className="w-full px-2 py-1 border rounded text-sm"
+              >
+                {BORDER_STYLE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {t(`borderStyle_${option}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="cell" className="mt-3 space-y-4">
+          <div className="space-y-2">
+            <div className="space-y-1">
+              <p className="text-xs font-medium">{t('selectedCellSettings')}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {activeCell
+                  ? activeCell.type === 'header'
+                    ? t('selectedHeader', { column: activeCell.col + 1 })
+                    : t('selectedCell', { row: activeCell.row + 1, column: activeCell.col + 1 })
+                  : t('noCellSelected')}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium block" htmlFor="activeCellFontSize">
+                {tText('fontSize')}
+              </label>
+              <input
+                id="activeCellFontSize"
+                type="number"
+                min={8}
+                max={72}
+                disabled={!activeCellStyle}
+                value={activeCellStyle?.fontSize ?? ''}
+                onChange={(e) =>
+                  updateActiveCellStyle({
+                    fontSize:
+                      Number.parseInt(e.target.value, 10) ||
+                      (activeCell?.type === 'header' ? DEFAULT_HEADER_FONT_SIZE : DEFAULT_BODY_FONT_SIZE),
+                  })
+                }
+                className="w-full px-2 py-1 border rounded text-sm disabled:opacity-50"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium block" htmlFor="activeCellColor">
+                {tText('textColor')}
+              </label>
+              <input
+                id="activeCellColor"
+                type="color"
+                disabled={!activeCellStyle}
+                value={activeCellStyle?.color ?? DEFAULT_TEXT_COLOR}
+                onChange={(e) => updateActiveCellStyle({ color: e.target.value })}
+                className="w-full h-8 p-0 border rounded disabled:opacity-50"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs font-medium block">{tText('textAlign')}</p>
+              <div className="flex gap-1">
+                {ALIGN_OPTIONS.map(({ value, icon: Icon }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    disabled={!activeCellStyle}
+                    onClick={() => updateActiveCellStyle({ textAlign: value })}
+                    className={`flex items-center justify-center p-2 rounded-md border transition-colors disabled:opacity-50 ${
+                      activeCellStyle?.textAlign === value
+                        ? 'bg-zinc-900 text-white border-zinc-900'
+                        : 'bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400 hover:text-zinc-700'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t pt-4">
+            <p className="text-[11px] text-muted-foreground mb-2">
+              {activeCellId ? t('cellSelected') : t('clickCellHint')}
+            </p>
+            <button
+              ref={buttonRef}
+              type="button"
+              disabled={!activeCellId}
+              onMouseDown={(e) => {
+                e.preventDefault();
+              }}
+              onClick={() => {
+                const rect = buttonRef.current?.getBoundingClientRect();
+                if (rect) {
+                  setDropdownPos({ top: rect.bottom + 5, left: rect.left - 100 });
+                  setDropdownOpen(true);
+                }
+              }}
+              className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-medium bg-zinc-900 text-white rounded-md hover:bg-zinc-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <PlusCircle className="w-3 h-3" />
+              {tText('insertPlaceholder')}
+            </button>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {config && (
         <MergeTagDropdown

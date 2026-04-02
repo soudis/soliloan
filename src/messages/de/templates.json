@@ -90,6 +90,10 @@
       },
       "container": {
         "dropHere": "Ziehe Komponenten hierher",
+        "tabData": "Daten",
+        "tabLayout": "Layout",
+        "tabStyle": "Stil",
+        "tabBlock": "Block",
         "loopKey": "Datenquelle",
         "staticContainer": "Statischer Container (kein Loop)",
         "dynamicHint": "Der Container wird fuer jedes Element der Datenquelle wiederholt.",
@@ -154,6 +158,10 @@
         "logoAppHint": "Kein Projekt-Logo konfiguriert. Es wird das App-Logo verwendet."
       },
       "table": {
+        "tabData": "Daten",
+        "tabStructure": "Struktur",
+        "tabStyle": "Stil",
+        "tabCell": "Zelle",
         "loopKey": "Datenquelle",
         "staticTable": "Statische Tabelle (kein Loop)",
         "displayName": "Anzeigename",

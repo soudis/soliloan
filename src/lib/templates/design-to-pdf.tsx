@@ -152,6 +152,7 @@ const DEFAULT_TABLE_BODY_FONT_SIZE = 14;
 const DEFAULT_TABLE_TEXT_COLOR = '#000000';
 const CSS_PX_TO_PDF_PT = 72 / 96;
 const pxToPdfPt = (px: number): number => px * CSS_PX_TO_PDF_PT;
+const getPdfBorderWidth = (value: unknown): number => pxToPdfPt(Number(value) || 1);
 const TABLE_CELL_PADDING_VERTICAL = pxToPdfPt(8);
 const TABLE_CELL_PADDING_HORIZONTAL = pxToPdfPt(12);
 const PDF_PAGE_WIDTH = 595;
@@ -161,7 +162,7 @@ const NON_LOOPABLE_CONTAINER_IDS = new Set(['ROOT', 'BODY', 'PAGE_HEADER', 'PAGE
 /** Build react-pdf border style from component props */
 function borderPropsToPdfStyle(props: Record<string, unknown> | null | undefined): Record<string, unknown> {
   if (!props || typeof props !== 'object') return {};
-  const w = Number(props.borderWidth) || 1;
+  const w = getPdfBorderWidth(props.borderWidth);
   const color = (props.borderColor as string) ?? '#e4e4e7';
   const style = (props.borderStyle as string) ?? 'solid';
   const out: Record<string, unknown> = {};
@@ -218,7 +219,7 @@ const getTableBorderConfig = (props: Record<string, any>) => ({
   borderLeft: props.borderLeft !== false,
   borderColor: (props.borderColor as string) ?? '#e4e4e7',
   borderStyle: (props.borderStyle as TableBorderStyle) ?? 'solid',
-  borderWidth: Number(props.borderWidth) || 1,
+  borderWidth: getPdfBorderWidth(props.borderWidth),
 });
 
 const getComponentName = (type: unknown): string | undefined => {
@@ -415,7 +416,7 @@ export function renderDesignToPdfParts(
 
   const getVerticalBorderWidth = (props: Record<string, unknown> | null | undefined): number => {
     if (!props || typeof props !== 'object') return 0;
-    const borderWidth = Number(props.borderWidth) || 1;
+    const borderWidth = getPdfBorderWidth(props.borderWidth);
     return (props.borderTop === true ? borderWidth : 0) + (props.borderBottom === true ? borderWidth : 0);
   };
 

@@ -35,6 +35,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   BORDER_STYLE_OPTIONS,
   type BorderProps,
@@ -409,291 +410,311 @@ export const ContainerSettings = () => {
     });
   };
 
+  const defaultTab = isStructural ? 'layout' : 'data';
+
   return (
     <div className="space-y-4 p-4">
-      {!isStructural && (
-        <div className="space-y-2">
-          <label className="text-xs font-medium" htmlFor="containerLoopKey">
-            {t('loopKey')}
-          </label>
-          <select
-            id="containerLoopKey"
-            value={loopKey}
-            onChange={(e) =>
-              setProp((props: ContainerProps) => {
-                props.loopKey = e.target.value;
-              })
-            }
-            className="w-full px-2 py-1.5 border rounded text-sm bg-white"
-          >
-            <option value="">{t('staticContainer')}</option>
-            {availableLoops.map((loop) => (
-              <option key={loop.key} value={loop.key}>
-                {loop.label}
-              </option>
-            ))}
-          </select>
-          <p className="text-[11px] text-muted-foreground">{loopKey ? t('dynamicHint') : t('staticHint')}</p>
-        </div>
-      )}
+      <Tabs defaultValue={defaultTab}>
+        <TabsList variant="modern" className="mt-0">
+          {!isStructural && (
+            <TabsTrigger variant="modern" size="sm" value="data">
+              {t('tabData')}
+            </TabsTrigger>
+          )}
+          <TabsTrigger variant="modern" size="sm" value="layout">
+            {t('tabLayout')}
+          </TabsTrigger>
+          <TabsTrigger variant="modern" size="sm" value="style">
+            {t('tabStyle')}
+          </TabsTrigger>
+          {!isStructural && (
+            <TabsTrigger variant="modern" size="sm" value="block">
+              {t('tabBlock')}
+            </TabsTrigger>
+          )}
+        </TabsList>
 
-      {/* Layout mode */}
-      <div className="space-y-2">
-        <label className="text-xs font-medium" htmlFor="layout">
-          {t('layout')}
-        </label>
-        <div className="flex gap-2">
-          {LAYOUT_OPTIONS.map((opt) => (
-            <LayoutButton
-              key={opt.value}
-              icon={opt.icon}
-              isActive={layout === opt.value}
-              label={t(`layout_${opt.value}`)}
-              onClick={() =>
-                setProp((props: ContainerProps) => {
-                  props.layout = opt.value;
-                })
-              }
-            />
-          ))}
-        </div>
-        <p className="text-[11px] text-muted-foreground">{t(`layout_${layout}`)}</p>
-      </div>
-
-      {/* Distribution (justify-content) — only for vertical/horizontal */}
-      {layout !== 'grid' && (
-        <div className="space-y-2">
-          <span className="text-xs font-medium">{t('distribution')}</span>
-          <div className="flex gap-1">
-            {JUSTIFY_OPTIONS.map((opt) => (
-              <ToggleButton
-                key={opt.value}
-                icon={layout === 'vertical' ? opt.iconV : opt.iconH}
-                isActive={justifyContent === opt.value}
-                label={t(`justify_${opt.value}`)}
-                onClick={() =>
-                  setProp((props: ContainerProps) => {
-                    props.justifyContent = opt.value;
-                  })
-                }
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Alignment (align-items) — only for vertical/horizontal */}
-      {layout !== 'grid' && (
-        <div className="space-y-2">
-          <span className="text-xs font-medium">{t('alignment')}</span>
-          <div className="flex gap-1">
-            {ALIGN_OPTIONS.map((opt) => (
-              <ToggleButton
-                key={opt.value}
-                icon={layout === 'vertical' ? opt.iconV : opt.iconH}
-                isActive={alignItems === opt.value}
-                label={t(`align_${opt.value}`)}
-                onClick={() =>
-                  setProp((props: ContainerProps) => {
-                    props.alignItems = opt.value;
-                  })
-                }
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Gap */}
-      <div className="space-y-2">
-        <label htmlFor="gap" className="text-xs font-medium">
-          {t('gap')}
-        </label>
-        <input
-          id="gap"
-          type="number"
-          min={0}
-          value={gap}
-          onChange={(e) =>
-            setProp((props: ContainerProps) => {
-              props.gap = Number(e.target.value);
-            })
-          }
-          className="w-full px-2 py-1 border rounded text-sm"
-        />
-      </div>
-
-      {/* Grid columns (only for grid layout) */}
-      {layout === 'grid' && (
-        <div className="space-y-2">
-          <label htmlFor="gridColumns" className="text-xs font-medium">
-            {t('gridColumns')}
-          </label>
-          <input
-            id="gridColumns"
-            type="number"
-            min={1}
-            max={12}
-            value={gridColumns}
-            onChange={(e) =>
-              setProp((props: ContainerProps) => {
-                props.gridColumns = Number(e.target.value);
-              })
-            }
-            className="w-full px-2 py-1 border rounded text-sm"
-          />
-        </div>
-      )}
-
-      {/* Padding */}
-      <div className="space-y-2">
-        <label htmlFor="padding" className="text-xs font-medium">
-          {t('padding')}
-        </label>
-        <input
-          id="padding"
-          type="number"
-          value={padding}
-          onChange={(e) =>
-            setProp((props: ContainerProps) => {
-              props.padding = Number(e.target.value);
-            })
-          }
-          className="w-full px-2 py-1 border rounded text-sm"
-        />
-      </div>
-
-      {/* Background color */}
-      <div className="space-y-2">
-        <label htmlFor="background" className="text-xs font-medium">
-          {t('backgroundColor')}
-        </label>
-        <input
-          id="background"
-          type="color"
-          value={rgbToHex(localColor.r, localColor.g, localColor.b)}
-          onChange={(e) => handleColorChange(e.target.value)}
-          className="w-full h-8 p-0 border rounded"
-        />
-        <div className="space-y-1">
-          <label htmlFor="opacity" className="text-xs text-zinc-600">
-            {t('opacity')} ({Math.round(localColor.a * 100)}%)
-          </label>
-          <input
-            id="opacity"
-            type="range"
-            min="0"
-            max="100"
-            value={Math.round(localColor.a * 100)}
-            onChange={(e) => handleOpacityChange(Number(e.target.value))}
-            className="w-full"
-          />
-        </div>
-      </div>
-
-      {/* Border */}
-      <div className="space-y-2">
-        <label className="text-xs font-medium" htmlFor="border">
-          {t('border')}
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {(['borderTop', 'borderRight', 'borderBottom', 'borderLeft'] as const).map((side) => (
-            <label key={side} className="flex items-center gap-1.5 text-xs">
-              <input
-                type="checkbox"
-                checked={Boolean(
-                  ({ borderTop, borderRight, borderBottom, borderLeft } as Record<string, boolean>)[side],
-                )}
+        {!isStructural && (
+          <TabsContent value="data" className="mt-3 space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs font-medium" htmlFor="containerLoopKey">
+                {t('loopKey')}
+              </label>
+              <select
+                id="containerLoopKey"
+                value={loopKey}
                 onChange={(e) =>
                   setProp((props: ContainerProps) => {
-                    (props as Record<string, boolean>)[side] = e.target.checked;
+                    props.loopKey = e.target.value;
                   })
                 }
-                className="rounded border-zinc-300"
-              />
-              {t(side)}
+                className="w-full px-2 py-1.5 border rounded text-sm bg-white"
+              >
+                <option value="">{t('staticContainer')}</option>
+                {availableLoops.map((loop) => (
+                  <option key={loop.key} value={loop.key}>
+                    {loop.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-[11px] text-muted-foreground">{loopKey ? t('dynamicHint') : t('staticHint')}</p>
+            </div>
+          </TabsContent>
+        )}
+
+        <TabsContent value="layout" className="mt-3 space-y-4">
+          <div className="space-y-2">
+            <label className="text-xs font-medium" htmlFor="layout">
+              {t('layout')}
             </label>
-          ))}
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
-            <label htmlFor="containerBorderColor" className="text-[11px] text-zinc-600">
-              {t('borderColor')}
-            </label>
-            <input
-              id="containerBorderColor"
-              type="color"
-              value={borderColor ?? '#e4e4e7'}
-              onChange={(e) =>
-                setProp((props: ContainerProps) => {
-                  props.borderColor = e.target.value;
-                })
-              }
-              className="w-full h-7 rounded border"
-            />
+            <div className="flex gap-2">
+              {LAYOUT_OPTIONS.map((opt) => (
+                <LayoutButton
+                  key={opt.value}
+                  icon={opt.icon}
+                  isActive={layout === opt.value}
+                  label={t(`layout_${opt.value}`)}
+                  onClick={() =>
+                    setProp((props: ContainerProps) => {
+                      props.layout = opt.value;
+                    })
+                  }
+                />
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground">{t(`layout_${layout}`)}</p>
           </div>
-          <div className="space-y-1">
-            <label htmlFor="containerBorderWidth" className="text-[11px] text-zinc-600">
-              {t('borderWidth')}
+
+          {layout !== 'grid' && (
+            <div className="space-y-2">
+              <span className="text-xs font-medium">{t('distribution')}</span>
+              <div className="flex gap-1">
+                {JUSTIFY_OPTIONS.map((opt) => (
+                  <ToggleButton
+                    key={opt.value}
+                    icon={layout === 'vertical' ? opt.iconV : opt.iconH}
+                    isActive={justifyContent === opt.value}
+                    label={t(`justify_${opt.value}`)}
+                    onClick={() =>
+                      setProp((props: ContainerProps) => {
+                        props.justifyContent = opt.value;
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {layout !== 'grid' && (
+            <div className="space-y-2">
+              <span className="text-xs font-medium">{t('alignment')}</span>
+              <div className="flex gap-1">
+                {ALIGN_OPTIONS.map((opt) => (
+                  <ToggleButton
+                    key={opt.value}
+                    icon={layout === 'vertical' ? opt.iconV : opt.iconH}
+                    isActive={alignItems === opt.value}
+                    label={t(`align_${opt.value}`)}
+                    onClick={() =>
+                      setProp((props: ContainerProps) => {
+                        props.alignItems = opt.value;
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <label htmlFor="gap" className="text-xs font-medium">
+              {t('gap')}
             </label>
             <input
-              id="containerBorderWidth"
+              id="gap"
               type="number"
-              min={1}
-              max={20}
-              value={borderWidth ?? 1}
+              min={0}
+              value={gap}
               onChange={(e) =>
                 setProp((props: ContainerProps) => {
-                  props.borderWidth = Number(e.target.value);
+                  props.gap = Number(e.target.value);
                 })
               }
               className="w-full px-2 py-1 border rounded text-sm"
             />
           </div>
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="containerBorderStyle" className="text-[11px] text-zinc-600">
-            {t('borderStyle')}
-          </label>
-          <select
-            id="containerBorderStyle"
-            value={borderStyle ?? 'solid'}
-            onChange={(e) =>
-              setProp((props: ContainerProps) => {
-                props.borderStyle = e.target.value as BorderStyle;
-              })
-            }
-            className="w-full px-2 py-1 border rounded text-sm"
-          >
-            {BORDER_STYLE_OPTIONS.map((opt) => (
-              <option key={opt} value={opt}>
-                {t(`borderStyle_${opt}`)}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
 
-      {/* Save as predefined block */}
-      {!isStructural && (
-        <div className="border-t pt-4">
-          <SaveAsBlockDialog
-            blockName={blockName}
-            setBlockName={setBlockName}
-            blockDesc={blockDesc}
-            setBlockDesc={setBlockDesc}
-            blockDatasets={blockDatasets}
-            setBlockDatasets={setBlockDatasets}
-            blockVisibility={blockVisibility}
-            setBlockVisibility={setBlockVisibility}
-            isSavingBlock={isSavingBlock}
-            onSave={handleSaveAsBlock}
-            isAdmin={editorMeta.isAdmin}
-            isGlobalTemplate={editorMeta.isGlobalTemplate}
-            t={t}
-          />
-        </div>
-      )}
+          {layout === 'grid' && (
+            <div className="space-y-2">
+              <label htmlFor="gridColumns" className="text-xs font-medium">
+                {t('gridColumns')}
+              </label>
+              <input
+                id="gridColumns"
+                type="number"
+                min={1}
+                max={12}
+                value={gridColumns}
+                onChange={(e) =>
+                  setProp((props: ContainerProps) => {
+                    props.gridColumns = Number(e.target.value);
+                  })
+                }
+                className="w-full px-2 py-1 border rounded text-sm"
+              />
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <label htmlFor="padding" className="text-xs font-medium">
+              {t('padding')}
+            </label>
+            <input
+              id="padding"
+              type="number"
+              value={padding}
+              onChange={(e) =>
+                setProp((props: ContainerProps) => {
+                  props.padding = Number(e.target.value);
+                })
+              }
+              className="w-full px-2 py-1 border rounded text-sm"
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="style" className="mt-3 space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="background" className="text-xs font-medium">
+              {t('backgroundColor')}
+            </label>
+            <input
+              id="background"
+              type="color"
+              value={rgbToHex(localColor.r, localColor.g, localColor.b)}
+              onChange={(e) => handleColorChange(e.target.value)}
+              className="w-full h-8 p-0 border rounded"
+            />
+            <div className="space-y-1">
+              <label htmlFor="opacity" className="text-xs text-zinc-600">
+                {t('opacity')} ({Math.round(localColor.a * 100)}%)
+              </label>
+              <input
+                id="opacity"
+                type="range"
+                min="0"
+                max="100"
+                value={Math.round(localColor.a * 100)}
+                onChange={(e) => handleOpacityChange(Number(e.target.value))}
+                className="w-full"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-medium" htmlFor="border">
+              {t('border')}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {(['borderTop', 'borderRight', 'borderBottom', 'borderLeft'] as const).map((side) => (
+                <label key={side} className="flex items-center gap-1.5 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(
+                      ({ borderTop, borderRight, borderBottom, borderLeft } as Record<string, boolean>)[side],
+                    )}
+                    onChange={(e) =>
+                      setProp((props: ContainerProps) => {
+                        (props as Record<string, boolean>)[side] = e.target.checked;
+                      })
+                    }
+                    className="rounded border-zinc-300"
+                  />
+                  {t(side)}
+                </label>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <label htmlFor="containerBorderColor" className="text-[11px] text-zinc-600">
+                  {t('borderColor')}
+                </label>
+                <input
+                  id="containerBorderColor"
+                  type="color"
+                  value={borderColor ?? '#e4e4e7'}
+                  onChange={(e) =>
+                    setProp((props: ContainerProps) => {
+                      props.borderColor = e.target.value;
+                    })
+                  }
+                  className="w-full h-7 rounded border"
+                />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="containerBorderWidth" className="text-[11px] text-zinc-600">
+                  {t('borderWidth')}
+                </label>
+                <input
+                  id="containerBorderWidth"
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={borderWidth ?? 1}
+                  onChange={(e) =>
+                    setProp((props: ContainerProps) => {
+                      props.borderWidth = Number(e.target.value);
+                    })
+                  }
+                  className="w-full px-2 py-1 border rounded text-sm"
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="containerBorderStyle" className="text-[11px] text-zinc-600">
+                {t('borderStyle')}
+              </label>
+              <select
+                id="containerBorderStyle"
+                value={borderStyle ?? 'solid'}
+                onChange={(e) =>
+                  setProp((props: ContainerProps) => {
+                    props.borderStyle = e.target.value as BorderStyle;
+                  })
+                }
+                className="w-full px-2 py-1 border rounded text-sm"
+              >
+                {BORDER_STYLE_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {t(`borderStyle_${opt}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </TabsContent>
+
+        {!isStructural && (
+          <TabsContent value="block" className="mt-3">
+            <SaveAsBlockDialog
+              blockName={blockName}
+              setBlockName={setBlockName}
+              blockDesc={blockDesc}
+              setBlockDesc={setBlockDesc}
+              blockDatasets={blockDatasets}
+              setBlockDatasets={setBlockDatasets}
+              blockVisibility={blockVisibility}
+              setBlockVisibility={setBlockVisibility}
+              isSavingBlock={isSavingBlock}
+              onSave={handleSaveAsBlock}
+              isAdmin={editorMeta.isAdmin}
+              isGlobalTemplate={editorMeta.isGlobalTemplate}
+              t={t}
+            />
+          </TabsContent>
+        )}
+      </Tabs>
     </div>
   );
 };
