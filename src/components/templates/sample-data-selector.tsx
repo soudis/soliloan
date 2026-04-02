@@ -4,9 +4,12 @@ import type { TemplateDataset } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 
-import { getSampleLendersAction, getSampleLoansAction } from '@/actions/templates/queries/get-sample-data';
+import { getSampleLendersAction, getSampleLoansAction } from '@/actions/templates/queries/get-template-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
+
+type SampleLenderRecord = Awaited<ReturnType<typeof getSampleLendersAction>>[number];
+type SampleLoanRecord = Awaited<ReturnType<typeof getSampleLoansAction>>[number];
 
 interface SampleDataSelectorProps {
   dataset: TemplateDataset;
@@ -47,13 +50,7 @@ export function SampleDataSelector({ dataset, projectId, value, onChange }: Samp
     if (!record) return '';
 
     if (dataset === 'LENDER') {
-      const lender = record as {
-        lenderNumber: number;
-        firstName?: string | null;
-        lastName?: string | null;
-        organisationName?: string | null;
-        type: string;
-      };
+      const lender = record as unknown as SampleLenderRecord;
       const name =
         lender.type === 'PERSON'
           ? `${lender.firstName ?? ''} ${lender.lastName ?? ''}`.trim()
@@ -62,11 +59,7 @@ export function SampleDataSelector({ dataset, projectId, value, onChange }: Samp
     }
 
     if (dataset === 'LOAN') {
-      const loan = record as {
-        loanNumber: number;
-        amount: number;
-        lender: { firstName?: string | null; lastName?: string | null; organisationName?: string | null; type: string };
-      };
+      const loan = record as unknown as SampleLoanRecord;
       const lenderName =
         loan.lender.type === 'PERSON'
           ? `${loan.lender.firstName ?? ''} ${loan.lender.lastName ?? ''}`.trim()

@@ -4,6 +4,7 @@ import React from 'react';
 
 import { db } from '@/lib/db';
 import { renderSystemEmailTemplate, resolveSystemTemplate } from '@/lib/templates/resolve-system-template';
+import { getTemplateData } from '@/lib/templates/template-data';
 
 const SOLILOAN_URL = (process.env.SOLILOAN_URL ?? '').replace(/\/+$/, '');
 
@@ -79,18 +80,28 @@ function buildSystemUrls(token: string) {
 async function sendSystemTemplateEmail({
   systemKey,
   projectId,
-  mergeData,
+  templateRecordId,
+  additionalMergeData,
   to,
   subject,
 }: {
   systemKey: string;
   projectId?: string | null;
-  mergeData: Record<string, unknown>;
+  templateRecordId?: string | null;
+  additionalMergeData?: Record<string, unknown>;
   to: string;
   subject: string;
 }) {
   const template = await resolveSystemTemplate(systemKey, projectId);
   if (!template) return false;
+
+  const templateData = await getTemplateData(template.dataset, templateRecordId, 'de', projectId ?? undefined);
+  if (!templateData) return false;
+
+  const mergeData: Record<string, unknown> = {
+    ...templateData,
+    ...(additionalMergeData ?? {}),
+  };
 
   let logoUrl: string | null = null;
   const configLogo = (mergeData.config as { logo?: unknown } | undefined)?.logo;
@@ -150,25 +161,13 @@ export async function sendPasswordInvitationEmail(
   // Try system template path when project context is available
   if (lenderContext) {
     try {
-      const mergeData: Record<string, unknown> = {
-        platform: {
-          name: process.env.NEXT_PUBLIC_SOLILOAN_PROJECT_NAME ?? 'SoliLoan',
-        },
-        config: lenderContext.configData,
-        lender: {
-          firstName: name,
-          fullName: name,
-          email: to,
-        },
-        system: systemUrls,
-      };
-
-      console.log('mergeData', mergeData);
-
       const sent = await sendSystemTemplateEmail({
         systemKey: 'lender-invite-email',
         projectId: lenderContext.projectId,
-        mergeData,
+        templateRecordId: lenderContext.lenderId,
+        additionalMergeData: {
+          system: systemUrls,
+        },
         to,
         subject: 'Danke für deinen Direktkredit',
       });
@@ -193,22 +192,13 @@ export async function sendProjectManagerInvitationEmail(
   const systemUrls = buildSystemUrls(token);
 
   try {
-    const mergeData: Record<string, unknown> = {
-      platform: {
-        name: process.env.NEXT_PUBLIC_SOLILOAN_PROJECT_NAME ?? 'SoliLoan',
-      },
-      project: {
-        name: managerContext.projectName,
-        slug: managerContext.projectSlug,
-      },
-      config: managerContext.configData,
-      system: systemUrls,
-    };
-
     const sent = await sendSystemTemplateEmail({
       systemKey: 'manager-invite-email',
       projectId: managerContext.projectId,
-      mergeData,
+      templateRecordId: managerContext.projectId,
+      additionalMergeData: {
+        system: systemUrls,
+      },
       to,
       subject: 'Einladung als Projektmanager',
     });
@@ -230,26 +220,24 @@ export async function sendProjectManagerInvitationEmail(
  * @param locale User's preferred language (defaults to 'de')
  * @returns Promise with the result of the email sending
  */
-export async function sendPasswordResetEmail(to: string, name: string, token: string, locale = 'de') {
+export async function sendPasswordResetEmail(
+  to: string,
+  name: string,
+  token: string,
+  userId: string,
+  locale = 'de',
+) {
   const systemUrls = buildSystemUrls(token);
   const resetUrl = systemUrls.passwordReset;
 
   try {
-    const mergeData: Record<string, unknown> = {
-      platform: {
-        name: process.env.NEXT_PUBLIC_SOLILOAN_PROJECT_NAME ?? 'SoliLoan',
-      },
-      user: {
-        name,
-        email: to,
-      },
-      system: systemUrls,
-    };
-
     const sent = await sendSystemTemplateEmail({
       systemKey: 'password-reset-email',
       projectId: null,
-      mergeData,
+      templateRecordId: userId,
+      additionalMergeData: {
+        system: systemUrls,
+      },
       to,
       subject: 'Passwort zurücksetzen',
     });

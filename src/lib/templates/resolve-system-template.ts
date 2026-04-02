@@ -20,6 +20,7 @@ export async function resolveSystemTemplate(systemKey: string, projectId?: strin
     select: {
       id: true,
       designJson: true,
+      dataset: true,
       projectId: true,
     },
     orderBy: { projectId: 'asc' },

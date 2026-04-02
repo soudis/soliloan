@@ -96,7 +96,7 @@ export async function requestPasswordReset(email: string) {
     });
 
     // Send the password reset email with the user's language preference
-    await sendPasswordResetEmail(user.email, user.name, token, user.language || 'de');
+    await sendPasswordResetEmail(user.email, user.name, token, user.id, user.language || 'de');
 
     return { success: true };
   } catch (error) {

@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getMergeTagConfigAction, type MergeTagConfig } from '@/actions/templates/queries/get-merge-tags';
 import { getProjectLogoAction } from '@/actions/templates/queries/get-project-logo';
-import { getMergeTagValuesAction } from '@/actions/templates/queries/get-sample-data';
+import { getMergeTagValuesAction } from '@/actions/templates/queries/get-template-data';
 import {
   generateDocumentParts,
   generateEmailHtml,
@@ -34,6 +34,9 @@ const A4_MIN_HEIGHT_PX = 1123;
 
 /** IDs that act as structural zones and should not show selection/drag handles */
 const STRUCTURAL_NODE_IDS = new Set(['ROOT', 'PAGE_HEADER', 'PAGE_FOOTER', 'BODY']);
+
+const needsProjectScopedTemplateData = (dataset: TemplateDataset) =>
+  dataset === 'PROJECT' || dataset === 'PROJECT_YEARLY';
 
 const RenderNode = ({ render }: { render: React.ReactNode }) => {
   const {
@@ -336,9 +339,11 @@ export function TemplateEditorView({
     let headerHtml = currentHeaderHtml;
     let footerHtml = currentFooterHtml;
 
-    if (selectedRecordId) {
+    const templateRecordId = selectedRecordId ?? (needsProjectScopedTemplateData(dataset) ? projectId : null);
+
+    if (templateRecordId) {
       try {
-        const data = await getMergeTagValuesAction(dataset, selectedRecordId, 'de', projectId);
+        const data = await getMergeTagValuesAction(dataset, templateRecordId, 'de', projectId);
         if (data) {
           html = processTemplate(html, data);
           if (headerHtml) headerHtml = processTemplate(headerHtml, data);
@@ -366,9 +371,11 @@ export function TemplateEditorView({
         const resolved = await resolvePreviewHtml();
         html = resolved.html;
       }
-      if (selectedRecordId) {
+      const templateRecordId = selectedRecordId ?? (needsProjectScopedTemplateData(dataset) ? projectId : null);
+
+      if (templateRecordId) {
         try {
-          const data = await getMergeTagValuesAction(dataset, selectedRecordId, 'de', projectId);
+          const data = await getMergeTagValuesAction(dataset, templateRecordId, 'de', projectId);
           if (data) html = processTemplate(html, data);
         } catch (e) {
           console.error('Preview error', e);
@@ -384,9 +391,11 @@ export function TemplateEditorView({
     try {
       const getLatest = getLatestDocumentPartsRef.current;
       let sampleData: Record<string, unknown> = {};
-      if (selectedRecordId) {
+      const templateRecordId = selectedRecordId ?? (needsProjectScopedTemplateData(dataset) ? projectId : null);
+
+      if (templateRecordId) {
         try {
-          const data = await getMergeTagValuesAction(dataset, selectedRecordId, 'de', projectId);
+          const data = await getMergeTagValuesAction(dataset, templateRecordId, 'de', projectId);
           if (data) sampleData = data;
         } catch (e) {
           console.error('Preview error', e);
