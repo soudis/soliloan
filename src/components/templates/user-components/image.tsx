@@ -88,7 +88,7 @@ export const ImageSettings = () => {
 
   const handleRemoveUpload = () => {
     setProp((props: ImageProps) => {
-      props.src = 'https://via.placeholder.com/150';
+      props.src = '';
       props.useLogoSource = false;
     });
     setFileName(null);
@@ -108,7 +108,7 @@ export const ImageSettings = () => {
   const handleDeselectLogo = () => {
     setProp((props: ImageProps) => {
       props.useLogoSource = false;
-      props.src = 'https://via.placeholder.com/150';
+      props.src = '';
     });
   };
 
@@ -235,9 +235,9 @@ export const ImageSettings = () => {
 
 Image.craft = {
   props: {
-    src: 'https://via.placeholder.com/150',
-    width: '100%',
-    useLogoSource: false,
+    src: '',
+    width: '100px',
+    useLogoSource: true,
   },
   related: {
     settings: ImageSettings,
