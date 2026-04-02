@@ -1,3 +1,4 @@
+import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { NextResponse } from 'next/server';
 import React from 'react';
@@ -5,6 +6,64 @@ import React from 'react';
 import { auth } from '@/lib/auth';
 
 const FONTS_DIR = path.join(process.cwd(), 'public', 'fonts');
+const DEFAULT_APP_LOGO_PATH = '/soliloan-logo.webp';
+
+function convertWebpToPngDataUrl(webpBytes: Buffer): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const convertProcess = spawn('convert', ['webp:-', 'png:-']);
+    const stdoutChunks: Buffer[] = [];
+    const stderrChunks: Buffer[] = [];
+
+    convertProcess.stdout.on('data', (chunk: Buffer | string) => {
+      stdoutChunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    });
+
+    convertProcess.stderr.on('data', (chunk: Buffer | string) => {
+      stderrChunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    });
+
+    convertProcess.on('error', (error) => {
+      reject(error);
+    });
+
+    convertProcess.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`WebP to PNG conversion failed: ${Buffer.concat(stderrChunks).toString('utf8')}`));
+        return;
+      }
+
+      const pngBytes = Buffer.concat(stdoutChunks);
+      resolve(`data:image/png;base64,${pngBytes.toString('base64')}`);
+    });
+
+    convertProcess.stdin.end(webpBytes);
+  });
+}
+
+async function resolvePdfLogoUrl(logoUrl: string | undefined, assetBaseUrl: string): Promise<string | undefined> {
+  if (logoUrl?.startsWith('data:image/webp;base64,')) {
+    const webpBytes = Buffer.from(logoUrl.replace('data:image/webp;base64,', ''), 'base64');
+    return convertWebpToPngDataUrl(webpBytes);
+  }
+
+  if (logoUrl) {
+    return logoUrl;
+  }
+
+  const appLogoUrl = `${assetBaseUrl}${DEFAULT_APP_LOGO_PATH}`;
+  const response = await fetch(appLogoUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to load app logo for PDF (${response.status})`);
+  }
+
+  const logoBytes = Buffer.from(await response.arrayBuffer());
+  const contentType = response.headers.get('content-type') || 'image/webp';
+  if (contentType.includes('image/webp')) {
+    return convertWebpToPngDataUrl(logoBytes);
+  }
+
+  return `data:${contentType};base64,${logoBytes.toString('base64')}`;
+}
 
 /**
  * POST /api/templates/pdf
@@ -20,6 +79,7 @@ export async function POST(request: Request) {
     if (!session) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
+    const assetBaseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : new URL(request.url).origin;
 
     const body = await request.json();
     if (body.design == null || typeof body.design !== 'object') {
@@ -36,6 +96,7 @@ export async function POST(request: Request) {
       renderToBuffer,
     } = await import('@react-pdf/renderer');
     const { renderDesignToPdfParts } = await import('@/lib/templates/design-to-pdf');
+    const resolvedLogoUrl = await resolvePdfLogoUrl(body.logoUrl as string | undefined, assetBaseUrl);
 
     // Only register upright weights. Italic registration triggers a DataView out-of-bounds
     // in react-pdf when embedding; italic text is rendered as normal in PDF to avoid the crash.
@@ -53,7 +114,8 @@ export async function POST(request: Request) {
       {
         design: body.design as Record<string, unknown>,
         sampleData: (body.sampleData as Record<string, unknown>) ?? {},
-        logoUrl: body.logoUrl as string | undefined,
+        logoUrl: resolvedLogoUrl,
+        assetBaseUrl,
       },
       { Document, Page, View, Text: PdfText, Image: PdfImage },
     );

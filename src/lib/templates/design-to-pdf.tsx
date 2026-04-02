@@ -1,3 +1,18 @@
+const DEFAULT_APP_LOGO_SRC = '/soliloan-logo.webp';
+
+function resolvePdfImageSrc(src: string, assetBaseUrl?: string): string {
+  if (!src) return src;
+  if (src.startsWith('data:') || src.startsWith('http://') || src.startsWith('https://')) {
+    return src;
+  }
+  if (!src.startsWith('/')) {
+    return src;
+  }
+
+  const baseUrl = (assetBaseUrl || process.env.SOLILOAN_URL || process.env.NEXTAUTH_URL || '').replace(/\/+$/, '');
+  return baseUrl ? `${baseUrl}${src}` : src;
+}
+
 /**
  * Renders editor design JSON to @react-pdf/renderer components.
  * Used by the PDF API to generate documents from design + sample data
@@ -162,6 +177,8 @@ export type DesignToPdfOptions = {
   sampleData?: Record<string, unknown>;
   /** Optional logo URL when image has useLogoSource (overrides project logo) */
   logoUrl?: string;
+  /** Base URL for resolving public asset paths like /soliloan-logo.webp */
+  assetBaseUrl?: string;
 };
 
 /** React-pdf components passed from the route (Document, Page, View, Text, Image) */
@@ -190,7 +207,7 @@ export function renderDesignToPdfParts(
   headerBorder: Record<string, unknown>;
   footerBorder: Record<string, unknown>;
 } {
-  const { design, sampleData = {}, logoUrl } = options;
+  const { design, sampleData = {}, logoUrl, assetBaseUrl } = options;
   const nodes = getNodesMapFromDesign(design);
   const { Document: _Doc, Page: _Page, View, Text: PdfText, Image: PdfImage } = components;
 
@@ -360,7 +377,8 @@ export function renderDesignToPdfParts(
 
       case 'Image': {
         const useLogo = props?.useLogoSource === true;
-        const src = useLogo && logoUrl ? logoUrl : (props?.src as string) || '';
+        const rawSrc = useLogo ? logoUrl || DEFAULT_APP_LOGO_SRC : (props?.src as string) || '';
+        const src = resolvePdfImageSrc(rawSrc, assetBaseUrl);
         const width = (props?.width as string) || '100%';
         if (!src) return null;
         return React.createElement(PdfImage, {
