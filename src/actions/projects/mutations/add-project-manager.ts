@@ -2,43 +2,12 @@
 
 import crypto from 'node:crypto';
 import { Entity, Operation } from '@prisma/client';
-import { omit } from 'lodash';
-import moment from 'moment';
 import { z } from 'zod';
 import { createAuditEntry, getManagerContext } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
-import { parseAdditionalFieldConfig } from '@/lib/utils/additional-fields';
 import { hashPassword } from '@/lib/utils/password';
 import { projectAction } from '@/lib/utils/safe-action';
-
-async function getProjectWithConfiguration(projectId: string) {
-  const project = await db.project.findUnique({
-    where: { id: projectId },
-    include: {
-      managers: true,
-      configuration: {
-        include: { loanTemplates: true },
-      },
-      lenders: {
-        include: { loans: { include: { transactions: true } } },
-      },
-    },
-  });
-  if (!project) return null;
-  return {
-    ...omit(project, ['lenders']),
-    hasHistoricTransactions: project.lenders.some((lender) =>
-      lender.loans.some(
-        (loan) => loan.transactions.filter((t) => moment(t.date).isBefore(moment().startOf('year'))).length > 0,
-      ),
-    ),
-    configuration: {
-      ...project.configuration,
-      lenderAdditionalFields: parseAdditionalFieldConfig(project.configuration.lenderAdditionalFields) ?? [],
-      loanAdditionalFields: parseAdditionalFieldConfig(project.configuration.loanAdditionalFields) ?? [],
-    },
-  };
-}
+import { getProjectUnsafe } from '../queries/get-project';
 
 export const addProjectManagerAction = projectAction
   .inputSchema(
@@ -112,7 +81,7 @@ export const addProjectManagerAction = projectAction
       projectId,
     });
 
-    const updated = await getProjectWithConfiguration(projectId);
+    const updated = await getProjectUnsafe(projectId);
     return { project: updated };
   });
 
