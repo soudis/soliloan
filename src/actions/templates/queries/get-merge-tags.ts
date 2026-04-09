@@ -8,6 +8,7 @@ import {
   buildLoopTags,
   buildMergeTagValue,
   DATASET_CONFIGS,
+  LOAN_YEARLY_FIELDS,
   LOOP_DEFINITIONS,
   NOTE_FIELDS,
   TRANSACTION_FIELDS,
@@ -90,6 +91,17 @@ export async function getMergeTagConfigAction(
       });
     }
 
+    if (dataset === 'LENDER_YEARLY' && loopKey === 'loans') {
+      for (const field of LOAN_YEARLY_FIELDS) {
+        childFields.push({
+          key: `loanYearly.${field}`,
+          label: t(`loanYearly.${field}`),
+          value: buildMergeTagValue('loanYearly', field),
+          entity: 'loanYearly',
+        });
+      }
+    }
+
     loops.push({
       key: loopDef.key,
       label: t(loopDef.labelKey),
@@ -103,7 +115,7 @@ export async function getMergeTagConfigAction(
   }
 
   // Add nested loops (transactions inside loans, notes inside loans)
-  if (dataset === 'LENDER') {
+  if (dataset === 'LENDER' || dataset === 'LENDER_YEARLY') {
     // Transaction loop (inside loans)
     const transactionDef = LOOP_DEFINITIONS.transactions;
     if (transactionDef) {
@@ -139,6 +151,27 @@ export async function getMergeTagConfigAction(
         entity: 'note',
       })),
     });
+  }
+
+  if (dataset === 'LENDER_YEARLY') {
+    const transactionsYearlyDef = LOOP_DEFINITIONS.transactionsYearly;
+    if (transactionsYearlyDef) {
+      const tags = buildLoopTags(transactionsYearlyDef.key);
+      loops.push({
+        key: 'transactionsYearly',
+        label: t(transactionsYearlyDef.labelKey),
+        startTag: tags.start,
+        endTag: tags.end,
+        childPrefix: 'transaction',
+        parentRequired: 'loans',
+        childFields: TRANSACTION_FIELDS.map((field) => ({
+          key: `transaction.${field}`,
+          label: t(`transaction.${field}`),
+          value: buildMergeTagValue('transaction', field),
+          entity: 'transaction',
+        })),
+      });
+    }
   }
 
   // Get additional fields from project config if projectId provided

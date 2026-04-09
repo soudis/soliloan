@@ -1,13 +1,16 @@
 'use client';
 
 import type { TemplateDataset, TemplateType } from '@prisma/client';
+import { useQuery } from '@tanstack/react-query';
 import { Loader2, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { updateTemplateAction } from '@/actions/templates/mutations/update-template';
+import { getProjectsForTemplateSampleAction } from '@/actions/templates/queries/get-template-data';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SampleDataSelector } from './sample-data-selector';
 import { TemplateEditorView } from './template-editor-view';
 
@@ -28,10 +31,29 @@ interface TemplateEditorProps {
 export function TemplateEditor({ template, projectId, isAdmin = false }: TemplateEditorProps) {
   const t = useTranslations('templates');
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [sampleProjectId, setSampleProjectId] = useState<string | null>(null);
   const [pendingDesign, setPendingDesign] = useState<object | null>(null);
   const [pendingHtml, setPendingHtml] = useState<string | null>(null);
 
   const { executeAsync: updateTemplate, isExecuting } = useAction(updateTemplateAction);
+
+  const contextProjectId = template.projectId ?? projectId;
+  const needsProjectPickerForSample = isAdmin && template.isGlobal && !contextProjectId;
+  const previewProjectId = contextProjectId ?? sampleProjectId;
+
+  const { data: sampleProjects, isLoading: sampleProjectsLoading } = useQuery({
+    queryKey: ['template-editor-sample-projects'],
+    queryFn: () => getProjectsForTemplateSampleAction(),
+    enabled: needsProjectPickerForSample,
+  });
+
+  useEffect(() => {
+    if (!needsProjectPickerForSample) return;
+    if (!sampleProjects?.length) return;
+    if (sampleProjectId != null && sampleProjects.some((p) => p.id === sampleProjectId)) return;
+    setSampleProjectId(sampleProjects[0].id);
+  }, [needsProjectPickerForSample, sampleProjects, sampleProjectId]);
 
   const handleDesignChange = useCallback((design: object, html: string) => {
     setPendingDesign(design);
@@ -57,8 +79,18 @@ export function TemplateEditor({ template, projectId, isAdmin = false }: Templat
     }
   };
 
-  // Determine projectId for sample data - use template's project or provided projectId
-  const effectiveProjectId = template.projectId ?? projectId;
+  const handleSampleRecordChange = useCallback((value: string | null) => {
+    setSelectedRecordId(value);
+    if (template.dataset === 'LENDER_YEARLY') {
+      setSelectedYear(null);
+    }
+  }, [template.dataset]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset lender/year when preview project changes
+  useEffect(() => {
+    setSelectedRecordId(null);
+    setSelectedYear(null);
+  }, [previewProjectId]);
 
   return (
     <div className="flex flex-col">
@@ -66,12 +98,35 @@ export function TemplateEditor({ template, projectId, isAdmin = false }: Templat
       <div className="flex items-center justify-between p-4 border-b bg-background">
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-semibold">{template.name}</h1>
-          {effectiveProjectId && (
+          {needsProjectPickerForSample && (
+            <Select
+              value={sampleProjectId ?? undefined}
+              onValueChange={(val) => setSampleProjectId(val || null)}
+              disabled={sampleProjectsLoading}
+            >
+              <SelectTrigger className="w-[260px]">
+                <SelectValue placeholder={sampleProjectsLoading ? 'Laden...' : t('editor.selectSampleProject')} />
+              </SelectTrigger>
+              <SelectContent>
+                {sampleProjects?.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+                {!sampleProjectsLoading && (!sampleProjects || sampleProjects.length === 0) && (
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground">{t('editor.noSampleRecords')}</div>
+                )}
+              </SelectContent>
+            </Select>
+          )}
+          {previewProjectId && (
             <SampleDataSelector
               dataset={template.dataset}
-              projectId={effectiveProjectId}
+              projectId={previewProjectId}
               value={selectedRecordId}
-              onChange={setSelectedRecordId}
+              onChange={handleSampleRecordChange}
+              selectedYear={selectedYear}
+              onYearChange={setSelectedYear}
             />
           )}
         </div>
@@ -86,11 +141,12 @@ export function TemplateEditor({ template, projectId, isAdmin = false }: Templat
         <TemplateEditorView
           templateType={template.type}
           dataset={template.dataset}
-          projectId={effectiveProjectId ?? undefined}
+          projectId={previewProjectId ?? undefined}
           isAdmin={isAdmin}
           isGlobalTemplate={template.isGlobal}
           initialDesign={template.designJson as object}
           selectedRecordId={selectedRecordId}
+          selectedYear={selectedYear}
           onDesignChange={handleDesignChange}
         />
       </div>

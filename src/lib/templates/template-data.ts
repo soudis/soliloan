@@ -1,10 +1,18 @@
-import type { Prisma, TemplateDataset } from '@prisma/client';
+import { Prisma, type TemplateDataset, type Transaction, TransactionType } from '@prisma/client';
 
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
-import { calculateLoanFields } from '@/lib/calculations/loan-calculations';
+import { calculateLoanFields, calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
-import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { formatCurrency, formatDate, formatPercentage, getLenderName } from '@/lib/utils';
+import { parseAdditionalFields } from '@/lib/utils/additional-fields';
+import { transactionSorter } from '@/lib/utils/sorters';
+import type { LenderWithRelations } from '@/types/lenders';
+import type { LoanWithRelations } from '@/types/loans';
+
+/** Options for template rendering (e.g. reporting year for `LENDER_YEARLY`). */
+export type TemplateDataOptions = {
+  year?: number;
+};
 
 const fileSelect = {
   id: true,
@@ -335,6 +343,143 @@ function buildLenderTemplateData(lender: TemplateLenderRecord, locale: string) {
   };
 }
 
+/** Synthetic interest rows from `calculateLoanFields` must not be passed to `calculateLoanPerYear`. */
+function stripSyntheticInterestTransactions(loan: TemplateLoanRecord): TemplateLoanRecord {
+  return {
+    ...loan,
+    transactions: (loan.transactions ?? []).filter((t) => (t as { type?: string }).type !== TransactionType.INTEREST),
+  };
+}
+
+function loanForPerYearCalc(loan: TemplateLoanRecord, lender: TemplateLenderRecord): LoanWithRelations {
+  const stripped = stripSyntheticInterestTransactions(loan);
+  const withLender = {
+    ...stripped,
+    lender: parseAdditionalFields(lender as unknown as LenderWithRelations),
+  };
+  return parseAdditionalFields(withLender as { additionalFields?: unknown }) as unknown as LoanWithRelations;
+}
+
+type YearlyRow = {
+  year: number;
+  begin: Prisma.Decimal;
+  end: Prisma.Decimal;
+  withdrawals: Prisma.Decimal;
+  deposits: Prisma.Decimal;
+  notReclaimed: Prisma.Decimal;
+  interestPaid: Prisma.Decimal;
+  interest: Prisma.Decimal;
+  interestError: Prisma.Decimal;
+};
+
+function formatYearlyScopeFields(
+  year: number,
+  row: YearlyRow | null | undefined,
+  locale: string,
+): Record<string, string> {
+  const z = (d: Prisma.Decimal | number) => formatCurrency(typeof d === 'number' ? d : d.toNumber(), locale);
+  if (!row) {
+    return {
+      year: String(year),
+      begin: z(0),
+      end: z(0),
+      deposits: z(0),
+      withdrawals: z(0),
+      interest: z(0),
+      interestPaid: z(0),
+      notReclaimed: z(0),
+      interestError: z(0),
+    };
+  }
+  return {
+    year: String(year),
+    begin: z(row.begin),
+    end: z(row.end),
+    deposits: z(row.deposits),
+    withdrawals: z(row.withdrawals),
+    interest: z(row.interest),
+    interestPaid: z(row.interestPaid),
+    notReclaimed: z(row.notReclaimed),
+    interestError: z(row.interestError),
+  };
+}
+
+function buildLenderYearlyTemplateData(lender: TemplateLenderRecord, year: number, locale: string) {
+  const toDate = new Date(year, 11, 31);
+
+  const agg = {
+    begin: 0,
+    end: 0,
+    deposits: 0,
+    withdrawals: 0,
+    interest: 0,
+    interestPaid: 0,
+    notReclaimed: 0,
+    interestError: 0,
+  };
+
+  const loans = (lender.loans ?? []).map((loan: TemplateLoanRecord) => {
+    let yearRow: YearlyRow | undefined;
+    try {
+      const perYear = calculateLoanPerYear(loanForPerYearCalc(loan, lender), toDate);
+      yearRow = perYear.find((e) => e.year === year) as YearlyRow | undefined;
+      if (yearRow) {
+        agg.begin += yearRow.begin.toNumber();
+        agg.end += yearRow.end.toNumber();
+        agg.deposits += yearRow.deposits.toNumber();
+        agg.withdrawals += yearRow.withdrawals.toNumber();
+        agg.interest += yearRow.interest.toNumber();
+        agg.interestPaid += yearRow.interestPaid.toNumber();
+        agg.notReclaimed += yearRow.notReclaimed.toNumber();
+        agg.interestError += yearRow.interestError.toNumber();
+      }
+    } catch {
+      // keep zeros for this loan
+    }
+
+    const transactionsYearlyRaw = [...(loan.transactions ?? [])]
+      .filter((t) => new Date(t.date as Date | string).getFullYear() === year)
+      .sort((a, b) => transactionSorter(a as Transaction, b as Transaction));
+
+    return {
+      loan: formatLoanFields(loan, locale),
+      loanYearly: formatYearlyScopeFields(year, yearRow, locale),
+      transactions: Array.isArray(loan.transactions)
+        ? loan.transactions.map((transaction: TemplateTransactionRecord) => formatTransaction(transaction, locale))
+        : [],
+      transactionsYearly: transactionsYearlyRaw.map((transaction: TemplateTransactionRecord) =>
+        formatTransaction(transaction, locale),
+      ),
+      notes: Array.isArray(loan.notes) ? loan.notes.map((note: TemplateNoteRecord) => formatNote(note, locale)) : [],
+    };
+  });
+
+  const lenderYearly = {
+    ...formatYearlyScopeFields(
+      year,
+      {
+        year,
+        begin: new Prisma.Decimal(agg.begin),
+        end: new Prisma.Decimal(agg.end),
+        withdrawals: new Prisma.Decimal(agg.withdrawals),
+        deposits: new Prisma.Decimal(agg.deposits),
+        notReclaimed: new Prisma.Decimal(agg.notReclaimed),
+        interestPaid: new Prisma.Decimal(agg.interestPaid),
+        interest: new Prisma.Decimal(agg.interest),
+        interestError: new Prisma.Decimal(agg.interestError),
+      },
+      locale,
+    ),
+  };
+
+  return {
+    lender: formatLenderFields(lender, locale),
+    lenderYearly,
+    loans,
+    notes: (lender.notes ?? []).map((note: TemplateNoteRecord) => formatNote(note, locale)),
+  };
+}
+
 async function getProjectTemplateData(projectId: string, locale: string) {
   const project = await db.project.findUnique({
     where: { id: projectId },
@@ -380,6 +525,7 @@ export async function getTemplateData(
   recordId?: string | null,
   locale = 'de',
   projectId?: string,
+  options?: TemplateDataOptions,
 ): Promise<Record<string, unknown> | null> {
   if (dataset === 'LENDER') {
     if (!recordId) return null;
@@ -462,13 +608,14 @@ export async function getTemplateData(
     const resolvedProjectId = projectId || lender.project?.id;
     const config = resolvedProjectId ? await getConfigData(resolvedProjectId) : {};
 
+    const lastCompleteYear = new Date().getFullYear() - 1;
+    const requestedYear = options?.year ?? lastCompleteYear;
+    if (requestedYear > lastCompleteYear) return null;
+
     return {
       platform: getPlatformData(),
       config,
-      lenderYearly: {
-        year: String(new Date().getFullYear()),
-      },
-      ...buildLenderTemplateData(lender, locale),
+      ...buildLenderYearlyTemplateData(lender, requestedYear, locale),
     };
   }
 

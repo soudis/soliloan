@@ -38,6 +38,8 @@ const STRUCTURAL_NODE_IDS = new Set(['ROOT', 'PAGE_HEADER', 'PAGE_FOOTER', 'BODY
 const needsProjectScopedTemplateData = (dataset: TemplateDataset) =>
   dataset === 'PROJECT' || dataset === 'PROJECT_YEARLY';
 
+const needsYearForLenderYearly = (dataset: TemplateDataset) => dataset === 'LENDER_YEARLY';
+
 const RenderNode = ({ render }: { render: React.ReactNode }) => {
   const {
     nodeId,
@@ -263,6 +265,8 @@ interface TemplateEditorViewProps {
   isGlobalTemplate?: boolean;
   initialDesign?: string | object;
   selectedRecordId: string | null;
+  /** Reporting year for `LENDER_YEARLY` template preview. */
+  selectedYear?: number | null;
   onDesignChange: (design: object, html: string) => void;
 }
 
@@ -274,6 +278,7 @@ export function TemplateEditorView({
   isGlobalTemplate = false,
   initialDesign,
   selectedRecordId,
+  selectedYear,
   onDesignChange,
 }: TemplateEditorViewProps) {
   const [mergeTagConfig, setMergeTagConfig] = useState<MergeTagConfig | null>(null);
@@ -340,10 +345,19 @@ export function TemplateEditorView({
     let footerHtml = currentFooterHtml;
 
     const templateRecordId = selectedRecordId ?? (needsProjectScopedTemplateData(dataset) ? projectId : null);
+    const canLoadMergeData =
+      templateRecordId &&
+      (!needsYearForLenderYearly(dataset) || (selectedYear != null && Number.isFinite(selectedYear)));
 
-    if (templateRecordId) {
+    if (canLoadMergeData) {
       try {
-        const data = await getMergeTagValuesAction(dataset, templateRecordId, 'de', projectId);
+        const data = await getMergeTagValuesAction(
+          dataset,
+          templateRecordId,
+          'de',
+          projectId,
+          needsYearForLenderYearly(dataset) && selectedYear != null ? { year: selectedYear } : undefined,
+        );
         if (data) {
           html = processTemplate(html, data);
           if (headerHtml) headerHtml = processTemplate(headerHtml, data);
@@ -372,10 +386,19 @@ export function TemplateEditorView({
         html = resolved.html;
       }
       const templateRecordId = selectedRecordId ?? (needsProjectScopedTemplateData(dataset) ? projectId : null);
+      const canLoadMergeData =
+        templateRecordId &&
+        (!needsYearForLenderYearly(dataset) || (selectedYear != null && Number.isFinite(selectedYear)));
 
-      if (templateRecordId) {
+      if (canLoadMergeData) {
         try {
-          const data = await getMergeTagValuesAction(dataset, templateRecordId, 'de', projectId);
+          const data = await getMergeTagValuesAction(
+            dataset,
+            templateRecordId,
+            'de',
+            projectId,
+            needsYearForLenderYearly(dataset) && selectedYear != null ? { year: selectedYear } : undefined,
+          );
           if (data) html = processTemplate(html, data);
         } catch (e) {
           console.error('Preview error', e);
@@ -392,10 +415,19 @@ export function TemplateEditorView({
       const getLatest = getLatestDocumentPartsRef.current;
       let sampleData: Record<string, unknown> = {};
       const templateRecordId = selectedRecordId ?? (needsProjectScopedTemplateData(dataset) ? projectId : null);
+      const canLoadMergeData =
+        templateRecordId &&
+        (!needsYearForLenderYearly(dataset) || (selectedYear != null && Number.isFinite(selectedYear)));
 
-      if (templateRecordId) {
+      if (canLoadMergeData) {
         try {
-          const data = await getMergeTagValuesAction(dataset, templateRecordId, 'de', projectId);
+          const data = await getMergeTagValuesAction(
+            dataset,
+            templateRecordId,
+            'de',
+            projectId,
+            needsYearForLenderYearly(dataset) && selectedYear != null ? { year: selectedYear } : undefined,
+          );
           if (data) sampleData = data;
         } catch (e) {
           console.error('Preview error', e);

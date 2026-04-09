@@ -95,7 +95,23 @@ async function sendSystemTemplateEmail({
   const template = await resolveSystemTemplate(systemKey, projectId);
   if (!template) return false;
 
-  const templateData = await getTemplateData(template.dataset, templateRecordId, 'de', projectId ?? undefined);
+  const templateDataOptions =
+    template.dataset === 'LENDER_YEARLY'
+      ? (() => {
+          const y = additionalMergeData?.year;
+          if (typeof y === 'number' && Number.isFinite(y)) return { year: y };
+          if (typeof y === 'string' && /^\d{4}$/.test(y)) return { year: Number.parseInt(y, 10) };
+          return { year: new Date().getFullYear() - 1 };
+        })()
+      : undefined;
+
+  const templateData = await getTemplateData(
+    template.dataset,
+    templateRecordId,
+    'de',
+    projectId ?? undefined,
+    templateDataOptions,
+  );
   if (!templateData) return false;
 
   const mergeData: Record<string, unknown> = {
@@ -220,13 +236,7 @@ export async function sendProjectManagerInvitationEmail(
  * @param locale User's preferred language (defaults to 'de')
  * @returns Promise with the result of the email sending
  */
-export async function sendPasswordResetEmail(
-  to: string,
-  name: string,
-  token: string,
-  userId: string,
-  locale = 'de',
-) {
+export async function sendPasswordResetEmail(to: string, name: string, token: string, userId: string, locale = 'de') {
   const systemUrls = buildSystemUrls(token);
   const resetUrl = systemUrls.passwordReset;
 

@@ -78,7 +78,26 @@
     "paymentType": "Zahlungsart (letzte Transaktion)"
   },
   "lenderYearly": {
-    "year": "Jahr"
+    "year": "Jahr",
+    "begin": "Anfangssaldo (Jahr)",
+    "end": "Endsaldo (Jahr)",
+    "deposits": "Einzahlungen (Jahr)",
+    "withdrawals": "Auszahlungen (Jahr)",
+    "interest": "Zinsen (Jahr)",
+    "interestPaid": "Ausgezahlte Zinsen (Jahr)",
+    "notReclaimed": "Nicht zurückgefordert (Jahr)",
+    "interestError": "Zinsfehler (Jahr)"
+  },
+  "loanYearly": {
+    "year": "Jahr",
+    "begin": "Anfangssaldo (Jahr)",
+    "end": "Endsaldo (Jahr)",
+    "deposits": "Einzahlungen (Jahr)",
+    "withdrawals": "Auszahlungen (Jahr)",
+    "interest": "Zinsen (Jahr)",
+    "interestPaid": "Ausgezahlte Zinsen (Jahr)",
+    "notReclaimed": "Nicht zurückgefordert (Jahr)",
+    "interestError": "Zinsfehler (Jahr)"
   },
   "config": {
     "name": "Projektname",
@@ -108,6 +127,7 @@
   "loops": {
     "loans": "Für jedes Darlehen",
     "transactions": "Für jede Transaktion",
+    "transactionsYearly": "Für jede Transaktion (Jahr)",
     "notes": "Für jede Notiz",
     "lenders": "Für jeden Darlehensgeber"
   },
@@ -117,7 +137,8 @@
     "lender": "Darlehensgeber",
     "loan": "Darlehen",
     "latestTransaction": "Letzte Transaktion",
-    "lenderYearly": "Jährliche Daten",
+    "lenderYearly": "Jährliche Daten (Gesamt)",
+    "loanYearly": "Jährliche Daten (Darlehen)",
     "transaction": "Transaktion",
     "note": "Notiz",
     "platform": "Plattform",

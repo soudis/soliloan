@@ -77,8 +77,31 @@ export const USER_FIELDS = ['name', 'email'] as const;
 // Latest transaction fields (top-level on LOAN dataset)
 export const LATEST_TRANSACTION_FIELDS = ['type', 'amount', 'date', 'paymentType'] as const;
 
-// Lender yearly fields (year-scoped aggregates)
-export const LENDER_YEARLY_FIELDS = ['year'] as const;
+// Lender yearly fields (year-scoped aggregates for `LENDER_YEARLY`)
+export const LENDER_YEARLY_FIELDS = [
+  'year',
+  'begin',
+  'end',
+  'deposits',
+  'withdrawals',
+  'interest',
+  'interestPaid',
+  'notReclaimed',
+  'interestError',
+] as const;
+
+/** Per-loan yearly aggregates inside `{{#loans}}` for `LENDER_YEARLY`. */
+export const LOAN_YEARLY_FIELDS = [
+  'year',
+  'begin',
+  'end',
+  'deposits',
+  'withdrawals',
+  'interest',
+  'interestPaid',
+  'notReclaimed',
+  'interestError',
+] as const;
 
 // Project fields
 export const PROJECT_FIELDS = ['name', 'slug'] as const;
@@ -179,6 +202,24 @@ export const FIELD_TYPES: Record<string, FieldType> = {
   'latestTransaction.paymentType': 'enum',
   // Lender Yearly
   'lenderYearly.year': 'number',
+  'lenderYearly.begin': 'currency',
+  'lenderYearly.end': 'currency',
+  'lenderYearly.deposits': 'currency',
+  'lenderYearly.withdrawals': 'currency',
+  'lenderYearly.interest': 'currency',
+  'lenderYearly.interestPaid': 'currency',
+  'lenderYearly.notReclaimed': 'currency',
+  'lenderYearly.interestError': 'currency',
+  // Loan Yearly (inside loans loop, LENDER_YEARLY)
+  'loanYearly.year': 'number',
+  'loanYearly.begin': 'currency',
+  'loanYearly.end': 'currency',
+  'loanYearly.deposits': 'currency',
+  'loanYearly.withdrawals': 'currency',
+  'loanYearly.interest': 'currency',
+  'loanYearly.interestPaid': 'currency',
+  'loanYearly.notReclaimed': 'currency',
+  'loanYearly.interestError': 'currency',
   // Platform
   'platform.name': 'string',
   // Configuration
@@ -233,6 +274,13 @@ export const LOOP_DEFINITIONS: Record<string, LoopDefinition> = {
     childPrefix: 'note',
     parentRequired: 'loans',
     availableFields: NOTE_FIELDS,
+  },
+  transactionsYearly: {
+    key: 'transactionsYearly',
+    labelKey: 'loops.transactionsYearly',
+    childPrefix: 'transaction',
+    parentRequired: 'loans',
+    availableFields: TRANSACTION_FIELDS,
   },
   lenders: {
     key: 'lenders',
