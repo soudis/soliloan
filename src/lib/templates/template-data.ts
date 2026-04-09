@@ -516,7 +516,7 @@ function formatYearlyScopeFields(
 }
 
 function buildLenderYearlyTemplateData(lender: TemplateLenderRecord, year: number, locale: string) {
-  const toDate = new Date(year, 11, 31);
+  const toDate = new Date(year + 1, 1, 1);
 
   const agg = {
     begin: 0,
