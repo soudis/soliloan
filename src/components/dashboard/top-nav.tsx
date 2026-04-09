@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, X } from 'lucide-react';
+import { Menu, UserCircle, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Session } from 'next-auth';
@@ -40,7 +40,10 @@ export function TopNav({ session, isSidebarOpen, setIsSidebarOpen }: TopNavProps
           <div className="flex items-center">
             <div className="ml-3 relative hidden md:flex">
               <div className="flex items-center gap-4">
-                <span className="text-sm font-medium">{session.user?.name || session.user?.email}</span>
+                <Link href="/account" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
+                  <UserCircle className="h-4 w-4" />
+                  {session.user?.name || session.user?.email}
+                </Link>
                 <Button variant="outline" onClick={() => signOut()}>
                   {t('signOut')}
                 </Button>

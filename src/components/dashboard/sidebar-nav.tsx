@@ -1,6 +1,7 @@
 'use client';
 
 import { Box, History, LayoutDashboard, LogOut, Settings, Users, Wallet } from 'lucide-react';
+import Link from 'next/link';
 import type { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
@@ -70,7 +71,7 @@ export function SidebarNav({ isSidebarOpen, session, projects }: SidebarNavProps
           <div className="mt-auto pt-4 border-t space-y-4">
             {/* User Profile for Mobile */}
             <div className="md:hidden space-y-3">
-              <div className="flex items-center gap-2 px-2">
+              <Link href="/account" className="flex items-center gap-2 px-2 rounded-md hover:bg-accent transition-colors py-1">
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
                   {session?.user?.name?.[0] || session?.user?.email?.[0]?.toUpperCase()}
                 </div>
@@ -78,7 +79,7 @@ export function SidebarNav({ isSidebarOpen, session, projects }: SidebarNavProps
                   <span className="text-sm font-medium truncate">{session?.user?.name}</span>
                   <span className="text-xs text-muted-foreground truncate">{session?.user?.email}</span>
                 </div>
-              </div>
+              </Link>
               <Button
                 variant="outline"
                 className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
