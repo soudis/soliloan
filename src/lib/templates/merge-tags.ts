@@ -47,8 +47,11 @@ export const LOAN_FIELDS = [
   'amount',
   'interestRate',
   'signDate',
+  'signDateLong',
   'endDate',
+  'endDateLong',
   'terminationDate',
+  'terminationDateLong',
   'terminationType',
   'contractStatus',
   // Calculated fields from loan-calculations.ts
@@ -61,21 +64,23 @@ export const LOAN_FIELDS = [
   'interestError',
   'notReclaimed',
   'repaidDate',
+  'repaidDateLong',
   'repayDate',
+  'repayDateLong',
   'isTerminated',
 ] as const;
 
 // Transaction fields from Prisma schema
-export const TRANSACTION_FIELDS = ['type', 'amount', 'date', 'paymentType'] as const;
+export const TRANSACTION_FIELDS = ['type', 'amount', 'date', 'dateLong', 'paymentType'] as const;
 
 // Note fields from Prisma schema
-export const NOTE_FIELDS = ['text', 'createdAt', 'createdByName', 'public'] as const;
+export const NOTE_FIELDS = ['text', 'createdAt', 'createdAtLong', 'createdByName', 'public'] as const;
 
 // User fields from Prisma schema
 export const USER_FIELDS = ['name', 'email'] as const;
 
 // Latest transaction fields (top-level on LOAN dataset)
-export const LATEST_TRANSACTION_FIELDS = ['type', 'amount', 'date', 'paymentType'] as const;
+export const LATEST_TRANSACTION_FIELDS = ['type', 'amount', 'date', 'dateLong', 'paymentType'] as const;
 
 // Lender yearly fields (year-scoped aggregates for `LENDER_YEARLY`)
 export const LENDER_YEARLY_FIELDS = [
@@ -170,8 +175,11 @@ export const FIELD_TYPES: Record<string, FieldType> = {
   'loan.amount': 'currency',
   'loan.interestRate': 'percent',
   'loan.signDate': 'date',
+  'loan.signDateLong': 'date',
   'loan.endDate': 'date',
+  'loan.endDateLong': 'date',
   'loan.terminationDate': 'date',
+  'loan.terminationDateLong': 'date',
   'loan.terminationType': 'enum',
   'loan.contractStatus': 'enum',
   'loan.status': 'enum',
@@ -183,16 +191,20 @@ export const FIELD_TYPES: Record<string, FieldType> = {
   'loan.interestError': 'currency',
   'loan.notReclaimed': 'currency',
   'loan.repaidDate': 'date',
+  'loan.repaidDateLong': 'date',
   'loan.repayDate': 'date',
+  'loan.repayDateLong': 'date',
   'loan.isTerminated': 'boolean',
   // Transaction
   'transaction.type': 'enum',
   'transaction.amount': 'currency',
   'transaction.date': 'date',
+  'transaction.dateLong': 'date',
   'transaction.paymentType': 'enum',
   // Note
   'note.text': 'string',
   'note.createdAt': 'date',
+  'note.createdAtLong': 'date',
   'note.createdByName': 'string',
   'note.public': 'boolean',
   // User
@@ -202,6 +214,7 @@ export const FIELD_TYPES: Record<string, FieldType> = {
   'latestTransaction.type': 'enum',
   'latestTransaction.amount': 'currency',
   'latestTransaction.date': 'date',
+  'latestTransaction.dateLong': 'date',
   'latestTransaction.paymentType': 'enum',
   // Lender Yearly
   'lenderYearly.year': 'number',

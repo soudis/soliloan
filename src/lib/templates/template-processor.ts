@@ -1,4 +1,5 @@
-const hasOwnValue = (data: Record<string, unknown>, key: string) => Object.hasOwn(data, key);
+/** Loop arrays may live on the prototype (see `createChildScope`); use `in`, not `Object.hasOwn`. */
+const getLoopArray = (data: Record<string, unknown>, key: string): unknown => (key in data ? data[key] : undefined);
 
 const createLoopScope = (
   parentData: Record<string, unknown>,
@@ -43,7 +44,7 @@ export const processTemplate = (template: string, currentData: Record<string, un
     if (foundEndIdx !== -1) {
       loopReplacementResult += template.substring(lastEnd, startIdx);
       const innerContent = template.substring(startIdx + loopMatch[0].length, foundEndIdx);
-      const items = hasOwnValue(currentData, key) ? currentData[key] : undefined;
+      const items = getLoopArray(currentData, key);
       if (Array.isArray(items)) {
         loopReplacementResult += items
           .map((item) => {

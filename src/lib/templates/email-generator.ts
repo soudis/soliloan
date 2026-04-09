@@ -334,7 +334,8 @@ export const generateEmailHtml = (
           bodyRows += `<tr>${cells}</tr>`;
         }
 
-        const tableHtml = `<table style="width: 100%; border-collapse: collapse; table-layout: fixed; margin: 16px 0; ${buildTableOuterBorderCss(borderConfig)}">${colgroup}<thead>${headerRow}</thead><tbody>${isDynamic ? `{{#${loopKey}}}` : ''}${bodyRows}${isDynamic ? `{{/${loopKey}}}` : ''}</tbody></table>`;
+        const padCss = paddingPropsToCssString(props);
+        const tableHtml = `<div style="width: 100%; box-sizing: border-box; padding: ${padCss}; margin: 0;"><table style="width: 100%; border-collapse: collapse; table-layout: fixed; box-sizing: border-box; margin: 0; padding: 0; ${buildTableOuterBorderCss(borderConfig)}">${colgroup}<thead>${headerRow}</thead><tbody>${isDynamic ? `{{#${loopKey}}}` : ''}${bodyRows}${isDynamic ? `{{/${loopKey}}}` : ''}</tbody></table></div>`;
         return tableHtml;
       }
 
@@ -586,7 +587,8 @@ export const generateDocumentParts = (
           bodyRows += `<tr>${cells}</tr>`;
         }
 
-        return `<table style="width: 100%; border-collapse: collapse; table-layout: fixed; margin: 16px 0; ${buildTableOuterBorderCss(borderConfig)}">${colgroup}<thead>${headerRow}</thead><tbody>${isDynamic ? `{{#${loopKey}}}` : ''}${bodyRows}${isDynamic ? `{{/${loopKey}}}` : ''}</tbody></table>`;
+        const padCss = paddingPropsToCssString(props);
+        return `<div style="width: 100%; box-sizing: border-box; padding: ${padCss}; margin: 0;"><table style="width: 100%; border-collapse: collapse; table-layout: fixed; box-sizing: border-box; margin: 0; padding: 0; ${buildTableOuterBorderCss(borderConfig)}">${colgroup}<thead>${headerRow}</thead><tbody>${isDynamic ? `{{#${loopKey}}}` : ''}${bodyRows}${isDynamic ? `{{/${loopKey}}}` : ''}</tbody></table></div>`;
       }
 
       default:

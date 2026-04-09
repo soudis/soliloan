@@ -2,8 +2,11 @@
 
 import type { Country, Lender, Salutation, TemplateDataset } from '@prisma/client';
 import { db } from '@/lib/db';
+import { formatDateLong, formatDateShort } from '@/lib/utils';
 import type { LenderWithRelations } from '@/types/lenders';
 import type { LoanWithRelations } from '@/types/loans';
+
+const SAMPLE_LOCALE = 'de';
 
 /**
  * Get sample lenders for preview selection
@@ -228,14 +231,6 @@ function formatCurrency(amount: number): string {
 }
 
 /**
- * Format date for German locale
- */
-function formatDate(date: Date | null | undefined): string {
-  if (!date) return '';
-  return new Intl.DateTimeFormat('de-DE').format(new Date(date));
-}
-
-/**
  * Format percentage for German locale
  */
 function formatPercent(value: number): string {
@@ -316,9 +311,12 @@ export function generateLoanMergeTagValues(loan: LoanWithRelations): Record<stri
       amountRaw: String(loan.amount),
       interestRate: formatPercent(loan.interestRate),
       interestRateRaw: String(loan.interestRate),
-      signDate: formatDate(loan.signDate),
-      endDate: formatDate(loan.endDate),
-      terminationDate: formatDate(loan.terminationDate),
+      signDate: formatDateShort(loan.signDate, SAMPLE_LOCALE),
+      signDateLong: formatDateLong(loan.signDate, SAMPLE_LOCALE),
+      endDate: formatDateShort(loan.endDate, SAMPLE_LOCALE),
+      endDateLong: formatDateLong(loan.endDate, SAMPLE_LOCALE),
+      terminationDate: formatDateShort(loan.terminationDate, SAMPLE_LOCALE),
+      terminationDateLong: formatDateLong(loan.terminationDate, SAMPLE_LOCALE),
       contractStatus: loan.contractStatus === 'COMPLETED' ? 'Abgeschlossen' : 'Laufend',
       balance: formatCurrency(totalDeposits - totalWithdrawals + totalInterest),
       accruedInterest: formatCurrency(totalInterest),

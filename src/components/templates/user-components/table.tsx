@@ -17,12 +17,13 @@ import { useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { paddingPropsToReactStyle } from '@/lib/templates/padding-utils';
+import { BlockPaddingFields } from '../block-padding-fields';
 import { useMergeTagConfig } from '../merge-tag-context';
 import { MergeTagDropdown } from '../merge-tag-dropdown';
 import { editorRegistry, useEditorRegistry } from './tiptap/editor-registry';
 import { useTiptapEditor } from './tiptap/use-tiptap-editor';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import './tiptap/tiptap.css';
 
 type TextAlign = 'left' | 'center' | 'right' | 'justify';
@@ -64,6 +65,11 @@ interface TableProps {
   borderColor?: string;
   borderStyle?: BorderStyle;
   borderWidth?: number;
+  padding?: number;
+  paddingTop?: number;
+  paddingRight?: number;
+  paddingBottom?: number;
+  paddingLeft?: number;
   _activeCellId?: string | null;
 }
 
@@ -86,6 +92,11 @@ type ResolvedTableProps = {
   borderColor: string;
   borderStyle: BorderStyle;
   borderWidth: number;
+  padding: number;
+  paddingTop?: number;
+  paddingRight?: number;
+  paddingBottom?: number;
+  paddingLeft?: number;
   _activeCellId?: string | null;
 };
 
@@ -407,6 +418,11 @@ export const Table = ({
   borderColor = '#e4e4e7',
   borderStyle = 'solid',
   borderWidth = 1,
+  padding = 0,
+  paddingTop,
+  paddingRight,
+  paddingBottom,
+  paddingLeft,
 }: TableProps) => {
   const {
     connectors: { connect },
@@ -487,7 +503,14 @@ export const Table = ({
       ref={(dom) => {
         if (dom) connect(dom);
       }}
-      className={`my-4 rounded-md overflow-hidden ${selected ? 'outline outline-2 outline-blue-500' : ''}`}
+      className={`rounded-md overflow-hidden ${selected ? 'outline outline-2 outline-blue-500' : ''}`}
+      style={paddingPropsToReactStyle({
+        padding,
+        paddingTop,
+        paddingRight,
+        paddingBottom,
+        paddingLeft,
+      })}
     >
       {/* Loop indicator (only shown for dynamic tables) */}
       {isDynamic && (
@@ -626,6 +649,11 @@ export const TableSettings = () => {
     borderColor,
     borderStyle,
     borderWidth,
+    padding,
+    paddingTop,
+    paddingRight,
+    paddingBottom,
+    paddingLeft,
   } = useNode((node) => ({
     loopKey: node.data.props.loopKey as string,
     label: node.data.props.label as string,
@@ -643,6 +671,11 @@ export const TableSettings = () => {
     borderColor: (node.data.props.borderColor as string) ?? '#e4e4e7',
     borderStyle: (node.data.props.borderStyle as BorderStyle) ?? 'solid',
     borderWidth: (node.data.props.borderWidth as number) ?? 1,
+    padding: (node.data.props.padding as number) ?? 0,
+    paddingTop: node.data.props.paddingTop as number | undefined,
+    paddingRight: node.data.props.paddingRight as number | undefined,
+    paddingBottom: node.data.props.paddingBottom as number | undefined,
+    paddingLeft: node.data.props.paddingLeft as number | undefined,
   }));
 
   const isDynamic = loopKey.length > 0;
@@ -879,6 +912,18 @@ export const TableSettings = () => {
         </TabsContent>
 
         <TabsContent value="style" className="mt-3 space-y-4">
+          <BlockPaddingFields<ResolvedTableProps>
+            idPrefix="table"
+            props={{
+              padding,
+              paddingTop,
+              paddingRight,
+              paddingBottom,
+              paddingLeft,
+            }}
+            setProp={setProp}
+          />
+
           <div className="space-y-2">
             <p className="text-xs font-medium">{t('border')}</p>
             <div className="flex flex-wrap gap-2">
@@ -1078,11 +1123,9 @@ const DEFAULT_HEADER_STYLES = [
   getDefaultCellStyle(true, 'left'),
   getDefaultCellStyle(true, 'left'),
 ];
-const DEFAULT_CELL_STYLES = [[
-  getDefaultCellStyle(false, 'left'),
-  getDefaultCellStyle(false, 'left'),
-  getDefaultCellStyle(false, 'left'),
-]];
+const DEFAULT_CELL_STYLES = [
+  [getDefaultCellStyle(false, 'left'), getDefaultCellStyle(false, 'left'), getDefaultCellStyle(false, 'left')],
+];
 
 Table.craft = {
   props: {
@@ -1103,6 +1146,11 @@ Table.craft = {
     borderColor: '#e4e4e7',
     borderStyle: 'solid' as BorderStyle,
     borderWidth: 1,
+    padding: 0,
+    paddingTop: undefined,
+    paddingRight: undefined,
+    paddingBottom: undefined,
+    paddingLeft: undefined,
     _activeCellId: null,
   },
   related: {

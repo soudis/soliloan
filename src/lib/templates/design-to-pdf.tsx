@@ -143,7 +143,11 @@ type TableCellStyle = {
 };
 type TemplateScope = Record<string, unknown>;
 
-const hasOwnScopeValue = (scopeData: TemplateScope, key: string) => Object.hasOwn(scopeData, key);
+/** Resolve a loop key against scope (own or inherited from parent prototype). `createChildScope` puts parent data on the prototype, so `Object.hasOwn` would hide e.g. `loans` inside a per-loan iteration. */
+const getScopeLoopArray = (scopeData: TemplateScope, loopKey: string): unknown => {
+  if (scopeData == null || typeof scopeData !== 'object') return undefined;
+  return loopKey in scopeData ? scopeData[loopKey] : undefined;
+};
 
 const createChildScope = (parentScope: TemplateScope, childScope: TemplateScope): TemplateScope =>
   Object.assign(Object.create(parentScope), childScope);
@@ -294,7 +298,7 @@ const getContainerLoopItems = (
   if (!props || NON_LOOPABLE_CONTAINER_IDS.has(nodeId)) return null;
   const loopKey = typeof props.loopKey === 'string' ? props.loopKey : '';
   if (!loopKey) return null;
-  const rawValue = hasOwnScopeValue(scopeData, loopKey) ? scopeData[loopKey] : undefined;
+  const rawValue = getScopeLoopArray(scopeData, loopKey);
   if (!Array.isArray(rawValue)) return [];
   return rawValue
     .filter((item): item is TemplateScope => typeof item === 'object' && item !== null)
@@ -652,9 +656,10 @@ export function renderDesignToPdfParts(
           scopeData,
         );
         const bodyRowsHeight = Array.from({ length: templateRowCount }, (_, rowIndex) => {
+          const loopArr = isDynamic ? getScopeLoopArray(scopeData, loopKey) : undefined;
           const rowData =
-            isDynamic && hasOwnScopeValue(scopeData, loopKey) && Array.isArray(scopeData[loopKey])
-              ? createChildScope(scopeData, (scopeData[loopKey][rowIndex] as TemplateScope | undefined) ?? {})
+            isDynamic && Array.isArray(loopArr)
+              ? createChildScope(scopeData, (loopArr[rowIndex] as TemplateScope | undefined) ?? {})
               : scopeData;
           return estimateTableRowHeight(
             cellTexts[rowIndex] || [],
@@ -671,8 +676,13 @@ export function renderDesignToPdfParts(
         const outerBorderHeight =
           (borderConfig.borderTop ? borderConfig.borderWidth : 0) +
           (borderConfig.borderBottom ? borderConfig.borderWidth : 0);
+        const padSides = resolvePaddingPx(props ?? {});
+        const verticalPadding = pxToPdfPt(padSides.top) + pxToPdfPt(padSides.bottom);
         return (
-          headerHeight + bodyRowsHeight * Math.max(1, renderedRowCount / templateRowCount) + outerBorderHeight + 32
+          headerHeight +
+          bodyRowsHeight * Math.max(1, renderedRowCount / templateRowCount) +
+          outerBorderHeight +
+          verticalPadding
         );
       }
 
@@ -902,8 +912,8 @@ export function renderDesignToPdfParts(
         });
         rows.push(React.createElement(View, { key: 'header-row', style: { flexDirection: 'row' } }, ...headerCells));
 
-        if (isDynamic && hasOwnScopeValue(scopeData, loopKey) && Array.isArray(scopeData[loopKey])) {
-          const items = scopeData[loopKey] as TemplateScope[];
+        if (isDynamic && Array.isArray(getScopeLoopArray(scopeData, loopKey))) {
+          const items = getScopeLoopArray(scopeData, loopKey) as TemplateScope[];
           items.forEach((item, r) => {
             const rowScope = createChildScope(scopeData, item);
             const cells = Array.from({ length: cols }, (_, c) => {
@@ -969,11 +979,19 @@ export function renderDesignToPdfParts(
             key: keyOverride ?? nodeId,
             style: {
               width: '100%',
-              marginVertical: 16,
-              ...buildTableOuterBorderPdfStyle(borderConfig),
+              ...paddingPropsToPdfPoints(props ?? {}, pxToPdfPt),
             },
           },
-          ...rows,
+          React.createElement(
+            View,
+            {
+              style: {
+                width: '100%',
+                ...buildTableOuterBorderPdfStyle(borderConfig),
+              },
+            },
+            ...rows,
+          ),
         );
       }
 

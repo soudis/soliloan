@@ -38,9 +38,12 @@
     "loanNumber": "Kreditnummer",
     "amount": "Darlehensbetrag",
     "interestRate": "Zinssatz",
-    "signDate": "Vertragsdatum",
-    "endDate": "Enddatum",
-    "terminationDate": "Kündigungsdatum",
+    "signDate": "Vertragsdatum (kurz)",
+    "signDateLong": "Vertragsdatum (lang)",
+    "endDate": "Enddatum (kurz)",
+    "endDateLong": "Enddatum (lang)",
+    "terminationDate": "Kündigungsdatum (kurz)",
+    "terminationDateLong": "Kündigungsdatum (lang)",
     "terminationType": "Kündigungsart",
     "contractStatus": "Vertragsstatus",
     "status": "Status",
@@ -51,19 +54,23 @@
     "interestPaid": "Ausgezahlte Zinsen",
     "interestError": "Zinsfehler",
     "notReclaimed": "Nicht zurückgefordert",
-    "repaidDate": "Rückzahlungsdatum",
-    "repayDate": "Fälligkeitsdatum",
+    "repaidDate": "Rückzahlungsdatum (kurz)",
+    "repaidDateLong": "Rückzahlungsdatum (lang)",
+    "repayDate": "Fälligkeitsdatum (kurz)",
+    "repayDateLong": "Fälligkeitsdatum (lang)",
     "isTerminated": "Gekündigt"
   },
   "transaction": {
     "type": "Typ",
     "amount": "Betrag",
-    "date": "Datum",
+    "date": "Datum (kurz)",
+    "dateLong": "Datum (lang)",
     "paymentType": "Zahlungsart"
   },
   "note": {
     "text": "Text",
-    "createdAt": "Erstellt am",
+    "createdAt": "Erstellt am (kurz)",
+    "createdAtLong": "Erstellt am (lang)",
     "createdByName": "Erstellt von",
     "public": "Öffentlich"
   },
@@ -74,7 +81,8 @@
   "latestTransaction": {
     "type": "Typ (letzte Transaktion)",
     "amount": "Betrag (letzte Transaktion)",
-    "date": "Datum (letzte Transaktion)",
+    "date": "Datum (kurz, letzte Transaktion)",
+    "dateLong": "Datum (lang, letzte Transaktion)",
     "paymentType": "Zahlungsart (letzte Transaktion)"
   },
   "lenderYearly": {

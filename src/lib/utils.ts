@@ -63,6 +63,29 @@ export function formatNumber(
   }).format(amount);
 }
 
+function resolveIntlLocaleForDates(locale: string): string {
+  if (locale === 'de' || locale.startsWith('de-')) return 'de-DE';
+  if (locale === 'en' || locale.startsWith('en-')) return 'en-US';
+  return locale;
+}
+
+/** Template-friendly short date (e.g. 09.04.2026 in de-DE). */
+export function formatDateShort(date: Date | string | null | undefined, locale: string): string {
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat(resolveIntlLocaleForDates(locale), { dateStyle: 'short' }).format(d);
+}
+
+/** Template-friendly long date (e.g. 9. April 2026 in de-DE). */
+export function formatDateLong(date: Date | string | null | undefined, locale: string): string {
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat(resolveIntlLocaleForDates(locale), { dateStyle: 'long' }).format(d);
+}
+
+/** UI display (date-fns long form). Prefer `formatDateShort` / `formatDateLong` in merge-tag templates. */
 export function formatDate(date: Date | string | null | undefined, locale: string): string {
   if (!date) {
     return '';

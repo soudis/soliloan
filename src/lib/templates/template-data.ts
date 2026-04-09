@@ -3,7 +3,7 @@ import { Prisma, type TemplateDataset, type Transaction, TransactionType } from 
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFields, calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
-import { formatCurrency, formatDate, formatPercentage, getLenderName } from '@/lib/utils';
+import { formatCurrency, formatDateLong, formatDateShort, formatPercentage, getLenderName } from '@/lib/utils';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { transactionSorter } from '@/lib/utils/sorters';
 import type { LenderWithRelations } from '@/types/lenders';
@@ -13,6 +13,57 @@ import type { LoanWithRelations } from '@/types/loans';
 export type TemplateDataOptions = {
   year?: number;
 };
+
+const isDeLocale = (locale: string) => locale === 'de' || locale.startsWith('de-');
+
+/** Display labels for `transaction.type` in templates (merge tags, PDF, email). */
+const TRANSACTION_TYPE_LABELS_DE: Record<string, string> = {
+  INTEREST: 'Zinsertrag',
+  DEPOSIT: 'Einzahlung',
+  WITHDRAWAL: 'Teilrückzahlung',
+  TERMINATION: 'Rückzahlung',
+  INTERESTPAYMENT: 'Zinsauszahlung',
+  NOTRECLAIMEDPARTIAL: 'Teilabschreibung',
+  NOTRECLAIMED: 'Abschreibung',
+  YEAR_OPENING_BALANCE: 'Anfangssaldo',
+  YEAR_CLOSING_BALANCE: 'Endsaldo',
+};
+
+const TRANSACTION_TYPE_LABELS_EN: Record<string, string> = {
+  INTEREST: 'Interest',
+  DEPOSIT: 'Deposit',
+  WITHDRAWAL: 'Withdrawal',
+  TERMINATION: 'Repayment',
+  INTERESTPAYMENT: 'Interest payment',
+  NOTRECLAIMEDPARTIAL: 'Partial write-off',
+  NOTRECLAIMED: 'Write-off',
+  YEAR_OPENING_BALANCE: 'Opening balance',
+  YEAR_CLOSING_BALANCE: 'Closing balance',
+};
+
+const PAYMENT_TYPE_LABELS_DE: Record<string, string> = {
+  BANK: 'Banküberweisung',
+  CASH: 'Bar',
+  OTHER: 'Sonstiges',
+};
+
+const PAYMENT_TYPE_LABELS_EN: Record<string, string> = {
+  BANK: 'Bank transfer',
+  CASH: 'Cash',
+  OTHER: 'Other',
+};
+
+function transactionTypeLabel(type: string | undefined, locale: string): string {
+  if (!type) return '';
+  const map = isDeLocale(locale) ? TRANSACTION_TYPE_LABELS_DE : TRANSACTION_TYPE_LABELS_EN;
+  return map[type] ?? type;
+}
+
+function paymentTypeLabel(paymentType: string | undefined, locale: string): string {
+  if (!paymentType) return '';
+  const map = isDeLocale(locale) ? PAYMENT_TYPE_LABELS_DE : PAYMENT_TYPE_LABELS_EN;
+  return map[paymentType] ?? paymentType;
+}
 
 const fileSelect = {
   id: true,
@@ -119,10 +170,9 @@ function getPlatformData() {
 
 function getMiscMergeTagValues(locale: string) {
   const now = new Date();
-  const intlLocale = locale === 'de' || locale.startsWith('de-') ? 'de-DE' : locale;
   return {
-    dateShort: new Intl.DateTimeFormat(intlLocale, { dateStyle: 'short' }).format(now),
-    dateLong: new Intl.DateTimeFormat(intlLocale, { dateStyle: 'long' }).format(now),
+    dateShort: formatDateShort(now, locale),
+    dateLong: formatDateLong(now, locale),
   };
 }
 
@@ -269,7 +319,8 @@ function formatNote(note: TemplateNoteRecord, locale: string) {
   return {
     note: {
       ...note,
-      createdAt: formatDate(note.createdAt, locale),
+      createdAt: formatDateShort(note.createdAt, locale),
+      createdAtLong: formatDateLong(note.createdAt, locale),
       createdByName,
       createdBy: {
         name: createdByName,
@@ -279,13 +330,59 @@ function formatNote(note: TemplateNoteRecord, locale: string) {
 }
 
 function formatTransaction(transaction: TemplateTransactionRecord, locale: string) {
+  const rawType = transaction.type as string | undefined;
+  const rawPayment = transaction.paymentType as string | undefined;
   return {
     transaction: {
       ...transaction,
+      type: transactionTypeLabel(rawType, locale),
       amount: formatCurrency(transaction.amount, locale),
-      date: formatDate(transaction.date, locale),
+      date: formatDateShort(transaction.date, locale),
+      dateLong: formatDateLong(transaction.date, locale),
+      paymentType: rawPayment ? paymentTypeLabel(rawPayment, locale) : '',
     },
   };
+}
+
+/** Synthetic first/last rows for `transactionsYearly` (LENDER_YEARLY): opening / closing balance for the year. */
+function formatYearlyBalanceBoundaryRow(
+  position: 'opening' | 'closing',
+  balance: number,
+  year: number,
+  locale: string,
+) {
+  const date = position === 'opening' ? new Date(year, 0, 1) : new Date(year, 11, 31);
+  const typeKey = position === 'opening' ? 'YEAR_OPENING_BALANCE' : 'YEAR_CLOSING_BALANCE';
+  return {
+    transaction: {
+      type: transactionTypeLabel(typeKey, locale),
+      amount: formatCurrency(balance, locale),
+      date: formatDateShort(date, locale),
+      dateLong: formatDateLong(date, locale),
+      paymentType: '',
+    },
+  };
+}
+
+function buildTransactionsYearlyList(
+  loan: TemplateLoanRecord,
+  year: number,
+  yearRow: YearlyRow | undefined,
+  locale: string,
+) {
+  const begin = yearRow ? yearRow.begin.toNumber() : 0;
+  const end = yearRow ? yearRow.end.toNumber() : 0;
+
+  const opening = formatYearlyBalanceBoundaryRow('opening', begin, year, locale);
+  const closing = formatYearlyBalanceBoundaryRow('closing', end, year, locale);
+
+  const inYear = [...(loan.transactions ?? [])]
+    .filter((t) => new Date(t.date as Date | string).getFullYear() === year)
+    .sort((a, b) => transactionSorter(a as Transaction, b as Transaction));
+
+  const middle = inYear.map((t) => formatTransaction(t as TemplateTransactionRecord, locale));
+
+  return [opening, ...middle, closing];
 }
 
 function formatLoanFields(loan: TemplateLoanRecord, locale: string) {
@@ -293,9 +390,12 @@ function formatLoanFields(loan: TemplateLoanRecord, locale: string) {
     ...loan,
     amount: formatCurrency(loan.amount, locale),
     interestRate: formatPercentage(loan.interestRate, locale),
-    signDate: formatDate(loan.signDate, locale),
-    endDate: formatDate(loan.endDate, locale),
-    terminationDate: formatDate(loan.terminationDate, locale),
+    signDate: formatDateShort(loan.signDate, locale),
+    signDateLong: formatDateLong(loan.signDate, locale),
+    endDate: formatDateShort(loan.endDate, locale),
+    endDateLong: formatDateLong(loan.endDate, locale),
+    terminationDate: formatDateShort(loan.terminationDate, locale),
+    terminationDateLong: formatDateLong(loan.terminationDate, locale),
     contractStatus: loan.contractStatus === 'COMPLETED' ? 'Abgeschlossen' : 'Laufend',
     balance: formatCurrency(loan.balance, locale),
     interest: formatCurrency(loan.interest, locale),
@@ -304,8 +404,10 @@ function formatLoanFields(loan: TemplateLoanRecord, locale: string) {
     interestPaid: formatCurrency(loan.interestPaid, locale),
     interestError: formatCurrency(loan.interestError, locale),
     notReclaimed: formatCurrency(loan.notReclaimed, locale),
-    repaidDate: loan.repaidDate ? formatDate(loan.repaidDate, locale) : '',
-    repayDate: loan.repayDate ? formatDate(loan.repayDate, locale) : '',
+    repaidDate: loan.repaidDate ? formatDateShort(loan.repaidDate, locale) : '',
+    repaidDateLong: loan.repaidDate ? formatDateLong(loan.repaidDate, locale) : '',
+    repayDate: loan.repayDate ? formatDateShort(loan.repayDate, locale) : '',
+    repayDateLong: loan.repayDate ? formatDateLong(loan.repayDate, locale) : '',
     isTerminated: loan.isTerminated ? 'Ja' : 'Nein',
   };
 }
@@ -381,21 +483,6 @@ type YearlyRow = {
   interestError: Prisma.Decimal;
 };
 
-/**
- * True if the loan has at least one real (non-synthetic) booking in `year` with a non-zero amount.
- * Skips `INTEREST` rows from `calculateLoanFields` (same as yearly balance math). Excludes loans with
- * no activity in that year (not deposited yet, or already fully settled before the year with no rows here).
- */
-function loanHasNonZeroTransactionInYear(loan: TemplateLoanRecord, year: number): boolean {
-  for (const t of loan.transactions ?? []) {
-    if ((t as { type?: TransactionType }).type === TransactionType.INTEREST) continue;
-    if (new Date(t.date as Date | string).getFullYear() !== year) continue;
-    const amt = typeof t.amount === 'number' ? t.amount : Number(t.amount);
-    if (Number.isFinite(amt) && amt !== 0) return true;
-  }
-  return false;
-}
-
 function formatYearlyScopeFields(
   year: number,
   row: YearlyRow | null | undefined,
@@ -442,11 +529,8 @@ function buildLenderYearlyTemplateData(lender: TemplateLenderRecord, year: numbe
     interestError: 0,
   };
 
-  const loansSource = (lender.loans ?? []).filter((loan: TemplateLoanRecord) =>
-    loanHasNonZeroTransactionInYear(loan, year),
-  );
-
-  const loans = loansSource.map((loan: TemplateLoanRecord) => {
+  /** All loans appear in `{{#loans}}` / PDF loops; `loanYearly` is per-year (zeros if no row). */
+  const loans = (lender.loans ?? []).map((loan: TemplateLoanRecord) => {
     let yearRow: YearlyRow | undefined;
     try {
       const perYear = calculateLoanPerYear(loanForPerYearCalc(loan, lender), toDate);
@@ -465,19 +549,13 @@ function buildLenderYearlyTemplateData(lender: TemplateLenderRecord, year: numbe
       // keep zeros for this loan
     }
 
-    const transactionsYearlyRaw = [...(loan.transactions ?? [])]
-      .filter((t) => new Date(t.date as Date | string).getFullYear() === year)
-      .sort((a, b) => transactionSorter(a as Transaction, b as Transaction));
-
     return {
       loan: formatLoanFields(loan, locale),
       loanYearly: formatYearlyScopeFields(year, yearRow, locale),
       transactions: Array.isArray(loan.transactions)
         ? loan.transactions.map((transaction: TemplateTransactionRecord) => formatTransaction(transaction, locale))
         : [],
-      transactionsYearly: transactionsYearlyRaw.map((transaction: TemplateTransactionRecord) =>
-        formatTransaction(transaction, locale),
-      ),
+      transactionsYearly: buildTransactionsYearlyList(loan, year, yearRow, locale),
       notes: Array.isArray(loan.notes) ? loan.notes.map((note: TemplateNoteRecord) => formatNote(note, locale)) : [],
     };
   });
@@ -594,12 +672,13 @@ export async function getTemplateData(
       loan: formatLoanFields(loan, locale),
       latestTransaction: latest
         ? {
-            type: latest.type,
+            type: transactionTypeLabel(latest.type as string, locale),
             amount: formatCurrency(latest.amount, locale),
-            date: formatDate(latest.date, locale),
-            paymentType: latest.paymentType,
+            date: formatDateShort(latest.date, locale),
+            dateLong: formatDateLong(latest.date, locale),
+            paymentType: latest.paymentType ? paymentTypeLabel(latest.paymentType as string, locale) : '',
           }
-        : { type: '', amount: '', date: '', paymentType: '' },
+        : { type: '', amount: '', date: '', dateLong: '', paymentType: '' },
       transactions: (loan.transactions ?? []).map((transaction) => formatTransaction(transaction, locale)),
       notes: (loan.notes ?? []).map((note) => formatNote(note, locale)),
     };
