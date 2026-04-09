@@ -372,10 +372,10 @@
     "terminate": {
       "button": "Vertrag kündigen",
       "dialogTitle": "Kredit kündigen",
-      "dialogDescription": "Geben Sie das Kündigungsdatum ein. Das berechnete Vertragsende wird automatisch ermittelt.",
+      "dialogDescription": "Geben Sie das Kündigungsdatum ein.",
       "terminationDate": "Kündigungsdatum",
       "terminationDatePlaceholder": "Kündigungsdatum auswählen",
-      "contractEnd": "Berechnetes Vertragsende: {date}",
+      "contractEnd": "Rückszahlungsfrist: {date}",
       "confirm": "Kündigung bestätigen",
       "confirming": "Wird gespeichert...",
       "cancel": "Abbrechen",

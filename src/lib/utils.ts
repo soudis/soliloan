@@ -68,7 +68,7 @@ function toValidDate(input: Date | string): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function getDateFnsLocale(locale: string) {
+export function getDateFnsLocale(locale: string) {
   return locale === 'de' ? de : enUS;
 }
 

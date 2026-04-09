@@ -45,7 +45,6 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
       interestRate: data.interestRate,
       terminationType: data.terminationType,
       endDate: data.endDate,
-      terminationDate: data.terminationDate,
       terminationPeriod: data.terminationPeriod,
       terminationPeriodType: data.terminationPeriodType,
       duration: data.duration,

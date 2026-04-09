@@ -66,7 +66,6 @@ export function LoanForm({
     contractStatus: initialData?.contractStatus || 'PENDING',
     terminationType: initialData?.terminationType || 'TERMINATION',
     endDate: initialData?.endDate || '',
-    terminationDate: initialData?.terminationDate || '',
     terminationPeriod: initialData?.terminationPeriod || '',
     terminationPeriodType: initialData?.terminationPeriodType || DurationType.MONTHS,
     duration: initialData?.duration || '',

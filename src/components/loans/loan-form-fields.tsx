@@ -89,7 +89,7 @@ export function LoanFormFields({ lenders, isEditMode = false }: LoanFormFieldsPr
 
       {/* Termination Information Section */}
       <FormSection icon={<FileX className="w-4 h-4 text-muted-foreground" />} title={t('new.form.terminationInfo')}>
-        <TerminationFormFields hideTerminationDate={!isEditMode} />
+        <TerminationFormFields hideTerminationDate />
       </FormSection>
 
       {/* Additional Information Section */}

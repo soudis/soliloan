@@ -2,7 +2,6 @@
 
 import { DurationType } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { de, enUS } from 'date-fns/locale';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import moment from 'moment';
 import { useLocale, useTranslations } from 'next-intl';
@@ -21,7 +20,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn, formatDateLong } from '@/lib/utils';
+import { cn, formatDateLong, getDateFnsLocale } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 
 interface TerminationDialogProps {
@@ -36,8 +35,9 @@ const toUTC = (date: Date) => {
 
 export function TerminationDialog({ loan, open, onOpenChange }: TerminationDialogProps) {
   const t = useTranslations('dashboard.loans.terminate');
+  const commonT = useTranslations('common');
   const locale = useLocale();
-  const dateLocale = locale === 'de' ? de : enUS;
+  const dateLocale = getDateFnsLocale(locale);
   const queryClient = useQueryClient();
 
   const [terminationDate, setTerminationDate] = useState<Date>(toUTC(new Date()));
@@ -49,6 +49,11 @@ export function TerminationDialog({ loan, open, onOpenChange }: TerminationDialo
       ? moment(terminationDate)
           .add(loan.terminationPeriod, loan.terminationPeriodType === DurationType.MONTHS ? 'months' : 'years')
           .toDate()
+      : null;
+
+  const terminationPeriodLabel =
+    loan.terminationPeriod && loan.terminationPeriodType
+      ? ` (${loan.terminationPeriod} ${commonT(`enums.loan.durationUnit.${loan.terminationPeriodType}`)})`
       : null;
 
   const handleOpenChange = (nextOpen: boolean) => {
@@ -111,7 +116,7 @@ export function TerminationDialog({ loan, open, onOpenChange }: TerminationDialo
                   selected={terminationDate}
                   onSelect={(date) => {
                     if (date) {
-                      setTerminationDate(toUTC(date));
+                      setTerminationDate(date);
                     }
                     setCalendarOpen(false);
                   }}
@@ -125,6 +130,7 @@ export function TerminationDialog({ loan, open, onOpenChange }: TerminationDialo
           {calculatedEndDate && (
             <p className="text-sm text-muted-foreground">
               {t('contractEnd', { date: formatDateLong(calculatedEndDate, locale) })}
+              {terminationPeriodLabel}
             </p>
           )}
         </div>
