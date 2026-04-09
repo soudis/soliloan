@@ -109,6 +109,9 @@ export const PROJECT_FIELDS = ['name', 'slug'] as const;
 // Platform fields (global, available on all datasets)
 export const PLATFORM_FIELDS = ['name'] as const;
 
+/** Current date / time–independent helpers (locale-formatted at render time). */
+export const MISC_FIELDS = ['dateShort', 'dateLong'] as const;
+
 // Configuration fields (project configuration: company info, address, banking)
 export const CONFIGURATION_FIELDS = [
   'name',
@@ -222,6 +225,9 @@ export const FIELD_TYPES: Record<string, FieldType> = {
   'loanYearly.interestError': 'currency',
   // Platform
   'platform.name': 'string',
+  // Misc (current date, etc.)
+  'misc.dateShort': 'string',
+  'misc.dateLong': 'string',
   // Configuration
   'config.name': 'string',
   'config.email': 'string',
@@ -302,6 +308,7 @@ export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
     topLevelFields: [
       { entity: 'user', fields: USER_FIELDS },
       { entity: 'platform', fields: PLATFORM_FIELDS },
+      { entity: 'misc', fields: MISC_FIELDS },
     ],
     loops: [],
   },
@@ -310,6 +317,7 @@ export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
       { entity: 'lender', fields: LENDER_FIELDS },
       { entity: 'config', fields: CONFIGURATION_FIELDS },
       { entity: 'platform', fields: PLATFORM_FIELDS },
+      { entity: 'misc', fields: MISC_FIELDS },
     ],
     loops: ['loans', 'notes'],
   },
@@ -320,6 +328,7 @@ export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
       { entity: 'latestTransaction', fields: LATEST_TRANSACTION_FIELDS },
       { entity: 'config', fields: CONFIGURATION_FIELDS },
       { entity: 'platform', fields: PLATFORM_FIELDS },
+      { entity: 'misc', fields: MISC_FIELDS },
     ],
     loops: ['transactions', 'notes'],
   },
@@ -328,6 +337,7 @@ export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
       { entity: 'project', fields: PROJECT_FIELDS },
       { entity: 'config', fields: CONFIGURATION_FIELDS },
       { entity: 'platform', fields: PLATFORM_FIELDS },
+      { entity: 'misc', fields: MISC_FIELDS },
     ],
     loops: ['lenders'],
   },
@@ -336,6 +346,7 @@ export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
       { entity: 'project', fields: PROJECT_FIELDS },
       { entity: 'config', fields: CONFIGURATION_FIELDS },
       { entity: 'platform', fields: PLATFORM_FIELDS },
+      { entity: 'misc', fields: MISC_FIELDS },
     ],
     loops: ['lenders'],
   },
@@ -345,6 +356,7 @@ export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
       { entity: 'lenderYearly', fields: LENDER_YEARLY_FIELDS },
       { entity: 'config', fields: CONFIGURATION_FIELDS },
       { entity: 'platform', fields: PLATFORM_FIELDS },
+      { entity: 'misc', fields: MISC_FIELDS },
     ],
     loops: ['loans', 'notes'],
   },

@@ -22,8 +22,6 @@ import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-
-import { useMergeTagConfig } from '../merge-tag-context';
 import { createPredefinedBlockAction } from '@/actions/templates/mutations/create-predefined-block';
 import { useEditorMetadata } from '@/components/templates/editor-context';
 import {
@@ -43,6 +41,9 @@ import {
   buildBorderStyle,
 } from '@/lib/templates/border-utils';
 import { extractCraftSubtree } from '@/lib/templates/craft-subtree';
+import { paddingPropsToReactStyle } from '@/lib/templates/padding-utils';
+import { BlockPaddingFields } from '../block-padding-fields';
+import { useMergeTagConfig } from '../merge-tag-context';
 
 type LayoutMode = 'vertical' | 'horizontal' | 'grid';
 type FlexJustify = 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around';
@@ -51,6 +52,10 @@ type FlexAlign = 'flex-start' | 'flex-end' | 'center' | 'stretch';
 interface ContainerProps extends BorderProps {
   loopKey?: string;
   padding?: number;
+  paddingTop?: number;
+  paddingRight?: number;
+  paddingBottom?: number;
+  paddingLeft?: number;
   background?: string;
   layout?: LayoutMode;
   gap?: number;
@@ -133,7 +138,6 @@ const buildLayoutStyle = (
         gridTemplateColumns: `repeat(${gridColumns}, 1fr)`,
         gap: `${gap}px`,
       };
-    case 'vertical':
     default:
       return {
         display: 'flex',
@@ -147,6 +151,10 @@ const buildLayoutStyle = (
 
 export const Container = ({
   padding = 20,
+  paddingTop,
+  paddingRight,
+  paddingBottom,
+  paddingLeft,
   background = 'transparent',
   layout = 'vertical',
   gap = 0,
@@ -185,6 +193,18 @@ export const Container = ({
     [borderTop, borderRight, borderBottom, borderLeft, borderColor, borderStyle, borderWidth],
   );
 
+  const paddingStyle = useMemo(
+    () =>
+      paddingPropsToReactStyle({
+        padding,
+        paddingTop,
+        paddingRight,
+        paddingBottom,
+        paddingLeft,
+      }),
+    [padding, paddingTop, paddingRight, paddingBottom, paddingLeft],
+  );
+
   return (
     <div
       ref={(dom) => {
@@ -193,7 +213,7 @@ export const Container = ({
         }
       }}
       style={{
-        padding: `${padding}px`,
+        ...paddingStyle,
         background,
         ...layoutStyle,
         ...borderStyleObj,
@@ -304,6 +324,10 @@ export const ContainerSettings = () => {
     nodeId,
     loopKey,
     padding,
+    paddingTop,
+    paddingRight,
+    paddingBottom,
+    paddingLeft,
     background,
     layout,
     gap,
@@ -321,6 +345,10 @@ export const ContainerSettings = () => {
     nodeId: node.id,
     loopKey: (node.data.props.loopKey as string) ?? '',
     padding: node.data.props.padding,
+    paddingTop: node.data.props.paddingTop as number | undefined,
+    paddingRight: node.data.props.paddingRight as number | undefined,
+    paddingBottom: node.data.props.paddingBottom as number | undefined,
+    paddingLeft: node.data.props.paddingLeft as number | undefined,
     background: node.data.props.background,
     layout: (node.data.props.layout as LayoutMode) ?? 'vertical',
     gap: node.data.props.gap ?? 0,
@@ -566,22 +594,17 @@ export const ContainerSettings = () => {
             </div>
           )}
 
-          <div className="space-y-2">
-            <label htmlFor="padding" className="text-xs font-medium">
-              {t('padding')}
-            </label>
-            <input
-              id="padding"
-              type="number"
-              value={padding}
-              onChange={(e) =>
-                setProp((props: ContainerProps) => {
-                  props.padding = Number(e.target.value);
-                })
-              }
-              className="w-full px-2 py-1 border rounded text-sm"
-            />
-          </div>
+          <BlockPaddingFields<ContainerProps>
+            idPrefix="container"
+            props={{
+              padding,
+              paddingTop,
+              paddingRight,
+              paddingBottom,
+              paddingLeft,
+            }}
+            setProp={setProp}
+          />
         </TabsContent>
 
         <TabsContent value="style" className="mt-3 space-y-4">
@@ -812,9 +835,7 @@ function SaveAsBlockDialog({
                     type="checkbox"
                     checked={blockDatasets.includes(ds)}
                     onChange={(e) => {
-                      setBlockDatasets((prev) =>
-                        e.target.checked ? [...prev, ds] : prev.filter((d) => d !== ds),
-                      );
+                      setBlockDatasets((prev) => (e.target.checked ? [...prev, ds] : prev.filter((d) => d !== ds)));
                     }}
                     className="rounded border-zinc-300"
                   />

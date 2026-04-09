@@ -117,6 +117,15 @@ function getPlatformData() {
   };
 }
 
+function getMiscMergeTagValues(locale: string) {
+  const now = new Date();
+  const intlLocale = locale === 'de' || locale.startsWith('de-') ? 'de-DE' : locale;
+  return {
+    dateShort: new Intl.DateTimeFormat(intlLocale, { dateStyle: 'short' }).format(now),
+    dateLong: new Intl.DateTimeFormat(intlLocale, { dateStyle: 'long' }).format(now),
+  };
+}
+
 async function getConfigData(projectId: string): Promise<Record<string, string>> {
   const project = await db.project.findUnique({
     where: { id: projectId },
@@ -531,6 +540,7 @@ async function getProjectTemplateData(projectId: string, locale: string) {
   return {
     platform: getPlatformData(),
     config,
+    misc: getMiscMergeTagValues(locale),
     project: {
       name: project.configuration?.name ?? '',
       slug: project.slug,
@@ -558,6 +568,7 @@ export async function getTemplateData(
     return {
       platform: getPlatformData(),
       config,
+      misc: getMiscMergeTagValues(locale),
       ...buildLenderTemplateData(lender, locale),
     };
   }
@@ -578,6 +589,7 @@ export async function getTemplateData(
     return {
       platform: getPlatformData(),
       config,
+      misc: getMiscMergeTagValues(locale),
       lender: formatLenderFields(loan.lender, locale),
       loan: formatLoanFields(loan, locale),
       latestTransaction: latest
@@ -604,6 +616,7 @@ export async function getTemplateData(
 
     return {
       platform: getPlatformData(),
+      misc: getMiscMergeTagValues(locale),
       user: {
         name: user.name ?? '',
         email: user.email ?? '',
@@ -630,10 +643,10 @@ export async function getTemplateData(
     const lastCompleteYear = new Date().getFullYear() - 1;
     const requestedYear = options?.year ?? lastCompleteYear;
     if (requestedYear > lastCompleteYear) return null;
-
     return {
       platform: getPlatformData(),
       config,
+      misc: getMiscMergeTagValues(locale),
       ...buildLenderYearlyTemplateData(lender, requestedYear, locale),
     };
   }

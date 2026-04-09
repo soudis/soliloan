@@ -1,3 +1,5 @@
+import { paddingPropsToCssString, resolvePaddingPx } from '@/lib/templates/padding-utils';
+
 /**
  * Process tiptap HTML content: strip <p> wrappers, convert merge-tag spans
  * back to {{tag}} mustache syntax, and flatten redundant braces.
@@ -234,7 +236,7 @@ export const generateEmailHtml = (
         const gap = props.gap || 0;
         const gridCols = props.gridColumns || 2;
         const bgColor = props.background || 'transparent';
-        const pad = props.padding || 0;
+        const padCss = paddingPropsToCssString(props);
         const justify = props.justifyContent || 'flex-start';
         const align = props.alignItems || 'stretch';
         const borderCss = borderPropsToCss(props);
@@ -242,18 +244,18 @@ export const generateEmailHtml = (
 
         if (layout === 'horizontal') {
           const flexStyle =
-            `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+            `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
           return wrapWithLoop(`<div style="${flexStyle}">${content}</div>`, loopKey);
         }
         if (layout === 'grid') {
-          const divStyle = `padding: ${pad}px; background-color: ${bgColor}; ${borderCss}`.trim();
+          const divStyle = `padding: ${padCss}; background-color: ${bgColor}; ${borderCss}`.trim();
           return wrapWithLoop(
             `<div style="${divStyle}"><!--[if mso]><table style="width:100%;border-spacing:${gap}px;" cellpadding="0"><tr><![endif]--><div style="display: grid; grid-template-columns: repeat(${gridCols}, 1fr); gap: ${gap}px;">${content}</div><!--[if mso]></tr></table><![endif]--></div>`,
             loopKey,
           );
         }
         const verticalStyle =
-          `display: flex; flex-direction: column; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+          `display: flex; flex-direction: column; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
         return wrapWithLoop(`<div style="${verticalStyle}">${content}</div>`, loopKey);
       }
 
@@ -264,10 +266,7 @@ export const generateEmailHtml = (
       }
 
       case 'Button': {
-        const btnUrl =
-          props.useSystemUrl && props.systemUrlKey
-            ? `{{system.${props.systemUrlKey}}}`
-            : props.url || '#';
+        const btnUrl = props.useSystemUrl && props.systemUrlKey ? `{{system.${props.systemUrlKey}}}` : props.url || '#';
         return `
           <div style="margin: 10px 0;">
             <a href="${btnUrl}" style="font-family: ${EMAIL_FONT_FAMILY}; background-color: ${props.background || '#2563eb'}; color: ${props.color || '#ffffff'}; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold;">
@@ -483,7 +482,7 @@ export const generateDocumentParts = (
         const gap = props.gap || 0;
         const gridCols = Math.max(1, props.gridColumns || 2);
         const bgColor = props.background || 'transparent';
-        const pad = props.padding || 0;
+        const padCss = paddingPropsToCssString(props);
         const justify = props.justifyContent || 'flex-start';
         const align = props.alignItems || 'stretch';
         const borderCss = borderPropsToCss(props);
@@ -496,7 +495,7 @@ export const generateDocumentParts = (
           );
           const inner = flexChildren.join('');
           const flexStyle =
-            `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+            `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
           return wrapWithLoop(`<div style="${flexStyle}">${inner}</div>`, loopKey);
         }
         if (layout === 'grid') {
@@ -508,12 +507,12 @@ export const generateDocumentParts = (
           );
           const inner = flexChildren.join('');
           const flexStyle =
-            `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+            `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
           return wrapWithLoop(`<div style="${flexStyle}">${inner}</div>`, loopKey);
         }
         // vertical (default)
         const verticalStyle =
-          `display: flex; flex-direction: column; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${pad}px; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+          `display: flex; flex-direction: column; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
         return wrapWithLoop(`<div style="${verticalStyle}">${content}</div>`, loopKey);
       }
 
@@ -525,9 +524,7 @@ export const generateDocumentParts = (
 
       case 'Button': {
         const docBtnUrl =
-          props.useSystemUrl && props.systemUrlKey
-            ? `{{system.${props.systemUrlKey}}}`
-            : props.url || '#';
+          props.useSystemUrl && props.systemUrlKey ? `{{system.${props.systemUrlKey}}}` : props.url || '#';
         return `<div style="margin: 10px 0;"><a href="${docBtnUrl}" style="font-family: ${EMAIL_FONT_FAMILY}; background-color: ${props.background || '#2563eb'}; color: ${props.color || '#ffffff'}; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold;">${props.text || 'Button'}</a></div>`;
       }
 
@@ -600,9 +597,11 @@ export const generateDocumentParts = (
   const headerHtml = renderNode(headerNodeId);
   const footerHtml = renderNode(footerNodeId);
 
-  // Extract padding from header/footer nodes (use resolved node IDs)
-  const headerPadding = nodes[headerNodeId]?.props?.padding ?? 16;
-  const footerPadding = nodes[footerNodeId]?.props?.padding ?? 16;
+  // Extract vertical padding sum (px) for metadata / layout hints
+  const headerPx = resolvePaddingPx(nodes[headerNodeId]?.props ?? { padding: 16 });
+  const footerPx = resolvePaddingPx(nodes[footerNodeId]?.props ?? { padding: 16 });
+  const headerPadding = headerPx.top + headerPx.bottom;
+  const footerPadding = footerPx.top + footerPx.bottom;
 
   // For the body, render the BODY node's children with the same layout as Container (horizontal/grid/vertical)
   const bodyNode = nodes[bodyNodeId];
@@ -610,7 +609,7 @@ export const generateDocumentParts = (
   const bodyLayout = bodyNode?.props?.layout || 'vertical';
   const bodyGap = bodyNode?.props?.gap ?? 0;
   const bodyGridCols = Math.max(1, bodyNode?.props?.gridColumns ?? 2);
-  const bodyPadding = bodyNode?.props?.padding ?? 56;
+  const bodyPaddingCss = paddingPropsToCssString(bodyNode?.props ?? { padding: 56 });
   const bodyBg = bodyNode?.props?.background ?? '#ffffff';
   const bodyJustify = bodyNode?.props?.justifyContent ?? 'flex-start';
   const bodyAlign = bodyNode?.props?.alignItems ?? 'stretch';
@@ -618,14 +617,14 @@ export const generateDocumentParts = (
 
   let bodyContentHtml: string;
   if (bodyChildren.length === 0) {
-    bodyContentHtml = `<div style="padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}"></div>`;
+    bodyContentHtml = `<div style="padding: ${bodyPaddingCss}; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}"></div>`;
   } else if (bodyLayout === 'horizontal') {
     const flexChildren = bodyChildren.map(
       (childId: string) =>
         `<div style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0;">${renderNode(childId)}</div>`,
     );
     const flexStyle =
-      `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${bodyGap}px; justify-content: ${bodyJustify}; align-items: ${bodyAlign}; padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
+      `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${bodyGap}px; justify-content: ${bodyJustify}; align-items: ${bodyAlign}; padding: ${bodyPaddingCss}; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
     bodyContentHtml = `<div style="${flexStyle}">${flexChildren.join('')}</div>`;
   } else if (bodyLayout === 'grid') {
     const gapPx = bodyGap;
@@ -635,12 +634,12 @@ export const generateDocumentParts = (
         `<div style="flex-grow: 0; flex-shrink: 0; flex-basis: ${basisPct}; min-width: 0;">${renderNode(childId)}</div>`,
     );
     const flexStyle =
-      `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${bodyGap}px; padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
+      `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${bodyGap}px; padding: ${bodyPaddingCss}; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
     bodyContentHtml = `<div style="${flexStyle}">${flexChildren.join('')}</div>`;
   } else {
     const bodyContent = bodyChildren.map((childId: string) => renderNode(childId)).join('');
     const verticalStyle =
-      `display: flex; flex-direction: column; gap: ${bodyGap}px; justify-content: ${bodyJustify}; align-items: ${bodyAlign}; padding: ${bodyPadding}px; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
+      `display: flex; flex-direction: column; gap: ${bodyGap}px; justify-content: ${bodyJustify}; align-items: ${bodyAlign}; padding: ${bodyPaddingCss}; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
     bodyContentHtml = `<div style="${verticalStyle}">${bodyContent}</div>`;
   }
 

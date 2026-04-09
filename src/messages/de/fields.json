@@ -120,6 +120,10 @@
   "platform": {
     "name": "Plattformname"
   },
+  "misc": {
+    "dateShort": "Aktuelles Datum (kurz)",
+    "dateLong": "Aktuelles Datum (lang)"
+  },
   "project": {
     "name": "Projektname",
     "slug": "Projekt-ID"
@@ -145,6 +149,7 @@
     "page": "Seite",
     "loops": "Schleifen",
     "additional": "Zusatzfelder",
-    "project": "Projekt"
+    "project": "Projekt",
+    "misc": "Sonstiges"
   }
 }

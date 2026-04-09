@@ -22,6 +22,7 @@ function resolvePdfImageSrc(src: string, assetBaseUrl?: string): string {
 import React from 'react';
 
 import { getNodesMapFromDesign } from '@/lib/templates/email-generator';
+import { paddingPropsToPdfPoints, resolvePaddingPx } from '@/lib/templates/padding-utils';
 import { processTemplate } from '@/lib/templates/template-processor';
 
 // ─── Tiptap HTML → text for PDF (merge tags → {{x}}, then strip HTML) ─────
@@ -159,6 +160,62 @@ const PDF_PAGE_WIDTH = 595;
 const TEXT_LINE_HEIGHT_MULTIPLIER = 1.5;
 const NON_LOOPABLE_CONTAINER_IDS = new Set(['ROOT', 'BODY', 'PAGE_HEADER', 'PAGE_FOOTER']);
 
+/** Editor image `width` is CSS (px or %). React-pdf uses points; convert px so PDF matches the editor. */
+function parseImageWidthToPt(value: unknown, relativeToPt: number): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return pxToPdfPt(value);
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.endsWith('%')) {
+    const pct = Number.parseFloat(trimmed.slice(0, -1));
+    return Number.isFinite(pct) ? (relativeToPt * pct) / 100 : null;
+  }
+  const numeric = Number.parseFloat(trimmed.replace(/px$/i, ''));
+  return Number.isFinite(numeric) ? pxToPdfPt(numeric) : null;
+}
+
+function imageWidthToPdfStyle(widthProp: unknown): { width: number | string } {
+  if (widthProp == null || widthProp === '') return { width: '100%' };
+  if (typeof widthProp === 'number' && Number.isFinite(widthProp)) {
+    return { width: pxToPdfPt(widthProp) };
+  }
+  if (typeof widthProp !== 'string') return { width: '100%' };
+  const trimmed = widthProp.trim();
+  if (!trimmed) return { width: '100%' };
+  if (trimmed.endsWith('%')) return { width: trimmed };
+  const numeric = Number.parseFloat(trimmed.replace(/px$/i, ''));
+  if (!Number.isFinite(numeric)) return { width: '100%' };
+  return { width: pxToPdfPt(numeric) };
+}
+
+/** Matches `Container` / `buildLayoutStyle` in `user-components/container.tsx` — react-pdf (Yoga) supports the same flex keywords. */
+function containerPdfFlexStyle(
+  props: Record<string, unknown> | undefined,
+  layout: 'vertical' | 'row',
+): Record<string, unknown> {
+  const justifyContent =
+    (props?.justifyContent as 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around' | undefined) ??
+    'flex-start';
+  const alignItems = (props?.alignItems as 'flex-start' | 'flex-end' | 'center' | 'stretch' | undefined) ?? 'stretch';
+  const gap = pxToPdfPt(Number(props?.gap) || 0);
+
+  if (layout === 'vertical') {
+    return {
+      flexDirection: 'column',
+      justifyContent,
+      alignItems,
+      gap,
+    };
+  }
+  return {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent,
+    alignItems,
+    gap,
+  };
+}
+
 /** Build react-pdf border style from component props */
 function borderPropsToPdfStyle(props: Record<string, unknown> | null | undefined): Record<string, unknown> {
   if (!props || typeof props !== 'object') return {};
@@ -244,7 +301,9 @@ const getContainerLoopItems = (
     .map((item) => createChildScope(scopeData, item));
 };
 
-const buildTableOuterBorderPdfStyle = (borderConfig: ReturnType<typeof getTableBorderConfig>): Record<string, unknown> => {
+const buildTableOuterBorderPdfStyle = (
+  borderConfig: ReturnType<typeof getTableBorderConfig>,
+): Record<string, unknown> => {
   const style: Record<string, unknown> = {};
   if (borderConfig.borderTop) {
     style.borderTopWidth = borderConfig.borderWidth;
@@ -400,20 +459,6 @@ export function renderDesignToPdfParts(
 
   const data = sampleData as TemplateScope;
 
-  const parseDimension = (value: unknown, relativeTo: number): number | null => {
-    if (typeof value === 'number' && Number.isFinite(value)) return value;
-    if (typeof value !== 'string') return null;
-
-    const trimmed = value.trim();
-    if (!trimmed) return null;
-    if (trimmed.endsWith('%')) {
-      const pct = Number.parseFloat(trimmed.slice(0, -1));
-      return Number.isFinite(pct) ? (relativeTo * pct) / 100 : null;
-    }
-    const numeric = Number.parseFloat(trimmed.replace(/px$/i, ''));
-    return Number.isFinite(numeric) ? numeric : null;
-  };
-
   const getVerticalBorderWidth = (props: Record<string, unknown> | null | undefined): number => {
     if (!props || typeof props !== 'object') return 0;
     const borderWidth = getPdfBorderWidth(props.borderWidth);
@@ -490,14 +535,18 @@ export function renderDesignToPdfParts(
       case 'PageHeader':
       case 'PageFooter': {
         const layout = (props?.layout as string) || 'vertical';
-        const gap = Number(props?.gap) || 0;
+        const gap = pxToPdfPt(Number(props?.gap) || 0);
         const gridCols = Math.max(1, Number(props?.gridColumns) || 2);
-        const pad = Number(props?.padding) || 0;
+        const sides = resolvePaddingPx(props);
+        const padTop = pxToPdfPt(sides.top);
+        const padBottom = pxToPdfPt(sides.bottom);
+        const padLeft = pxToPdfPt(sides.left);
+        const padRight = pxToPdfPt(sides.right);
         const borderHeight = getVerticalBorderWidth(props);
-        const innerWidth = Math.max(availableWidth - pad * 2, 80);
+        const innerWidth = Math.max(availableWidth - padLeft - padRight, 80);
 
         if (childIdsList.length === 0) {
-          return pad * 2 + borderHeight;
+          return padTop + padBottom + borderHeight;
         }
 
         if (layout === 'horizontal') {
@@ -506,29 +555,41 @@ export function renderDesignToPdfParts(
             childIdsList.reduce((sum, childId) => sum + getNodeInstanceCount(childId, scopeData), 0),
           );
           const childWidth = Math.max((innerWidth - gap * Math.max(childCount - 1, 0)) / childCount, 40);
-          const childHeights = childIdsList.flatMap((childId) => estimateNodeHeights(childId, childWidth, context, scopeData));
+          const childHeights = childIdsList.flatMap((childId) =>
+            estimateNodeHeights(childId, childWidth, context, scopeData),
+          );
           if (childHeights.length === 0) {
-            return pad * 2 + borderHeight;
+            return padTop + padBottom + borderHeight;
           }
-          return pad * 2 + borderHeight + Math.max(...childHeights);
+          return padTop + padBottom + borderHeight + Math.max(...childHeights);
         }
 
         if (layout === 'grid') {
           const childWidth = Math.max((innerWidth - gap * Math.max(gridCols - 1, 0)) / gridCols, 40);
-          const childHeights = childIdsList.flatMap((childId) => estimateNodeHeights(childId, childWidth, context, scopeData));
+          const childHeights = childIdsList.flatMap((childId) =>
+            estimateNodeHeights(childId, childWidth, context, scopeData),
+          );
           if (childHeights.length === 0) {
-            return pad * 2 + borderHeight;
+            return padTop + padBottom + borderHeight;
           }
           let totalHeight = 0;
           for (let index = 0; index < childHeights.length; index += gridCols) {
             totalHeight += Math.max(...childHeights.slice(index, index + gridCols));
           }
           const rowCount = Math.ceil(childHeights.length / gridCols);
-          return pad * 2 + borderHeight + totalHeight + gap * Math.max(rowCount - 1, 0);
+          return padTop + padBottom + borderHeight + totalHeight + gap * Math.max(rowCount - 1, 0);
         }
 
-        const childHeights = childIdsList.flatMap((childId) => estimateNodeHeights(childId, innerWidth, context, scopeData));
-        return pad * 2 + borderHeight + childHeights.reduce((sum, height) => sum + height, 0) + gap * Math.max(childHeights.length - 1, 0);
+        const childHeights = childIdsList.flatMap((childId) =>
+          estimateNodeHeights(childId, innerWidth, context, scopeData),
+        );
+        return (
+          padTop +
+          padBottom +
+          borderHeight +
+          childHeights.reduce((sum, height) => sum + height, 0) +
+          gap * Math.max(childHeights.length - 1, 0)
+        );
       }
 
       case 'Text': {
@@ -539,9 +600,10 @@ export function renderDesignToPdfParts(
       }
 
       case 'Image': {
-        const resolvedWidth = parseDimension(props?.width, availableWidth) ?? Math.min(availableWidth, 180);
-        const estimatedHeight = Math.max(24, Math.min(resolvedWidth / 3, 96));
-        return estimatedHeight + 16;
+        const resolvedWidth =
+          parseImageWidthToPt(props?.width, availableWidth) ?? Math.min(availableWidth, pxToPdfPt(180));
+        const estimatedHeight = Math.max(pxToPdfPt(24), Math.min(resolvedWidth / 3, pxToPdfPt(96)));
+        return estimatedHeight + pxToPdfPt(16);
       }
 
       case 'Table': {
@@ -558,7 +620,8 @@ export function renderDesignToPdfParts(
         const renderedRowCount = isDynamic ? Math.max(dynamicRows, 1) : staticRows;
         const borderConfig = getTableBorderConfig(props ?? {});
         const columnWidths = normalizeTableColumnWidths(props?.columnWidths, cols);
-        const horizontalBorderHeight = borderConfig.borderTop || borderConfig.borderBottom ? borderConfig.borderWidth : 0;
+        const horizontalBorderHeight =
+          borderConfig.borderTop || borderConfig.borderBottom ? borderConfig.borderWidth : 0;
 
         const estimateTableRowHeight = (
           rowValues: string[],
@@ -568,22 +631,30 @@ export function renderDesignToPdfParts(
           const cellHeights = Array.from({ length: cols }, (_, colIndex) => {
             const cellStyle = rowStyleResolver(colIndex);
             const columnWidth = columnWidths[colIndex] ?? 100 / cols;
-            const availableCellWidth = Math.max((availableWidth * columnWidth) / 100 - TABLE_CELL_PADDING_HORIZONTAL * 2, 40);
+            const availableCellWidth = Math.max(
+              (availableWidth * columnWidth) / 100 - TABLE_CELL_PADDING_HORIZONTAL * 2,
+              40,
+            );
             const raw = processTemplate(processTiptapContent(rowValues[colIndex] || ''), rowData);
             return estimateTextHeight(raw, pxToPdfPt(cellStyle.fontSize), availableCellWidth);
           });
-          return Math.max(...cellHeights, pxToPdfPt(DEFAULT_TABLE_BODY_FONT_SIZE)) + TABLE_CELL_PADDING_VERTICAL * 2 + horizontalBorderHeight;
+          return (
+            Math.max(...cellHeights, pxToPdfPt(DEFAULT_TABLE_BODY_FONT_SIZE)) +
+            TABLE_CELL_PADDING_VERTICAL * 2 +
+            horizontalBorderHeight
+          );
         };
 
         const headerHeight = estimateTableRowHeight(
           headerTexts,
-          (colIndex) => resolveTableCellStyle(headerStyles[colIndex], true, ((props?.textAlign as TableTextAlign) || 'left')),
+          (colIndex) =>
+            resolveTableCellStyle(headerStyles[colIndex], true, (props?.textAlign as TableTextAlign) || 'left'),
           scopeData,
         );
         const bodyRowsHeight = Array.from({ length: templateRowCount }, (_, rowIndex) => {
           const rowData =
             isDynamic && hasOwnScopeValue(scopeData, loopKey) && Array.isArray(scopeData[loopKey])
-              ? createChildScope(scopeData, ((scopeData[loopKey][rowIndex] as TemplateScope | undefined) ?? {}))
+              ? createChildScope(scopeData, (scopeData[loopKey][rowIndex] as TemplateScope | undefined) ?? {})
               : scopeData;
           return estimateTableRowHeight(
             cellTexts[rowIndex] || [],
@@ -591,26 +662,31 @@ export function renderDesignToPdfParts(
               resolveTableCellStyle(
                 isDynamic ? cellStyles[0]?.[colIndex] : cellStyles[rowIndex]?.[colIndex],
                 false,
-                ((props?.textAlign as TableTextAlign) || 'left'),
+                (props?.textAlign as TableTextAlign) || 'left',
               ),
             rowData,
           );
         }).reduce((sum, height) => sum + height, 0);
 
         const outerBorderHeight =
-          (borderConfig.borderTop ? borderConfig.borderWidth : 0) + (borderConfig.borderBottom ? borderConfig.borderWidth : 0);
-        return headerHeight + bodyRowsHeight * Math.max(1, renderedRowCount / templateRowCount) + outerBorderHeight + 32;
+          (borderConfig.borderTop ? borderConfig.borderWidth : 0) +
+          (borderConfig.borderBottom ? borderConfig.borderWidth : 0);
+        return (
+          headerHeight + bodyRowsHeight * Math.max(1, renderedRowCount / templateRowCount) + outerBorderHeight + 32
+        );
       }
 
       case 'Button':
         return 0;
 
-      case 'Canvas':
-      case 'Element':
       default:
         return childIdsList.reduce(
           (sum, childId) =>
-            sum + estimateNodeHeights(childId, availableWidth, context, scopeData).reduce((innerSum, height) => innerSum + height, 0),
+            sum +
+            estimateNodeHeights(childId, availableWidth, context, scopeData).reduce(
+              (innerSum, height) => innerSum + height,
+              0,
+            ),
           0,
         );
     }
@@ -665,14 +741,12 @@ export function renderDesignToPdfParts(
       case 'PageHeader':
       case 'PageFooter': {
         const layout = (props?.layout as string) || 'vertical';
-        const gap = Number(props?.gap) || 0;
         const gridCols = Math.max(1, Number(props?.gridColumns) || 2);
         const bg = (props?.background as string) || 'transparent';
-        const pad = Number(props?.padding) || 0;
         const borderStyle = borderPropsToPdfStyle(props);
 
         const baseStyle: Record<string, unknown> = {
-          padding: pad,
+          ...paddingPropsToPdfPoints(props, pxToPdfPt),
           backgroundColor: bg,
           width: '100%',
           ...borderStyle,
@@ -685,9 +759,7 @@ export function renderDesignToPdfParts(
               key: keyOverride ?? nodeId,
               style: {
                 ...baseStyle,
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                gap,
+                ...containerPdfFlexStyle(props, 'row'),
               },
             },
             ...children.map((child, i) =>
@@ -710,9 +782,7 @@ export function renderDesignToPdfParts(
               key: keyOverride ?? nodeId,
               style: {
                 ...baseStyle,
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                gap,
+                ...containerPdfFlexStyle(props, 'row'),
               },
             },
             ...children.map((child, i) =>
@@ -731,7 +801,10 @@ export function renderDesignToPdfParts(
           View,
           {
             key: keyOverride ?? nodeId,
-            style: baseStyle,
+            style: {
+              ...baseStyle,
+              ...containerPdfFlexStyle(props, 'vertical'),
+            },
           },
           ...children,
         );
@@ -772,12 +845,16 @@ export function renderDesignToPdfParts(
         const useLogo = props?.useLogoSource === true;
         const rawSrc = useLogo ? logoUrl || DEFAULT_APP_LOGO_SRC : (props?.src as string) || '';
         const src = resolvePdfImageSrc(rawSrc, assetBaseUrl);
-        const width = (props?.width as string) || '100%';
         if (!src) return null;
+        const widthStyle = imageWidthToPdfStyle(props?.width ?? '100%');
         return React.createElement(PdfImage, {
           key: keyOverride ?? nodeId,
           src,
-          style: { width, maxWidth: '100%', marginVertical: 8 },
+          style: {
+            ...widthStyle,
+            maxWidth: '100%',
+            marginVertical: pxToPdfPt(8),
+          },
         });
       }
 
@@ -912,10 +989,18 @@ export function renderDesignToPdfParts(
     }
   };
 
-  const headerPadding = Number(nodes[headerNodeId]?.props?.padding) ?? 16;
-  const footerPadding = Number(nodes[footerNodeId]?.props?.padding) ?? 16;
-  const headerHeight = Math.max(headerPadding * 2 + 16, estimateNodeHeight(headerNodeId, PDF_PAGE_WIDTH, { isHeaderOrFooter: true }));
-  const footerHeight = Math.max(footerPadding * 2 + 16, estimateNodeHeight(footerNodeId, PDF_PAGE_WIDTH, { isHeaderOrFooter: true }));
+  const headerSides = resolvePaddingPx(nodes[headerNodeId]?.props ?? { padding: 16 });
+  const footerSides = resolvePaddingPx(nodes[footerNodeId]?.props ?? { padding: 16 });
+  const headerPadding = pxToPdfPt(headerSides.top) + pxToPdfPt(headerSides.bottom);
+  const footerPadding = pxToPdfPt(footerSides.top) + pxToPdfPt(footerSides.bottom);
+  const headerHeight = Math.max(
+    headerPadding + pxToPdfPt(16),
+    estimateNodeHeight(headerNodeId, PDF_PAGE_WIDTH, { isHeaderOrFooter: true }),
+  );
+  const footerHeight = Math.max(
+    footerPadding + pxToPdfPt(16),
+    estimateNodeHeight(footerNodeId, PDF_PAGE_WIDTH, { isHeaderOrFooter: true }),
+  );
   const headerBorder = borderPropsToPdfStyle(nodes[headerNodeId]?.props);
   const footerBorder = borderPropsToPdfStyle(nodes[footerNodeId]?.props);
 
@@ -923,12 +1008,12 @@ export function renderDesignToPdfParts(
   const footer = renderNode(footerNodeId, { isHeaderOrFooter: true });
   const bodyNode = nodes[bodyNodeId];
   const bodyChildIds: string[] = bodyNode?.nodes || [];
-  const bodyLayout = bodyNode?.props?.layout || 'vertical';
-  const bodyGap = Number(bodyNode?.props?.gap) ?? 0;
+  const bodyLayout = (bodyNode?.props?.layout as string) || 'vertical';
   const bodyGridCols = Math.max(1, Number(bodyNode?.props?.gridColumns) ?? 2);
-  const bodyPad = Number(bodyNode?.props?.padding) ?? 56;
   const bodyBg = (bodyNode?.props?.background as string) ?? '#ffffff';
   const bodyBorderStyle = borderPropsToPdfStyle(bodyNode?.props);
+  const bodyProps = (bodyNode?.props ?? {}) as Record<string, unknown>;
+  const bodyPaddingPdf = paddingPropsToPdfPoints(bodyNode?.props ?? { padding: 56 }, pxToPdfPt);
 
   let bodyContent: React.ReactNode;
   if (bodyChildIds.length === 0) {
@@ -940,13 +1025,11 @@ export function renderDesignToPdfParts(
         View,
         {
           style: {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: bodyGap,
-            padding: bodyPad,
+            ...bodyPaddingPdf,
             backgroundColor: bodyBg,
             width: '100%',
             ...bodyBorderStyle,
+            ...containerPdfFlexStyle(bodyProps, 'row'),
           },
         },
         ...bodyChildren.map((child, i) =>
@@ -963,13 +1046,11 @@ export function renderDesignToPdfParts(
         View,
         {
           style: {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: bodyGap,
-            padding: bodyPad,
+            ...bodyPaddingPdf,
             backgroundColor: bodyBg,
             width: '100%',
             ...bodyBorderStyle,
+            ...containerPdfFlexStyle(bodyProps, 'row'),
           },
         },
         ...bodyChildren.map((child, i) =>
@@ -985,10 +1066,11 @@ export function renderDesignToPdfParts(
         View,
         {
           style: {
-            padding: bodyPad,
+            ...bodyPaddingPdf,
             backgroundColor: bodyBg,
             width: '100%',
             ...bodyBorderStyle,
+            ...containerPdfFlexStyle(bodyProps, 'vertical'),
           },
         },
         ...bodyChildren,

@@ -92,6 +92,14 @@
       "noSelection": "Wähle eine Komponente aus, um ihre Einstellungen zu bearbeiten.",
       "displayName": "Anzeigename"
     },
+    "padding": {
+      "uniform": "Innenabstand (Basis)",
+      "top": "Oben",
+      "right": "Rechts",
+      "bottom": "Unten",
+      "left": "Links",
+      "hint": "Optionale Seiten überschreiben die Basis. Leer lassen, um die Basis zu verwenden."
+    },
     "components": {
       "text": {
         "defaultText": "Hier Text eingeben",
