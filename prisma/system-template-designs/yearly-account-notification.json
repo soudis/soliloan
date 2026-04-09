@@ -1,1 +1,497 @@
-{}
+{
+  "ROOT": {
+    "type": {
+      "resolvedName": "Container"
+    },
+    "nodes": [
+      "t1oa4qZ22i",
+      "04WRhdIeAA",
+      "eXfKLdLsxS"
+    ],
+    "props": {
+      "id": "ROOT",
+      "gap": 0,
+      "layout": "vertical",
+      "loopKey": "",
+      "padding": 0,
+      "borderTop": false,
+      "alignItems": "stretch",
+      "background": "#ffffff",
+      "borderLeft": false,
+      "borderColor": "#e4e4e7",
+      "borderRight": false,
+      "borderStyle": "solid",
+      "borderWidth": 1,
+      "gridColumns": 2,
+      "borderBottom": false,
+      "justifyContent": "flex-start"
+    },
+    "custom": {},
+    "hidden": false,
+    "isCanvas": true,
+    "displayName": "Dokument",
+    "linkedNodes": {}
+  },
+  "01HZ529OKw": {
+    "type": {
+      "resolvedName": "Image"
+    },
+    "nodes": [],
+    "props": {
+      "src": "https://via.placeholder.com/150",
+      "width": "50px",
+      "useLogoSource": true
+    },
+    "custom": {},
+    "hidden": false,
+    "parent": "s1DaSGH1bK",
+    "isCanvas": false,
+    "displayName": "Image",
+    "linkedNodes": {}
+  },
+  "04WRhdIeAA": {
+    "type": {
+      "resolvedName": "Container"
+    },
+    "nodes": [
+      "TGDTCmDb4j",
+      "FPIa4hW5os",
+      "t-a1t7-9Oo",
+      "ocM6rOTPKd",
+      "6lE4CkClku"
+    ],
+    "props": {
+      "id": "BODY",
+      "gap": 0,
+      "layout": "vertical",
+      "loopKey": "",
+      "padding": 50,
+      "borderTop": false,
+      "alignItems": "stretch",
+      "background": "#ffffff",
+      "borderLeft": false,
+      "paddingTop": 20,
+      "borderColor": "#e4e4e7",
+      "borderRight": false,
+      "borderStyle": "solid",
+      "borderWidth": 1,
+      "gridColumns": 2,
+      "borderBottom": false,
+      "paddingBottom": 20,
+      "justifyContent": "flex-start"
+    },
+    "custom": {},
+    "hidden": false,
+    "parent": "ROOT",
+    "isCanvas": true,
+    "displayName": "Hauptcontainer",
+    "linkedNodes": {}
+  },
+  "6lE4CkClku": {
+    "type": {
+      "resolvedName": "Container"
+    },
+    "nodes": [
+      "wE01iGQeRZ",
+      "kKva2V3mMm"
+    ],
+    "props": {
+      "gap": 0,
+      "layout": "vertical",
+      "loopKey": "loans",
+      "padding": 0,
+      "borderTop": false,
+      "alignItems": "stretch",
+      "background": "transparent",
+      "borderLeft": false,
+      "paddingTop": 15,
+      "borderColor": "#e4e4e7",
+      "borderRight": false,
+      "borderStyle": "solid",
+      "borderWidth": 1,
+      "gridColumns": 2,
+      "paddingLeft": 0,
+      "borderBottom": false,
+      "paddingBottom": 5,
+      "justifyContent": "flex-start"
+    },
+    "custom": {},
+    "hidden": false,
+    "parent": "04WRhdIeAA",
+    "isCanvas": true,
+    "displayName": "Kreditinfo",
+    "linkedNodes": {}
+  },
+  "FPIa4hW5os": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "nodes": [],
+    "props": {
+      "text": "<p><span data-merge-tag-id=\"config.place\" data-merge-tag-label=\"Ort\" data-merge-tag=\"config.place\" class=\"merge-tag-pill\">{{Ort}}</span>, <span data-merge-tag-id=\"misc.dateShort\" data-merge-tag-label=\"Aktuelles Datum (kurz)\" data-merge-tag=\"misc.dateShort\" class=\"merge-tag-pill\">{{Aktuelles Datum (kurz)}}</span></p>",
+      "color": "#000000",
+      "fontSize": 13,
+      "textAlign": "right"
+    },
+    "custom": {
+      "useCustomDragHandle": true
+    },
+    "hidden": false,
+    "parent": "04WRhdIeAA",
+    "isCanvas": false,
+    "displayName": "Ort, Datum",
+    "linkedNodes": {}
+  },
+  "QvfOL02FXl": {
+    "type": {
+      "resolvedName": "Container"
+    },
+    "nodes": [
+      "W3ysQo92FQ"
+    ],
+    "props": {
+      "gap": 0,
+      "layout": "vertical",
+      "loopKey": "",
+      "padding": 0,
+      "borderTop": true,
+      "alignItems": "stretch",
+      "background": "transparent",
+      "borderLeft": false,
+      "borderColor": "#e4e4e7",
+      "borderRight": false,
+      "borderStyle": "solid",
+      "borderWidth": 1,
+      "gridColumns": 2,
+      "borderBottom": false,
+      "justifyContent": "flex-start"
+    },
+    "custom": {},
+    "hidden": false,
+    "parent": "eXfKLdLsxS",
+    "isCanvas": true,
+    "displayName": "Seitenfusszeile",
+    "linkedNodes": {}
+  },
+  "TGDTCmDb4j": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "nodes": [],
+    "props": {
+      "text": "<p>An:</p><p><span data-merge-tag-id=\"lender.fullName\" data-merge-tag-label=\"Vollständiger Name\" data-merge-tag=\"lender.fullName\" class=\"merge-tag-pill\">{{Vollständiger Name}}</span></p><p><span data-merge-tag-id=\"lender.street\" data-merge-tag-label=\"Straße\" data-merge-tag=\"lender.street\" class=\"merge-tag-pill\">{{Straße}}</span></p><p><span data-merge-tag-id=\"lender.country\" data-merge-tag-label=\"Land\" data-merge-tag=\"lender.country\" class=\"merge-tag-pill\">{{Land}}</span>-<span data-merge-tag-id=\"lender.zip\" data-merge-tag-label=\"PLZ\" data-merge-tag=\"lender.zip\" class=\"merge-tag-pill\">{{PLZ}}</span> <span data-merge-tag-id=\"lender.place\" data-merge-tag-label=\"Ort\" data-merge-tag=\"lender.place\" class=\"merge-tag-pill\">{{Ort}}</span></p>",
+      "color": "#000000",
+      "fontSize": 13,
+      "textAlign": "left"
+    },
+    "custom": {
+      "useCustomDragHandle": true
+    },
+    "hidden": false,
+    "parent": "04WRhdIeAA",
+    "isCanvas": false,
+    "displayName": "Adresse",
+    "linkedNodes": {}
+  },
+  "W3ysQo92FQ": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "nodes": [],
+    "props": {
+      "text": "<p></p><p>Seite <span data-merge-tag-id=\"page.pageNumber\" data-merge-tag-label=\"Seitennummer\" data-merge-tag=\"pageNumber\" class=\"merge-tag-pill\">{{Seitennummer}}</span> von <span data-merge-tag-id=\"page.totalPages\" data-merge-tag-label=\"Gesamtseiten\" data-merge-tag=\"totalPages\" class=\"merge-tag-pill\">{{Gesamtseiten}}</span></p>",
+      "color": "#000000",
+      "fontSize": 13,
+      "textAlign": "right"
+    },
+    "custom": {
+      "useCustomDragHandle": true
+    },
+    "hidden": false,
+    "parent": "QvfOL02FXl",
+    "isCanvas": false,
+    "displayName": "Seitennummer",
+    "linkedNodes": {}
+  },
+  "dMo02dK6qw": {
+    "type": {
+      "resolvedName": "Container"
+    },
+    "nodes": [
+      "fy9uVUoTcF"
+    ],
+    "props": {
+      "gap": 0,
+      "layout": "vertical",
+      "loopKey": "",
+      "padding": 2,
+      "borderTop": false,
+      "alignItems": "stretch",
+      "background": "transparent",
+      "borderLeft": false,
+      "borderColor": "#e4e4e7",
+      "borderRight": false,
+      "borderStyle": "solid",
+      "borderWidth": 1,
+      "gridColumns": 2,
+      "borderBottom": false,
+      "justifyContent": "flex-start"
+    },
+    "custom": {},
+    "hidden": false,
+    "parent": "s1DaSGH1bK",
+    "isCanvas": true,
+    "displayName": "Container",
+    "linkedNodes": {}
+  },
+  "eXfKLdLsxS": {
+    "type": {
+      "resolvedName": "PageFooter"
+    },
+    "nodes": [
+      "QvfOL02FXl"
+    ],
+    "props": {
+      "id": "PAGE_FOOTER",
+      "padding": 50,
+      "borderTop": false,
+      "background": "transparent",
+      "borderLeft": false,
+      "paddingTop": 5,
+      "borderColor": "#e4e4e7",
+      "borderRight": false,
+      "borderStyle": "solid",
+      "borderWidth": 1,
+      "borderBottom": false
+    },
+    "custom": {},
+    "hidden": false,
+    "parent": "ROOT",
+    "isCanvas": true,
+    "displayName": "Fusszeile",
+    "linkedNodes": {}
+  },
+  "fy9uVUoTcF": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "nodes": [],
+    "props": {
+      "text": "<p><span data-merge-tag-id=\"config.name\" data-merge-tag-label=\"Projektname\" data-merge-tag=\"config.name\" class=\"merge-tag-pill\">{{Projektname}}</span></p><p><span data-merge-tag-id=\"config.street\" data-merge-tag-label=\"Straße\" data-merge-tag=\"config.street\" class=\"merge-tag-pill\">{{Straße}}</span></p><p><span data-merge-tag-id=\"config.zip\" data-merge-tag-label=\"PLZ\" data-merge-tag=\"config.zip\" class=\"merge-tag-pill\">{{PLZ}}</span> <span data-merge-tag-id=\"config.place\" data-merge-tag-label=\"Ort\" data-merge-tag=\"config.place\" class=\"merge-tag-pill\">{{Ort}}</span></p>",
+      "color": "#000000",
+      "fontSize": 13,
+      "textAlign": "right"
+    },
+    "custom": {
+      "useCustomDragHandle": true
+    },
+    "hidden": false,
+    "parent": "dMo02dK6qw",
+    "isCanvas": false,
+    "displayName": "Text",
+    "linkedNodes": {}
+  },
+  "kKva2V3mMm": {
+    "type": {
+      "resolvedName": "Table"
+    },
+    "nodes": [],
+    "props": {
+      "rows": 1,
+      "label": "Für jede Transaktion (Jahr)",
+      "columns": 3,
+      "loopKey": "transactionsYearly",
+      "padding": 0,
+      "borderTop": true,
+      "cellTexts": [
+        [
+          "<p><span data-merge-tag-id=\"transaction.date\" data-merge-tag-label=\"Datum (kurz)\" data-merge-tag=\"transaction.date\" class=\"merge-tag-pill\">{{Datum (kurz)}}</span></p>",
+          "<p><span data-merge-tag-id=\"transaction.type\" data-merge-tag-label=\"Typ\" data-merge-tag=\"transaction.type\" class=\"merge-tag-pill\">{{Typ}}</span></p>",
+          "<p><span data-merge-tag-id=\"transaction.amount\" data-merge-tag-label=\"Betrag\" data-merge-tag=\"transaction.amount\" class=\"merge-tag-pill\">{{Betrag}}</span></p>"
+        ]
+      ],
+      "textAlign": "left",
+      "borderLeft": true,
+      "cellStyles": [
+        [
+          {
+            "color": "#000000",
+            "fontSize": 13,
+            "textAlign": "left"
+          },
+          {
+            "color": "#000000",
+            "fontSize": 13,
+            "textAlign": "left"
+          },
+          {
+            "color": "#000000",
+            "fontSize": 13,
+            "textAlign": "right"
+          }
+        ]
+      ],
+      "paddingTop": 20,
+      "borderColor": "#e4e4e7",
+      "borderRight": true,
+      "borderStyle": "solid",
+      "borderWidth": 1,
+      "headerTexts": [
+        "<p>Datum</p>",
+        "<p>Vorgang</p>",
+        "<p>Betrag</p>"
+      ],
+      "paddingLeft": 10,
+      "borderBottom": true,
+      "columnWidths": [
+        1,
+        2,
+        2
+      ],
+      "headerStyles": [
+        {
+          "color": "#000000",
+          "fontSize": 13,
+          "textAlign": "left"
+        },
+        {
+          "color": "#000000",
+          "fontSize": 13,
+          "textAlign": "left"
+        },
+        {
+          "color": "#000000",
+          "fontSize": 13,
+          "textAlign": "right"
+        }
+      ],
+      "paddingRight": 10,
+      "paddingBottom": 5
+    },
+    "custom": {},
+    "hidden": false,
+    "parent": "6lE4CkClku",
+    "isCanvas": false,
+    "displayName": "Bewegungen",
+    "linkedNodes": {}
+  },
+  "ocM6rOTPKd": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "nodes": [],
+    "props": {
+      "text": "<p></p><p></p><p><span data-merge-tag-id=\"lender.salutationText\" data-merge-tag-label=\"Anredetext\" data-merge-tag=\"lender.salutationText\" class=\"merge-tag-pill\">{{Anredetext}}</span>!</p><p></p><p>Vielen Dank für die Unterstützung im Jahr <span data-merge-tag-id=\"lenderYearly.year\" data-merge-tag-label=\"Jahr\" data-merge-tag=\"lenderYearly.year\" class=\"merge-tag-pill\">{{Jahr}}</span>! Hier der Kontoauszug und die Berechnung der</p><p>Zinsen. Falls etwas nicht stimmt oder unverständlich ist, stehen wir für Rückfragen gerne zur Verfügung! Melde dich gerne unter <span data-merge-tag-id=\"config.email\" data-merge-tag-label=\"E-Mail\" data-merge-tag=\"config.email\" class=\"merge-tag-pill\">{{E-Mail}}</span>.</p><p></p><p>Deine Gesamtzinserträge für <span data-merge-tag-id=\"lenderYearly.year\" data-merge-tag-label=\"Jahr\" data-merge-tag=\"lenderYearly.year\" class=\"merge-tag-pill\">{{Jahr}}</span> betragen: <strong><span data-merge-tag-id=\"lenderYearly.interest\" data-merge-tag-label=\"Zinsen (Jahr)\" data-merge-tag=\"lenderYearly.interest\" class=\"merge-tag-pill\">{{Zinsen (Jahr)}}</span></strong></p><p>Beachte: Zinserträge sind einkommenssteuerpflichtig!</p><p></p><p>Solidarische Grüße,</p><p><span data-merge-tag-id=\"config.name\" data-merge-tag-label=\"Projektname\" data-merge-tag=\"config.name\" class=\"merge-tag-pill\">{{Projektname}}</span></p><p></p>",
+      "color": "#000000",
+      "fontSize": 13,
+      "textAlign": "left"
+    },
+    "custom": {
+      "useCustomDragHandle": true
+    },
+    "hidden": false,
+    "parent": "04WRhdIeAA",
+    "isCanvas": false,
+    "displayName": "Text",
+    "linkedNodes": {}
+  },
+  "s1DaSGH1bK": {
+    "type": {
+      "resolvedName": "Container"
+    },
+    "nodes": [
+      "01HZ529OKw",
+      "dMo02dK6qw"
+    ],
+    "props": {
+      "gap": 0,
+      "layout": "horizontal",
+      "loopKey": "",
+      "padding": 0,
+      "borderTop": false,
+      "alignItems": "center",
+      "background": "transparent",
+      "borderLeft": false,
+      "borderColor": "#e4e4e7",
+      "borderRight": false,
+      "borderStyle": "solid",
+      "borderWidth": 1,
+      "gridColumns": 2,
+      "borderBottom": true,
+      "justifyContent": "space-between"
+    },
+    "custom": {},
+    "hidden": false,
+    "parent": "t1oa4qZ22i",
+    "isCanvas": true,
+    "displayName": "Projektkopfzeile",
+    "linkedNodes": {}
+  },
+  "t-a1t7-9Oo": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "nodes": [],
+    "props": {
+      "text": "<p></p><p><strong>Kontomitteilung <span data-merge-tag-id=\"lenderYearly.year\" data-merge-tag-label=\"Jahr\" data-merge-tag=\"lenderYearly.year\" class=\"merge-tag-pill\">{{Jahr}}</span> für das Direktkreditkonto Nr. <span data-merge-tag-id=\"lender.lenderNumber\" data-merge-tag-label=\"Konto-Nr.\" data-merge-tag=\"lender.lenderNumber\" class=\"merge-tag-pill\">{{Konto-Nr.}}</span></strong></p>",
+      "color": "#000000",
+      "fontSize": 14,
+      "textAlign": "left"
+    },
+    "custom": {
+      "useCustomDragHandle": true
+    },
+    "hidden": false,
+    "parent": "04WRhdIeAA",
+    "isCanvas": false,
+    "displayName": "Betreff",
+    "linkedNodes": {}
+  },
+  "t1oa4qZ22i": {
+    "type": {
+      "resolvedName": "PageHeader"
+    },
+    "nodes": [
+      "s1DaSGH1bK"
+    ],
+    "props": {
+      "id": "PAGE_HEADER",
+      "padding": 50,
+      "borderTop": false,
+      "background": "transparent",
+      "borderLeft": false,
+      "borderColor": "#e4e4e7",
+      "borderRight": false,
+      "borderStyle": "solid",
+      "borderWidth": 1,
+      "borderBottom": false,
+      "paddingBottom": 5
+    },
+    "custom": {},
+    "hidden": false,
+    "parent": "ROOT",
+    "isCanvas": true,
+    "displayName": "Kopfzeile",
+    "linkedNodes": {}
+  },
+  "wE01iGQeRZ": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "nodes": [],
+    "props": {
+      "text": "<p><strong>Kredit Nr. <span data-merge-tag-id=\"loan.loanNumber\" data-merge-tag-label=\"Kreditnummer\" data-merge-tag=\"loan.loanNumber\" class=\"merge-tag-pill\">{{Kreditnummer}}</span>:</strong></p>",
+      "color": "#000000",
+      "fontSize": 13,
+      "textAlign": "left"
+    },
+    "custom": {
+      "useCustomDragHandle": true
+    },
+    "hidden": false,
+    "parent": "6lE4CkClku",
+    "isCanvas": false,
+    "displayName": "Kreditnummer",
+    "linkedNodes": {}
+  }
+}

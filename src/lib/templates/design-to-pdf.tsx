@@ -128,7 +128,7 @@ function renderTextSegments(
   baseStyle: Record<string, unknown>,
   PdfText: React.ComponentType<any>,
 ): React.ReactNode[] {
-  if (segments.length === 0) return [' '];
+  if (segments.length === 0) return [];
   return segments.map((seg, i) =>
     seg.style ? React.createElement(PdfText, { key: i, style: { ...baseStyle, ...seg.style } }, seg.text) : seg.text,
   );
@@ -162,6 +162,7 @@ const TABLE_CELL_PADDING_VERTICAL = pxToPdfPt(8);
 const TABLE_CELL_PADDING_HORIZONTAL = pxToPdfPt(12);
 const PDF_PAGE_WIDTH = 595;
 const TEXT_LINE_HEIGHT_MULTIPLIER = 1.5;
+
 const NON_LOOPABLE_CONTAINER_IDS = new Set(['ROOT', 'BODY', 'PAGE_HEADER', 'PAGE_FOOTER']);
 
 /** Editor image `width` is CSS (px or %). React-pdf uses points; convert px so PDF matches the editor. */
@@ -839,11 +840,13 @@ export function renderDesignToPdfParts(
                 .replace(/\{\{pageNumber\}\}/g, String(pageNumber))
                 .replace(/\{\{totalPages\}\}/g, String(totalPages));
               const segments = htmlToTextSegments(withNumbers);
+              if (segments.length === 0) return null;
               return React.createElement(PdfText, { style }, ...renderTextSegments(segments, style, PdfText));
             },
           });
         }
         const segments = htmlToTextSegments(withData);
+        if (segments.length === 0) return null;
         return React.createElement(
           PdfText,
           { key: keyOverride ?? nodeId, style },
