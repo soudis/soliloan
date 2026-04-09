@@ -12,6 +12,7 @@
       "id": "ROOT",
       "gap": 0,
       "layout": "vertical",
+      "loopKey": "",
       "padding": 40,
       "borderTop": false,
       "alignItems": "stretch",
@@ -28,7 +29,7 @@
     "custom": {},
     "hidden": false,
     "isCanvas": true,
-    "displayName": "Container",
+    "displayName": "E-Mail",
     "linkedNodes": {}
   },
   "0Beagmtsv-": {
@@ -62,6 +63,7 @@
     "props": {
       "gap": 0,
       "layout": "vertical",
+      "loopKey": "",
       "padding": 20,
       "borderTop": false,
       "alignItems": "center",
@@ -79,7 +81,7 @@
     "hidden": false,
     "parent": "ROOT",
     "isCanvas": true,
-    "displayName": "Container",
+    "displayName": "Haupttext",
     "linkedNodes": {}
   },
   "8RchCNyK7R": {
@@ -92,6 +94,7 @@
     "props": {
       "gap": 0,
       "layout": "vertical",
+      "loopKey": "",
       "padding": 5,
       "borderTop": true,
       "alignItems": "stretch",
@@ -109,7 +112,7 @@
     "hidden": false,
     "parent": "ROOT",
     "isCanvas": true,
-    "displayName": "Container",
+    "displayName": "Fusszeile",
     "linkedNodes": {}
   },
   "RgQqa5Zbjs": {
@@ -129,7 +132,7 @@
     "hidden": false,
     "parent": "kxLfnsE00R",
     "isCanvas": false,
-    "displayName": "Text",
+    "displayName": "Dankestext",
     "linkedNodes": {}
   },
   "VZr3GxhXW3": {
@@ -146,7 +149,7 @@
     "hidden": false,
     "parent": "kxLfnsE00R",
     "isCanvas": false,
-    "displayName": "Image",
+    "displayName": "Projektlogo",
     "linkedNodes": {}
   },
   "e9mzmOalDj": {
@@ -180,6 +183,7 @@
     "props": {
       "gap": 0,
       "layout": "horizontal",
+      "loopKey": "",
       "padding": 20,
       "borderTop": false,
       "alignItems": "center",
@@ -197,7 +201,7 @@
     "hidden": false,
     "parent": "ROOT",
     "isCanvas": true,
-    "displayName": "Container",
+    "displayName": "Kopfzeile",
     "linkedNodes": {}
   },
   "zurtR-fNAa": {
