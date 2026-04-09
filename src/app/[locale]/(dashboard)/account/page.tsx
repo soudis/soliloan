@@ -14,6 +14,7 @@ export default async function AccountPage() {
   const user = await db.user.findUnique({
     where: { id: session.user.id },
     select: {
+      email: true,
       name: true,
       language: true,
     },

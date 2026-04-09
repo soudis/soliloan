@@ -1,15 +1,22 @@
 {
-  "title": "Profil",
+  "title": "Benutzer Einstellungen",
   "profile": {
-    "title": "Profilinformationen",
+    "title": "Profil",
+    "email": "E-Mail",
     "name": "Benutzername",
     "namePlaceholder": "Name eingeben",
     "language": "Sprache",
     "languagePlaceholder": "Sprache auswählen",
     "save": "Profil speichern",
     "saving": "Wird gespeichert...",
-    "success": "Profil erfolgreich aktualisiert. Du wirst abgemeldet, damit die Änderungen wirksam werden.",
-    "error": "Fehler beim Aktualisieren des Profils."
+    "success": "Profil erfolgreich aktualisiert. Du wirst jetzt abgemeldet.",
+    "error": "Fehler beim Aktualisieren des Profils.",
+    "confirmDialog": {
+      "title": "Profil speichern?",
+      "description": "Durch die Änderung wirst du abgemeldet und musst dich erneut anmelden.",
+      "confirm": "Speichern und abmelden",
+      "cancel": "Abbrechen"
+    }
   },
   "password": {
     "title": "Passwort ändern",
@@ -26,11 +33,11 @@
   },
   "deleteAccount": {
     "title": "Account löschen",
-    "description": "Dein Account wird zurückgesetzt. Du kannst dich danach nicht mehr anmelden. Deine Kredite und Kreditgeber*innen bleiben erhalten.",
+    "description": "Dein Account wird gelöscht und du kannst dich danach nicht mehr anmelden. Deine Kreditinformationen bleiben erhalten.",
     "button": "Account löschen",
     "confirm": {
       "title": "Account wirklich löschen?",
-      "description": "Diese Aktion kann nicht rückgängig gemacht werden. Dein Account wird zurückgesetzt und du wirst aus allen Projekten entfernt. Kredite und Kreditgeber*innen bleiben erhalten.",
+      "description": "Dein Account wird gelöscht und wirst abgemeldet.",
       "confirm": "Ja, Account löschen",
       "cancel": "Abbrechen"
     },

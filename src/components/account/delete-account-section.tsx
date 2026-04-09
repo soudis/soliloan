@@ -1,8 +1,8 @@
 'use client';
 
-import { useAction } from 'next-safe-action/hooks';
 import { signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
+import { useAction } from 'next-safe-action/hooks';
 import { toast } from 'sonner';
 
 import { resetAccountAction } from '@/actions/account/mutations/reset-account';
@@ -48,10 +48,7 @@ export function DeleteAccountSection() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('confirm.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => execute()}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
+            <AlertDialogAction onClick={() => execute()} className="bg-destructive hover:bg-destructive/90">
               {t('confirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>

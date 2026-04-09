@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, UserCircle, X } from 'lucide-react';
+import { LogOut, Menu, UserCircle, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Session } from 'next-auth';
@@ -45,6 +45,7 @@ export function TopNav({ session, isSidebarOpen, setIsSidebarOpen }: TopNavProps
                   {session.user?.name || session.user?.email}
                 </Link>
                 <Button variant="outline" onClick={() => signOut()}>
+                  <LogOut className="mr-2 h-4 w-4" />
                   {t('signOut')}
                 </Button>
               </div>
