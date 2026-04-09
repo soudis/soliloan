@@ -16,12 +16,12 @@ import {
   getNodesMapFromDesign,
   getNodesMapFromSerialized,
 } from '@/lib/templates/email-generator';
+import { getNodeEditorLabel } from '@/lib/templates/craft-node-name';
 import { processTemplate } from '@/lib/templates/template-processor';
 import { EditorMetadataProvider } from './editor-context';
+import { EditorSidebar } from './editor-sidebar';
 import { LogoProvider } from './logo-context';
 import { MergeTagConfigProvider } from './merge-tag-context';
-import { SettingsPanel } from './settings-panel';
-import { Toolbox } from './toolbox';
 import { USER_COMPONENTS } from './user-components';
 import { Container } from './user-components/container';
 import { PageFooter } from './user-components/page-footer';
@@ -53,7 +53,7 @@ const RenderNode = ({ render }: { render: React.ReactNode }) => {
     isStructural: STRUCTURAL_NODE_IDS.has(node.id),
     isSelected: node.events.selected,
     isHovered: node.events.hovered,
-    name: node.data.name,
+    name: getNodeEditorLabel(node.data, node.id),
   }));
 
   // Style for selection and hover
@@ -201,13 +201,8 @@ const InternalEditor = ({
 
       {/* Sidebar on the right */}
       {!isPreviewing && (
-        <div className="w-80 border-l overflow-y-auto bg-white flex flex-col z-20">
-          <div className="border-b">
-            <Toolbox />
-          </div>
-          <div className="flex-1">
-            <SettingsPanel />
-          </div>
+        <div className="z-20 flex h-full min-h-0 w-80 shrink-0 flex-col border-l bg-white">
+          <EditorSidebar />
         </div>
       )}
 

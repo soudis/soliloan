@@ -372,6 +372,21 @@ type YearlyRow = {
   interestError: Prisma.Decimal;
 };
 
+/**
+ * True if the loan has at least one real (non-synthetic) booking in `year` with a non-zero amount.
+ * Skips `INTEREST` rows from `calculateLoanFields` (same as yearly balance math). Excludes loans with
+ * no activity in that year (not deposited yet, or already fully settled before the year with no rows here).
+ */
+function loanHasNonZeroTransactionInYear(loan: TemplateLoanRecord, year: number): boolean {
+  for (const t of loan.transactions ?? []) {
+    if ((t as { type?: TransactionType }).type === TransactionType.INTEREST) continue;
+    if (new Date(t.date as Date | string).getFullYear() !== year) continue;
+    const amt = typeof t.amount === 'number' ? t.amount : Number(t.amount);
+    if (Number.isFinite(amt) && amt !== 0) return true;
+  }
+  return false;
+}
+
 function formatYearlyScopeFields(
   year: number,
   row: YearlyRow | null | undefined,
@@ -418,7 +433,11 @@ function buildLenderYearlyTemplateData(lender: TemplateLenderRecord, year: numbe
     interestError: 0,
   };
 
-  const loans = (lender.loans ?? []).map((loan: TemplateLoanRecord) => {
+  const loansSource = (lender.loans ?? []).filter((loan: TemplateLoanRecord) =>
+    loanHasNonZeroTransactionInYear(loan, year),
+  );
+
+  const loans = loansSource.map((loan: TemplateLoanRecord) => {
     let yearRow: YearlyRow | undefined;
     try {
       const perYear = calculateLoanPerYear(loanForPerYearCalc(loan, lender), toDate);

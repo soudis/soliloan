@@ -102,18 +102,18 @@ export const Toolbox = () => {
   const blocks = data?.data?.blocks ?? [];
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="space-y-3 p-4">
       <Tabs defaultValue="basic">
-        <TabsList className="w-full">
-          <TabsTrigger value="basic" className="flex-1 text-xs">
+        <TabsList variant="modern" className="mt-0 w-full">
+          <TabsTrigger variant="modern" size="sm" value="basic" className="flex-1">
             {t('toolbox.tabBasic')}
           </TabsTrigger>
-          <TabsTrigger value="predefined" className="flex-1 text-xs">
+          <TabsTrigger variant="modern" size="sm" value="predefined" className="flex-1">
             {t('toolbox.tabPredefined')}
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="basic" className="mt-3">
+        <TabsContent value="basic" className="mt-3 focus-visible:outline-none">
           <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">{t('toolbox.title')}</div>
           <div className="grid grid-cols-2 gap-2">
             <div
@@ -168,7 +168,7 @@ export const Toolbox = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="predefined" className="mt-3">
+        <TabsContent value="predefined" className="mt-3 focus-visible:outline-none">
           {isLoading ? (
             <div className="flex items-center justify-center py-8 text-zinc-400">
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -231,9 +231,7 @@ function PredefinedBlockItem({
         <Package className="w-4 h-4 text-zinc-500 group-hover:text-zinc-900 shrink-0" />
         <div className="min-w-0">
           <div className="text-xs font-medium truncate">{block.name}</div>
-          {block.description && (
-            <div className="text-[10px] text-zinc-400 truncate">{block.description}</div>
-          )}
+          {block.description && <div className="text-[10px] text-zinc-400 truncate">{block.description}</div>}
         </div>
       </div>
       {isAdmin && (

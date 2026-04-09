@@ -64,6 +64,15 @@
       "childFieldsSuffix": "Felder",
       "additionalFieldsSuffix": "Zusatzfelder"
     },
+    "sidebar": {
+      "tabToolbox": "Blöcke",
+      "tabSettings": "Einstellungen",
+      "tabHierarchy": "Hierarchie"
+    },
+    "hierarchy": {
+      "empty": "Keine Struktur geladen.",
+      "doubleClickHint": "Doppelklick auf einen Eintrag, um den Anzeigenamen zu bearbeiten."
+    },
     "toolbox": {
       "title": "Blöcke",
       "tabBasic": "Basis",
@@ -80,7 +89,8 @@
     "settings": {
       "title": "Einstellungen",
       "delete": "Komponente löschen",
-      "noSelection": "Wähle eine Komponente aus, um ihre Einstellungen zu bearbeiten."
+      "noSelection": "Wähle eine Komponente aus, um ihre Einstellungen zu bearbeiten.",
+      "displayName": "Anzeigename"
     },
     "components": {
       "text": {
