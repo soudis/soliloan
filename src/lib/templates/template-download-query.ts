@@ -60,3 +60,46 @@ export function parseTemplateDownloadQuery(
       return { ok: false, message: 'unsupported dataset' };
   }
 }
+
+/** Build query params for GET download / send-email matching {@link parseTemplateDownloadQuery}. */
+export function buildTemplateUseSearchParams(
+  dataset: TemplateDataset,
+  input: {
+    projectId: string;
+    lenderId?: string;
+    loanId?: string;
+    transactionId?: string;
+    year?: number;
+  },
+): URLSearchParams {
+  const sp = new URLSearchParams();
+  switch (dataset) {
+    case 'LENDER':
+      if (input.lenderId) {
+        sp.set('lenderId', input.lenderId);
+      }
+      break;
+    case 'LENDER_YEARLY':
+      if (input.lenderId) {
+        sp.set('lenderId', input.lenderId);
+      }
+      if (input.year != null) {
+        sp.set('year', String(input.year));
+      }
+      break;
+    case 'LOAN':
+      if (input.loanId) {
+        sp.set('loanId', input.loanId);
+      }
+      break;
+    case 'TRANSACTION':
+      if (input.transactionId) {
+        sp.set('transactionId', input.transactionId);
+      }
+      break;
+    default:
+      break;
+  }
+  sp.set('projectId', input.projectId);
+  return sp;
+}

@@ -6,24 +6,7 @@ import { generateTemplatePdfBuffer } from '@/lib/templates/generate-template-pdf
 import { parseTemplateDownloadQuery } from '@/lib/templates/template-download-query';
 import { getTemplateData } from '@/lib/templates/template-data';
 import { resolveTemplateFilename } from '@/lib/templates/template-subject-filename';
-
-async function assertTemplateAccess(params: {
-  userId: string;
-  isAdmin: boolean;
-  template: { projectId: string | null; isGlobal: boolean };
-}) {
-  const { userId, isAdmin, template } = params;
-  if (template.isGlobal && !isAdmin) {
-    return false;
-  }
-  if (template.projectId && !isAdmin) {
-    const count = await db.project.count({
-      where: { id: template.projectId, managers: { some: { id: userId } } },
-    });
-    return count > 0;
-  }
-  return true;
-}
+import { assertManagerCanUseCommunicationTemplate } from '@/lib/templates/template-use-access';
 
 /**
  * GET /api/templates/[id]/download
@@ -51,19 +34,22 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     const userId = session.user.id as string;
     const isAdmin = Boolean(session.user.isAdmin);
-    const canAccess = await assertTemplateAccess({
-      userId,
-      isAdmin,
-      template: { projectId: template.projectId, isGlobal: template.isGlobal },
-    });
-    if (!canAccess) {
-      return new NextResponse('Not found', { status: 404 });
-    }
 
     const url = new URL(request.url);
     const parsed = parseTemplateDownloadQuery(template.dataset, url.searchParams);
     if (!parsed.ok) {
       return new NextResponse(parsed.message, { status: 400 });
+    }
+
+    const canAccess = await assertManagerCanUseCommunicationTemplate({
+      userId,
+      isAdmin,
+      template: { projectId: template.projectId, isGlobal: template.isGlobal },
+      dataset: template.dataset,
+      parsed,
+    });
+    if (!canAccess) {
+      return new NextResponse('Not found', { status: 404 });
     }
 
     const locale = 'de';

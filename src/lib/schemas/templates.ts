@@ -70,6 +70,25 @@ export const getTemplatesSchema = z.object({
 
 export type GetTemplatesFormData = z.infer<typeof getTemplatesSchema>;
 
+/** Batch list for lender / loan / transaction template menus (project + global, EMAIL + DOCUMENT). */
+export const getQuickActionTemplatesSchema = z.object({
+  projectId: z.string(),
+  datasets: z.array(z.nativeEnum(TemplateDataset)).min(1),
+});
+
+export type GetQuickActionTemplatesFormData = z.infer<typeof getQuickActionTemplatesSchema>;
+
+export const sendCommunicationTemplateEmailSchema = z.object({
+  templateId: z.string(),
+  projectId: z.string(),
+  lenderId: z.string().optional(),
+  loanId: z.string().optional(),
+  transactionId: z.string().optional(),
+  year: z.number().int().optional(),
+});
+
+export type SendCommunicationTemplateEmailFormData = z.infer<typeof sendCommunicationTemplateEmailSchema>;
+
 // --- Predefined Craft Blocks ---
 
 export const createPredefinedBlockSchema = z.object({

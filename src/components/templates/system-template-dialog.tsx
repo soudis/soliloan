@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
-import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
+import { STARTER_TEMPLATE_SYSTEM_KEYS } from '@/lib/templates/starter-template-system-keys';
 import type { GlobalTemplateListItem } from '@/types/templates';
 
 interface SystemTemplateDialogProps {
@@ -45,7 +45,10 @@ export function SystemTemplateDialog({ projectId }: SystemTemplateDialogProps) {
     getTemplatesAction({ isGlobal: true, isSystem: true })
       .then((result) => {
         const all = result?.data?.templates ?? [];
-        const filtered = all.filter((tpl) => tpl.dataset !== 'USER');
+        const starter = new Set<string>(STARTER_TEMPLATE_SYSTEM_KEYS);
+        const filtered = all.filter(
+          (tpl) => tpl.dataset !== 'USER' && !(tpl.systemKey != null && starter.has(tpl.systemKey)),
+        );
         setTemplates(filtered as GlobalTemplateListItem[]);
       })
       .finally(() => setLoading(false));
@@ -92,16 +95,14 @@ export function SystemTemplateDialog({ projectId }: SystemTemplateDialogProps) {
         ) : templates.length === 0 ? (
           <p className="text-sm text-muted-foreground py-4">{t('systemDialog.noTemplates')}</p>
         ) : (
-          <div className="space-y-2 max-h-[300px] overflow-y-auto">
+          <div className="space-y-2 max-h-[350px] overflow-y-auto">
             {templates.map((tpl) => (
               <button
                 key={tpl.id}
                 type="button"
                 onClick={() => setSelectedId(tpl.id)}
-                className={`w-full text-left rounded-lg border p-3 transition-colors ${
-                  selectedId === tpl.id
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary/50'
+                className={`w-full text-left rounded-lg border p-3 transition-colors cursor-pointer ${
+                  selectedId === tpl.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -110,14 +111,9 @@ export function SystemTemplateDialog({ projectId }: SystemTemplateDialogProps) {
                     <Badge variant="outline" className="text-xs">
                       {tpl.type === 'EMAIL' ? t('types.email') : t('types.document')}
                     </Badge>
-                    <Badge variant="secondary" className="text-xs">
-                      {getDatasetDisplayName(tpl.dataset)}
-                    </Badge>
                   </div>
                 </div>
-                {tpl.description && (
-                  <p className="text-xs text-muted-foreground mt-1">{tpl.description}</p>
-                )}
+                {tpl.description && <p className="text-xs text-muted-foreground mt-1">{tpl.description}</p>}
               </button>
             ))}
           </div>

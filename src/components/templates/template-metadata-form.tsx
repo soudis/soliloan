@@ -1,8 +1,6 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { MergeTagConfig, MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
-import { getMergeTagConfigAction } from '@/actions/templates/queries/get-merge-tags';
 import type { TemplateDataset, TemplateType } from '@prisma/client';
 import { TemplateDataset as TemplateDatasetEnum } from '@prisma/client';
 import { Loader2, PlusCircle } from 'lucide-react';
@@ -14,14 +12,12 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { createGlobalTemplateAction, createTemplateAction } from '@/actions/templates/mutations/create-template';
 import { updateTemplateAction } from '@/actions/templates/mutations/update-template';
+import type { MergeTagConfig, MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
+import { getMergeTagConfigAction } from '@/actions/templates/queries/get-merge-tags';
 import { getTemplatesAction } from '@/actions/templates/queries/get-templates';
+import { MergeTagDropdown } from '@/components/templates/merge-tag-dropdown';
 import { Button } from '@/components/ui/button';
-import {
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -29,7 +25,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
 import { type CreateTemplateFormData, createTemplateSchema } from '@/lib/schemas/templates';
-import { MergeTagDropdown } from '@/components/templates/merge-tag-dropdown';
 import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
 import type { GlobalTemplateListItem } from '@/types/templates';
 
@@ -135,7 +130,7 @@ export function TemplateCreateFormContent({ projectId, isAdmin, onCreated }: Cre
       if (isAdmin && !projectId) {
         router.push(`/admin/templates/${result.data.id}`);
       } else if (currentProjectId) {
-        router.push(`/${currentProjectId}/configuration/templates/${result.data.id}`);
+        router.push(`/configuration/templates/${result.data.id}`);
       }
     }
   };
@@ -307,8 +302,7 @@ function SubjectOrFilenameField<TFieldValues extends FieldValues & { subjectOrFi
     };
   }, [dataset, projectId, templateType]);
 
-  const label =
-    templateType === 'EMAIL' ? t('dialog.fields.subjectTemplate') : t('dialog.fields.filenameTemplate');
+  const label = templateType === 'EMAIL' ? t('dialog.fields.subjectTemplate') : t('dialog.fields.filenameTemplate');
   const placeholder =
     templateType === 'EMAIL'
       ? t('dialog.fields.subjectTemplatePlaceholder')

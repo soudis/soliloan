@@ -45,7 +45,7 @@
   "systemDialog": {
     "trigger": "Systemvorlage anpassen",
     "title": "Systemvorlage anpassen",
-    "description": "Wähle eine Systemvorlage aus, die als projektspezifische Vorlage kopiert und angepasst werden kann.",
+    "description": "Wähle eine Systemvorlage aus, um sie für dein Projekt anzupassen.",
     "noTemplates": "Keine Systemvorlagen verfügbar.",
     "submit": "Vorlage kopieren",
     "cancel": "Abbrechen",

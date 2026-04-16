@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { addTransactionAction } from '@/actions/loans';
+import { FormCheckbox } from '@/components/form/form-checkbox';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
@@ -31,6 +32,7 @@ export function TransactionDialog({ loanId, open, onOpenChange }: TransactionDia
     date: '',
     amount: '',
     paymentType: 'BANK',
+    notifyLender: false,
   };
 
   const form = useForm({
@@ -38,7 +40,7 @@ export function TransactionDialog({ loanId, open, onOpenChange }: TransactionDia
     defaultValues,
   });
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset only when dialog opens/closes
   useEffect(() => {
     form.reset(defaultValues);
   }, [open]);
@@ -69,6 +71,12 @@ export function TransactionDialog({ loanId, open, onOpenChange }: TransactionDia
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-4">
             <TransactionFormFields loanId={loanId} />
+
+            <FormCheckbox
+              name="notifyLender"
+              label={t('transactions.notifyLender')}
+              hint={t('transactions.notifyLenderHint')}
+            />
 
             <div className="flex justify-end space-x-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

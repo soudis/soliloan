@@ -48,6 +48,20 @@ const SYSTEM_TEMPLATES = [
     type: 'DOCUMENT' as const,
     dataset: TemplateDataset.LENDER_YEARLY,
   },
+  {
+    systemKey: 'defaultEmail',
+    name: 'Standardvorlage E-Mail',
+    description: 'Ausgangsdesign für neue E-Mail-Vorlagen (bearbeitbar unter Admin)',
+    type: 'EMAIL' as const,
+    dataset: TemplateDataset.LENDER,
+  },
+  {
+    systemKey: 'defaultDocument',
+    name: 'Standardvorlage Dokument',
+    description: 'Ausgangsdesign für neue Dokumentvorlagen (bearbeitbar unter Admin)',
+    type: 'DOCUMENT' as const,
+    dataset: TemplateDataset.LENDER,
+  },
 ];
 
 type LoadedSystemTemplateFile = {

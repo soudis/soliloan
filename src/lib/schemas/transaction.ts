@@ -14,6 +14,8 @@ export const transactionFormSchema = z.object({
   date: createDateSchema(true),
   amount: createNumberSchemaRequired(),
   paymentType: paymentTypeEnum,
+  /** Notify lender by email (system template `transaction-notification-email`); default off. */
+  notifyLender: z.boolean().default(false),
 });
 
 export type TransactionFormData = z.infer<typeof transactionFormSchema>;

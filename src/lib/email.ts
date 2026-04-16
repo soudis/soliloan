@@ -150,6 +150,35 @@ async function sendSystemTemplateEmail({
   return true;
 }
 
+export function getLenderEmailFromTemplateMergeData(mergeData: Record<string, unknown>): string | null {
+  const lender = mergeData.lender as { email?: unknown } | undefined;
+  if (!lender || typeof lender.email !== 'string') {
+    return null;
+  }
+  const trimmed = lender.email.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+/** Render a stored communication template (design JSON) and send to one recipient. */
+export async function renderAndSendCommunicationTemplateEmail(args: {
+  designJson: unknown;
+  subjectOrFilename: string | null;
+  mergeData: Record<string, unknown>;
+  to: string;
+  fallbackSubject: string;
+  logoUrl: string | null;
+}): Promise<boolean> {
+  const html = renderSystemEmailTemplate(args.designJson, args.mergeData, { logoUrl: args.logoUrl });
+  if (!html) return false;
+  const finalSubject = resolveTemplateSubject(
+    args.subjectOrFilename,
+    args.mergeData,
+    args.fallbackSubject,
+  );
+  await sendRawEmail(args.to, finalSubject, html);
+  return true;
+}
+
 export interface LenderInviteContext {
   lenderId: string;
   lenderName: string;
@@ -244,6 +273,29 @@ export async function sendProjectManagerInvitationEmail(
  * @param locale User's preferred language (defaults to 'de')
  * @returns Promise with the result of the email sending
  */
+/**
+ * Notify the lender about a newly booked transaction (manager opt-in).
+ * Uses system template `transaction-notification-email` (project override if present).
+ */
+export async function sendTransactionNotificationToLender(args: {
+  to: string;
+  transactionId: string;
+  projectId: string;
+}) {
+  try {
+    return await sendSystemTemplateEmail({
+      systemKey: 'transaction-notification-email',
+      projectId: args.projectId,
+      templateRecordId: args.transactionId,
+      to: args.to,
+      subject: 'Neue Zahlung',
+    });
+  } catch (err) {
+    console.error('Failed to send transaction notification email', err);
+    return false;
+  }
+}
+
 export async function sendPasswordResetEmail(to: string, name: string, token: string, userId: string, locale = 'de') {
   const systemUrls = buildSystemUrls(token);
   const resetUrl = systemUrls.passwordReset;
