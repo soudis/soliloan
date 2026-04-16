@@ -29,7 +29,8 @@
   },
   "template": {
     "notFound": "Vorlage nicht gefunden.",
-    "systemCannotDelete": "Systemvorlagen können nicht gelöscht werden."
+    "systemCannotDelete": "Systemvorlagen können nicht gelöscht werden.",
+    "systemFieldsOnly": "Bei Systemvorlagen sind nur Betreff/Dateiname änderbar."
   },
   "migration": {
     "fetchFailed": "Datenpaket konnte nicht von der DKP-v1 API heruntergeladen werden. Bitte URL und Token prüfen.",

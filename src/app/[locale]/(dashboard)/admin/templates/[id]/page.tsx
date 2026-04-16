@@ -45,11 +45,14 @@ export default async function AdminTemplateEditorPage({ params }: PageProps) {
         template={{
           id: data.template.id,
           name: data.template.name,
+          description: data.template.description,
+          subjectOrFilename: data.template.subjectOrFilename,
           type: data.template.type,
           dataset: data.template.dataset,
           designJson: data.template.designJson,
           projectId: data.template.projectId,
           isGlobal: data.template.isGlobal,
+          isSystem: data.template.isSystem,
         }}
         pageData={pageData}
         isAdmin

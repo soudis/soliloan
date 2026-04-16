@@ -187,8 +187,11 @@ const EMAIL_MAX_WIDTH = 600;
 
 /**
  * Wrap raw body HTML in a full HTML document with the Inter font loaded,
- * a light gray background, and a centered max-width container.
+ * a light gray background, and a centered max-width container with top inset + shadow (document-like card).
  */
+const EMAIL_CARD_SHADOW =
+  '0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06)';
+
 const wrapInDocument = (bodyHtml: string): string => {
   return `<!DOCTYPE html>
 <html>
@@ -201,8 +204,8 @@ const wrapInDocument = (bodyHtml: string): string => {
   * { box-sizing: border-box; }
 </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f4f4f5;">
-  <div style="max-width: ${EMAIL_MAX_WIDTH}px; margin: 0 auto; background-color: #ffffff;">
+<body style="margin: 0; padding: 24px 16px 40px; background-color: #f4f4f5;">
+  <div style="max-width: ${EMAIL_MAX_WIDTH}px; margin: 0 auto; background-color: #ffffff; border-radius: 4px; box-shadow: ${EMAIL_CARD_SHADOW};">
     ${bodyHtml}
   </div>
 </body>

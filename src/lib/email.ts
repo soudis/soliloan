@@ -6,6 +6,7 @@ import { db } from '@/lib/db';
 import { renderSystemEmailTemplate, resolveSystemTemplate } from '@/lib/templates/resolve-system-template';
 import { getAppBaseUrl, getDefaultSystemLinkMergeData } from '@/lib/templates/system-merge-links';
 import { getTemplateData } from '@/lib/templates/template-data';
+import { resolveTemplateSubject } from '@/lib/templates/template-subject-filename';
 
 // Create a transporter using environment variables
 const transporter = nodemailer.createTransport({
@@ -139,7 +140,13 @@ async function sendSystemTemplateEmail({
   const html = renderSystemEmailTemplate(template.designJson, mergeData, { logoUrl });
   if (!html) return false;
 
-  await sendRawEmail(to, subject, html);
+  const finalSubject = resolveTemplateSubject(
+    template.subjectOrFilename,
+    mergeData as Record<string, unknown>,
+    subject,
+  );
+
+  await sendRawEmail(to, finalSubject, html);
   return true;
 }
 

@@ -210,12 +210,14 @@ const InternalEditor = ({
         </div>
       )}
 
-      {/* Preview Layer — email only (document opens PDF in new tab) */}
+      {/* Preview Layer — email only: iframe renders same HTML as sent mail (margin + card shadow from wrapInDocument) */}
       {isPreviewing && !isDocument && (
-        <div className="absolute inset-0 bg-zinc-100 p-8 flex flex-col items-center z-30">
-          <div className="bg-white shadow-sm min-h-[600px] w-full max-w-[600px]">
-            <iframe title="Email Preview" srcDoc={previewHtml} className="w-full h-full min-h-[600px] border-none" />
-          </div>
+        <div className="absolute inset-0 z-30 overflow-auto bg-[#f4f4f5]">
+          <iframe
+            title="Email Preview"
+            srcDoc={previewHtml}
+            className="block min-h-[600px] w-full border-0"
+          />
         </div>
       )}
     </div>

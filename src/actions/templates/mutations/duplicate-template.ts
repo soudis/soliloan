@@ -51,6 +51,7 @@ export const duplicateTemplateAction = authAction
       data: {
         name: data.name,
         description: sourceTemplate.description,
+        subjectOrFilename: sourceTemplate.subjectOrFilename,
         type: sourceTemplate.type,
         dataset: sourceTemplate.dataset,
         designJson: sourceTemplate.designJson ?? {},

@@ -22,6 +22,7 @@ export async function resolveSystemTemplate(systemKey: string, projectId?: strin
       designJson: true,
       dataset: true,
       projectId: true,
+      subjectOrFilename: true,
     },
     orderBy: { projectId: 'asc' },
   });

@@ -50,15 +50,46 @@ const SYSTEM_TEMPLATES = [
   },
 ];
 
-async function loadSystemTemplateDesign(systemKey: string): Promise<Prisma.InputJsonValue> {
+type LoadedSystemTemplateFile = {
+  designJson: Prisma.InputJsonValue;
+  subjectOrFilename: string | null;
+};
+
+function normalizeSubjectOrFilename(value: unknown): string | null {
+  if (value === undefined || value === null) {
+    return null;
+  }
+  if (typeof value === 'string') {
+    return value;
+  }
+  return null;
+}
+
+/**
+ * Loads `prisma/system-template-designs/<systemKey>.json`.
+ * Format from `scripts/export-email-templates.ts`: `{ designJson, subjectOrFilename }`.
+ * Legacy files are raw design JSON only (no wrapper) — `subjectOrFilename` is then null.
+ */
+async function loadSystemTemplateDesign(systemKey: string): Promise<LoadedSystemTemplateFile> {
   const filePath = path.join(SYSTEM_TEMPLATE_DESIGNS_DIR, `${systemKey}.json`);
 
   try {
     const fileContent = await readFile(filePath, 'utf8');
-    return JSON.parse(fileContent) as Prisma.InputJsonValue;
+    const parsed: unknown = JSON.parse(fileContent);
+    if (parsed && typeof parsed === 'object' && parsed !== null && 'designJson' in parsed) {
+      const o = parsed as { designJson?: unknown; subjectOrFilename?: unknown };
+      return {
+        designJson: (o.designJson ?? {}) as Prisma.InputJsonValue,
+        subjectOrFilename: normalizeSubjectOrFilename(o.subjectOrFilename),
+      };
+    }
+    return {
+      designJson: parsed as Prisma.InputJsonValue,
+      subjectOrFilename: null,
+    };
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return {};
+      return { designJson: {}, subjectOrFilename: null };
     }
     throw error;
   }
@@ -68,7 +99,7 @@ async function seedSystemTemplates(adminUserId: string) {
   await mkdir(SYSTEM_TEMPLATE_DESIGNS_DIR, { recursive: true });
 
   for (const tpl of SYSTEM_TEMPLATES) {
-    const designJson = await loadSystemTemplateDesign(tpl.systemKey);
+    const { designJson, subjectOrFilename } = await loadSystemTemplateDesign(tpl.systemKey);
 
     // cannot use upsert because of the unique constraint on systemKey and projectId and prisma does not support unique on null values, while postgres does
     const exists = await prisma.communicationTemplate.findFirst({
@@ -86,6 +117,7 @@ async function seedSystemTemplates(adminUserId: string) {
           type: tpl.type,
           dataset: tpl.dataset,
           designJson,
+          subjectOrFilename,
           isGlobal: true,
           isSystem: true,
           createdBy: { connect: { id: adminUserId } },

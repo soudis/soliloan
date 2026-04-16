@@ -7,6 +7,8 @@ import { z } from 'zod';
 export const templateBaseSchema = z.object({
   name: z.string().min(1, 'error.template.nameRequired').max(100),
   description: z.string().max(500).nullable().optional(),
+  /** EMAIL: subject template; DOCUMENT: filename template (merge tags allowed). */
+  subjectOrFilename: z.string().max(500).nullable().optional(),
   type: z.enum(TemplateType),
   dataset: z.enum(TemplateDataset),
 });
@@ -26,6 +28,7 @@ export const updateTemplateSchema = z.object({
   templateId: z.string(),
   name: z.string().min(1).max(100).optional(),
   description: z.string().max(500).nullable().optional(),
+  subjectOrFilename: z.string().max(500).nullable().optional(),
   designJson: z.record(z.string(), z.any()).optional(),
   htmlContent: z.string().nullable().optional(),
 });

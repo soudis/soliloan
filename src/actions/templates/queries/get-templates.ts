@@ -9,6 +9,7 @@ const globalTemplateListSelect = {
   id: true,
   name: true,
   description: true,
+  subjectOrFilename: true,
   type: true,
   dataset: true,
   isGlobal: true,

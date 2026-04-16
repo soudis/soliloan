@@ -53,7 +53,6 @@ export async function getProjectUnsafe(projectId: string): Promise<ProjectWithCo
       loanAdditionalFields: parseAdditionalFieldConfig(project.configuration.loanAdditionalFields) ?? [],
     },
   };
-  return projectWithConfiguration;
 }
 
 export const getProjectAction = projectAction

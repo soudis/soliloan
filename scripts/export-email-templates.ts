@@ -66,6 +66,7 @@ async function main() {
       select: {
         systemKey: true,
         designJson: true,
+        subjectOrFilename: true,
       },
       orderBy: {
         systemKey: 'asc',
@@ -76,7 +77,11 @@ async function main() {
       if (!template.systemKey) continue;
 
       const filePath = path.join(OUTPUT_DIR, `${template.systemKey}.json`);
-      const fileContents = `${JSON.stringify(template.designJson ?? {}, null, 2)}\n`;
+      const payload = {
+        designJson: template.designJson ?? {},
+        subjectOrFilename: template.subjectOrFilename ?? null,
+      };
+      const fileContents = `${JSON.stringify(payload, null, 2)}\n`;
       await writeFile(filePath, fileContents, 'utf8');
       console.info(`Exported ${template.systemKey} -> ${path.relative(process.cwd(), filePath)}`);
     }

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import type { MergeTagConfig, MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
 import { Button } from '@/components/ui/button';
@@ -118,19 +119,48 @@ export function MergeTagDropdown({
 
   const selectedItem = selectedGroup?.items.find((item) => item.key === selectedItemKey);
 
+  /** Root: backdrop + panel (Select portals outside this subtree — see `data-merge-tag-dropdown-sub`). */
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handlePointerDownCapture = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (rootRef.current?.contains(target)) return;
+      if (target.closest('[data-merge-tag-dropdown-sub]')) return;
+      onClose();
+    };
+
+    document.addEventListener('pointerdown', handlePointerDownCapture, true);
+    return () => document.removeEventListener('pointerdown', handlePointerDownCapture, true);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
-  return (
-    <>
+  // Portal to document.body so `position: fixed` uses viewport coordinates from
+  // getBoundingClientRect(). Ancestors with `transform` (e.g. Radix Dialog) would
+  // otherwise make fixed positioning relative to that ancestor and misplace the panel.
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div
+      ref={rootRef}
+      className="pointer-events-none fixed inset-0 z-[100000]"
+      data-merge-tag-dropdown-root=""
+    >
       <button
         type="button"
-        className="fixed inset-0 z-[9998]"
+        className="pointer-events-auto fixed inset-0 z-0 cursor-default bg-transparent"
+        aria-label="Close"
         onMouseDown={(e) => e.preventDefault()}
         onClick={onClose}
       />
       <div
-        className="fixed z-[9999] w-80 rounded-lg border bg-background p-4 shadow-xl"
+        className="pointer-events-auto fixed z-[1] w-80 max-h-[min(24rem,calc(100vh-2rem))] overflow-y-auto rounded-lg border bg-background p-4 shadow-xl"
         style={{ top: position.top, left: position.left }}
+        onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="space-y-3">
           <div className="space-y-1.5">
@@ -139,7 +169,11 @@ export function MergeTagDropdown({
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={tMergeTags('groupPlaceholder')} />
               </SelectTrigger>
-              <SelectContent className="z-[10000]">
+              <SelectContent
+                className="z-[100002]"
+                position="popper"
+                data-merge-tag-dropdown-sub=""
+              >
                 {groups.map((group) => (
                   <SelectItem key={group.key} value={group.key}>
                     {group.label}
@@ -159,7 +193,11 @@ export function MergeTagDropdown({
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={tMergeTags('fieldPlaceholder')} />
               </SelectTrigger>
-              <SelectContent className="z-[10000]">
+              <SelectContent
+                className="z-[100002]"
+                position="popper"
+                data-merge-tag-dropdown-sub=""
+              >
                 {selectedGroup?.items.map((item) => (
                   <SelectItem key={item.key} value={item.key}>
                     {item.label}
@@ -187,6 +225,7 @@ export function MergeTagDropdown({
           </Button>
         </div>
       </div>
-    </>
+    </div>,
+    document.body,
   );
 }

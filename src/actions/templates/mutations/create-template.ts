@@ -29,6 +29,7 @@ export const createTemplateAction = projectAction
       data: {
         name: data.name,
         description: data.description ?? null,
+        subjectOrFilename: data.subjectOrFilename ?? null,
         type: data.type,
         dataset: data.dataset,
         designJson,
@@ -55,6 +56,7 @@ export const createGlobalTemplateAction = adminAction
       data: {
         name: data.name,
         description: data.description ?? null,
+        subjectOrFilename: data.subjectOrFilename ?? null,
         type: data.type,
         dataset: data.dataset,
         designJson: data.designJson ?? {},

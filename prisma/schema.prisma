@@ -255,6 +255,8 @@ model CommunicationTemplate {
   id          String          @id @default(cuid())
   name        String
   description String?
+  /** EMAIL: subject template; DOCUMENT: filename template — merge tags allowed (`{{lender.email}}`, …). */
+  subjectOrFilename String?
   type        TemplateType
   dataset     TemplateDataset
   designJson  Json

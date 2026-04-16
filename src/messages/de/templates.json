@@ -17,6 +17,11 @@
     "description": "Erstelle eine neue E-Mail- oder Dokumentvorlage",
     "submit": "Erstellen",
     "created": "Vorlage erfolgreich erstellt",
+    "settingsTitle": "Vorlageneinstellungen",
+    "settingsDescription": "Name, Beschreibung und Betreff bzw. Dateiname.",
+    "settingsDescriptionSystem": "Betreff (E-Mail) bzw. Dateiname (Dokument).",
+    "saveSettings": "Einstellungen speichern",
+    "settingsSaved": "Einstellungen gespeichert",
     "fields": {
       "name": "Name",
       "namePlaceholder": "z.B. Willkommens-E-Mail",
@@ -26,6 +31,12 @@
       "typePlaceholder": "Vorlagentyp auswählen",
       "dataset": "Datensatz",
       "datasetPlaceholder": "Datensatz auswählen",
+      "subjectTemplate": "Betreff",
+      "subjectTemplatePlaceholder": "z.B. Danke für deinen Direktkredit!",
+      "filenameTemplate": "Dateiname (PDF)",
+      "filenameTemplatePlaceholder": "z.B. Kontomitteilung",
+      "mergeTagsHint": "Platzhalter über den Button einfügen",
+      "insertMergeTag": "Platzhalter einfügen",
       "sourceTemplate": "Vorlage als Basis",
       "sourceTemplatePlaceholder": "Globale Vorlage auswählen",
       "sourceTemplateNone": "Keine (leere Vorlage)"
@@ -41,6 +52,7 @@
     "copied": "Systemvorlage wurde als Projektvorlage kopiert"
   },
   "editor": {
+    "settingsButton": "Einstellungen",
     "save": "Speichern",
     "saved": "Vorlage gespeichert",
     "noChanges": "Keine Änderungen zum Speichern",
