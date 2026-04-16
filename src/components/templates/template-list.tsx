@@ -5,7 +5,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Copy, Edit, FileText, Mail, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { deleteTemplateAction } from '@/actions/templates/mutations/delete-template';
 import { duplicateTemplateAction } from '@/actions/templates/mutations/duplicate-template';
@@ -35,33 +35,51 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
   const { executeAsync: deleteTemplate } = useAction(deleteTemplateAction);
   const { executeAsync: duplicateTemplate } = useAction(duplicateTemplateAction);
 
-  const handleOpenTemplate = (template: Pick<CommunicationTemplate, 'id' | 'isGlobal'>) => {
-    if (isAdmin && template.isGlobal) {
-      router.push(`/admin/templates/${template.id}`);
-    } else if (currentProjectId) {
-      router.push(`/configuration/templates/${template.id}`);
-    }
-  };
+  const handleOpenTemplate = useCallback(
+    (template: Pick<CommunicationTemplate, 'id' | 'isGlobal'>) => {
+      if (isAdmin && template.isGlobal) {
+        router.push(`/admin/templates/${template.id}`);
+      } else if (currentProjectId) {
+        router.push(`/configuration/templates/${template.id}`);
+      }
+    },
+    [isAdmin, currentProjectId, router],
+  );
 
-  const handleDuplicate = async (template: Pick<CommunicationTemplate, 'id' | 'name'>) => {
-    if (!project) return;
-    const result = await duplicateTemplate({
-      id: template.id,
-      name: `${template.name} (${t('list.copy')})`,
-      projectId: project.id,
-    });
+  const handleDuplicate = useCallback(
+    async (template: Pick<CommunicationTemplate, 'id' | 'name'>) => {
+      if (!project) return;
+      const result = await duplicateTemplate({
+        id: template.id,
+        name: `${template.name} (${t('list.copy')})`,
+        projectId: project.id,
+      });
 
-    if (result?.serverError) {
-      toast.error(result.serverError);
-    } else {
-      toast.success(t('list.duplicated'));
-    }
-  };
+      if (result?.serverError) {
+        toast.error(result.serverError);
+      } else {
+        toast.success(t('list.duplicated'));
+      }
+    },
+    [project, duplicateTemplate, t],
+  );
 
-  const handleDeleteClick = (template: Pick<CommunicationTemplate, 'id' | 'name'>) => {
+  const handleDeleteClick = useCallback((template: Pick<CommunicationTemplate, 'id' | 'name'>) => {
     setTemplateToDelete(template);
     setDeleteDialogOpen(true);
-  };
+  }, []);
+
+  const tableData = useMemo(() => {
+    if (externalTemplates !== undefined) return externalTemplates;
+    const list = project?.templates ?? [];
+    return list.map((template) => ({
+      ...template,
+      project: project
+        ? { id: project.id, configuration: { name: project.configuration.name } }
+        : { id: '', configuration: { name: '' } },
+      createdBy: template.createdBy,
+    }));
+  }, [externalTemplates, project]);
 
   const handleDeleteConfirm = async () => {
     if (!templateToDelete) return;
@@ -80,7 +98,7 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
     setTemplateToDelete(null);
   };
 
-  const columns: ColumnDef<CommunicationTemplateWithProject>[] = [
+  const columns = useMemo<ColumnDef<CommunicationTemplateWithProject>[]>(() => [
     {
       accessorKey: 'name',
       header: t('list.columns.name'),
@@ -120,50 +138,46 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
       header: t('list.columns.createdAt'),
       cell: ({ row }) => <span>{new Intl.DateTimeFormat('de-DE').format(new Date(row.original.createdAt))}</span>,
     },
-  ];
+  ], [t]);
+
+  const rowActions = useCallback(
+    (row: CommunicationTemplateWithProject) => (
+      <>
+        <DropdownMenuItem onClick={() => handleOpenTemplate(row)}>
+          <Edit className="h-4 w-4 mr-2" />
+          {t('list.actions.edit')}
+        </DropdownMenuItem>
+        {project ? (
+          <DropdownMenuItem onClick={() => handleDuplicate(row)}>
+            <Copy className="h-4 w-4 mr-2" />
+            {t('list.actions.duplicate')}
+          </DropdownMenuItem>
+        ) : null}
+        {(!row.isSystem || project) && (
+          <DropdownMenuItem
+            onClick={() => handleDeleteClick(row)}
+            className="text-destructive focus:text-destructive"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            {t('list.actions.delete')}
+          </DropdownMenuItem>
+        )}
+      </>
+    ),
+    [project, t, handleOpenTemplate, handleDuplicate, handleDeleteClick],
+  );
 
   return (
     <>
       <DataTable
         columns={columns}
-        data={
-          externalTemplates ??
-          (project?.templates ?? []).map((template) => ({
-            ...template,
-            project: project
-              ? { id: project.id, configuration: { name: project.configuration.name } }
-              : { id: '', configuration: { name: '' } },
-            createdBy: template.createdBy,
-          }))
-        }
+        data={tableData}
         hideHeader
         showColumnVisibility={false}
         showFilter={false}
         showPagination={false}
-        onRowClick={(row) => handleOpenTemplate(row)}
-        actions={(row) => (
-          <>
-            <DropdownMenuItem onClick={() => handleOpenTemplate(row)}>
-              <Edit className="h-4 w-4 mr-2" />
-              {t('list.actions.edit')}
-            </DropdownMenuItem>
-            {project ? (
-              <DropdownMenuItem onClick={() => handleDuplicate(row)}>
-                <Copy className="h-4 w-4 mr-2" />
-                {t('list.actions.duplicate')}
-              </DropdownMenuItem>
-            ) : null}
-            {(!row.isSystem || project) && (
-              <DropdownMenuItem
-                onClick={() => handleDeleteClick(row)}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                {t('list.actions.delete')}
-              </DropdownMenuItem>
-            )}
-          </>
-        )}
+        onRowClick={handleOpenTemplate}
+        actions={rowActions}
       />
 
       <ConfirmDialog

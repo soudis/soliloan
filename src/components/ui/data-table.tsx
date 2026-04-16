@@ -24,6 +24,8 @@ import { DataTableHeader } from './data-table-header';
 import { DataTablePagination } from './data-table-pagination';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from './dropdown-menu';
 
+const EMPTY_COLUMN_VISIBILITY: VisibilityState = {};
+
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
     style?: {
@@ -154,7 +156,7 @@ export function DataTable<TData, TValue>({
   showPagination = true,
   showFilter = true,
   columnFilters = {},
-  defaultColumnVisibility = {},
+  defaultColumnVisibility,
   viewType,
   views,
   isLoading,
@@ -167,7 +169,7 @@ export function DataTable<TData, TValue>({
   // Get table state from URL — views are passed so the hook can diff against the selected view's baseline
   const { state: tableState, setState: setTableState } = useTableUrlState({
     defaultColumnVisibility,
-    views: views ?? [],
+    views,
   });
 
   const sorting = tableState.sorting;
@@ -396,7 +398,7 @@ export function DataTable<TData, TValue>({
           showColumnVisibility={showColumnVisibility}
           showFilter={showFilter}
           columnFilters={columnFilters}
-          defaultColumnVisibility={defaultColumnVisibility}
+          defaultColumnVisibility={defaultColumnVisibility ?? EMPTY_COLUMN_VISIBILITY}
           views={views || []}
           viewType={viewType}
           hasActiveFilters={hasActiveFilters}
