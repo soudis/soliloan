@@ -345,6 +345,17 @@ export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
     ],
     loops: ['transactions', 'notes'],
   },
+  TRANSACTION: {
+    topLevelFields: [
+      { entity: 'loan', fields: LOAN_FIELDS },
+      { entity: 'lender', fields: LENDER_FIELDS },
+      { entity: 'transaction', fields: TRANSACTION_FIELDS },
+      { entity: 'config', fields: CONFIGURATION_FIELDS },
+      { entity: 'platform', fields: PLATFORM_FIELDS },
+      { entity: 'misc', fields: MISC_FIELDS },
+    ],
+    loops: ['transactions', 'notes'],
+  },
   PROJECT: {
     topLevelFields: [
       { entity: 'project', fields: PROJECT_FIELDS },
@@ -399,6 +410,8 @@ export function getDatasetDisplayName(dataset: TemplateDataset): string {
       return 'Darlehensgeber';
     case 'LOAN':
       return 'Darlehen';
+    case 'TRANSACTION':
+      return 'Transaktion';
     case 'PROJECT':
       return 'Projekt';
     case 'PROJECT_YEARLY':
@@ -412,7 +425,7 @@ export function getDatasetDisplayName(dataset: TemplateDataset): string {
 
 /** Datasets that show lender/loan/year sample pickers for preview merge data. */
 export function needsSampleRecordSelection(dataset: TemplateDataset): boolean {
-  return dataset === 'LENDER' || dataset === 'LOAN' || dataset === 'LENDER_YEARLY';
+  return dataset === 'LENDER' || dataset === 'LOAN' || dataset === 'TRANSACTION' || dataset === 'LENDER_YEARLY';
 }
 
 /**
@@ -436,7 +449,7 @@ export function canOpenTemplatePreview(options: {
     return selectedRecordId != null && selectedYear != null && Number.isFinite(selectedYear);
   }
 
-  if (dataset === 'LENDER' || dataset === 'LOAN') {
+  if (dataset === 'LENDER' || dataset === 'LOAN' || dataset === 'TRANSACTION') {
     return selectedRecordId != null;
   }
 

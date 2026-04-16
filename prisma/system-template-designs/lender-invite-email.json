@@ -158,7 +158,7 @@
     },
     "nodes": [],
     "props": {
-      "text": "<p><em>Dies ist eine automatisch generierte E-Mail. Bei Fragen melde dich unter </em><span data-merge-tag-id=\"config.email\" data-merge-tag-label=\"E-Mail\" data-merge-tag=\"config.email\" class=\"merge-tag-pill\">{{E-Mail}}</span></p>",
+      "text": "<p><em>Dies ist eine automatisch generierte E-Mail. Bei Fragen melde dich unter <span data-merge-tag-id=\"config.email\" data-merge-tag-label=\"E-Mail\" data-merge-tag=\"config.email\" class=\"merge-tag-pill\">{{E-Mail}}</span></em></p>",
       "color": "#000000",
       "fontSize": 12,
       "textAlign": "center"

@@ -1,11 +1,13 @@
 'use client';
 
 import { useNode } from '@craftjs/core';
+import type { TemplateDataset } from '@prisma/client';
 import { Link2, PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
+import { useEditorMetadata } from '@/components/templates/editor-context';
 import { useMergeTagConfig } from '../merge-tag-context';
 import { MergeTagDropdown } from '../merge-tag-dropdown';
 
@@ -23,7 +25,26 @@ const SYSTEM_URL_KEYS = [
   'emailVerification',
   'invitation',
   'login',
+  'projectLink',
+  'lenderLink',
+  'loanLink',
 ] as const;
+
+type SystemUrlKey = (typeof SYSTEM_URL_KEYS)[number];
+
+/** Context-specific system links: hide in button dropdown where dataset cannot supply sensible merge context. */
+function isSystemUrlKeyVisibleForDataset(key: SystemUrlKey, dataset: TemplateDataset): boolean {
+  switch (key) {
+    case 'loanLink':
+      return dataset === 'LOAN' || dataset === 'TRANSACTION';
+    case 'projectLink':
+      return dataset !== 'USER';
+    case 'lenderLink':
+      return true;
+    default:
+      return true;
+  }
+}
 
 export const Button = ({
   text = 'Klick mich',
@@ -72,6 +93,7 @@ export const Button = ({
 
 export const ButtonSettings = () => {
   const t = useTranslations('templates.editor.components.button');
+  const editorMeta = useEditorMetadata();
   const config = useMergeTagConfig();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
@@ -93,6 +115,20 @@ export const ButtonSettings = () => {
     useSystemUrl: node.data.props.useSystemUrl ?? false,
     systemUrlKey: node.data.props.systemUrlKey ?? '',
   }));
+
+  const visibleSystemUrlKeys = useMemo(
+    () => SYSTEM_URL_KEYS.filter((key) => isSystemUrlKeyVisibleForDataset(key, editorMeta.dataset)),
+    [editorMeta.dataset],
+  );
+
+  useEffect(() => {
+    if (!systemUrlKey) return;
+    if (!isSystemUrlKeyVisibleForDataset(systemUrlKey as SystemUrlKey, editorMeta.dataset)) {
+      setProp((props: ButtonProps) => {
+        props.systemUrlKey = '';
+      });
+    }
+  }, [editorMeta.dataset, systemUrlKey, setProp]);
 
   const handleMergeTagSelect = (item: MergeTagField | MergeTagLoop) => {
     const tagValue = 'startTag' in item ? item.startTag : item.value;
@@ -173,7 +209,7 @@ export const ButtonSettings = () => {
               className="w-full px-2 py-1 border rounded text-sm"
             >
               <option value="">{t('systemUrlKeyPlaceholder')}</option>
-              {SYSTEM_URL_KEYS.map((key) => (
+              {visibleSystemUrlKeys.map((key) => (
                 <option key={key} value={key}>
                   {t(`systemUrlKeys.${key}`)}
                 </option>

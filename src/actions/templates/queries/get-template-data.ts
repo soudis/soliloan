@@ -81,6 +81,36 @@ export async function getSampleLoansAction(projectId: string, limit = 10) {
 }
 
 /**
+ * Sample transactions for `TRANSACTION` dataset template preview (merge data uses transaction id).
+ */
+export async function getSampleTransactionsAction(projectId: string, limit = 20) {
+  return db.transaction.findMany({
+    where: { loan: { lender: { projectId } } },
+    select: {
+      id: true,
+      type: true,
+      amount: true,
+      date: true,
+      loan: {
+        select: {
+          loanNumber: true,
+          lender: {
+            select: {
+              firstName: true,
+              lastName: true,
+              organisationName: true,
+              type: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: { date: 'desc' },
+    take: limit,
+  });
+}
+
+/**
  * Get template data for preview replacement and live rendering.
  */
 export async function getMergeTagValuesAction(

@@ -149,6 +149,7 @@ export function TemplateEditor({ template, pageData, projectId, isAdmin = false 
                     serverHydratedProjectId={pageData.effectivePreviewProjectId}
                     initialSampleLenders={pageData.sampleLenders}
                     initialSampleLoans={pageData.sampleLoans}
+                    initialSampleTransactions={pageData.sampleTransactions}
                     initialLenderYearsByLenderId={pageData.lenderYearsByLenderId}
                   />
                 )}

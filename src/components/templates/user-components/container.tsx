@@ -1,7 +1,7 @@
 'use client';
 
 import { useEditor, useNode } from '@craftjs/core';
-import { TemplateDataset } from '@prisma/client';
+import { TemplateDataset, type TemplateType } from '@prisma/client';
 import {
   AlignCenter,
   AlignEndHorizontal,
@@ -312,6 +312,7 @@ const DATASET_LABELS: Record<string, string> = {
   PROJECT: 'Projekt',
   PROJECT_YEARLY: 'Projekt (jährlich)',
   LENDER_YEARLY: 'Kreditgeber (jährlich)',
+  TRANSACTION: 'Transaktion',
 };
 
 export const ContainerSettings = () => {
@@ -368,6 +369,7 @@ export const ContainerSettings = () => {
   const [blockName, setBlockName] = useState('');
   const [blockDesc, setBlockDesc] = useState('');
   const [blockDatasets, setBlockDatasets] = useState<TemplateDataset[]>([editorMeta.dataset]);
+  const [blockTemplateTypes, setBlockTemplateTypes] = useState<TemplateType[]>([editorMeta.templateType]);
   const [blockVisibility, setBlockVisibility] = useState<'PROJECT_MANAGERS' | 'ADMIN_ONLY'>('PROJECT_MANAGERS');
   const [isSavingBlock, setIsSavingBlock] = useState(false);
 
@@ -387,6 +389,7 @@ export const ContainerSettings = () => {
         description: blockDesc.trim() || null,
         designJson: subtree,
         datasets: blockDatasets,
+        templateTypes: blockTemplateTypes,
         visibility: editorMeta.isAdmin && editorMeta.isGlobalTemplate ? blockVisibility : 'PROJECT_MANAGERS',
         projectId: editorMeta.isGlobalTemplate ? null : editorMeta.projectId,
       });
@@ -397,13 +400,14 @@ export const ContainerSettings = () => {
         toast.success(t('blockSaved'));
         setBlockName('');
         setBlockDesc('');
+        setBlockTemplateTypes([editorMeta.templateType]);
       }
     } catch {
       toast.error(t('blockSaveError'));
     } finally {
       setIsSavingBlock(false);
     }
-  }, [blockName, blockDesc, blockDatasets, blockVisibility, nodeId, query, editorMeta, t]);
+  }, [blockName, blockDesc, blockDatasets, blockTemplateTypes, blockVisibility, nodeId, query, editorMeta, t]);
 
   // Parse the current background color
   const colorValues = useMemo(() => parseColor(background), [background]);
@@ -727,6 +731,8 @@ export const ContainerSettings = () => {
               setBlockDesc={setBlockDesc}
               blockDatasets={blockDatasets}
               setBlockDatasets={setBlockDatasets}
+              blockTemplateTypes={blockTemplateTypes}
+              setBlockTemplateTypes={setBlockTemplateTypes}
               blockVisibility={blockVisibility}
               setBlockVisibility={setBlockVisibility}
               isSavingBlock={isSavingBlock}
@@ -749,6 +755,8 @@ function SaveAsBlockDialog({
   setBlockDesc,
   blockDatasets,
   setBlockDatasets,
+  blockTemplateTypes,
+  setBlockTemplateTypes,
   blockVisibility,
   setBlockVisibility,
   isSavingBlock,
@@ -763,6 +771,8 @@ function SaveAsBlockDialog({
   setBlockDesc: (v: string) => void;
   blockDatasets: TemplateDataset[];
   setBlockDatasets: React.Dispatch<React.SetStateAction<TemplateDataset[]>>;
+  blockTemplateTypes: TemplateType[];
+  setBlockTemplateTypes: React.Dispatch<React.SetStateAction<TemplateType[]>>;
   blockVisibility: 'PROJECT_MANAGERS' | 'ADMIN_ONLY';
   setBlockVisibility: (v: 'PROJECT_MANAGERS' | 'ADMIN_ONLY') => void;
   isSavingBlock: boolean;
@@ -798,6 +808,28 @@ function SaveAsBlockDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-2">
+          <fieldset className="space-y-1.5">
+            <legend className="text-sm font-medium">{t('blockTemplateTypes')}</legend>
+            <p className="text-xs text-muted-foreground">{t('blockTemplateTypesHint')}</p>
+            <div className="flex flex-wrap gap-4 mt-1">
+              {(['EMAIL', 'DOCUMENT'] as const).map((tt) => (
+                <label key={tt} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={blockTemplateTypes.includes(tt)}
+                    onChange={(e) => {
+                      setBlockTemplateTypes((prev) =>
+                        e.target.checked ? [...prev, tt] : prev.filter((x) => x !== tt),
+                      );
+                    }}
+                    className="rounded border-zinc-300"
+                  />
+                  {t(`blockTemplateType_${tt}`)}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
           <div className="space-y-1.5">
             <label htmlFor="dlgBlockName" className="text-sm font-medium">
               {t('blockName')}
@@ -866,7 +898,12 @@ function SaveAsBlockDialog({
         <DialogFooter>
           <button
             type="button"
-            disabled={!blockName.trim() || blockDatasets.length === 0 || isSavingBlock}
+            disabled={
+              !blockName.trim() ||
+              blockDatasets.length === 0 ||
+              blockTemplateTypes.length === 0 ||
+              isSavingBlock
+            }
             onClick={handleSave}
             className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-zinc-900 text-white rounded-md hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >

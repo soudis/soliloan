@@ -7,10 +7,12 @@ import {
   getSampleLendersAction,
   getSampleLenderYearsAction,
   getSampleLoansAction,
+  getSampleTransactionsAction,
 } from '@/actions/templates/queries/get-template-data';
 
 export type SampleLenderRow = Awaited<ReturnType<typeof getSampleLendersAction>>[number];
 export type SampleLoanRow = Awaited<ReturnType<typeof getSampleLoansAction>>[number];
+export type SampleTransactionRow = Awaited<ReturnType<typeof getSampleTransactionsAction>>[number];
 
 export type TemplateEditorPageData = {
   mergeTagConfig: MergeTagConfig;
@@ -21,6 +23,7 @@ export type TemplateEditorPageData = {
   effectivePreviewProjectId: string | null;
   sampleLenders: Awaited<ReturnType<typeof getSampleLendersAction>>;
   sampleLoans: Awaited<ReturnType<typeof getSampleLoansAction>>;
+  sampleTransactions: Awaited<ReturnType<typeof getSampleTransactionsAction>>;
   /** For `LENDER_YEARLY`: reporting years per sample lender id. */
   lenderYearsByLenderId: Record<string, number[]>;
 };
@@ -62,6 +65,7 @@ export async function loadTemplateEditorPageData(params: {
 
   let sampleLenders: Awaited<ReturnType<typeof getSampleLendersAction>> = [];
   let sampleLoans: Awaited<ReturnType<typeof getSampleLoansAction>> = [];
+  let sampleTransactions: Awaited<ReturnType<typeof getSampleTransactionsAction>> = [];
   const lenderYearsByLenderId: Record<string, number[]> = {};
 
   if (effectivePreviewProjectId) {
@@ -77,6 +81,8 @@ export async function loadTemplateEditorPageData(params: {
       }
     } else if (dataset === 'LOAN') {
       sampleLoans = await getSampleLoansAction(effectivePreviewProjectId);
+    } else if (dataset === 'TRANSACTION') {
+      sampleTransactions = await getSampleTransactionsAction(effectivePreviewProjectId);
     }
   }
 
@@ -87,6 +93,7 @@ export async function loadTemplateEditorPageData(params: {
     effectivePreviewProjectId,
     sampleLenders,
     sampleLoans,
+    sampleTransactions,
     lenderYearsByLenderId,
   };
 }

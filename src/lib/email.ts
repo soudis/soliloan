@@ -4,9 +4,8 @@ import React from 'react';
 
 import { db } from '@/lib/db';
 import { renderSystemEmailTemplate, resolveSystemTemplate } from '@/lib/templates/resolve-system-template';
+import { getAppBaseUrl, getDefaultSystemLinkMergeData } from '@/lib/templates/system-merge-links';
 import { getTemplateData } from '@/lib/templates/template-data';
-
-const SOLILOAN_URL = (process.env.SOLILOAN_URL ?? '').replace(/\/+$/, '');
 
 // Create a transporter using environment variables
 const transporter = nodemailer.createTransport({
@@ -67,13 +66,15 @@ async function sendLegacyPasswordInvitationEmail(
 }
 
 function buildSystemUrls(token: string) {
-  const inviteUrl = `${SOLILOAN_URL}/auth/set-password?token=${token}`;
+  const base = getAppBaseUrl();
+  const inviteUrl = `${base}/auth/set-password?token=${token}`;
 
   return {
+    ...getDefaultSystemLinkMergeData(),
     passwordReset: inviteUrl,
     emailVerification: inviteUrl,
     invitation: inviteUrl,
-    login: `${SOLILOAN_URL}/auth/login`,
+    login: `${base}/auth/login`,
   };
 }
 

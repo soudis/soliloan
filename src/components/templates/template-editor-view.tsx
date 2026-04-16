@@ -550,6 +550,7 @@ export function TemplateEditorView({
         <EditorMetadataProvider
           value={{
             dataset,
+            templateType,
             projectId: projectId ?? null,
             isAdmin,
             isGlobalTemplate,

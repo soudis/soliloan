@@ -76,10 +76,11 @@ export const Toolbox = () => {
   const editorMeta = useEditorMetadata();
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['predefinedBlocks', editorMeta.dataset, editorMeta.projectId],
+    queryKey: ['predefinedBlocks', editorMeta.dataset, editorMeta.templateType, editorMeta.projectId],
     queryFn: () =>
       getPredefinedBlocksAction({
         dataset: editorMeta.dataset,
+        templateType: editorMeta.templateType,
         projectId: editorMeta.projectId,
       }),
   });

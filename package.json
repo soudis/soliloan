@@ -13,6 +13,8 @@
     "export:email-templates": "tsx scripts/export-email-templates.ts",
     "prisma:generate": "prisma generate",
     "prisma:studio": "bash -c 'source <(grep -E \"^POSTGRES_\" .env) && DATABASE_URL=\"postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}\" prisma studio'",
+    "prisma:push": "bash -c 'source <(grep -E \"^POSTGRES_\" .env) && DATABASE_URL=\"postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}\" prisma db push'",
+    "prisma:seed": "bash -c 'source <(grep -E \"^POSTGRES_\" .env) && DATABASE_URL=\"postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}\" prisma db seed'",
     "format": "biome format src prisma",
     "format:fix": "biome format src prisma --write",
     "typecheck": "tsc --noEmit",

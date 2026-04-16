@@ -3,6 +3,7 @@ import { Prisma, type TemplateDataset, type Transaction, TransactionType } from 
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFields, calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
+import { withSystemMergeData } from '@/lib/templates/system-merge-links';
 import { formatCurrency, formatDateLong, formatDateShort, formatPercentage, getLenderName } from '@/lib/utils';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { transactionSorter } from '@/lib/utils/sorters';
@@ -264,6 +265,19 @@ type TemplateTransactionRecord = Record<string, unknown> & {
   amount: number;
   date: Date | string | null;
 };
+
+/** Top-level `latestTransaction` / `transaction` merge fields (flat object, same keys as `TRANSACTION_FIELDS`). */
+function formatTransactionMergeFields(transaction: TemplateTransactionRecord, locale: string) {
+  const rawType = transaction.type as string | undefined;
+  const rawPayment = transaction.paymentType as string | undefined;
+  return {
+    type: transactionTypeLabel(rawType, locale),
+    amount: formatCurrency(transaction.amount, locale),
+    date: formatDateShort(transaction.date, locale),
+    dateLong: formatDateLong(transaction.date, locale),
+    paymentType: rawPayment ? paymentTypeLabel(rawPayment, locale) : '',
+  };
+}
 
 type TemplateLoanRecord = Record<string, unknown> & {
   amount: number;
@@ -615,7 +629,7 @@ async function getProjectTemplateData(projectId: string, locale: string) {
     ),
   );
 
-  return {
+  return withSystemMergeData({
     platform: getPlatformData(),
     config,
     misc: getMiscMergeTagValues(locale),
@@ -624,7 +638,7 @@ async function getProjectTemplateData(projectId: string, locale: string) {
       slug: project.slug,
     },
     lenders: lenders.map((lender) => buildLenderTemplateData(lender, locale)),
-  };
+  });
 }
 
 export async function getTemplateData(
@@ -643,12 +657,12 @@ export async function getTemplateData(
     const resolvedProjectId = projectId || lender.project?.id;
     const config = resolvedProjectId ? await getConfigData(resolvedProjectId) : {};
 
-    return {
+    return withSystemMergeData({
       platform: getPlatformData(),
       config,
       misc: getMiscMergeTagValues(locale),
       ...buildLenderTemplateData(lender, locale),
-    };
+    });
   }
 
   if (dataset === 'LOAN') {
@@ -664,24 +678,48 @@ export async function getTemplateData(
     );
     const latest = sortedTransactions[0];
 
-    return {
+    return withSystemMergeData({
       platform: getPlatformData(),
       config,
       misc: getMiscMergeTagValues(locale),
       lender: formatLenderFields(loan.lender, locale),
       loan: formatLoanFields(loan, locale),
       latestTransaction: latest
-        ? {
-            type: transactionTypeLabel(latest.type as string, locale),
-            amount: formatCurrency(latest.amount, locale),
-            date: formatDateShort(latest.date, locale),
-            dateLong: formatDateLong(latest.date, locale),
-            paymentType: latest.paymentType ? paymentTypeLabel(latest.paymentType as string, locale) : '',
-          }
+        ? formatTransactionMergeFields(latest as TemplateTransactionRecord, locale)
         : { type: '', amount: '', date: '', dateLong: '', paymentType: '' },
       transactions: (loan.transactions ?? []).map((transaction) => formatTransaction(transaction, locale)),
       notes: (loan.notes ?? []).map((note) => formatNote(note, locale)),
-    };
+    });
+  }
+
+  if (dataset === 'TRANSACTION') {
+    if (!recordId) return null;
+
+    const txMeta = await db.transaction.findUnique({
+      where: { id: recordId },
+      select: { id: true, loanId: true },
+    });
+    if (!txMeta) return null;
+
+    const loan = await getCalculatedLoan(txMeta.loanId);
+    if (!loan) return null;
+
+    const specificTx = (loan.transactions ?? []).find((t) => (t as { id?: string }).id === recordId);
+    if (!specificTx) return null;
+
+    const resolvedProjectId = projectId || loan.lender.project?.id;
+    const config = resolvedProjectId ? await getConfigData(resolvedProjectId) : {};
+
+    return withSystemMergeData({
+      platform: getPlatformData(),
+      config,
+      misc: getMiscMergeTagValues(locale),
+      lender: formatLenderFields(loan.lender, locale),
+      loan: formatLoanFields(loan, locale),
+      transaction: formatTransactionMergeFields(specificTx as TemplateTransactionRecord, locale),
+      transactions: (loan.transactions ?? []).map((transaction) => formatTransaction(transaction, locale)),
+      notes: (loan.notes ?? []).map((note) => formatNote(note, locale)),
+    });
   }
 
   if (dataset === 'USER') {
@@ -693,14 +731,14 @@ export async function getTemplateData(
     });
     if (!user) return null;
 
-    return {
+    return withSystemMergeData({
       platform: getPlatformData(),
       misc: getMiscMergeTagValues(locale),
       user: {
         name: user.name ?? '',
         email: user.email ?? '',
       },
-    };
+    });
   }
 
   if (dataset === 'PROJECT' || dataset === 'PROJECT_YEARLY') {
@@ -722,12 +760,12 @@ export async function getTemplateData(
     const lastCompleteYear = new Date().getFullYear() - 1;
     const requestedYear = options?.year ?? lastCompleteYear;
     if (requestedYear > lastCompleteYear) return null;
-    return {
+    return withSystemMergeData({
       platform: getPlatformData(),
       config,
       misc: getMiscMergeTagValues(locale),
       ...buildLenderYearlyTemplateData(lender, requestedYear, locale),
-    };
+    });
   }
 
   return null;

@@ -223,6 +223,7 @@ enum TemplateDataset {
   USER
   LENDER
   LOAN
+  TRANSACTION
   PROJECT
   PROJECT_YEARLY
   LENDER_YEARLY
@@ -239,6 +240,8 @@ model PredefinedCraftBlock {
   description String?
   designJson  Json
   datasets    TemplateDataset[]
+  /** Block appears in template editors for these template types (e.g. EMAIL vs DOCUMENT). */
+  templateTypes TemplateType[]
   visibility  PredefinedBlockVisibility  @default(PROJECT_MANAGERS)
   projectId   String?
   project     Project?                  @relation(fields: [projectId], references: [id], onDelete: Cascade)

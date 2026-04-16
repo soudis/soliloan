@@ -9,10 +9,11 @@ import {
   getSampleLendersAction,
   getSampleLenderYearsAction,
   getSampleLoansAction,
+  getSampleTransactionsAction,
 } from '@/actions/templates/queries/get-template-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
-import type { SampleLenderRow, SampleLoanRow } from '@/lib/templates/template-editor-page-data';
+import type { SampleLenderRow, SampleLoanRow, SampleTransactionRow } from '@/lib/templates/template-editor-page-data';
 
 interface SampleDataSelectorProps {
   dataset: TemplateDataset;
@@ -26,6 +27,7 @@ interface SampleDataSelectorProps {
   serverHydratedProjectId?: string | null;
   initialSampleLenders?: SampleLenderRow[];
   initialSampleLoans?: SampleLoanRow[];
+  initialSampleTransactions?: SampleTransactionRow[];
   initialLenderYearsByLenderId?: Record<string, number[]>;
 }
 
@@ -39,11 +41,13 @@ export function SampleDataSelector({
   serverHydratedProjectId,
   initialSampleLenders = [],
   initialSampleLoans = [],
+  initialSampleTransactions = [],
   initialLenderYearsByLenderId = {},
 }: SampleDataSelectorProps) {
   const t = useTranslations('templates');
 
   const isLenderSample = dataset === 'LENDER' || dataset === 'LENDER_YEARLY';
+  const isLoanOrTransactionSample = dataset === 'LOAN' || dataset === 'TRANSACTION';
   const useServerHydration = serverHydratedProjectId != null && projectId === serverHydratedProjectId;
 
   const { data: fetchedRecords, isLoading: recordsLoading } = useQuery({
@@ -55,17 +59,21 @@ export function SampleDataSelector({
           return getSampleLendersAction(projectId);
         case 'LOAN':
           return getSampleLoansAction(projectId);
+        case 'TRANSACTION':
+          return getSampleTransactionsAction(projectId);
         default:
           return [];
       }
     },
-    enabled: (isLenderSample || dataset === 'LOAN') && !!projectId && !useServerHydration,
+    enabled: (isLenderSample || isLoanOrTransactionSample) && !!projectId && !useServerHydration,
   });
 
   const sampleRecords = useServerHydration
     ? dataset === 'LOAN'
       ? initialSampleLoans
-      : initialSampleLenders
+      : dataset === 'TRANSACTION'
+        ? initialSampleTransactions
+        : initialSampleLenders
     : fetchedRecords;
 
   const isLoading = useServerHydration ? false : recordsLoading;
@@ -88,11 +96,11 @@ export function SampleDataSelector({
 
   useEffect(() => {
     if (dataset === 'PROJECT' || dataset === 'PROJECT_YEARLY') return;
-    if (!(isLenderSample || dataset === 'LOAN')) return;
+    if (!(isLenderSample || isLoanOrTransactionSample)) return;
     if (!sampleRecords?.length) return;
     if (value != null && sampleRecords.some((r) => r.id === value)) return;
     onChange(sampleRecords[0].id);
-  }, [dataset, isLenderSample, sampleRecords, value, onChange]);
+  }, [dataset, isLenderSample, isLoanOrTransactionSample, sampleRecords, value, onChange]);
 
   useEffect(() => {
     if (dataset !== 'LENDER_YEARLY' || !onYearChange) return;
@@ -130,6 +138,16 @@ export function SampleDataSelector({
       return `#${loan.loanNumber} - ${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(loan.amount)} (${lenderName})`;
     }
 
+    if (dataset === 'TRANSACTION') {
+      const tx = record as unknown as SampleTransactionRow;
+      const lenderName =
+        tx.loan.lender.type === 'PERSON'
+          ? `${tx.loan.lender.firstName ?? ''} ${tx.loan.lender.lastName ?? ''}`.trim()
+          : (tx.loan.lender.organisationName ?? '');
+      const dateStr = new Intl.DateTimeFormat('de-DE', { dateStyle: 'short' }).format(new Date(tx.date));
+      return `${dateStr} · #${tx.loan.loanNumber} · ${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(tx.amount)} (${lenderName})`;
+    }
+
     return '';
   };
 
@@ -139,9 +157,9 @@ export function SampleDataSelector({
       ? t('editor.selectSampleLenderYearly')
       : t('editor.selectSampleRecord', { type: getDatasetDisplayName(dataset) });
 
-  /** LOAN: width follows selected label (one line); avoids a min-width that wraps the whole control to the next row. */
+  /** LOAN / TRANSACTION: width follows selected label (one line); avoids a min-width that wraps the whole control to the next row. */
   const lenderSelectTriggerClass =
-    dataset === 'LOAN'
+    dataset === 'LOAN' || dataset === 'TRANSACTION'
       ? 'h-10 w-fit max-w-full shrink-0 whitespace-nowrap text-left gap-2 [&>span]:min-w-0 [&>span]:text-left'
       : 'h-10 w-[280px] text-left [&>span]:block [&>span]:min-w-0 [&>span]:flex-1 [&>span]:text-left';
 

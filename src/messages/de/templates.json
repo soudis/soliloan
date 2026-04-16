@@ -159,6 +159,10 @@
         "blockDescriptionPlaceholder": "Kurze Beschreibung des Blocks",
         "blockDatasets": "Kompatible Datensätze",
         "blockDatasetsHint": "Der Block wird nur für Vorlagen mit diesen Datensätzen angezeigt.",
+        "blockTemplateTypes": "Vorlagentypen",
+        "blockTemplateTypesHint": "Der Block erscheint nur in Editoren für diese Vorlagentypen.",
+        "blockTemplateType_EMAIL": "E-Mail",
+        "blockTemplateType_DOCUMENT": "Dokument",
         "blockVisibility": "Sichtbarkeit",
         "blockVisibilityAll": "Alle Projektmanager",
         "blockVisibilityAdmin": "Nur Administratoren",
@@ -225,7 +229,10 @@
           "passwordReset": "Passwort zurücksetzen",
           "emailVerification": "E-Mail bestätigen",
           "invitation": "Einladung annehmen",
-          "login": "Anmelden"
+          "login": "Anmelden",
+          "projectLink": "Projektseite (Kreditgeber)",
+          "lenderLink": "Kreditgeber-Dashboard",
+          "loanLink": "Darlehensseite (Kreditgeber)"
         },
         "backgroundColor": "Hintergrundfarbe",
         "textColor": "Textfarbe"

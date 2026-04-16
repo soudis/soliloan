@@ -39,7 +39,7 @@ const SYSTEM_TEMPLATES = [
     name: 'Transaktionsbenachrichtigung',
     description: 'E-Mail-Benachrichtigung über neue Transaktionen an Kreditgeber',
     type: 'EMAIL' as const,
-    dataset: TemplateDataset.LOAN,
+    dataset: TemplateDataset.TRANSACTION,
   },
   {
     systemKey: 'yearly-account-notification',

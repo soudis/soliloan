@@ -34,6 +34,7 @@ export const createPredefinedBlockAction = authAction
         description: data.description,
         designJson: data.designJson,
         datasets: data.datasets,
+        templateTypes: data.templateTypes,
         visibility: data.visibility,
         project: data.projectId ? { connect: { id: data.projectId } } : undefined,
         createdBy: { connect: { id: ctx.session.user.id } },

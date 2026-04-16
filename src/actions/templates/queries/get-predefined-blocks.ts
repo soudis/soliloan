@@ -1,6 +1,6 @@
 'use server';
 
-import type { Prisma, TemplateDataset } from '@prisma/client';
+import type { Prisma, TemplateDataset, TemplateType } from '@prisma/client';
 import { db } from '@/lib/db';
 import { listPredefinedBlocksSchema } from '@/lib/schemas/templates';
 import { authAction } from '@/lib/utils/safe-action';
@@ -10,6 +10,7 @@ export const getPredefinedBlocksAction = authAction
   .action(async ({ parsedInput: data, ctx }) => {
     const where: Prisma.PredefinedCraftBlockWhereInput = {
       datasets: { has: data.dataset as TemplateDataset },
+      templateTypes: { has: data.templateType as TemplateType },
     };
 
     // Scope: global blocks + project-specific blocks for the given project
@@ -32,6 +33,7 @@ export const getPredefinedBlocksAction = authAction
         description: true,
         designJson: true,
         datasets: true,
+        templateTypes: true,
         visibility: true,
         projectId: true,
       },

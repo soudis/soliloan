@@ -74,6 +74,7 @@ export const createPredefinedBlockSchema = z.object({
   description: z.string().max(500).nullable().optional(),
   designJson: z.record(z.string(), z.any()),
   datasets: z.array(z.enum(TemplateDataset)).min(1, 'error.predefinedBlock.datasetsRequired'),
+  templateTypes: z.array(z.enum(TemplateType)).min(1, 'error.predefinedBlock.templateTypesRequired'),
   visibility: z.enum(['PROJECT_MANAGERS', 'ADMIN_ONLY']).default('PROJECT_MANAGERS'),
   projectId: z.string().nullable().optional(),
 });
@@ -82,6 +83,7 @@ export type CreatePredefinedBlockFormData = z.infer<typeof createPredefinedBlock
 
 export const listPredefinedBlocksSchema = z.object({
   dataset: z.enum(TemplateDataset),
+  templateType: z.enum(TemplateType),
   projectId: z.string().nullable().optional(),
 });
 
