@@ -30,6 +30,21 @@
   "template": {
     "notFound": "Vorlage nicht gefunden."
   },
+  "account": {
+    "noPassword": "Dieses Konto ist deaktiviert. Bitte kontaktiere einen Administrator.",
+    "resetSuccess": "Dein Konto wurde erfolgreich zurückgesetzt.",
+    "resetFailed": "Fehler beim Zurücksetzen des Kontos."
+  },
+  "password": {
+    "invalidCurrent": "Das aktuelle Passwort ist falsch.",
+    "mismatch": "Die Passwörter stimmen nicht überein.",
+    "changeFailed": "Fehler beim Ändern des Passworts.",
+    "changeSuccess": "Passwort erfolgreich geändert."
+  },
+  "profile": {
+    "updateFailed": "Fehler beim Aktualisieren des Profils.",
+    "updateSuccess": "Profil erfolgreich aktualisiert."
+  },
   "migration": {
     "fetchFailed": "Datenpaket konnte nicht von der DKP-v1 API heruntergeladen werden. Bitte URL und Token prüfen.",
     "noDatabaseJson": "Das ZIP-Archiv enthält keine database.json Datei.",

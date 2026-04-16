@@ -33,7 +33,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         if (!user.password) {
-          throw new Error('User has no password');
+          throw new Error('error.account.noPassword');
         }
 
         const { verifyPassword } = await import('./utils/password');
