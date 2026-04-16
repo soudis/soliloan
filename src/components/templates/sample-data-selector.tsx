@@ -114,14 +114,22 @@ export function SampleDataSelector({
     return '';
   };
 
+  const lenderRecordPlaceholder = isLoading
+    ? 'Laden...'
+    : dataset === 'LENDER_YEARLY'
+      ? t('editor.selectSampleLenderYearly')
+      : t('editor.selectSampleRecord', { type: getDatasetDisplayName(dataset) });
+
+  /** LOAN: width follows selected label (one line); avoids a min-width that wraps the whole control to the next row. */
+  const lenderSelectTriggerClass =
+    dataset === 'LOAN'
+      ? 'h-10 w-fit max-w-full shrink-0 whitespace-nowrap text-left gap-2 [&>span]:min-w-0 [&>span]:text-left'
+      : 'h-10 w-[280px] text-left [&>span]:block [&>span]:min-w-0 [&>span]:flex-1 [&>span]:text-left';
+
   const lenderSelect = (
     <Select value={value ?? undefined} onValueChange={(val) => onChange(val || null)} disabled={isLoading}>
-      <SelectTrigger className="w-[280px]">
-        <SelectValue
-          placeholder={
-            isLoading ? 'Laden...' : t('editor.selectSampleRecord', { type: getDatasetDisplayName(dataset) })
-          }
-        />
+      <SelectTrigger className={lenderSelectTriggerClass}>
+        <SelectValue placeholder={lenderRecordPlaceholder} />
       </SelectTrigger>
       <SelectContent>
         {sampleRecords?.map((record) => (

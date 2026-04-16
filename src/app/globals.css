@@ -160,6 +160,22 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+@layer components {
+  /* DataTable rows with onRowClick: tint only “normal” cells; hovering … or bulk-select does not tint the row */
+  .data-table-clickable-row:not([data-state='selected']):hover
+    > td:not([data-actions-cell]):not([data-bulk-select-cell]) {
+    @apply bg-muted/50;
+  }
+  .data-table-clickable-row:not([data-state='selected']):hover:has(> td[data-actions-cell]:hover)
+    > td:not([data-actions-cell]):not([data-bulk-select-cell]) {
+    @apply bg-transparent;
+  }
+  .data-table-clickable-row:not([data-state='selected']):hover:has(> td[data-bulk-select-cell]:hover)
+    > td:not([data-actions-cell]):not([data-bulk-select-cell]) {
+    @apply bg-transparent;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

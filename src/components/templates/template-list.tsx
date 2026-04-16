@@ -2,7 +2,7 @@
 
 import type { CommunicationTemplate } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Copy, Edit, FileText, Mail, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Copy, Edit, FileText, Mail, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useState } from 'react';
@@ -10,14 +10,8 @@ import { toast } from 'sonner';
 import { deleteTemplateAction } from '@/actions/templates/mutations/delete-template';
 import { duplicateTemplateAction } from '@/actions/templates/mutations/duplicate-template';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
 import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
@@ -41,7 +35,7 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
   const { executeAsync: deleteTemplate } = useAction(deleteTemplateAction);
   const { executeAsync: duplicateTemplate } = useAction(duplicateTemplateAction);
 
-  const handleEdit = (template: Pick<CommunicationTemplate, 'id' | 'name' | 'isGlobal'>) => {
+  const handleOpenTemplate = (template: Pick<CommunicationTemplate, 'id' | 'isGlobal'>) => {
     if (isAdmin && template.isGlobal) {
       router.push(`/admin/templates/${template.id}`);
     } else if (currentProjectId) {
@@ -126,36 +120,6 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
       header: t('list.columns.createdAt'),
       cell: ({ row }) => <span>{new Intl.DateTimeFormat('de-DE').format(new Date(row.original.createdAt))}</span>,
     },
-    {
-      id: 'actions',
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleEdit(row.original)}>
-              <Edit className="h-4 w-4 mr-2" />
-              {t('list.actions.edit')}
-            </DropdownMenuItem>
-            {project ? (
-              <DropdownMenuItem onClick={() => handleDuplicate(row.original)}>
-                <Copy className="h-4 w-4 mr-2" />
-                {t('list.actions.duplicate')}
-              </DropdownMenuItem>
-            ) : null}
-            {(!row.original.isSystem || project) && (
-              <DropdownMenuItem onClick={() => handleDeleteClick(row.original)} className="text-destructive">
-                <Trash2 className="h-4 w-4 mr-2" />
-                {t('list.actions.delete')}
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
-    },
   ];
 
   return (
@@ -172,6 +136,34 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
             createdBy: template.createdBy,
           }))
         }
+        hideHeader
+        showColumnVisibility={false}
+        showFilter={false}
+        showPagination={false}
+        onRowClick={(row) => handleOpenTemplate(row)}
+        actions={(row) => (
+          <>
+            <DropdownMenuItem onClick={() => handleOpenTemplate(row)}>
+              <Edit className="h-4 w-4 mr-2" />
+              {t('list.actions.edit')}
+            </DropdownMenuItem>
+            {project ? (
+              <DropdownMenuItem onClick={() => handleDuplicate(row)}>
+                <Copy className="h-4 w-4 mr-2" />
+                {t('list.actions.duplicate')}
+              </DropdownMenuItem>
+            ) : null}
+            {(!row.isSystem || project) && (
+              <DropdownMenuItem
+                onClick={() => handleDeleteClick(row)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {t('list.actions.delete')}
+              </DropdownMenuItem>
+            )}
+          </>
+        )}
       />
 
       <ConfirmDialog

@@ -6,17 +6,18 @@ import { isEmpty } from 'lodash';
 import debounce from 'lodash.debounce';
 import { Eye, EyeOff, GripVertical, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { getMergeTagConfigAction, type MergeTagConfig } from '@/actions/templates/queries/get-merge-tags';
 import { getProjectLogoAction } from '@/actions/templates/queries/get-project-logo';
 import { getMergeTagValuesAction } from '@/actions/templates/queries/get-template-data';
+import { getNodeEditorLabel } from '@/lib/templates/craft-node-name';
 import {
   generateDocumentParts,
   generateEmailHtml,
   getNodesMapFromDesign,
   getNodesMapFromSerialized,
 } from '@/lib/templates/email-generator';
-import { getNodeEditorLabel } from '@/lib/templates/craft-node-name';
+import { canOpenTemplatePreview } from '@/lib/templates/merge-tags';
 import { processTemplate } from '@/lib/templates/template-processor';
 import { EditorMetadataProvider } from './editor-context';
 import { EditorSidebar } from './editor-sidebar';
@@ -109,20 +110,28 @@ const EditorTopbar = ({
   isPreviewing,
   isGeneratingPdf,
   togglePreview,
+  sampleToolbarSlot,
+  previewOpenBlocked,
 }: {
   isPreviewing: boolean;
   isGeneratingPdf: boolean;
   togglePreview: () => void;
+  sampleToolbarSlot?: ReactNode;
+  /** When true, opening preview is disabled (still allowed to leave preview back to editor). */
+  previewOpenBlocked: boolean;
 }) => {
   const t = useTranslations('templates.editor');
 
+  const previewButtonDisabled = isGeneratingPdf || (!isPreviewing && previewOpenBlocked);
+
   return (
-    <div className="flex items-center justify-between px-4 py-2 border-b bg-zinc-50">
-      <div className="flex items-center gap-2">
+    <div className="flex items-center gap-4 px-4 py-2 border-b bg-zinc-50">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">{sampleToolbarSlot}</div>
+      <div className="flex shrink-0 items-center gap-2">
         <button
           type="button"
           onClick={togglePreview}
-          disabled={isGeneratingPdf}
+          disabled={previewButtonDisabled}
           className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
             isPreviewing ? 'bg-zinc-900 text-white hover:bg-zinc-800' : 'bg-white border text-zinc-700 hover:bg-zinc-50'
           }`}
@@ -136,11 +145,6 @@ const EditorTopbar = ({
           )}
           {isGeneratingPdf ? t('generatingPdf') : isPreviewing ? t('showEditor') : t('showPreview')}
         </button>
-      </div>
-
-      <div className="text-xs text-zinc-500 flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-        {t('autoSaveActive')}
       </div>
     </div>
   );
@@ -263,6 +267,8 @@ interface TemplateEditorViewProps {
   /** Reporting year for `LENDER_YEARLY` template preview. */
   selectedYear?: number | null;
   onDesignChange: (design: object, html: string) => void;
+  /** Sample data controls (project + record/year) shown next to the preview toggle. */
+  sampleToolbarSlot?: ReactNode;
 }
 
 export function TemplateEditorView({
@@ -275,7 +281,15 @@ export function TemplateEditorView({
   selectedRecordId,
   selectedYear,
   onDesignChange,
+  sampleToolbarSlot,
 }: TemplateEditorViewProps) {
+  const previewOpenBlocked = !canOpenTemplatePreview({
+    dataset,
+    projectId,
+    selectedRecordId,
+    selectedYear,
+  });
+
   const [mergeTagConfig, setMergeTagConfig] = useState<MergeTagConfig | null>(null);
   const [projectLogo, setProjectLogo] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -479,7 +493,13 @@ export function TemplateEditorView({
 
   return (
     <div className="min-h-[700px] border rounded-lg overflow-hidden flex flex-col bg-white">
-      <EditorTopbar isPreviewing={isPreviewing} isGeneratingPdf={isGeneratingPdf} togglePreview={togglePreview} />
+      <EditorTopbar
+        isPreviewing={isPreviewing}
+        isGeneratingPdf={isGeneratingPdf}
+        togglePreview={togglePreview}
+        sampleToolbarSlot={sampleToolbarSlot}
+        previewOpenBlocked={previewOpenBlocked}
+      />
 
       <div className="flex-1 flex flex-col relative">
         <EditorMetadataProvider

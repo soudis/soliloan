@@ -409,3 +409,36 @@ export function getDatasetDisplayName(dataset: TemplateDataset): string {
       return dataset;
   }
 }
+
+/** Datasets that show lender/loan/year sample pickers for preview merge data. */
+export function needsSampleRecordSelection(dataset: TemplateDataset): boolean {
+  return dataset === 'LENDER' || dataset === 'LOAN' || dataset === 'LENDER_YEARLY';
+}
+
+/**
+ * Whether preview (email iframe / PDF) may open: needs a project context, and for
+ * lender/loan/yearly datasets a selected record (and year for `LENDER_YEARLY`).
+ */
+export function canOpenTemplatePreview(options: {
+  dataset: TemplateDataset;
+  projectId: string | undefined;
+  selectedRecordId: string | null;
+  selectedYear: number | null | undefined;
+}): boolean {
+  const { dataset, projectId, selectedRecordId, selectedYear } = options;
+  if (!projectId) return false;
+
+  if (dataset === 'PROJECT' || dataset === 'PROJECT_YEARLY') {
+    return true;
+  }
+
+  if (dataset === 'LENDER_YEARLY') {
+    return selectedRecordId != null && selectedYear != null && Number.isFinite(selectedYear);
+  }
+
+  if (dataset === 'LENDER' || dataset === 'LOAN') {
+    return selectedRecordId != null;
+  }
+
+  return true;
+}

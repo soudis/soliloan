@@ -11,6 +11,7 @@ import { updateTemplateAction } from '@/actions/templates/mutations/update-templ
 import { getProjectsForTemplateSampleAction } from '@/actions/templates/queries/get-template-data';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { needsSampleRecordSelection } from '@/lib/templates/merge-tags';
 import { SampleDataSelector } from './sample-data-selector';
 import { TemplateEditorView } from './template-editor-view';
 
@@ -79,12 +80,15 @@ export function TemplateEditor({ template, projectId, isAdmin = false }: Templat
     }
   };
 
-  const handleSampleRecordChange = useCallback((value: string | null) => {
-    setSelectedRecordId(value);
-    if (template.dataset === 'LENDER_YEARLY') {
-      setSelectedYear(null);
-    }
-  }, [template.dataset]);
+  const handleSampleRecordChange = useCallback(
+    (value: string | null) => {
+      setSelectedRecordId(value);
+      if (template.dataset === 'LENDER_YEARLY') {
+        setSelectedYear(null);
+      }
+    },
+    [template.dataset],
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset lender/year when preview project changes
   useEffect(() => {
@@ -98,37 +102,6 @@ export function TemplateEditor({ template, projectId, isAdmin = false }: Templat
       <div className="flex items-center justify-between p-4 border-b bg-background">
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-semibold">{template.name}</h1>
-          {needsProjectPickerForSample && (
-            <Select
-              value={sampleProjectId ?? undefined}
-              onValueChange={(val) => setSampleProjectId(val || null)}
-              disabled={sampleProjectsLoading}
-            >
-              <SelectTrigger className="w-[260px]">
-                <SelectValue placeholder={sampleProjectsLoading ? 'Laden...' : t('editor.selectSampleProject')} />
-              </SelectTrigger>
-              <SelectContent>
-                {sampleProjects?.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-                {!sampleProjectsLoading && (!sampleProjects || sampleProjects.length === 0) && (
-                  <div className="px-2 py-1.5 text-sm text-muted-foreground">{t('editor.noSampleRecords')}</div>
-                )}
-              </SelectContent>
-            </Select>
-          )}
-          {previewProjectId && (
-            <SampleDataSelector
-              dataset={template.dataset}
-              projectId={previewProjectId}
-              value={selectedRecordId}
-              onChange={handleSampleRecordChange}
-              selectedYear={selectedYear}
-              onYearChange={setSelectedYear}
-            />
-          )}
         </div>
         <Button onClick={handleSave} disabled={isExecuting || !pendingDesign}>
           {isExecuting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
@@ -148,6 +121,48 @@ export function TemplateEditor({ template, projectId, isAdmin = false }: Templat
           selectedRecordId={selectedRecordId}
           selectedYear={selectedYear}
           onDesignChange={handleDesignChange}
+          sampleToolbarSlot={
+            needsProjectPickerForSample || previewProjectId ? (
+              <>
+                {needsProjectPickerForSample && (
+                  <Select
+                    value={sampleProjectId ?? undefined}
+                    onValueChange={(val) => setSampleProjectId(val || null)}
+                    disabled={sampleProjectsLoading}
+                  >
+                    <SelectTrigger className="w-[260px]">
+                      <SelectValue placeholder={sampleProjectsLoading ? 'Laden...' : t('editor.selectSampleProject')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sampleProjects?.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                      {!sampleProjectsLoading && (!sampleProjects || sampleProjects.length === 0) && (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">{t('editor.noSampleRecords')}</div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
+                {previewProjectId && needsSampleRecordSelection(template.dataset) && (
+                  <span className="shrink-0 whitespace-nowrap text-sm text-muted-foreground">
+                    {t('editor.sampleDatasetLabel')}
+                  </span>
+                )}
+                {previewProjectId && (
+                  <SampleDataSelector
+                    dataset={template.dataset}
+                    projectId={previewProjectId}
+                    value={selectedRecordId}
+                    onChange={handleSampleRecordChange}
+                    selectedYear={selectedYear}
+                    onYearChange={setSelectedYear}
+                  />
+                )}
+              </>
+            ) : undefined
+          }
         />
       </div>
     </div>
