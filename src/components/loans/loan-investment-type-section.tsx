@@ -10,27 +10,27 @@ import { getInvestmentTypeByInterestRateAction } from '@/actions/investment-type
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FormSection } from '@/components/ui/form-section';
+import type { LoanFormClientData } from '@/lib/schemas/loan';
 import { useProject } from '../providers/project-provider';
 
 export function LoanInvestmentTypeSection() {
   const t = useTranslations('dashboard.loans.investmentType');
   const commonT = useTranslations('common');
   const { project } = useProject();
-  const form = useFormContext();
+  const form = useFormContext<LoanFormClientData>();
 
   const interestRate = form.watch('interestRate');
   const signDate = form.watch('signDate');
 
-  const interestRateStr = typeof interestRate === 'string' ? interestRate : String(interestRate ?? '');
-  const hasValues = interestRateStr !== '' && !!signDate;
+  const hasValues = interestRate !== '' && !!signDate;
 
   const { data, isLoading } = useQuery({
-    queryKey: ['investmentType', project.id, interestRateStr],
+    queryKey: ['investmentType', project.id, interestRate],
     queryFn: async () => {
       if (!hasValues) return null;
       const result = await getInvestmentTypeByInterestRateAction({
         projectId: project.id,
-        interestRate: interestRateStr,
+        interestRate,
       });
       return result?.data?.investmentType ?? null;
     },
@@ -69,7 +69,7 @@ export function LoanInvestmentTypeSection() {
     <FormSection icon={<Scale className="w-4 h-4 text-muted-foreground" />} title={t('title')}>
       <p className="text-sm text-muted-foreground mb-3">{t('noInvestmentType')}</p>
       <Button variant="outline" size="sm" asChild>
-        <Link href={`/investment-types/new?projectId=${project.id}&interestRate=${encodeURIComponent(interestRateStr)}`}>
+        <Link href={`/investment-types/new?projectId=${project.id}&interestRate=${encodeURIComponent(interestRate)}`}>
           <ExternalLink className="w-4 h-4 mr-2" />
           {t('createNow')}
         </Link>

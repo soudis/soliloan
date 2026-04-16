@@ -1,4 +1,5 @@
 import { TerminationType } from '@prisma/client';
+import type { ContractStatus, DurationType, InterestMethod } from '@prisma/client';
 import { z } from 'zod';
 
 import {
@@ -85,4 +86,23 @@ export const loanFormSchema = z
   .superRefine(validateTermination);
 
 export type LoanFormData = z.infer<typeof loanFormSchema>;
+// We keep two types intentionally:
+// - LoanFormClientData models raw React Hook Form values (number inputs are locale-formatted strings while editing).
+// - LoanFormData models parsed/validated values after Zod preprocessing (numbers/dates are converted for server usage).
+export type LoanFormClientData = {
+  loanNumber: '' | number | null;
+  lenderId: string;
+  signDate: Date | '' | null;
+  amount: string;
+  interestRate: string;
+  terminationType: TerminationType;
+  endDate: Date | '' | null;
+  terminationPeriod: '' | number | null;
+  terminationPeriodType: DurationType | null | undefined;
+  duration: '' | number | null;
+  durationType: DurationType | null | undefined;
+  altInterestMethod: InterestMethod | null | undefined;
+  contractStatus: ContractStatus;
+  additionalFields: Record<string, unknown> | null | undefined;
+};
 export type LoanTerminationData = z.infer<typeof loanTerminationSchema>;
