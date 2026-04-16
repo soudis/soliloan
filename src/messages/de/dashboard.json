@@ -355,6 +355,15 @@
         "submitting": "Wird erstellt..."
       }
     },
+    "investmentType": {
+      "title": "Anlageart",
+      "loading": "Anlageart wird geprüft…",
+      "unnamed": "Unbenannte Anlageart",
+      "interestRate": "Zinssatz",
+      "capacity": "Kapazität",
+      "noInvestmentType": "Für diesen Zinssatz existiert noch keine Anlageart. Erstellen Sie eine, um die VermAnlG-Anforderungen zu erfüllen.",
+      "createNow": "Anlageart jetzt anlegen"
+    },
     "edit": {
       "title": "Kredit von {lenderName} bearbeiten",
       "form": {
@@ -497,6 +506,11 @@
       "hasHistoricTransactions": "Es gibt bereits Zahlungen aus vergangenen Jahren, die Zinsberechnungsmethode kann nicht mehr geändert werden.",
       "altInterestMethodsHint": "Alternative Zinsmethoden können pro Kredit angegeben werden. Es wird empfohlen keine alternative Methoden zuzulassen.",
       "noAltInterestMethods": "Keine alternativen Zinsmethoden zugelassen",
+      "deInvestmentActCompliance": {
+        "title": "Module",
+        "label": "Modul zum Schutz vor dem deutschen Anlegerschutz",
+        "hint": "Aktiviert die VermAnlG-konforme Verwaltung von Anlagearten mit Begrenzungsregeln."
+      },
       "loanTemplates": {
         "loanTemplates": "Kreditvorlagen",
         "name": "Name",
@@ -647,6 +661,7 @@
       "downloadReport": "Report herunterladen"
     }
   },
+
   "myLoans": {
     "title": "Meine Kredite",
     "welcome": "Willkommen, {name}!",
@@ -684,5 +699,55 @@
       "prev": "Zurück",
       "next": "Weiter"
     }
+  },
+
+  "investmentTypes": {
+    "title": "Anlagearten",
+    "description": "Verwalten Sie Anlagearten gemäß VermAnlG.",
+    "effectiveDate": "Stichtag",
+    "create": "Anlageart erstellen",
+    "table": {
+      "name": "Name",
+      "limitationType": "Art der Begrenzung",
+      "interestRate": "Zinssatz",
+      "numberOfLoans": "Anzahl Anlagen",
+      "totalAmount": "Anlagesumme",
+      "capacity": "Kapazität"
+    },
+    "detail": {
+      "title": "Anlageart",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "loans": "Zugeordnete Kredite",
+      "noLoans": "Keine Kredite zugeordnet.",
+      "loanNumber": "Nummer",
+      "lender": "Kreditgeber*in",
+      "amount": "Betrag",
+      "interestRate": "Zinssatz",
+      "confirmDelete": "Anlageart löschen?",
+      "confirmDeleteDescription": "Die Anlageart wird endgültig entfernt. {count, plural, =0 {Es sind keine Kredite zugeordnet.} one {1 Kredit verliert die Zuordnung zu dieser Anlageart.} other {# Kredite verlieren die Zuordnung zu dieser Anlageart.}} Die Kredite selbst werden nicht gelöscht.",
+      "deleteSuccess": "Anlageart erfolgreich gelöscht.",
+      "deleteError": "Fehler beim Löschen der Anlageart."
+    },
+    "form": {
+      "createTitle": "Anlageart erstellen",
+      "editTitle": "Anlageart bearbeiten",
+      "interestRate": "Zinssatz",
+      "interestRatePlaceholder": "Zinssatz eingeben",
+      "interestRateHintDisabled": "Der Zinssatz kann nicht geändert werden, da bereits Kredite zugeordnet sind.",
+      "name": "Name",
+      "namePlaceholder": "Optionaler Name",
+      "limitationType": "Art der Begrenzung",
+      "limitationTypeNotMoreThanNUnits": "Nicht mehr als {limit} Anlagen",
+      "limitationTypeNotMoreThanNUnitsDescription": "Es dürfen nicht mehr als {limit} Anlagen dieses Typs existieren.",
+      "limitationTypeTotalAmount": "Anlagesumme nicht höher als {limit} in {timePeriod}",
+      "limitationTypeTotalAmountDescription": "Die Gesamtanlagesumme darf {limit} innerhalb von {timePeriod} nicht überschreiten.",
+      "submit": "Speichern",
+      "submitting": "Wird gespeichert…",
+      "cancel": "Abbrechen",
+      "success": "Anlageart erfolgreich gespeichert.",
+      "error": "Fehler beim Speichern der Anlageart."
+    },
+    "notEnabled": "Das Modul zum Schutz vor dem deutschen Anlegerschutz ist für dieses Projekt nicht aktiviert."
   }
 }

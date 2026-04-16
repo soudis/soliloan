@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 
 import { createAuditEntry, getLenderContext, getLoanContext, removeNullFields } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
+import { normalizeLoanInterestRate } from '@/lib/schemas/investment-type';
 import { loanFormSchema } from '@/lib/schemas/loan';
 import { lenderAction } from '@/lib/utils/safe-action';
 
@@ -32,6 +33,29 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
     if (existing) return { fieldErrors: { loanNumber: 'error.loan.numberAlreadyExists' } };
   }
 
+  // DEInvestmentActCompliance: auto-link matching InvestmentType
+  let investmentTypeId: string | undefined;
+  const project = await db.project.findUnique({
+    where: { id: lender.projectId },
+    select: { configuration: { select: { deInvestmentActCompliance: true } } },
+  });
+
+  if (project?.configuration.deInvestmentActCompliance) {
+    const normalizedRate = normalizeLoanInterestRate(data.interestRate);
+    const matchingType = await db.investmentType.findUnique({
+      where: {
+        projectId_interestRate: {
+          projectId: lender.projectId,
+          interestRate: normalizedRate,
+        },
+      },
+      select: { id: true },
+    });
+    if (matchingType) {
+      investmentTypeId = matchingType.id;
+    }
+  }
+
   const loan = await db.loan.create({
     data: {
       lender: {
@@ -52,6 +76,7 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
       altInterestMethod: data.altInterestMethod,
       contractStatus: data.contractStatus,
       additionalFields: data.additionalFields ?? {},
+      ...(investmentTypeId && { investmentType: { connect: { id: investmentTypeId } } }),
     },
     include: {
       lender: true,

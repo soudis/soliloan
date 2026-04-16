@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createAuditEntry, getChangedFields, getLenderContext, getLoanContext } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
+import { normalizeLoanInterestRate } from '@/lib/schemas/investment-type';
 import { loanFormSchema } from '@/lib/schemas/loan';
 import { loanAction } from '@/lib/utils/safe-action';
 
@@ -39,7 +40,22 @@ export const updateLoanAction = loanAction
       throw new Error('Loan not found');
     }
 
-    // Update the loan
+    // DEInvestmentActCompliance: update investmentTypeId based on interest rate
+    let investmentTypeId: string | null | undefined;
+    if (loan.lender.project.configuration.deInvestmentActCompliance) {
+      const normalizedRate = normalizeLoanInterestRate(data.interestRate);
+      const matchingType = await db.investmentType.findUnique({
+        where: {
+          projectId_interestRate: {
+            projectId: loan.lender.projectId,
+            interestRate: normalizedRate,
+          },
+        },
+        select: { id: true },
+      });
+      investmentTypeId = matchingType?.id ?? null;
+    }
+
     const updatedLoan = await db.loan.update({
       where: {
         id: loanId,
@@ -57,6 +73,7 @@ export const updateLoanAction = loanAction
         altInterestMethod: data.altInterestMethod,
         contractStatus: data.contractStatus,
         additionalFields: data.additionalFields ?? {},
+        ...(investmentTypeId !== undefined && { investmentTypeId }),
       },
       include: {
         lender: true,

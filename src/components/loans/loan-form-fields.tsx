@@ -12,6 +12,7 @@ import { LenderCombobox } from '@/components/loans/lender-combobox';
 import { FormSection } from '@/components/ui/form-section';
 import { FormAdditionalFields } from '../form/form-additional-fields';
 import { useProject } from '../providers/project-provider';
+import { LoanInvestmentTypeSection } from './loan-investment-type-section';
 import { TerminationFormFields } from './termination-form-fields';
 
 interface LoanFormFieldsProps {
@@ -86,6 +87,9 @@ export function LoanFormFields({ lenders, isEditMode = false }: LoanFormFieldsPr
           }))}
         />
       </FormSection>
+
+      {/* DEInvestmentActCompliance Section */}
+      {project.configuration.deInvestmentActCompliance && <LoanInvestmentTypeSection />}
 
       {/* Termination Information Section */}
       <FormSection icon={<FileX className="w-4 h-4 text-muted-foreground" />} title={t('new.form.terminationInfo')}>

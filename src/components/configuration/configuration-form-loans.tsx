@@ -35,6 +35,7 @@ export function ConfigurationFormLoans({
     interestMethod: initialData?.interestMethod || '',
     altInterestMethods: initialData?.altInterestMethods || [],
     loanAdditionalFields: initialData?.loanAdditionalFields || [],
+    deInvestmentActCompliance: initialData?.deInvestmentActCompliance ?? false,
   };
 
   const form = useForm({

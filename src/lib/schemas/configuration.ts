@@ -58,6 +58,7 @@ export const configurationFormLoanSchema = z.object({
   interestMethod: interestMethodEnumRequired,
   altInterestMethods: z.array(z.enum(InterestMethod)).default([]).optional(),
   loanAdditionalFields: z.array(additionalFieldConfigSchema).default([]).optional(),
+  deInvestmentActCompliance: z.coerce.boolean().default(false),
 });
 
 export const configurationFormSchema = z.union([

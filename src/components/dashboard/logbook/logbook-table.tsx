@@ -106,6 +106,26 @@ export function LogbookTable({ changes, views }: LogbookTableProps) {
           });
         }
         break;
+      case 'investment_type':
+        if (change.operation === 'CREATE') {
+          return t('investmentType.created', {
+            name: context.investmentType?.name || '',
+            interestRate: context.investmentType?.interestRate ?? '',
+          });
+        }
+        if (change.operation === 'UPDATE') {
+          return t('investmentType.updated', {
+            name: context.investmentType?.name || '',
+            interestRate: context.investmentType?.interestRate ?? '',
+          });
+        }
+        if (change.operation === 'DELETE') {
+          return t('investmentType.deleted', {
+            name: context.investmentType?.name || '',
+            interestRate: context.investmentType?.interestRate ?? '',
+          });
+        }
+        break;
       case 'project':
         if (change.operation === 'CREATE') {
           return t('project.created');

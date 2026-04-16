@@ -1,14 +1,27 @@
 'use client';
 
 import { ViewType } from '@prisma/client';
-import { Box, FileText, HandCoins, History, LayoutDashboard, LogOut, Settings, Users, Wallet } from 'lucide-react';
+import {
+  Box,
+  FileText,
+  HandCoins,
+  History,
+  LayoutDashboard,
+  LogOut,
+  Scale,
+  Settings,
+  Users,
+  Wallet,
+} from 'lucide-react';
 import Link from 'next/link';
 import type { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
+import { useQueryState } from 'nuqs';
 
 import { ThemeSelector } from '@/components/theme-selector';
 import { Button } from '@/components/ui/button';
+import { PROJECT_ID_KEY, projectIdParser } from '@/lib/params';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -30,6 +43,9 @@ export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews }: S
   const commonT = useTranslations('common');
   const { toggleSidebar } = useAppStore();
   const isAdmin = session.user.isAdmin;
+  const [projectId] = useQueryState(PROJECT_ID_KEY, projectIdParser);
+  const currentProject = projects.find((p) => p.id === projectId);
+  const showInvestmentTypes = currentProject?.configuration.deInvestmentActCompliance === true;
 
   return (
     <>
@@ -83,6 +99,7 @@ export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews }: S
                 <SidebarViewItems views={sidebarViews} viewType={ViewType.LOAN} basePath="/loans" />
               </div>
               <NavItem href="/logbook" icon={History} label={t('logbook')} />
+              {showInvestmentTypes && <NavItem href="/investment-types" icon={Scale} label={t('investmentTypes')} />}
               <NavItem href="/configuration" icon={Settings} label={t('configuration')} />
             </div>
           </nav>

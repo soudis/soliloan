@@ -7,6 +7,7 @@ import type { ProjectWithConfiguration } from '@/types/projects';
 import { FormFieldConfigurator } from '../form/form-field-configurator';
 import { FormMultiSelect } from '../form/form-multi-select';
 import { FormSelect } from '../form/form-select';
+import { FormSwitch } from '../form/form-switch';
 import { LoanTemplateTable } from './loan-template-table';
 
 interface ConfigurationFormFieldsLoansProps {
@@ -54,6 +55,15 @@ export function ConfigurationFormFieldsLoans({ hasHistoricTransactions, project 
       <div className="mt-8">
         <FormSection title={t('form.loanAdditionalFields')}>
           <FormFieldConfigurator name="loanAdditionalFields" />
+        </FormSection>
+      </div>
+      <div className="mt-8">
+        <FormSection title={t('form.deInvestmentActCompliance.title')}>
+          <FormSwitch
+            name="deInvestmentActCompliance"
+            label={t('form.deInvestmentActCompliance.label')}
+            hint={t('form.deInvestmentActCompliance.hint')}
+          />
         </FormSection>
       </div>
     </>

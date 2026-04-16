@@ -208,6 +208,10 @@
       "ACT_360_COMPOUND": "ACT/360 (Mit Zinseszins)",
       "ACT_ACT_COMPOUND": "ACT/ACT (Mit Zinseszins)"
     },
+    "limitationType": {
+      "NOT_MORE_THAN_N_UNITS": "Nicht mehr als {limit} Anlagen",
+      "TOTAL_AMOUNT_OVER_TIME_PERIOD": "Anlagesumme nicht höher als {limit} in {timePeriod}"
+    },
     "theme": {
       "default": "Standard",
       "ocean": "Ozean",
