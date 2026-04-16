@@ -10,8 +10,25 @@ import { getInvestmentTypeByInterestRateAction } from '@/actions/investment-type
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FormSection } from '@/components/ui/form-section';
+import { MAX_TOTAL_AMOUNT_EUR, MAX_UNITS, PERIOD_MONTHS } from '@/lib/schemas/investment-type';
 import type { LoanFormClientData } from '@/lib/schemas/loan';
 import { useProject } from '../providers/project-provider';
+
+function getLimitationLabel(type: LimitationType, commonT: ReturnType<typeof useTranslations>) {
+  let label: string;
+  switch (type) {
+    case 'NOT_MORE_THAN_N_UNITS':
+      label = commonT('enums.limitationType.NOT_MORE_THAN_N_UNITS', { limit: MAX_UNITS });
+      break;
+    default:
+      label = commonT('enums.limitationType.TOTAL_AMOUNT_OVER_TIME_PERIOD', {
+        limit: new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(MAX_TOTAL_AMOUNT_EUR),
+        timePeriod: `${PERIOD_MONTHS} Monate`,
+      });
+      break;
+  }
+  return label;
+}
 
 export function LoanInvestmentTypeSection() {
   const t = useTranslations('dashboard.loans.investmentType');
@@ -39,8 +56,6 @@ export function LoanInvestmentTypeSection() {
 
   if (!hasValues) return null;
 
-  const limitationLabel = (type: LimitationType) => commonT(`enums.limitationType.${type}`);
-
   if (isLoading) {
     return (
       <FormSection icon={<Scale className="w-4 h-4 text-muted-foreground" />} title={t('title')}>
@@ -55,7 +70,7 @@ export function LoanInvestmentTypeSection() {
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">{data.name || t('unnamed')}</span>
-            <Badge variant="secondary">{limitationLabel(data.limitationType)}</Badge>
+            <Badge variant="secondary">{getLimitationLabel(data.limitationType, commonT)}</Badge>
           </div>
           <p className="text-sm text-muted-foreground">
             {t('interestRate')}: {data.interestRate}% &middot; {t('capacity')}: 0
