@@ -1,23 +1,24 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { de, enUS } from 'date-fns/locale';
-import { ChevronDown, Pencil, Trash2 } from 'lucide-react';
+import { ChevronDown, Pencil, ShieldX, Trash2, Undo2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { deleteLoanAction } from '@/actions/loans';
+import { deleteLoanAction, revertTerminateLoanAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { InfoItem } from '@/components/ui/info-item';
 import { useRouter } from '@/i18n/navigation';
-import { cn, formatCurrency, formatPercentage } from '@/lib/utils';
+import { formatTerminationModalities } from '@/lib/table-column-utils';
+import { cn, formatCurrency, formatDateLong, formatDateShort, formatPercentage } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
+import { LoanStatus } from '@/types/loans';
 import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-items';
 import { BalanceTable } from '../loans/balance-table';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 import { LoanTransactions } from '../loans/loan-transactions';
+import { TerminationDialog } from '../loans/termination-dialog';
 import { useProject } from '../providers/project-provider';
 import { Button } from '../ui/button';
 
@@ -30,11 +31,12 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const locale = useLocale();
-  const dateLocale = locale === 'de' ? de : enUS;
   const { project } = useProject();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isTerminateOpen, setIsTerminateOpen] = useState(false);
+  const [isRevertTerminateOpen, setIsRevertTerminateOpen] = useState(false);
   const [loanId] = useQueryState('loanId', parseAsString);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -50,29 +52,10 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
     }
   }, [isDeepLinked]);
 
-  const getTerminationModalities = () => {
-    switch (loan.terminationType) {
-      case 'ENDDATE':
-        return `${commonT('enums.loan.terminationType.ENDDATE')} - ${loan.endDate ? format(new Date(loan.endDate), 'PPP', { locale: dateLocale }) : '-'}`;
-      case 'TERMINATION':
-        if (!loan.terminationPeriod || !loan.terminationPeriodType)
-          return `${commonT('enums.loan.terminationType.TERMINATION')} - -`;
-        return `${commonT('enums.loan.terminationType.TERMINATION')} - ${loan.terminationPeriod} ${
-          loan.terminationPeriodType === 'MONTHS'
-            ? commonT('enums.loan.durationUnit.MONTHS')
-            : commonT('enums.loan.durationUnit.YEARS')
-        }`;
-      case 'DURATION':
-        if (!loan.duration || !loan.durationType) return `${commonT('enums.loan.terminationType.DURATION')} - -`;
-        return `${commonT('enums.loan.terminationType.DURATION')} - ${loan.duration} ${
-          loan.durationType === 'MONTHS'
-            ? commonT('enums.loan.durationUnit.MONTHS')
-            : commonT('enums.loan.durationUnit.YEARS')
-        }`;
-      default:
-        return '-';
-    }
-  };
+  const canTerminateLoan =
+    loan.terminationType === 'TERMINATION' && loan.status === LoanStatus.ACTIVE && !loan.isTerminated;
+
+  const getTerminationModalities = () => formatTerminationModalities(loan, commonT, (d) => formatDateLong(d, locale));
 
   const handleDeleteLoan = async () => {
     const toastId = toast.loading(t('delete.loading'));
@@ -89,11 +72,25 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
     }
   };
 
+  const handleRevertTermination = async () => {
+    const toastId = toast.loading(t('terminate.revertLoading'));
+    try {
+      const result = await revertTerminateLoanAction({ loanId: loan.id });
+      if (result?.serverError || result?.validationErrors) {
+        toast.error(t('terminate.revertError'), { id: toastId });
+      } else {
+        toast.success(t('terminate.revertSuccess'), { id: toastId });
+        await queryClient.invalidateQueries({ queryKey: ['lender', loan.lender.id] });
+      }
+    } catch {
+      toast.error(t('terminate.revertError'), { id: toastId });
+    }
+  };
+
   return (
     <div ref={cardRef} className="scroll-mt-24 rounded-lg border bg-card text-card-foreground shadow-sm">
       {/* Collapsible header */}
       <div className="flex w-full items-center p-4 gap-2">
-        {/** biome-ignore lint/a11y/noStaticElementInteractions: needed */}
         {/** biome-ignore lint/a11y/useKeyWithClickEvents: needed */}
         <div
           onClick={() => setIsOpen((prev) => !prev)}
@@ -110,7 +107,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
               <span>·</span>
               <span>{formatPercentage(loan.interestRate)} %</span>
               <span>·</span>
-              <span>{format(new Date(loan.signDate), 'PP', { locale: dateLocale })}</span>
+              <span>{formatDateShort(loan.signDate, locale)}</span>
             </div>
           </div>
           <div className="flex items-center justify-center">
@@ -157,10 +154,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
           {/* Loan details + balance in two columns */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="space-y-3">
-              <InfoItem
-                label={t('table.signDate')}
-                value={format(new Date(loan.signDate), 'PPP', { locale: dateLocale })}
-              />
+              <InfoItem label={t('table.signDate')} value={formatDateLong(loan.signDate, locale)} />
               <InfoItem
                 label={t('table.amount')}
                 value={
@@ -172,25 +166,43 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                 }
               />
               <InfoItem label={t('table.terminationModalities')} value={getTerminationModalities()} />
+              {canTerminateLoan && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-destructive text-destructive hover:bg-destructive/10"
+                  onClick={() => setIsTerminateOpen(true)}
+                >
+                  <ShieldX className="h-4 w-4 mr-1.5" />
+                  {t('terminate.button')}
+                </Button>
+              )}
               {loan.terminationDate && loan.terminationType === 'TERMINATION' && (
-                <InfoItem
-                  label={t('table.terminationDate')}
-                  value={format(new Date(loan.terminationDate), 'PPP', { locale: dateLocale })}
-                />
+                <div className="flex items-end gap-2">
+                  <InfoItem label={t('table.terminationDate')} value={formatDateLong(loan.terminationDate, locale)} />
+                  {loan.isTerminated && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                      onClick={() => setIsRevertTerminateOpen(true)}
+                    >
+                      <Undo2 className="h-4 w-4 mr-1.5 text-muted-foreground" />
+                      {t('terminate.revertButton')}
+                    </Button>
+                  )}
+                </div>
               )}
               {loan.repayDate &&
                 loan.status !== 'REPAID' &&
                 loan.status !== 'NOTDEPOSITED' &&
                 loan.terminationType !== 'ENDDATE' && (
-                  <InfoItem
-                    label={t('table.repayDate')}
-                    value={format(new Date(loan.repayDate), 'PPP', { locale: dateLocale })}
-                  />
+                  <InfoItem label={t('table.repayDate')} value={formatDateLong(loan.repayDate, locale)} />
                 )}
               {loan.status === 'REPAID' && loan.transactions.at(-1)?.date && (
                 <InfoItem
                   label={t('table.repaidDate')}
-                  value={format(new Date(loan.transactions.at(-1)?.date ?? ''), 'PPP', { locale: dateLocale })}
+                  value={formatDateLong(loan.transactions.at(-1)?.date, locale)}
                 />
               )}
               <div className="grid grid-cols-2 gap-3">
@@ -219,6 +231,18 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
         title={t('delete.confirmTitle')}
         description={t('delete.confirmDescription')}
         confirmText={commonT('ui.actions.delete')}
+      />
+
+      {loan.terminationType === 'TERMINATION' && (
+        <TerminationDialog loan={loan} open={isTerminateOpen} onOpenChange={setIsTerminateOpen} />
+      )}
+
+      <ConfirmDialog
+        open={isRevertTerminateOpen}
+        onOpenChange={setIsRevertTerminateOpen}
+        onConfirm={handleRevertTermination}
+        title={t('terminate.revertConfirmTitle')}
+        description={t('terminate.revertConfirmDescription')}
       />
     </div>
   );

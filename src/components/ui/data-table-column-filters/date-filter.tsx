@@ -1,5 +1,4 @@
 import type { ColumnFilter } from '@tanstack/react-table';
-import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
 import { X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -7,7 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
+import { cn, formatDateLong } from '@/lib/utils';
 
 interface DateFilterProps {
   filterState?: ColumnFilter;
@@ -34,9 +33,7 @@ export function DateFilter({ filterState, onFilterChange }: DateFilterProps) {
               >
                 {(filterState?.value as [string, string])?.[0] ? (
                   <div className="flex items-center justify-between w-full">
-                    <span>
-                      {format(new Date((filterState?.value as [string, string])[0]), 'PPP', { locale: dateLocale })}
-                    </span>
+                    <span>{formatDateLong((filterState?.value as [string, string])[0], locale)}</span>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -93,9 +90,7 @@ export function DateFilter({ filterState, onFilterChange }: DateFilterProps) {
               >
                 {(filterState?.value as [string, string])?.[1] ? (
                   <div className="flex items-center justify-between w-full">
-                    <span>
-                      {format(new Date((filterState?.value as [string, string])[1]), 'PPP', { locale: dateLocale })}
-                    </span>
+                    <span>{formatDateLong((filterState?.value as [string, string])[1], locale)}</span>
                     <Button
                       variant="ghost"
                       size="icon"

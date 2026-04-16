@@ -1,11 +1,11 @@
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
 
-import { DateFilter, NumberFilter, SelectFilter, TextFilter } from './data-table-column-filters/index';
+import { DateFilter, MultiSelectFilter, NumberFilter, SelectFilter, TextFilter } from './data-table-column-filters/index';
 
 interface DataTableColumnFiltersProps {
   columnFilters: {
     [key: string]: {
-      type: 'text' | 'select' | 'number' | 'date';
+      type: 'text' | 'select' | 'multi-select' | 'number' | 'date';
       options?: { label: string; value: string }[];
       label?: string;
     };
@@ -47,6 +47,16 @@ export function DataTableColumnFilters({ columnFilters, tableState, setTableStat
                   case 'select':
                     return (
                       <SelectFilter
+                        filterState={filterState}
+                        options={filterConfig.options || []}
+                        onFilterChange={(value) => {
+                          handleFilterChange(columnId, value);
+                        }}
+                      />
+                    );
+                  case 'multi-select':
+                    return (
+                      <MultiSelectFilter
                         filterState={filterState}
                         options={filterConfig.options || []}
                         onFilterChange={(value) => {

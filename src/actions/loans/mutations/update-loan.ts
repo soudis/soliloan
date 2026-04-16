@@ -50,7 +50,6 @@ export const updateLoanAction = loanAction
         interestRate: data.interestRate,
         terminationType: data.terminationType,
         endDate: data.endDate,
-        terminationDate: data.terminationDate,
         terminationPeriod: data.terminationPeriod,
         terminationPeriodType: data.terminationPeriodType,
         duration: data.duration,

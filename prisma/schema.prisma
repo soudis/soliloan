@@ -309,8 +309,8 @@ enum ViewType {
 }
 
 enum TerminationType {
-  ENDDATE
   TERMINATION
+  ENDDATE
   DURATION
 }
 

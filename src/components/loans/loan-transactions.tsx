@@ -2,8 +2,6 @@
 
 import type { Transaction } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { de, enUS } from 'date-fns/locale';
 import { ArrowDownIcon, ArrowUpIcon, ChevronLeft, ChevronRight, Percent, Plus, Receipt, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
@@ -11,7 +9,7 @@ import { toast } from 'sonner';
 
 import { deleteTransactionAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
-import { cn, formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency, formatDateLong } from '@/lib/utils';
 import { type LoanDetailsWithCalculations, LoanStatus } from '@/types/loans';
 
 import { Button } from '../ui/button';
@@ -31,7 +29,6 @@ export function LoanTransactions({ loanId, transactions, loan }: LoanTransaction
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const locale = useLocale();
-  const dateLocale = locale === 'de' ? de : enUS;
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
@@ -141,9 +138,7 @@ export function LoanTransactions({ loanId, transactions, loan }: LoanTransaction
               </div>
               <div>
                 <div className="text-sm font-medium">{commonT(`enums.transaction.type.${transaction.type}`)}</div>
-                <div className="text-xs text-muted-foreground">
-                  {format(new Date(transaction.date), 'PPP', { locale: dateLocale })}
-                </div>
+                <div className="text-xs text-muted-foreground">{formatDateLong(transaction.date, locale)}</div>
               </div>
             </div>
             <div className="flex items-center space-x-2">

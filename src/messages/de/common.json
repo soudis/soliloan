@@ -160,17 +160,26 @@
         "ANNUALLY": "Jährlich"
       },
       "terminationType": {
-        "ENDDATE": "Enddatum",
         "TERMINATION": "Kündigungsfrist",
-        "DURATION": "Laufzeit"
+        "ENDDATE": "Laufzeit - Datum",
+        "DURATION": "Laufzeit - Dauer"
       },
       "contractStatus": {
         "PENDING": "Ausstehend",
         "COMPLETED": "Abgeschlossen"
       },
+      "terminationModalities": {
+        "ENDDATE": "Laufzeit bis {date}",
+        "TERMINATION": "Kündigungsfrist {duration}",
+        "DURATION": "Laufzeit {duration} (bis {date})"
+      },
       "durationUnit": {
         "MONTHS": "Monate",
         "YEARS": "Jahre"
+      },
+      "durationUnitDative": {
+        "MONTHS": "Monaten",
+        "YEARS": "Jahren"
       }
     },
     "transaction": {
