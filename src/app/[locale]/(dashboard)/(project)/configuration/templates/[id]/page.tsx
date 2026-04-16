@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { getTemplateAction } from '@/actions/templates/queries/get-template';
 import { TemplateEditor } from '@/components/templates/template-editor';
 import { searchParamsCache } from '@/lib/params';
+import { loadTemplateEditorPageData } from '@/lib/templates/template-editor-page-data';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -30,6 +31,17 @@ export default async function ProjectTemplateEditorPage({ params, searchParams }
     redirect(`/configuration?tab=templates`);
   }
 
+  const pageData = await loadTemplateEditorPageData({
+    template: {
+      dataset: data.template.dataset,
+      type: data.template.type,
+      projectId: data.template.projectId,
+      isGlobal: data.template.isGlobal,
+    },
+    routeProjectId: projectId,
+    isAdmin: false,
+  });
+
   return (
     <div className="flex flex-col">
       <TemplateEditor
@@ -42,6 +54,7 @@ export default async function ProjectTemplateEditorPage({ params, searchParams }
           projectId: data.template.projectId,
           isGlobal: data.template.isGlobal,
         }}
+        pageData={pageData}
         projectId={projectId}
       />
     </div>

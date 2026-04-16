@@ -12,9 +12,7 @@ import {
 } from '@/actions/templates/queries/get-template-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
-
-type SampleLenderRecord = Awaited<ReturnType<typeof getSampleLendersAction>>[number];
-type SampleLoanRecord = Awaited<ReturnType<typeof getSampleLoansAction>>[number];
+import type { SampleLenderRow, SampleLoanRow } from '@/lib/templates/template-editor-page-data';
 
 interface SampleDataSelectorProps {
   dataset: TemplateDataset;
@@ -24,6 +22,11 @@ interface SampleDataSelectorProps {
   /** Reporting year for `LENDER_YEARLY` preview (complete past years only). */
   selectedYear?: number | null;
   onYearChange?: (year: number | null) => void;
+  /** Server-loaded preview project: when it matches `projectId`, use initial lists instead of fetching. */
+  serverHydratedProjectId?: string | null;
+  initialSampleLenders?: SampleLenderRow[];
+  initialSampleLoans?: SampleLoanRow[];
+  initialLenderYearsByLenderId?: Record<string, number[]>;
 }
 
 export function SampleDataSelector({
@@ -33,13 +36,17 @@ export function SampleDataSelector({
   onChange,
   selectedYear,
   onYearChange,
+  serverHydratedProjectId,
+  initialSampleLenders = [],
+  initialSampleLoans = [],
+  initialLenderYearsByLenderId = {},
 }: SampleDataSelectorProps) {
   const t = useTranslations('templates');
 
   const isLenderSample = dataset === 'LENDER' || dataset === 'LENDER_YEARLY';
+  const useServerHydration = serverHydratedProjectId != null && projectId === serverHydratedProjectId;
 
-  // Fetch sample records based on dataset type
-  const { data: sampleRecords, isLoading } = useQuery({
+  const { data: fetchedRecords, isLoading: recordsLoading } = useQuery({
     queryKey: ['sample-data', dataset, projectId],
     queryFn: async () => {
       switch (dataset) {
@@ -48,24 +55,36 @@ export function SampleDataSelector({
           return getSampleLendersAction(projectId);
         case 'LOAN':
           return getSampleLoansAction(projectId);
-        case 'PROJECT':
-        case 'PROJECT_YEARLY':
-          return [];
         default:
           return [];
       }
     },
-    enabled: (isLenderSample || dataset === 'LOAN') && !!projectId,
+    enabled: (isLenderSample || dataset === 'LOAN') && !!projectId && !useServerHydration,
   });
 
-  const { data: sampleYears, isLoading: yearsLoading } = useQuery({
+  const sampleRecords = useServerHydration
+    ? dataset === 'LOAN'
+      ? initialSampleLoans
+      : initialSampleLenders
+    : fetchedRecords;
+
+  const isLoading = useServerHydration ? false : recordsLoading;
+
+  const useServerYears =
+    useServerHydration && dataset === 'LENDER_YEARLY' && !!value && Object.hasOwn(initialLenderYearsByLenderId, value);
+
+  const { data: fetchedYears, isLoading: yearsLoading } = useQuery({
     queryKey: ['sample-lender-years', value],
     queryFn: async () => {
       if (!value) return [];
       return getSampleLenderYearsAction(value);
     },
-    enabled: dataset === 'LENDER_YEARLY' && !!value,
+    enabled: dataset === 'LENDER_YEARLY' && !!value && !useServerYears,
   });
+
+  const sampleYears = useServerYears && value ? (initialLenderYearsByLenderId[value] ?? []) : fetchedYears;
+
+  const yearsLoadingState = useServerYears ? false : yearsLoading;
 
   useEffect(() => {
     if (dataset === 'PROJECT' || dataset === 'PROJECT_YEARLY') return;
@@ -94,7 +113,7 @@ export function SampleDataSelector({
     if (!record) return '';
 
     if (isLenderSample) {
-      const lender = record as unknown as SampleLenderRecord;
+      const lender = record as unknown as SampleLenderRow;
       const name =
         lender.type === 'PERSON'
           ? `${lender.firstName ?? ''} ${lender.lastName ?? ''}`.trim()
@@ -103,7 +122,7 @@ export function SampleDataSelector({
     }
 
     if (dataset === 'LOAN') {
-      const loan = record as unknown as SampleLoanRecord;
+      const loan = record as unknown as SampleLoanRow;
       const lenderName =
         loan.lender.type === 'PERSON'
           ? `${loan.lender.firstName ?? ''} ${loan.lender.lastName ?? ''}`.trim()
@@ -151,10 +170,10 @@ export function SampleDataSelector({
         <Select
           value={selectedYear != null ? String(selectedYear) : undefined}
           onValueChange={(val) => onYearChange?.(val ? Number.parseInt(val, 10) : null)}
-          disabled={!value || yearsLoading || !sampleYears?.length}
+          disabled={!value || yearsLoadingState || !sampleYears?.length}
         >
           <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder={yearsLoading ? 'Laden...' : t('editor.selectSampleYear')} />
+            <SelectValue placeholder={yearsLoadingState ? 'Laden...' : t('editor.selectSampleYear')} />
           </SelectTrigger>
           <SelectContent>
             {sampleYears?.map((y) => (
@@ -162,7 +181,7 @@ export function SampleDataSelector({
                 {y}
               </SelectItem>
             ))}
-            {!yearsLoading && (!sampleYears || sampleYears.length === 0) && value && (
+            {!yearsLoadingState && (!sampleYears || sampleYears.length === 0) && value && (
               <div className="px-2 py-1.5 text-sm text-muted-foreground">{t('editor.noSampleRecords')}</div>
             )}
           </SelectContent>

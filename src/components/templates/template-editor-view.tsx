@@ -263,6 +263,10 @@ interface TemplateEditorViewProps {
   isAdmin?: boolean;
   isGlobalTemplate?: boolean;
   initialDesign?: string | object;
+  /** Merge tag config and logo for `projectId` as resolved on the server (and when that id changes). */
+  initialMergeTagConfig: MergeTagConfig;
+  initialProjectLogo: string | null;
+  initialPreviewProjectId?: string;
   selectedRecordId: string | null;
   /** Reporting year for `LENDER_YEARLY` template preview. */
   selectedYear?: number | null;
@@ -278,6 +282,9 @@ export function TemplateEditorView({
   isAdmin = false,
   isGlobalTemplate = false,
   initialDesign,
+  initialMergeTagConfig,
+  initialProjectLogo,
+  initialPreviewProjectId,
   selectedRecordId,
   selectedYear,
   onDesignChange,
@@ -290,8 +297,8 @@ export function TemplateEditorView({
     selectedYear,
   });
 
-  const [mergeTagConfig, setMergeTagConfig] = useState<MergeTagConfig | null>(null);
-  const [projectLogo, setProjectLogo] = useState<string | null>(null);
+  const [mergeTagConfig, setMergeTagConfig] = useState<MergeTagConfig>(initialMergeTagConfig);
+  const [projectLogo, setProjectLogo] = useState<string | null>(initialProjectLogo);
   const [isMounted, setIsMounted] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -310,14 +317,52 @@ export function TemplateEditorView({
 
   const isDocument = templateType === 'DOCUMENT';
 
+  /**
+   * RSC + client re-renders can pass new object identities for `initialMergeTagConfig` / `initialProjectLogo`
+   * every time; they must not be `useEffect` deps or we repeatedly POST server actions.
+   */
+  const serverPreviewSnapshotRef = useRef<{
+    mergeTagConfig: MergeTagConfig;
+    projectLogo: string | null;
+    previewProjectId: string | undefined;
+  } | null>(null);
+  if (serverPreviewSnapshotRef.current === null) {
+    serverPreviewSnapshotRef.current = {
+      mergeTagConfig: initialMergeTagConfig,
+      projectLogo: initialProjectLogo,
+      previewProjectId: initialPreviewProjectId,
+    };
+  }
+
   const logoContextValue = useMemo(() => ({ projectLogo, appLogo: '/soliloan-logo.webp' }), [projectLogo]);
 
   useEffect(() => {
     setIsMounted(true);
-    getMergeTagConfigAction(dataset, projectId, templateType).then(setMergeTagConfig);
-    if (projectId) {
-      getProjectLogoAction(projectId).then(setProjectLogo);
+  }, []);
+
+  useEffect(() => {
+    const snapshot = serverPreviewSnapshotRef.current;
+    if (!snapshot) return;
+
+    if (projectId === snapshot.previewProjectId) {
+      setMergeTagConfig(snapshot.mergeTagConfig);
+      setProjectLogo(snapshot.projectLogo);
+      return;
     }
+    let cancelled = false;
+    void getMergeTagConfigAction(dataset, projectId, templateType).then((config) => {
+      if (!cancelled) setMergeTagConfig(config);
+    });
+    if (projectId) {
+      void getProjectLogoAction(projectId).then((logo) => {
+        if (!cancelled) setProjectLogo(logo);
+      });
+    } else {
+      setProjectLogo(null);
+    }
+    return () => {
+      cancelled = true;
+    };
   }, [dataset, projectId, templateType]);
 
   // Sync initial design to local state for preview

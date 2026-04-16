@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { getTemplateAction } from '@/actions/templates/queries/get-template';
 import { TemplateEditor } from '@/components/templates/template-editor';
 import { auth } from '@/lib/auth';
+import { loadTemplateEditorPageData } from '@/lib/templates/template-editor-page-data';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -28,6 +29,16 @@ export default async function AdminTemplateEditorPage({ params }: PageProps) {
     );
   }
 
+  const pageData = await loadTemplateEditorPageData({
+    template: {
+      dataset: data.template.dataset,
+      type: data.template.type,
+      projectId: data.template.projectId,
+      isGlobal: data.template.isGlobal,
+    },
+    isAdmin: true,
+  });
+
   return (
     <div className="h-screen flex flex-col">
       <TemplateEditor
@@ -40,6 +51,7 @@ export default async function AdminTemplateEditorPage({ params }: PageProps) {
           projectId: data.template.projectId,
           isGlobal: data.template.isGlobal,
         }}
+        pageData={pageData}
         isAdmin
       />
     </div>
