@@ -29,7 +29,7 @@ export function LenderDashboard({ loans, aggregates, userName }: Props) {
   const loanListSectionRef = useRef<HTMLElement>(null);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 mb-256">
       <div className="space-y-3">
         <h1 className="text-2xl font-bold sm:text-3xl">
           {userName?.trim() ? t('welcome', { name: userName.trim() }) : t('welcomeGuest')}

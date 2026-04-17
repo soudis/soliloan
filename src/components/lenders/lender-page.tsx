@@ -60,7 +60,7 @@ export const LenderPage = ({ lender }: Props) => {
   );
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 mb-256">
       <LenderPageHeader lender={lender} />
 
       {/* Mobile/Tablet: horizontal nav bar */}
