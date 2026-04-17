@@ -6,6 +6,7 @@ import { createAuditEntry, getManagerContext } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
 import { type ProjectManagerInviteContext, sendProjectManagerInvitationEmail } from '@/lib/email';
 import { generateToken } from '@/lib/token';
+import { normalizeStoredEmail } from '@/lib/utils/email';
 import { hashPassword } from '@/lib/utils/password';
 import { projectAction } from '@/lib/utils/safe-action';
 import { getProjectUnsafe } from '../queries/get-project';
@@ -19,7 +20,7 @@ export const addProjectManagerAction = projectAction
   )
   .action(async ({ ctx, parsedInput }) => {
     const { projectId, email } = parsedInput;
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = normalizeStoredEmail(email);
 
     const project = await db.project.findUnique({
       where: { id: projectId },

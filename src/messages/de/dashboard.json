@@ -21,7 +21,7 @@
     "lenderInterest": "Kreditgeberzinsen",
     "activeLoans": "Aktive Kredite",
     "repaidLoans": "Zurückgezahlte Kredite",
-    "terminatedLoans": "Beendete Kredite",
+    "terminatedLoans": "Gekündigte Kredite",
     "notDepositedLoans": "Nicht ausgezahlte Kredite"
   },
   "charts": {
@@ -254,7 +254,8 @@
       "lenderName": "Kreditgeber*in",
       "lender": "Kreditgeber*in",
       "amount": "Vertragswert",
-      "balance": "Aushaftend",
+      "balance": "Kontostand",
+      "total": "Summe",
       "balanceShort": "Stand:",
       "interestRate": "Zinssatz",
       "interest": "Zinsen",
@@ -608,6 +609,44 @@
         "newId": "Neue ID"
       },
       "downloadReport": "Report herunterladen"
+    }
+  },
+  "myLoans": {
+    "title": "Meine Kredite",
+    "welcome": "Willkommen, {name}!",
+    "welcomeGuest": "Willkommen!",
+    "description": "Hier behältst du deine Kredite im Blick — über alle Projekte hinweg, bei denen du als Kreditgeber*in eingetragen bist.",
+    "balance": "Kontostand",
+    "contact": "Kontakt",
+    "bankConnection": "Bankverbindung",
+    "loansSection": "Kredite",
+    "kpi": {
+      "loanCount": "Anzahl Kredite",
+      "totalBalance": "Gesamtkontostand",
+      "interest": "Zinsertrag (gesamt)",
+      "recentActivity": "Letzte Aktivitäten",
+      "noRecentActivity": "Keine Buchungen außer Zinsbuchungen."
+    },
+    "activity": {
+      "date": "Datum",
+      "project": "Projekt",
+      "type": "Art",
+      "amount": "Betrag"
+    },
+    "filter": {
+      "all": "Alle",
+      "status": {
+        "ACTIVE": "Aktiv",
+        "REPAID": "Zurückgezahlt",
+        "TERMINATED": "Gekündigt",
+        "NOTDEPOSITED": "Nicht eingezahlt"
+      }
+    },
+    "searchPlaceholder": "Suche nach Projekt, Kreditnr., Betrag …",
+    "empty": "Keine Kredite für diesen Filter.",
+    "pagination": {
+      "prev": "Zurück",
+      "next": "Weiter"
     }
   }
 }

@@ -26,9 +26,11 @@ interface LoanTransactionsProps {
   loanId: string;
   transactions: Transaction[];
   loan: LoanDetailsWithCalculations;
+  /** Hide mutations, templates, add — for lender portal */
+  readOnly?: boolean;
 }
 
-export function LoanTransactions({ loanId, transactions, loan }: LoanTransactionsProps) {
+export function LoanTransactions({ loanId, transactions, loan, readOnly = false }: LoanTransactionsProps) {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const locale = useLocale();
@@ -149,7 +151,7 @@ export function LoanTransactions({ loanId, transactions, loan }: LoanTransaction
             </div>
             <div className="flex items-center space-x-2">
               <div className="font-medium font-mono text-sm">{formatCurrency(transaction.amount)}</div>
-              {transaction.type !== 'INTEREST' && (
+              {!readOnly && transaction.type !== 'INTEREST' && (
                 <TemplateQuickActions
                   projectId={loan.lender.projectId}
                   mode="transaction"
@@ -159,19 +161,21 @@ export function LoanTransactions({ loanId, transactions, loan }: LoanTransaction
                   density="compact"
                 />
               )}
-              <div className="w-8 flex justify-end">
-                {transaction.id === lastNonInterest?.id && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => handleDeleteClick(transaction.id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                    <span className="sr-only">{commonT('ui.actions.delete')}</span>
-                  </Button>
-                )}
-              </div>
+              {!readOnly && (
+                <div className="w-8 flex justify-end">
+                  {transaction.id === lastNonInterest?.id && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => handleDeleteClick(transaction.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      <span className="sr-only">{commonT('ui.actions.delete')}</span>
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -207,28 +211,34 @@ export function LoanTransactions({ loanId, transactions, loan }: LoanTransaction
           </div>
         )}
 
-        <Button
-          variant="outline"
-          className="w-full border-dashed py-6"
-          size="sm"
-          onClick={() => setIsTransactionDialogOpen(true)}
-          disabled={loan.status === LoanStatus.REPAID}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          {commonT('terms.transaction')}
-        </Button>
+        {!readOnly && (
+          <Button
+            variant="outline"
+            className="w-full border-dashed py-6"
+            size="sm"
+            onClick={() => setIsTransactionDialogOpen(true)}
+            disabled={loan.status === LoanStatus.REPAID}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {commonT('terms.transaction')}
+          </Button>
+        )}
       </div>
 
-      <TransactionDialog loanId={loanId} open={isTransactionDialogOpen} onOpenChange={setIsTransactionDialogOpen} />
+      {!readOnly && (
+        <>
+          <TransactionDialog loanId={loanId} open={isTransactionDialogOpen} onOpenChange={setIsTransactionDialogOpen} />
 
-      <ConfirmDialog
-        open={isConfirmOpen}
-        onOpenChange={setIsConfirmOpen}
-        onConfirm={handleConfirmDelete}
-        title={t('transactions.delete.confirmTitle')}
-        description={t('transactions.delete.confirmDescription')}
-        confirmText={commonT('ui.actions.delete')}
-      />
+          <ConfirmDialog
+            open={isConfirmOpen}
+            onOpenChange={setIsConfirmOpen}
+            onConfirm={handleConfirmDelete}
+            title={t('transactions.delete.confirmTitle')}
+            description={t('transactions.delete.confirmDescription')}
+            confirmText={commonT('ui.actions.delete')}
+          />
+        </>
+      )}
     </>
   );
 }

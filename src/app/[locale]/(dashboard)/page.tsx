@@ -16,10 +16,14 @@ export default async function DashboardRootPage({ params }: DashboardRootPagePro
 
   const result = await getProjects();
   const projects = result?.projects ?? [];
+  const { locale } = await params;
 
   if (projects.length > 0) {
-    const { locale } = await params;
     redirect(`/${locale}/dashboard?projectId=${projects[0].id}`);
+  }
+
+  if (!session.user.isManager && session.user.loanedToProjects.length > 0) {
+    redirect(`/${locale}/my-loans`);
   }
 
   // If no projects exist, redirect to projects page (for admins) or show empty state
