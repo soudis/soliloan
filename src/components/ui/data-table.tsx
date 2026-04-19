@@ -423,7 +423,9 @@ export function DataTable<TData, TValue>({
         lastRowActionsMenuClosedAtRef={actions && onRowClick ? lastRowActionsMenuClosedAtRef : undefined}
       />
 
-      {showPagination && <DataTablePagination table={table} />}
+      {showPagination && (
+        <DataTablePagination table={table} onPageSizeChange={(pageSize) => setTableState({ pageSize, pageIndex: 0 })} />
+      )}
     </div>
   );
 }
