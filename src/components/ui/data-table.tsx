@@ -144,6 +144,8 @@ interface DataTableProps<TData, TValue> {
   actions?: (row: TData) => React.ReactNode;
   bulkActions?: BulkAction[];
   views?: View[];
+  /** Lender/loan: offer "pin to sidebar" in save dialog. */
+  allowSidebarViews?: boolean;
   getRowId?: (row: TData) => string;
 }
 
@@ -159,6 +161,7 @@ export function DataTable<TData, TValue>({
   defaultColumnVisibility,
   viewType,
   views,
+  allowSidebarViews = false,
   isLoading,
   actions,
   bulkActions,
@@ -404,6 +407,7 @@ export function DataTable<TData, TValue>({
           hasActiveFilters={hasActiveFilters}
           tableState={tableState}
           setTableState={setTableState}
+          allowSidebarViews={allowSidebarViews}
         />
       )}
 

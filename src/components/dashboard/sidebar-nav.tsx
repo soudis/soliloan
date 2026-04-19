@@ -1,5 +1,6 @@
 'use client';
 
+import { ViewType } from '@prisma/client';
 import { Box, FileText, HandCoins, History, LayoutDashboard, LogOut, Settings, Users, Wallet } from 'lucide-react';
 import type { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
@@ -10,16 +11,20 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store';
 import type { ProjectWithConfiguration } from '@/types/projects';
+import type { SidebarNavView } from '@/types/sidebar-nav';
 import { NavItem } from './nav-item';
 import ProjectSelector from './project-selector';
+import { ProjectTableNavItem } from './project-table-nav-item';
+import { SidebarViewItems } from './sidebar-view-items';
 
 interface SidebarNavProps {
   isSidebarOpen: boolean;
   session: Session;
   projects: ProjectWithConfiguration[];
+  sidebarViews: SidebarNavView[];
 }
 
-export function SidebarNav({ isSidebarOpen, session, projects }: SidebarNavProps) {
+export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews }: SidebarNavProps) {
   const t = useTranslations('navigation');
   const commonT = useTranslations('common');
   const { toggleSidebar } = useAppStore();
@@ -68,8 +73,14 @@ export function SidebarNav({ isSidebarOpen, session, projects }: SidebarNavProps
             <ProjectSelector projects={projects} />
             <div className="space-y-2 pt-1">
               <NavItem href="/dashboard" icon={LayoutDashboard} label={t('dashboard')} />
-              <NavItem href="/lenders" icon={Users} label={t('lenders')} />
-              <NavItem href="/loans" icon={Wallet} label={t('loans')} />
+              <div className="space-y-1">
+                <ProjectTableNavItem basePath="/lenders" icon={Users} label={t('lenders')} />
+                <SidebarViewItems views={sidebarViews} viewType={ViewType.LENDER} basePath="/lenders" />
+              </div>
+              <div className="space-y-1">
+                <ProjectTableNavItem basePath="/loans" icon={Wallet} label={t('loans')} />
+                <SidebarViewItems views={sidebarViews} viewType={ViewType.LOAN} basePath="/loans" />
+              </div>
               <NavItem href="/logbook" icon={History} label={t('logbook')} />
               <NavItem href="/configuration" icon={Settings} label={t('configuration')} />
             </div>

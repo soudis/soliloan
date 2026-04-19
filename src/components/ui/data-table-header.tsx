@@ -4,7 +4,7 @@ import type { View, ViewType } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Table, VisibilityState } from '@tanstack/react-table';
 import { isEqual } from 'lodash';
-import { SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, Save, SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useMemo, useState } from 'react';
@@ -16,9 +16,11 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
 import { DataTableColumnFilters } from './data-table-column-filters';
@@ -42,6 +44,7 @@ interface DataTableHeaderProps<TData> {
   defaultColumnVisibility: VisibilityState;
   tableState: TableUrlState;
   setTableState: SetTableUrlState;
+  allowSidebarViews?: boolean;
 }
 
 export function DataTableHeader<TData>({
@@ -55,19 +58,59 @@ export function DataTableHeader<TData>({
   hasActiveFilters,
   tableState,
   setTableState,
+  allowSidebarViews = false,
 }: DataTableHeaderProps<TData>) {
   const projectId = useProjectId();
+  const router = useRouter();
   const t = useTranslations('dataTable');
   const [showColumnFilters, setShowColumnFilters] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveAsOpen, setSaveAsOpen] = useState(false);
+  const tv = useTranslations('views');
   const queryClient = useQueryClient();
 
   const { executeAsync: executeCreateView } = useAction(createViewAction);
   const { executeAsync: executeUpdateView } = useAction(updateViewAction);
   const { executeAsync: executeDeleteView } = useAction(deleteViewAction);
 
-  // Function to save the current view
-  const handleSaveView = async (name: string, isDefault: boolean) => {
+  const buildViewDataPayload = () => ({
+    sorting: tableState.sorting,
+    columnFilters: tableState.columnFilters,
+    columnVisibility: tableState.columnVisibility,
+    globalFilter: tableState.globalFilter,
+    pageSize: tableState.pageSize,
+    pagination: {
+      pageIndex: 0,
+      pageSize: tableState.pageSize,
+    },
+  });
+
+  const handleOverwriteView = async () => {
+    if (!viewType || !tableState.selectedView) return;
+    setIsSaving(true);
+    try {
+      const result = await executeUpdateView({
+        viewId: tableState.selectedView,
+        ...(projectId && { projectId }),
+        data: {
+          data: buildViewDataPayload(),
+        },
+      });
+
+      if (result?.serverError || result?.validationErrors) {
+        throw new Error(result.serverError || 'Saving failed');
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ['views', viewType] });
+      router.refresh();
+    } catch (err) {
+      console.error('Error updating view:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveView = async (name: string, isDefault: boolean, saveForProject: boolean, showInSidebar: boolean) => {
     if (!viewType) return;
 
     setIsSaving(true);
@@ -76,18 +119,9 @@ export function DataTableHeader<TData>({
         name,
         type: viewType as ViewType,
         isDefault,
-        data: {
-          sorting: tableState.sorting,
-          columnFilters: tableState.columnFilters,
-          columnVisibility: tableState.columnVisibility,
-          globalFilter: tableState.globalFilter,
-          pageSize: tableState.pageSize,
-          pagination: {
-            pageIndex: 0,
-            pageSize: tableState.pageSize,
-          },
-        },
-        ...(projectId && { projectId }),
+        showInSidebar,
+        data: buildViewDataPayload(),
+        ...(saveForProject && projectId ? { projectId } : {}),
       });
 
       if (result?.serverError || result?.validationErrors) {
@@ -96,8 +130,8 @@ export function DataTableHeader<TData>({
 
       const view = result?.data?.view;
 
-      // Refresh the view list
       await queryClient.invalidateQueries({ queryKey: ['views', viewType] });
+      router.refresh();
       if (view) {
         // Select the new view — since the saved data matches current state,
         // all URL overrides will be cleared by the hook's diff logic.
@@ -119,6 +153,7 @@ export function DataTableHeader<TData>({
 
     await executeUpdateView({ viewId, data: { isDefault }, ...(projectId && { projectId }) });
     queryClient.invalidateQueries({ queryKey: ['views', viewType] });
+    router.refresh();
   };
 
   const handleViewDelete = async (viewId: string) => {
@@ -126,6 +161,7 @@ export function DataTableHeader<TData>({
 
     await executeDeleteView({ viewId });
     queryClient.invalidateQueries({ queryKey: ['views', viewType] });
+    router.refresh();
   };
 
   const viewDirty = useMemo(() => {
@@ -211,7 +247,42 @@ export function DataTableHeader<TData>({
                 }}
                 onViewDelete={handleViewDelete}
               />
-              <SaveViewDialog onSave={handleSaveView} isLoading={isSaving} disabled={!viewDirty} />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1 px-2"
+                    disabled={!viewDirty || isSaving}
+                    title={tv('saveView.menuTitle')}
+                  >
+                    <Save className="h-4 w-4" />
+                    <ChevronDown className="h-4 w-4 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    disabled={!tableState.selectedView || !viewDirty || isSaving}
+                    onSelect={() => {
+                      void handleOverwriteView();
+                    }}
+                  >
+                    {tv('saveView.overwrite')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem disabled={!viewDirty || isSaving} onSelect={() => setSaveAsOpen(true)}>
+                    {tv('saveView.saveAsNew')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <SaveViewDialog
+                hideTrigger
+                open={saveAsOpen}
+                onOpenChange={setSaveAsOpen}
+                onSave={handleSaveView}
+                isLoading={isSaving}
+                allowSidebar={allowSidebarViews}
+                hasProject={!!projectId}
+              />
             </>
           )}
           {Object.keys(columnFilters).length > 0 && (

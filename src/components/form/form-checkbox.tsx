@@ -11,9 +11,10 @@ interface FormCheckboxProps {
   label?: string;
   hint?: string;
   className?: string;
+  disabled?: boolean;
 }
 
-export function FormCheckbox({ name, label, hint, className }: FormCheckboxProps) {
+export function FormCheckbox({ name, label, hint, className, disabled }: FormCheckboxProps) {
   const form = useFormContext();
 
   return (
@@ -27,6 +28,7 @@ export function FormCheckbox({ name, label, hint, className }: FormCheckboxProps
               <Checkbox
                 className="mt-0.5"
                 checked={field.value === true}
+                disabled={disabled}
                 onCheckedChange={(v) => field.onChange(v === true)}
               />
             </FormControl>
@@ -37,9 +39,7 @@ export function FormCheckbox({ name, label, hint, className }: FormCheckboxProps
             ) : null}
           </div>
           {hint ? (
-            <FormDescription
-              className={cn('text-sm text-muted-foreground/80', label ? 'ps-7' : undefined)}
-            >
+            <FormDescription className={cn('text-sm text-muted-foreground/80', label ? 'ps-7' : undefined)}>
               {hint}
             </FormDescription>
           ) : null}

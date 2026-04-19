@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { useAppStore, useNavigationUiStore } from '@/store';
 import type { ProjectWithConfiguration } from '@/types/projects';
+import type { SidebarNavView } from '@/types/sidebar-nav';
 import { SidebarNav } from './sidebar-nav';
 import { TopNav } from './top-nav';
 
@@ -14,10 +15,12 @@ export default function DashboardNavigation({
   children,
   session,
   projects,
+  sidebarViews = [],
 }: {
   children: React.ReactNode;
   session: Session | null;
   projects: ProjectWithConfiguration[];
+  sidebarViews?: SidebarNavView[];
 }) {
   const { isSidebarOpen, toggleSidebar } = useAppStore();
   const isProjectSwitching = useNavigationUiStore((s) => s.isProjectSwitching);
@@ -39,7 +42,9 @@ export default function DashboardNavigation({
       />
 
       <div className="flex h-[calc(100vh-4rem)]">
-        {showSidebar && <SidebarNav isSidebarOpen={isSidebarOpen} session={session} projects={projects} />}
+        {showSidebar && (
+          <SidebarNav isSidebarOpen={isSidebarOpen} session={session} projects={projects} sidebarViews={sidebarViews} />
+        )}
 
         {/* Main Content */}
         <main className="relative flex-1 overflow-y-auto bg-background">

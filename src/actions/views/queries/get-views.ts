@@ -1,26 +1,39 @@
 'use server';
 
-import type { ViewType } from '@prisma/client';
+import type { Prisma, ViewType } from '@prisma/client';
 
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { assertCanManageProject } from '@/lib/views/access';
 
-export async function getViewsByType(viewType: ViewType) {
+export async function getViewsByType(viewType: ViewType, projectId?: string | null) {
   try {
     const session = await auth();
     if (!session) {
       throw new Error('Unauthorized');
     }
 
-    // Fetch all views for the user
+    const userId = session.user?.id;
+    if (!userId) {
+      throw new Error('Unauthorized');
+    }
+    const isAdmin = session.user.isAdmin ?? false;
+
+    if (projectId) {
+      await assertCanManageProject(projectId, userId, isAdmin);
+    }
+
+    const or: Prisma.ViewWhereInput[] = [{ userId, projectId: null }];
+    if (projectId) {
+      or.push({ projectId });
+    }
+
     const views = await db.view.findMany({
       where: {
-        userId: session.user.id,
         type: viewType,
+        OR: or,
       },
-      orderBy: {
-        name: 'asc',
-      },
+      orderBy: [{ projectId: 'asc' }, { name: 'asc' }],
     });
 
     return { views };

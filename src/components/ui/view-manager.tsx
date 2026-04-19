@@ -33,8 +33,9 @@ export function ViewManager({ onViewSelect, onViewDelete, onViewDefault, views, 
   useEffect(() => {
     if (views && views.length > 0 && !initializedRef.current && !state.selectedView) {
       initializedRef.current = true;
-      // Find default view if it exists
-      const defaultView = views.find((view: View) => view.isDefault);
+      const defaultView =
+        views.find((view: View) => view.isDefault && view.projectId === null) ??
+        views.find((view: View) => view.isDefault && view.projectId != null);
       if (defaultView) {
         onViewSelectRef.current(defaultView);
       } else {
@@ -81,20 +82,16 @@ export function ViewManager({ onViewSelect, onViewDelete, onViewDefault, views, 
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleViewSelect(null)} className="flex items-center justify-between">
-          <span>{t('defaultView')}</span>
+        <DropdownMenuItem onClick={() => handleViewSelect(null)} className="flex items-center">
+          <span className="text-left">{t('defaultView')}</span>
         </DropdownMenuItem>
         {views?.map((view) => (
-          <DropdownMenuItem
-            key={view.id}
-            onClick={() => handleViewSelect(view)}
-            className="flex items-center justify-between"
-          >
+          <DropdownMenuItem key={view.id} onClick={() => handleViewSelect(view)} className="flex items-center gap-2">
             {onViewDefault && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6"
+                className="h-6 w-6 shrink-0"
                 onClick={(e) => handleDefault(view.id, !view.isDefault, e)}
               >
                 {view.isDefault ? (
@@ -104,9 +101,21 @@ export function ViewManager({ onViewSelect, onViewDelete, onViewDefault, views, 
                 )}
               </Button>
             )}
-            <span>{view.name}</span>
+            <span className="flex min-w-0 flex-1 items-center justify-start gap-1 text-left">
+              <span className="truncate">{view.name}</span>
+              {view.projectId ? (
+                <span className="shrink-0 rounded border border-border px-1 py-px text-[10px] text-muted-foreground">
+                  {t('projectBadge')}
+                </span>
+              ) : null}
+            </span>
             {onViewDelete && (
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => handleDelete(view.id, e)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0"
+                onClick={(e) => handleDelete(view.id, e)}
+              >
                 <Trash2 className="h-4 w-4" />
               </Button>
             )}
