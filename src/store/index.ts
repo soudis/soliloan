@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export { useNavigationUiStore } from './navigation-ui';
+
 export type ColorScheme = 'default' | 'ocean' | 'forest' | 'sunset' | 'lavender';
 
 interface AppState {

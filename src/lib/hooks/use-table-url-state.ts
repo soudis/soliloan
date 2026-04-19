@@ -3,8 +3,10 @@
 import type { View } from '@prisma/client';
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/react-table';
 import { isEqual } from 'lodash';
-import { createParser, parseAsInteger, parseAsString, useQueryStates } from 'nuqs';
+import { useQueryStates } from 'nuqs';
 import { useCallback, useMemo } from 'react';
+
+import { tableUrlNuqsOptions, tableUrlParsers } from '@/lib/table-url-parsers';
 
 export type TableUrlState = {
   globalFilter: string;
@@ -18,27 +20,6 @@ export type TableUrlState = {
 
 export type SetTableUrlState = (update: Partial<TableUrlState>) => void;
 
-/**
- * Custom nuqs parser that encodes JSON as base64 to produce URL-safe values.
- * This avoids special characters ({, }, [, ], ", :) in the URL that break
- * Next.js RSC payload fetches.
- */
-function parseAsBase64Json<T>(validator: (value: unknown) => T | null) {
-  return createParser<T>({
-    parse: (query) => {
-      try {
-        const json = atob(query);
-        const parsed = JSON.parse(json);
-        return validator(parsed);
-      } catch {
-        return null;
-      }
-    },
-    serialize: (value) => btoa(JSON.stringify(value)),
-    eq: (a, b) => a === b || JSON.stringify(a) === JSON.stringify(b),
-  });
-}
-
 /** The baseline state when no view is selected */
 const DEFAULT_BASELINE: TableUrlState = {
   globalFilter: '',
@@ -48,25 +29,6 @@ const DEFAULT_BASELINE: TableUrlState = {
   pageIndex: 0,
   pageSize: 25,
   selectedView: '',
-};
-
-const tableParsers = {
-  q: parseAsString,
-  sort: parseAsBase64Json<SortingState>((v) => {
-    if (!Array.isArray(v)) return null;
-    return v as SortingState;
-  }),
-  filters: parseAsBase64Json<ColumnFiltersState>((v) => {
-    if (!Array.isArray(v)) return null;
-    return v as ColumnFiltersState;
-  }),
-  cols: parseAsBase64Json<VisibilityState>((v) => {
-    if (typeof v !== 'object' || v === null || Array.isArray(v)) return null;
-    return v as VisibilityState;
-  }),
-  page: parseAsInteger,
-  pageSize: parseAsInteger,
-  view: parseAsString,
 };
 
 /**
@@ -100,10 +62,7 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
   const defaultColumnVisibility = options.defaultColumnVisibility ?? EMPTY_COLUMN_VISIBILITY;
   const views = options.views ?? EMPTY_VIEWS;
 
-  const [rawState, setRawState] = useQueryStates(tableParsers, {
-    history: 'replace',
-    shallow: true,
-  });
+  const [rawState, setRawState] = useQueryStates(tableUrlParsers, tableUrlNuqsOptions);
 
   // Compute the baseline from the selected view (or defaults)
   const baseline = useMemo<TableUrlState>(() => {

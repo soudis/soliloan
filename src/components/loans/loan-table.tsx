@@ -15,6 +15,7 @@ import type { BulkAction } from '@/components/ui/data-table';
 import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useRouter } from '@/i18n/navigation';
+import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
 import {
   createAdditionalFieldDefaultColumnVisibility,
   createAdditionalFieldFilters,
@@ -43,6 +44,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
   const commonT = useTranslations('common');
   const router = useRouter();
   const locale = useLocale();
+  const selectedViewName = useSelectedViewName(views);
 
   type DeleteState = { mode: 'bulk'; ids: string[] } | { mode: 'single'; loanId: string } | null;
 
@@ -289,8 +291,13 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">{t('title')}</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">{t('title')}</h1>
+          {selectedViewName ? (
+            <p className="mt-0.5 text-base font-normal text-muted-foreground">{selectedViewName}</p>
+          ) : null}
+        </div>
         <Button onClick={() => router.push('/loans/new')}>
           <Plus className="mr-2 h-4 w-4" />
           {t('new.title')}
@@ -304,6 +311,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
         defaultColumnVisibility={defaultColumnVisibility}
         viewType={ViewType.LOAN}
         views={views}
+        allowSidebarViews
         showFilter={true}
         onRowClick={(row) => router.push(`/lenders/${row.lender.id}?loanId=${row.id}`)}
         bulkActions={bulkActions}

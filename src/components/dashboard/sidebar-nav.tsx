@@ -1,24 +1,30 @@
 'use client';
 
-import { Box, FileText, History, LayoutDashboard, LogOut, Settings, Users, Wallet } from 'lucide-react';
+import { ViewType } from '@prisma/client';
+import { Box, FileText, HandCoins, History, LayoutDashboard, LogOut, Settings, Users, Wallet } from 'lucide-react';
 import type { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 
 import { ThemeSelector } from '@/components/theme-selector';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store';
 import type { ProjectWithConfiguration } from '@/types/projects';
+import type { SidebarNavView } from '@/types/sidebar-nav';
 import { NavItem } from './nav-item';
 import ProjectSelector from './project-selector';
+import { ProjectTableNavItem } from './project-table-nav-item';
+import { SidebarViewItems } from './sidebar-view-items';
 
 interface SidebarNavProps {
   isSidebarOpen: boolean;
   session: Session;
   projects: ProjectWithConfiguration[];
+  sidebarViews: SidebarNavView[];
 }
 
-export function SidebarNav({ isSidebarOpen, session, projects }: SidebarNavProps) {
+export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews }: SidebarNavProps) {
   const t = useTranslations('navigation');
   const commonT = useTranslations('common');
   const { toggleSidebar } = useAppStore();
@@ -46,13 +52,38 @@ export function SidebarNav({ isSidebarOpen, session, projects }: SidebarNavProps
         } fixed inset-y-0 left-0 z-30 w-64 transform border-r bg-background transition duration-300 ease-in-out md:relative md:translate-x-0`}
       >
         <div className="h-full overflow-y-auto px-3 py-4 flex flex-col">
-          <ProjectSelector projects={projects} />
-          <nav className="space-y-2 flex-grow">
-            <NavItem href="/dashboard" icon={LayoutDashboard} label={t('dashboard')} />
-            <NavItem href="/lenders" icon={Users} label={t('lenders')} />
-            <NavItem href="/loans" icon={Wallet} label={t('loans')} />
-            <NavItem href="/logbook" icon={History} label={t('logbook')} />
-            <NavItem href="/configuration" icon={Settings} label={t('configuration')} />
+          {session.user.loanedToProjects.length > 0 && (
+            <nav className="pb-2">
+              <div className="pb-2">
+                <span className="text-sm font-medium">{t('sectionMyLoans')}</span>
+                <div className="pt-1 space-y-2">
+                  <NavItem href="/my-loans" icon={HandCoins} label={t('myLoansOverview')} />
+                </div>
+              </div>
+            </nav>
+          )}
+
+          <nav
+            className={cn(
+              'space-y-2 flex-grow flex flex-col',
+              session.user.loanedToProjects.length > 0 && 'border-t pt-4',
+            )}
+          >
+            <span className="text-sm font-medium">{t('management')}</span>
+            <ProjectSelector projects={projects} />
+            <div className="space-y-2 pt-1">
+              <NavItem href="/dashboard" icon={LayoutDashboard} label={t('dashboard')} />
+              <div className="space-y-1">
+                <ProjectTableNavItem basePath="/lenders" icon={Users} label={t('lenders')} />
+                <SidebarViewItems views={sidebarViews} viewType={ViewType.LENDER} basePath="/lenders" />
+              </div>
+              <div className="space-y-1">
+                <ProjectTableNavItem basePath="/loans" icon={Wallet} label={t('loans')} />
+                <SidebarViewItems views={sidebarViews} viewType={ViewType.LOAN} basePath="/loans" />
+              </div>
+              <NavItem href="/logbook" icon={History} label={t('logbook')} />
+              <NavItem href="/configuration" icon={Settings} label={t('configuration')} />
+            </div>
           </nav>
 
           {isAdmin && (

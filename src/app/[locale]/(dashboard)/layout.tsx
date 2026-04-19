@@ -7,11 +7,11 @@ import { auth } from '@/lib/auth';
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 
-  const { projects } = await getProjects();
+  const { projects, sidebarViews } = await getProjects();
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardNavigation session={session} projects={projects}>
+      <DashboardNavigation session={session} projects={projects} sidebarViews={sidebarViews}>
         <div className="h-full">{children}</div>
       </DashboardNavigation>
     </div>

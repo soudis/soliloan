@@ -3,14 +3,23 @@
   "error": "Fehler beim Laden der Ansichten",
   "loadView": "Ansicht laden",
   "defaultView": "Standardansicht",
+  "projectBadge": "Projekt",
   "saveView": {
     "title": "Ansicht speichern",
     "description": "Speichere deine aktuellen Ansichtseinstellungen",
     "name": "Ansichtsname",
     "namePlaceholder": "Gib einen Namen für diese Ansicht ein",
     "isDefault": "Als Standardansicht festlegen",
+    "saveForProject": "Für alle Manager*innen dieses Projekts speichern",
+    "saveForProjectHint": "Gilt für alle mit Zugriff auf das Projekt.",
+    "saveForProjectNeedProject": "Projekt in der URL auswählen (projectId), um eine Projekt-Ansicht zu speichern.",
+    "showInSidebar": "In der Seitenleiste unter Kreditgeber*innen / Kredite anzeigen",
+    "showInSidebarHint": "Erscheint als Untereintrag unter dem jeweiligen Menüpunkt.",
     "cancel": "Abbrechen",
     "save": "Ansicht speichern",
-    "saving": "Wird gespeichert..."
+    "saving": "Wird gespeichert...",
+    "menuTitle": "Ansicht speichern",
+    "overwrite": "Aktuelle Ansicht überschreiben",
+    "saveAsNew": "Als neue Ansicht speichern …"
   }
 }

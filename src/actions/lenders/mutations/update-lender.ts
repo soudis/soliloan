@@ -7,6 +7,7 @@ import { createAuditEntry, getChangedFields, getLenderContext } from '@/lib/audi
 import { db } from '@/lib/db';
 import { lenderFormSchema } from '@/lib/schemas/lender';
 import { getLenderName } from '@/lib/utils';
+import { normalizeStoredEmail } from '@/lib/utils/email';
 import { lenderAction } from '@/lib/utils/safe-action';
 
 export const updateLenderAction = lenderAction
@@ -35,6 +36,8 @@ export const updateLenderAction = lenderAction
       throw new Error('Lender not found');
     }
 
+    const lenderEmail = data.email ? normalizeStoredEmail(data.email) : null;
+
     // Update the lender
     const updatedLender = await db.lender.update({
       where: {
@@ -58,12 +61,12 @@ export const updateLenderAction = lenderAction
         bic: data.bic,
         notificationType: data.notificationType,
         additionalFields: data.additionalFields ?? {},
-        ...(data.email && {
+        ...(lenderEmail && {
           user: {
             connectOrCreate: {
-              where: { email: data.email },
+              where: { email: lenderEmail },
               create: {
-                email: data.email,
+                email: lenderEmail,
                 name: getLenderName(data),
                 language: lender.project.configuration?.userLanguage ?? Language.de,
               },

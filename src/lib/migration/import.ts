@@ -8,6 +8,7 @@ import type { Prisma, PrismaClient } from '@prisma/client';
 import { InterestMethod } from '@prisma/client';
 import AdmZip from 'adm-zip';
 import { isAfter } from 'date-fns';
+import { normalizeStoredEmail } from '@/lib/utils/email';
 import {
   emptyToNull,
   ensureUniqueSlug,
@@ -202,12 +203,13 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
         let adminCount = 0;
         const admins = data.admin ?? [];
         for (const admin of admins) {
-          if (!admin.email) {
+          const adminEmail = admin.email ? normalizeStoredEmail(admin.email) : '';
+          if (!adminEmail) {
             warnings.push({ entity: 'admin', legacyId: admin.id, message: 'Keine E-Mail -> Admin übersprungen' });
             continue;
           }
 
-          const existingUser = await tx.user.findUnique({ where: { email: admin.email } });
+          const existingUser = await tx.user.findUnique({ where: { email: adminEmail } });
 
           if (existingUser) {
             await tx.project.update({
@@ -218,7 +220,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
             const newUser = await tx.user.create({
               data: {
                 name: admin.logon_id,
-                email: admin.email,
+                email: adminEmail,
                 password: admin.passwordHashed,
                 language: 'de',
                 theme: 'default',
@@ -238,7 +240,9 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
         let lenderCount = 0;
 
         for (const user of data.user) {
-          const userEmail = emptyToNull(user.email);
+          const userEmailRaw = emptyToNull(user.email);
+          const normalizedUserEmail = userEmailRaw ? normalizeStoredEmail(userEmailRaw) : '';
+          const userEmail = normalizedUserEmail.length > 0 ? normalizedUserEmail : null;
           let emailLinked = false;
 
           if (userEmail) {
