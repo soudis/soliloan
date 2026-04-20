@@ -174,7 +174,7 @@ export function InvestmentTypeDetailContent({ investmentType, project }: Props) 
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{commonT('ui.cancel')}</AlertDialogCancel>
+            <AlertDialogCancel>{commonT('ui.actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {t('detail.delete')}
             </AlertDialogAction>

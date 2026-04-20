@@ -12,10 +12,7 @@ import { Form } from '@/components/ui/form';
 import { FormActions } from '@/components/ui/form-actions';
 import { FormLayout } from '@/components/ui/form-layout';
 import { useRouter } from '@/i18n/navigation';
-import {
-  type InvestmentTypeFormData,
-  investmentTypeFormSchema,
-} from '@/lib/schemas/investment-type';
+import { type InvestmentTypeFormData, investmentTypeFormSchema } from '@/lib/schemas/investment-type';
 import { formatNumber } from '@/lib/utils';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { InvestmentTypeFormFields } from './investment-type-form-fields';
@@ -26,9 +23,19 @@ interface Props {
   project: ProjectWithConfiguration;
   initialData?: InvestmentTypeWithLoans;
   prefilledInterestRate?: string;
+  onSuccess?: () => void | Promise<void>;
+  onCancel?: () => void;
+  hideTitle?: boolean;
 }
 
-export function InvestmentTypeFormClient({ project, initialData, prefilledInterestRate }: Props) {
+export function InvestmentTypeFormClient({
+  project,
+  initialData,
+  prefilledInterestRate,
+  onSuccess,
+  onCancel,
+  hideTitle = false,
+}: Props) {
   const t = useTranslations('dashboard.investmentTypes.form');
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +80,11 @@ export function InvestmentTypeFormClient({ project, initialData, prefilledIntere
       }
 
       toast.success(t('success'));
-      router.push(`/investment-types?projectId=${project.id}`);
+      if (onSuccess) {
+        await onSuccess();
+      } else {
+        router.push(`/investment-types?projectId=${project.id}`);
+      }
     } catch (err) {
       console.error('Error submitting form:', err);
       setError(err instanceof Error ? err.message : t('error'));
@@ -84,7 +95,7 @@ export function InvestmentTypeFormClient({ project, initialData, prefilledIntere
   const isLoading = isCreating || isUpdating;
 
   return (
-    <FormLayout title={isEditMode ? t('editTitle') : t('createTitle')} error={error}>
+    <FormLayout title={hideTitle ? undefined : isEditMode ? t('editTitle') : t('createTitle')} error={error}>
       <Form {...form}>
         <form onSubmit={handleSubmit}>
           <InvestmentTypeFormFields hasLoans={hasLoans} />
@@ -93,6 +104,7 @@ export function InvestmentTypeFormClient({ project, initialData, prefilledIntere
             submittingButtonText={t('submitting')}
             cancelButtonText={t('cancel')}
             isLoading={isLoading}
+            onCancel={onCancel}
           />
         </form>
       </Form>

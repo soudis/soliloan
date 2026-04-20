@@ -69,9 +69,9 @@ export function InvestmentTypesPageContent({ investmentTypes, project }: Props) 
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>{t('table.interestRate')}</TableHead>
               <TableHead>{t('table.name')}</TableHead>
               <TableHead>{t('table.limitationType')}</TableHead>
-              <TableHead className="text-right">{t('table.interestRate')}</TableHead>
               <TableHead className="text-right">{t('table.numberOfLoans')}</TableHead>
               <TableHead className="text-right">{t('table.totalAmount')}</TableHead>
               <TableHead className="text-right">{t('table.capacity')}</TableHead>
@@ -86,17 +86,17 @@ export function InvestmentTypesPageContent({ investmentTypes, project }: Props) 
               </TableRow>
             ) : (
               investmentTypes.map((it) => (
-                <TableRow key={it.id} className="cursor-pointer hover:bg-muted/50">
+                <TableRow key={it.id}>
                   <TableCell>
                     <Link
                       href={`/investment-types/${it.id}?projectId=${project.id}`}
-                      className="block w-full font-medium hover:underline"
+                      className="block w-full font-bold hover:underline"
                     >
-                      {it.name || '—'}
+                      {it.interestRate}%
                     </Link>
                   </TableCell>
+                  <TableCell>{it.name || '—'}</TableCell>
                   <TableCell>{limitationLabel(it.limitationType)}</TableCell>
-                  <TableCell className="text-right">{it.interestRate}%</TableCell>
                   <TableCell className="text-right">{it._count.loans}</TableCell>
                   <TableCell className="text-right">0</TableCell>
                   <TableCell className="text-right">0</TableCell>

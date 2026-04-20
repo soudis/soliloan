@@ -1,6 +1,7 @@
 'use client';
 
 import { InterestMethod } from '@prisma/client';
+import { Scale } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { FormSection } from '@/components/ui/form-section';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -21,6 +22,22 @@ export function ConfigurationFormFieldsLoans({ hasHistoricTransactions, project 
 
   return (
     <>
+      <div className="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <FormSection
+          title={t('form.deInvestmentActCompliance.title')}
+          icon={<Scale className="h-4 w-4 text-muted-foreground" />}
+        >
+          <FormSwitch
+            name="deInvestmentActCompliance"
+            label={t('form.deInvestmentActCompliance.label')}
+            hint={t('form.deInvestmentActCompliance.hint')}
+            labelPlacement="inline"
+          />
+        </FormSection>
+        <FormSection title="Was kommt hier denn hin?" icon={<Scale className="h-4 w-4 text-muted-foreground" />}>
+          <div>Ich weiß es nocht nicht </div>
+        </FormSection>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <FormSection title={t('form.loanDefaults')}>
           <FormSelect
@@ -55,15 +72,6 @@ export function ConfigurationFormFieldsLoans({ hasHistoricTransactions, project 
       <div className="mt-8">
         <FormSection title={t('form.loanAdditionalFields')}>
           <FormFieldConfigurator name="loanAdditionalFields" />
-        </FormSection>
-      </div>
-      <div className="mt-8">
-        <FormSection title={t('form.deInvestmentActCompliance.title')}>
-          <FormSwitch
-            name="deInvestmentActCompliance"
-            label={t('form.deInvestmentActCompliance.label')}
-            hint={t('form.deInvestmentActCompliance.hint')}
-          />
         </FormSection>
       </div>
     </>

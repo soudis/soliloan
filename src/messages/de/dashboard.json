@@ -358,10 +358,11 @@
     "investmentType": {
       "title": "Anlageart",
       "loading": "Anlageart wird geprüft…",
+      "missingRequirements": "Bitte zuerst das Datum und den Zinssatz angeben.",
       "unnamed": "Unbenannte Anlageart",
       "interestRate": "Zinssatz",
       "capacity": "Kapazität",
-      "noInvestmentType": "Für diesen Zinssatz existiert noch keine Anlageart. Erstellen Sie eine, um die VermAnlG-Anforderungen zu erfüllen.",
+      "noInvestmentType": "Für diesen Zinssatz existiert noch <strong>keine</strong> Anlageart. Wir empfehlen eine zu erstellen. Anlagearten helfen bei der Einhaltung der Ausnahmeregelungen nach § 2 VermAnlG. [Mehr dazu Link]",
       "createNow": "Anlageart jetzt anlegen"
     },
     "edit": {
@@ -507,9 +508,9 @@
       "altInterestMethodsHint": "Alternative Zinsmethoden können pro Kredit angegeben werden. Es wird empfohlen keine alternative Methoden zuzulassen.",
       "noAltInterestMethods": "Keine alternativen Zinsmethoden zugelassen",
       "deInvestmentActCompliance": {
-        "title": "Module",
+        "title": "Rechtliches",
         "label": "Modul zum Schutz vor dem deutschen Anlegerschutz",
-        "hint": "Aktiviert die VermAnlG-konforme Verwaltung von Anlagearten mit Begrenzungsregeln."
+        "hint": "Funktionen zur Einhaltung der Ausnahmeregelungen nach § 2 VermAnlG. [Mehr dazu Link]"
       },
       "loanTemplates": {
         "loanTemplates": "Kreditvorlagen",
@@ -708,7 +709,7 @@
     "create": "Anlageart erstellen",
     "table": {
       "name": "Name",
-      "limitationType": "Art der Begrenzung",
+      "limitationType": "Begrenzung",
       "interestRate": "Zinssatz",
       "numberOfLoans": "Anzahl Anlagen",
       "totalAmount": "Anlagesumme",
