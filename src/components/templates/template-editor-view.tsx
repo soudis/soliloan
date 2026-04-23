@@ -213,11 +213,7 @@ const InternalEditor = ({
       {/* Preview Layer — email only: iframe renders same HTML as sent mail (margin + card shadow from wrapInDocument) */}
       {isPreviewing && !isDocument && (
         <div className="absolute inset-0 z-30 overflow-auto bg-[#f4f4f5]">
-          <iframe
-            title="Email Preview"
-            srcDoc={previewHtml}
-            className="block min-h-[600px] w-full border-0"
-          />
+          <iframe title="Email Preview" srcDoc={previewHtml} className="block min-h-[600px] w-full border-0" />
         </div>
       )}
     </div>
@@ -407,13 +403,17 @@ export function TemplateEditorView({
 
     if (canLoadMergeData) {
       try {
-        const data = await getMergeTagValuesAction(
+        const mergeResult = await getMergeTagValuesAction({
           dataset,
-          templateRecordId,
-          'de',
-          projectId,
-          needsYearForLenderYearly(dataset) && selectedYear != null ? { year: selectedYear } : undefined,
-        );
+          recordId: templateRecordId,
+          locale: 'de',
+          projectId: projectId ?? undefined,
+          year:
+            needsYearForLenderYearly(dataset) && selectedYear != null && Number.isFinite(selectedYear)
+              ? selectedYear
+              : undefined,
+        });
+        const data = !mergeResult?.serverError && mergeResult.data ? mergeResult.data : null;
         if (data) {
           html = processTemplate(html, data);
           if (headerHtml) headerHtml = processTemplate(headerHtml, data);
@@ -448,13 +448,17 @@ export function TemplateEditorView({
 
       if (canLoadMergeData) {
         try {
-          const data = await getMergeTagValuesAction(
+          const mergeResult = await getMergeTagValuesAction({
             dataset,
-            templateRecordId,
-            'de',
-            projectId,
-            needsYearForLenderYearly(dataset) && selectedYear != null ? { year: selectedYear } : undefined,
-          );
+            recordId: templateRecordId,
+            locale: 'de',
+            projectId: projectId ?? undefined,
+            year:
+              needsYearForLenderYearly(dataset) && selectedYear != null && Number.isFinite(selectedYear)
+                ? selectedYear
+                : undefined,
+          });
+          const data = !mergeResult?.serverError && mergeResult.data ? mergeResult.data : null;
           if (data) html = processTemplate(html, data);
         } catch (e) {
           console.error('Preview error', e);
@@ -477,14 +481,19 @@ export function TemplateEditorView({
 
       if (canLoadMergeData) {
         try {
-          const data = await getMergeTagValuesAction(
+          const mergeResult = await getMergeTagValuesAction({
             dataset,
-            templateRecordId,
-            'de',
-            projectId,
-            needsYearForLenderYearly(dataset) && selectedYear != null ? { year: selectedYear } : undefined,
-          );
-          if (data) sampleData = data;
+            recordId: templateRecordId,
+            locale: 'de',
+            projectId: projectId ?? undefined,
+            year:
+              needsYearForLenderYearly(dataset) && selectedYear != null && Number.isFinite(selectedYear)
+                ? selectedYear
+                : undefined,
+          });
+          if (!mergeResult?.serverError && mergeResult.data) {
+            sampleData = mergeResult.data;
+          }
         } catch (e) {
           console.error('Preview error', e);
         }

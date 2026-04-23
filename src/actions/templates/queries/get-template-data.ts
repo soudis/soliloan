@@ -1,40 +1,39 @@
 'use server';
 
 import type { Prisma, TemplateDataset } from '@prisma/client';
+import { z } from 'zod';
 
-import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { lenderIdSchema, projectSampleListSchema } from '@/lib/schemas/common';
+import { getMergeTagValuesInputSchema } from '@/lib/schemas/templates';
 import { getTemplateData, type TemplateDataOptions } from '@/lib/templates/template-data';
-import { lenderAction, projectAction } from '@/lib/utils/safe-action';
+import { adminAction, lenderAction, managerAction, projectAction } from '@/lib/utils/safe-action';
 
 /**
  * All projects (id + display name) for global template preview sample data.
  * Admin-only; used when a global template has no `projectId` and the editor has no project from the route.
  */
-export async function getProjectsForTemplateSampleAction(): Promise<Array<{ id: string; name: string }>> {
-  const session = await auth();
-  if (!session?.user?.isAdmin) {
-    return [];
-  }
-  const projects = await db.project.findMany({
-    select: {
-      id: true,
-      configuration: {
-        select: { name: true },
+export const getProjectsForTemplateSampleAction = adminAction
+  .inputSchema(z.object({}))
+  .action(async () => {
+    const projects = await db.project.findMany({
+      select: {
+        id: true,
+        configuration: {
+          select: { name: true },
+        },
       },
-    },
-    orderBy: {
-      configuration: {
-        name: 'asc',
+      orderBy: {
+        configuration: {
+          name: 'asc',
+        },
       },
-    },
+    });
+    return projects.map((p) => ({
+      id: p.id,
+      name: p.configuration?.name?.trim() ? p.configuration.name : p.id,
+    }));
   });
-  return projects.map((p) => ({
-    id: p.id,
-    name: p.configuration?.name?.trim() ? p.configuration.name : p.id,
-  }));
-}
 
 const sampleLenderSelect = {
   id: true,
@@ -138,17 +137,120 @@ export const getSampleTransactionsAction = projectAction.inputSchema(projectSamp
 });
 
 /**
+ * Enforces that the manager may load merge data for the given dataset/ids (admins: full access).
+ */
+async function assertCanAccessMergeTagData(
+  user: { id?: string | null; isAdmin?: boolean | null },
+  input: { dataset: TemplateDataset; recordId?: string | null; projectId?: string },
+) {
+  if (user.isAdmin) {
+    return;
+  }
+
+  const userId = user.id;
+  if (!userId) {
+    throw new Error('error.unauthorized');
+  }
+  const { dataset, recordId, projectId: routeProjectId } = input;
+
+  const assertUserManagesProject = async (entityProjectId: string) => {
+    const n = await db.project.count({
+      where: { id: entityProjectId, managers: { some: { id: userId } } },
+    });
+    if (n === 0) {
+      throw new Error('error.project.notFound');
+    }
+  };
+
+  switch (dataset) {
+    case 'LENDER':
+    case 'LENDER_YEARLY': {
+      if (!recordId) {
+        return;
+      }
+      const lender = await db.lender.findUnique({
+        where: { id: recordId },
+        select: { projectId: true },
+      });
+      if (!lender) {
+        throw new Error('error.lender.notFound');
+      }
+      if (routeProjectId && routeProjectId !== lender.projectId) {
+        throw new Error('error.unauthorized');
+      }
+      await assertUserManagesProject(lender.projectId);
+      return;
+    }
+    case 'LOAN': {
+      if (!recordId) {
+        return;
+      }
+      const loan = await db.loan.findUnique({
+        where: { id: recordId },
+        select: { lender: { select: { projectId: true } } },
+      });
+      if (!loan) {
+        throw new Error('error.loan.notFound');
+      }
+      if (routeProjectId && routeProjectId !== loan.lender.projectId) {
+        throw new Error('error.unauthorized');
+      }
+      await assertUserManagesProject(loan.lender.projectId);
+      return;
+    }
+    case 'TRANSACTION': {
+      if (!recordId) {
+        return;
+      }
+      const transaction = await db.transaction.findUnique({
+        where: { id: recordId },
+        select: { loan: { select: { lender: { select: { projectId: true } } } } },
+      });
+      if (!transaction) {
+        throw new Error('error.transaction.notFound');
+      }
+      const entityProjectId = transaction.loan.lender.projectId;
+      if (routeProjectId && routeProjectId !== entityProjectId) {
+        throw new Error('error.unauthorized');
+      }
+      await assertUserManagesProject(entityProjectId);
+      return;
+    }
+    case 'USER': {
+      if (recordId && recordId !== userId) {
+        throw new Error('error.unauthorized');
+      }
+      return;
+    }
+    case 'PROJECT':
+    case 'PROJECT_YEARLY': {
+      const resolved = recordId ?? routeProjectId;
+      if (!resolved) {
+        return;
+      }
+      if (recordId && routeProjectId && recordId !== routeProjectId) {
+        throw new Error('error.unauthorized');
+      }
+      await assertUserManagesProject(resolved);
+      return;
+    }
+    default: {
+      return;
+    }
+  }
+}
+
+/**
  * Get template data for preview replacement and live rendering.
  */
-export async function getMergeTagValuesAction(
-  dataset: TemplateDataset,
-  recordId?: string | null,
-  locale = 'de',
-  projectId?: string,
-  options?: TemplateDataOptions,
-): Promise<Record<string, unknown> | null> {
-  return getTemplateData(dataset, recordId, locale, projectId, options);
-}
+export const getMergeTagValuesAction = managerAction.inputSchema(getMergeTagValuesInputSchema).action(
+  async ({ ctx, parsedInput }) => {
+    const { dataset, recordId, locale, projectId, year } = parsedInput;
+    await assertCanAccessMergeTagData(ctx.session.user, { dataset, recordId, projectId });
+    const options: TemplateDataOptions | undefined = year != null && Number.isFinite(year) ? { year } : undefined;
+    return getTemplateData(dataset, recordId, locale, projectId, options);
+  },
+);
 
 /**
  * Years available for `LENDER_YEARLY` sample data: from first lender transaction through last complete calendar year.

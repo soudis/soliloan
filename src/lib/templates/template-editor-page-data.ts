@@ -52,7 +52,8 @@ export async function loadTemplateEditorPageData(params: {
   let effectivePreviewProjectId = contextProjectId;
 
   if (needsProjectPickerForSample) {
-    sampleProjects = await getProjectsForTemplateSampleAction();
+    const sampleProjectsResult = await getProjectsForTemplateSampleAction({});
+    sampleProjects = sampleProjectsResult.data ?? [];
     effectivePreviewProjectId = sampleProjects[0]?.id ?? null;
   }
 
