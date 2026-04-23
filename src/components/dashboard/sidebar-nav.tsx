@@ -4,6 +4,7 @@ import { ViewType } from '@prisma/client';
 import {
   Box,
   FileText,
+  FlaskConical,
   HandCoins,
   History,
   LayoutDashboard,
@@ -101,6 +102,9 @@ export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews }: S
               <NavItem href="/logbook" icon={History} label={t('logbook')} />
               {showInvestmentTypes && <NavItem href="/investment-types" icon={Scale} label={t('investmentTypes')} />}
               <NavItem href="/configuration" icon={Settings} label={t('configuration')} />
+              {process.env.NODE_ENV === 'development' && (
+                <NavItem href="/sandbox" icon={FlaskConical} label={t('sandbox')} />
+              )}
             </div>
           </nav>
 
