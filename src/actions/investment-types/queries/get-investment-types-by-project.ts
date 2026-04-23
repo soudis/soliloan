@@ -7,7 +7,16 @@ import { projectAction } from '@/lib/utils/safe-action';
 export async function getInvestmentTypesByProjectUnsafe(projectId: string) {
   const investmentTypes = await db.investmentType.findMany({
     where: { projectId },
-    include: { _count: { select: { loans: true } } },
+    include: {
+      loans: {
+        select: {
+          id: true,
+          amount: true,
+          signDate: true,
+        },
+      },
+      _count: { select: { loans: true } },
+    },
     orderBy: { interestRate: 'asc' },
   });
 

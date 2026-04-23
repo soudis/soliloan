@@ -203,7 +203,9 @@ export function SandboxClient() {
       <Section title="GridIndicator5x4">
         <Showcase label="Interaktiv">
           <div className="flex items-center gap-6">
-            <GridIndicator5x4 value={gridValue} className="w-24" />
+            <div className="h-24 w-24">
+              <GridIndicator5x4 value={gridValue} className="h-full w-full" />
+            </div>
             <div className="space-y-2">
               <p className="text-sm font-medium tabular-nums">{gridValue} / 20</p>
               <input

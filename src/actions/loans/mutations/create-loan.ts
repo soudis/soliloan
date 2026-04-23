@@ -20,7 +20,17 @@ async function getNextLoanNumber(projectId: string): Promise<number> {
 export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(async ({ parsedInput: data }) => {
   const lender = await db.lender.findUniqueOrThrow({
     where: { id: data.lenderId },
-    select: { projectId: true },
+    select: {
+      country: true,
+      projectId: true,
+      project: {
+        select: {
+          configuration: {
+            select: { deInvestmentActCompliance: true },
+          },
+        },
+      },
+    },
   });
 
   const loanNumber = data.loanNumber ?? (await getNextLoanNumber(lender.projectId));
@@ -33,14 +43,10 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
     if (existing) return { fieldErrors: { loanNumber: 'error.loan.numberAlreadyExists' } };
   }
 
-  // DEInvestmentActCompliance: auto-link matching InvestmentType
+  // DEInvestmentActCompliance: German lenders must use an existing matching InvestmentType.
   let investmentTypeId: string | undefined;
-  const project = await db.project.findUnique({
-    where: { id: lender.projectId },
-    select: { configuration: { select: { deInvestmentActCompliance: true } } },
-  });
 
-  if (project?.configuration.deInvestmentActCompliance) {
+  if (lender.project.configuration.deInvestmentActCompliance && lender.country === 'DE') {
     const normalizedRate = normalizeLoanInterestRate(data.interestRate);
     const matchingType = await db.investmentType.findUnique({
       where: {
@@ -51,9 +57,12 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
       },
       select: { id: true },
     });
-    if (matchingType) {
-      investmentTypeId = matchingType.id;
+
+    if (!matchingType) {
+      return { fieldErrors: { interestRate: 'error.loan.investmentTypeRequired' } };
     }
+
+    investmentTypeId = matchingType.id;
   }
 
   const loan = await db.loan.create({

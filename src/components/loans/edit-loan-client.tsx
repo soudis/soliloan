@@ -31,6 +31,12 @@ export function EditLoanClient({ loan, project }: EditLoanClientProps) {
 
       const result = await updateLoanAction({ loanId: loan.id, data });
 
+      if (result?.data?.fieldErrors) {
+        return Object.fromEntries(
+          Object.entries(result.data.fieldErrors).filter(([, message]) => message),
+        ) as FormSubmitResult;
+      }
+
       if (result?.serverError || result?.validationErrors) {
         throw new Error(result.serverError || 'Validation failed');
       }

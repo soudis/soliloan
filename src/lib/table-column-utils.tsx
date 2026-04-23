@@ -86,12 +86,7 @@ export function createNumberColumn<T>(
       accessorKey,
       header: headerKey,
       cell: ({ row }) => {
-        const value =
-          row.getValue(accessorKey) !== null &&
-          row.getValue(accessorKey) !== undefined &&
-          row.getValue(accessorKey) !== ''
-            ? parser.parse(row.getValue(accessorKey) as string)
-            : '';
+        const value = formatTableNumberValue(row.getValue(accessorKey), parser);
         return <div className="tabular-nums">{value}</div>;
       },
     },
@@ -101,6 +96,18 @@ export function createNumberColumn<T>(
   // Add the filter function after creation
   column.filterFn = 'inNumberRange';
   return column;
+}
+
+function formatTableNumberValue(rawValue: unknown, parser: NumberParser): number | string | null {
+  if (rawValue === null || rawValue === undefined || rawValue === '') {
+    return '';
+  }
+
+  if (typeof rawValue === 'number') {
+    return rawValue;
+  }
+
+  return parser.parse(String(rawValue));
 }
 
 // Create a currency column
@@ -161,21 +168,28 @@ export function createDateColumn<T>(
   );
 }
 
+type PercentageColumnFormattingOptions = {
+  align?: 'left' | 'right' | 'center';
+};
+
 // Create a percentage column
 export function createPercentageColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,
   t: (key: string) => string,
   locale: string,
+  formatting: PercentageColumnFormattingOptions = {},
 ): ColumnDef<T> {
   const parser = new NumberParser(locale);
+  const align = formatting.align ?? 'right';
   const column = createColumn<T>(
     {
       accessorKey,
       header: headerKey,
+      align,
       cell: ({ row }) => {
         const value = parser.parse(row.getValue(accessorKey) as string) || 0;
-        return <div className="text-right tabular-nums">{`${value.toFixed(2)}%`}</div>;
+        return <div className={`${getTextAlignClass(align)} tabular-nums`}>{`${value.toFixed(2)}%`}</div>;
       },
     },
     t,
@@ -184,6 +198,17 @@ export function createPercentageColumn<T>(
   // Add the filter function after creation
   column.filterFn = 'inNumberRange';
   return column;
+}
+
+function getTextAlignClass(align: 'left' | 'right' | 'center') {
+  switch (align) {
+    case 'center':
+      return 'text-center';
+    case 'right':
+      return 'text-right';
+    default:
+      return 'text-left';
+  }
 }
 
 // Create an enum column with badge

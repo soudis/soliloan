@@ -209,8 +209,8 @@
       "ACT_ACT_COMPOUND": "ACT/ACT (Mit Zinseszins)"
     },
     "limitationType": {
-      "NOT_MORE_THAN_N_UNITS": "Max. {limit} Anlagen",
-      "TOTAL_AMOUNT_OVER_TIME_PERIOD": "Max. {limit} in {timePeriod}n"
+      "NOT_MORE_THAN_N_UNITS": "Anzahl Anlagen",
+      "TOTAL_AMOUNT_OVER_TIME_PERIOD": "Anlagesumme"
     },
     "theme": {
       "default": "Standard",

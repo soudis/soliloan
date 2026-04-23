@@ -23,7 +23,8 @@
   },
   "loan": {
     "notFound": "Kredit nicht gefunden.",
-    "numberAlreadyExists": "Diese Kreditnummer ist in diesem Projekt bereits vergeben."
+    "numberAlreadyExists": "Diese Kreditnummer ist in diesem Projekt bereits vergeben.",
+    "investmentTypeRequired": "Für deutsche Kreditgeber*innen muss bei aktivem Anlagearten-Modul zuerst eine passende Anlageart für diesen Zinssatz erstellt werden."
   },
   "note": {
     "notFound": "Notiz nicht gefunden."

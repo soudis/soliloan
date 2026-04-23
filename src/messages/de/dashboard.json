@@ -358,12 +358,14 @@
     "investmentType": {
       "title": "Anlageart",
       "loading": "Anlageart wird geprüft…",
-      "missingRequirements": "Bitte zuerst das Datum und den Zinssatz angeben.",
-      "unnamed": "Unbenannte Anlageart",
+      "missingRequirements": "Bitte zuerst angeben: {fields}",
+      "onlyForGermanLenders": "Bei Kreditgeber*innen die nicht aus Deutschland stammen muss keine Anlageart zugeordnet werden.",
+      "unnamed": "",
       "interestRate": "Zinssatz",
       "capacity": "Kapazität",
-      "noInvestmentType": "Für diesen Zinssatz existiert noch <strong>keine</strong> Anlageart. Wir empfehlen eine zu erstellen. Anlagearten helfen bei der Einhaltung der Ausnahmeregelungen nach § 2 VermAnlG. [Mehr dazu Link]",
-      "createNow": "Anlageart jetzt anlegen"
+      "capacityIncludingCurrent": "Inklusive aktuellem Kredit",
+      "noInvestmentType": "Für diesen Zinssatz existiert noch <strong>keine</strong> Anlageart. Für deutsche Kreditgeber*innen muss sie vor dem Speichern des Kredits erstellt werden.",
+      "createNow": "Anlageart anlegen"
     },
     "edit": {
       "title": "Kredit von {lenderName} bearbeiten",
@@ -704,25 +706,36 @@
 
   "investmentTypes": {
     "title": "Anlagearten",
-    "description": "Verwalten Sie Anlagearten gemäß VermAnlG.",
+    "description": "Verwalten Sie Anlagearten zur Einhaltung des deutschen Anlegerschutzes-Gesetzes.",
     "effectiveDate": "Stichtag",
     "create": "Anlageart erstellen",
     "table": {
       "name": "Name",
-      "limitationType": "Begrenzung",
+      "limitationType": "Art der Begrenzung",
       "interestRate": "Zinssatz",
-      "numberOfLoans": "Anzahl Anlagen",
-      "totalAmount": "Anlagesumme",
-      "capacity": "Kapazität"
+      "numberOfLoans": "Anzahl Anlagen (Gesamt)",
+      "numberOfEffectiveLoans": "Anzahl Anlagen (12 Monate)",
+      "totalAmount": "Anlagesumme (Gesamt)",
+      "totalAmountWithinTimeframe": "Anlagesumme (12 Monate)",
+      "capacity": "Kapazität",
+      "freeCapacity": "Frei"
     },
     "detail": {
       "title": "Anlageart",
+      "information": "Informationen",
       "edit": "Bearbeiten",
       "delete": "Löschen",
       "loans": "Zugeordnete Kredite",
       "noLoans": "Keine Kredite zugeordnet.",
+      "relevantLoans": "Relevante Kredite",
+      "relevantLoansDescription": "Für die Kapazität sind Kredite relevant, die maximal 12 Monate vor oder nach dem Stichtag ({effectiveDate}) liegen. [Mehr dazu]",
+      "noRelevantLoans": "Keine relevanten Kredite im Zeitraum.",
+      "loansOutsideTimeframe": "Kredite außerhalb des Zeitraums",
+      "loansOutsideTimeframeDescription": "Folgende Kredite sind Teil der Anlageart, aber haben zum Stichtag ({effectiveDate}) keinen Einfluss auf die Kapazität.",
+      "noLoansOutsideTimeframe": "Keine Kredite außerhalb des Zeitraums.",
       "loanNumber": "Nummer",
       "lender": "Kreditgeber*in",
+      "signDate": "Vertragsdatum",
       "amount": "Betrag",
       "interestRate": "Zinssatz",
       "confirmDelete": "Anlageart löschen?",
@@ -739,15 +752,20 @@
       "name": "Name",
       "namePlaceholder": "Optionaler Name",
       "limitationType": "Art der Begrenzung",
-      "limitationTypeNotMoreThanNUnits": "Nicht mehr als {limit} Anlagen",
-      "limitationTypeNotMoreThanNUnitsDescription": "Es dürfen nicht mehr als {limit} Anlagen dieses Typs existieren.",
-      "limitationTypeTotalAmount": "Anlagesumme nicht höher als {limit} in {timePeriod}",
-      "limitationTypeTotalAmountDescription": "Die Gesamtanlagesumme darf {limit} innerhalb von {timePeriod} nicht überschreiten.",
+      "limitationTypeSectionDescription": "Welche Ausnahmeregelung soll für diese Anlegeart genutzt werden?",
+      "limitationTypeNotMoreThanNUnits": "Begrenzte Anzahl der Anlagen",
+      "limitationTypeNotMoreThanNUnitsDescription": "Es dürfen nicht mehr als {limit} Anlagen dieser Anlageart existieren.",
+      "limitationTypeTotalAmount": "Begrenzte Anlagesumme (über {timePeriod})",
+      "limitationTypeTotalAmountDescription": "Die Gesamtanlagesumme der Kredite mit dieser Anlageart darf {limit} innerhalb von {timePeriod} nicht überschreiten.",
       "submit": "Speichern",
       "submitting": "Wird gespeichert…",
       "cancel": "Abbrechen",
       "success": "Anlageart erfolgreich gespeichert.",
       "error": "Fehler beim Speichern der Anlageart."
+    },
+    "capacity": {
+      "units": "Anlagen",
+      "totalAmount": "Anlagesumme in 12 Monaten"
     },
     "notEnabled": "Das Modul zum Schutz vor dem deutschen Anlegerschutz ist für dieses Projekt nicht aktiviert."
   }

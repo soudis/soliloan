@@ -102,7 +102,7 @@ export function LoanForm({
     <FormLayout title={title} error={error}>
       <Form {...form}>
         <form onSubmit={handleSubmit}>
-          <LoanFormFields lenders={lenders} isEditMode={isEditMode} />
+          <LoanFormFields lenders={lenders} isEditMode={isEditMode} currentLoanId={initialData?.id} />
 
           <FormActions
             submitButtonText={submitButtonText}

@@ -4,12 +4,14 @@ import { ContractStatus, type Lender } from '@prisma/client';
 import { FileX } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useFormContext } from 'react-hook-form';
 import { FormDatePicker } from '@/components/form/form-date-picker';
 import { FormField } from '@/components/form/form-field';
 import { FormNumberInput } from '@/components/form/form-number-input';
 import { FormSelect } from '@/components/form/form-select';
 import { LenderCombobox } from '@/components/loans/lender-combobox';
 import { FormSection } from '@/components/ui/form-section';
+import type { LoanFormClientData } from '@/lib/schemas/loan';
 import { FormAdditionalFields } from '../form/form-additional-fields';
 import { useProject } from '../providers/project-provider';
 import { LoanInvestmentTypeSection } from './loan-investment-type-section';
@@ -18,15 +20,20 @@ import { TerminationFormFields } from './termination-form-fields';
 interface LoanFormFieldsProps {
   lenders: Lender[];
   isEditMode?: boolean;
+  currentLoanId?: string;
 }
 
-export function LoanFormFields({ lenders, isEditMode = false }: LoanFormFieldsProps) {
+export function LoanFormFields({ lenders, isEditMode = false, currentLoanId }: LoanFormFieldsProps) {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const searchParams = useSearchParams();
+  const form = useFormContext<LoanFormClientData>();
 
   const preselectedLenderId = searchParams.get('lenderId');
   const { project } = useProject();
+  const lenderId = form.watch('lenderId');
+  const selectedLender = lenders.find((lender) => lender.id === lenderId);
+  const isInvestmentTypeSectionActive = selectedLender?.country === 'DE';
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -89,7 +96,9 @@ export function LoanFormFields({ lenders, isEditMode = false }: LoanFormFieldsPr
       </FormSection>
 
       {/* DEInvestmentActCompliance Section */}
-      {project.configuration.deInvestmentActCompliance && <LoanInvestmentTypeSection />}
+      {project.configuration.deInvestmentActCompliance && (
+        <LoanInvestmentTypeSection hasSelectedLender={!!selectedLender} isActive={isInvestmentTypeSectionActive} currentLoanId={currentLoanId} />
+      )}
 
       {/* Termination Information Section */}
       <FormSection icon={<FileX className="w-4 h-4 text-muted-foreground" />} title={t('new.form.terminationInfo')}>

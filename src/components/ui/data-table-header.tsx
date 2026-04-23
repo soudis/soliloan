@@ -325,7 +325,7 @@ export function DataTableHeader<TData>({
           )}
         </div>
       </div>
-      {showColumnFilters && viewType && Object.keys(columnFilters).length > 0 && (
+      {showColumnFilters && Object.keys(columnFilters).length > 0 && (
         <DataTableColumnFilters tableState={tableState} setTableState={setTableState} columnFilters={columnFilters} />
       )}
     </>

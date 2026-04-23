@@ -1,4 +1,6 @@
+import { ViewType } from '@prisma/client';
 import { notFound } from 'next/navigation';
+import { getViewsByType } from '@/actions';
 import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
 import { getInvestmentTypesByProjectUnsafe } from '@/actions/investment-types/queries/get-investment-types-by-project';
 import { InvestmentTypesPageContent } from '@/components/investment-types/investment-types-page-content';
@@ -16,7 +18,10 @@ export default async function InvestmentTypesPage({ searchParams }: PageProps) {
     notFound();
   }
 
-  const { investmentTypes } = await getInvestmentTypesByProjectUnsafe(projectId);
+  const [{ investmentTypes }, views] = await Promise.all([
+    getInvestmentTypesByProjectUnsafe(projectId),
+    getViewsByType(ViewType.INVESTMENT_TYPE),
+  ]);
 
-  return <InvestmentTypesPageContent investmentTypes={investmentTypes} project={project} />;
+  return <InvestmentTypesPageContent investmentTypes={investmentTypes} project={project} views={views?.views ?? []} />;
 }

@@ -40,9 +40,9 @@ export const updateLoanAction = loanAction
       throw new Error('Loan not found');
     }
 
-    // DEInvestmentActCompliance: update investmentTypeId based on interest rate
-    let investmentTypeId: string | null | undefined;
-    if (loan.lender.project.configuration.deInvestmentActCompliance) {
+    // DEInvestmentActCompliance: German lenders must use an existing matching InvestmentType.
+    let investmentTypeId: string | null = null;
+    if (loan.lender.project.configuration.deInvestmentActCompliance && loan.lender.country === 'DE') {
       const normalizedRate = normalizeLoanInterestRate(data.interestRate);
       const matchingType = await db.investmentType.findUnique({
         where: {
@@ -53,7 +53,12 @@ export const updateLoanAction = loanAction
         },
         select: { id: true },
       });
-      investmentTypeId = matchingType?.id ?? null;
+
+      if (!matchingType) {
+        return { fieldErrors: { interestRate: 'error.loan.investmentTypeRequired' } };
+      }
+
+      investmentTypeId = matchingType.id;
     }
 
     const updatedLoan = await db.loan.update({
@@ -73,7 +78,7 @@ export const updateLoanAction = loanAction
         altInterestMethod: data.altInterestMethod,
         contractStatus: data.contractStatus,
         additionalFields: data.additionalFields ?? {},
-        ...(investmentTypeId !== undefined && { investmentTypeId }),
+        investmentTypeId,
       },
       include: {
         lender: true,

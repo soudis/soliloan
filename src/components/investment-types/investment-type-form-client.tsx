@@ -1,9 +1,10 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { InvestmentType, LimitationType, Loan } from '@prisma/client';
+import { type InvestmentType, LimitationType, type Loan } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
+import type { FormEvent } from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -23,6 +24,7 @@ interface Props {
   project: ProjectWithConfiguration;
   initialData?: InvestmentTypeWithLoans;
   prefilledInterestRate?: string;
+  fixInterestRate?: boolean;
   onSuccess?: () => void | Promise<void>;
   onCancel?: () => void;
   hideTitle?: boolean;
@@ -32,6 +34,7 @@ export function InvestmentTypeFormClient({
   project,
   initialData,
   prefilledInterestRate,
+  fixInterestRate = false,
   onSuccess,
   onCancel,
   hideTitle = false,
@@ -48,7 +51,7 @@ export function InvestmentTypeFormClient({
 
   const defaultValues = {
     interestRate: initialData ? formatNumber(initialData.interestRate, 0, 3) : prefilledInterestRate || ('' as const),
-    limitationType: initialData?.limitationType || ('' as unknown as LimitationType),
+    limitationType: initialData?.limitationType ?? LimitationType.TOTAL_AMOUNT_OVER_TIME_PERIOD,
     name: initialData?.name || null,
   };
 
@@ -93,12 +96,24 @@ export function InvestmentTypeFormClient({
   });
 
   const isLoading = isCreating || isUpdating;
+  const isInterestRateDisabled = hasLoans || fixInterestRate;
+
+  const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.stopPropagation();
+    void handleSubmit(event);
+  };
 
   return (
     <FormLayout title={hideTitle ? undefined : isEditMode ? t('editTitle') : t('createTitle')} error={error}>
       <Form {...form}>
-        <form onSubmit={handleSubmit}>
-          <InvestmentTypeFormFields hasLoans={hasLoans} />
+        <form onSubmit={handleFormSubmit}>
+          <InvestmentTypeFormFields
+            isInterestRateDisabled={isInterestRateDisabled}
+            showInterestRateDisabledHint={hasLoans}
+            interestRateAutoFocus={!isEditMode && !fixInterestRate}
+            currentCapacityAmount={null}
+            currentCapacityUnits={null}
+          />
           <FormActions
             submitButtonText={t('submit')}
             submittingButtonText={t('submitting')}

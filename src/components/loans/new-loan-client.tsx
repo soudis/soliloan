@@ -9,6 +9,7 @@ import { LoanForm } from '@/components/loans/loan-form';
 import { useRouter } from '@/i18n/navigation';
 import type { LoanFormData } from '@/lib/schemas/loan';
 import { getLenderName } from '@/lib/utils';
+import type { FormSubmitResult } from '@/types/forms';
 import type { LenderWithCalculations } from '@/types/lenders';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
@@ -25,7 +26,7 @@ export function NewLoanClient({ project, lender, lenderId }: NewLoanClientProps)
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (data: LoanFormData) => {
+  const handleSubmit = async (data: LoanFormData): Promise<FormSubmitResult> => {
     try {
       setIsSubmitting(true);
 
@@ -41,7 +42,9 @@ export function NewLoanClient({ project, lender, lenderId }: NewLoanClientProps)
       const result = await createLoanAction({ ...data, lenderId: data.lenderId });
 
       if (result?.data?.fieldErrors) {
-        return result.data.fieldErrors;
+        return Object.fromEntries(
+          Object.entries(result.data.fieldErrors).filter(([, message]) => message),
+        ) as FormSubmitResult;
       }
 
       if (result?.serverError || result?.validationErrors) {
@@ -61,6 +64,8 @@ export function NewLoanClient({ project, lender, lenderId }: NewLoanClientProps)
     } finally {
       setIsSubmitting(false);
     }
+
+    return undefined;
   };
 
   const initialData = lenderId
