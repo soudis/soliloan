@@ -7,51 +7,7 @@ import { getLoanAction } from '@/actions/loans/queries/get-loan';
 import { db } from '@/lib/db';
 import { formatCurrency, formatDate, formatPercentage, getLenderName } from '@/lib/utils';
 
-/**
- * Get sample lenders for preview selection (simplified view)
- */
-export async function getSampleLendersAction(projectId: string, limit = 10) {
-  return db.lender.findMany({
-    where: { projectId },
-    select: {
-      id: true,
-      lenderNumber: true,
-      firstName: true,
-      lastName: true,
-      organisationName: true,
-      type: true,
-      email: true,
-    },
-    orderBy: { lenderNumber: 'asc' },
-    take: limit,
-  });
-}
-
-/**
- * Get sample loans for preview selection (simplified view)
- */
-export async function getSampleLoansAction(projectId: string, limit = 10) {
-  return db.loan.findMany({
-    where: { lender: { projectId } },
-    select: {
-      id: true,
-      loanNumber: true,
-      amount: true,
-      signDate: true,
-      lender: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          organisationName: true,
-          type: true,
-        },
-      },
-    },
-    orderBy: { loanNumber: 'asc' },
-    take: limit,
-  });
-}
+export { getSampleLendersAction, getSampleLoansAction } from './get-template-data';
 
 /**
  * Fetch project configuration and build the config merge tag data.

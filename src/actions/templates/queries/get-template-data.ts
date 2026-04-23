@@ -1,10 +1,12 @@
 'use server';
 
-import type { TemplateDataset } from '@prisma/client';
+import type { Prisma, TemplateDataset } from '@prisma/client';
 
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { lenderIdSchema, projectSampleListSchema } from '@/lib/schemas/common';
 import { getTemplateData, type TemplateDataOptions } from '@/lib/templates/template-data';
+import { lenderAction, projectAction } from '@/lib/utils/safe-action';
 
 /**
  * All projects (id + display name) for global template preview sample data.
@@ -34,40 +36,42 @@ export async function getProjectsForTemplateSampleAction(): Promise<Array<{ id: 
   }));
 }
 
-/**
- * Get sample lenders for preview selection (simplified view)
- */
-export async function getSampleLendersAction(projectId: string, limit = 10) {
-  return db.lender.findMany({
-    where: { projectId },
+const sampleLenderSelect = {
+  id: true,
+  lenderNumber: true,
+  firstName: true,
+  lastName: true,
+  organisationName: true,
+  type: true,
+  email: true,
+} as const;
+
+const sampleLoanSelect = {
+  id: true,
+  loanNumber: true,
+  amount: true,
+  signDate: true,
+  lender: {
     select: {
       id: true,
-      lenderNumber: true,
       firstName: true,
       lastName: true,
       organisationName: true,
       type: true,
-      email: true,
     },
-    orderBy: { lenderNumber: 'asc' },
-    take: limit,
-  });
-}
+  },
+} as const;
 
-/**
- * Get sample loans for preview selection (simplified view)
- */
-export async function getSampleLoansAction(projectId: string, limit = 10) {
-  return db.loan.findMany({
-    where: { lender: { projectId } },
+const sampleTransactionSelect = {
+  id: true,
+  type: true,
+  amount: true,
+  date: true,
+  loan: {
     select: {
-      id: true,
       loanNumber: true,
-      amount: true,
-      signDate: true,
       lender: {
         select: {
-          id: true,
           firstName: true,
           lastName: true,
           organisationName: true,
@@ -75,40 +79,63 @@ export async function getSampleLoansAction(projectId: string, limit = 10) {
         },
       },
     },
+  },
+} as const;
+
+export type SampleLenderRow = Prisma.LenderGetPayload<{ select: typeof sampleLenderSelect }>;
+export type SampleLoanRow = Prisma.LoanGetPayload<{ select: typeof sampleLoanSelect }>;
+export type SampleTransactionRow = Prisma.TransactionGetPayload<{ select: typeof sampleTransactionSelect }>;
+
+async function fetchSampleLendersForProject(projectId: string, take: number) {
+  return db.lender.findMany({
+    where: { projectId },
+    select: sampleLenderSelect,
+    orderBy: { lenderNumber: 'asc' },
+    take,
+  });
+}
+
+async function fetchSampleLoansForProject(projectId: string, take: number) {
+  return db.loan.findMany({
+    where: { lender: { projectId } },
+    select: sampleLoanSelect,
     orderBy: { loanNumber: 'asc' },
-    take: limit,
+    take,
+  });
+}
+
+async function fetchSampleTransactionsForProject(projectId: string, take: number) {
+  return db.transaction.findMany({
+    where: { loan: { lender: { projectId } } },
+    select: sampleTransactionSelect,
+    orderBy: { date: 'desc' },
+    take,
   });
 }
 
 /**
+ * Get sample lenders for preview selection (simplified view)
+ */
+export const getSampleLendersAction = projectAction.inputSchema(projectSampleListSchema).action(async ({ parsedInput }) => {
+  const { projectId, limit = 10 } = parsedInput;
+  return fetchSampleLendersForProject(projectId, limit);
+});
+
+/**
+ * Get sample loans for preview selection (simplified view)
+ */
+export const getSampleLoansAction = projectAction.inputSchema(projectSampleListSchema).action(async ({ parsedInput }) => {
+  const { projectId, limit = 10 } = parsedInput;
+  return fetchSampleLoansForProject(projectId, limit);
+});
+
+/**
  * Sample transactions for `TRANSACTION` dataset template preview (merge data uses transaction id).
  */
-export async function getSampleTransactionsAction(projectId: string, limit = 20) {
-  return db.transaction.findMany({
-    where: { loan: { lender: { projectId } } },
-    select: {
-      id: true,
-      type: true,
-      amount: true,
-      date: true,
-      loan: {
-        select: {
-          loanNumber: true,
-          lender: {
-            select: {
-              firstName: true,
-              lastName: true,
-              organisationName: true,
-              type: true,
-            },
-          },
-        },
-      },
-    },
-    orderBy: { date: 'desc' },
-    take: limit,
-  });
-}
+export const getSampleTransactionsAction = projectAction.inputSchema(projectSampleListSchema).action(async ({ parsedInput }) => {
+  const { projectId, limit = 20 } = parsedInput;
+  return fetchSampleTransactionsForProject(projectId, limit);
+});
 
 /**
  * Get template data for preview replacement and live rendering.
@@ -126,18 +153,20 @@ export async function getMergeTagValuesAction(
 /**
  * Years available for `LENDER_YEARLY` sample data: from first lender transaction through last complete calendar year.
  */
-export async function getSampleLenderYearsAction(lenderId: string): Promise<number[]> {
-  const lastCompleteYear = new Date().getFullYear() - 1;
-  const agg = await db.transaction.aggregate({
-    where: { loan: { lenderId } },
-    _min: { date: true },
+export const getSampleLenderYearsAction = lenderAction
+  .schema(lenderIdSchema)
+  .action(async ({ parsedInput: { lenderId } }) => {
+    const lastCompleteYear = new Date().getFullYear() - 1;
+    const agg = await db.transaction.aggregate({
+      where: { loan: { lenderId } },
+      _min: { date: true },
+    });
+    const minDate = agg._min.date;
+    if (!minDate) return [];
+    const firstYear = new Date(minDate).getFullYear();
+    const years: number[] = [];
+    for (let y = firstYear; y <= lastCompleteYear; y++) {
+      years.push(y);
+    }
+    return years.reverse();
   });
-  const minDate = agg._min.date;
-  if (!minDate) return [];
-  const firstYear = new Date(minDate).getFullYear();
-  const years: number[] = [];
-  for (let y = firstYear; y <= lastCompleteYear; y++) {
-    years.push(y);
-  }
-  return years.reverse();
-}

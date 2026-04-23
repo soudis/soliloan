@@ -8,11 +8,12 @@ import {
   getSampleLenderYearsAction,
   getSampleLoansAction,
   getSampleTransactionsAction,
+  type SampleLenderRow,
+  type SampleLoanRow,
+  type SampleTransactionRow,
 } from '@/actions/templates/queries/get-template-data';
 
-export type SampleLenderRow = Awaited<ReturnType<typeof getSampleLendersAction>>[number];
-export type SampleLoanRow = Awaited<ReturnType<typeof getSampleLoansAction>>[number];
-export type SampleTransactionRow = Awaited<ReturnType<typeof getSampleTransactionsAction>>[number];
+export type { SampleLenderRow, SampleLoanRow, SampleTransactionRow };
 
 export type TemplateEditorPageData = {
   mergeTagConfig: MergeTagConfig;
@@ -21,9 +22,9 @@ export type TemplateEditorPageData = {
   sampleProjects: Array<{ id: string; name: string }>;
   /** Project used for merge tags, logo, and sample lists (matches first sample project when admin picker applies). */
   effectivePreviewProjectId: string | null;
-  sampleLenders: Awaited<ReturnType<typeof getSampleLendersAction>>;
-  sampleLoans: Awaited<ReturnType<typeof getSampleLoansAction>>;
-  sampleTransactions: Awaited<ReturnType<typeof getSampleTransactionsAction>>;
+  sampleLenders: SampleLenderRow[];
+  sampleLoans: SampleLoanRow[];
+  sampleTransactions: SampleTransactionRow[];
   /** For `LENDER_YEARLY`: reporting years per sample lender id. */
   lenderYearsByLenderId: Record<string, number[]>;
 };
@@ -63,26 +64,30 @@ export async function loadTemplateEditorPageData(params: {
 
   const projectLogo = effectivePreviewProjectId != null ? await getProjectLogoAction(effectivePreviewProjectId) : null;
 
-  let sampleLenders: Awaited<ReturnType<typeof getSampleLendersAction>> = [];
-  let sampleLoans: Awaited<ReturnType<typeof getSampleLoansAction>> = [];
-  let sampleTransactions: Awaited<ReturnType<typeof getSampleTransactionsAction>> = [];
+  let sampleLenders: SampleLenderRow[] = [];
+  let sampleLoans: SampleLoanRow[] = [];
+  let sampleTransactions: SampleTransactionRow[] = [];
   const lenderYearsByLenderId: Record<string, number[]> = {};
 
   if (effectivePreviewProjectId) {
     const { dataset } = template;
     if (dataset === 'LENDER' || dataset === 'LENDER_YEARLY') {
-      sampleLenders = await getSampleLendersAction(effectivePreviewProjectId);
+      const lendersResult = await getSampleLendersAction({ projectId: effectivePreviewProjectId });
+      sampleLenders = lendersResult.data ?? [];
       if (dataset === 'LENDER_YEARLY' && sampleLenders.length > 0) {
         await Promise.all(
           sampleLenders.map(async (lender) => {
-            lenderYearsByLenderId[lender.id] = await getSampleLenderYearsAction(lender.id);
+            const yearsResult = await getSampleLenderYearsAction({ lenderId: lender.id });
+            lenderYearsByLenderId[lender.id] = yearsResult.data ?? [];
           }),
         );
       }
     } else if (dataset === 'LOAN') {
-      sampleLoans = await getSampleLoansAction(effectivePreviewProjectId);
+      const loansResult = await getSampleLoansAction({ projectId: effectivePreviewProjectId });
+      sampleLoans = loansResult.data ?? [];
     } else if (dataset === 'TRANSACTION') {
-      sampleTransactions = await getSampleTransactionsAction(effectivePreviewProjectId);
+      const txResult = await getSampleTransactionsAction({ projectId: effectivePreviewProjectId });
+      sampleTransactions = txResult.data ?? [];
     }
   }
 
