@@ -7,15 +7,18 @@ import { z } from 'zod';
 export const templateBaseSchema = z.object({
   name: z.string().min(1, 'error.template.nameRequired').max(100),
   description: z.string().max(500).nullable().optional(),
+  /** EMAIL: subject template; DOCUMENT: filename template (merge tags allowed). */
+  subjectOrFilename: z.string().max(500).nullable().optional(),
   type: z.enum(TemplateType),
   dataset: z.enum(TemplateDataset),
 });
 
 // Create template schema
 export const createTemplateSchema = templateBaseSchema.extend({
-  projectId: z.string().optional(), // If not provided, will be global (admin only)
+  projectId: z.string().optional(),
   isGlobal: z.boolean().nullable().optional(),
   designJson: z.record(z.string(), z.any()).nullable().optional(),
+  sourceTemplateId: z.string().optional(),
 });
 
 export type CreateTemplateFormData = z.infer<typeof createTemplateSchema>;
@@ -25,6 +28,7 @@ export const updateTemplateSchema = z.object({
   templateId: z.string(),
   name: z.string().min(1).max(100).optional(),
   description: z.string().max(500).nullable().optional(),
+  subjectOrFilename: z.string().max(500).nullable().optional(),
   designJson: z.record(z.string(), z.any()).optional(),
   htmlContent: z.string().nullable().optional(),
 });
@@ -33,7 +37,7 @@ export type UpdateTemplateFormData = z.infer<typeof updateTemplateSchema>;
 
 // Delete template schema
 export const deleteTemplateSchema = z.object({
-  id: z.string(),
+  templateId: z.string(),
 });
 
 export type DeleteTemplateFormData = z.infer<typeof deleteTemplateSchema>;
@@ -60,7 +64,67 @@ export const getTemplatesSchema = z.object({
   type: z.enum(TemplateType).optional(),
   dataset: z.enum(TemplateDataset).optional(),
   isGlobal: z.boolean().optional(),
-  includeGlobal: z.boolean().optional().default(false), // Include global templates in project query
+  isSystem: z.boolean().optional(),
+  includeGlobal: z.boolean().optional().default(false),
 });
 
 export type GetTemplatesFormData = z.infer<typeof getTemplatesSchema>;
+
+/** Batch list for lender / loan / transaction template menus (project + global, EMAIL + DOCUMENT). */
+export const getQuickActionTemplatesSchema = z.object({
+  projectId: z.string(),
+  datasets: z.array(z.nativeEnum(TemplateDataset)).min(1),
+});
+
+export type GetQuickActionTemplatesFormData = z.infer<typeof getQuickActionTemplatesSchema>;
+
+export const sendCommunicationTemplateEmailSchema = z.object({
+  templateId: z.string(),
+  projectId: z.string(),
+  lenderId: z.string().optional(),
+  loanId: z.string().optional(),
+  transactionId: z.string().optional(),
+  year: z.number().int().optional(),
+});
+
+export type SendCommunicationTemplateEmailFormData = z.infer<typeof sendCommunicationTemplateEmailSchema>;
+
+// --- Predefined Craft Blocks ---
+
+export const createPredefinedBlockSchema = z.object({
+  name: z.string().min(1, 'error.predefinedBlock.nameRequired').max(100),
+  description: z.string().max(500).nullable().optional(),
+  designJson: z.record(z.string(), z.any()),
+  datasets: z.array(z.enum(TemplateDataset)).min(1, 'error.predefinedBlock.datasetsRequired'),
+  templateTypes: z.array(z.enum(TemplateType)).min(1, 'error.predefinedBlock.templateTypesRequired'),
+  visibility: z.enum(['PROJECT_MANAGERS', 'ADMIN_ONLY']).default('PROJECT_MANAGERS'),
+  projectId: z.string().nullable().optional(),
+});
+
+export type CreatePredefinedBlockFormData = z.infer<typeof createPredefinedBlockSchema>;
+
+export const listPredefinedBlocksSchema = z.object({
+  dataset: z.enum(TemplateDataset),
+  templateType: z.enum(TemplateType),
+  projectId: z.string().nullable().optional(),
+});
+
+export type ListPredefinedBlocksFormData = z.infer<typeof listPredefinedBlocksSchema>;
+
+export const deletePredefinedBlockSchema = z.object({
+  id: z.string(),
+});
+
+export type DeletePredefinedBlockFormData = z.infer<typeof deletePredefinedBlockSchema>;
+
+/** Server action input for `getMergeTagValuesAction` (template editor preview, merge resolution). */
+export const getMergeTagValuesInputSchema = z.object({
+  dataset: z.nativeEnum(TemplateDataset),
+  recordId: z.string().min(1).nullish(),
+  locale: z.string().min(1).default('de'),
+  /** Route/editor project context; must match the record’s project when set (prevents config bleed). */
+  projectId: z.string().min(1).optional(),
+  year: z.number().int().optional(),
+});
+
+export type GetMergeTagValuesInput = z.infer<typeof getMergeTagValuesInputSchema>;

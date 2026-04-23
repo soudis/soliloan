@@ -83,6 +83,16 @@
       "selectFallback": "Kredit auswählen",
       "selectPrompt": "Bitte wählen Sie einen Kredit aus, um Details anzuzeigen."
     },
+    "templateQuickActions": {
+      "download": "Download",
+      "email": "E-Mail",
+      "yearDialogTitle": "Jahr wählen",
+      "yearLabel": "Berichtsjahr",
+      "yearPlaceholder": "Jahr auswählen",
+      "confirm": "OK",
+      "cancel": "Abbrechen",
+      "emailSent": "E-Mail wurde gesendet."
+    },
     "delete": {
       "confirmTitle": "Kreditgeber*in löschen?",
       "confirmDescription": "Sind Sie sicher, dass Sie diese Kreditgeber*in löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
@@ -222,6 +232,8 @@
       "amountPlaceholder": "Betrag eingeben",
       "paymentType": "Zahlungsart",
       "paymentTypePlaceholder": "Zahlungsart auswählen",
+      "notifyLender": "Benachrichtigung senden",
+      "notifyLenderHint": "Kreditgeber*in per E-Mail über Eintragung der Zahlung informieren?",
       "note": "Notiz",
       "notePlaceholder": "Optionale Notiz eingeben",
       "delete": {

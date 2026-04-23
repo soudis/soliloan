@@ -18,6 +18,7 @@ import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-ite
 import { BalanceTable } from '../loans/balance-table';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 import { LoanTransactions } from '../loans/loan-transactions';
+import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { useProject } from '../providers/project-provider';
 import { Button } from '../ui/button';
 
@@ -93,7 +94,6 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
     <div ref={cardRef} className="scroll-mt-24 rounded-lg border bg-card text-card-foreground shadow-sm">
       {/* Collapsible header */}
       <div className="flex w-full items-center p-4 gap-2">
-        {/** biome-ignore lint/a11y/noStaticElementInteractions: needed */}
         {/** biome-ignore lint/a11y/useKeyWithClickEvents: needed */}
         <div
           onClick={() => setIsOpen((prev) => !prev)}
@@ -116,7 +116,18 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
           <div className="flex items-center justify-center">
             <LoanStatusBadge status={loan.status} />
           </div>
-          <div className="flex gap-1 shrink-0 ml-auto items-center justify-end flex-1">
+          {/* biome-ignore lint/a11y/useKeyWithClickEvents: toolbar only stops accordion toggle propagation */}
+          <div
+            className="flex gap-1 shrink-0 ml-auto items-center justify-end flex-1"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <TemplateQuickActions
+              projectId={loan.lender.projectId}
+              mode="loan"
+              lenderId={loan.lender.id}
+              loanId={loan.id}
+              density="toolbar"
+            />
             <Button
               variant="ghost"
               size="icon"

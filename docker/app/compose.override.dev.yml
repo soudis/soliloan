@@ -21,7 +21,18 @@ services:
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
       - CHOKIDAR_INTERVAL=1000
+      - SMTP_HOST=mailhog
+      - SMTP_PORT=1025
+      - SMTP_FROM=noreply@soliloan.localhost
     volumes:
       - ./:/app:cached
       - /app/node_modules
     command: /bin/sh -c "pnpm install && pnpm prisma db push --accept-data-loss && pnpm prisma db seed && pnpm dev"
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - backend_network

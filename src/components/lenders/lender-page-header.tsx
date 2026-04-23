@@ -9,6 +9,7 @@ import { deleteLenderAction } from '@/actions/lenders/mutations/delete-lender';
 import { useRouter } from '@/i18n/navigation';
 import { getLenderName } from '@/lib/utils';
 import type { LenderWithCalculations } from '@/types/lenders';
+import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { ConfirmDialog } from '../generic/confirm-dialog';
 import { Button } from '../ui/button';
 
@@ -51,7 +52,8 @@ export function LenderPageHeader({ lender }: LenderPageHeaderProps) {
           {commonT('terms.loanCount', { count: lender.loans.length })}
         </p>
       </div>
-      <div className="flex gap-2 mt-2 sm:mt-0">
+      <div className="flex gap-2 mt-2 sm:mt-0 flex-wrap items-center justify-end">
+        <TemplateQuickActions projectId={lender.projectId} mode="lender" lenderId={lender.id} />
         <Button
           variant="outline"
           size="sm"

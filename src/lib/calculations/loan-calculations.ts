@@ -52,7 +52,7 @@ const getBaseDays = (method: InterestMethod, date: Moment) => {
   if (method.startsWith('ACT_ACT')) {
     return moment(date).endOf('year').dayOfYear();
   }
-  return Number.parseInt(method.split('_')[1] ?? '360');
+  return Number.parseInt(method.split('_')[1] ?? '360', 10);
 };
 
 export const calculateInterestDaily = (
@@ -144,14 +144,13 @@ export const calculateLoanPerYear = (
     let interestBaseAmount = currentYear.interestBaseAmount;
     // calculate interest for new transactions of year
     let interest = new Prisma.Decimal(0);
-    let terminationDate;
-    // biome-ignore lint/complexity/noForEach: <explanation>
+    let terminationDate: Moment | undefined;
     transactions
       .filter((transaction) => moment(transaction.date).year() === year)
       .forEach((transaction) => {
         if (toDate.isSameOrAfter(transaction.date) && currentTransactionId !== transaction.id) {
           amount = amount.plus(transaction.amount);
-          if (compound ?? transaction.type !== TransactionType.INTERESTPAYMENT) {
+          if (compound || transaction.type !== TransactionType.INTERESTPAYMENT) {
             interestBaseAmount = interestBaseAmount.plus(transaction.amount);
             if (amount.lessThanOrEqualTo(1)) {
               terminationDate = moment(transaction.date);

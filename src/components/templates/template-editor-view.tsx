@@ -6,21 +6,23 @@ import { isEmpty } from 'lodash';
 import debounce from 'lodash.debounce';
 import { Eye, EyeOff, GripVertical, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { getMergeTagConfigAction, type MergeTagConfig } from '@/actions/templates/queries/get-merge-tags';
 import { getProjectLogoAction } from '@/actions/templates/queries/get-project-logo';
-import { getMergeTagValuesAction } from '@/actions/templates/queries/get-sample-data';
+import { getMergeTagValuesAction } from '@/actions/templates/queries/get-template-data';
+import { getNodeEditorLabel } from '@/lib/templates/craft-node-name';
 import {
   generateDocumentParts,
   generateEmailHtml,
   getNodesMapFromDesign,
   getNodesMapFromSerialized,
 } from '@/lib/templates/email-generator';
+import { canOpenTemplatePreview } from '@/lib/templates/merge-tags';
 import { processTemplate } from '@/lib/templates/template-processor';
+import { EditorMetadataProvider } from './editor-context';
+import { EditorSidebar } from './editor-sidebar';
 import { LogoProvider } from './logo-context';
 import { MergeTagConfigProvider } from './merge-tag-context';
-import { SettingsPanel } from './settings-panel';
-import { Toolbox } from './toolbox';
 import { USER_COMPONENTS } from './user-components';
 import { Container } from './user-components/container';
 import { PageFooter } from './user-components/page-footer';
@@ -33,6 +35,11 @@ const A4_MIN_HEIGHT_PX = 1123;
 
 /** IDs that act as structural zones and should not show selection/drag handles */
 const STRUCTURAL_NODE_IDS = new Set(['ROOT', 'PAGE_HEADER', 'PAGE_FOOTER', 'BODY']);
+
+const needsProjectScopedTemplateData = (dataset: TemplateDataset) =>
+  dataset === 'PROJECT' || dataset === 'PROJECT_YEARLY';
+
+const needsYearForLenderYearly = (dataset: TemplateDataset) => dataset === 'LENDER_YEARLY';
 
 const RenderNode = ({ render }: { render: React.ReactNode }) => {
   const {
@@ -47,7 +54,7 @@ const RenderNode = ({ render }: { render: React.ReactNode }) => {
     isStructural: STRUCTURAL_NODE_IDS.has(node.id),
     isSelected: node.events.selected,
     isHovered: node.events.hovered,
-    name: node.data.name,
+    name: getNodeEditorLabel(node.data, node.id),
   }));
 
   // Style for selection and hover
@@ -103,20 +110,28 @@ const EditorTopbar = ({
   isPreviewing,
   isGeneratingPdf,
   togglePreview,
+  sampleToolbarSlot,
+  previewOpenBlocked,
 }: {
   isPreviewing: boolean;
   isGeneratingPdf: boolean;
   togglePreview: () => void;
+  sampleToolbarSlot?: ReactNode;
+  /** When true, opening preview is disabled (still allowed to leave preview back to editor). */
+  previewOpenBlocked: boolean;
 }) => {
   const t = useTranslations('templates.editor');
 
+  const previewButtonDisabled = isGeneratingPdf || (!isPreviewing && previewOpenBlocked);
+
   return (
-    <div className="flex items-center justify-between px-4 py-2 border-b bg-zinc-50">
-      <div className="flex items-center gap-2">
+    <div className="flex items-center gap-4 px-4 py-2 border-b bg-zinc-50">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">{sampleToolbarSlot}</div>
+      <div className="flex shrink-0 items-center gap-2">
         <button
           type="button"
           onClick={togglePreview}
-          disabled={isGeneratingPdf}
+          disabled={previewButtonDisabled}
           className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
             isPreviewing ? 'bg-zinc-900 text-white hover:bg-zinc-800' : 'bg-white border text-zinc-700 hover:bg-zinc-50'
           }`}
@@ -130,11 +145,6 @@ const EditorTopbar = ({
           )}
           {isGeneratingPdf ? t('generatingPdf') : isPreviewing ? t('showEditor') : t('showPreview')}
         </button>
-      </div>
-
-      <div className="text-xs text-zinc-500 flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-        {t('autoSaveActive')}
       </div>
     </div>
   );
@@ -195,22 +205,15 @@ const InternalEditor = ({
 
       {/* Sidebar on the right */}
       {!isPreviewing && (
-        <div className="w-80 border-l overflow-y-auto bg-white flex flex-col z-20">
-          <div className="border-b">
-            <Toolbox />
-          </div>
-          <div className="flex-1">
-            <SettingsPanel />
-          </div>
+        <div className="z-20 flex h-full min-h-0 w-80 shrink-0 flex-col border-l bg-white">
+          <EditorSidebar />
         </div>
       )}
 
-      {/* Preview Layer — email only (document opens PDF in new tab) */}
+      {/* Preview Layer — email only: iframe renders same HTML as sent mail (margin + card shadow from wrapInDocument) */}
       {isPreviewing && !isDocument && (
-        <div className="absolute inset-0 bg-zinc-100 p-8 flex flex-col items-center z-30">
-          <div className="bg-white shadow-sm min-h-[600px] w-full max-w-[600px]">
-            <iframe title="Email Preview" srcDoc={previewHtml} className="w-full h-full min-h-[600px] border-none" />
-          </div>
+        <div className="absolute inset-0 z-30 overflow-auto bg-[#f4f4f5]">
+          <iframe title="Email Preview" srcDoc={previewHtml} className="block min-h-[600px] w-full border-0" />
         </div>
       )}
     </div>
@@ -255,21 +258,45 @@ interface TemplateEditorViewProps {
   templateType: TemplateType;
   dataset: TemplateDataset;
   projectId?: string;
+  isAdmin?: boolean;
+  isGlobalTemplate?: boolean;
   initialDesign?: string | object;
+  /** Merge tag config and logo for `projectId` as resolved on the server (and when that id changes). */
+  initialMergeTagConfig: MergeTagConfig;
+  initialProjectLogo: string | null;
+  initialPreviewProjectId?: string;
   selectedRecordId: string | null;
+  /** Reporting year for `LENDER_YEARLY` template preview. */
+  selectedYear?: number | null;
   onDesignChange: (design: object, html: string) => void;
+  /** Sample data controls (project + record/year) shown next to the preview toggle. */
+  sampleToolbarSlot?: ReactNode;
 }
 
 export function TemplateEditorView({
   templateType,
   dataset,
   projectId,
+  isAdmin = false,
+  isGlobalTemplate = false,
   initialDesign,
+  initialMergeTagConfig,
+  initialProjectLogo,
+  initialPreviewProjectId,
   selectedRecordId,
+  selectedYear,
   onDesignChange,
+  sampleToolbarSlot,
 }: TemplateEditorViewProps) {
-  const [mergeTagConfig, setMergeTagConfig] = useState<MergeTagConfig | null>(null);
-  const [projectLogo, setProjectLogo] = useState<string | null>(null);
+  const previewOpenBlocked = !canOpenTemplatePreview({
+    dataset,
+    projectId,
+    selectedRecordId,
+    selectedYear,
+  });
+
+  const [mergeTagConfig, setMergeTagConfig] = useState<MergeTagConfig>(initialMergeTagConfig);
+  const [projectLogo, setProjectLogo] = useState<string | null>(initialProjectLogo);
   const [isMounted, setIsMounted] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -288,14 +315,52 @@ export function TemplateEditorView({
 
   const isDocument = templateType === 'DOCUMENT';
 
+  /**
+   * RSC + client re-renders can pass new object identities for `initialMergeTagConfig` / `initialProjectLogo`
+   * every time; they must not be `useEffect` deps or we repeatedly POST server actions.
+   */
+  const serverPreviewSnapshotRef = useRef<{
+    mergeTagConfig: MergeTagConfig;
+    projectLogo: string | null;
+    previewProjectId: string | undefined;
+  } | null>(null);
+  if (serverPreviewSnapshotRef.current === null) {
+    serverPreviewSnapshotRef.current = {
+      mergeTagConfig: initialMergeTagConfig,
+      projectLogo: initialProjectLogo,
+      previewProjectId: initialPreviewProjectId,
+    };
+  }
+
   const logoContextValue = useMemo(() => ({ projectLogo, appLogo: '/soliloan-logo.webp' }), [projectLogo]);
 
   useEffect(() => {
     setIsMounted(true);
-    getMergeTagConfigAction(dataset, projectId, templateType).then(setMergeTagConfig);
-    if (projectId) {
-      getProjectLogoAction(projectId).then(setProjectLogo);
+  }, []);
+
+  useEffect(() => {
+    const snapshot = serverPreviewSnapshotRef.current;
+    if (!snapshot) return;
+
+    if (projectId === snapshot.previewProjectId) {
+      setMergeTagConfig(snapshot.mergeTagConfig);
+      setProjectLogo(snapshot.projectLogo);
+      return;
     }
+    let cancelled = false;
+    void getMergeTagConfigAction(dataset, projectId, templateType).then((config) => {
+      if (!cancelled) setMergeTagConfig(config);
+    });
+    if (projectId) {
+      void getProjectLogoAction(projectId).then((logo) => {
+        if (!cancelled) setProjectLogo(logo);
+      });
+    } else {
+      setProjectLogo(null);
+    }
+    return () => {
+      cancelled = true;
+    };
   }, [dataset, projectId, templateType]);
 
   // Sync initial design to local state for preview
@@ -306,7 +371,7 @@ export function TemplateEditorView({
         setCurrentDesign(designData);
         if (isDocument) {
           const nodes = getNodesMapFromDesign(designData as Record<string, unknown>);
-          const parts = generateDocumentParts(nodes);
+          const parts = generateDocumentParts(nodes, { logoUrl: projectLogo });
           setCurrentHtml(parts.bodyHtml);
           setCurrentHeaderHtml(parts.headerHtml);
           setCurrentFooterHtml(parts.footerHtml);
@@ -314,13 +379,13 @@ export function TemplateEditorView({
           setCurrentFooterPadding(parts.footerPadding);
         } else {
           const nodes = getNodesMapFromDesign(designData as Record<string, unknown>);
-          setCurrentHtml(generateEmailHtml(nodes));
+          setCurrentHtml(generateEmailHtml(nodes, { logoUrl: projectLogo }));
         }
       } catch (e) {
         console.error('Error initializing design state', e);
       }
     }
-  }, [initialDesign, isDocument]);
+  }, [initialDesign, isDocument, projectLogo]);
 
   const resolvePreviewHtml = async (): Promise<{
     html: string;
@@ -331,9 +396,24 @@ export function TemplateEditorView({
     let headerHtml = currentHeaderHtml;
     let footerHtml = currentFooterHtml;
 
-    if (selectedRecordId) {
+    const templateRecordId = selectedRecordId ?? (needsProjectScopedTemplateData(dataset) ? projectId : null);
+    const canLoadMergeData =
+      templateRecordId &&
+      (!needsYearForLenderYearly(dataset) || (selectedYear != null && Number.isFinite(selectedYear)));
+
+    if (canLoadMergeData) {
       try {
-        const data = await getMergeTagValuesAction(dataset, selectedRecordId, 'de', projectId);
+        const mergeResult = await getMergeTagValuesAction({
+          dataset,
+          recordId: templateRecordId,
+          locale: 'de',
+          projectId: projectId ?? undefined,
+          year:
+            needsYearForLenderYearly(dataset) && selectedYear != null && Number.isFinite(selectedYear)
+              ? selectedYear
+              : undefined,
+        });
+        const data = !mergeResult?.serverError && mergeResult.data ? mergeResult.data : null;
         if (data) {
           html = processTemplate(html, data);
           if (headerHtml) headerHtml = processTemplate(headerHtml, data);
@@ -361,9 +441,24 @@ export function TemplateEditorView({
         const resolved = await resolvePreviewHtml();
         html = resolved.html;
       }
-      if (selectedRecordId) {
+      const templateRecordId = selectedRecordId ?? (needsProjectScopedTemplateData(dataset) ? projectId : null);
+      const canLoadMergeData =
+        templateRecordId &&
+        (!needsYearForLenderYearly(dataset) || (selectedYear != null && Number.isFinite(selectedYear)));
+
+      if (canLoadMergeData) {
         try {
-          const data = await getMergeTagValuesAction(dataset, selectedRecordId, 'de', projectId);
+          const mergeResult = await getMergeTagValuesAction({
+            dataset,
+            recordId: templateRecordId,
+            locale: 'de',
+            projectId: projectId ?? undefined,
+            year:
+              needsYearForLenderYearly(dataset) && selectedYear != null && Number.isFinite(selectedYear)
+                ? selectedYear
+                : undefined,
+          });
+          const data = !mergeResult?.serverError && mergeResult.data ? mergeResult.data : null;
           if (data) html = processTemplate(html, data);
         } catch (e) {
           console.error('Preview error', e);
@@ -379,10 +474,26 @@ export function TemplateEditorView({
     try {
       const getLatest = getLatestDocumentPartsRef.current;
       let sampleData: Record<string, unknown> = {};
-      if (selectedRecordId) {
+      const templateRecordId = selectedRecordId ?? (needsProjectScopedTemplateData(dataset) ? projectId : null);
+      const canLoadMergeData =
+        templateRecordId &&
+        (!needsYearForLenderYearly(dataset) || (selectedYear != null && Number.isFinite(selectedYear)));
+
+      if (canLoadMergeData) {
         try {
-          const data = await getMergeTagValuesAction(dataset, selectedRecordId, 'de', projectId);
-          if (data) sampleData = data;
+          const mergeResult = await getMergeTagValuesAction({
+            dataset,
+            recordId: templateRecordId,
+            locale: 'de',
+            projectId: projectId ?? undefined,
+            year:
+              needsYearForLenderYearly(dataset) && selectedYear != null && Number.isFinite(selectedYear)
+                ? selectedYear
+                : undefined,
+          });
+          if (!mergeResult?.serverError && mergeResult.data) {
+            sampleData = mergeResult.data;
+          }
         } catch (e) {
           console.error('Preview error', e);
         }
@@ -418,7 +529,7 @@ export function TemplateEditorView({
         setCurrentDesign(parsed);
 
         if (isDocument) {
-          const parts = generateDocumentParts(nodes);
+          const parts = generateDocumentParts(nodes, { logoUrl: projectLogo });
           setCurrentHtml(parts.bodyHtml);
           setCurrentHeaderHtml(parts.headerHtml);
           setCurrentFooterHtml(parts.footerHtml);
@@ -426,42 +537,59 @@ export function TemplateEditorView({
           setCurrentFooterPadding(parts.footerPadding);
           onDesignChange(parsed, parts.bodyHtml);
         } else {
-          const html = generateEmailHtml(nodes);
+          const html = generateEmailHtml(nodes, { logoUrl: projectLogo });
           setCurrentHtml(html);
           onDesignChange(parsed, html);
         }
       }, 500),
-    [onDesignChange, isDocument],
+    [onDesignChange, isDocument, projectLogo],
   );
 
   if (!isMounted) return null;
 
   return (
     <div className="min-h-[700px] border rounded-lg overflow-hidden flex flex-col bg-white">
-      <EditorTopbar isPreviewing={isPreviewing} isGeneratingPdf={isGeneratingPdf} togglePreview={togglePreview} />
+      <EditorTopbar
+        isPreviewing={isPreviewing}
+        isGeneratingPdf={isGeneratingPdf}
+        togglePreview={togglePreview}
+        sampleToolbarSlot={sampleToolbarSlot}
+        previewOpenBlocked={previewOpenBlocked}
+      />
 
       <div className="flex-1 flex flex-col relative">
-        <LogoProvider value={logoContextValue}>
-          <MergeTagConfigProvider value={mergeTagConfig}>
-            <Editor
-              resolver={USER_COMPONENTS}
-              onNodesChange={debouncedDesignChange}
-              onRender={(props) => <RenderNode {...props} />}
-              enabled={true}
-              indicator={{
-                success: '#22c55e',
-                error: '#ef4444',
-              }}
-            >
-              <EditorInitialWrapper initialDesign={initialDesign} />
-              <DocumentPartsRefSetter
-                getLatestDocumentPartsRef={getLatestDocumentPartsRef}
-                getLatestEmailHtmlRef={getLatestEmailHtmlRef}
-              />
-              <InternalEditor isPreviewing={isPreviewing} previewHtml={previewHtml} isDocument={isDocument} />
-            </Editor>
-          </MergeTagConfigProvider>
-        </LogoProvider>
+        <EditorMetadataProvider
+          value={{
+            dataset,
+            templateType,
+            projectId: projectId ?? null,
+            isAdmin,
+            isGlobalTemplate,
+          }}
+        >
+          <LogoProvider value={logoContextValue}>
+            <MergeTagConfigProvider value={mergeTagConfig}>
+              <Editor
+                resolver={USER_COMPONENTS}
+                onNodesChange={debouncedDesignChange}
+                onRender={(props) => <RenderNode {...props} />}
+                enabled={true}
+                indicator={{
+                  success: '#22c55e',
+                  error: '#ef4444',
+                }}
+              >
+                <EditorInitialWrapper initialDesign={initialDesign} />
+                <DocumentPartsRefSetter
+                  getLatestDocumentPartsRef={getLatestDocumentPartsRef}
+                  getLatestEmailHtmlRef={getLatestEmailHtmlRef}
+                  logoUrl={projectLogo}
+                />
+                <InternalEditor isPreviewing={isPreviewing} previewHtml={previewHtml} isDocument={isDocument} />
+              </Editor>
+            </MergeTagConfigProvider>
+          </LogoProvider>
+        </EditorMetadataProvider>
       </div>
     </div>
   );
@@ -517,9 +645,11 @@ type DocumentParts = {
 const DocumentPartsRefSetter = ({
   getLatestDocumentPartsRef,
   getLatestEmailHtmlRef,
+  logoUrl,
 }: {
   getLatestDocumentPartsRef: React.MutableRefObject<(() => DocumentParts) | null>;
   getLatestEmailHtmlRef: React.MutableRefObject<(() => string) | null>;
+  logoUrl?: string | null;
 }) => {
   const { query } = useEditor();
 
@@ -527,7 +657,7 @@ const DocumentPartsRefSetter = ({
     const getDocumentParts = (): DocumentParts => {
       const serialized = query.serialize();
       const nodes = getNodesMapFromSerialized(serialized);
-      const parts = generateDocumentParts(nodes);
+      const parts = generateDocumentParts(nodes, { logoUrl });
       let design: Record<string, unknown> | undefined;
       try {
         design = JSON.parse(serialized) as Record<string, unknown>;
@@ -548,7 +678,7 @@ const DocumentPartsRefSetter = ({
     const getEmailHtml = (): string => {
       const serialized = query.serialize();
       const nodes = getNodesMapFromSerialized(serialized);
-      return generateEmailHtml(nodes);
+      return generateEmailHtml(nodes, { logoUrl });
     };
     getLatestDocumentPartsRef.current = getDocumentParts;
     getLatestEmailHtmlRef.current = getEmailHtml;
@@ -556,7 +686,7 @@ const DocumentPartsRefSetter = ({
       getLatestDocumentPartsRef.current = null;
       getLatestEmailHtmlRef.current = null;
     };
-  }, [query, getLatestDocumentPartsRef, getLatestEmailHtmlRef]);
+  }, [query, getLatestDocumentPartsRef, getLatestEmailHtmlRef, logoUrl]);
 
   return null;
 };

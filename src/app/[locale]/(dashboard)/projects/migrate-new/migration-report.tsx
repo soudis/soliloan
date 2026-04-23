@@ -85,9 +85,7 @@ export function MigrationReportView({ report }: MigrationReportViewProps) {
         <div className="flex items-start gap-3">
           <CheckCircle2 className="h-6 w-6 text-green-600 mt-0.5" />
           <div>
-            <h3 className="text-lg font-semibold text-green-700 dark:text-green-400">
-              {t('report.success')}
-            </h3>
+            <h3 className="text-lg font-semibold text-green-700 dark:text-green-400">{t('report.success')}</h3>
             <p className="mt-1 text-sm text-muted-foreground">
               {t('report.projectCreated', { slug: report.projectSlug ?? '' })}
             </p>
@@ -117,7 +115,10 @@ export function MigrationReportView({ report }: MigrationReportViewProps) {
         <CollapsibleSection title={t('report.warnings')} count={report.warnings.length}>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {report.warnings.map((warning) => (
-              <div key={`w-${warning.entity}-${warning.legacyId}-${warning.message.slice(0, 20)}`} className="text-sm bg-yellow-500/10 rounded p-2 flex gap-2">
+              <div
+                key={`w-${warning.entity}-${warning.legacyId}-${warning.message.slice(0, 20)}`}
+                className="text-sm bg-yellow-500/10 rounded p-2 flex gap-2"
+              >
                 <span className="font-mono text-xs text-muted-foreground shrink-0">
                   {warning.entity}#{warning.legacyId}
                 </span>

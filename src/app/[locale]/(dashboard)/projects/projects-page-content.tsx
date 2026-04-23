@@ -9,9 +9,9 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { ProjectDialog } from '@/components/projects/project-dialog';
-import { ActionButton } from '@/components/ui/action-button';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useRouter } from '@/i18n/navigation';
 import { createColumn, createEnumBadgeColumn } from '@/lib/table-column-utils';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -373,15 +373,14 @@ export function ProjectsPageContent({ views, projects }: ProjectsPageContentProp
           router.push(`/configuration?projectId=${row.id}`);
         }}
         actions={(row) => (
-          <div className="flex items-center justify-end space-x-2">
-            <ActionButton
-              icon={<Pencil className="h-4 w-4" />}
-              tooltip={commonT('ui.actions.edit')}
-              onClick={() => {
-                router.push(`/configuration?projectId=${row.id}`);
-              }}
-            />
-          </div>
+          <DropdownMenuItem
+            onClick={() => {
+              router.push(`/configuration?projectId=${row.id}`);
+            }}
+          >
+            <Pencil className="h-4 w-4 mr-2" />
+            {commonT('ui.actions.edit')}
+          </DropdownMenuItem>
         )}
       />
     </div>

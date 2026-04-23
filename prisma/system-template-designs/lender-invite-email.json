@@ -1,0 +1,230 @@
+{
+  "designJson": {
+    "ROOT": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "kxLfnsE00R",
+        "8JUD_d5uyV",
+        "8RchCNyK7R"
+      ],
+      "props": {
+        "id": "ROOT",
+        "gap": 0,
+        "layout": "vertical",
+        "loopKey": "",
+        "padding": 40,
+        "borderTop": false,
+        "alignItems": "stretch",
+        "background": "#ffffff",
+        "borderLeft": false,
+        "borderColor": "#e4e4e7",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": false,
+        "justifyContent": "flex-start"
+      },
+      "custom": {},
+      "hidden": false,
+      "isCanvas": true,
+      "displayName": "E-Mail",
+      "linkedNodes": {}
+    },
+    "0Beagmtsv-": {
+      "type": {
+        "resolvedName": "Text"
+      },
+      "nodes": [],
+      "props": {
+        "text": "<p>Dein Direktkredit an <span data-merge-tag-id=\"config.name\" data-merge-tag-label=\"Projektname\" data-merge-tag=\"config.name\" class=\"merge-tag-pill\">{{Projektname}}</span> wurde auf <span data-merge-tag-id=\"platform.name\" data-merge-tag-label=\"Plattformname\" data-merge-tag=\"platform.name\" class=\"merge-tag-pill\">{{Plattformname}}</span> eingetragen. Wenn du den Status deines Kredits online verfolgen möchtest, kannst du dich hier mit deinem bestehenen Account anmelden oder einen Account erstellen:</p>",
+        "color": "#000000",
+        "fontSize": 16,
+        "textAlign": "left"
+      },
+      "custom": {
+        "useCustomDragHandle": true
+      },
+      "hidden": false,
+      "parent": "8JUD_d5uyV",
+      "isCanvas": false,
+      "displayName": "Text",
+      "linkedNodes": {}
+    },
+    "8JUD_d5uyV": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "0Beagmtsv-",
+        "zurtR-fNAa"
+      ],
+      "props": {
+        "gap": 0,
+        "layout": "vertical",
+        "loopKey": "",
+        "padding": 20,
+        "borderTop": false,
+        "alignItems": "center",
+        "background": "transparent",
+        "borderLeft": false,
+        "borderColor": "#e4e4e7",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": false,
+        "justifyContent": "flex-start"
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "ROOT",
+      "isCanvas": true,
+      "displayName": "Haupttext",
+      "linkedNodes": {}
+    },
+    "8RchCNyK7R": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "e9mzmOalDj"
+      ],
+      "props": {
+        "gap": 0,
+        "layout": "vertical",
+        "loopKey": "",
+        "padding": 5,
+        "borderTop": true,
+        "alignItems": "stretch",
+        "background": "transparent",
+        "borderLeft": false,
+        "borderColor": "#3d3846",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": false,
+        "justifyContent": "flex-start"
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "ROOT",
+      "isCanvas": true,
+      "displayName": "Fusszeile",
+      "linkedNodes": {}
+    },
+    "RgQqa5Zbjs": {
+      "type": {
+        "resolvedName": "Text"
+      },
+      "nodes": [],
+      "props": {
+        "text": "<p><strong>Danke für deinen Direktkredit!</strong></p>",
+        "color": "#000000",
+        "fontSize": 25,
+        "textAlign": "left"
+      },
+      "custom": {
+        "useCustomDragHandle": true
+      },
+      "hidden": false,
+      "parent": "kxLfnsE00R",
+      "isCanvas": false,
+      "displayName": "Dankestext",
+      "linkedNodes": {}
+    },
+    "VZr3GxhXW3": {
+      "type": {
+        "resolvedName": "Image"
+      },
+      "nodes": [],
+      "props": {
+        "src": "/soliloan-logo.webp",
+        "width": "92px",
+        "useLogoSource": true
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "kxLfnsE00R",
+      "isCanvas": false,
+      "displayName": "Projektlogo",
+      "linkedNodes": {}
+    },
+    "e9mzmOalDj": {
+      "type": {
+        "resolvedName": "Text"
+      },
+      "nodes": [],
+      "props": {
+        "text": "<p><em>Dies ist eine automatisch generierte E-Mail. Bei Fragen melde dich unter <span data-merge-tag-id=\"config.email\" data-merge-tag-label=\"E-Mail\" data-merge-tag=\"config.email\" class=\"merge-tag-pill\">{{E-Mail}}</span></em></p>",
+        "color": "#000000",
+        "fontSize": 12,
+        "textAlign": "center"
+      },
+      "custom": {
+        "useCustomDragHandle": true
+      },
+      "hidden": false,
+      "parent": "8RchCNyK7R",
+      "isCanvas": false,
+      "displayName": "Text",
+      "linkedNodes": {}
+    },
+    "kxLfnsE00R": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "VZr3GxhXW3",
+        "RgQqa5Zbjs"
+      ],
+      "props": {
+        "gap": 0,
+        "layout": "horizontal",
+        "loopKey": "",
+        "padding": 20,
+        "borderTop": false,
+        "alignItems": "center",
+        "background": "transparent",
+        "borderLeft": false,
+        "borderColor": "#3d3846",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": true,
+        "justifyContent": "space-between"
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "ROOT",
+      "isCanvas": true,
+      "displayName": "Kopfzeile",
+      "linkedNodes": {}
+    },
+    "zurtR-fNAa": {
+      "type": {
+        "resolvedName": "Button"
+      },
+      "nodes": [],
+      "props": {
+        "url": "#",
+        "text": "{{platform.name}}",
+        "color": "#ffffff",
+        "background": "#2563eb",
+        "systemUrlKey": "invitation",
+        "useSystemUrl": true
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "8JUD_d5uyV",
+      "isCanvas": false,
+      "displayName": "Button",
+      "linkedNodes": {}
+    }
+  },
+  "subjectOrFilename": "Danke für deinen Direktkredit an {{config.name}}!"
+}

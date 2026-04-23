@@ -11,15 +11,26 @@ import {
   type BorderStyle,
   buildBorderStyle,
 } from '@/lib/templates/border-utils';
+import { paddingPropsToReactStyle } from '@/lib/templates/padding-utils';
+
+import { BlockPaddingFields } from '../block-padding-fields';
 
 interface PageHeaderProps extends BorderProps {
   padding?: number;
+  paddingTop?: number;
+  paddingRight?: number;
+  paddingBottom?: number;
+  paddingLeft?: number;
   background?: string;
   children?: ReactNode;
 }
 
 export const PageHeader = ({
   padding = 16,
+  paddingTop,
+  paddingRight,
+  paddingBottom,
+  paddingLeft,
   background = 'transparent',
   borderTop,
   borderRight,
@@ -50,6 +61,18 @@ export const PageHeader = ({
     [borderTop, borderRight, borderBottom, borderLeft, borderColor, borderStyle, borderWidth],
   );
 
+  const paddingStyle = useMemo(
+    () =>
+      paddingPropsToReactStyle({
+        padding,
+        paddingTop,
+        paddingRight,
+        paddingBottom,
+        paddingLeft,
+      }),
+    [padding, paddingTop, paddingRight, paddingBottom, paddingLeft],
+  );
+
   return (
     <div
       ref={(dom) => {
@@ -59,7 +82,7 @@ export const PageHeader = ({
     >
       <div
         style={{
-          padding: `${padding}px`,
+          ...paddingStyle,
           background,
           ...borderStyleObj,
         }}
@@ -86,6 +109,10 @@ export const PageHeaderSettings = () => {
   const {
     actions: { setProp },
     padding,
+    paddingTop,
+    paddingRight,
+    paddingBottom,
+    paddingLeft,
     background,
     borderTop,
     borderRight,
@@ -96,6 +123,10 @@ export const PageHeaderSettings = () => {
     borderWidth,
   } = useNode((node) => ({
     padding: node.data.props.padding,
+    paddingTop: node.data.props.paddingTop as number | undefined,
+    paddingRight: node.data.props.paddingRight as number | undefined,
+    paddingBottom: node.data.props.paddingBottom as number | undefined,
+    paddingLeft: node.data.props.paddingLeft as number | undefined,
     background: node.data.props.background,
     borderTop: node.data.props.borderTop ?? false,
     borderRight: node.data.props.borderRight ?? false,
@@ -108,22 +139,17 @@ export const PageHeaderSettings = () => {
 
   return (
     <div className="space-y-4 p-4">
-      <div className="space-y-2">
-        <label htmlFor="headerPadding" className="text-xs font-medium">
-          {t('padding')}
-        </label>
-        <input
-          id="headerPadding"
-          type="number"
-          value={padding}
-          onChange={(e) =>
-            setProp((props: PageHeaderProps) => {
-              props.padding = Number(e.target.value);
-            })
-          }
-          className="w-full px-2 py-1 border rounded text-sm"
-        />
-      </div>
+      <BlockPaddingFields<PageHeaderProps>
+        idPrefix="pageHeader"
+        props={{
+          padding,
+          paddingTop,
+          paddingRight,
+          paddingBottom,
+          paddingLeft,
+        }}
+        setProp={setProp}
+      />
       <div className="space-y-2">
         <label htmlFor="headerBg" className="text-xs font-medium">
           {t('backgroundColor')}

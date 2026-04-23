@@ -15,6 +15,7 @@ export async function getProjectUnsafe(projectId: string): Promise<ProjectWithCo
       id: projectId,
     },
     include: {
+      managers: true,
       configuration: {
         include: {
           loanTemplates: true,
@@ -53,7 +54,6 @@ export async function getProjectUnsafe(projectId: string): Promise<ProjectWithCo
       loanAdditionalFields: parseAdditionalFieldConfig(project.configuration.loanAdditionalFields) ?? [],
     },
   };
-  return projectWithConfiguration;
 }
 
 export const getProjectAction = projectAction

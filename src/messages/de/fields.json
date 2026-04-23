@@ -38,9 +38,12 @@
     "loanNumber": "Kreditnummer",
     "amount": "Darlehensbetrag",
     "interestRate": "Zinssatz",
-    "signDate": "Vertragsdatum",
-    "endDate": "Enddatum",
-    "terminationDate": "Kündigungsdatum",
+    "signDate": "Vertragsdatum (kurz)",
+    "signDateLong": "Vertragsdatum (lang)",
+    "endDate": "Enddatum (kurz)",
+    "endDateLong": "Enddatum (lang)",
+    "terminationDate": "Kündigungsdatum (kurz)",
+    "terminationDateLong": "Kündigungsdatum (lang)",
     "terminationType": "Kündigungsart",
     "contractStatus": "Vertragsstatus",
     "status": "Status",
@@ -51,21 +54,58 @@
     "interestPaid": "Ausgezahlte Zinsen",
     "interestError": "Zinsfehler",
     "notReclaimed": "Nicht zurückgefordert",
-    "repaidDate": "Rückzahlungsdatum",
-    "repayDate": "Fälligkeitsdatum",
+    "repaidDate": "Rückzahlungsdatum (kurz)",
+    "repaidDateLong": "Rückzahlungsdatum (lang)",
+    "repayDate": "Fälligkeitsdatum (kurz)",
+    "repayDateLong": "Fälligkeitsdatum (lang)",
     "isTerminated": "Gekündigt"
   },
   "transaction": {
     "type": "Typ",
     "amount": "Betrag",
-    "date": "Datum",
+    "date": "Datum (kurz)",
+    "dateLong": "Datum (lang)",
     "paymentType": "Zahlungsart"
   },
   "note": {
     "text": "Text",
-    "createdAt": "Erstellt am",
+    "createdAt": "Erstellt am (kurz)",
+    "createdAtLong": "Erstellt am (lang)",
     "createdByName": "Erstellt von",
     "public": "Öffentlich"
+  },
+  "user": {
+    "name": "Name",
+    "email": "E-Mail"
+  },
+  "latestTransaction": {
+    "type": "Typ (letzte Transaktion)",
+    "amount": "Betrag (letzte Transaktion)",
+    "date": "Datum (kurz, letzte Transaktion)",
+    "dateLong": "Datum (lang, letzte Transaktion)",
+    "paymentType": "Zahlungsart (letzte Transaktion)"
+  },
+  "lenderYearly": {
+    "year": "Jahr",
+    "begin": "Anfangssaldo (Jahr)",
+    "end": "Endsaldo (Jahr)",
+    "deposits": "Einzahlungen (Jahr)",
+    "withdrawals": "Auszahlungen (Jahr)",
+    "interest": "Zinsen (Jahr)",
+    "interestPaid": "Ausgezahlte Zinsen (Jahr)",
+    "notReclaimed": "Nicht zurückgefordert (Jahr)",
+    "interestError": "Zinsfehler (Jahr)"
+  },
+  "loanYearly": {
+    "year": "Jahr",
+    "begin": "Anfangssaldo (Jahr)",
+    "end": "Endsaldo (Jahr)",
+    "deposits": "Einzahlungen (Jahr)",
+    "withdrawals": "Auszahlungen (Jahr)",
+    "interest": "Zinsen (Jahr)",
+    "interestPaid": "Ausgezahlte Zinsen (Jahr)",
+    "notReclaimed": "Nicht zurückgefordert (Jahr)",
+    "interestError": "Zinsfehler (Jahr)"
   },
   "config": {
     "name": "Projektname",
@@ -85,6 +125,13 @@
     "pageNumber": "Seitennummer",
     "totalPages": "Gesamtseiten"
   },
+  "platform": {
+    "name": "Plattformname"
+  },
+  "misc": {
+    "dateShort": "Aktuelles Datum (kurz)",
+    "dateLong": "Aktuelles Datum (lang)"
+  },
   "project": {
     "name": "Projektname",
     "slug": "Projekt-ID"
@@ -92,17 +139,25 @@
   "loops": {
     "loans": "Für jedes Darlehen",
     "transactions": "Für jede Transaktion",
+    "transactionsYearly": "Für jede Transaktion (Jahr)",
     "notes": "Für jede Notiz",
     "lenders": "Für jeden Darlehensgeber"
   },
   "categories": {
     "config": "Projekt-Konfiguration",
+    "user": "Benutzer",
     "lender": "Darlehensgeber",
     "loan": "Darlehen",
+    "latestTransaction": "Letzte Transaktion",
+    "lenderYearly": "Jährliche Daten (Gesamt)",
+    "loanYearly": "Jährliche Daten (Darlehen)",
     "transaction": "Transaktion",
     "note": "Notiz",
+    "platform": "Plattform",
     "page": "Seite",
     "loops": "Schleifen",
-    "additional": "Zusatzfelder"
+    "additional": "Zusatzfelder",
+    "project": "Projekt",
+    "misc": "Sonstiges"
   }
 }
