@@ -9,10 +9,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { deleteTemplateAction } from '@/actions/templates/mutations/delete-template';
 import { duplicateTemplateAction } from '@/actions/templates/mutations/duplicate-template';
-import {
-  getProjectSystemTemplatesOverviewAction,
-  type ProjectSystemTemplateOverviewRow,
-} from '@/actions/templates/queries/get-project-system-templates-overview';
+import { getProjectSystemTemplatesOverviewAction } from '@/actions/templates/queries/get-project-system-templates-overview';
+import type { ProjectSystemTemplateOverviewRow } from '@/lib/templates/project-system-templates-overview';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/ui/data-table';
@@ -22,13 +20,14 @@ import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
 
 interface ProjectSystemTemplatesTableProps {
   projectId: string;
+  initialRows: ProjectSystemTemplateOverviewRow[];
 }
 
-export function ProjectSystemTemplatesTable({ projectId }: ProjectSystemTemplatesTableProps) {
+export function ProjectSystemTemplatesTable({ projectId, initialRows }: ProjectSystemTemplatesTableProps) {
   const t = useTranslations('templates');
   const router = useRouter();
-  const [rows, setRows] = useState<ProjectSystemTemplateOverviewRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [rows, setRows] = useState<ProjectSystemTemplateOverviewRow[]>(initialRows);
+  const [loading, setLoading] = useState(false);
   const [resetTarget, setResetTarget] = useState<Pick<
     ProjectSystemTemplateOverviewRow,
     'effectiveTemplateId' | 'name'
@@ -47,8 +46,8 @@ export function ProjectSystemTemplatesTable({ projectId }: ProjectSystemTemplate
   }, [projectId]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    setRows(initialRows);
+  }, [initialRows]);
 
   const handleCustomize = useCallback(
     async (row: ProjectSystemTemplateOverviewRow) => {

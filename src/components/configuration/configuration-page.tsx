@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { updateConfigurationAction } from '@/actions/projects/mutations/update-project-configuration';
 import type { ConfigurationFormData } from '@/lib/schemas/configuration';
 import { convertEmptyToNull } from '@/lib/utils/form';
+import type { ProjectSystemTemplateOverviewRow } from '@/lib/templates/project-system-templates-overview';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ConfigurationFormGeneral } from './configuration-form-general';
@@ -23,9 +24,10 @@ export type ConfigurationTabValue = 'general' | 'lender' | 'loans' | 'templates'
 type Props = {
   project: ProjectWithConfiguration;
   inviteValidDays: number;
+  systemTemplatesOverviewRows: ProjectSystemTemplateOverviewRow[];
 };
 
-export const ConfigurationPage = ({ project, inviteValidDays }: Props) => {
+export const ConfigurationPage = ({ project, inviteValidDays, systemTemplatesOverviewRows }: Props) => {
   const t = useTranslations('dashboard.configuration');
   const [activeTab, setActiveTab] = useQueryState(
     'tab',
@@ -113,7 +115,7 @@ export const ConfigurationPage = ({ project, inviteValidDays }: Props) => {
         />
       </TabsContent>
       <TabsContent value="templates">
-        <ProjectTemplatesTab project={project} />
+        <ProjectTemplatesTab project={project} systemTemplatesOverviewRows={systemTemplatesOverviewRows} />
       </TabsContent>
       <TabsContent value="files">Files</TabsContent>
     </Tabs>
