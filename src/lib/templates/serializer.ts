@@ -1,3 +1,4 @@
+// biome-ignore lint/suspicious/noExplicitAny: needed
 export const serializeDesign = (query: any) => {
   return query.serialize();
 };

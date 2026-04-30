@@ -24,15 +24,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { createPredefinedBlockAction } from '@/actions/templates/mutations/create-predefined-block';
 import { useEditorMetadata } from '@/components/templates/editor-context';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   BORDER_STYLE_OPTIONS,
@@ -41,9 +33,11 @@ import {
   buildBorderStyle,
 } from '@/lib/templates/border-utils';
 import { extractCraftSubtree } from '@/lib/templates/craft-subtree';
+import { mergeLoopsAllowedForCanvasPlacement } from '@/lib/templates/merge-tag-insertion-filter';
 import { paddingPropsToReactStyle } from '@/lib/templates/padding-utils';
 import { BlockPaddingFields } from '../block-padding-fields';
 import { useMergeTagConfig } from '../merge-tag-context';
+import { useMergeTagInsertionLoops } from '../use-merge-tag-insertion-loops';
 
 type LayoutMode = 'vertical' | 'horizontal' | 'grid';
 type FlexJustify = 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around';
@@ -150,6 +144,7 @@ const buildLayoutStyle = (
 };
 
 export const Container = ({
+  loopKey = '',
   padding = 20,
   paddingTop,
   paddingRight,
@@ -173,7 +168,14 @@ export const Container = ({
   const t = useTranslations('templates.editor.components.container');
   const {
     connectors: { connect },
-  } = useNode();
+    loopRibbonTitle,
+  } = useNode((node) => ({
+    loopRibbonTitle:
+      typeof node.data.displayName === 'string' ? node.data.displayName.trim() : '',
+  }));
+
+  const hasLoop = loopKey.trim().length > 0;
+  const ribbonLabel = loopRibbonTitle || loopKey;
 
   const layoutStyle = useMemo(
     () => buildLayoutStyle(layout, gap, gridColumns, justifyContent, alignItems),
@@ -205,6 +207,26 @@ export const Container = ({
     [padding, paddingTop, paddingRight, paddingBottom, paddingLeft],
   );
 
+  const emptyPlaceholder = (!children || (Array.isArray(children) && children.length === 0)) && (
+    <div className="py-12 border-2 border-dashed border-zinc-200 rounded-lg flex items-center justify-center text-zinc-400 text-sm pointer-events-none w-full">
+      {t('dropHere')}
+    </div>
+  );
+
+  const contentBody = (
+    <>
+      {children}
+      {emptyPlaceholder}
+    </>
+  );
+
+  const contentStyle = {
+    ...paddingStyle,
+    background,
+    ...layoutStyle,
+    ...borderStyleObj,
+  };
+
   return (
     <div
       ref={(dom) => {
@@ -212,18 +234,33 @@ export const Container = ({
           connect(dom);
         }
       }}
-      style={{
-        ...paddingStyle,
-        background,
-        ...layoutStyle,
-        ...borderStyleObj,
-      }}
-      className="min-h-[50px] w-full"
+      className={`min-h-[50px] w-full ${hasLoop ? 'flex flex-col overflow-hidden rounded-md' : ''}`}
+      style={hasLoop ? undefined : contentStyle}
     >
-      {children}
-      {(!children || (Array.isArray(children) && children.length === 0)) && (
-        <div className="py-12 border-2 border-dashed border-zinc-200 rounded-lg flex items-center justify-center text-zinc-400 text-sm pointer-events-none w-full">
-          {t('dropHere')}
+      {hasLoop && (
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-zinc-200/70 bg-zinc-50/60 px-2 py-[3px]">
+          <span className="font-mono text-[9px] leading-tight tracking-tight text-zinc-400">
+            {'{{#'}
+            {loopKey}
+            {'}}'}
+          </span>
+          <span className="truncate font-sans text-[10px] font-normal text-zinc-500/75">{ribbonLabel}</span>
+        </div>
+      )}
+      {hasLoop ? (
+        <div style={contentStyle} className="min-h-[50px] w-full flex-1 min-w-0">
+          {contentBody}
+        </div>
+      ) : (
+        contentBody
+      )}
+      {hasLoop && (
+        <div className="shrink-0 border-t border-zinc-200/70 bg-zinc-50/60 px-2 py-[3px] text-right">
+          <span className="font-mono text-[9px] leading-tight tracking-tight text-zinc-400">
+            {'{{/'}
+            {loopKey}
+            {'}}'}
+          </span>
         </div>
       )}
     </div>
@@ -375,6 +412,24 @@ export const ContainerSettings = () => {
 
   const isStructural = ['ROOT', 'PAGE_HEADER', 'BODY', 'PAGE_FOOTER'].includes(nodeId);
   const availableLoops = config?.loops ?? [];
+  /** Parent chain only — the loop assigned to this container must not depend on itself. */
+  const ancestorLoopsForLoopPicker = useMergeTagInsertionLoops(nodeId, false);
+
+  const selectableLoops = useMemo(
+    () => mergeLoopsAllowedForCanvasPlacement(availableLoops, ancestorLoopsForLoopPicker, editorMeta.dataset),
+    [availableLoops, ancestorLoopsForLoopPicker, editorMeta.dataset],
+  );
+
+  useEffect(() => {
+    if (!loopKey || !config?.loops) return;
+    const current = config.loops.find((l) => l.key === loopKey);
+    if (!current) return;
+    if (!mergeLoopsAllowedForCanvasPlacement([current], ancestorLoopsForLoopPicker, editorMeta.dataset).length) {
+      setProp((props: ContainerProps) => {
+        props.loopKey = '';
+      });
+    }
+  }, [loopKey, ancestorLoopsForLoopPicker, editorMeta.dataset, config?.loops, setProp]);
 
   const handleSaveAsBlock = useCallback(async () => {
     if (!blockName.trim()) return;
@@ -442,17 +497,12 @@ export const ContainerSettings = () => {
     });
   };
 
-  const defaultTab = isStructural ? 'layout' : 'data';
+  const defaultTab = 'layout';
 
   return (
     <div className="space-y-4 p-4">
       <Tabs defaultValue={defaultTab}>
         <TabsList variant="modern" className="mt-0">
-          {!isStructural && (
-            <TabsTrigger variant="modern" size="sm" value="data">
-              {t('tabData')}
-            </TabsTrigger>
-          )}
           <TabsTrigger variant="modern" size="sm" value="layout">
             {t('tabLayout')}
           </TabsTrigger>
@@ -462,6 +512,11 @@ export const ContainerSettings = () => {
           {!isStructural && (
             <TabsTrigger variant="modern" size="sm" value="block">
               {t('tabBlock')}
+            </TabsTrigger>
+          )}
+          {!isStructural && (
+            <TabsTrigger variant="modern" size="sm" value="data">
+              {t('tabData')}
             </TabsTrigger>
           )}
         </TabsList>
@@ -483,13 +538,16 @@ export const ContainerSettings = () => {
                 className="w-full px-2 py-1.5 border rounded text-sm bg-white"
               >
                 <option value="">{t('staticContainer')}</option>
-                {availableLoops.map((loop) => (
+                {selectableLoops.map((loop) => (
                   <option key={loop.key} value={loop.key}>
                     {loop.label}
                   </option>
                 ))}
               </select>
               <p className="text-[11px] text-muted-foreground">{loopKey ? t('dynamicHint') : t('staticHint')}</p>
+              {availableLoops.length > 0 && selectableLoops.length !== availableLoops.length ? (
+                <p className="text-[11px] text-muted-foreground">{t('loopKeyContextHint')}</p>
+              ) : null}
             </div>
           </TabsContent>
         )}
@@ -804,32 +862,9 @@ function SaveAsBlockDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('saveAsBlockTitle')}</DialogTitle>
-          <DialogDescription>{t('blockDatasetsHint')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          <fieldset className="space-y-1.5">
-            <legend className="text-sm font-medium">{t('blockTemplateTypes')}</legend>
-            <p className="text-xs text-muted-foreground">{t('blockTemplateTypesHint')}</p>
-            <div className="flex flex-wrap gap-4 mt-1">
-              {(['EMAIL', 'DOCUMENT'] as const).map((tt) => (
-                <label key={tt} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={blockTemplateTypes.includes(tt)}
-                    onChange={(e) => {
-                      setBlockTemplateTypes((prev) =>
-                        e.target.checked ? [...prev, tt] : prev.filter((x) => x !== tt),
-                      );
-                    }}
-                    className="rounded border-zinc-300"
-                  />
-                  {t(`blockTemplateType_${tt}`)}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
           <div className="space-y-1.5">
             <label htmlFor="dlgBlockName" className="text-sm font-medium">
               {t('blockName')}
@@ -857,9 +892,30 @@ function SaveAsBlockDialog({
               className="w-full px-3 py-2 border rounded-md text-sm"
             />
           </div>
-
+          <fieldset className="space-y-1.5">
+            <legend className="text-sm font-medium">{t('blockTemplateTypes')}</legend>
+            <p className="text-xs text-muted-foreground">{t('blockTemplateTypesHint')}</p>
+            <div className="flex flex-wrap gap-4 mt-1">
+              {(['EMAIL', 'DOCUMENT'] as const).map((tt) => (
+                <label key={tt} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={blockTemplateTypes.includes(tt)}
+                    onChange={(e) => {
+                      setBlockTemplateTypes((prev) =>
+                        e.target.checked ? [...prev, tt] : prev.filter((x) => x !== tt),
+                      );
+                    }}
+                    className="rounded border-zinc-300"
+                  />
+                  {t(`blockTemplateType_${tt}`)}
+                </label>
+              ))}
+            </div>
+          </fieldset>
           <fieldset className="space-y-1.5">
             <legend className="text-sm font-medium">{t('blockDatasets')}</legend>
+            <p className="text-xs text-muted-foreground">{t('blockDatasetsHint')}</p>
             <div className="grid grid-cols-2 gap-2 mt-1">
               {Object.values(TemplateDataset).map((ds) => (
                 <label key={ds} className="flex items-center gap-2 text-sm">
@@ -899,10 +955,7 @@ function SaveAsBlockDialog({
           <button
             type="button"
             disabled={
-              !blockName.trim() ||
-              blockDatasets.length === 0 ||
-              blockTemplateTypes.length === 0 ||
-              isSavingBlock
+              !blockName.trim() || blockDatasets.length === 0 || blockTemplateTypes.length === 0 || isSavingBlock
             }
             onClick={handleSave}
             className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-zinc-900 text-white rounded-md hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"

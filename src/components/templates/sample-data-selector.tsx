@@ -55,12 +55,21 @@ export function SampleDataSelector({
     queryFn: async () => {
       switch (dataset) {
         case 'LENDER':
-        case 'LENDER_YEARLY':
-          return getSampleLendersAction(projectId);
-        case 'LOAN':
-          return getSampleLoansAction(projectId);
-        case 'TRANSACTION':
-          return getSampleTransactionsAction(projectId);
+        case 'LENDER_YEARLY': {
+          const result = await getSampleLendersAction({ projectId });
+          if (result?.serverError) return [];
+          return result.data ?? [];
+        }
+        case 'LOAN': {
+          const result = await getSampleLoansAction({ projectId });
+          if (result?.serverError) return [];
+          return result.data ?? [];
+        }
+        case 'TRANSACTION': {
+          const result = await getSampleTransactionsAction({ projectId });
+          if (result?.serverError) return [];
+          return result.data ?? [];
+        }
         default:
           return [];
       }
@@ -85,7 +94,9 @@ export function SampleDataSelector({
     queryKey: ['sample-lender-years', value],
     queryFn: async () => {
       if (!value) return [];
-      return getSampleLenderYearsAction(value);
+      const result = await getSampleLenderYearsAction({ lenderId: value });
+      if (result?.serverError) return [];
+      return result.data ?? [];
     },
     enabled: dataset === 'LENDER_YEARLY' && !!value && !useServerYears,
   });

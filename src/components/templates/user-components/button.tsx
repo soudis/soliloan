@@ -10,6 +10,7 @@ import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/ge
 import { useEditorMetadata } from '@/components/templates/editor-context';
 import { useMergeTagConfig } from '../merge-tag-context';
 import { MergeTagDropdown } from '../merge-tag-dropdown';
+import { useMergeTagInsertionLoops } from '../use-merge-tag-insertion-loops';
 
 interface ButtonProps {
   text: string;
@@ -107,6 +108,7 @@ export const ButtonSettings = () => {
     color,
     useSystemUrl,
     systemUrlKey,
+    nodeId,
   } = useNode((node) => ({
     text: node.data.props.text,
     url: node.data.props.url,
@@ -114,7 +116,10 @@ export const ButtonSettings = () => {
     color: node.data.props.color,
     useSystemUrl: node.data.props.useSystemUrl ?? false,
     systemUrlKey: node.data.props.systemUrlKey ?? '',
+    nodeId: node.id,
   }));
+
+  const ancestorLoopsInnermostFirst = useMergeTagInsertionLoops(nodeId, false);
 
   const visibleSystemUrlKeys = useMemo(
     () => SYSTEM_URL_KEYS.filter((key) => isSystemUrlKeyVisibleForDataset(key, editorMeta.dataset)),
@@ -281,6 +286,10 @@ export const ButtonSettings = () => {
           onSelect={handleMergeTagSelect}
           config={config}
           position={dropdownPos}
+          insertionContext={{
+            ancestorLoopsInnermostFirst,
+            dataset: editorMeta.dataset,
+          }}
         />
       )}
     </div>

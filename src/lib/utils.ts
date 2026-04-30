@@ -97,6 +97,7 @@ export class NumberParser {
   private groupSymbol: string;
   private decimalSymbol: string;
 
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: needed
   constructor(private readonly locale: string) {
     const parts = Intl.NumberFormat(locale).formatToParts(1111.11);
     this.groupSymbol = parts.find((part) => part.type === 'group')?.value ?? '.';

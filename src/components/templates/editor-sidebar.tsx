@@ -1,11 +1,11 @@
 'use client';
 
 import { useEditor } from '@craftjs/core';
+import { ListTree, Plus, Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { EditorHierarchyPanel } from './editor-hierarchy-panel';
 import { SettingsPanel } from './settings-panel';
 import { Toolbox } from './toolbox';
@@ -36,47 +36,54 @@ export function EditorSidebar() {
   }, [selectedId]);
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col bg-white">
-      <Tabs value={tab} onValueChange={setTab} className="flex h-full min-h-0 flex-col">
-        <div className="shrink-0 border-b p-2">
-          <TabsList variant="modern" className="mt-0 w-full">
-            <TabsTrigger variant="modern" size="sm" value="toolbox" className="flex-1">
-              {t('sidebar.tabToolbox')}
-            </TabsTrigger>
-            <TabsTrigger variant="modern" size="sm" value="settings" className="flex-1">
-              {t('sidebar.tabSettings')}
-            </TabsTrigger>
-            <TabsTrigger variant="modern" size="sm" value="hierarchy" className="flex-1">
-              {t('sidebar.tabHierarchy')}
-            </TabsTrigger>
-          </TabsList>
-        </div>
+    <TooltipProvider>
+      <div className="flex h-full min-h-0 w-full flex-col bg-white">
+        <Tabs value={tab} onValueChange={setTab} className="flex h-full min-h-0 flex-col">
+          <div className="shrink-0 border-b px-4 py-2">
+            <TabsList variant="modern" className="mt-0 flex w-full">
+              <TabsTrigger variant="modern" size="sm" value="toolbox" className="min-w-0 flex-1 md:flex-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Plus />
+                  </TooltipTrigger>
+                  <TooltipContent>{t('sidebar.tabToolbox')}</TooltipContent>
+                </Tooltip>
+              </TabsTrigger>
+              <TabsTrigger variant="modern" size="sm" value="settings" className="min-w-0 flex-1 md:flex-1">
+                <Settings />
+              </TabsTrigger>
+              <TabsTrigger variant="modern" size="sm" value="hierarchy" className="min-w-0 flex-1 md:flex-1">
+                <ListTree />
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-        <TabsContent
-          value="toolbox"
-          className="mt-0 flex-1 min-h-0 overflow-y-auto focus-visible:outline-none focus-visible:ring-0"
-        >
-          <Toolbox />
-        </TabsContent>
+          <TabsContent
+            value="toolbox"
+            className="mt-0 flex-1 min-h-0 overflow-y-auto focus-visible:outline-none focus-visible:ring-0"
+          >
+            <Toolbox />
+          </TabsContent>
 
-        <TabsContent
-          value="settings"
-          className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden focus-visible:outline-none focus-visible:ring-0"
-        >
-          <SettingsPanel />
-        </TabsContent>
+          <TabsContent
+            value="settings"
+            className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden focus-visible:outline-none focus-visible:ring-0"
+          >
+            <SettingsPanel />
+          </TabsContent>
 
-        <TabsContent
-          value="hierarchy"
-          className="mt-0 flex-1 min-h-0 overflow-y-auto focus-visible:outline-none focus-visible:ring-0"
-        >
-          <EditorHierarchyPanel
-            onBeforeSelectNode={() => {
-              skipSettingsOnSelectionRef.current = true;
-            }}
-          />
-        </TabsContent>
-      </Tabs>
-    </div>
+          <TabsContent
+            value="hierarchy"
+            className="mt-0 flex-1 min-h-0 overflow-y-auto focus-visible:outline-none focus-visible:ring-0"
+          >
+            <EditorHierarchyPanel
+              onBeforeSelectNode={() => {
+                skipSettingsOnSelectionRef.current = true;
+              }}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </TooltipProvider>
   );
 }

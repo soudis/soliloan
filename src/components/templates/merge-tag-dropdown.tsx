@@ -1,20 +1,29 @@
 'use client';
 
+import type { TemplateDataset } from '@prisma/client';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useTranslations } from 'next-intl';
 import type { MergeTagConfig, MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { canInsertLoopAtContext, shouldShowLoopChildFieldsGroup } from '@/lib/templates/merge-tag-insertion-filter';
 
 type MergeTagItem = MergeTagField | MergeTagLoop;
 type MergeTagGroup = {
   key: string;
   label: string;
+  /** Hint shown under the title in the group select (translations). */
+  description: string;
   items: MergeTagItem[];
 };
 
 const isLoop = (item: MergeTagItem): item is MergeTagLoop => 'startTag' in item;
+
+export type MergeTagDropdownInsertionContext = {
+  ancestorLoopsInnermostFirst: string[];
+  dataset: TemplateDataset;
+};
 
 export function MergeTagDropdown({
   isOpen,
@@ -22,17 +31,26 @@ export function MergeTagDropdown({
   onSelect,
   config,
   position,
+  insertionContext,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (item: MergeTagItem) => void;
   config: MergeTagConfig;
   position: { top: number; left: number };
+  /** When set (editor blocks), restricts loop wrappers and loop-only fields to the current enclosing loops. */
+  insertionContext?: MergeTagDropdownInsertionContext;
 }) {
   const tFields = useTranslations('fields');
   const tMergeTags = useTranslations('templates.editor.mergeTags');
 
   const groups = useMemo<MergeTagGroup[]>(() => {
+    const loopsShownInToolbar = insertionContext
+      ? config.loops.filter((loop) =>
+          canInsertLoopAtContext(loop, insertionContext.ancestorLoopsInnermostFirst, insertionContext.dataset),
+        )
+      : config.loops;
+
     const entityOrder: string[] = [];
     const entityMap = new Map<string, MergeTagField[]>();
 
@@ -49,6 +67,7 @@ export function MergeTagDropdown({
       .map((entity) => ({
         key: `entity:${entity}`,
         label: tFields(`categories.${entity}`),
+        description: tMergeTags(`groupDescriptions.entity.${entity}` as Parameters<typeof tMergeTags>[0]),
         items: entityMap.get(entity) ?? [],
       }))
       .filter((group) => group.items.length > 0);
@@ -57,6 +76,7 @@ export function MergeTagDropdown({
       nextGroups.push({
         key: 'additional:lender',
         label: `${tFields('categories.lender')} ${tMergeTags('additionalFieldsSuffix')}`,
+        description: tMergeTags('groupDescriptions.additionalLender'),
         items: config.additionalFields.lender,
       });
     }
@@ -65,30 +85,39 @@ export function MergeTagDropdown({
       nextGroups.push({
         key: 'additional:loan',
         label: `${tFields('categories.loan')} ${tMergeTags('additionalFieldsSuffix')}`,
+        description: tMergeTags('groupDescriptions.additionalLoan'),
         items: config.additionalFields.loan,
       });
     }
 
-    if (config.loops.length > 0) {
+    if (loopsShownInToolbar.length > 0) {
       nextGroups.push({
         key: 'loops',
         label: tFields('categories.loops'),
-        items: config.loops,
+        description: tMergeTags('groupDescriptions.loops'),
+        items: loopsShownInToolbar,
       });
     }
 
-    for (const loop of config.loops) {
+    const loopsWithChildUi = insertionContext
+      ? config.loops.filter((loop) =>
+          shouldShowLoopChildFieldsGroup(loop, insertionContext.ancestorLoopsInnermostFirst),
+        )
+      : config.loops;
+
+    for (const loop of loopsWithChildUi) {
       if (loop.childFields.length > 0) {
         nextGroups.push({
           key: `loop-fields:${loop.key}`,
           label: `${loop.label} ${tMergeTags('childFieldsSuffix')}`,
+          description: tMergeTags(`groupDescriptions.loopChild.${loop.key}` as Parameters<typeof tMergeTags>[0]),
           items: loop.childFields,
         });
       }
     }
 
     return nextGroups;
-  }, [config, tFields, tMergeTags]);
+  }, [config, insertionContext, tFields, tMergeTags]);
 
   const [selectedGroupKey, setSelectedGroupKey] = useState('');
   const [selectedItemKey, setSelectedItemKey] = useState('');
@@ -145,11 +174,7 @@ export function MergeTagDropdown({
   if (typeof document === 'undefined') return null;
 
   return createPortal(
-    <div
-      ref={rootRef}
-      className="pointer-events-none fixed inset-0 z-[100000]"
-      data-merge-tag-dropdown-root=""
-    >
+    <div ref={rootRef} className="pointer-events-none fixed inset-0 z-[100000]" data-merge-tag-dropdown-root="">
       <button
         type="button"
         className="pointer-events-auto fixed inset-0 z-0 cursor-default bg-transparent"
@@ -166,17 +191,21 @@ export function MergeTagDropdown({
           <div className="space-y-1.5">
             <p className="text-xs font-medium text-foreground">{tMergeTags('groupLabel')}</p>
             <Select value={selectedGroupKey || undefined} onValueChange={setSelectedGroupKey}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="h-auto min-h-10 w-full whitespace-normal px-3 py-2 text-left [&>svg]:shrink-0">
                 <SelectValue placeholder={tMergeTags('groupPlaceholder')} />
               </SelectTrigger>
-              <SelectContent
-                className="z-[100002]"
-                position="popper"
-                data-merge-tag-dropdown-sub=""
-              >
+              <SelectContent className="z-[100002]" position="popper" data-merge-tag-dropdown-sub="">
                 {groups.map((group) => (
-                  <SelectItem key={group.key} value={group.key}>
-                    {group.label}
+                  <SelectItem
+                    key={group.key}
+                    value={group.key}
+                    textValue={`${group.label} ${group.description}`}
+                    className="!items-start py-2.5"
+                  >
+                    <span className="flex min-w-0 flex-col gap-0.5">
+                      <span className="font-medium leading-tight">{group.label}</span>
+                      <span className="text-xs leading-snug text-muted-foreground">{group.description}</span>
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -193,11 +222,7 @@ export function MergeTagDropdown({
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={tMergeTags('fieldPlaceholder')} />
               </SelectTrigger>
-              <SelectContent
-                className="z-[100002]"
-                position="popper"
-                data-merge-tag-dropdown-sub=""
-              >
+              <SelectContent className="z-[100002]" position="popper" data-merge-tag-dropdown-sub="">
                 {selectedGroup?.items.map((item) => (
                   <SelectItem key={item.key} value={item.key}>
                     {item.label}

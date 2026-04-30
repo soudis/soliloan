@@ -1,4 +1,6 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: needed */
 import { paddingPropsToCssString, resolvePaddingPx } from '@/lib/templates/padding-utils';
+import { stripLoopScaffoldFromTiptapHtml } from '@/lib/templates/tiptap-merge-loop';
 
 /**
  * Process tiptap HTML content: strip <p> wrappers, convert merge-tag spans
@@ -6,7 +8,7 @@ import { paddingPropsToCssString, resolvePaddingPx } from '@/lib/templates/paddi
  */
 const processTiptapContent = (html: string): string => {
   // TipTap usually returns HTML wrapped in <p> tags.
-  const stripped = html.replace(/<p>/g, '').replace(/<\/p>/g, '<br />');
+  const stripped = stripLoopScaffoldFromTiptapHtml(html.replace(/<p>/g, '').replace(/<\/p>/g, '<br />'));
 
   // Convert <span data-merge-tag="..."> back to {{tag}}.
   const withMergeTags = stripped.replace(
@@ -189,8 +191,7 @@ const EMAIL_MAX_WIDTH = 600;
  * Wrap raw body HTML in a full HTML document with the Inter font loaded,
  * a light gray background, and a centered max-width container with top inset + shadow (document-like card).
  */
-const EMAIL_CARD_SHADOW =
-  '0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06)';
+const EMAIL_CARD_SHADOW = '0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06)';
 
 const wrapInDocument = (bodyHtml: string): string => {
   return `<!DOCTYPE html>

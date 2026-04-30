@@ -116,3 +116,15 @@ export const deletePredefinedBlockSchema = z.object({
 });
 
 export type DeletePredefinedBlockFormData = z.infer<typeof deletePredefinedBlockSchema>;
+
+/** Server action input for `getMergeTagValuesAction` (template editor preview, merge resolution). */
+export const getMergeTagValuesInputSchema = z.object({
+  dataset: z.nativeEnum(TemplateDataset),
+  recordId: z.string().min(1).nullish(),
+  locale: z.string().min(1).default('de'),
+  /** Route/editor project context; must match the record’s project when set (prevents config bleed). */
+  projectId: z.string().min(1).optional(),
+  year: z.number().int().optional(),
+});
+
+export type GetMergeTagValuesInput = z.infer<typeof getMergeTagValuesInputSchema>;

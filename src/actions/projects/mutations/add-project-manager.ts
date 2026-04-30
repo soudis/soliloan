@@ -18,7 +18,7 @@ export const addProjectManagerAction = projectAction
       email: z.string().email(),
     }),
   )
-  .action(async ({ ctx, parsedInput }) => {
+  .action(async ({ parsedInput }) => {
     const { projectId, email } = parsedInput;
     const normalizedEmail = normalizeStoredEmail(email);
 

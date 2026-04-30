@@ -213,11 +213,7 @@ const InternalEditor = ({
       {/* Preview Layer — email only: iframe renders same HTML as sent mail (margin + card shadow from wrapInDocument) */}
       {isPreviewing && !isDocument && (
         <div className="absolute inset-0 z-30 overflow-auto bg-[#f4f4f5]">
-          <iframe
-            title="Email Preview"
-            srcDoc={previewHtml}
-            className="block min-h-[600px] w-full border-0"
-          />
+          <iframe title="Email Preview" srcDoc={previewHtml} className="block min-h-[600px] w-full border-0" />
         </div>
       )}
     </div>
@@ -305,12 +301,9 @@ export function TemplateEditorView({
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [previewHtml, setPreviewHtml] = useState('');
-  const [currentDesign, setCurrentDesign] = useState<object | null>(null);
   const [currentHtml, setCurrentHtml] = useState<string>('');
   const [currentHeaderHtml, setCurrentHeaderHtml] = useState<string>('');
   const [currentFooterHtml, setCurrentFooterHtml] = useState<string>('');
-  const [currentHeaderPadding, setCurrentHeaderPadding] = useState<number>(16);
-  const [currentFooterPadding, setCurrentFooterPadding] = useState<number>(16);
 
   /** Ref set by a child inside Editor to get latest document parts (avoids stale debounced state). */
   const getLatestDocumentPartsRef = useRef<(() => DocumentParts) | null>(null);
@@ -372,15 +365,12 @@ export function TemplateEditorView({
     if (initialDesign && initialDesign !== '{}' && !isEmpty(initialDesign)) {
       try {
         const designData = typeof initialDesign === 'string' ? JSON.parse(initialDesign) : initialDesign;
-        setCurrentDesign(designData);
         if (isDocument) {
           const nodes = getNodesMapFromDesign(designData as Record<string, unknown>);
           const parts = generateDocumentParts(nodes, { logoUrl: projectLogo });
           setCurrentHtml(parts.bodyHtml);
           setCurrentHeaderHtml(parts.headerHtml);
           setCurrentFooterHtml(parts.footerHtml);
-          setCurrentHeaderPadding(parts.headerPadding);
-          setCurrentFooterPadding(parts.footerPadding);
         } else {
           const nodes = getNodesMapFromDesign(designData as Record<string, unknown>);
           setCurrentHtml(generateEmailHtml(nodes, { logoUrl: projectLogo }));
@@ -407,13 +397,17 @@ export function TemplateEditorView({
 
     if (canLoadMergeData) {
       try {
-        const data = await getMergeTagValuesAction(
+        const mergeResult = await getMergeTagValuesAction({
           dataset,
-          templateRecordId,
-          'de',
-          projectId,
-          needsYearForLenderYearly(dataset) && selectedYear != null ? { year: selectedYear } : undefined,
-        );
+          recordId: templateRecordId,
+          locale: 'de',
+          projectId: projectId ?? undefined,
+          year:
+            needsYearForLenderYearly(dataset) && selectedYear != null && Number.isFinite(selectedYear)
+              ? selectedYear
+              : undefined,
+        });
+        const data = !mergeResult?.serverError && mergeResult.data ? mergeResult.data : null;
         if (data) {
           html = processTemplate(html, data);
           if (headerHtml) headerHtml = processTemplate(headerHtml, data);
@@ -448,13 +442,17 @@ export function TemplateEditorView({
 
       if (canLoadMergeData) {
         try {
-          const data = await getMergeTagValuesAction(
+          const mergeResult = await getMergeTagValuesAction({
             dataset,
-            templateRecordId,
-            'de',
-            projectId,
-            needsYearForLenderYearly(dataset) && selectedYear != null ? { year: selectedYear } : undefined,
-          );
+            recordId: templateRecordId,
+            locale: 'de',
+            projectId: projectId ?? undefined,
+            year:
+              needsYearForLenderYearly(dataset) && selectedYear != null && Number.isFinite(selectedYear)
+                ? selectedYear
+                : undefined,
+          });
+          const data = !mergeResult?.serverError && mergeResult.data ? mergeResult.data : null;
           if (data) html = processTemplate(html, data);
         } catch (e) {
           console.error('Preview error', e);
@@ -477,14 +475,19 @@ export function TemplateEditorView({
 
       if (canLoadMergeData) {
         try {
-          const data = await getMergeTagValuesAction(
+          const mergeResult = await getMergeTagValuesAction({
             dataset,
-            templateRecordId,
-            'de',
-            projectId,
-            needsYearForLenderYearly(dataset) && selectedYear != null ? { year: selectedYear } : undefined,
-          );
-          if (data) sampleData = data;
+            recordId: templateRecordId,
+            locale: 'de',
+            projectId: projectId ?? undefined,
+            year:
+              needsYearForLenderYearly(dataset) && selectedYear != null && Number.isFinite(selectedYear)
+                ? selectedYear
+                : undefined,
+          });
+          if (!mergeResult?.serverError && mergeResult.data) {
+            sampleData = mergeResult.data;
+          }
         } catch (e) {
           console.error('Preview error', e);
         }
@@ -517,15 +520,12 @@ export function TemplateEditorView({
         const serialized = query.serialize();
         const parsed = JSON.parse(serialized) as object;
         const nodes = getNodesMapFromSerialized(serialized);
-        setCurrentDesign(parsed);
 
         if (isDocument) {
           const parts = generateDocumentParts(nodes, { logoUrl: projectLogo });
           setCurrentHtml(parts.bodyHtml);
           setCurrentHeaderHtml(parts.headerHtml);
           setCurrentFooterHtml(parts.footerHtml);
-          setCurrentHeaderPadding(parts.headerPadding);
-          setCurrentFooterPadding(parts.footerPadding);
           onDesignChange(parsed, parts.bodyHtml);
         } else {
           const html = generateEmailHtml(nodes, { logoUrl: projectLogo });

@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { InterestMethod, Language, PrismaClient, TemplateDataset, type Prisma } from '@prisma/client';
+import { InterestMethod, Language, type Prisma, PrismaClient, TemplateDataset } from '@prisma/client';
 
 import { hashPassword } from '@/lib/utils/password';
 

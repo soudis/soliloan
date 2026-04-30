@@ -23,7 +23,8 @@ import { Text } from './user-components/text';
  * The subtree is a flat map of nodeId → nodeData (same shape as query.serialize()).
  * We build the tree bottom-up: leaf nodes first, then parents wrapping children.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+// biome-ignore lint/suspicious/noExplicitAny: needed
 const COMPONENT_MAP: Record<string, React.ComponentType<any>> = {
   Container,
   Text,
@@ -105,11 +106,11 @@ export const Toolbox = () => {
   return (
     <div className="space-y-3 p-4">
       <Tabs defaultValue="basic">
-        <TabsList variant="modern" className="mt-0 w-full">
-          <TabsTrigger variant="modern" size="sm" value="basic" className="flex-1">
+        <TabsList variant="modern" className="mt-0 flex w-full">
+          <TabsTrigger variant="modern" size="sm" value="basic" className="min-w-0 flex-1 md:flex-1">
             {t('toolbox.tabBasic')}
           </TabsTrigger>
-          <TabsTrigger variant="modern" size="sm" value="predefined" className="flex-1">
+          <TabsTrigger variant="modern" size="sm" value="predefined" className="min-w-0 flex-1 md:flex-1">
             {t('toolbox.tabPredefined')}
           </TabsTrigger>
         </TabsList>

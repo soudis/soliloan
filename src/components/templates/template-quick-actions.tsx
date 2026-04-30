@@ -110,7 +110,12 @@ export function TemplateQuickActions({
 
   const { data: lenderYears = [], isLoading: yearsLoading } = useQuery({
     queryKey: ['lender-sample-years', lenderId],
-    queryFn: () => getSampleLenderYearsAction(lenderId),
+    queryFn: async () => {
+      if (!lenderId) return [];
+      const result = await getSampleLenderYearsAction({ lenderId });
+      if (result?.serverError) return [];
+      return result.data ?? [];
+    },
     enabled: yearDialogOpen && !!lenderId,
   });
 
