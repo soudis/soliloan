@@ -1,7 +1,7 @@
 'use client';
 
 import type { Transaction } from '@prisma/client';
-import { Percent, Receipt, Wallet, ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
+import { ArrowDownIcon, ArrowUpIcon, Percent, Receipt, Wallet } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { cn, formatCurrency } from '@/lib/utils';
@@ -64,7 +64,7 @@ export function LoanBalanceSummary({ loan, readOnly }: LoanBalanceSummaryProps) 
   }
 
   return (
-    <div className="mt-2 border-t pt-6">
+    <div className="pt-0">
       <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('table.totals')}</h4>
       <div className="space-y-0">
         {deposits !== 0 && (
@@ -146,9 +146,9 @@ export function LoanBalanceSummary({ loan, readOnly }: LoanBalanceSummaryProps) 
             <div className="rounded-full bg-muted p-1">
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </div>
-            <span className="text-md font-bold">{t('table.balance')}</span>
+            <span className="text-sm font-bold">{t('table.balance')}</span>
           </div>
-          <SummaryAmount className="font-bold text-md text-foreground">{formatCurrency(balance ?? 0)}</SummaryAmount>
+          <SummaryAmount className="font-bold text-sm text-foreground">{formatCurrency(balance ?? 0)}</SummaryAmount>
         </div>
       </div>
     </div>

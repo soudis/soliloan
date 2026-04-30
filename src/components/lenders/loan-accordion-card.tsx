@@ -165,68 +165,77 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
 
       {/* Expandable content */}
       {isOpen && (
-        <div className="border-t px-4 pb-4 pt-4">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div className="space-y-3">
-              <InfoItem
-                label={t('table.signDate')}
-                value={format(new Date(loan.signDate), 'PPP', { locale: dateLocale })}
-              />
-              <InfoItem
-                label={t('table.amount')}
-                value={
-                  <span>
-                    <span className="whitespace-nowrap">{formatCurrency(loan.amount)}</span>{' '}
-                    <span className="text-muted-foreground text-sm">{t('table.for')}</span>{' '}
-                    <span className="whitespace-nowrap">{formatPercentage(loan.interestRate)} %</span>
-                  </span>
-                }
-              />
-            </div>
-            <div className="space-y-3">
-              <InfoItem label={t('table.terminationModalities')} value={getTerminationModalities()} />
-              {loan.terminationDate && loan.terminationType === 'TERMINATION' && (
+        <>
+          <div className="border-t px-4 pb-4 pt-4">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <div className="space-y-3">
                 <InfoItem
-                  label={t('table.terminationDate')}
-                  value={format(new Date(loan.terminationDate), 'PPP', { locale: dateLocale })}
+                  label={t('table.signDate')}
+                  value={format(new Date(loan.signDate), 'PPP', { locale: dateLocale })}
                 />
-              )}
-              {loan.repayDate &&
-                loan.status !== 'REPAID' &&
-                loan.status !== 'NOTDEPOSITED' &&
-                loan.terminationType !== 'ENDDATE' && (
+                <InfoItem
+                  label={t('table.amount')}
+                  value={
+                    <span>
+                      <span className="whitespace-nowrap">{formatCurrency(loan.amount)}</span>{' '}
+                      <span className="text-muted-foreground text-sm">{t('table.for')}</span>{' '}
+                      <span className="whitespace-nowrap">{formatPercentage(loan.interestRate)} %</span>
+                    </span>
+                  }
+                />
+              </div>
+              <div className="space-y-3">
+                <InfoItem label={t('table.terminationModalities')} value={getTerminationModalities()} />
+                {loan.terminationDate && loan.terminationType === 'TERMINATION' && (
                   <InfoItem
-                    label={t('table.repayDate')}
-                    value={format(new Date(loan.repayDate), 'PPP', { locale: dateLocale })}
+                    label={t('table.terminationDate')}
+                    value={format(new Date(loan.terminationDate), 'PPP', { locale: dateLocale })}
                   />
                 )}
-              {loan.status === 'REPAID' && loan.transactions.at(-1)?.date && (
-                <InfoItem
-                  label={t('table.repaidDate')}
-                  value={format(new Date(loan.transactions.at(-1)?.date ?? ''), 'PPP', { locale: dateLocale })}
-                />
-              )}
-              <div className="grid grid-cols-2 gap-3">
-                <AdditionalFieldInfoItems
-                  additionalFields={loan.additionalFields}
-                  configuration={project.configuration.loanAdditionalFields}
-                />
+                {loan.repayDate &&
+                  loan.status !== 'REPAID' &&
+                  loan.status !== 'NOTDEPOSITED' &&
+                  loan.terminationType !== 'ENDDATE' && (
+                    <InfoItem
+                      label={t('table.repayDate')}
+                      value={format(new Date(loan.repayDate), 'PPP', { locale: dateLocale })}
+                    />
+                  )}
+                {loan.status === 'REPAID' && loan.transactions.at(-1)?.date && (
+                  <InfoItem
+                    label={t('table.repaidDate')}
+                    value={format(new Date(loan.transactions.at(-1)?.date ?? ''), 'PPP', { locale: dateLocale })}
+                  />
+                )}
+                <div className="grid grid-cols-2 gap-3">
+                  <AdditionalFieldInfoItems
+                    additionalFields={loan.additionalFields}
+                    configuration={project.configuration.loanAdditionalFields}
+                  />
+                </div>
               </div>
             </div>
           </div>
-          {/* Transactions */}
-          <div className="mt-4 space-y-1 border-t pt-4">
-            <LoanTransactions
-              loanId={loan.id}
-              transactions={loan.transactions}
-              loan={loan}
-              showBalanceSummary={false}
-              showAddTransaction={false}
-            />
-            <LoanAddTransactionControl loanId={loan.id} loan={loan} />
-            <LoanBalanceSummary loan={loan} readOnly={false} />
+          <div className="border-t pb-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 lg:items-stretch">
+              <div className="space-y-1 px-4 py-4">
+                <LoanTransactions
+                  loanId={loan.id}
+                  transactions={loan.transactions}
+                  loan={loan}
+                  showBalanceSummary={false}
+                  showAddTransaction={false}
+                />
+                <LoanAddTransactionControl loanId={loan.id} loan={loan} />
+              </div>
+              <div className="flex min-h-0 flex-col border-t border-border lg:border-t-0 lg:border-l lg:border-border">
+                <div className="flex flex-1 flex-col space-y-3 px-4 pb-4 pt-4 lg:py-4 lg:pl-6 lg:pr-4">
+                  <LoanBalanceSummary loan={loan} readOnly={false} />
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       <ConfirmDialog
