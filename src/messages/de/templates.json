@@ -81,7 +81,34 @@
       "bubbleRemovePlaceholder": "Platzhalter entfernen",
       "bubbleBold": "Fett",
       "bubbleItalic": "Kursiv",
-      "bubbleUnderline": "Unterstrichen"
+      "bubbleUnderline": "Unterstrichen",
+      "groupDescriptions": {
+        "additionalLender": "Frei konfigurierbare Zusatzfelder am Darlehensgeber.",
+        "additionalLoan": "Frei konfigurierbare Zusatzfelder am Darlehensvertrag.",
+        "loops": "Wiederholungsblöcke für Listen (z. B. alle Darlehen oder Transaktionen).",
+        "entity": {
+          "config": "Firmen- und Kontaktdaten aus der Projektkonfiguration.",
+          "user": "Angaben zur aktuell angemeldeten Nutzer:in.",
+          "lender": "Stammdaten und Kennzahlen eines Darlehensgebers.",
+          "loan": "Vertrags- und Saldoangaben eines Darlehens.",
+          "latestTransaction": "Werte aus der letzten Transaktion des Darlehens.",
+          "lenderYearly": "Jahreswerte und Bewegungen auf Gesamtebene.",
+          "loanYearly": "Jahreswerte je Darlehensvertrag innerhalb der Schleife.",
+          "transaction": "Einzelne Buchung innerhalb eines Darlehens.",
+          "note": "Notiz zu einem Darlehen oder passendem Kontext.",
+          "platform": "App-weite Metaangaben (z. B. Plattformname).",
+          "page": "Seitennummerierung für mehrseitige PDFs.",
+          "project": "Name und technische ID des Projekts.",
+          "misc": "Unabhängig von Datensätzen (z. B. aktuelles Datum)."
+        },
+        "loopChild": {
+          "loans": "Felder eines einzelnen Darlehens innerhalb der Darlehens-Schleife.",
+          "transactions": "Felder einer Transaktion innerhalb der Transaktions-Schleife.",
+          "notes": "Felder einer Notiz innerhalb der Notiz-Schleife.",
+          "transactionsYearly": "Transaktionsfelder in der Jahresdarstellung.",
+          "lenders": "Felder eines einzelnen Darlehensgebers innerhalb der Geber-Schleife."
+        }
+      }
     },
     "sidebar": {
       "tabToolbox": "Blöcke",
@@ -95,15 +122,15 @@
     "toolbox": {
       "title": "Blöcke",
       "tabBasic": "Basis",
-      "tabPredefined": "Vordefiniert",
+      "tabPredefined": "Schablonen",
       "layout": "Layout",
       "text": "Text",
       "button": "Button",
       "image": "Bild",
       "table": "Tabelle",
-      "predefinedEmpty": "Keine vordefinierten Blöcke für diesen Vorlagentyp vorhanden.",
-      "predefinedLoading": "Blöcke werden geladen…",
-      "predefinedDeleted": "Block gelöscht"
+      "predefinedEmpty": "Keine Schablonen für diesen Vorlagentyp vorhanden.",
+      "predefinedLoading": "Schablonen werden geladen…",
+      "predefinedDeleted": "Schablone gelöscht"
     },
     "settings": {
       "title": "Einstellungen",
@@ -134,9 +161,9 @@
         "tabStyle": "Stil",
         "tabBlock": "Block",
         "loopKey": "Datenquelle",
-        "staticContainer": "Statischer Container (kein Loop)",
+        "staticContainer": "Keine Wiederholung",
         "dynamicHint": "Der Container wird fuer jedes Element der Datenquelle wiederholt.",
-        "staticHint": "Der Container wird genau einmal gerendert.",
+        "staticHint": "Der Container wird genau einmal angezeigt.",
         "layout": "Layout",
         "layout_vertical": "Vertikal (untereinander)",
         "layout_horizontal": "Horizontal (nebeneinander)",
@@ -169,25 +196,25 @@
         "borderStyle_dashed": "Gestrichelt",
         "borderStyle_dotted": "Gepunktet",
         "borderStyle_double": "Doppelt",
-        "saveAsBlock": "Als Block speichern",
-        "saveAsBlockTitle": "Vordefinierten Block erstellen",
+        "saveAsBlock": "Als Schablone speichern",
+        "saveAsBlockTitle": "Schablone erstellen",
         "blockName": "Name",
         "blockNamePlaceholder": "z.B. Kopfzeile",
         "blockDescription": "Beschreibung",
-        "blockDescriptionPlaceholder": "Kurze Beschreibung des Blocks",
+        "blockDescriptionPlaceholder": "Kurze Beschreibung der Schablone",
         "blockDatasets": "Kompatible Datensätze",
-        "blockDatasetsHint": "Der Block wird nur für Vorlagen mit diesen Datensätzen angezeigt.",
+        "blockDatasetsHint": "Die Schablone wird nur für Vorlagen mit diesen Datensätzen angezeigt.",
         "blockTemplateTypes": "Vorlagentypen",
-        "blockTemplateTypesHint": "Der Block erscheint nur in Editoren für diese Vorlagentypen.",
+        "blockTemplateTypesHint": "Die Schablone erscheint nur in Editoren für diese Vorlagentypen.",
         "blockTemplateType_EMAIL": "E-Mail",
         "blockTemplateType_DOCUMENT": "Dokument",
         "blockVisibility": "Sichtbarkeit",
         "blockVisibilityAll": "Alle Projektmanager",
         "blockVisibilityAdmin": "Nur Administratoren",
-        "blockSave": "Block speichern",
+        "blockSave": "Schablone speichern",
         "blockSaving": "Wird gespeichert…",
-        "blockSaved": "Block wurde gespeichert",
-        "blockSaveError": "Fehler beim Speichern des Blocks"
+        "blockSaved": "Schablone wurde gespeichert",
+        "blockSaveError": "Fehler beim Speichern der Schablone"
       },
       "image": {
         "imageUrl": "Bild URL",

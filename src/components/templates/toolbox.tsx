@@ -105,11 +105,11 @@ export const Toolbox = () => {
   return (
     <div className="space-y-3 p-4">
       <Tabs defaultValue="basic">
-        <TabsList variant="modern" className="mt-0 w-full">
-          <TabsTrigger variant="modern" size="sm" value="basic" className="flex-1">
+        <TabsList variant="modern" className="mt-0 flex w-full">
+          <TabsTrigger variant="modern" size="sm" value="basic" className="min-w-0 flex-1 md:flex-1">
             {t('toolbox.tabBasic')}
           </TabsTrigger>
-          <TabsTrigger variant="modern" size="sm" value="predefined" className="flex-1">
+          <TabsTrigger variant="modern" size="sm" value="predefined" className="min-w-0 flex-1 md:flex-1">
             {t('toolbox.tabPredefined')}
           </TabsTrigger>
         </TabsList>

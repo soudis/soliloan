@@ -765,11 +765,8 @@ export const TableSettings = () => {
 
   return (
     <div className="space-y-4 p-4">
-      <Tabs defaultValue="data">
+      <Tabs defaultValue="structure">
         <TabsList variant="modern" className="mt-0">
-          <TabsTrigger variant="modern" size="sm" value="data">
-            {t('tabData')}
-          </TabsTrigger>
           <TabsTrigger variant="modern" size="sm" value="structure">
             {t('tabStructure')}
           </TabsTrigger>
@@ -778,6 +775,9 @@ export const TableSettings = () => {
           </TabsTrigger>
           <TabsTrigger variant="modern" size="sm" value="cell">
             {t('tabCell')}
+          </TabsTrigger>
+          <TabsTrigger variant="modern" size="sm" value="data">
+            {t('tabData')}
           </TabsTrigger>
         </TabsList>
 

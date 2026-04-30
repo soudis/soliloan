@@ -24,15 +24,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { createPredefinedBlockAction } from '@/actions/templates/mutations/create-predefined-block';
 import { useEditorMetadata } from '@/components/templates/editor-context';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   BORDER_STYLE_OPTIONS,
@@ -442,17 +434,12 @@ export const ContainerSettings = () => {
     });
   };
 
-  const defaultTab = isStructural ? 'layout' : 'data';
+  const defaultTab = 'layout';
 
   return (
     <div className="space-y-4 p-4">
       <Tabs defaultValue={defaultTab}>
         <TabsList variant="modern" className="mt-0">
-          {!isStructural && (
-            <TabsTrigger variant="modern" size="sm" value="data">
-              {t('tabData')}
-            </TabsTrigger>
-          )}
           <TabsTrigger variant="modern" size="sm" value="layout">
             {t('tabLayout')}
           </TabsTrigger>
@@ -462,6 +449,11 @@ export const ContainerSettings = () => {
           {!isStructural && (
             <TabsTrigger variant="modern" size="sm" value="block">
               {t('tabBlock')}
+            </TabsTrigger>
+          )}
+          {!isStructural && (
+            <TabsTrigger variant="modern" size="sm" value="data">
+              {t('tabData')}
             </TabsTrigger>
           )}
         </TabsList>
@@ -804,32 +796,9 @@ function SaveAsBlockDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('saveAsBlockTitle')}</DialogTitle>
-          <DialogDescription>{t('blockDatasetsHint')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          <fieldset className="space-y-1.5">
-            <legend className="text-sm font-medium">{t('blockTemplateTypes')}</legend>
-            <p className="text-xs text-muted-foreground">{t('blockTemplateTypesHint')}</p>
-            <div className="flex flex-wrap gap-4 mt-1">
-              {(['EMAIL', 'DOCUMENT'] as const).map((tt) => (
-                <label key={tt} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={blockTemplateTypes.includes(tt)}
-                    onChange={(e) => {
-                      setBlockTemplateTypes((prev) =>
-                        e.target.checked ? [...prev, tt] : prev.filter((x) => x !== tt),
-                      );
-                    }}
-                    className="rounded border-zinc-300"
-                  />
-                  {t(`blockTemplateType_${tt}`)}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
           <div className="space-y-1.5">
             <label htmlFor="dlgBlockName" className="text-sm font-medium">
               {t('blockName')}
@@ -857,9 +826,30 @@ function SaveAsBlockDialog({
               className="w-full px-3 py-2 border rounded-md text-sm"
             />
           </div>
-
+          <fieldset className="space-y-1.5">
+            <legend className="text-sm font-medium">{t('blockTemplateTypes')}</legend>
+            <p className="text-xs text-muted-foreground">{t('blockTemplateTypesHint')}</p>
+            <div className="flex flex-wrap gap-4 mt-1">
+              {(['EMAIL', 'DOCUMENT'] as const).map((tt) => (
+                <label key={tt} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={blockTemplateTypes.includes(tt)}
+                    onChange={(e) => {
+                      setBlockTemplateTypes((prev) =>
+                        e.target.checked ? [...prev, tt] : prev.filter((x) => x !== tt),
+                      );
+                    }}
+                    className="rounded border-zinc-300"
+                  />
+                  {t(`blockTemplateType_${tt}`)}
+                </label>
+              ))}
+            </div>
+          </fieldset>
           <fieldset className="space-y-1.5">
             <legend className="text-sm font-medium">{t('blockDatasets')}</legend>
+            <p className="text-xs text-muted-foreground">{t('blockDatasetsHint')}</p>
             <div className="grid grid-cols-2 gap-2 mt-1">
               {Object.values(TemplateDataset).map((ds) => (
                 <label key={ds} className="flex items-center gap-2 text-sm">
@@ -899,10 +889,7 @@ function SaveAsBlockDialog({
           <button
             type="button"
             disabled={
-              !blockName.trim() ||
-              blockDatasets.length === 0 ||
-              blockTemplateTypes.length === 0 ||
-              isSavingBlock
+              !blockName.trim() || blockDatasets.length === 0 || blockTemplateTypes.length === 0 || isSavingBlock
             }
             onClick={handleSave}
             className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-zinc-900 text-white rounded-md hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"

@@ -13,6 +13,8 @@ type MergeTagItem = MergeTagField | MergeTagLoop;
 type MergeTagGroup = {
   key: string;
   label: string;
+  /** Hint shown under the title in the group select (translations). */
+  description: string;
   items: MergeTagItem[];
 };
 
@@ -65,6 +67,7 @@ export function MergeTagDropdown({
       .map((entity) => ({
         key: `entity:${entity}`,
         label: tFields(`categories.${entity}`),
+        description: tMergeTags(`groupDescriptions.entity.${entity}` as Parameters<typeof tMergeTags>[0]),
         items: entityMap.get(entity) ?? [],
       }))
       .filter((group) => group.items.length > 0);
@@ -73,6 +76,7 @@ export function MergeTagDropdown({
       nextGroups.push({
         key: 'additional:lender',
         label: `${tFields('categories.lender')} ${tMergeTags('additionalFieldsSuffix')}`,
+        description: tMergeTags('groupDescriptions.additionalLender'),
         items: config.additionalFields.lender,
       });
     }
@@ -81,6 +85,7 @@ export function MergeTagDropdown({
       nextGroups.push({
         key: 'additional:loan',
         label: `${tFields('categories.loan')} ${tMergeTags('additionalFieldsSuffix')}`,
+        description: tMergeTags('groupDescriptions.additionalLoan'),
         items: config.additionalFields.loan,
       });
     }
@@ -89,6 +94,7 @@ export function MergeTagDropdown({
       nextGroups.push({
         key: 'loops',
         label: tFields('categories.loops'),
+        description: tMergeTags('groupDescriptions.loops'),
         items: loopsShownInToolbar,
       });
     }
@@ -104,6 +110,7 @@ export function MergeTagDropdown({
         nextGroups.push({
           key: `loop-fields:${loop.key}`,
           label: `${loop.label} ${tMergeTags('childFieldsSuffix')}`,
+          description: tMergeTags(`groupDescriptions.loopChild.${loop.key}` as Parameters<typeof tMergeTags>[0]),
           items: loop.childFields,
         });
       }
@@ -184,13 +191,21 @@ export function MergeTagDropdown({
           <div className="space-y-1.5">
             <p className="text-xs font-medium text-foreground">{tMergeTags('groupLabel')}</p>
             <Select value={selectedGroupKey || undefined} onValueChange={setSelectedGroupKey}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="h-auto min-h-10 w-full whitespace-normal px-3 py-2 text-left [&>svg]:shrink-0">
                 <SelectValue placeholder={tMergeTags('groupPlaceholder')} />
               </SelectTrigger>
               <SelectContent className="z-[100002]" position="popper" data-merge-tag-dropdown-sub="">
                 {groups.map((group) => (
-                  <SelectItem key={group.key} value={group.key}>
-                    {group.label}
+                  <SelectItem
+                    key={group.key}
+                    value={group.key}
+                    textValue={`${group.label} ${group.description}`}
+                    className="!items-start py-2.5"
+                  >
+                    <span className="flex min-w-0 flex-col gap-0.5">
+                      <span className="font-medium leading-tight">{group.label}</span>
+                      <span className="text-xs leading-snug text-muted-foreground">{group.description}</span>
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
