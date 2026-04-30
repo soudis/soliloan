@@ -45,7 +45,7 @@ export const getLenderQuickActionTemplatesAction = authAction
     const templates = await db.communicationTemplate.findMany({
       where: {
         OR: [{ projectId }, { isGlobal: true }],
-        dataset: { in: ['LOAN', 'LENDER_YEARLY'] },
+        dataset: { in: ['LOAN', 'LENDER_YEARLY', 'PROJECT', 'PROJECT_YEARLY', 'LENDER'] },
         type: 'DOCUMENT',
         isPublic: true,
         AND: [
