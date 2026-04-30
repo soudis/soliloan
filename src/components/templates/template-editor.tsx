@@ -29,6 +29,7 @@ interface TemplateEditorProps {
     projectId: string | null;
     isGlobal: boolean;
     isSystem: boolean;
+    isPublic: boolean;
   };
   pageData: TemplateEditorPageData;
   projectId?: string;
@@ -124,6 +125,7 @@ export function TemplateEditor({ template, pageData, projectId, isAdmin = false 
               type: template.type,
               dataset: template.dataset,
               isSystem: template.isSystem,
+              isPublic: template.isPublic,
             }}
             systemOnly={template.isSystem}
             onSaved={() => {

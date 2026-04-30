@@ -1,4 +1,4 @@
-import type { TemplateDataset } from '@prisma/client';
+import type { TemplateDataset, TemplateType } from '@prisma/client';
 
 import { db } from '@/lib/db';
 import type { TemplateDownloadParseResult } from '@/lib/templates/template-download-query';
@@ -87,5 +87,57 @@ export async function assertManagerCanUseCommunicationTemplate(params: {
     return count > 0;
   }
 
+  return true;
+}
+
+/** Lenders may download public DOCUMENT templates for their own loan / lender yearly data only. */
+export async function assertLenderCanUsePublicCommunicationTemplate(params: {
+  userEmail: string | null | undefined;
+  template: TemplateAccessRow & { type: TemplateType; isPublic: boolean };
+  dataset: TemplateDataset;
+  parsed: Extract<TemplateDownloadParseResult, { ok: true }>;
+}): Promise<boolean> {
+  const { userEmail, template, dataset, parsed } = params;
+
+  if (!userEmail || template.type !== 'DOCUMENT' || !template.isPublic) {
+    return false;
+  }
+
+  if (dataset !== 'LOAN' && dataset !== 'LENDER_YEARLY') {
+    return false;
+  }
+
+  if (dataset === 'LOAN') {
+    const loan = await db.loan.findUnique({
+      where: { id: parsed.recordId },
+      select: {
+        lender: { select: { email: true, projectId: true } },
+      },
+    });
+    if (!loan || loan.lender.email !== userEmail) {
+      return false;
+    }
+    if (parsed.projectId && parsed.projectId !== loan.lender.projectId) {
+      return false;
+    }
+    if (template.projectId && template.projectId !== loan.lender.projectId) {
+      return false;
+    }
+    return true;
+  }
+
+  const lender = await db.lender.findUnique({
+    where: { id: parsed.recordId },
+    select: { email: true, projectId: true },
+  });
+  if (!lender || lender.email !== userEmail) {
+    return false;
+  }
+  if (parsed.projectId && parsed.projectId !== lender.projectId) {
+    return false;
+  }
+  if (template.projectId && template.projectId !== lender.projectId) {
+    return false;
+  }
   return true;
 }

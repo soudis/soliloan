@@ -7,8 +7,8 @@ import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { duplicateTemplateAction } from '@/actions/templates/mutations/duplicate-template';
 import { deleteTemplateAction } from '@/actions/templates/mutations/delete-template';
+import { duplicateTemplateAction } from '@/actions/templates/mutations/duplicate-template';
 import {
   getProjectSystemTemplatesOverviewAction,
   type ProjectSystemTemplateOverviewRow,
@@ -104,6 +104,11 @@ export function ProjectSystemTemplatesTable({ projectId }: ProjectSystemTemplate
             ) : (
               <Badge variant="outline" className="text-xs">
                 {t('list.system')}
+              </Badge>
+            )}
+            {row.original.type === 'DOCUMENT' && row.original.isPublic && (
+              <Badge variant="outline" className="text-xs">
+                {t('list.publicLender')}
               </Badge>
             )}
           </div>

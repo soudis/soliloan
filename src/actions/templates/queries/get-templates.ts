@@ -18,6 +18,7 @@ const globalTemplateListSelect = {
   projectId: true,
   createdAt: true,
   updatedAt: true,
+  isPublic: true,
   project: {
     select: {
       id: true,

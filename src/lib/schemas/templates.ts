@@ -11,6 +11,8 @@ export const templateBaseSchema = z.object({
   subjectOrFilename: z.string().max(500).nullable().optional(),
   type: z.enum(TemplateType),
   dataset: z.enum(TemplateDataset),
+  /** DOCUMENT only: visible to lenders in portal; ignored for EMAIL. */
+  isPublic: z.boolean().optional(),
 });
 
 // Create template schema
@@ -29,6 +31,7 @@ export const updateTemplateSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   description: z.string().max(500).nullable().optional(),
   subjectOrFilename: z.string().max(500).nullable().optional(),
+  isPublic: z.boolean().optional(),
   designJson: z.record(z.string(), z.any()).optional(),
   htmlContent: z.string().nullable().optional(),
 });
@@ -77,6 +80,14 @@ export const getQuickActionTemplatesSchema = z.object({
 });
 
 export type GetQuickActionTemplatesFormData = z.infer<typeof getQuickActionTemplatesSchema>;
+
+/** Public document templates for authenticated lenders (loan must belong to the user’s lender identity). */
+export const getLenderQuickActionTemplatesSchema = z.object({
+  projectId: z.string(),
+  loanId: z.string(),
+});
+
+export type GetLenderQuickActionTemplatesFormData = z.infer<typeof getLenderQuickActionTemplatesSchema>;
 
 export const sendCommunicationTemplateEmailSchema = z.object({
   templateId: z.string(),

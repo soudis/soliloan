@@ -262,6 +262,8 @@ model CommunicationTemplate {
   dataset     TemplateDataset
   designJson  Json
   htmlContent String?
+  /** DOCUMENT only: lenders with portal access can download from their loan dashboard when true. */
+  isPublic    Boolean         @default(false)
   isGlobal    Boolean         @default(false)
   isSystem    Boolean         @default(false)
   systemKey   String?

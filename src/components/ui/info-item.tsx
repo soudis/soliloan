@@ -46,7 +46,7 @@ export function InfoItem({
 
   return (
     <div className={cn('flex flex-col gap-1', className)}>
-      <div className="text-sm text-muted-foreground">{label}</div>
+      <div className="text-xs text-muted-foreground">{label}</div>
       {value ? (
         <div className="flex items-center justify-between items-start">
           <div className="text-lg font-medium">{value}</div>

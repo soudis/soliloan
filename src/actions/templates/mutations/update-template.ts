@@ -11,7 +11,7 @@ export const updateTemplateAction = templateAction
   .action(async ({ parsedInput: data }) => {
     const existing = await db.communicationTemplate.findUnique({
       where: { id: data.templateId },
-      select: { isSystem: true },
+      select: { isSystem: true, type: true },
     });
     if (!existing) {
       throw new Error('error.template.notFound');
@@ -25,11 +25,17 @@ export const updateTemplateAction = templateAction
       throw new Error('error.template.systemFieldsOnly');
     }
 
+    const optionalPublicChange =
+      data.isPublic !== undefined && existing.type === 'DOCUMENT'
+        ? { isPublic: data.isPublic }
+        : {};
+
     const dataToApply = existing.isSystem
       ? {
           ...(data.subjectOrFilename !== undefined && { subjectOrFilename: data.subjectOrFilename }),
           ...(data.designJson !== undefined && { designJson: data.designJson }),
           ...(data.htmlContent !== undefined && { htmlContent: data.htmlContent }),
+          ...(existing.type === 'DOCUMENT' ? optionalPublicChange : {}),
         }
       : {
           ...(data.name !== undefined && { name: data.name }),
@@ -37,6 +43,7 @@ export const updateTemplateAction = templateAction
           ...(data.subjectOrFilename !== undefined && { subjectOrFilename: data.subjectOrFilename }),
           ...(data.designJson !== undefined && { designJson: data.designJson }),
           ...(data.htmlContent !== undefined && { htmlContent: data.htmlContent }),
+          ...optionalPublicChange,
         };
 
     if (Object.keys(dataToApply).length === 0) {

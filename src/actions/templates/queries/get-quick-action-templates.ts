@@ -16,6 +16,7 @@ const quickSelect = {
   isSystem: true,
   systemKey: true,
   projectId: true,
+  isPublic: true,
 } as const satisfies Prisma.CommunicationTemplateSelect;
 
 /**

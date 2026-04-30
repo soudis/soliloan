@@ -56,6 +56,7 @@ export const duplicateTemplateAction = authAction
         dataset: sourceTemplate.dataset,
         designJson: sourceTemplate.designJson ?? {},
         htmlContent: sourceTemplate.htmlContent,
+        isPublic: sourceTemplate.type === 'DOCUMENT' ? sourceTemplate.isPublic : false,
         isGlobal,
         // Project-level copy of a system template keeps the same key for lookup (global fallback + override).
         systemKey: data.projectId ? sourceTemplate.systemKey : undefined,

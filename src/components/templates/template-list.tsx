@@ -99,47 +99,55 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
     setTemplateToDelete(null);
   };
 
-  const columns = useMemo<ColumnDef<CommunicationTemplateWithProject>[]>(() => [
-    {
-      accessorKey: 'name',
-      header: t('list.columns.name'),
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          {row.original.type === 'EMAIL' ? (
-            <Mail className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          )}
-          <span className="font-medium">{row.original.name}</span>
-          {row.original.isSystem && (
-            <Badge variant="default" className="text-xs">
-              {t('list.system')}
-            </Badge>
-          )}
-          {row.original.isGlobal && !row.original.isSystem && (
-            <Badge variant="secondary" className="text-xs">
-              {t('list.global')}
-            </Badge>
-          )}
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'type',
-      header: t('list.columns.type'),
-      cell: ({ row }) => <span>{row.original.type === 'EMAIL' ? t('types.email') : t('types.document')}</span>,
-    },
-    {
-      accessorKey: 'dataset',
-      header: t('list.columns.dataset'),
-      cell: ({ row }) => <span>{getDatasetDisplayName(row.original.dataset)}</span>,
-    },
-    {
-      accessorKey: 'createdAt',
-      header: t('list.columns.createdAt'),
-      cell: ({ row }) => <span>{new Intl.DateTimeFormat('de-DE').format(new Date(row.original.createdAt))}</span>,
-    },
-  ], [t]);
+  const columns = useMemo<ColumnDef<CommunicationTemplateWithProject>[]>(
+    () => [
+      {
+        accessorKey: 'name',
+        header: t('list.columns.name'),
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2">
+            {row.original.type === 'EMAIL' ? (
+              <Mail className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            )}
+            <span className="font-medium">{row.original.name}</span>
+            {row.original.isSystem && (
+              <Badge variant="default" className="text-xs">
+                {t('list.system')}
+              </Badge>
+            )}
+            {row.original.isGlobal && !row.original.isSystem && (
+              <Badge variant="secondary" className="text-xs">
+                {t('list.global')}
+              </Badge>
+            )}
+            {row.original.type === 'DOCUMENT' && row.original.isPublic && (
+              <Badge variant="outline" className="text-xs">
+                {t('list.publicLender')}
+              </Badge>
+            )}
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'type',
+        header: t('list.columns.type'),
+        cell: ({ row }) => <span>{row.original.type === 'EMAIL' ? t('types.email') : t('types.document')}</span>,
+      },
+      {
+        accessorKey: 'dataset',
+        header: t('list.columns.dataset'),
+        cell: ({ row }) => <span>{getDatasetDisplayName(row.original.dataset)}</span>,
+      },
+      {
+        accessorKey: 'createdAt',
+        header: t('list.columns.createdAt'),
+        cell: ({ row }) => <span>{new Intl.DateTimeFormat('de-DE').format(new Date(row.original.createdAt))}</span>,
+      },
+    ],
+    [t],
+  );
 
   const rowActions = useCallback(
     (row: CommunicationTemplateWithProject) => (

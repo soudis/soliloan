@@ -17,12 +17,15 @@ export type ProjectSystemTemplateOverviewRow = {
   description: string | null;
   type: 'EMAIL' | 'DOCUMENT';
   dataset: TemplateDataset;
+  /** DOCUMENT: lender portal visibility when true. */
+  isPublic: boolean;
   /** ISO timestamp (serialized from server action payload). */
   createdAt: string;
 };
 
-export const getProjectSystemTemplatesOverviewAction = projectAction.inputSchema(projectIdSchema).action(
-  async ({ parsedInput: { projectId } }) => {
+export const getProjectSystemTemplatesOverviewAction = projectAction
+  .inputSchema(projectIdSchema)
+  .action(async ({ parsedInput: { projectId } }) => {
     const globals = await db.communicationTemplate.findMany({
       where: {
         isGlobal: true,
@@ -43,6 +46,7 @@ export const getProjectSystemTemplatesOverviewAction = projectAction.inputSchema
         dataset: true,
         systemKey: true,
         createdAt: true,
+        isPublic: true,
       },
     });
 
@@ -60,11 +64,12 @@ export const getProjectSystemTemplatesOverviewAction = projectAction.inputSchema
         dataset: true,
         systemKey: true,
         createdAt: true,
+        isPublic: true,
       },
     });
 
     const overrideBySystemKey = new Map(
-      overrides.flatMap((t) => (t.systemKey != null ? [[t.systemKey, t]] as const : [])),
+      overrides.flatMap((t) => (t.systemKey != null ? ([[t.systemKey, t]] as const) : [])),
     );
 
     const rows: ProjectSystemTemplateOverviewRow[] = globals
@@ -81,10 +86,10 @@ export const getProjectSystemTemplatesOverviewAction = projectAction.inputSchema
           description: display.description,
           type: display.type as 'EMAIL' | 'DOCUMENT',
           dataset: display.dataset,
+          isPublic: display.isPublic,
           createdAt: display.createdAt.toISOString(),
         };
       });
 
     return { rows };
-  },
-);
+  });

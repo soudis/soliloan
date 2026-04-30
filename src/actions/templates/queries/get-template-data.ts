@@ -7,33 +7,31 @@ import { db } from '@/lib/db';
 import { lenderIdSchema, projectSampleListSchema } from '@/lib/schemas/common';
 import { getMergeTagValuesInputSchema } from '@/lib/schemas/templates';
 import { getTemplateData, type TemplateDataOptions } from '@/lib/templates/template-data';
-import { adminAction, lenderAction, managerAction, projectAction } from '@/lib/utils/safe-action';
+import { adminAction, authAction, lenderAction, managerAction, projectAction } from '@/lib/utils/safe-action';
 
 /**
  * All projects (id + display name) for global template preview sample data.
  * Admin-only; used when a global template has no `projectId` and the editor has no project from the route.
  */
-export const getProjectsForTemplateSampleAction = adminAction
-  .inputSchema(z.object({}))
-  .action(async () => {
-    const projects = await db.project.findMany({
-      select: {
-        id: true,
-        configuration: {
-          select: { name: true },
-        },
+export const getProjectsForTemplateSampleAction = adminAction.inputSchema(z.object({})).action(async () => {
+  const projects = await db.project.findMany({
+    select: {
+      id: true,
+      configuration: {
+        select: { name: true },
       },
-      orderBy: {
-        configuration: {
-          name: 'asc',
-        },
+    },
+    orderBy: {
+      configuration: {
+        name: 'asc',
       },
-    });
-    return projects.map((p) => ({
-      id: p.id,
-      name: p.configuration?.name?.trim() ? p.configuration.name : p.id,
-    }));
+    },
   });
+  return projects.map((p) => ({
+    id: p.id,
+    name: p.configuration?.name?.trim() ? p.configuration.name : p.id,
+  }));
+});
 
 const sampleLenderSelect = {
   id: true,
@@ -115,26 +113,32 @@ async function fetchSampleTransactionsForProject(projectId: string, take: number
 /**
  * Get sample lenders for preview selection (simplified view)
  */
-export const getSampleLendersAction = projectAction.inputSchema(projectSampleListSchema).action(async ({ parsedInput }) => {
-  const { projectId, limit = 10 } = parsedInput;
-  return fetchSampleLendersForProject(projectId, limit);
-});
+export const getSampleLendersAction = projectAction
+  .inputSchema(projectSampleListSchema)
+  .action(async ({ parsedInput }) => {
+    const { projectId, limit = 10 } = parsedInput;
+    return fetchSampleLendersForProject(projectId, limit);
+  });
 
 /**
  * Get sample loans for preview selection (simplified view)
  */
-export const getSampleLoansAction = projectAction.inputSchema(projectSampleListSchema).action(async ({ parsedInput }) => {
-  const { projectId, limit = 10 } = parsedInput;
-  return fetchSampleLoansForProject(projectId, limit);
-});
+export const getSampleLoansAction = projectAction
+  .inputSchema(projectSampleListSchema)
+  .action(async ({ parsedInput }) => {
+    const { projectId, limit = 10 } = parsedInput;
+    return fetchSampleLoansForProject(projectId, limit);
+  });
 
 /**
  * Sample transactions for `TRANSACTION` dataset template preview (merge data uses transaction id).
  */
-export const getSampleTransactionsAction = projectAction.inputSchema(projectSampleListSchema).action(async ({ parsedInput }) => {
-  const { projectId, limit = 20 } = parsedInput;
-  return fetchSampleTransactionsForProject(projectId, limit);
-});
+export const getSampleTransactionsAction = projectAction
+  .inputSchema(projectSampleListSchema)
+  .action(async ({ parsedInput }) => {
+    const { projectId, limit = 20 } = parsedInput;
+    return fetchSampleTransactionsForProject(projectId, limit);
+  });
 
 /**
  * Enforces that the manager may load merge data for the given dataset/ids (admins: full access).
@@ -243,32 +247,54 @@ async function assertCanAccessMergeTagData(
 /**
  * Get template data for preview replacement and live rendering.
  */
-export const getMergeTagValuesAction = managerAction.inputSchema(getMergeTagValuesInputSchema).action(
-  async ({ ctx, parsedInput }) => {
+export const getMergeTagValuesAction = managerAction
+  .inputSchema(getMergeTagValuesInputSchema)
+  .action(async ({ ctx, parsedInput }) => {
     const { dataset, recordId, locale, projectId, year } = parsedInput;
     await assertCanAccessMergeTagData(ctx.session.user, { dataset, recordId, projectId });
     const options: TemplateDataOptions | undefined = year != null && Number.isFinite(year) ? { year } : undefined;
     return getTemplateData(dataset, recordId, locale, projectId, options);
-  },
-);
+  });
 
 /**
  * Years available for `LENDER_YEARLY` sample data: from first lender transaction through last complete calendar year.
  */
+async function buildLenderYearsList(lenderId: string): Promise<number[]> {
+  const lastCompleteYear = new Date().getFullYear() - 1;
+  const agg = await db.transaction.aggregate({
+    where: { loan: { lenderId } },
+    _min: { date: true },
+  });
+  const minDate = agg._min.date;
+  if (!minDate) return [];
+  const firstYear = new Date(minDate).getFullYear();
+  const years: number[] = [];
+  for (let y = firstYear; y <= lastCompleteYear; y++) {
+    years.push(y);
+  }
+  return years.reverse();
+}
+
 export const getSampleLenderYearsAction = lenderAction
   .schema(lenderIdSchema)
   .action(async ({ parsedInput: { lenderId } }) => {
-    const lastCompleteYear = new Date().getFullYear() - 1;
-    const agg = await db.transaction.aggregate({
-      where: { loan: { lenderId } },
-      _min: { date: true },
-    });
-    const minDate = agg._min.date;
-    if (!minDate) return [];
-    const firstYear = new Date(minDate).getFullYear();
-    const years: number[] = [];
-    for (let y = firstYear; y <= lastCompleteYear; y++) {
-      years.push(y);
+    return buildLenderYearsList(lenderId);
+  });
+
+/** Lender portal: same year list as managers, but only for the signed-in lender identity. */
+export const getLenderSampleLenderYearsAction = authAction
+  .inputSchema(lenderIdSchema)
+  .action(async ({ parsedInput: { lenderId }, ctx }) => {
+    const email = ctx.session.user.email;
+    if (!email) {
+      throw new Error('error.unauthorized');
     }
-    return years.reverse();
+    const lender = await db.lender.findUnique({
+      where: { id: lenderId },
+      select: { email: true },
+    });
+    if (!lender || lender.email !== email) {
+      throw new Error('error.unauthorized');
+    }
+    return buildLenderYearsList(lenderId);
   });

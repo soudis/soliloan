@@ -7,18 +7,15 @@ import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-
-import { getQuickActionTemplatesAction } from '@/actions/templates/queries/get-quick-action-templates';
 import { sendCommunicationTemplateEmailAction } from '@/actions/templates/mutations/send-communication-template-email';
-import { getSampleLenderYearsAction } from '@/actions/templates/queries/get-template-data';
-import { Button } from '@/components/ui/button';
+import { getLenderQuickActionTemplatesAction } from '@/actions/templates/queries/get-lender-quick-action-templates';
+import { getQuickActionTemplatesAction } from '@/actions/templates/queries/get-quick-action-templates';
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  getLenderSampleLenderYearsAction,
+  getSampleLenderYearsAction,
+} from '@/actions/templates/queries/get-template-data';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,13 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { buildTemplateUseSearchParams } from '@/lib/templates/template-download-query';
 import { cn } from '@/lib/utils';
 
@@ -57,6 +48,11 @@ export type TemplateQuickActionsProps = {
   lenderId: string;
   loanId?: string;
   transactionId?: string;
+  /**
+   * Lender portal: public DOCUMENT templates only (same loan card as managers, no e-mail).
+   * Requires `loanId`.
+   */
+  lenderSelfService?: boolean;
   /**
    * `default`: outline buttons with optional label on sm+ (lender header).
    * `toolbar`: ghost icon buttons `h-8 w-8` (loan card toolbar, next to edit/delete).
@@ -85,33 +81,50 @@ export function TemplateQuickActions({
   loanId,
   transactionId,
   density = 'default',
+  lenderSelfService = false,
 }: TemplateQuickActionsProps) {
   const t = useTranslations('dashboard.lenders.templateQuickActions');
   const [yearDialogOpen, setYearDialogOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [pendingYearly, setPendingYearly] = useState<PendingYearly | null>(null);
 
-  const datasets = datasetsForMode(mode);
+  const managerDatasets = datasetsForMode(mode);
+  const datasets: TemplateDataset[] = lenderSelfService ? ['LOAN', 'LENDER_YEARLY'] : [...managerDatasets];
 
   const { data: templates = [], isLoading } = useQuery({
-    queryKey: ['quick-action-templates', projectId, datasets.join(',')],
+    queryKey: lenderSelfService
+      ? ['lender-quick-action-templates', projectId, loanId]
+      : ['quick-action-templates', projectId, datasets.join(',')],
     queryFn: async () => {
+      if (lenderSelfService) {
+        if (!loanId) return [];
+        const result = await getLenderQuickActionTemplatesAction({ projectId, loanId });
+        if (result?.serverError) {
+          return [];
+        }
+        return result.data?.templates ?? [];
+      }
       const result = await getQuickActionTemplatesAction({ projectId, datasets });
       if (result?.serverError) {
         return [];
       }
       return result.data?.templates ?? [];
     },
-    enabled: !!projectId && datasets.length > 0,
+    enabled: !!projectId && (lenderSelfService ? !!loanId : managerDatasets.length > 0),
   });
 
   const docTemplates = templates.filter((tpl) => tpl.type === 'DOCUMENT');
-  const emailTemplates = templates.filter((tpl) => tpl.type === 'EMAIL');
+  const emailTemplates = lenderSelfService ? [] : templates.filter((tpl) => tpl.type === 'EMAIL');
 
   const { data: lenderYears = [], isLoading: yearsLoading } = useQuery({
-    queryKey: ['lender-sample-years', lenderId],
+    queryKey: lenderSelfService ? ['lender-lender-sample-years', lenderId] : ['lender-sample-years', lenderId],
     queryFn: async () => {
       if (!lenderId) return [];
+      if (lenderSelfService) {
+        const result = await getLenderSampleLenderYearsAction({ lenderId });
+        if (result?.serverError) return [];
+        return result.data ?? [];
+      }
       const result = await getSampleLenderYearsAction({ lenderId });
       if (result?.serverError) return [];
       return result.data ?? [];
@@ -168,7 +181,7 @@ export function TemplateQuickActions({
 
   function handlePickTemplate(template: QuickTemplateRow, action: 'download' | 'email') {
     if (template.dataset === 'LENDER_YEARLY') {
-      startYearlyFlow({ template, action });
+      startYearlyFlow({ template, action: lenderSelfService ? 'download' : action });
       return;
     }
     if (action === 'download') {
@@ -192,16 +205,15 @@ export function TemplateQuickActions({
     setPendingYearly(null);
   }
 
+  if (lenderSelfService && !loanId) {
+    return null;
+  }
+
   if (isLoading || (docTemplates.length === 0 && emailTemplates.length === 0)) {
     return null;
   }
 
-  const triggerClass =
-    density === 'compact'
-      ? 'h-7 w-7'
-      : density === 'toolbar'
-        ? 'h-8 w-8'
-        : 'h-9 px-3 sm:px-3';
+  const triggerClass = density === 'compact' ? 'h-7 w-7' : density === 'toolbar' ? 'h-8 w-8' : 'h-9 px-3 sm:px-3';
 
   const isIconTrigger = density === 'compact' || density === 'toolbar';
   const iconClassName = density === 'default' ? 'h-4 w-4' : 'h-3.5 w-3.5';
@@ -300,11 +312,7 @@ export function TemplateQuickActions({
             <Button type="button" variant="outline" onClick={() => setYearDialogOpen(false)}>
               {t('cancel')}
             </Button>
-            <Button
-              type="button"
-              onClick={() => void confirmYearly()}
-              disabled={selectedYear == null || yearsLoading}
-            >
+            <Button type="button" onClick={() => void confirmYearly()} disabled={selectedYear == null || yearsLoading}>
               {t('confirm')}
             </Button>
           </DialogFooter>

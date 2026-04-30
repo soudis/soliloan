@@ -56,6 +56,7 @@ export default async function ProjectTemplateEditorPage({ params, searchParams }
           projectId: data.template.projectId,
           isGlobal: data.template.isGlobal,
           isSystem: data.template.isSystem,
+          isPublic: data.template.isPublic,
         }}
         pageData={pageData}
         projectId={projectId}

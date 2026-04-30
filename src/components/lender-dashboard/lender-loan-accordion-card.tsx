@@ -2,16 +2,15 @@
 
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
-import { ChevronDown } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { ProjectLogo } from '@/components/dashboard/project-logo';
+import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { InfoItem } from '@/components/ui/info-item';
-import { cn, formatCurrency, formatPercentage, getLenderName } from '@/lib/utils';
+import { formatCurrency, formatPercentage, getLenderName } from '@/lib/utils';
 import { formatAddressPlace } from '@/lib/utils/format';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
-
 import { BalanceTable } from '../loans/balance-table';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 import { LoanTransactions } from '../loans/loan-transactions';
@@ -94,6 +93,22 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
                 <span>{format(new Date(loan.signDate), 'PP', { locale: dateLocale })}</span>
               </div>
             </div>
+            {/* biome-ignore lint/a11y/useKeyWithClickEvents: toolbar stops accordion toggle only */}
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              className="flex items-center"
+            >
+              <TemplateQuickActions
+                lenderSelfService
+                projectId={lender.projectId}
+                mode="loan"
+                lenderId={lender.id}
+                loanId={loan.id}
+                density="default"
+              />
+            </div>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
             <div>
@@ -103,19 +118,6 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
             <LoanStatusBadge status={loan.status} />
           </div>
         </div>
-        <button
-          type="button"
-          aria-expanded={isOpen}
-          className="shrink-0 self-center rounded-md p-2 hover:bg-muted"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleToggle();
-          }}
-        >
-          <ChevronDown
-            className={cn('h-5 w-5 text-muted-foreground transition-transform duration-200', isOpen && 'rotate-180')}
-          />
-        </button>
       </div>
 
       {isOpen && (
