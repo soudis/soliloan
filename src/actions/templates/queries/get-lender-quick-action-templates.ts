@@ -60,8 +60,9 @@ export const getLenderQuickActionTemplatesAction = authAction
 
     return {
       // filter out system templates that have a project clone
-      templates: templates.filter((tpl) =>
-        templates.some((t) => t.systemKey === tpl.systemKey && tpl.id !== t.id && !t.projectId),
+      templates: templates.filter(
+        (tpl) =>
+          !templates.some((t) => t.systemKey === tpl.systemKey && tpl.id !== t.id && !!t.projectId && !tpl.projectId),
       ),
     };
   });

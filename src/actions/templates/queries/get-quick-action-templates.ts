@@ -41,10 +41,7 @@ export const getQuickActionTemplatesAction = managerAction
         type: { in: ['EMAIL', 'DOCUMENT'] },
         AND: [
           {
-            OR: [
-              { systemKey: null },
-              { systemKey: { notIn: [...STARTER_TEMPLATE_SYSTEM_KEYS] } },
-            ],
+            OR: [{ systemKey: null }, { systemKey: { notIn: [...STARTER_TEMPLATE_SYSTEM_KEYS] } }],
           },
         ],
       },
@@ -52,5 +49,10 @@ export const getQuickActionTemplatesAction = managerAction
       orderBy: [{ isGlobal: 'desc' }, { name: 'asc' }],
     });
 
-    return { templates };
+    return {
+      templates: templates.filter(
+        (tpl) =>
+          !templates.some((t) => t.systemKey === tpl.systemKey && tpl.id !== t.id && !!t.projectId && !tpl.projectId),
+      ),
+    };
   });
