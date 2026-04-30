@@ -48,10 +48,12 @@ export const MergeTag = Node.create<MergeTagOptions>({
   group: 'inline',
 
   inline: true,
-  draggable: true,
+  draggable: false,
   selectable: true,
 
   atom: true, // Treated as a single unit, cannot be edited
+
+  marks: 'bold italic underline',
 
   addOptions() {
     return {
@@ -121,7 +123,7 @@ export const MergeTag = Node.create<MergeTagOptions>({
         'data-merge-tag-id': node.attrs.id,
         'data-merge-tag-label': node.attrs.label,
       }),
-      `{{${node.attrs.label || node.attrs.value}}}`,
+      `${node.attrs.label || node.attrs.value}`,
     ];
   },
 

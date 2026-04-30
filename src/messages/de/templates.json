@@ -76,7 +76,12 @@
       "loopSuffix": "Schleife",
       "childFieldsSuffix": "Felder",
       "additionalFieldsSuffix": "Zusatzfelder",
-      "loopBodyPlaceholder": "Schleifeninhalt eingeben …"
+      "loopBodyPlaceholder": "Schleifeninhalt eingeben …",
+      "bubbleFieldLabel": "Platzhalter",
+      "bubbleRemovePlaceholder": "Platzhalter entfernen",
+      "bubbleBold": "Fett",
+      "bubbleItalic": "Kursiv",
+      "bubbleUnderline": "Unterstrichen"
     },
     "sidebar": {
       "tabToolbox": "Blöcke",

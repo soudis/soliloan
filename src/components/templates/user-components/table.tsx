@@ -2,17 +2,7 @@
 
 import { useNode } from '@craftjs/core';
 import { EditorContent } from '@tiptap/react';
-import { BubbleMenu } from '@tiptap/react/menus';
-import {
-  AlignCenter,
-  AlignJustify,
-  AlignLeft,
-  AlignRight,
-  Bold,
-  Italic,
-  PlusCircle,
-  Underline as UnderlineIcon,
-} from 'lucide-react';
+import { AlignCenter, AlignJustify, AlignLeft, AlignRight, PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -26,6 +16,7 @@ import { useMergeTagConfig } from '../merge-tag-context';
 import { MergeTagDropdown } from '../merge-tag-dropdown';
 import { useMergeTagInsertionLoops } from '../use-merge-tag-insertion-loops';
 import { editorRegistry, useEditorRegistry } from './tiptap/editor-registry';
+import { TemplateTiptapBubbleMenu } from './tiptap/template-tiptap-bubble-menu';
 import { useTiptapEditor } from './tiptap/use-tiptap-editor';
 import './tiptap/tiptap.css';
 
@@ -330,43 +321,7 @@ const TiptapCell = ({
       className={`px-2 py-1.5 min-h-[1.5em] ${isHeader ? 'font-semibold' : ''}`}
       style={{ textAlign, color, fontSize }}
     >
-      {editor && editable && (
-        <BubbleMenu
-          editor={editor}
-          pluginKey={`bubbleMenu-${cellId}`}
-          shouldShow={({ editor }) => !editor.state.selection.empty}
-        >
-          <div className="flex bg-zinc-900 text-white rounded-md shadow-lg border border-zinc-800 p-0.5 z-[1000] overflow-hidden">
-            <button
-              type="button"
-              onClick={() => editor.chain().focus().toggleBold().run()}
-              className={`p-1.5 hover:bg-zinc-800 rounded transition-colors ${
-                editor.isActive('bold') ? 'text-blue-400 bg-zinc-800' : 'text-zinc-400'
-              }`}
-            >
-              <Bold className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => editor.chain().focus().toggleItalic().run()}
-              className={`p-1.5 hover:bg-zinc-800 rounded transition-colors ${
-                editor.isActive('italic') ? 'text-blue-400 bg-zinc-800' : 'text-zinc-400'
-              }`}
-            >
-              <Italic className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => editor.chain().focus().toggleUnderline().run()}
-              className={`p-1.5 hover:bg-zinc-800 rounded transition-colors ${
-                editor.isActive('underline') ? 'text-blue-400 bg-zinc-800' : 'text-zinc-400'
-              }`}
-            >
-              <UnderlineIcon className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </BubbleMenu>
-      )}
+      {editor && editable && <TemplateTiptapBubbleMenu editor={editor} pluginKey={`bubbleMenu-${cellId}`} dense />}
 
       <div
         className="w-full h-full"
