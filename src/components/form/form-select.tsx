@@ -79,7 +79,7 @@ export function FormSelect({
                         option === 'divider' ? (
                           <SelectSeparator
                             key={`divider_${
-                              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                              // biome-ignore lint/suspicious/noArrayIndexKey: no other way
                               index
                             }`}
                           />

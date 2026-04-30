@@ -234,7 +234,7 @@ export const TextSettings = () => {
           value={fontSize}
           onChange={(e) =>
             setProp((props: TextProps) => {
-              props.fontSize = Number.parseInt(e.target.value);
+              props.fontSize = Number.parseInt(e.target.value, 10);
             })
           }
           className="w-full px-2 py-1 border rounded text-sm"

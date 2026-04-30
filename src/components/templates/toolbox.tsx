@@ -23,7 +23,8 @@ import { Text } from './user-components/text';
  * The subtree is a flat map of nodeId → nodeData (same shape as query.serialize()).
  * We build the tree bottom-up: leaf nodes first, then parents wrapping children.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+// biome-ignore lint/suspicious/noExplicitAny: needed
 const COMPONENT_MAP: Record<string, React.ComponentType<any>> = {
   Container,
   Text,

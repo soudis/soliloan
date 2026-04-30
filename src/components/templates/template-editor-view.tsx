@@ -301,12 +301,9 @@ export function TemplateEditorView({
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [previewHtml, setPreviewHtml] = useState('');
-  const [currentDesign, setCurrentDesign] = useState<object | null>(null);
   const [currentHtml, setCurrentHtml] = useState<string>('');
   const [currentHeaderHtml, setCurrentHeaderHtml] = useState<string>('');
   const [currentFooterHtml, setCurrentFooterHtml] = useState<string>('');
-  const [currentHeaderPadding, setCurrentHeaderPadding] = useState<number>(16);
-  const [currentFooterPadding, setCurrentFooterPadding] = useState<number>(16);
 
   /** Ref set by a child inside Editor to get latest document parts (avoids stale debounced state). */
   const getLatestDocumentPartsRef = useRef<(() => DocumentParts) | null>(null);
@@ -368,15 +365,12 @@ export function TemplateEditorView({
     if (initialDesign && initialDesign !== '{}' && !isEmpty(initialDesign)) {
       try {
         const designData = typeof initialDesign === 'string' ? JSON.parse(initialDesign) : initialDesign;
-        setCurrentDesign(designData);
         if (isDocument) {
           const nodes = getNodesMapFromDesign(designData as Record<string, unknown>);
           const parts = generateDocumentParts(nodes, { logoUrl: projectLogo });
           setCurrentHtml(parts.bodyHtml);
           setCurrentHeaderHtml(parts.headerHtml);
           setCurrentFooterHtml(parts.footerHtml);
-          setCurrentHeaderPadding(parts.headerPadding);
-          setCurrentFooterPadding(parts.footerPadding);
         } else {
           const nodes = getNodesMapFromDesign(designData as Record<string, unknown>);
           setCurrentHtml(generateEmailHtml(nodes, { logoUrl: projectLogo }));
@@ -526,15 +520,12 @@ export function TemplateEditorView({
         const serialized = query.serialize();
         const parsed = JSON.parse(serialized) as object;
         const nodes = getNodesMapFromSerialized(serialized);
-        setCurrentDesign(parsed);
 
         if (isDocument) {
           const parts = generateDocumentParts(nodes, { logoUrl: projectLogo });
           setCurrentHtml(parts.bodyHtml);
           setCurrentHeaderHtml(parts.headerHtml);
           setCurrentFooterHtml(parts.footerHtml);
-          setCurrentHeaderPadding(parts.headerPadding);
-          setCurrentFooterPadding(parts.footerPadding);
           onDesignChange(parsed, parts.bodyHtml);
         } else {
           const html = generateEmailHtml(nodes, { logoUrl: projectLogo });

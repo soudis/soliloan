@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: needed */
 const DEFAULT_APP_LOGO_SRC = '/soliloan-logo.webp';
 
 function resolvePdfImageSrc(src: string, assetBaseUrl?: string): string {

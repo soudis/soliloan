@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: needed */
 import { paddingPropsToCssString, resolvePaddingPx } from '@/lib/templates/padding-utils';
 import { stripLoopScaffoldFromTiptapHtml } from '@/lib/templates/tiptap-merge-loop';
 

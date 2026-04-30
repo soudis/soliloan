@@ -99,7 +99,7 @@ export function createCurrencyColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,
   t: (key: string) => string,
-  locale: string,
+  _: string,
 ): ColumnDef<T> {
   const parser = new NumberParser('de-DE');
   const column = createColumn<T>(
@@ -136,8 +136,7 @@ export function createDateColumn<T>(
         try {
           const date = new Date(dateStr);
           return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (e) {
+        } catch (_) {
           return '';
         }
       },
@@ -467,24 +466,24 @@ export function createAdditionalFieldsColumns<T>(
   }) ?? []) as ColumnDef<T>[];
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: needed
 export function createAdditionalFieldDefaultColumnVisibility<T>(
   accessorKey: string,
   config: AdditionalFieldConfig[] | undefined | null,
 ) {
   const defaultColumnVisibility: VisibilityState = {};
-  // biome-ignore lint/complexity/noForEach: <explanation>
   config?.forEach((field) => {
     defaultColumnVisibility[`${accessorKey}.${field.id}`] = false;
   });
   return defaultColumnVisibility;
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: needed
 export function createAdditionalFieldFilters<T>(
   accessorKey: string,
   config: AdditionalFieldConfig[] | undefined | null,
 ) {
   const filters: DataTableColumnFilters = {};
-  // biome-ignore lint/complexity/noForEach: <explanation>
   config?.forEach((field) => {
     if (field.type === AdditionalFieldType.TEXT) {
       filters[`${accessorKey}.${field.id}`] = {
@@ -571,8 +570,7 @@ export function createTerminationModalitiesColumn<
             const date = new Date(row.endDate);
             const formattedDate = Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
             return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${formattedDate}`;
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          } catch (e) {
+          } catch (_) {
             return commonT(`enums.loan.terminationType.${terminationType}`);
           }
         } else if (terminationType === 'DURATION' && row.duration && row.durationType) {
@@ -600,8 +598,7 @@ export function createTerminationModalitiesColumn<
             const date = new Date(loan.endDate);
             const formattedDate = Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
             return `${commonT(`enums.loan.terminationType.${terminationType}`)} - ${formattedDate}`;
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          } catch (e) {
+          } catch (_) {
             return commonT(`enums.loan.terminationType.${terminationType}`);
           }
         } else if (terminationType === 'DURATION' && loan.duration && loan.durationType) {
