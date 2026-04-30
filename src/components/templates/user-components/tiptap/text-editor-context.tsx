@@ -15,6 +15,7 @@ export const TextEditorProvider = TextEditorContext.Provider;
 export const useTextEditor = () => {
   const context = useContext(TextEditorContext);
   if (!context) {
+    // biome-ignore lint/suspicious/noExplicitAny: needed
     return { editor: null, lastSelection: { current: null } as React.RefObject<any> };
   }
   return context;

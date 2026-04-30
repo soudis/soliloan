@@ -10,6 +10,11 @@ import { validationError } from '../utils/validation';
 export const idSchema = z.string().min(1, { message: 'validation.common.required' });
 export const idObjectSchema = z.object({ id: idSchema });
 export const projectIdSchema = z.object({ projectId: idSchema });
+/** Project id + optional list cap for template preview sample pickers. */
+export const projectSampleListSchema = z.object({
+  projectId: idSchema,
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+});
 export const lenderIdSchema = z.object({ lenderId: idSchema });
 export const loanIdSchema = z.object({ loanId: idSchema });
 export const transactionIdSchema = z.object({ transactionId: idSchema });

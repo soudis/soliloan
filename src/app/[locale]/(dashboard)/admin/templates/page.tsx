@@ -1,23 +1,20 @@
-'use client';
-
-import { useSession } from 'next-auth/react';
-import { useTranslations } from 'next-intl';
+import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
+import { getGlobalTemplatesUnsafe } from '@/actions/templates/queries/get-templates';
 import { TemplateDialog } from '@/components/templates/template-dialog';
 import { TemplateList } from '@/components/templates/template-list';
-import { redirect } from '@/i18n/navigation';
+import { auth } from '@/lib/auth';
 
-export default function AdminTemplatesPage() {
-  const { data: session } = useSession();
-  const t = useTranslations('templates');
-
+export default async function AdminTemplatesPage() {
+  const session = await auth();
   if (!session) {
-    return null;
+    redirect('/auth/login');
+  }
+  if (!session.user.isAdmin) {
+    redirect('/');
   }
 
-  // Redirect non-admins
-  if (!session?.user?.isAdmin) {
-    redirect({ href: '/', locale: 'de' });
-  }
+  const [templates, t] = await Promise.all([getGlobalTemplatesUnsafe(), getTranslations('templates')]);
 
   return (
     <div className="container py-6">
@@ -29,7 +26,7 @@ export default function AdminTemplatesPage() {
         <TemplateDialog isAdmin />
       </div>
 
-      <TemplateList isAdmin />
+      <TemplateList isAdmin templates={templates} />
     </div>
   );
 }

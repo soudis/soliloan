@@ -1,13 +1,5 @@
 'use client';
 
-import { removeProjectManagerAction } from '@/actions/projects';
-import { ConfirmDialog } from '@/components/generic/confirm-dialog';
-import { ActionButton } from '@/components/ui/action-button';
-import { Button } from '@/components/ui/button';
-import { FormSection } from '@/components/ui/form-section';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { formatDate } from '@/lib/utils';
-import type { ProjectWithConfiguration } from '@/types/projects';
 import type { User } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { ClockAlert, Mail, PlusCircle, Repeat2, Unlink } from 'lucide-react';
@@ -16,6 +8,14 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { removeProjectManagerAction } from '@/actions/projects';
+import { ConfirmDialog } from '@/components/generic/confirm-dialog';
+import { ActionButton } from '@/components/ui/action-button';
+import { Button } from '@/components/ui/button';
+import { FormSection } from '@/components/ui/form-section';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { formatDate } from '@/lib/utils';
+import type { ProjectWithConfiguration } from '@/types/projects';
 import { AddManagerDialog } from './add-manager-dialog';
 
 type Props = {

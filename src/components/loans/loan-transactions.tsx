@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 
 import { deleteTransactionAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
+import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { cn, formatCurrency } from '@/lib/utils';
 import { type LoanDetailsWithCalculations, LoanStatus } from '@/types/loans';
 
@@ -148,6 +149,16 @@ export function LoanTransactions({ loanId, transactions, loan }: LoanTransaction
             </div>
             <div className="flex items-center space-x-2">
               <div className="font-medium font-mono text-sm">{formatCurrency(transaction.amount)}</div>
+              {transaction.type !== 'INTEREST' && (
+                <TemplateQuickActions
+                  projectId={loan.lender.projectId}
+                  mode="transaction"
+                  lenderId={loan.lender.id}
+                  loanId={loan.id}
+                  transactionId={transaction.id}
+                  density="compact"
+                />
+              )}
               <div className="w-8 flex justify-end">
                 {transaction.id === lastNonInterest?.id && (
                   <Button

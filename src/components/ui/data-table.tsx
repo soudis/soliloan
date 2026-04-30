@@ -1,3 +1,5 @@
+'use client';
+
 import type { View, ViewType } from '@prisma/client';
 import {
   type ColumnDef,
@@ -10,8 +12,9 @@ import {
   useReactTable,
   type VisibilityState,
 } from '@tanstack/react-table';
-import { Settings } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { MoreHorizontal } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTableUrlState } from '@/lib/hooks/use-table-url-state';
 
 import { Checkbox } from './checkbox';
@@ -19,6 +22,9 @@ import { DataTableBody } from './data-table-body';
 import { DataTableBulkBar } from './data-table-bulk-bar';
 import { DataTableHeader } from './data-table-header';
 import { DataTablePagination } from './data-table-pagination';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from './dropdown-menu';
+
+const EMPTY_COLUMN_VISIBILITY: VisibilityState = {};
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -26,6 +32,10 @@ declare module '@tanstack/react-table' {
       textAlign?: 'left' | 'center' | 'right';
     };
     fixed?: boolean;
+    /** Narrow column with no padding; used for the row … menu. */
+    actionsColumn?: boolean;
+    /** Bulk checkbox column: full-cell hit area, not sticky. */
+    bulkSelectColumn?: boolean;
   }
 }
 
@@ -102,14 +112,6 @@ export const dateRangeFilter: FilterFn<unknown> = (row, columnId, filterValue) =
   return result;
 };
 
-// Define the column meta type to include the fixed property
-declare module '@tanstack/react-table' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface ColumnMeta<TData, TValue> {
-    fixed?: boolean;
-  }
-}
-
 export type DataTableColumnFilters = {
   [key: string]: {
     type: 'text' | 'select' | 'number' | 'date';
@@ -129,6 +131,8 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   onRowClick?: (row: TData) => void;
+  /** Hide toolbar (search, filters, column visibility, views). Use for simple tables. */
+  hideHeader?: boolean;
   showColumnVisibility?: boolean;
   showPagination?: boolean;
   showFilter?: boolean;
@@ -136,6 +140,7 @@ interface DataTableProps<TData, TValue> {
   defaultColumnVisibility?: VisibilityState;
   viewType?: ViewType;
   isLoading?: boolean;
+  /** Render `DropdownMenuItem` (and optional `DropdownMenuSeparator`) children; shown inside the row … menu. */
   actions?: (row: TData) => React.ReactNode;
   bulkActions?: BulkAction[];
   views?: View[];
@@ -146,11 +151,12 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   onRowClick,
+  hideHeader = false,
   showColumnVisibility = true,
   showPagination = true,
   showFilter = true,
   columnFilters = {},
-  defaultColumnVisibility = {},
+  defaultColumnVisibility,
   viewType,
   views,
   isLoading,
@@ -158,10 +164,12 @@ export function DataTable<TData, TValue>({
   bulkActions,
   getRowId = (row) => (row as Record<string, unknown>).id as string,
 }: DataTableProps<TData, TValue>) {
+  const t = useTranslations('dataTable');
+
   // Get table state from URL — views are passed so the hook can diff against the selected view's baseline
   const { state: tableState, setState: setTableState } = useTableUrlState({
     defaultColumnVisibility,
-    views: views ?? [],
+    views,
   });
 
   const sorting = tableState.sorting;
@@ -176,6 +184,8 @@ export function DataTable<TData, TValue>({
   const globalFilter = tableState.globalFilter;
 
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+  /** After the row-actions menu closes, ignore row navigations briefly (avoids ghost click-through). */
+  const lastRowActionsMenuClosedAtRef = useRef(0);
 
   // Clear selection when data changes (e.g., after bulk delete + revalidation)
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally reset selection when data reference changes
@@ -210,27 +220,36 @@ export function DataTable<TData, TValue>({
       cols.push({
         id: 'select',
         header: ({ table }) => (
-          <div className="flex items-center justify-center px-1" data-bulk-select>
+          // biome-ignore lint/a11y/noLabelWithoutControl: Radix Checkbox is not a native input; wrapping label gives full-cell hit area.
+          <label
+            className="absolute inset-0 z-10 flex min-h-0 cursor-pointer items-center justify-center leading-none rounded-none transition-colors hover:bg-muted"
+            data-bulk-select
+          >
             <Checkbox
               checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
               onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
               aria-label="Select all"
             />
-          </div>
+          </label>
         ),
         cell: ({ row }) => (
-          <div className="flex items-center justify-center px-1" data-bulk-select>
+          // biome-ignore lint/a11y/noLabelWithoutControl: Radix Checkbox is not a native input; wrapping label gives full-cell hit area.
+          <label
+            className="absolute inset-0 z-10 flex min-h-0 cursor-pointer items-center justify-center leading-none rounded-none transition-colors hover:bg-muted"
+            data-bulk-select
+          >
             <Checkbox
               checked={row.getIsSelected()}
               onCheckedChange={(value) => row.toggleSelected(!!value)}
               aria-label="Select row"
             />
-          </div>
+          </label>
         ),
         enableSorting: false,
         enableHiding: false,
         meta: {
           fixed: false,
+          bulkSelectColumn: true,
         },
       });
     }
@@ -241,19 +260,49 @@ export function DataTable<TData, TValue>({
       cols.push({
         id: 'actions',
         header: () => (
-          <div className="flex h-full w-full items-center justify-center">
-            <Settings className="h-4 w-4" />
+          <div className="flex h-full w-full items-center justify-center text-muted-foreground" aria-hidden>
+            <MoreHorizontal className="h-4 w-4 shrink-0" />
           </div>
         ),
-        cell: ({ row }) => <div className="flex items-center justify-center">{actions(row.original)}</div>,
+        cell: ({ row }) => (
+          <div className="absolute inset-0 min-h-0" data-row-actions>
+            <DropdownMenu
+              modal
+              onOpenChange={(open) => {
+                if (!open) lastRowActionsMenuClosedAtRef.current = Date.now();
+              }}
+            >
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="absolute inset-0 z-10 flex min-h-0 cursor-pointer items-center justify-center leading-none rounded-none text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+                  aria-label={t('rowActions')}
+                >
+                  <MoreHorizontal className="h-4 w-4 shrink-0" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                sideOffset={4}
+                data-row-actions-menu-content=""
+                className="z-[200]"
+                onCloseAutoFocus={(e) => e.preventDefault()}
+                onPointerDown={(e) => e.stopPropagation()}
+              >
+                {actions(row.original)}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ),
         meta: {
           fixed: true,
+          actionsColumn: true,
         },
       });
     }
     return cols;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [columns, actions, hasBulkActions]);
+  }, [columns, actions, hasBulkActions, t]);
 
   // Compute selected row IDs for bulk actions
   const selectedIds = useMemo(() => {
@@ -280,7 +329,7 @@ export function DataTable<TData, TValue>({
       });
     },
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    ...(showPagination ? { getPaginationRowModel: getPaginationRowModel() } : {}),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: (updater) => {
@@ -343,18 +392,20 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <DataTableHeader<TData>
-        table={table}
-        showColumnVisibility={showColumnVisibility}
-        showFilter={showFilter}
-        columnFilters={columnFilters}
-        defaultColumnVisibility={defaultColumnVisibility}
-        views={views || []}
-        viewType={viewType}
-        hasActiveFilters={hasActiveFilters}
-        tableState={tableState}
-        setTableState={setTableState}
-      />
+      {!hideHeader && (
+        <DataTableHeader<TData>
+          table={table}
+          showColumnVisibility={showColumnVisibility}
+          showFilter={showFilter}
+          columnFilters={columnFilters}
+          defaultColumnVisibility={defaultColumnVisibility ?? EMPTY_COLUMN_VISIBILITY}
+          views={views || []}
+          viewType={viewType}
+          hasActiveFilters={hasActiveFilters}
+          tableState={tableState}
+          setTableState={setTableState}
+        />
+      )}
 
       {bulkActions && selectedIds.length > 0 && (
         <DataTableBulkBar
@@ -365,7 +416,12 @@ export function DataTable<TData, TValue>({
         />
       )}
 
-      <DataTableBody table={table} onRowClick={onRowClick} hasBulkSelect={hasBulkActions} />
+      <DataTableBody
+        table={table}
+        onRowClick={onRowClick}
+        hasBulkSelect={hasBulkActions}
+        lastRowActionsMenuClosedAtRef={actions && onRowClick ? lastRowActionsMenuClosedAtRef : undefined}
+      />
 
       {showPagination && <DataTablePagination table={table} />}
     </div>
