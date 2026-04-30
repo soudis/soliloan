@@ -33,9 +33,11 @@ import {
   buildBorderStyle,
 } from '@/lib/templates/border-utils';
 import { extractCraftSubtree } from '@/lib/templates/craft-subtree';
+import { mergeLoopsAllowedForCanvasPlacement } from '@/lib/templates/merge-tag-insertion-filter';
 import { paddingPropsToReactStyle } from '@/lib/templates/padding-utils';
 import { BlockPaddingFields } from '../block-padding-fields';
 import { useMergeTagConfig } from '../merge-tag-context';
+import { useMergeTagInsertionLoops } from '../use-merge-tag-insertion-loops';
 
 type LayoutMode = 'vertical' | 'horizontal' | 'grid';
 type FlexJustify = 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around';
@@ -367,6 +369,24 @@ export const ContainerSettings = () => {
 
   const isStructural = ['ROOT', 'PAGE_HEADER', 'BODY', 'PAGE_FOOTER'].includes(nodeId);
   const availableLoops = config?.loops ?? [];
+  /** Parent chain only — the loop assigned to this container must not depend on itself. */
+  const ancestorLoopsForLoopPicker = useMergeTagInsertionLoops(nodeId, false);
+
+  const selectableLoops = useMemo(
+    () => mergeLoopsAllowedForCanvasPlacement(availableLoops, ancestorLoopsForLoopPicker, editorMeta.dataset),
+    [availableLoops, ancestorLoopsForLoopPicker, editorMeta.dataset],
+  );
+
+  useEffect(() => {
+    if (!loopKey || !config?.loops) return;
+    const current = config.loops.find((l) => l.key === loopKey);
+    if (!current) return;
+    if (!mergeLoopsAllowedForCanvasPlacement([current], ancestorLoopsForLoopPicker, editorMeta.dataset).length) {
+      setProp((props: ContainerProps) => {
+        props.loopKey = '';
+      });
+    }
+  }, [loopKey, ancestorLoopsForLoopPicker, editorMeta.dataset, config?.loops, setProp]);
 
   const handleSaveAsBlock = useCallback(async () => {
     if (!blockName.trim()) return;
@@ -475,13 +495,16 @@ export const ContainerSettings = () => {
                 className="w-full px-2 py-1.5 border rounded text-sm bg-white"
               >
                 <option value="">{t('staticContainer')}</option>
-                {availableLoops.map((loop) => (
+                {selectableLoops.map((loop) => (
                   <option key={loop.key} value={loop.key}>
                     {loop.label}
                   </option>
                 ))}
               </select>
               <p className="text-[11px] text-muted-foreground">{loopKey ? t('dynamicHint') : t('staticHint')}</p>
+              {availableLoops.length > 0 && selectableLoops.length !== availableLoops.length ? (
+                <p className="text-[11px] text-muted-foreground">{t('loopKeyContextHint')}</p>
+              ) : null}
             </div>
           </TabsContent>
         )}

@@ -50,6 +50,15 @@ export function canInsertLoopAtContext(
   return outerToInner.includes(parentReq);
 }
 
+/** Loops the user may assign to a Container/Table given canvas nesting (ancestors only, excluding the node being configured). */
+export function mergeLoopsAllowedForCanvasPlacement(
+  loops: readonly MergeTagLoop[],
+  ancestorLoopsInnermostFirst: string[] | readonly string[],
+  dataset: TemplateDataset,
+): MergeTagLoop[] {
+  return loops.filter((loop) => canInsertLoopAtContext(loop, ancestorLoopsInnermostFirst, dataset));
+}
+
 export function shouldShowLoopChildFieldsGroup(loop: MergeTagLoop, ancestorLoopsInnermostFirst: unknown): boolean {
   const stack = Array.isArray(ancestorLoopsInnermostFirst) ? ancestorLoopsInnermostFirst : [];
   const innermost = stack[0] ?? null;

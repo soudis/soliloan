@@ -8,6 +8,7 @@ import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { mergeLoopsAllowedForCanvasPlacement } from '@/lib/templates/merge-tag-insertion-filter';
 import { paddingPropsToReactStyle } from '@/lib/templates/padding-utils';
 import { buildLoopMergeTagFallbackHtml } from '@/lib/templates/tiptap-merge-loop';
 import { BlockPaddingFields } from '../block-padding-fields';
@@ -643,7 +644,26 @@ export const TableSettings = () => {
   const isDynamic = loopKey.length > 0;
   const availableLoops = config?.loops ?? [];
 
+  /** Includes this table when opening merge tags inside cells. */
   const ancestorLoopsInnermostFirst = useMergeTagInsertionLoops(tableNodeId, true);
+  /** Parent chain only — same rules as assigning a loop wrapper to Container/Table. */
+  const ancestorLoopsForLoopPicker = useMergeTagInsertionLoops(tableNodeId, false);
+
+  const selectableLoops = useMemo(
+    () => mergeLoopsAllowedForCanvasPlacement(availableLoops, ancestorLoopsForLoopPicker, editorMeta.dataset),
+    [availableLoops, ancestorLoopsForLoopPicker, editorMeta.dataset],
+  );
+
+  useEffect(() => {
+    if (!loopKey || !config?.loops) return;
+    const current = config.loops.find((l) => l.key === loopKey);
+    if (!current) return;
+    if (!mergeLoopsAllowedForCanvasPlacement([current], ancestorLoopsForLoopPicker, editorMeta.dataset).length) {
+      setProp((props: ResolvedTableProps) => {
+        props.loopKey = '';
+      });
+    }
+  }, [loopKey, ancestorLoopsForLoopPicker, editorMeta.dataset, config?.loops, setProp]);
   const activeCell = parseCellId(activeCellId);
   const activeCellStyle = activeCell
     ? activeCell.type === 'header'
@@ -793,13 +813,16 @@ export const TableSettings = () => {
               className="w-full px-2 py-1.5 border rounded text-sm bg-white"
             >
               <option value="">{t('staticTable')}</option>
-              {availableLoops.map((loop) => (
+              {selectableLoops.map((loop) => (
                 <option key={loop.key} value={loop.key}>
                   {loop.label}
                 </option>
               ))}
             </select>
             <p className="text-[11px] text-muted-foreground">{isDynamic ? t('dynamicHint') : t('staticHint')}</p>
+            {availableLoops.length > 0 && selectableLoops.length !== availableLoops.length ? (
+              <p className="text-[11px] text-muted-foreground">{t('loopKeyContextHint')}</p>
+            ) : null}
           </div>
 
           {isDynamic && (
