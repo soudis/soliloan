@@ -12,6 +12,7 @@ import { duplicateTemplateAction } from '@/actions/templates/mutations/duplicate
 import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
 import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
@@ -143,24 +144,45 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
   const rowActions = useCallback(
     (row: CommunicationTemplateWithProject) => (
       <>
-        <DropdownMenuItem onClick={() => handleOpenTemplate(row)}>
-          <Edit className="h-4 w-4 mr-2" />
-          {t('list.actions.edit')}
-        </DropdownMenuItem>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuItem onClick={() => handleOpenTemplate(row)}>
+              <Edit className="h-4 w-4 mr-2" />
+              {t('list.actions.edit')}
+            </DropdownMenuItem>
+          </TooltipTrigger>
+          <TooltipContent side="left" className="max-w-xs">
+            {t('list.actions.editTooltip')}
+          </TooltipContent>
+        </Tooltip>
         {project ? (
-          <DropdownMenuItem onClick={() => handleDuplicate(row)}>
-            <Copy className="h-4 w-4 mr-2" />
-            {t('list.actions.duplicate')}
-          </DropdownMenuItem>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuItem onClick={() => handleDuplicate(row)}>
+                <Copy className="h-4 w-4 mr-2" />
+                {t('list.actions.duplicate')}
+              </DropdownMenuItem>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="max-w-xs">
+              {t('list.actions.duplicateTooltip')}
+            </TooltipContent>
+          </Tooltip>
         ) : null}
         {(!row.isSystem || project) && (
-          <DropdownMenuItem
-            onClick={() => handleDeleteClick(row)}
-            className="text-destructive focus:text-destructive"
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            {t('list.actions.delete')}
-          </DropdownMenuItem>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuItem
+                onClick={() => handleDeleteClick(row)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {t('list.actions.delete')}
+              </DropdownMenuItem>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="max-w-xs">
+              {t('list.actions.deleteTooltip')}
+            </TooltipContent>
+          </Tooltip>
         )}
       </>
     ),
@@ -169,16 +191,18 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
 
   return (
     <>
-      <DataTable
-        columns={columns}
-        data={tableData}
-        hideHeader
-        showColumnVisibility={false}
-        showFilter={false}
-        showPagination={false}
-        onRowClick={handleOpenTemplate}
-        actions={rowActions}
-      />
+      <TooltipProvider delayDuration={400}>
+        <DataTable
+          columns={columns}
+          data={tableData}
+          hideHeader
+          showColumnVisibility={false}
+          showFilter={false}
+          showPagination={false}
+          onRowClick={handleOpenTemplate}
+          actions={rowActions}
+        />
+      </TooltipProvider>
 
       <ConfirmDialog
         open={deleteDialogOpen}

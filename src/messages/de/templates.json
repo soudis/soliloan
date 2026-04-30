@@ -5,7 +5,34 @@
   },
   "project": {
     "title": "Projektvorlagen",
-    "description": "Verwalte E-Mail- und Dokumentvorlagen für dieses Projekt"
+    "description": "Verwalte E-Mail- und Dokumentvorlagen für dieses Projekt",
+    "sections": {
+      "customTitle": "Eigene Projektvorlagen",
+      "customDescription": "Frei erstellte Dokument- und E-Mail-Vorlagen, die nur in diesem Projekt verfügbar sind.",
+      "systemTitle": "Systemvorlagen",
+      "systemDescription": "Von der Plattform bereitgestellte Standardvorlagen (z. B. behördliche Dokumente oder E-Mails). Sobald du eine Systemvorlage für dieses Projekt anpasst, ersetzt die Projektkopie die globale Vorlage."
+    },
+    "systemList": {
+      "customizedBadge": "Projektspezifisch",
+      "empty": "Keine Systemvorlagen vorhanden.",
+      "toast": {
+        "customized": "Projektvorlage erstellt — der Editor wird geöffnet"
+      },
+      "actions": {
+        "customize": "Vorlage anpassen",
+        "customizeTooltip": "Legt eine Projekt­kopie dieser Systemvorlage an und öffnet den Editor, damit du Inhalt und Aufbau ändern kannst.",
+        "reset": "Zurücksetzen",
+        "resetTooltip": "Entfernt die projektspezifische Kopie — für dieses Projekt gilt wieder die globale Standardvorlage.",
+        "editTooltip": "Öffnet diese projektspezifische Kopie im Vorlagen-Editor."
+      },
+      "resetDialog": {
+        "title": "Systemvorlage zurücksetzen?",
+        "description": "Die projektspezifische Kopie „{name}“ wird gelöscht. Anschließend nutzt dieses Projekt automatisch wieder die globale Standardvorlage.",
+        "confirm": "Zurücksetzen",
+        "cancel": "Abbrechen",
+        "success": "Projekt­anpassung entfernt — es gilt wieder die Standardvorlage"
+      }
+    }
   },
   "types": {
     "email": "E-Mail",
@@ -41,15 +68,6 @@
       "sourceTemplatePlaceholder": "Globale Vorlage auswählen",
       "sourceTemplateNone": "Keine (leere Vorlage)"
     }
-  },
-  "systemDialog": {
-    "trigger": "Systemvorlage anpassen",
-    "title": "Systemvorlage anpassen",
-    "description": "Wähle eine Systemvorlage aus, um sie für dein Projekt anzupassen.",
-    "noTemplates": "Keine Systemvorlagen verfügbar.",
-    "submit": "Vorlage kopieren",
-    "cancel": "Abbrechen",
-    "copied": "Systemvorlage wurde als Projektvorlage kopiert"
   },
   "editor": {
     "settingsButton": "Einstellungen",
@@ -336,8 +354,11 @@
     },
     "actions": {
       "edit": "Bearbeiten",
+      "editTooltip": "Öffnet diese Vorlage im Editor.",
       "duplicate": "Duplizieren",
-      "delete": "Löschen"
+      "duplicateTooltip": "Erzeugt eine zusätzliche Kopie dieser Vorlage im gleichen Projekt.",
+      "delete": "Löschen",
+      "deleteTooltip": "Löscht die Vorlage unwiderruflich aus dem Projekt."
     },
     "deleteDialog": {
       "title": "Vorlage löschen",
