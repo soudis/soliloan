@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { previewCommunicationTemplateEmailAction } from '@/actions/templates/mutations/preview-communication-template-email';
 import { sendCommunicationTemplateEmailAction } from '@/actions/templates/mutations/send-communication-template-email';
 import { getLenderQuickActionTemplatesAction } from '@/actions/templates/queries/get-lender-quick-action-templates';
 import { getQuickActionTemplatesAction } from '@/actions/templates/queries/get-quick-action-templates';
@@ -83,6 +84,21 @@ type PendingYearly = {
   action: 'download' | 'email';
 };
 
+type EmailPreviewPayload = {
+  templateName: string;
+  sendInput: {
+    templateId: string;
+    projectId: string;
+    lenderId?: string;
+    loanId?: string;
+    transactionId?: string;
+    year?: number;
+  };
+  to: string;
+  subject: string;
+  html: string;
+};
+
 export function TemplateQuickActions({
   projectId,
   mode,
@@ -99,6 +115,8 @@ export function TemplateQuickActions({
   const [yearDialogOpen, setYearDialogOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [pendingYearly, setPendingYearly] = useState<PendingYearly | null>(null);
+  const [emailPreviewOpen, setEmailPreviewOpen] = useState(false);
+  const [emailPreview, setEmailPreview] = useState<EmailPreviewPayload | null>(null);
 
   const managerDatasets = datasetsForMode(mode);
   const datasets: TemplateDataset[] = lenderSelfService ? ['LOAN', 'LENDER_YEARLY'] : [...managerDatasets];
@@ -145,6 +163,9 @@ export function TemplateQuickActions({
   });
 
   const { executeAsync: sendEmail, isExecuting: sending } = useAction(sendCommunicationTemplateEmailAction);
+  const { executeAsync: loadEmailPreview, isExecuting: previewLoading } = useAction(
+    previewCommunicationTemplateEmailAction,
+  );
 
   const basePayload = {
     projectId,
@@ -172,8 +193,10 @@ export function TemplateQuickActions({
     setSelectedYear((y) => (y == null ? lenderYears[0] : y));
   }, [yearDialogOpen, lenderYears]);
 
-  async function runEmail(template: QuickTemplateRow, year?: number) {
-    const result = await sendEmail({
+  async function openEmailPreview(template: QuickTemplateRow, year?: number) {
+    setEmailPreviewOpen(true);
+    setEmailPreview(null);
+    const result = await loadEmailPreview({
       templateId: template.id,
       projectId,
       lenderId,
@@ -183,12 +206,47 @@ export function TemplateQuickActions({
     });
     if (result?.serverError) {
       toast.error(result.serverError);
+      setEmailPreviewOpen(false);
+      return;
+    }
+    if (result?.validationErrors) {
+      setEmailPreviewOpen(false);
+      return;
+    }
+    const data = result.data;
+    if (!data) {
+      setEmailPreviewOpen(false);
+      return;
+    }
+    setEmailPreview({
+      templateName: template.name,
+      sendInput: {
+        templateId: template.id,
+        projectId,
+        lenderId,
+        loanId,
+        transactionId,
+        year,
+      },
+      to: data.to,
+      subject: data.subject,
+      html: data.html,
+    });
+  }
+
+  async function confirmSendEmail() {
+    if (!emailPreview) return;
+    const result = await sendEmail(emailPreview.sendInput);
+    if (result?.serverError) {
+      toast.error(result.serverError);
       return;
     }
     if (result?.validationErrors) {
       return;
     }
     toast.success(t('emailSent'));
+    setEmailPreviewOpen(false);
+    setEmailPreview(null);
   }
 
   function handlePickTemplate(template: QuickTemplateRow, action: 'download' | 'email') {
@@ -200,7 +258,7 @@ export function TemplateQuickActions({
       window.open(buildDownloadHref(template), '_blank', 'noopener,noreferrer');
       return;
     }
-    void runEmail(template);
+    void openEmailPreview(template);
   }
 
   async function confirmYearly() {
@@ -212,10 +270,14 @@ export function TemplateQuickActions({
       setPendingYearly(null);
       return;
     }
-    await runEmail(template, selectedYear);
+    const tpl = template;
+    const yr = selectedYear;
     setYearDialogOpen(false);
     setPendingYearly(null);
+    await openEmailPreview(tpl, yr);
   }
+
+  const emailActionBusy = sending || previewLoading;
 
   if (lenderSelfService && !loanId) {
     return null;
@@ -269,7 +331,7 @@ export function TemplateQuickActions({
                 {emailTemplates.map((tpl) => (
                   <DropdownMenuItem
                     key={`em-${tpl.id}`}
-                    disabled={sending}
+                    disabled={emailActionBusy}
                     onSelect={() => handlePickTemplate(tpl, 'email')}
                   >
                     <Mail className="mr-2 h-4 w-4" />
@@ -322,6 +384,66 @@ export function TemplateQuickActions({
                 disabled={selectedYear == null || yearsLoading}
               >
                 {t('confirm')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog
+          open={emailPreviewOpen}
+          onOpenChange={(open) => {
+            setEmailPreviewOpen(open);
+            if (!open) setEmailPreview(null);
+          }}
+        >
+          <DialogContent className="flex max-h-[90vh] max-w-3xl flex-col gap-4">
+            <DialogHeader>
+              <DialogTitle>{t('emailPreviewTitle')}</DialogTitle>
+              {emailPreview ? (
+                <p className="text-sm font-medium text-foreground">{emailPreview.templateName}</p>
+              ) : null}
+            </DialogHeader>
+            {previewLoading || !emailPreview ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">{commonT('ui.status.loading')}</div>
+            ) : (
+              <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+                <div className="shrink-0 space-y-2 text-sm">
+                  <div className="break-all">
+                    <span className="font-medium text-muted-foreground">{t('emailPreviewTo')}</span>{' '}
+                    {emailPreview.to}
+                  </div>
+                  <div className="break-words">
+                    <span className="font-medium text-muted-foreground">{t('emailPreviewSubject')}</span>{' '}
+                    {emailPreview.subject}
+                  </div>
+                </div>
+                <div className="min-h-[200px] flex-1 overflow-hidden rounded-md border bg-muted/30">
+                  <iframe
+                    title={t('emailPreviewTitle')}
+                    srcDoc={emailPreview.html}
+                    className="block h-[min(50vh,420px)] w-full border-0 bg-white"
+                  />
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setEmailPreviewOpen(false);
+                  setEmailPreview(null);
+                }}
+                disabled={sending}
+              >
+                {t('cancel')}
+              </Button>
+              <Button
+                type="button"
+                onClick={() => void confirmSendEmail()}
+                disabled={!emailPreview || sending || previewLoading}
+              >
+                {t('sendEmail')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -394,7 +516,7 @@ export function TemplateQuickActions({
               {emailTemplates.map((tpl) => (
                 <DropdownMenuItem
                   key={`em-${tpl.id}`}
-                  disabled={sending}
+                  disabled={emailActionBusy}
                   onSelect={() => handlePickTemplate(tpl, 'email')}
                 >
                   {tpl.name}
@@ -435,6 +557,66 @@ export function TemplateQuickActions({
             </Button>
             <Button type="button" onClick={() => void confirmYearly()} disabled={selectedYear == null || yearsLoading}>
               {t('confirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={emailPreviewOpen}
+        onOpenChange={(open) => {
+          setEmailPreviewOpen(open);
+          if (!open) setEmailPreview(null);
+        }}
+      >
+        <DialogContent className="flex max-h-[90vh] max-w-3xl flex-col gap-4">
+          <DialogHeader>
+            <DialogTitle>{t('emailPreviewTitle')}</DialogTitle>
+            {emailPreview ? (
+              <p className="text-sm font-medium text-foreground">{emailPreview.templateName}</p>
+            ) : null}
+          </DialogHeader>
+          {previewLoading || !emailPreview ? (
+            <div className="py-8 text-center text-sm text-muted-foreground">{commonT('ui.status.loading')}</div>
+          ) : (
+            <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+              <div className="shrink-0 space-y-2 text-sm">
+                <div className="break-all">
+                  <span className="font-medium text-muted-foreground">{t('emailPreviewTo')}</span>{' '}
+                  {emailPreview.to}
+                </div>
+                <div className="break-words">
+                  <span className="font-medium text-muted-foreground">{t('emailPreviewSubject')}</span>{' '}
+                  {emailPreview.subject}
+                </div>
+              </div>
+              <div className="min-h-[200px] flex-1 overflow-hidden rounded-md border bg-muted/30">
+                <iframe
+                  title={t('emailPreviewTitle')}
+                  srcDoc={emailPreview.html}
+                  className="block h-[min(50vh,420px)] w-full border-0 bg-white"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setEmailPreviewOpen(false);
+                setEmailPreview(null);
+              }}
+              disabled={sending}
+            >
+              {t('cancel')}
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void confirmSendEmail()}
+              disabled={!emailPreview || sending || previewLoading}
+            >
+              {t('sendEmail')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -4,66 +4,30 @@ import type { Transaction } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  ChevronLeft,
-  ChevronRight,
-  Percent,
-  Plus,
-  Receipt,
-  Wallet,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { type ReactNode, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { deleteTransactionAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { cn, formatCurrency } from '@/lib/utils';
-import { type LoanDetailsWithCalculations, LoanStatus } from '@/types/loans';
+import type { LoanDetailsWithCalculations } from '@/types/loans';
 
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Switch } from '../ui/switch';
-import { TransactionDialog } from './transaction-dialog';
+import { LoanAddTransactionControl } from './loan-add-transaction-control';
+import {
+  LoanBalanceSummary,
+  TRANSACTION_ACTIONS_SLOT_CLASS,
+  TRANSACTION_AMOUNT_CLASS,
+  transactionIcon,
+  transactionIconBackground,
+} from './loan-balance-summary';
 
 const PAGE_SIZE = 10;
-
-/** Match data-table actions column (`w-9`); single … menu per row. */
-const TRANSACTION_ACTIONS_SLOT_CLASS = 'flex w-9 min-w-[2.25rem] shrink-0 justify-end';
-const TRANSACTION_AMOUNT_CLASS =
-  'min-w-[9rem] shrink-0 text-right font-medium font-mono text-sm tabular-nums';
-
-function transactionIcon(type: Transaction['type']) {
-  switch (type) {
-    case 'DEPOSIT':
-      return <ArrowDownIcon className="h-4 w-4 text-green-500" />;
-    case 'INTEREST':
-      return <Percent className="h-4 w-4 text-green-500" />;
-    case 'WITHDRAWAL':
-    case 'INTERESTPAYMENT':
-    case 'TERMINATION':
-      return <ArrowUpIcon className="h-4 w-4 text-blue-500" />;
-    default:
-      return <Receipt className="h-4 w-4 text-gray-500" />;
-  }
-}
-
-function transactionIconBackground(type: Transaction['type']) {
-  switch (type) {
-    case 'DEPOSIT':
-    case 'INTEREST':
-      return 'bg-green-500/20';
-    case 'WITHDRAWAL':
-    case 'INTERESTPAYMENT':
-    case 'TERMINATION':
-      return 'bg-blue-500/20';
-    default:
-      return 'bg-gray-500/20';
-  }
-}
 
 interface LoanTransactionsProps {
   loanId: string;
@@ -73,6 +37,11 @@ interface LoanTransactionsProps {
   readOnly?: boolean;
   /** Show deposit/interest/withdrawal totals and balance below the list (same data as BalanceTable sums) */
   showBalanceSummary?: boolean;
+  /**
+   * When false, the add control is omitted so the parent can render {@link LoanAddTransactionControl} elsewhere
+   * (e.g. above {@link LoanBalanceSummary}).
+   */
+  showAddTransaction?: boolean;
 }
 
 export function LoanTransactions({
@@ -81,12 +50,12 @@ export function LoanTransactions({
   loan,
   readOnly = false,
   showBalanceSummary = false,
+  showAddTransaction = true,
 }: LoanTransactionsProps) {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const locale = useLocale();
   const dateLocale = locale === 'de' ? de : enUS;
-  const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [showBookings, setShowBookings] = useState(true);
@@ -125,13 +94,15 @@ export function LoanTransactions({
 
   const lastNonInterest = transactions.findLast((tx) => tx.type !== 'INTEREST');
 
+  const addTransactionEnabled = !readOnly && showAddTransaction;
+
   return (
     <>
       <div className="space-y-1">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('table.transactions')}</h4>
+          <h4 className="mb-2 text-sm font-medium text-muted-foreground">{t('table.transactions')}</h4>
 
-          <div className="flex items-center justify-between pb-2 space-x-4">
+          <div className="flex items-center justify-between space-x-4 pb-2">
             <div className="flex items-center gap-2">
               <Switch
                 id="bookings-mode"
@@ -141,7 +112,7 @@ export function LoanTransactions({
                   setPage(0);
                 }}
               />
-              <Label htmlFor="bookings-mode" className="text-xs text-muted-foreground cursor-pointer">
+              <Label htmlFor="bookings-mode" className="cursor-pointer text-xs text-muted-foreground">
                 {showBookings ? t('table.bookings') : t('table.transactions')}
               </Label>
             </div>
@@ -151,12 +122,11 @@ export function LoanTransactions({
           </div>
         </div>
 
-        {/* Transaction list */}
         {paginated.map((transaction) => (
           <div
             key={transaction.id}
             className={cn(
-              'flex items-center justify-between rounded-md px-2 py-1.5 border-t first:border-t-0',
+              'flex items-center justify-between rounded-md border-t px-2 py-1.5 first:border-t-0',
               transaction.type === 'INTEREST' && 'opacity-60',
             )}
           >
@@ -197,10 +167,9 @@ export function LoanTransactions({
         ))}
 
         {filtered.length === 0 && (
-          <div className="text-center text-sm text-muted-foreground py-4">{t('transactions.noTransactions')}</div>
+          <div className="py-4 text-center text-sm text-muted-foreground">{t('transactions.noTransactions')}</div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 pt-2">
             <Button
@@ -229,24 +198,13 @@ export function LoanTransactions({
 
         {showBalanceSummary && <LoanBalanceSummary loan={loan} readOnly={readOnly} />}
 
-        {!readOnly && (
-          <Button
-            variant="outline"
-            className="w-full border-dashed py-6"
-            size="sm"
-            onClick={() => setIsTransactionDialogOpen(true)}
-            disabled={loan.status === LoanStatus.REPAID}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            {commonT('terms.transaction')}
-          </Button>
+        {addTransactionEnabled && (
+          <LoanAddTransactionControl loanId={loanId} loan={loan} className="w-full border-dashed py-6" />
         )}
       </div>
 
       {!readOnly && (
         <>
-          <TransactionDialog loanId={loanId} open={isTransactionDialogOpen} onOpenChange={setIsTransactionDialogOpen} />
-
           <ConfirmDialog
             open={isConfirmOpen}
             onOpenChange={setIsConfirmOpen}
@@ -258,122 +216,5 @@ export function LoanTransactions({
         </>
       )}
     </>
-  );
-}
-
-function LoanBalanceSummary({
-  loan,
-  readOnly,
-}: {
-  loan: LoanDetailsWithCalculations;
-  readOnly: boolean;
-}) {
-  const t = useTranslations('dashboard.loans');
-  const { deposits, withdrawals, notReclaimed, interest, interestPaid, interestError, balance } = loan;
-
-  const showTotalBorder =
-    deposits !== 0 || withdrawals > 0 || interest > 0 || interestPaid !== 0 || notReclaimed > 0 || interestError > 0;
-
-  const rowClass =
-    'flex items-center justify-between rounded-md border-t px-2 py-1.5 first:border-t-0';
-
-  function SummaryAmount({ className, children }: { className?: string; children: ReactNode }) {
-    return (
-      <div className="flex shrink-0 items-center gap-2">
-        <div className={cn(TRANSACTION_AMOUNT_CLASS, className)}>{children}</div>
-        {!readOnly && <div className={TRANSACTION_ACTIONS_SLOT_CLASS} aria-hidden />}
-      </div>
-    );
-  }
-
-  return (
-    <div className="mt-2 border-t pt-2">
-      <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('table.totals')}</h4>
-      <div className="space-y-0">
-        {deposits !== 0 && (
-          <div className={rowClass}>
-            <div className="flex min-w-0 flex-1 items-center space-x-3">
-              <div className={cn('rounded-full p-1', transactionIconBackground('DEPOSIT'))}>
-                {transactionIcon('DEPOSIT')}
-              </div>
-              <span className="text-sm font-medium">{t('table.deposits')}</span>
-            </div>
-            <SummaryAmount className="text-green-600">+{formatCurrency(deposits)}</SummaryAmount>
-          </div>
-        )}
-        {interest !== 0 && (
-          <div className={rowClass}>
-            <div className="flex min-w-0 flex-1 items-center space-x-3">
-              <div className={cn('rounded-full p-1', transactionIconBackground('INTEREST'))}>
-                {transactionIcon('INTEREST')}
-              </div>
-              <span className="text-sm font-medium">{t('table.interest')}</span>
-            </div>
-            <SummaryAmount className="text-green-600">+{formatCurrency(interest)}</SummaryAmount>
-          </div>
-        )}
-        {interestPaid !== 0 && (
-          <div className={rowClass}>
-            <div className="flex min-w-0 flex-1 items-center space-x-3">
-              <div className={cn('rounded-full p-1', transactionIconBackground('INTERESTPAYMENT'))}>
-                {transactionIcon('INTERESTPAYMENT')}
-              </div>
-              <span className="text-sm font-medium">{t('table.interestPaid')}</span>
-            </div>
-            <SummaryAmount className="text-blue-600">{formatCurrency(interestPaid)}</SummaryAmount>
-          </div>
-        )}
-        {interestError !== 0 && (
-          <div className={rowClass}>
-            <div className="flex min-w-0 flex-1 items-center space-x-3">
-              <div className="rounded-full bg-amber-500/20 p-1">
-                <Receipt className="h-4 w-4 text-amber-600" />
-              </div>
-              <span className="text-sm font-medium">{t('table.interestError')}</span>
-            </div>
-            <SummaryAmount className="text-amber-600">
-              {interestError < 0 ? '-' : ''}
-              {formatCurrency(interestError)}
-            </SummaryAmount>
-          </div>
-        )}
-        {withdrawals !== 0 && (
-          <div className={rowClass}>
-            <div className="flex min-w-0 flex-1 items-center space-x-3">
-              <div className={cn('rounded-full p-1', transactionIconBackground('WITHDRAWAL'))}>
-                {transactionIcon('WITHDRAWAL')}
-              </div>
-              <span className="text-sm font-medium">{t('table.withdrawals')}</span>
-            </div>
-            <SummaryAmount className="text-blue-600">{formatCurrency(withdrawals)}</SummaryAmount>
-          </div>
-        )}
-        {notReclaimed !== 0 && (
-          <div className={rowClass}>
-            <div className="flex min-w-0 flex-1 items-center space-x-3">
-              <div className={cn('rounded-full p-1', transactionIconBackground('WITHDRAWAL'))}>
-                {transactionIcon('WITHDRAWAL')}
-              </div>
-              <span className="text-sm font-medium">{t('table.notReclaimed')}</span>
-            </div>
-            <SummaryAmount className="text-blue-600">{formatCurrency(notReclaimed)}</SummaryAmount>
-          </div>
-        )}
-        <div
-          className={cn(
-            'flex items-center justify-between rounded-md px-2 py-1.5',
-            showTotalBorder ? 'mt-2 border-t pt-2' : 'border-t first:border-t-0',
-          )}
-        >
-          <div className="flex min-w-0 flex-1 items-center space-x-3">
-            <div className="rounded-full bg-muted p-1">
-              <Wallet className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <span className="text-sm font-bold">{t('table.balance')}</span>
-          </div>
-          <SummaryAmount className="font-bold text-foreground">{formatCurrency(balance ?? 0)}</SummaryAmount>
-        </div>
-      </div>
-    </div>
   );
 }

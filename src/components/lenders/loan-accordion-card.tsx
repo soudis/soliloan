@@ -16,6 +16,8 @@ import { useRouter } from '@/i18n/navigation';
 import { cn, formatCurrency, formatPercentage } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-items';
+import { LoanAddTransactionControl } from '../loans/loan-add-transaction-control';
+import { LoanBalanceSummary } from '../loans/loan-balance-summary';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 import { LoanTransactions } from '../loans/loan-transactions';
 import { useProject } from '../providers/project-provider';
@@ -213,8 +215,16 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
             </div>
           </div>
           {/* Transactions */}
-          <div className="mt-4 pt-4 border-t">
-            <LoanTransactions loanId={loan.id} transactions={loan.transactions} loan={loan} showBalanceSummary />
+          <div className="mt-4 space-y-1 border-t pt-4">
+            <LoanTransactions
+              loanId={loan.id}
+              transactions={loan.transactions}
+              loan={loan}
+              showBalanceSummary={false}
+              showAddTransaction={false}
+            />
+            <LoanAddTransactionControl loanId={loan.id} loan={loan} />
+            <LoanBalanceSummary loan={loan} readOnly={false} />
           </div>
         </div>
       )}

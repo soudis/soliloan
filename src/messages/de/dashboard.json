@@ -91,7 +91,11 @@
       "yearPlaceholder": "Jahr auswählen",
       "confirm": "OK",
       "cancel": "Abbrechen",
-      "emailSent": "E-Mail wurde gesendet."
+      "emailSent": "E-Mail wurde gesendet.",
+      "emailPreviewTitle": "E-Mail-Vorschau",
+      "emailPreviewTo": "An:",
+      "emailPreviewSubject": "Betreff:",
+      "sendEmail": "E-Mail senden"
     },
     "delete": {
       "confirmTitle": "Kreditgeber*in löschen?",
