@@ -314,9 +314,13 @@ function SubjectOrFilenameField<TFieldValues extends FieldValues & { subjectOrFi
       name={'subjectOrFilename' as Path<TFieldValues>}
       render={({ field }) => {
         const handleMergeTagSelect = (item: MergeTagField | MergeTagLoop) => {
-          const tagValue = 'startTag' in item ? item.startTag : item.value;
           const cur = field.value ?? '';
-          field.onChange(cur ? `${cur} ${tagValue}` : tagValue);
+          if ('startTag' in item && 'endTag' in item) {
+            const snippet = `${item.startTag}${item.endTag}`;
+            field.onChange(cur ? `${cur} ${snippet}` : snippet);
+          } else {
+            field.onChange(cur ? `${cur} ${item.value}` : item.value);
+          }
           setMergeDropdownOpen(false);
         };
 

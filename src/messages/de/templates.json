@@ -75,7 +75,8 @@
       "insert": "Einfügen",
       "loopSuffix": "Schleife",
       "childFieldsSuffix": "Felder",
-      "additionalFieldsSuffix": "Zusatzfelder"
+      "additionalFieldsSuffix": "Zusatzfelder",
+      "loopBodyPlaceholder": "Schleifeninhalt eingeben …"
     },
     "sidebar": {
       "tabToolbox": "Blöcke",

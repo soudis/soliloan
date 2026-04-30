@@ -24,10 +24,11 @@ import React from 'react';
 import { getNodesMapFromDesign } from '@/lib/templates/email-generator';
 import { paddingPropsToPdfPoints, resolvePaddingPx } from '@/lib/templates/padding-utils';
 import { processTemplate } from '@/lib/templates/template-processor';
+import { stripLoopScaffoldFromTiptapHtml } from '@/lib/templates/tiptap-merge-loop';
 
 // ─── Tiptap HTML → text for PDF (merge tags → {{x}}, then strip HTML) ─────
 function processTiptapContent(html: string): string {
-  const stripped = (html || '').replace(/<p>/g, '').replace(/<\/p>/g, '<br />');
+  const stripped = stripLoopScaffoldFromTiptapHtml((html || '').replace(/<p>/g, '').replace(/<\/p>/g, '<br />'));
   const withMergeTags = stripped.replace(
     /<span[^>]*data-merge-tag="([^"]*)"[^>]*>.*?<\/span>/g,
     (_: string, tag: string) => `{{${tag.replace(/[{}]/g, '')}}}`,

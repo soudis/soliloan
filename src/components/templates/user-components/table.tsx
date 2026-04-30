@@ -19,6 +19,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { paddingPropsToReactStyle } from '@/lib/templates/padding-utils';
+import { buildLoopMergeTagFallbackHtml } from '@/lib/templates/tiptap-merge-loop';
 import { BlockPaddingFields } from '../block-padding-fields';
 import { useEditorMetadata } from '../editor-context';
 import { useMergeTagConfig } from '../merge-tag-context';
@@ -631,6 +632,7 @@ export const Table = ({
 export const TableSettings = () => {
   const t = useTranslations('templates.editor.components.table');
   const tText = useTranslations('templates.editor.components.text');
+  const tTpl = useTranslations('templates.editor');
   const config = useMergeTagConfig();
   const editorMeta = useEditorMetadata();
 
@@ -771,20 +773,34 @@ export const TableSettings = () => {
   };
 
   const handleMergeTagSelect = (item: MergeTagField | MergeTagLoop) => {
-    const mergeTag = {
-      id: String('id' in item ? item.id : item.key),
-      label: item.label,
-      value: ('startTag' in item ? item.startTag : item.value).replace(/[{}]/g, ''),
-    };
+    const isLoopItem = (it: MergeTagField | MergeTagLoop): it is MergeTagLoop => 'startTag' in it && 'endTag' in it;
 
     if (activeEditor) {
       const pos = lastSelection.current?.from ?? activeEditor.state.selection.from;
 
-      if ('insertMergeTag' in activeEditor.commands) {
-        activeEditor.chain().focus(pos).insertMergeTag(mergeTag).run();
+      if (isLoopItem(item)) {
+        if ('insertMergeTagLoop' in activeEditor.commands) {
+          activeEditor.chain().focus(pos).insertMergeTagLoop(item).run();
+        } else {
+          activeEditor
+            .chain()
+            .focus(pos)
+            .insertContent(buildLoopMergeTagFallbackHtml(item, tTpl('mergeTags.loopBodyPlaceholder')))
+            .run();
+        }
       } else {
-        const mergeTagHtml = `<span data-merge-tag="${mergeTag.value}" data-merge-tag-id="${mergeTag.id}" data-merge-tag-label="${mergeTag.label}" class="merge-tag-pill">${mergeTag.label}</span>`;
-        activeEditor.chain().focus(pos).insertContent(mergeTagHtml).run();
+        const mergeTag = {
+          id: String(item.key),
+          label: item.label,
+          value: item.value.replace(/\{\{|\}\}/g, ''),
+        };
+
+        if ('insertMergeTag' in activeEditor.commands) {
+          activeEditor.chain().focus(pos).insertMergeTag(mergeTag).run();
+        } else {
+          const mergeTagHtml = `<span data-merge-tag="${mergeTag.value}" data-merge-tag-id="${mergeTag.id}" data-merge-tag-label="${mergeTag.label}" class="merge-tag-pill">${mergeTag.label}</span>`;
+          activeEditor.chain().focus(pos).insertContent(mergeTagHtml).run();
+        }
       }
 
       lastSelection.current = null;

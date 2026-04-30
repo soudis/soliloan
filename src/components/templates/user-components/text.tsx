@@ -16,6 +16,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
+import { buildLoopMergeTagFallbackHtml } from '@/lib/templates/tiptap-merge-loop';
 import { useEditorMetadata } from '../editor-context';
 import { useMergeTagConfig } from '../merge-tag-context';
 import { MergeTagDropdown } from '../merge-tag-dropdown';
@@ -198,6 +199,7 @@ export const Text = ({ text, fontSize = 16, color = '#000000', textAlign = 'left
 
 export const TextSettings = () => {
   const t = useTranslations('templates.editor.components.text');
+  const tTpl = useTranslations('templates.editor');
   const editorMeta = useEditorMetadata();
 
   const {
@@ -227,32 +229,42 @@ export const TextSettings = () => {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleMergeTagSelect = (item: MergeTagField | MergeTagLoop) => {
-    const mergeTag = {
-      id: String('id' in item ? item.id : item.key),
-      label: item.label,
-      value: ('startTag' in item ? item.startTag : item.value).replace(/[{}]/g, ''),
-    };
+    const isLoopItem = (it: MergeTagField | MergeTagLoop): it is MergeTagLoop => 'startTag' in it && 'endTag' in it;
 
     if (editor) {
-      // 1. Get position BEFORE calling any focus methods
       const pos = lastSelection.current?.from ?? editor.state.selection.from;
 
-      // 2. Chain focus(pos) followed by insertion
-      if ('insertMergeTag' in editor.commands) {
-        editor.chain().focus(pos).insertMergeTag(mergeTag).run();
+      if (isLoopItem(item)) {
+        if ('insertMergeTagLoop' in editor.commands) {
+          editor.chain().focus(pos).insertMergeTagLoop(item).run();
+        } else {
+          editor
+            .chain()
+            .focus(pos)
+            .insertContent(buildLoopMergeTagFallbackHtml(item, tTpl('mergeTags.loopBodyPlaceholder')))
+            .run();
+        }
       } else {
-        // Fallback: insert at current selection using chain for better type safety
-        const mergeTagHtml = `<span data-merge-tag="${mergeTag.value}" data-merge-tag-id="${mergeTag.id}" data-merge-tag-label="${mergeTag.label}" class="merge-tag-pill">${mergeTag.label}</span>`;
-        editor.chain().focus(pos).insertContent(mergeTagHtml).run();
+        const mergeTag = {
+          id: String(item.key),
+          label: item.label,
+          value: item.value.replace(/\{\{|\}\}/g, ''),
+        };
+        if ('insertMergeTag' in editor.commands) {
+          editor.chain().focus(pos).insertMergeTag(mergeTag).run();
+        } else {
+          const mergeTagHtml = `<span data-merge-tag="${mergeTag.value}" data-merge-tag-id="${mergeTag.id}" data-merge-tag-label="${mergeTag.label}" class="merge-tag-pill">${mergeTag.label}</span>`;
+          editor.chain().focus(pos).insertContent(mergeTagHtml).run();
+        }
       }
 
-      // 3. Clear lastSelection to avoid stale data
       lastSelection.current = null;
     } else {
-      // Emergency fallback: append to text
       setProp((props: TextProps) => {
-        const mergeTagHtml = `<span data-merge-tag="${mergeTag.value}" data-merge-tag-id="${mergeTag.id}" data-merge-tag-label="${mergeTag.label}" class="merge-tag-pill">${mergeTag.label}</span>`;
-        props.text = props.text ? `${props.text}${mergeTagHtml}` : mergeTagHtml;
+        const append = isLoopItem(item)
+          ? buildLoopMergeTagFallbackHtml(item, tTpl('mergeTags.loopBodyPlaceholder'))
+          : `<span data-merge-tag="${item.value.replace(/\{\{|\}\}/g, '')}" data-merge-tag-id="${String(item.key)}" data-merge-tag-label="${item.label}" class="merge-tag-pill">${item.label}</span>`;
+        props.text = props.text ? `${props.text}${append}` : append;
       });
     }
     setDropdownOpen(false);
