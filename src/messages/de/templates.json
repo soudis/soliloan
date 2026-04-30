@@ -117,7 +117,8 @@
     },
     "hierarchy": {
       "empty": "Keine Struktur geladen.",
-      "doubleClickHint": "Doppelklick auf einen Eintrag, um den Anzeigenamen zu bearbeiten."
+      "doubleClickHint": "Doppelklick auf einen Eintrag oder das Stiftsymbol anklicken, um den Anzeigenamen zu bearbeiten.",
+      "renameAria": "Anzeigenamen bearbeiten"
     },
     "toolbox": {
       "title": "Blöcke",
@@ -235,7 +236,6 @@
         "tabCell": "Zelle",
         "loopKey": "Datenquelle",
         "staticTable": "Statische Tabelle (kein Loop)",
-        "displayName": "Anzeigename",
         "columns": "Spalten",
         "rows": "Zeilen",
         "columnWidths": "Spaltenbreiten",

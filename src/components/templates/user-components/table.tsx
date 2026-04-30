@@ -1,6 +1,6 @@
 'use client';
 
-import { useNode } from '@craftjs/core';
+import { useEditor, useNode } from '@craftjs/core';
 import { EditorContent } from '@tiptap/react';
 import { AlignCenter, AlignJustify, AlignLeft, AlignRight, PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { mergeLoopsAllowedForCanvasPlacement } from '@/lib/templates/merge-tag-insertion-filter';
+import { setNodeDisplayName } from '@/lib/templates/craft-node-name';
 import { paddingPropsToReactStyle } from '@/lib/templates/padding-utils';
 import { buildLoopMergeTagFallbackHtml } from '@/lib/templates/tiptap-merge-loop';
 import { BlockPaddingFields } from '../block-padding-fields';
@@ -44,7 +45,6 @@ const DEFAULT_TEXT_COLOR = '#000000';
 
 interface TableProps {
   loopKey?: string;
-  label?: string;
   columns?: number;
   rows?: number;
   headerTexts?: string[];
@@ -71,7 +71,6 @@ interface TableProps {
 /** Props as they exist on the craft.js node (always have defaults populated) */
 type ResolvedTableProps = {
   loopKey: string;
-  label: string;
   columns: number;
   rows: number;
   headerTexts: string[];
@@ -361,7 +360,6 @@ const TiptapCell = ({
 
 export const Table = ({
   loopKey = '',
-  label = '',
   columns = 3,
   rows = 1,
   headerTexts = ['Spalte 1', 'Spalte 2', 'Spalte 3'],
@@ -388,8 +386,15 @@ export const Table = ({
     selected,
     actions: { setProp },
     id: nodeId,
-  } = useNode((state) => ({
-    selected: state.events.selected,
+    dynamicTableTitle,
+  } = useNode((node) => ({
+    selected: node.events.selected,
+    dynamicTableTitle: (() => {
+      const fromDisplay = typeof node.data.displayName === 'string' ? node.data.displayName.trim() : '';
+      if (fromDisplay) return fromDisplay;
+      const legacy = (node.data.props as { label?: string }).label;
+      return typeof legacy === 'string' ? legacy.trim() : '';
+    })(),
   }));
 
   // Track which cell was last focused so the sidebar knows which editor to target
@@ -457,122 +462,133 @@ export const Table = ({
     [setProp],
   );
 
+  const shellPaddingStyle = paddingPropsToReactStyle({
+    padding,
+    paddingTop,
+    paddingRight,
+    paddingBottom,
+    paddingLeft,
+  });
+
+  const tableElement = (
+    <table className="w-full border-collapse table-fixed" style={outerBorderStyle}>
+      <colgroup>
+        {columnDescriptors.map((column) => (
+          <col
+            key={column.id}
+            style={{
+              width: `${column.width}%`,
+            }}
+          />
+        ))}
+      </colgroup>
+      {/* Header */}
+      <thead>
+        <tr className="bg-zinc-50">
+          {columnDescriptors.map((column) => {
+            const cellStyle = resolveCellStyle(headerStyles[column.colIdx], true, textAlign);
+            const thStyle: CSSProperties = {
+              width: `${column.width}%`,
+            };
+            if (showVerticalGrid && column.colIdx < columns - 1) {
+              thStyle.borderRight = `${borderWidth}px ${borderStyle} ${borderColor}`;
+            }
+            if (showHorizontalGrid) {
+              thStyle.borderBottom = `${borderWidth}px ${borderStyle} ${borderColor}`;
+            }
+            return (
+              <th key={column.id} className="align-top" style={thStyle}>
+                <TiptapCell
+                  cellId={column.id}
+                  content={headerTexts[column.colIdx] ?? ''}
+                  onChange={(html) => handleHeaderChange(column.colIdx, html)}
+                  isHeader
+                  editable={selected}
+                  onFocus={() => setActiveCellId(column.id)}
+                  fontSize={cellStyle.fontSize}
+                  color={cellStyle.color}
+                  textAlign={cellStyle.textAlign}
+                />
+              </th>
+            );
+          })}
+        </tr>
+      </thead>
+
+      {/* Body rows */}
+      <tbody>
+        {Array.from({ length: displayRows }).map((_, rowIdx) => (
+          <tr
+            key={`row-${
+              // biome-ignore lint/suspicious/noArrayIndexKey: needed
+              rowIdx
+            }`}
+          >
+            {Array.from({ length: columns }).map((_, colIdx) => {
+              const cellId = buildCellId(nodeId, 'cell', rowIdx, colIdx);
+              const cellStyle = resolveCellStyle(cellStyles[rowIdx]?.[colIdx], false, textAlign);
+              const tdStyle: CSSProperties = {
+                width: `${normalizedColumnWidths[colIdx] ?? 100 / columns}%`,
+              };
+              if (showVerticalGrid && colIdx < columns - 1) {
+                tdStyle.borderRight = `${borderWidth}px ${borderStyle} ${borderColor}`;
+              }
+              if (showHorizontalGrid && rowIdx < displayRows - 1) {
+                tdStyle.borderBottom = `${borderWidth}px ${borderStyle} ${borderColor}`;
+              }
+              return (
+                <td key={cellId} className="align-top" style={tdStyle}>
+                  <TiptapCell
+                    cellId={cellId}
+                    content={cellTexts[rowIdx]?.[colIdx] ?? ''}
+                    onChange={(html) => handleCellChange(rowIdx, colIdx, html)}
+                    editable={selected}
+                    onFocus={() => setActiveCellId(cellId)}
+                    fontSize={cellStyle.fontSize}
+                    color={cellStyle.color}
+                    textAlign={cellStyle.textAlign}
+                  />
+                </td>
+              );
+            })}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+
   return (
     <div
       ref={(dom) => {
         if (dom) connect(dom);
       }}
-      className={`rounded-md overflow-hidden ${selected ? 'outline outline-2 outline-blue-500' : ''}`}
-      style={paddingPropsToReactStyle({
-        padding,
-        paddingTop,
-        paddingRight,
-        paddingBottom,
-        paddingLeft,
-      })}
+      className={`rounded-md overflow-hidden ${isDynamic ? 'flex flex-col' : ''} ${selected ? 'outline outline-2 outline-blue-500' : ''}`}
+      style={isDynamic ? undefined : shellPaddingStyle}
     >
-      {/* Loop indicator (only shown for dynamic tables) */}
       {isDynamic && (
-        <div className="bg-zinc-100 px-3 py-1 text-[10px] font-mono text-zinc-500 flex justify-between items-center border-b border-zinc-200">
-          <span>
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-zinc-200/70 bg-zinc-50/60 px-2 py-[3px]">
+          <span className="font-mono text-[9px] leading-tight tracking-tight text-zinc-400">
             {'{{#'}
             {loopKey}
             {'}}'}
           </span>
-          <span className="font-sans font-bold uppercase tracking-wider">{label || loopKey}</span>
+          <span className="truncate font-sans text-[10px] font-normal text-zinc-500/75">
+            {dynamicTableTitle || loopKey}
+          </span>
         </div>
       )}
 
-      {/* Table */}
-      <table className="w-full border-collapse table-fixed" style={outerBorderStyle}>
-        <colgroup>
-          {columnDescriptors.map((column) => (
-            <col
-              key={column.id}
-              style={{
-                width: `${column.width}%`,
-              }}
-            />
-          ))}
-        </colgroup>
-        {/* Header */}
-        <thead>
-          <tr className="bg-zinc-50">
-            {columnDescriptors.map((column) => {
-              const cellStyle = resolveCellStyle(headerStyles[column.colIdx], true, textAlign);
-              const thStyle: CSSProperties = {
-                width: `${column.width}%`,
-              };
-              if (showVerticalGrid && column.colIdx < columns - 1) {
-                thStyle.borderRight = `${borderWidth}px ${borderStyle} ${borderColor}`;
-              }
-              if (showHorizontalGrid) {
-                thStyle.borderBottom = `${borderWidth}px ${borderStyle} ${borderColor}`;
-              }
-              return (
-                <th key={column.id} className="align-top" style={thStyle}>
-                  <TiptapCell
-                    cellId={column.id}
-                    content={headerTexts[column.colIdx] ?? ''}
-                    onChange={(html) => handleHeaderChange(column.colIdx, html)}
-                    isHeader
-                    editable={selected}
-                    onFocus={() => setActiveCellId(column.id)}
-                    fontSize={cellStyle.fontSize}
-                    color={cellStyle.color}
-                    textAlign={cellStyle.textAlign}
-                  />
-                </th>
-              );
-            })}
-          </tr>
-        </thead>
+      {isDynamic ? (
+        <div style={shellPaddingStyle} className="min-w-0 flex-1">
+          {tableElement}
+        </div>
+      ) : (
+        tableElement
+      )}
 
-        {/* Body rows */}
-        <tbody>
-          {Array.from({ length: displayRows }).map((_, rowIdx) => (
-            <tr
-              key={`row-${
-                // biome-ignore lint/suspicious/noArrayIndexKey: needed
-                rowIdx
-              }`}
-            >
-              {Array.from({ length: columns }).map((_, colIdx) => {
-                const cellId = buildCellId(nodeId, 'cell', rowIdx, colIdx);
-                const cellStyle = resolveCellStyle(cellStyles[rowIdx]?.[colIdx], false, textAlign);
-                const tdStyle: CSSProperties = {
-                  width: `${normalizedColumnWidths[colIdx] ?? 100 / columns}%`,
-                };
-                if (showVerticalGrid && colIdx < columns - 1) {
-                  tdStyle.borderRight = `${borderWidth}px ${borderStyle} ${borderColor}`;
-                }
-                if (showHorizontalGrid && rowIdx < displayRows - 1) {
-                  tdStyle.borderBottom = `${borderWidth}px ${borderStyle} ${borderColor}`;
-                }
-                return (
-                  <td key={cellId} className="align-top" style={tdStyle}>
-                    <TiptapCell
-                      cellId={cellId}
-                      content={cellTexts[rowIdx]?.[colIdx] ?? ''}
-                      onChange={(html) => handleCellChange(rowIdx, colIdx, html)}
-                      editable={selected}
-                      onFocus={() => setActiveCellId(cellId)}
-                      fontSize={cellStyle.fontSize}
-                      color={cellStyle.color}
-                      textAlign={cellStyle.textAlign}
-                    />
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Loop end indicator */}
       {isDynamic && (
-        <div className="bg-zinc-100 px-3 py-1 text-[10px] font-mono text-zinc-500 border-t border-zinc-200 text-right">
-          <span>
+        <div className="shrink-0 border-t border-zinc-200/70 bg-zinc-50/60 px-2 py-[3px] text-right">
+          <span className="font-mono text-[9px] leading-tight tracking-tight text-zinc-400">
             {'{{/'}
             {loopKey}
             {'}}'}
@@ -589,6 +605,7 @@ export const TableSettings = () => {
   const t = useTranslations('templates.editor.components.table');
   const tText = useTranslations('templates.editor.components.text');
   const tTpl = useTranslations('templates.editor');
+  const { actions } = useEditor();
   const config = useMergeTagConfig();
   const editorMeta = useEditorMetadata();
 
@@ -596,7 +613,6 @@ export const TableSettings = () => {
     actions: { setProp },
     tableNodeId,
     loopKey,
-    label,
     columns,
     rows,
     headerStyles,
@@ -619,7 +635,6 @@ export const TableSettings = () => {
   } = useNode((node) => ({
     tableNodeId: node.id,
     loopKey: node.data.props.loopKey as string,
-    label: node.data.props.label as string,
     columns: node.data.props.columns as number,
     rows: node.data.props.rows as number,
     headerStyles: (node.data.props.headerStyles as TableCellStyle[]) ?? [],
@@ -695,13 +710,12 @@ export const TableSettings = () => {
   const handleLoopKeyChange = (newKey: string) => {
     setProp((props: ResolvedTableProps) => {
       props.loopKey = newKey;
-      if (newKey) {
-        const loop = availableLoops.find((l) => l.key === newKey);
-        if (loop) {
-          props.label = loop.label;
-        }
-      }
     });
+    if (!newKey) return;
+    const loop = availableLoops.find((l) => l.key === newKey);
+    if (loop) {
+      setNodeDisplayName(actions, tableNodeId, loop.label);
+    }
   };
 
   const handleColumnsChange = (newCols: number) => {
@@ -824,25 +838,6 @@ export const TableSettings = () => {
               <p className="text-[11px] text-muted-foreground">{t('loopKeyContextHint')}</p>
             ) : null}
           </div>
-
-          {isDynamic && (
-            <div className="space-y-2">
-              <label className="text-xs font-medium" htmlFor="label">
-                {t('displayName')}
-              </label>
-              <input
-                id="label"
-                type="text"
-                value={label}
-                onChange={(e) =>
-                  setProp((props: ResolvedTableProps) => {
-                    props.label = e.target.value;
-                  })
-                }
-                className="w-full px-2 py-1 border rounded text-sm"
-              />
-            </div>
-          )}
         </TabsContent>
 
         <TabsContent value="structure" className="mt-3 space-y-4">
@@ -1135,7 +1130,6 @@ const DEFAULT_CELL_STYLES = [
 Table.craft = {
   props: {
     loopKey: '',
-    label: '',
     columns: DEFAULT_COLUMNS,
     rows: 1,
     headerTexts: DEFAULT_HEADERS,

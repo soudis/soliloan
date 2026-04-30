@@ -144,6 +144,7 @@ const buildLayoutStyle = (
 };
 
 export const Container = ({
+  loopKey = '',
   padding = 20,
   paddingTop,
   paddingRight,
@@ -167,7 +168,14 @@ export const Container = ({
   const t = useTranslations('templates.editor.components.container');
   const {
     connectors: { connect },
-  } = useNode();
+    loopRibbonTitle,
+  } = useNode((node) => ({
+    loopRibbonTitle:
+      typeof node.data.displayName === 'string' ? node.data.displayName.trim() : '',
+  }));
+
+  const hasLoop = loopKey.trim().length > 0;
+  const ribbonLabel = loopRibbonTitle || loopKey;
 
   const layoutStyle = useMemo(
     () => buildLayoutStyle(layout, gap, gridColumns, justifyContent, alignItems),
@@ -199,6 +207,26 @@ export const Container = ({
     [padding, paddingTop, paddingRight, paddingBottom, paddingLeft],
   );
 
+  const emptyPlaceholder = (!children || (Array.isArray(children) && children.length === 0)) && (
+    <div className="py-12 border-2 border-dashed border-zinc-200 rounded-lg flex items-center justify-center text-zinc-400 text-sm pointer-events-none w-full">
+      {t('dropHere')}
+    </div>
+  );
+
+  const contentBody = (
+    <>
+      {children}
+      {emptyPlaceholder}
+    </>
+  );
+
+  const contentStyle = {
+    ...paddingStyle,
+    background,
+    ...layoutStyle,
+    ...borderStyleObj,
+  };
+
   return (
     <div
       ref={(dom) => {
@@ -206,18 +234,33 @@ export const Container = ({
           connect(dom);
         }
       }}
-      style={{
-        ...paddingStyle,
-        background,
-        ...layoutStyle,
-        ...borderStyleObj,
-      }}
-      className="min-h-[50px] w-full"
+      className={`min-h-[50px] w-full ${hasLoop ? 'flex flex-col overflow-hidden rounded-md' : ''}`}
+      style={hasLoop ? undefined : contentStyle}
     >
-      {children}
-      {(!children || (Array.isArray(children) && children.length === 0)) && (
-        <div className="py-12 border-2 border-dashed border-zinc-200 rounded-lg flex items-center justify-center text-zinc-400 text-sm pointer-events-none w-full">
-          {t('dropHere')}
+      {hasLoop && (
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-zinc-200/70 bg-zinc-50/60 px-2 py-[3px]">
+          <span className="font-mono text-[9px] leading-tight tracking-tight text-zinc-400">
+            {'{{#'}
+            {loopKey}
+            {'}}'}
+          </span>
+          <span className="truncate font-sans text-[10px] font-normal text-zinc-500/75">{ribbonLabel}</span>
+        </div>
+      )}
+      {hasLoop ? (
+        <div style={contentStyle} className="min-h-[50px] w-full flex-1 min-w-0">
+          {contentBody}
+        </div>
+      ) : (
+        contentBody
+      )}
+      {hasLoop && (
+        <div className="shrink-0 border-t border-zinc-200/70 bg-zinc-50/60 px-2 py-[3px] text-right">
+          <span className="font-mono text-[9px] leading-tight tracking-tight text-zinc-400">
+            {'{{/'}
+            {loopKey}
+            {'}}'}
+          </span>
         </div>
       )}
     </div>
