@@ -16,8 +16,10 @@ import {
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
+import { useEditorMetadata } from '../editor-context';
 import { useMergeTagConfig } from '../merge-tag-context';
 import { MergeTagDropdown } from '../merge-tag-dropdown';
+import { useMergeTagInsertionLoops } from '../use-merge-tag-insertion-loops';
 import { editorRegistry, useEditorRegistry } from './tiptap/editor-registry';
 import { TextEditorProvider } from './tiptap/text-editor-context';
 import { useTiptapEditor } from './tiptap/use-tiptap-editor';
@@ -196,6 +198,7 @@ export const Text = ({ text, fontSize = 16, color = '#000000', textAlign = 'left
 
 export const TextSettings = () => {
   const t = useTranslations('templates.editor.components.text');
+  const editorMeta = useEditorMetadata();
 
   const {
     actions: { setProp },
@@ -210,6 +213,8 @@ export const TextSettings = () => {
     text: node.data.props.text,
     id: node.id,
   }));
+
+  const ancestorLoopsInnermostFirst = useMergeTagInsertionLoops(id, false);
 
   // Get editor instance from registry since we are in a different React tree (Sidebar)
   const registryData = useEditorRegistry(id);
@@ -344,6 +349,10 @@ export const TextSettings = () => {
           onSelect={handleMergeTagSelect}
           config={config}
           position={dropdownPos}
+          insertionContext={{
+            ancestorLoopsInnermostFirst,
+            dataset: editorMeta.dataset,
+          }}
         />
       )}
     </div>

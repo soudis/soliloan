@@ -20,8 +20,10 @@ import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/ge
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { paddingPropsToReactStyle } from '@/lib/templates/padding-utils';
 import { BlockPaddingFields } from '../block-padding-fields';
+import { useEditorMetadata } from '../editor-context';
 import { useMergeTagConfig } from '../merge-tag-context';
 import { MergeTagDropdown } from '../merge-tag-dropdown';
+import { useMergeTagInsertionLoops } from '../use-merge-tag-insertion-loops';
 import { editorRegistry, useEditorRegistry } from './tiptap/editor-registry';
 import { useTiptapEditor } from './tiptap/use-tiptap-editor';
 import './tiptap/tiptap.css';
@@ -630,9 +632,11 @@ export const TableSettings = () => {
   const t = useTranslations('templates.editor.components.table');
   const tText = useTranslations('templates.editor.components.text');
   const config = useMergeTagConfig();
+  const editorMeta = useEditorMetadata();
 
   const {
     actions: { setProp },
+    tableNodeId,
     loopKey,
     label,
     columns,
@@ -655,6 +659,7 @@ export const TableSettings = () => {
     paddingBottom,
     paddingLeft,
   } = useNode((node) => ({
+    tableNodeId: node.id,
     loopKey: node.data.props.loopKey as string,
     label: node.data.props.label as string,
     columns: node.data.props.columns as number,
@@ -680,6 +685,8 @@ export const TableSettings = () => {
 
   const isDynamic = loopKey.length > 0;
   const availableLoops = config?.loops ?? [];
+
+  const ancestorLoopsInnermostFirst = useMergeTagInsertionLoops(tableNodeId, true);
   const activeCell = parseCellId(activeCellId);
   const activeCellStyle = activeCell
     ? activeCell.type === 'header'
@@ -1108,6 +1115,10 @@ export const TableSettings = () => {
           onSelect={handleMergeTagSelect}
           config={config}
           position={dropdownPos}
+          insertionContext={{
+            ancestorLoopsInnermostFirst,
+            dataset: editorMeta.dataset,
+          }}
         />
       )}
     </div>
