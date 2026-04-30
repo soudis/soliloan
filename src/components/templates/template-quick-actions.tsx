@@ -2,7 +2,7 @@
 
 import type { TemplateDataset, TemplateType } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Mail } from 'lucide-react';
+import { Download, Mail, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useEffect, useState } from 'react';
@@ -20,6 +20,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
@@ -59,6 +60,14 @@ export type TemplateQuickActionsProps = {
    * `compact`: ghost icon buttons `h-7 w-7` (transaction rows).
    */
   density?: 'default' | 'compact' | 'toolbar';
+  /**
+   * Single … menu (e.g. loan transaction rows): templates as items + optional delete.
+   * When set, `density` is ignored.
+   */
+  rowMenu?: {
+    showDelete: boolean;
+    onDelete: () => void;
+  };
 };
 
 /** Row shape from {@link getQuickActionTemplatesAction} (subset of `CommunicationTemplate`). */
@@ -82,8 +91,11 @@ export function TemplateQuickActions({
   transactionId,
   density = 'default',
   lenderSelfService = false,
+  rowMenu,
 }: TemplateQuickActionsProps) {
   const t = useTranslations('dashboard.lenders.templateQuickActions');
+  const commonT = useTranslations('common');
+  const dataTableT = useTranslations('dataTable');
   const [yearDialogOpen, setYearDialogOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [pendingYearly, setPendingYearly] = useState<PendingYearly | null>(null);
@@ -207,6 +219,115 @@ export function TemplateQuickActions({
 
   if (lenderSelfService && !loanId) {
     return null;
+  }
+
+  if (rowMenu) {
+    const hasTemplates = docTemplates.length > 0 || emailTemplates.length > 0;
+    const showTrigger = rowMenu.showDelete || hasTemplates || isLoading;
+    if (!showTrigger) {
+      return null;
+    }
+
+    const showLoadingPlaceholder = isLoading && !hasTemplates;
+    const showSeparatorBeforeDelete = rowMenu.showDelete && (hasTemplates || showLoadingPlaceholder);
+
+    return (
+      <>
+        <DropdownMenu modal>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+              aria-label={dataTableT('rowActions')}
+            >
+              <MoreHorizontal className="h-4 w-4 shrink-0" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            sideOffset={4}
+            className="z-[200] max-h-80 overflow-y-auto"
+            onCloseAutoFocus={(e) => e.preventDefault()}
+          >
+            {showLoadingPlaceholder ? (
+              <DropdownMenuItem disabled>{commonT('ui.status.loading')}</DropdownMenuItem>
+            ) : (
+              <>
+                {docTemplates.map((tpl) => (
+                  <DropdownMenuItem
+                    key={`dl-${tpl.id}`}
+                    disabled={sending}
+                    onSelect={() => handlePickTemplate(tpl, 'download')}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    {tpl.name}
+                  </DropdownMenuItem>
+                ))}
+                {docTemplates.length > 0 && emailTemplates.length > 0 ? <DropdownMenuSeparator /> : null}
+                {emailTemplates.map((tpl) => (
+                  <DropdownMenuItem
+                    key={`em-${tpl.id}`}
+                    disabled={sending}
+                    onSelect={() => handlePickTemplate(tpl, 'email')}
+                  >
+                    <Mail className="mr-2 h-4 w-4" />
+                    {tpl.name}
+                  </DropdownMenuItem>
+                ))}
+              </>
+            )}
+            {showSeparatorBeforeDelete ? <DropdownMenuSeparator /> : null}
+            {rowMenu.showDelete ? (
+              <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => rowMenu.onDelete()}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                {commonT('ui.actions.delete')}
+              </DropdownMenuItem>
+            ) : null}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <Dialog open={yearDialogOpen} onOpenChange={setYearDialogOpen}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>{t('yearDialogTitle')}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2 py-2">
+              <Label>{t('yearLabel')}</Label>
+              <Select
+                value={selectedYear != null ? String(selectedYear) : undefined}
+                onValueChange={(v) => setSelectedYear(Number.parseInt(v, 10))}
+                disabled={yearsLoading || lenderYears.length === 0}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('yearPlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {lenderYears.map((y) => (
+                    <SelectItem key={y} value={String(y)}>
+                      {y}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setYearDialogOpen(false)}>
+                {t('cancel')}
+              </Button>
+              <Button
+                type="button"
+                onClick={() => void confirmYearly()}
+                disabled={selectedYear == null || yearsLoading}
+              >
+                {t('confirm')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
   }
 
   if (isLoading || (docTemplates.length === 0 && emailTemplates.length === 0)) {

@@ -11,7 +11,6 @@ import { formatCurrency, formatPercentage, getLenderName } from '@/lib/utils';
 import { formatAddressPlace } from '@/lib/utils/format';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
-import { BalanceTable } from '../loans/balance-table';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 import { LoanTransactions } from '../loans/loan-transactions';
 
@@ -160,9 +159,6 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
                   value={format(new Date(loan.transactions.at(-1)?.date ?? ''), 'PPP', { locale: dateLocale })}
                 />
               )}
-              <div className="mt-0">
-                <BalanceTable className="w-full max-w-none" totals={loan} />
-              </div>
             </div>
             <div className="space-y-3 lg:pl-2">
               <InfoItem
@@ -190,7 +186,13 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
           </div>
 
           <div className="mt-4 border-t pt-4">
-            <LoanTransactions loanId={loan.id} transactions={loan.transactions} loan={loan} readOnly />
+            <LoanTransactions
+              loanId={loan.id}
+              transactions={loan.transactions}
+              loan={loan}
+              readOnly
+              showBalanceSummary
+            />
           </div>
         </div>
       )}

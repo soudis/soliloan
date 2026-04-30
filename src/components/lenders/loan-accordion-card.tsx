@@ -10,15 +10,14 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { deleteLoanAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
+import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { InfoItem } from '@/components/ui/info-item';
 import { useRouter } from '@/i18n/navigation';
 import { cn, formatCurrency, formatPercentage } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-items';
-import { BalanceTable } from '../loans/balance-table';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 import { LoanTransactions } from '../loans/loan-transactions';
-import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { useProject } from '../providers/project-provider';
 import { Button } from '../ui/button';
 
@@ -165,8 +164,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
       {/* Expandable content */}
       {isOpen && (
         <div className="border-t px-4 pb-4 pt-4">
-          {/* Loan details + balance in two columns */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <div className="space-y-3">
               <InfoItem
                 label={t('table.signDate')}
@@ -182,6 +180,8 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                   </span>
                 }
               />
+            </div>
+            <div className="space-y-3">
               <InfoItem label={t('table.terminationModalities')} value={getTerminationModalities()} />
               {loan.terminationDate && loan.terminationType === 'TERMINATION' && (
                 <InfoItem
@@ -211,14 +211,10 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                 />
               </div>
             </div>
-            <div>
-              <BalanceTable className="lg:mt-0" totals={loan} />
-            </div>
           </div>
-
           {/* Transactions */}
           <div className="mt-4 pt-4 border-t">
-            <LoanTransactions loanId={loan.id} transactions={loan.transactions} loan={loan} />
+            <LoanTransactions loanId={loan.id} transactions={loan.transactions} loan={loan} showBalanceSummary />
           </div>
         </div>
       )}
