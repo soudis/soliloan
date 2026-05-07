@@ -1,7 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { formatCurrency, formatDate, formatPercentage } from '@/lib/utils';
+import { formatCurrency, formatDateLong, formatPercentage } from '@/lib/utils';
 import type { LoanWithCalculations } from '@/types/loans';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 
@@ -16,7 +16,7 @@ export function LoanSelectorItem({ loan }: LoanSelectorItemProps) {
   const amountStr = formatCurrency(loan.amount);
   const interestRateStr = `${formatPercentage(loan.interestRate)}%`;
   const balanceStr = formatCurrency(loan.balance);
-  const contractDateStr = formatDate(loan.signDate, locale);
+  const contractDateStr = formatDateLong(loan.signDate, locale);
 
   const loanNumberAndBadge = (
     <div className="flex flex-col items-start flex-shrink-0 gap-1 min-w-30">

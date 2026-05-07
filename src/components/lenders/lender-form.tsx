@@ -16,6 +16,7 @@ import {
 import type { LenderFormData } from '@/lib/schemas/lender';
 import { lenderFormSchema } from '@/lib/schemas/lender';
 import { additionalFieldDefaults, validateAdditionalFields } from '@/lib/utils/additional-fields';
+import type { FormSubmitHandler } from '@/types/forms';
 import type { LenderWithRelations } from '@/types/lenders';
 import { useProject } from '../providers/project-provider';
 import { LenderFormFields } from './lender-form-fields';
@@ -25,7 +26,7 @@ interface LenderFormProps {
   submitButtonText: string;
   submittingButtonText: string;
   cancelButtonText: string;
-  onSubmit: (data: LenderFormData) => Promise<Record<string, string> | undefined>;
+  onSubmit: FormSubmitHandler<LenderFormData>;
   initialData?: Partial<LenderWithRelations>;
   isLoading?: boolean;
   error?: string | null;

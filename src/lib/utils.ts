@@ -93,6 +93,9 @@ export function formatDate(date: Date | string | null | undefined, locale: strin
   return format(date, 'PPP', { locale: locale === 'de' ? de : enUS });
 }
 
+// Backwards compatible: existing code expects formatDate() to be the long form.
+export const formatDate = formatDateLong;
+
 export class NumberParser {
   private groupSymbol: string;
   private decimalSymbol: string;

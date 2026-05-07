@@ -21,6 +21,7 @@ export async function getProjectUnsafe(projectId: string): Promise<ProjectWithCo
           loanTemplates: true,
         },
       },
+      managers: true,
       lenders: {
         include: { loans: { include: { transactions: true } } },
       },
@@ -43,6 +44,7 @@ export async function getProjectUnsafe(projectId: string): Promise<ProjectWithCo
 
   return {
     ...omit(project, ['lenders']),
+    managers: project.managers,
     hasHistoricTransactions: project.lenders.some((lender) =>
       lender.loans.some(
         (loan) => loan.transactions.filter((t) => moment(t.date).isBefore(moment().startOf('year'))).length > 0,

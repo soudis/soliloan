@@ -14,7 +14,7 @@ import { ActionButton } from '@/components/ui/action-button';
 import { Button } from '@/components/ui/button';
 import { FormSection } from '@/components/ui/form-section';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { formatDate } from '@/lib/utils';
+import { formatDateLong } from '@/lib/utils';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { AddManagerDialog } from './add-manager-dialog';
 
@@ -179,7 +179,7 @@ function PendingMessage({ manager, inviteValidDays }: PendingMessageProps) {
     ? new Date(lastInvitedDate.getTime() + inviteValidDays * 24 * 60 * 60 * 1000)
     : null;
   const isExpired = !!(lastInvitedDate && expiresAt && expiresAt < new Date());
-  const expiresAtFormatted = expiresAt ? formatDate(expiresAt, locale) : '';
+  const expiresAtFormatted = expiresAt ? formatDateLong(expiresAt, locale) : '';
   const isPending = !isActive && !isExpired;
 
   return (

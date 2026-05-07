@@ -59,7 +59,6 @@ export const loanTerminationSchema = z.object({
   // Termination Information
   terminationType: z.enum(TerminationType),
   endDate: createDateSchema(false),
-  terminationDate: createDateSchema(false),
   terminationPeriod: optionalNumberSchema,
   terminationPeriodType: periodTypeEnum.nullable().optional(),
   duration: optionalNumberSchema,

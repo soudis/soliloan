@@ -1,14 +1,13 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { de, enUS } from 'date-fns/locale';
 import { Info, Key, Mail, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { sendInvitationEmailAction } from '@/actions/users';
 import { InfoItem } from '@/components/ui/info-item';
+import { formatDateTimeLong } from '@/lib/utils';
 import { hasAdditionalFields } from '@/lib/utils/additional-fields';
 import { formatAddressPlace } from '@/lib/utils/format';
 import type { LenderDetailsWithCalculations } from '@/types/lenders';
@@ -25,7 +24,6 @@ export function LenderContactSection({ lender }: LenderContactSectionProps) {
   const t = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
   const locale = useLocale();
-  const dateLocale = locale === 'de' ? de : enUS;
   const { project } = useProject();
   const queryClient = useQueryClient();
   const [isSendingInvitation, setIsSendingInvitation] = useState(false);
@@ -133,7 +131,7 @@ export function LenderContactSection({ lender }: LenderContactSectionProps) {
                   label={t('details.lastLogin')}
                   value={
                     lender.user.lastLogin ? (
-                      format(new Date(lender.user.lastLogin), 'PPP p', { locale: dateLocale })
+                      formatDateTimeLong(lender.user.lastLogin, locale)
                     ) : (
                       <span className="text-muted-foreground italic">{t('details.neverLoggedIn')}</span>
                     )
@@ -144,7 +142,7 @@ export function LenderContactSection({ lender }: LenderContactSectionProps) {
                     label={t('details.lastInvited')}
                     value={
                       lender.user.lastInvited ? (
-                        format(new Date(lender.user.lastInvited), 'PPP p', { locale: dateLocale })
+                        formatDateTimeLong(lender.user.lastInvited, locale)
                       ) : (
                         <span className="text-muted-foreground italic">{t('details.neverInvited')}</span>
                       )
