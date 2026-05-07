@@ -9,14 +9,8 @@
     "languagePlaceholder": "Sprache auswählen",
     "save": "Profil speichern",
     "saving": "Wird gespeichert...",
-    "success": "Profil erfolgreich aktualisiert. Du wirst jetzt abgemeldet.",
-    "error": "Fehler beim Aktualisieren des Profils.",
-    "confirmDialog": {
-      "title": "Profil speichern?",
-      "description": "Durch die Änderung wirst du abgemeldet und musst dich erneut anmelden.",
-      "confirm": "Speichern und abmelden",
-      "cancel": "Abbrechen"
-    }
+    "success": "Profil erfolgreich aktualisiert.",
+    "error": "Fehler beim Aktualisieren des Profils."
   },
   "password": {
     "title": "Passwort ändern",

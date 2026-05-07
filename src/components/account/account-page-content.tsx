@@ -2,7 +2,6 @@
 
 import type { Language } from '@prisma/client';
 import { AlertTriangle, KeyRound, UserCircle } from 'lucide-react';
-import { signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 
 import { FormSection } from '@/components/ui/form-section';
@@ -27,12 +26,7 @@ export function AccountPageContent({ user }: AccountPageContentProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <FormSection title={t('profile.title')} icon={<UserCircle className="h-4 w-4 text-muted-foreground" />}>
-          <AccountSettingsForm
-            email={user.email}
-            name={user.name}
-            language={user.language}
-            onSuccess={() => signOut({ callbackUrl: '/auth/login' })}
-          />
+          <AccountSettingsForm email={user.email} name={user.name} language={user.language} />
         </FormSection>
 
         <FormSection title={t('password.title')} icon={<KeyRound className="h-4 w-4 text-muted-foreground" />}>

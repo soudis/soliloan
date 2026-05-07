@@ -2,23 +2,13 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { Language } from '@prisma/client';
-import { useState } from 'react';
-import { useAction } from 'next-safe-action/hooks';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
+import { useAction } from 'next-safe-action/hooks';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-
 import { updateProfileAction } from '@/actions/account/mutations/update-profile';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import type { UpdateProfileFormData } from '@/lib/schemas/account';
@@ -29,14 +19,12 @@ interface AccountSettingsFormProps {
   email: string;
   name: string;
   language: Language;
-  onSuccess?: () => void;
 }
 
-export function AccountSettingsForm({ email, name, language, onSuccess }: AccountSettingsFormProps) {
+export function AccountSettingsForm({ email, name, language }: AccountSettingsFormProps) {
   const t = useTranslations('account.profile');
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [pendingData, setPendingData] = useState<UpdateProfileFormData | null>(null);
-
+  const { update } = useSession();
+  const router = useRouter();
   const form = useForm({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
@@ -46,9 +34,15 @@ export function AccountSettingsForm({ email, name, language, onSuccess }: Accoun
   });
 
   const { execute, isPending } = useAction(updateProfileAction, {
-    onSuccess: () => {
+    onSuccess: async ({ input }) => {
+      await update({
+        user: {
+          name: input.name,
+          language: input.language,
+        },
+      });
+      router.refresh();
       toast.success(t('success'));
-      onSuccess?.();
     },
     onError: ({ error }) => {
       toast.error(error.serverError || t('error'));
@@ -56,46 +50,21 @@ export function AccountSettingsForm({ email, name, language, onSuccess }: Accoun
   });
 
   const handleSubmit = form.handleSubmit((data) => {
-    setPendingData(data as UpdateProfileFormData);
-    setShowConfirm(true);
+    execute(data as UpdateProfileFormData);
   });
 
-  const handleConfirm = () => {
-    if (pendingData) {
-      execute(pendingData);
-    }
-    setShowConfirm(false);
-  };
-
   return (
-    <>
-      <Form {...form}>
-        <form onSubmit={handleSubmit} className="flex flex-col h-full">
-          <div className="flex-1">
-            <AccountSettingsFormFields email={email} />
-          </div>
-          <div className="flex justify-end pt-4 mt-auto">
-            <Button type="submit" disabled={isPending}>
-              {isPending ? t('saving') : t('save')}
-            </Button>
-          </div>
-        </form>
-      </Form>
-
-      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('confirmDialog.title')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('confirmDialog.description')}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('confirmDialog.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirm}>
-              {t('confirmDialog.confirm')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    <Form {...form}>
+      <form onSubmit={handleSubmit} className="flex flex-col h-full">
+        <div className="flex-1">
+          <AccountSettingsFormFields email={email} />
+        </div>
+        <div className="flex justify-end pt-4 mt-auto">
+          <Button type="submit" disabled={isPending}>
+            {isPending ? t('saving') : t('save')}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

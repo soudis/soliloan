@@ -100,7 +100,7 @@ export const TerminationFormFields = ({ hideTerminationDate }: Props) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="col-span-2 max-w-80">
           {!isFixedTerm && (
-            <div className="pl-4">
+            <div className="pl-0">
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label className="block">{`${t('new.form.terminationPeriod')} *`}</Label>
@@ -129,7 +129,7 @@ export const TerminationFormFields = ({ hideTerminationDate }: Props) => {
             </div>
           )}
           {isFixedTerm && (
-            <RadioGroup value={dateSubType} onValueChange={handleRadioChange} className="pl-4">
+            <RadioGroup value={dateSubType} onValueChange={handleRadioChange} className="pl-0">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 h-4">
                   <RadioGroupItem value="endDate" id="radio-endDate" />

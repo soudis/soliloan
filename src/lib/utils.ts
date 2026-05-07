@@ -1,6 +1,5 @@
 import type { ClassValue } from 'clsx';
 import { clsx } from 'clsx';
-import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
 import { twMerge } from 'tailwind-merge';
 
@@ -63,10 +62,16 @@ export function formatNumber(
   }).format(amount);
 }
 
-function resolveIntlLocaleForDates(locale: string): string {
+export function resolveIntlLocaleForDates(locale: string): string {
   if (locale === 'de' || locale.startsWith('de-')) return 'de-DE';
   if (locale === 'en' || locale.startsWith('en-')) return 'en-US';
   return locale;
+}
+
+/** date-fns locale for react-day-picker; matches {@link resolveIntlLocaleForDates} branches. */
+export function getDateFnsLocale(locale: string) {
+  if (locale === 'de' || locale.startsWith('de-')) return de;
+  return enUS;
 }
 
 /** Template-friendly short date (e.g. 09.04.2026 in de-DE). */
@@ -83,14 +88,6 @@ export function formatDateLong(date: Date | string | null | undefined, locale: s
   const d = typeof date === 'string' ? new Date(date) : date;
   if (Number.isNaN(d.getTime())) return '';
   return new Intl.DateTimeFormat(resolveIntlLocaleForDates(locale), { dateStyle: 'long' }).format(d);
-}
-
-/** UI display (date-fns long form). Prefer `formatDateShort` / `formatDateLong` in merge-tag templates. */
-export function formatDate(date: Date | string | null | undefined, locale: string): string {
-  if (!date) {
-    return '';
-  }
-  return format(date, 'PPP', { locale: locale === 'de' ? de : enUS });
 }
 
 // Backwards compatible: existing code expects formatDate() to be the long form.
