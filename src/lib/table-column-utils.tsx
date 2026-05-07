@@ -4,7 +4,7 @@ import moment from 'moment';
 import { Badge } from '@/components/ui/badge';
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { formatCurrency, getLenderName, NumberParser } from '@/lib/utils';
+import { formatCurrency, getLenderName, NumberParser, resolveIntlLocaleForDates } from '@/lib/utils';
 import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat } from './schemas/common';
 
 // Define the custom filter function for compound text fields
@@ -145,7 +145,7 @@ export function createDateColumn<T>(
         if (!dateStr) return '';
         try {
           const date = new Date(dateStr);
-          return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
+          return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(resolveIntlLocaleForDates(locale ?? 'de'));
         } catch (_) {
           return '';
         }

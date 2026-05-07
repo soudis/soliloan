@@ -81,8 +81,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       }
     }
 
-    const assetBaseUrl =
-      process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : url.origin;
+    const assetBaseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : url.origin;
 
     const design = template.designJson as Record<string, unknown>;
     const pdfBytes = await generateTemplatePdfBuffer({

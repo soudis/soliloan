@@ -170,11 +170,7 @@ export async function renderAndSendCommunicationTemplateEmail(args: {
 }): Promise<boolean> {
   const html = renderSystemEmailTemplate(args.designJson, args.mergeData, { logoUrl: args.logoUrl });
   if (!html) return false;
-  const finalSubject = resolveTemplateSubject(
-    args.subjectOrFilename,
-    args.mergeData,
-    args.fallbackSubject,
-  );
+  const finalSubject = resolveTemplateSubject(args.subjectOrFilename, args.mergeData, args.fallbackSubject);
   await sendRawEmail(args.to, finalSubject, html);
   return true;
 }

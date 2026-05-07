@@ -2,10 +2,7 @@ import type { MigrationReport } from './types';
 
 type TranslateFunction = (key: string, values?: Record<string, string | number>) => string;
 
-export function formatMigrationReportAsPlainText(
-  report: MigrationReport,
-  t: TranslateFunction
-): string {
+export function formatMigrationReportAsPlainText(report: MigrationReport, t: TranslateFunction): string {
   const lines: string[] = [];
 
   const title = t('report.success');
@@ -67,12 +64,7 @@ export function formatMigrationReportAsPlainText(
     lines.push(headers.map((h, i) => h.padEnd(colWidths[i])).join('  '));
 
     for (const mapping of report.idMappings) {
-      const values = [
-        mapping.entity,
-        String(mapping.legacyId),
-        String(mapping.displayNumber ?? '-'),
-        mapping.newId,
-      ];
+      const values = [mapping.entity, String(mapping.legacyId), String(mapping.displayNumber ?? '-'), mapping.newId];
       lines.push(values.map((v, i) => v.padEnd(colWidths[i])).join('  '));
     }
   }

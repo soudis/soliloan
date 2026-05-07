@@ -12,13 +12,7 @@ import { getQuickActionTemplatesAction } from '@/actions/templates/queries/get-q
 import { sendCommunicationTemplateEmailAction } from '@/actions/templates/mutations/send-communication-template-email';
 import { getSampleLenderYearsAction } from '@/actions/templates/queries/get-template-data';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,13 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { buildTemplateUseSearchParams } from '@/lib/templates/template-download-query';
 import { cn } from '@/lib/utils';
 
@@ -196,12 +184,7 @@ export function TemplateQuickActions({
     return null;
   }
 
-  const triggerClass =
-    density === 'compact'
-      ? 'h-7 w-7'
-      : density === 'toolbar'
-        ? 'h-8 w-8'
-        : 'h-9 px-3 sm:px-3';
+  const triggerClass = density === 'compact' ? 'h-7 w-7' : density === 'toolbar' ? 'h-8 w-8' : 'h-9 px-3 sm:px-3';
 
   const isIconTrigger = density === 'compact' || density === 'toolbar';
   const iconClassName = density === 'default' ? 'h-4 w-4' : 'h-3.5 w-3.5';
@@ -300,11 +283,7 @@ export function TemplateQuickActions({
             <Button type="button" variant="outline" onClick={() => setYearDialogOpen(false)}>
               {t('cancel')}
             </Button>
-            <Button
-              type="button"
-              onClick={() => void confirmYearly()}
-              disabled={selectedYear == null || yearsLoading}
-            >
+            <Button type="button" onClick={() => void confirmYearly()} disabled={selectedYear == null || yearsLoading}>
               {t('confirm')}
             </Button>
           </DialogFooter>

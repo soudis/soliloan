@@ -13,9 +13,7 @@ export async function resolveSystemTemplate(systemKey: string, projectId?: strin
       systemKey,
       isSystem: true,
       type: 'EMAIL',
-      ...(projectId
-        ? { OR: [{ projectId }, { projectId: null }] }
-        : { projectId: null }),
+      ...(projectId ? { OR: [{ projectId }, { projectId: null }] } : { projectId: null }),
     },
     select: {
       id: true,

@@ -36,7 +36,11 @@ export function resolveTemplateFilename(
 ): string {
   const base =
     (raw ?? '').trim() !== ''
-      ? sanitizeFilenameBase(processTemplate((raw ?? '').trim(), mergeData).replace(WHITESPACE_COLLAPSE, ' ').trim())
+      ? sanitizeFilenameBase(
+          processTemplate((raw ?? '').trim(), mergeData)
+            .replace(WHITESPACE_COLLAPSE, ' ')
+            .trim(),
+        )
       : sanitizeFilenameBase(fallback);
   const withExt = base.toLowerCase().endsWith('.pdf') ? base : `${base}.pdf`;
   return withExt;
