@@ -8,12 +8,12 @@ import { useAction } from 'next-safe-action/hooks';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { bulkDeleteLoansAction } from '@/actions/loans';
+import { bulkDeleteLoansAction, deleteLoanAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
-import { ActionButton } from '@/components/ui/action-button';
 import { Button } from '@/components/ui/button';
 import type { BulkAction } from '@/components/ui/data-table';
 import { DataTable } from '@/components/ui/data-table';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useRouter } from '@/i18n/navigation';
 import {
   createAdditionalFieldDefaultColumnVisibility,
@@ -44,16 +44,25 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
   const router = useRouter();
   const locale = useLocale();
 
-  const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  type DeleteState = { mode: 'bulk'; ids: string[] } | { mode: 'single'; loanId: string } | null;
+
+  const [deleteState, setDeleteState] = useState<DeleteState>(null);
 
   const { execute: executeBulkDelete } = useAction(bulkDeleteLoansAction, {
     onSuccess: () => {
       toast.success(t('bulkDelete.success'));
-      setBulkDeleteIds([]);
     },
     onError: ({ error }) => {
       toast.error(error.serverError ?? t('bulkDelete.error'));
+    },
+  });
+
+  const { execute: executeDeleteLoan } = useAction(deleteLoanAction, {
+    onSuccess: () => {
+      toast.success(t('delete.success'));
+    },
+    onError: ({ error }) => {
+      toast.error(error.serverError ?? t('delete.error'));
     },
   });
 
@@ -63,8 +72,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
       icon: <Trash2 className="h-4 w-4" />,
       variant: 'destructive',
       onClick: (ids) => {
-        setBulkDeleteIds(ids);
-        setIsConfirmOpen(true);
+        setDeleteState({ mode: 'bulk', ids });
       },
     },
   ];
@@ -300,25 +308,41 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
         onRowClick={(row) => router.push(`/lenders/${row.lender.id}?loanId=${row.id}`)}
         bulkActions={bulkActions}
         actions={(row) => (
-          <div className="flex items-center justify-end space-x-2">
-            <ActionButton
-              icon={<Pencil className="h-4 w-4" />}
-              tooltip={commonT('ui.actions.edit')}
+          <>
+            <DropdownMenuItem
               onClick={() => {
                 router.push(`/loans/${row.id}/edit`);
               }}
-            />
-          </div>
+            >
+              <Pencil className="h-4 w-4 mr-2" />
+              {commonT('ui.actions.edit')}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setDeleteState({ mode: 'single', loanId: row.id })}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {commonT('ui.actions.delete')}
+            </DropdownMenuItem>
+          </>
         )}
       />
 
       <ConfirmDialog
-        open={isConfirmOpen}
-        onOpenChange={setIsConfirmOpen}
-        title={t('bulkDelete.confirmTitle')}
-        description={t('bulkDelete.confirmDescription', { count: bulkDeleteIds.length })}
+        open={deleteState !== null}
+        onOpenChange={(open) => !open && setDeleteState(null)}
+        title={deleteState?.mode === 'bulk' ? t('bulkDelete.confirmTitle') : t('delete.confirmTitle')}
+        description={
+          deleteState?.mode === 'bulk'
+            ? t('bulkDelete.confirmDescription', { count: deleteState.ids.length })
+            : t('delete.confirmDescription')
+        }
         onConfirm={() => {
-          executeBulkDelete({ projectId, loanIds: bulkDeleteIds });
+          if (deleteState?.mode === 'bulk') {
+            executeBulkDelete({ projectId, loanIds: deleteState.ids });
+          } else if (deleteState?.mode === 'single') {
+            executeDeleteLoan({ loanId: deleteState.loanId });
+          }
         }}
       />
     </div>

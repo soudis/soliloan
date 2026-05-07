@@ -92,8 +92,13 @@ interface UseTableUrlStateOptions {
   views?: View[];
 }
 
+/** Stable fallbacks — inline `{}` / `[]` defaults in callers change identity every render and invalidates memoized URL state. */
+const EMPTY_COLUMN_VISIBILITY: VisibilityState = {};
+const EMPTY_VIEWS: View[] = [];
+
 export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
-  const { defaultColumnVisibility = {}, views = [] } = options;
+  const defaultColumnVisibility = options.defaultColumnVisibility ?? EMPTY_COLUMN_VISIBILITY;
+  const views = options.views ?? EMPTY_VIEWS;
 
   const [rawState, setRawState] = useQueryStates(tableParsers, {
     history: 'replace',

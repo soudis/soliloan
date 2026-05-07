@@ -8,12 +8,12 @@ import { useAction } from 'next-safe-action/hooks';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { bulkDeleteLendersAction } from '@/actions/lenders';
+import { bulkDeleteLendersAction, deleteLenderAction } from '@/actions/lenders';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
-import { ActionButton } from '@/components/ui/action-button';
 import { Button } from '@/components/ui/button';
 import type { BulkAction } from '@/components/ui/data-table';
 import { DataTable } from '@/components/ui/data-table';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useRouter } from '@/i18n/navigation';
 import {
   createAdditionalFieldDefaultColumnVisibility,
@@ -42,16 +42,25 @@ export function LenderTable({ lenders, views }: LenderTableProps) {
   const locale = useLocale();
   const { project } = useProject();
 
-  const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  type DeleteState = { mode: 'bulk'; ids: string[] } | { mode: 'single'; lenderId: string } | null;
+
+  const [deleteState, setDeleteState] = useState<DeleteState>(null);
 
   const { execute: executeBulkDelete } = useAction(bulkDeleteLendersAction, {
     onSuccess: () => {
       toast.success(t('bulkDelete.success'));
-      setBulkDeleteIds([]);
     },
     onError: ({ error }) => {
       toast.error(error.serverError ?? t('bulkDelete.error'));
+    },
+  });
+
+  const { execute: executeDeleteLender } = useAction(deleteLenderAction, {
+    onSuccess: () => {
+      toast.success(t('delete.success'));
+    },
+    onError: ({ error }) => {
+      toast.error(error.serverError ?? t('delete.error'));
     },
   });
 
@@ -61,8 +70,7 @@ export function LenderTable({ lenders, views }: LenderTableProps) {
       icon: <Trash2 className="h-4 w-4" />,
       variant: 'destructive',
       onClick: (ids) => {
-        setBulkDeleteIds(ids);
-        setIsConfirmOpen(true);
+        setDeleteState({ mode: 'bulk', ids });
       },
     },
   ];
@@ -273,33 +281,49 @@ export function LenderTable({ lenders, views }: LenderTableProps) {
         onRowClick={(row) => router.push(`/lenders/${row.id}`)}
         bulkActions={bulkActions}
         actions={(row) => (
-          <div className="flex items-center justify-end space-x-2">
-            <ActionButton
-              icon={<Plus className="h-4 w-4" />}
-              tooltip={commonT('ui.actions.createLoan')}
-              srOnly={commonT('ui.actions.createLoan')}
+          <>
+            <DropdownMenuItem
               onClick={() => {
                 router.push(`/loans/new?lenderId=${row.id}`);
               }}
-            />
-            <ActionButton
-              icon={<Pencil className="h-4 w-4" />}
-              tooltip={commonT('ui.actions.edit')}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {commonT('ui.actions.createLoan')}
+            </DropdownMenuItem>
+            <DropdownMenuItem
               onClick={() => {
                 router.push(`/lenders/${row.id}/edit`);
               }}
-            />
-          </div>
+            >
+              <Pencil className="h-4 w-4 mr-2" />
+              {commonT('ui.actions.edit')}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setDeleteState({ mode: 'single', lenderId: row.id })}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {commonT('ui.actions.delete')}
+            </DropdownMenuItem>
+          </>
         )}
       />
 
       <ConfirmDialog
-        open={isConfirmOpen}
-        onOpenChange={setIsConfirmOpen}
-        title={t('bulkDelete.confirmTitle')}
-        description={t('bulkDelete.confirmDescription', { count: bulkDeleteIds.length })}
+        open={deleteState !== null}
+        onOpenChange={(open) => !open && setDeleteState(null)}
+        title={deleteState?.mode === 'bulk' ? t('bulkDelete.confirmTitle') : t('delete.confirmTitle')}
+        description={
+          deleteState?.mode === 'bulk'
+            ? t('bulkDelete.confirmDescription', { count: deleteState.ids.length })
+            : t('delete.confirmDescription')
+        }
         onConfirm={() => {
-          executeBulkDelete({ projectId: project.id, lenderIds: bulkDeleteIds });
+          if (deleteState?.mode === 'bulk') {
+            executeBulkDelete({ projectId: project.id, lenderIds: deleteState.ids });
+          } else if (deleteState?.mode === 'single') {
+            executeDeleteLender({ lenderId: deleteState.lenderId });
+          }
         }}
       />
     </div>

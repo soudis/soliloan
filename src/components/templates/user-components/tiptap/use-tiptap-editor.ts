@@ -2,6 +2,7 @@ import BubbleMenu from '@tiptap/extension-bubble-menu';
 import Underline from '@tiptap/extension-underline';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo } from 'react';
 import { MergeTag } from './merge-tag-extension';
 
@@ -14,6 +15,8 @@ interface UseTiptapEditorProps {
 }
 
 export const useTiptapEditor = ({ content, onUpdate, editable, color, fontSize }: UseTiptapEditorProps) => {
+  const t = useTranslations('templates.editor');
+
   const extensions = useMemo(
     () => [
       StarterKit.configure({
@@ -28,12 +31,14 @@ export const useTiptapEditor = ({ content, onUpdate, editable, color, fontSize }
         listItem: false,
       }),
       Underline,
-      MergeTag,
+      MergeTag.configure({
+        loopBodyPlaceholder: t('mergeTags.loopBodyPlaceholder'),
+      }),
       BubbleMenu.configure({
         pluginKey: 'bubbleMenu',
       }),
     ],
-    [],
+    [t],
   );
 
   const editor = useEditor(

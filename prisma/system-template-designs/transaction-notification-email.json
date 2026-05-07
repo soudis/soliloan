@@ -1,0 +1,405 @@
+{
+  "designJson": {
+    "ROOT": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "_TwKNBsj22",
+        "06vvkaaMvG",
+        "Y52OwWRd2l"
+      ],
+      "props": {
+        "id": "ROOT",
+        "gap": 0,
+        "layout": "vertical",
+        "loopKey": "",
+        "padding": 40,
+        "borderTop": false,
+        "alignItems": "stretch",
+        "background": "#ffffff",
+        "borderLeft": false,
+        "borderColor": "#e4e4e7",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": false,
+        "justifyContent": "flex-start"
+      },
+      "custom": {},
+      "hidden": false,
+      "isCanvas": true,
+      "displayName": "Container",
+      "linkedNodes": {}
+    },
+    "06vvkaaMvG": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "foA5ABafaV",
+        "RqLPnlxo-J",
+        "Jzg8S45kPC",
+        "md0WrDAFRA",
+        "zjS3M45tyG",
+        "Vxkd5Pdnne"
+      ],
+      "props": {
+        "gap": 20,
+        "layout": "vertical",
+        "loopKey": "",
+        "padding": 20,
+        "borderTop": false,
+        "alignItems": "stretch",
+        "background": "transparent",
+        "borderLeft": false,
+        "borderColor": "#e4e4e7",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": false,
+        "justifyContent": "flex-start"
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "ROOT",
+      "isCanvas": true,
+      "displayName": "Container",
+      "linkedNodes": {}
+    },
+    "Jzg8S45kPC": {
+      "type": {
+        "resolvedName": "Text"
+      },
+      "nodes": [],
+      "props": {
+        "text": "<p>Der Gesamtkontostand beträgt somit zum Stichtag <span data-merge-tag-id=\"misc.dateShort\" data-merge-tag-label=\"Aktuelles Datum (kurz)\" data-merge-tag=\"misc.dateShort\" class=\"merge-tag-pill\">{{Aktuelles Datum (kurz)}}</span>:</p>",
+        "color": "#000000",
+        "fontSize": 16,
+        "textAlign": "left"
+      },
+      "custom": {
+        "useCustomDragHandle": true
+      },
+      "hidden": false,
+      "parent": "06vvkaaMvG",
+      "isCanvas": false,
+      "displayName": "Text",
+      "linkedNodes": {}
+    },
+    "K6AUvysDBD": {
+      "type": {
+        "resolvedName": "Text"
+      },
+      "nodes": [],
+      "props": {
+        "text": "<p><em>Dies ist eine automatisch generierte E-Mail. Bei Fragen melde dich unter <span data-merge-tag-id=\"config.email\" data-merge-tag-label=\"E-Mail\" data-merge-tag=\"config.email\" class=\"merge-tag-pill\">{{E-Mail}}</span></em></p>",
+        "color": "#000000",
+        "fontSize": 12,
+        "textAlign": "center"
+      },
+      "custom": {
+        "useCustomDragHandle": true
+      },
+      "hidden": false,
+      "parent": "Y52OwWRd2l",
+      "isCanvas": false,
+      "displayName": "Text",
+      "linkedNodes": {}
+    },
+    "LQT_hy5ggJ": {
+      "type": {
+        "resolvedName": "Text"
+      },
+      "nodes": [],
+      "props": {
+        "text": "<p><strong>Eine Zahlung wurde vermerkt</strong></p>",
+        "color": "#000000",
+        "fontSize": 25,
+        "textAlign": "left"
+      },
+      "custom": {
+        "useCustomDragHandle": true
+      },
+      "hidden": false,
+      "parent": "_TwKNBsj22",
+      "isCanvas": false,
+      "displayName": "Text",
+      "linkedNodes": {}
+    },
+    "RQmcGOMM_I": {
+      "type": {
+        "resolvedName": "Image"
+      },
+      "nodes": [],
+      "props": {
+        "src": "/soliloan-logo.webp",
+        "width": "92px",
+        "useLogoSource": true
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "_TwKNBsj22",
+      "isCanvas": false,
+      "displayName": "Image",
+      "linkedNodes": {}
+    },
+    "RqLPnlxo-J": {
+      "type": {
+        "resolvedName": "Table"
+      },
+      "nodes": [],
+      "props": {
+        "rows": 1,
+        "label": "",
+        "columns": 3,
+        "loopKey": "",
+        "padding": 0,
+        "borderTop": true,
+        "cellTexts": [
+          [
+            "<p><span data-merge-tag-id=\"transaction.date\" data-merge-tag-label=\"Datum (kurz)\" data-merge-tag=\"transaction.date\" class=\"merge-tag-pill\">{{Datum (kurz)}}</span></p>",
+            "<p><span data-merge-tag-id=\"transaction.type\" data-merge-tag-label=\"Typ\" data-merge-tag=\"transaction.type\" class=\"merge-tag-pill\">{{Typ}}</span></p>",
+            "<p><span data-merge-tag-id=\"transaction.amount\" data-merge-tag-label=\"Betrag\" data-merge-tag=\"transaction.amount\" class=\"merge-tag-pill\">{{Betrag}}</span></p>"
+          ]
+        ],
+        "textAlign": "left",
+        "borderLeft": true,
+        "cellStyles": [
+          [
+            {
+              "color": "#000000",
+              "fontSize": 14,
+              "textAlign": "left"
+            },
+            {
+              "color": "#000000",
+              "fontSize": 14,
+              "textAlign": "left"
+            },
+            {
+              "color": "#000000",
+              "fontSize": 14,
+              "textAlign": "right"
+            }
+          ]
+        ],
+        "borderColor": "#e4e4e7",
+        "borderRight": true,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "headerTexts": [
+          "<p>Datum</p>",
+          "<p>Zahlungsart</p>",
+          "<p>Betrag</p>"
+        ],
+        "borderBottom": true,
+        "columnWidths": [
+          1,
+          1,
+          1
+        ],
+        "headerStyles": [
+          {
+            "color": "#000000",
+            "fontSize": 13,
+            "textAlign": "left"
+          },
+          {
+            "color": "#000000",
+            "fontSize": 13,
+            "textAlign": "left"
+          },
+          {
+            "color": "#000000",
+            "fontSize": 13,
+            "textAlign": "right"
+          }
+        ]
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "06vvkaaMvG",
+      "isCanvas": false,
+      "displayName": "Table",
+      "linkedNodes": {}
+    },
+    "Vxkd5Pdnne": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "a2zyCtvYbb"
+      ],
+      "props": {
+        "gap": 0,
+        "layout": "horizontal",
+        "loopKey": "",
+        "padding": 0,
+        "borderTop": false,
+        "alignItems": "center",
+        "background": "transparent",
+        "borderLeft": false,
+        "borderColor": "#e4e4e7",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": false,
+        "justifyContent": "center"
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "06vvkaaMvG",
+      "isCanvas": true,
+      "displayName": "Container",
+      "linkedNodes": {}
+    },
+    "Y52OwWRd2l": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "K6AUvysDBD"
+      ],
+      "props": {
+        "gap": 0,
+        "layout": "vertical",
+        "loopKey": "",
+        "padding": 5,
+        "borderTop": true,
+        "alignItems": "stretch",
+        "background": "transparent",
+        "borderLeft": false,
+        "borderColor": "#3d3846",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": false,
+        "justifyContent": "flex-start"
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "ROOT",
+      "isCanvas": true,
+      "displayName": "Container",
+      "linkedNodes": {}
+    },
+    "_TwKNBsj22": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "RQmcGOMM_I",
+        "LQT_hy5ggJ"
+      ],
+      "props": {
+        "gap": 0,
+        "layout": "horizontal",
+        "loopKey": "",
+        "padding": 20,
+        "borderTop": false,
+        "alignItems": "center",
+        "background": "transparent",
+        "borderLeft": false,
+        "borderColor": "#3d3846",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": true,
+        "justifyContent": "space-between"
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "ROOT",
+      "isCanvas": true,
+      "displayName": "Container",
+      "linkedNodes": {}
+    },
+    "a2zyCtvYbb": {
+      "type": {
+        "resolvedName": "Button"
+      },
+      "nodes": [],
+      "props": {
+        "url": "#",
+        "text": "{{platform.name}}",
+        "color": "#ffffff",
+        "background": "#2563eb",
+        "systemUrlKey": "loanLink",
+        "useSystemUrl": true
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "Vxkd5Pdnne",
+      "isCanvas": false,
+      "displayName": "Button",
+      "linkedNodes": {}
+    },
+    "foA5ABafaV": {
+      "type": {
+        "resolvedName": "Text"
+      },
+      "nodes": [],
+      "props": {
+        "text": "<p>Eine Zahlung für deinen Direktkredit #<span data-merge-tag-id=\"loan.loanNumber\" data-merge-tag-label=\"Kreditnummer\" data-merge-tag=\"loan.loanNumber\" class=\"merge-tag-pill\">{{Kreditnummer}}</span> bei <span data-merge-tag-id=\"config.name\" data-merge-tag-label=\"Projektname\" data-merge-tag=\"config.name\" class=\"merge-tag-pill\">{{Projektname}}</span> wurde vermerkt:</p>",
+        "color": "#000000",
+        "fontSize": 16,
+        "textAlign": "left"
+      },
+      "custom": {
+        "useCustomDragHandle": true
+      },
+      "hidden": false,
+      "parent": "06vvkaaMvG",
+      "isCanvas": false,
+      "displayName": "Text",
+      "linkedNodes": {}
+    },
+    "md0WrDAFRA": {
+      "type": {
+        "resolvedName": "Text"
+      },
+      "nodes": [],
+      "props": {
+        "text": "<p><strong><span data-merge-tag-id=\"lender.balance\" data-merge-tag-label=\"Kontostand\" data-merge-tag=\"lender.balance\" class=\"merge-tag-pill\">{{Kontostand}}</span></strong></p>",
+        "color": "#000000",
+        "fontSize": 16,
+        "textAlign": "center"
+      },
+      "custom": {
+        "useCustomDragHandle": true
+      },
+      "hidden": false,
+      "parent": "06vvkaaMvG",
+      "isCanvas": false,
+      "displayName": "Text",
+      "linkedNodes": {}
+    },
+    "zjS3M45tyG": {
+      "type": {
+        "resolvedName": "Text"
+      },
+      "nodes": [],
+      "props": {
+        "text": "<p>Du kannst deine Daten jederzeit auf <span data-merge-tag-id=\"platform.name\" data-merge-tag-label=\"Plattformname\" data-merge-tag=\"platform.name\" class=\"merge-tag-pill\">{{Plattformname}}</span> einsehen:</p>",
+        "color": "#000000",
+        "fontSize": 16,
+        "textAlign": "left"
+      },
+      "custom": {
+        "useCustomDragHandle": true
+      },
+      "hidden": false,
+      "parent": "06vvkaaMvG",
+      "isCanvas": false,
+      "displayName": "Text",
+      "linkedNodes": {}
+    }
+  },
+  "subjectOrFilename": "Eine Zahlung für deinen Direktkredit an {{config.name}} wurde vermerkt"
+}

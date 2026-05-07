@@ -1,19 +1,18 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { useAction } from 'next-safe-action/hooks';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
-
 import { addProjectManagerAction } from '@/actions/projects';
 import { FormField } from '@/components/form/form-field';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
-import { useQueryClient } from '@tanstack/react-query';
-import { useAction } from 'next-safe-action/hooks';
 
 const addManagerFormSchema = z.object({
   email: z.string().min(1, { message: 'validation.common.required' }).email({ message: 'validation.common.email' }),

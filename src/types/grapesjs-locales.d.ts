@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: needed */
 declare module 'grapesjs/locale/de' {
   const locale: any;
   export default locale;

@@ -15,32 +15,42 @@
   margin: 0;
 }
 
-/* Merge Tag Styling — inline text with {{ }} brackets */
-.merge-tag-wrapper {
-  display: inline;
-}
-
-.merge-tag,
+/* Merge tags: soft chips (no mustache glyphs in the UI) */
 .merge-tag-pill {
   display: inline !important;
   vertical-align: baseline !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background-color: transparent !important;
-  color: #6d28d9 !important;
-  border-radius: 0 !important;
-  font-size: inherit !important;
-  font-weight: 500 !important;
-  font-family: inherit !important;
-  white-space: nowrap !important;
+  box-sizing: border-box !important;
+  margin: 0 0.12em !important;
+  padding: 0.1em 0.45em !important;
   cursor: pointer !important;
   line-height: inherit !important;
-  border: none !important;
+  font-family: inherit !important;
+  font-size: max(12px, 0.92em) !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+  color: hsl(258 72% 32%) !important;
+  border: 1px solid hsl(250 91% 90%) !important;
+  border-radius: 999px !important;
+  background: hsl(250 100% 97%) !important;
+  outline: none !important;
 }
 
 .merge-tag-pill:hover {
-  color: #5b21b6 !important;
-  text-decoration: underline;
+  color: hsl(263 73% 28%) !important;
+  border-color: hsl(251 73% 85%) !important;
+  background: hsl(251 94% 95%) !important;
+}
+
+.merge-tag-pill--selected {
+  box-shadow:
+    0 0 0 1px hsl(221 91% 60%),
+    0 2px 4px hsl(258 53% 30% / 0.08) !important;
+  border-color: hsl(221 91% 75%) !important;
+}
+
+.merge-tag-wrapper {
+  display: inline;
 }
 
 /* Selection styling */

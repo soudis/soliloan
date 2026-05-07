@@ -47,8 +47,11 @@ export const LOAN_FIELDS = [
   'amount',
   'interestRate',
   'signDate',
+  'signDateLong',
   'endDate',
+  'endDateLong',
   'terminationDate',
+  'terminationDateLong',
   'terminationType',
   'contractStatus',
   // Calculated fields from loan-calculations.ts
@@ -61,18 +64,58 @@ export const LOAN_FIELDS = [
   'interestError',
   'notReclaimed',
   'repaidDate',
+  'repaidDateLong',
   'repayDate',
+  'repayDateLong',
   'isTerminated',
 ] as const;
 
 // Transaction fields from Prisma schema
-export const TRANSACTION_FIELDS = ['type', 'amount', 'date', 'paymentType'] as const;
+export const TRANSACTION_FIELDS = ['type', 'amount', 'date', 'dateLong', 'paymentType'] as const;
 
 // Note fields from Prisma schema
-export const NOTE_FIELDS = ['text', 'createdAt', 'createdByName', 'public'] as const;
+export const NOTE_FIELDS = ['text', 'createdAt', 'createdAtLong', 'createdByName', 'public'] as const;
+
+// User fields from Prisma schema
+export const USER_FIELDS = ['name', 'email'] as const;
+
+// Latest transaction fields (top-level on LOAN dataset)
+export const LATEST_TRANSACTION_FIELDS = ['type', 'amount', 'date', 'dateLong', 'paymentType'] as const;
+
+// Lender yearly fields (year-scoped aggregates for `LENDER_YEARLY`)
+export const LENDER_YEARLY_FIELDS = [
+  'year',
+  'begin',
+  'end',
+  'deposits',
+  'withdrawals',
+  'interest',
+  'interestPaid',
+  'notReclaimed',
+  'interestError',
+] as const;
+
+/** Per-loan yearly aggregates inside `{{#loans}}` for `LENDER_YEARLY`. */
+export const LOAN_YEARLY_FIELDS = [
+  'year',
+  'begin',
+  'end',
+  'deposits',
+  'withdrawals',
+  'interest',
+  'interestPaid',
+  'notReclaimed',
+  'interestError',
+] as const;
 
 // Project fields
 export const PROJECT_FIELDS = ['name', 'slug'] as const;
+
+// Platform fields (global, available on all datasets)
+export const PLATFORM_FIELDS = ['name'] as const;
+
+/** Current date / time–independent helpers (locale-formatted at render time). */
+export const MISC_FIELDS = ['dateShort', 'dateLong'] as const;
 
 // Configuration fields (project configuration: company info, address, banking)
 export const CONFIGURATION_FIELDS = [
@@ -132,8 +175,11 @@ export const FIELD_TYPES: Record<string, FieldType> = {
   'loan.amount': 'currency',
   'loan.interestRate': 'percent',
   'loan.signDate': 'date',
+  'loan.signDateLong': 'date',
   'loan.endDate': 'date',
+  'loan.endDateLong': 'date',
   'loan.terminationDate': 'date',
+  'loan.terminationDateLong': 'date',
   'loan.terminationType': 'enum',
   'loan.contractStatus': 'enum',
   'loan.status': 'enum',
@@ -145,18 +191,56 @@ export const FIELD_TYPES: Record<string, FieldType> = {
   'loan.interestError': 'currency',
   'loan.notReclaimed': 'currency',
   'loan.repaidDate': 'date',
+  'loan.repaidDateLong': 'date',
   'loan.repayDate': 'date',
+  'loan.repayDateLong': 'date',
   'loan.isTerminated': 'boolean',
   // Transaction
   'transaction.type': 'enum',
   'transaction.amount': 'currency',
   'transaction.date': 'date',
+  'transaction.dateLong': 'date',
   'transaction.paymentType': 'enum',
   // Note
   'note.text': 'string',
   'note.createdAt': 'date',
+  'note.createdAtLong': 'date',
   'note.createdByName': 'string',
   'note.public': 'boolean',
+  // User
+  'user.name': 'string',
+  'user.email': 'string',
+  // Latest Transaction (top-level on LOAN dataset)
+  'latestTransaction.type': 'enum',
+  'latestTransaction.amount': 'currency',
+  'latestTransaction.date': 'date',
+  'latestTransaction.dateLong': 'date',
+  'latestTransaction.paymentType': 'enum',
+  // Lender Yearly
+  'lenderYearly.year': 'number',
+  'lenderYearly.begin': 'currency',
+  'lenderYearly.end': 'currency',
+  'lenderYearly.deposits': 'currency',
+  'lenderYearly.withdrawals': 'currency',
+  'lenderYearly.interest': 'currency',
+  'lenderYearly.interestPaid': 'currency',
+  'lenderYearly.notReclaimed': 'currency',
+  'lenderYearly.interestError': 'currency',
+  // Loan Yearly (inside loans loop, LENDER_YEARLY)
+  'loanYearly.year': 'number',
+  'loanYearly.begin': 'currency',
+  'loanYearly.end': 'currency',
+  'loanYearly.deposits': 'currency',
+  'loanYearly.withdrawals': 'currency',
+  'loanYearly.interest': 'currency',
+  'loanYearly.interestPaid': 'currency',
+  'loanYearly.notReclaimed': 'currency',
+  'loanYearly.interestError': 'currency',
+  // Platform
+  'platform.name': 'string',
+  // Misc (current date, etc.)
+  'misc.dateShort': 'string',
+  'misc.dateLong': 'string',
   // Configuration
   'config.name': 'string',
   'config.email': 'string',
@@ -210,6 +294,13 @@ export const LOOP_DEFINITIONS: Record<string, LoopDefinition> = {
     parentRequired: 'loans',
     availableFields: NOTE_FIELDS,
   },
+  transactionsYearly: {
+    key: 'transactionsYearly',
+    labelKey: 'loops.transactionsYearly',
+    childPrefix: 'transaction',
+    parentRequired: 'loans',
+    availableFields: TRANSACTION_FIELDS,
+  },
   lenders: {
     key: 'lenders',
     labelKey: 'loops.lenders',
@@ -226,10 +317,20 @@ export type DatasetConfig = {
 };
 
 export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
+  USER: {
+    topLevelFields: [
+      { entity: 'user', fields: USER_FIELDS },
+      { entity: 'platform', fields: PLATFORM_FIELDS },
+      { entity: 'misc', fields: MISC_FIELDS },
+    ],
+    loops: [],
+  },
   LENDER: {
     topLevelFields: [
       { entity: 'lender', fields: LENDER_FIELDS },
       { entity: 'config', fields: CONFIGURATION_FIELDS },
+      { entity: 'platform', fields: PLATFORM_FIELDS },
+      { entity: 'misc', fields: MISC_FIELDS },
     ],
     loops: ['loans', 'notes'],
   },
@@ -237,7 +338,21 @@ export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
     topLevelFields: [
       { entity: 'loan', fields: LOAN_FIELDS },
       { entity: 'lender', fields: LENDER_FIELDS },
+      { entity: 'latestTransaction', fields: LATEST_TRANSACTION_FIELDS },
       { entity: 'config', fields: CONFIGURATION_FIELDS },
+      { entity: 'platform', fields: PLATFORM_FIELDS },
+      { entity: 'misc', fields: MISC_FIELDS },
+    ],
+    loops: ['transactions', 'notes'],
+  },
+  TRANSACTION: {
+    topLevelFields: [
+      { entity: 'loan', fields: LOAN_FIELDS },
+      { entity: 'lender', fields: LENDER_FIELDS },
+      { entity: 'transaction', fields: TRANSACTION_FIELDS },
+      { entity: 'config', fields: CONFIGURATION_FIELDS },
+      { entity: 'platform', fields: PLATFORM_FIELDS },
+      { entity: 'misc', fields: MISC_FIELDS },
     ],
     loops: ['transactions', 'notes'],
   },
@@ -245,6 +360,8 @@ export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
     topLevelFields: [
       { entity: 'project', fields: PROJECT_FIELDS },
       { entity: 'config', fields: CONFIGURATION_FIELDS },
+      { entity: 'platform', fields: PLATFORM_FIELDS },
+      { entity: 'misc', fields: MISC_FIELDS },
     ],
     loops: ['lenders'],
   },
@@ -252,8 +369,20 @@ export const DATASET_CONFIGS: Record<TemplateDataset, DatasetConfig> = {
     topLevelFields: [
       { entity: 'project', fields: PROJECT_FIELDS },
       { entity: 'config', fields: CONFIGURATION_FIELDS },
+      { entity: 'platform', fields: PLATFORM_FIELDS },
+      { entity: 'misc', fields: MISC_FIELDS },
     ],
     loops: ['lenders'],
+  },
+  LENDER_YEARLY: {
+    topLevelFields: [
+      { entity: 'lender', fields: LENDER_FIELDS },
+      { entity: 'lenderYearly', fields: LENDER_YEARLY_FIELDS },
+      { entity: 'config', fields: CONFIGURATION_FIELDS },
+      { entity: 'platform', fields: PLATFORM_FIELDS },
+      { entity: 'misc', fields: MISC_FIELDS },
+    ],
+    loops: ['loans', 'notes'],
   },
 };
 
@@ -275,15 +404,54 @@ export function buildLoopTags(loopKey: string): { start: string; end: string } {
  */
 export function getDatasetDisplayName(dataset: TemplateDataset): string {
   switch (dataset) {
+    case 'USER':
+      return 'Benutzer';
     case 'LENDER':
       return 'Darlehensgeber';
     case 'LOAN':
       return 'Darlehen';
+    case 'TRANSACTION':
+      return 'Transaktion';
     case 'PROJECT':
       return 'Projekt';
     case 'PROJECT_YEARLY':
       return 'Projekt (Jahresübersicht)';
+    case 'LENDER_YEARLY':
+      return 'Kontomitteilung (jährlich)';
     default:
       return dataset;
   }
+}
+
+/** Datasets that show lender/loan/year sample pickers for preview merge data. */
+export function needsSampleRecordSelection(dataset: TemplateDataset): boolean {
+  return dataset === 'LENDER' || dataset === 'LOAN' || dataset === 'TRANSACTION' || dataset === 'LENDER_YEARLY';
+}
+
+/**
+ * Whether preview (email iframe / PDF) may open: needs a project context, and for
+ * lender/loan/yearly datasets a selected record (and year for `LENDER_YEARLY`).
+ */
+export function canOpenTemplatePreview(options: {
+  dataset: TemplateDataset;
+  projectId: string | undefined;
+  selectedRecordId: string | null;
+  selectedYear: number | null | undefined;
+}): boolean {
+  const { dataset, projectId, selectedRecordId, selectedYear } = options;
+  if (!projectId) return false;
+
+  if (dataset === 'PROJECT' || dataset === 'PROJECT_YEARLY') {
+    return true;
+  }
+
+  if (dataset === 'LENDER_YEARLY') {
+    return selectedRecordId != null && selectedYear != null && Number.isFinite(selectedYear);
+  }
+
+  if (dataset === 'LENDER' || dataset === 'LOAN' || dataset === 'TRANSACTION') {
+    return selectedRecordId != null;
+  }
+
+  return true;
 }

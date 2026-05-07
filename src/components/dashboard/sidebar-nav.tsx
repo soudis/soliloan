@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, History, LayoutDashboard, LogOut, Settings, Users, Wallet } from 'lucide-react';
+import { Box, FileText, History, LayoutDashboard, LogOut, Settings, Users, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import type { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
@@ -62,6 +62,7 @@ export function SidebarNav({ isSidebarOpen, session, projects }: SidebarNavProps
                 <span className="text-sm font-medium">{t('administration')}</span>
                 <div className="pt-1">
                   <NavItem href="/projects" icon={Box} label={t('projects')} />
+                  <NavItem href="/admin/templates" icon={FileText} label={t('templates')} />
                 </div>
               </div>
             </nav>
@@ -71,7 +72,10 @@ export function SidebarNav({ isSidebarOpen, session, projects }: SidebarNavProps
           <div className="mt-auto pt-4 border-t space-y-4">
             {/* User Profile for Mobile */}
             <div className="md:hidden space-y-3">
-              <Link href="/account" className="flex items-center gap-2 px-2 rounded-md hover:bg-accent transition-colors py-1">
+              <Link
+                href="/account"
+                className="flex items-center gap-2 px-2 rounded-md hover:bg-accent transition-colors py-1"
+              >
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
                   {session?.user?.name?.[0] || session?.user?.email?.[0]?.toUpperCase()}
                 </div>

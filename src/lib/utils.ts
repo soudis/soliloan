@@ -63,40 +63,34 @@ export function formatNumber(
   }).format(amount);
 }
 
-function toValidDate(input: Date | string): Date | null {
-  const date = input instanceof Date ? input : new Date(input);
-  return Number.isNaN(date.getTime()) ? null : date;
+function resolveIntlLocaleForDates(locale: string): string {
+  if (locale === 'de' || locale.startsWith('de-')) return 'de-DE';
+  if (locale === 'en' || locale.startsWith('en-')) return 'en-US';
+  return locale;
 }
 
-export function getDateFnsLocale(locale: string) {
-  return locale === 'de' ? de : enUS;
-}
-
-function getShortDatePattern(locale: string) {
-  // Force leading zeros but keep locale-specific ordering/separators.
-  // Keep this intentionally small: we currently support `de` and `en`.
-  return locale === 'de' ? 'dd.MM.yyyy' : 'MM/dd/yyyy';
-}
-
-export function formatDateLong(date: Date | string | null | undefined, locale: string): string {
-  if (!date) return '';
-  const valid = toValidDate(date);
-  if (!valid) return '';
-  return format(valid, 'PPP', { locale: getDateFnsLocale(locale) });
-}
-
+/** Template-friendly short date (e.g. 09.04.2026 in de-DE). */
 export function formatDateShort(date: Date | string | null | undefined, locale: string): string {
   if (!date) return '';
-  const valid = toValidDate(date);
-  if (!valid) return '';
-  return format(valid, getShortDatePattern(locale), { locale: getDateFnsLocale(locale) });
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat(resolveIntlLocaleForDates(locale), { dateStyle: 'short' }).format(d);
 }
 
-export function formatDateTimeLong(date: Date | string | null | undefined, locale: string): string {
+/** Template-friendly long date (e.g. 9. April 2026 in de-DE). */
+export function formatDateLong(date: Date | string | null | undefined, locale: string): string {
   if (!date) return '';
-  const valid = toValidDate(date);
-  if (!valid) return '';
-  return format(valid, 'PPP p', { locale: getDateFnsLocale(locale) });
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat(resolveIntlLocaleForDates(locale), { dateStyle: 'long' }).format(d);
+}
+
+/** UI display (date-fns long form). Prefer `formatDateShort` / `formatDateLong` in merge-tag templates. */
+export function formatDate(date: Date | string | null | undefined, locale: string): string {
+  if (!date) {
+    return '';
+  }
+  return format(date, 'PPP', { locale: locale === 'de' ? de : enUS });
 }
 
 // Backwards compatible: existing code expects formatDate() to be the long form.
@@ -106,7 +100,8 @@ export class NumberParser {
   private groupSymbol: string;
   private decimalSymbol: string;
 
-  constructor(locale: string) {
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: needed
+  constructor(private readonly locale: string) {
     const parts = Intl.NumberFormat(locale).formatToParts(1111.11);
     this.groupSymbol = parts.find((part) => part.type === 'group')?.value ?? '.';
     this.decimalSymbol = parts.find((part) => part.type === 'decimal')?.value ?? ',';

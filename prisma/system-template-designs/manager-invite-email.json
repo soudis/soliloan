@@ -1,0 +1,226 @@
+{
+  "designJson": {
+    "ROOT": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "BfcSV7RQKT",
+        "LR97xenyTg",
+        "aJpApaErKN"
+      ],
+      "props": {
+        "id": "ROOT",
+        "gap": 0,
+        "layout": "vertical",
+        "padding": 40,
+        "borderTop": false,
+        "alignItems": "stretch",
+        "background": "#ffffff",
+        "borderLeft": false,
+        "borderColor": "#e4e4e7",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": false,
+        "justifyContent": "flex-start"
+      },
+      "custom": {},
+      "hidden": false,
+      "isCanvas": true,
+      "displayName": "Container",
+      "linkedNodes": {}
+    },
+    "9n1xujUkV-": {
+      "type": {
+        "resolvedName": "Image"
+      },
+      "nodes": [],
+      "props": {
+        "src": "/soliloan-logo.webp",
+        "width": "92px",
+        "useLogoSource": true
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "BfcSV7RQKT",
+      "isCanvas": false,
+      "displayName": "Image",
+      "linkedNodes": {}
+    },
+    "BfcSV7RQKT": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "9n1xujUkV-",
+        "MLp2UMb-Cj"
+      ],
+      "props": {
+        "gap": 0,
+        "layout": "horizontal",
+        "padding": 20,
+        "borderTop": false,
+        "alignItems": "center",
+        "background": "transparent",
+        "borderLeft": false,
+        "borderColor": "#3d3846",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": true,
+        "justifyContent": "space-between"
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "ROOT",
+      "isCanvas": true,
+      "displayName": "Container",
+      "linkedNodes": {}
+    },
+    "LR97xenyTg": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "ocTNCvgGzw",
+        "PR6iTWl5L9"
+      ],
+      "props": {
+        "gap": 0,
+        "layout": "vertical",
+        "padding": 20,
+        "borderTop": false,
+        "alignItems": "center",
+        "background": "transparent",
+        "borderLeft": false,
+        "borderColor": "#e4e4e7",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": false,
+        "justifyContent": "flex-start"
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "ROOT",
+      "isCanvas": true,
+      "displayName": "Container",
+      "linkedNodes": {}
+    },
+    "MLp2UMb-Cj": {
+      "type": {
+        "resolvedName": "Text"
+      },
+      "nodes": [],
+      "props": {
+        "text": "<p><strong>Verwalte die Kredite von </strong></p><p><span data-merge-tag-id=\"project.name\" data-merge-tag-label=\"Projektname\" data-merge-tag=\"project.name\" class=\"merge-tag-pill\">{{Projektname}}</span></p>",
+        "color": "#000000",
+        "fontSize": 25,
+        "textAlign": "left"
+      },
+      "custom": {
+        "useCustomDragHandle": true
+      },
+      "hidden": false,
+      "parent": "BfcSV7RQKT",
+      "isCanvas": false,
+      "displayName": "Text",
+      "linkedNodes": {}
+    },
+    "PR6iTWl5L9": {
+      "type": {
+        "resolvedName": "Button"
+      },
+      "nodes": [],
+      "props": {
+        "url": "#",
+        "text": "Account erstellen",
+        "color": "#ffffff",
+        "background": "#2563eb",
+        "systemUrlKey": "invitation",
+        "useSystemUrl": true
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "LR97xenyTg",
+      "isCanvas": false,
+      "displayName": "Button",
+      "linkedNodes": {}
+    },
+    "aJpApaErKN": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "nKH3a-fKSb"
+      ],
+      "props": {
+        "gap": 0,
+        "layout": "vertical",
+        "padding": 5,
+        "borderTop": true,
+        "alignItems": "stretch",
+        "background": "transparent",
+        "borderLeft": false,
+        "borderColor": "#3d3846",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": false,
+        "justifyContent": "flex-start"
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "ROOT",
+      "isCanvas": true,
+      "displayName": "Container",
+      "linkedNodes": {}
+    },
+    "nKH3a-fKSb": {
+      "type": {
+        "resolvedName": "Text"
+      },
+      "nodes": [],
+      "props": {
+        "text": "<p><em>Dies ist eine automatisch generierte E-Mail. Bei Fragen melde dich unter <span data-merge-tag-id=\"config.email\" data-merge-tag-label=\"E-Mail\" data-merge-tag=\"config.email\" class=\"merge-tag-pill\">{{E-Mail}}</span></em></p>",
+        "color": "#000000",
+        "fontSize": 12,
+        "textAlign": "center"
+      },
+      "custom": {
+        "useCustomDragHandle": true
+      },
+      "hidden": false,
+      "parent": "aJpApaErKN",
+      "isCanvas": false,
+      "displayName": "Text",
+      "linkedNodes": {}
+    },
+    "ocTNCvgGzw": {
+      "type": {
+        "resolvedName": "Text"
+      },
+      "nodes": [],
+      "props": {
+        "text": "<p>Du wurdest eingeladen einen Account auf <span data-merge-tag-id=\"platform.name\" data-merge-tag-label=\"Plattformname\" data-merge-tag=\"platform.name\" class=\"merge-tag-pill\">{{Plattformname}}</span> zu erstellen um die Kredite für das Projekt <span data-merge-tag-id=\"config.name\" data-merge-tag-label=\"Projektname\" data-merge-tag=\"config.name\" class=\"merge-tag-pill\">{{Projektname}}</span> zu verwalten:</p>",
+        "color": "#000000",
+        "fontSize": 16,
+        "textAlign": "left"
+      },
+      "custom": {
+        "useCustomDragHandle": true
+      },
+      "hidden": false,
+      "parent": "LR97xenyTg",
+      "isCanvas": false,
+      "displayName": "Text",
+      "linkedNodes": {}
+    }
+  },
+  "subjectOrFilename": "Vewalte die Kredite von {{project.name}}"
+}
