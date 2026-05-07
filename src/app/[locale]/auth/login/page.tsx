@@ -1,27 +1,14 @@
-'use client';
-
-import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
 import { LoginForm } from '@/components/auth/login-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default function LoginPage() {
-  const t = useTranslations('auth.login');
+export default async function LoginPage() {
+  const t = await getTranslations('auth.login');
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">{t('title')}</h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          {t('createAccount')}{' '}
-          <Link href="/auth/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-            {t('createAccount')}
-          </Link>
-        </p>
-      </div>
-
-      <Card>
+    <div className="space-y-4 md:space-y-8">
+      <Card className="border-none gap-4 py-4 md:gap-6 md:py-6">
         <CardHeader>
           <CardTitle>{t('title')}</CardTitle>
           <CardDescription>{t('description')}</CardDescription>

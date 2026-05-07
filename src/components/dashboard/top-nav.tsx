@@ -7,6 +7,7 @@ import type { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 
+import { AboutMenu } from '@/components/dashboard/about-menu';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -53,8 +54,9 @@ export function TopNav({ session, isSidebarOpen, setIsSidebarOpen, showSidebarTo
               </div>
             )}
           </div>
-          <div className="flex items-center">
-            <div className="ml-3 relative hidden md:flex">
+          <div className="flex items-center gap-1">
+            <AboutMenu />
+            <div className="relative hidden md:flex md:ml-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="group h-9 gap-2 px-2 text-sm font-medium">

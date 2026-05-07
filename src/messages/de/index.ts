@@ -5,6 +5,7 @@ import dashboard from './dashboard.json';
 import dataTable from './dataTable.json';
 import error from './error.json';
 import fields from './fields.json';
+import legal from './legal.json';
 import logbook from './logbook.json';
 import navigation from './navigation.json';
 import templates from './templates.json';
@@ -24,4 +25,5 @@ export default {
   templates,
   validation,
   fields,
+  legal,
 };

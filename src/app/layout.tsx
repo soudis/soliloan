@@ -3,8 +3,11 @@ import localFont from 'next/font/local';
 import './globals.css';
 
 import type { Metadata } from 'next';
+import { getSoliloanProjectName } from '@/lib/project-name';
 import { ColorSchemeScript } from './color-scheme-script';
 import { Providers } from './providers';
+
+const projectName = getSoliloanProjectName();
 
 const inter = localFont({
   src: '../fonts/Inter-VariableFont.woff2',
@@ -29,8 +32,8 @@ const roboto = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'Direktkreditplattform',
-  description: 'Direktkreditplattform',
+  title: projectName,
+  description: projectName,
 };
 
 export const dynamic = 'force-dynamic';
