@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { deleteLoanAction, revertTerminateLoanAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
+import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { InfoItem } from '@/components/ui/info-item';
 import { useRouter } from '@/i18n/navigation';
 import { formatTerminationModalities } from '@/lib/table-column-utils';
@@ -113,7 +114,18 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
           <div className="flex items-center justify-center">
             <LoanStatusBadge status={loan.status} />
           </div>
-          <div className="flex gap-1 shrink-0 ml-auto items-center justify-end flex-1">
+          {/* biome-ignore lint/a11y/useKeyWithClickEvents: toolbar only stops accordion toggle propagation */}
+          <div
+            className="flex gap-1 shrink-0 ml-auto items-center justify-end flex-1"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <TemplateQuickActions
+              projectId={loan.lender.projectId}
+              mode="loan"
+              lenderId={loan.lender.id}
+              loanId={loan.id}
+              density="toolbar"
+            />
             <Button
               variant="ghost"
               size="icon"

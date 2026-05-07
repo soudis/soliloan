@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, History, LayoutDashboard, LogOut, Settings, Users, Wallet } from 'lucide-react';
+import { Box, FileText, History, LayoutDashboard, LogOut, Settings, Users, Wallet } from 'lucide-react';
 import type { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
@@ -61,6 +61,7 @@ export function SidebarNav({ isSidebarOpen, session, projects }: SidebarNavProps
                 <span className="text-sm font-medium">{t('administration')}</span>
                 <div className="pt-1">
                   <NavItem href="/projects" icon={Box} label={t('projects')} />
+                  <NavItem href="/admin/templates" icon={FileText} label={t('templates')} />
                 </div>
               </div>
             </nav>

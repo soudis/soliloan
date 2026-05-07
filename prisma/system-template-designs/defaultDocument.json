@@ -1,0 +1,275 @@
+{
+  "designJson": {
+    "ROOT": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "t1oa4qZ22i",
+        "04WRhdIeAA",
+        "eXfKLdLsxS"
+      ],
+      "props": {
+        "id": "ROOT",
+        "gap": 0,
+        "layout": "vertical",
+        "loopKey": "",
+        "padding": 0,
+        "borderTop": false,
+        "alignItems": "stretch",
+        "background": "#ffffff",
+        "borderLeft": false,
+        "borderColor": "#e4e4e7",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": false,
+        "justifyContent": "flex-start"
+      },
+      "custom": {},
+      "hidden": false,
+      "isCanvas": true,
+      "displayName": "Dokument",
+      "linkedNodes": {}
+    },
+    "01HZ529OKw": {
+      "type": {
+        "resolvedName": "Image"
+      },
+      "nodes": [],
+      "props": {
+        "src": "https://via.placeholder.com/150",
+        "width": "50px",
+        "useLogoSource": true
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "s1DaSGH1bK",
+      "isCanvas": false,
+      "displayName": "Image",
+      "linkedNodes": {}
+    },
+    "04WRhdIeAA": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [],
+      "props": {
+        "id": "BODY",
+        "gap": 0,
+        "layout": "vertical",
+        "loopKey": "",
+        "padding": 50,
+        "borderTop": false,
+        "alignItems": "stretch",
+        "background": "#ffffff",
+        "borderLeft": false,
+        "paddingTop": 20,
+        "borderColor": "#e4e4e7",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": false,
+        "paddingBottom": 20,
+        "justifyContent": "flex-start"
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "ROOT",
+      "isCanvas": true,
+      "displayName": "Hauptcontainer",
+      "linkedNodes": {}
+    },
+    "QvfOL02FXl": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "W3ysQo92FQ"
+      ],
+      "props": {
+        "gap": 0,
+        "layout": "vertical",
+        "loopKey": "",
+        "padding": 0,
+        "borderTop": true,
+        "alignItems": "stretch",
+        "background": "transparent",
+        "borderLeft": false,
+        "borderColor": "#e4e4e7",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": false,
+        "justifyContent": "flex-start"
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "eXfKLdLsxS",
+      "isCanvas": true,
+      "displayName": "Seitenfusszeile",
+      "linkedNodes": {}
+    },
+    "W3ysQo92FQ": {
+      "type": {
+        "resolvedName": "Text"
+      },
+      "nodes": [],
+      "props": {
+        "text": "<p></p><p>Seite <span data-merge-tag-id=\"page.pageNumber\" data-merge-tag-label=\"Seitennummer\" data-merge-tag=\"pageNumber\" class=\"merge-tag-pill\">{{Seitennummer}}</span> von <span data-merge-tag-id=\"page.totalPages\" data-merge-tag-label=\"Gesamtseiten\" data-merge-tag=\"totalPages\" class=\"merge-tag-pill\">{{Gesamtseiten}}</span></p>",
+        "color": "#000000",
+        "fontSize": 13,
+        "textAlign": "right"
+      },
+      "custom": {
+        "useCustomDragHandle": true
+      },
+      "hidden": false,
+      "parent": "QvfOL02FXl",
+      "isCanvas": false,
+      "displayName": "Seitennummer",
+      "linkedNodes": {}
+    },
+    "dMo02dK6qw": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "fy9uVUoTcF"
+      ],
+      "props": {
+        "gap": 0,
+        "layout": "vertical",
+        "loopKey": "",
+        "padding": 2,
+        "borderTop": false,
+        "alignItems": "stretch",
+        "background": "transparent",
+        "borderLeft": false,
+        "borderColor": "#e4e4e7",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": false,
+        "justifyContent": "flex-start"
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "s1DaSGH1bK",
+      "isCanvas": true,
+      "displayName": "Container",
+      "linkedNodes": {}
+    },
+    "eXfKLdLsxS": {
+      "type": {
+        "resolvedName": "PageFooter"
+      },
+      "nodes": [
+        "QvfOL02FXl"
+      ],
+      "props": {
+        "id": "PAGE_FOOTER",
+        "padding": 50,
+        "borderTop": false,
+        "background": "transparent",
+        "borderLeft": false,
+        "paddingTop": 5,
+        "borderColor": "#e4e4e7",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "borderBottom": false
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "ROOT",
+      "isCanvas": true,
+      "displayName": "Fusszeile",
+      "linkedNodes": {}
+    },
+    "fy9uVUoTcF": {
+      "type": {
+        "resolvedName": "Text"
+      },
+      "nodes": [],
+      "props": {
+        "text": "<p><span data-merge-tag-id=\"config.name\" data-merge-tag-label=\"Projektname\" data-merge-tag=\"config.name\" class=\"merge-tag-pill\">{{Projektname}}</span></p><p><span data-merge-tag-id=\"config.street\" data-merge-tag-label=\"Straße\" data-merge-tag=\"config.street\" class=\"merge-tag-pill\">{{Straße}}</span></p><p><span data-merge-tag-id=\"config.zip\" data-merge-tag-label=\"PLZ\" data-merge-tag=\"config.zip\" class=\"merge-tag-pill\">{{PLZ}}</span> <span data-merge-tag-id=\"config.place\" data-merge-tag-label=\"Ort\" data-merge-tag=\"config.place\" class=\"merge-tag-pill\">{{Ort}}</span></p>",
+        "color": "#000000",
+        "fontSize": 13,
+        "textAlign": "right"
+      },
+      "custom": {
+        "useCustomDragHandle": true
+      },
+      "hidden": false,
+      "parent": "dMo02dK6qw",
+      "isCanvas": false,
+      "displayName": "Text",
+      "linkedNodes": {}
+    },
+    "s1DaSGH1bK": {
+      "type": {
+        "resolvedName": "Container"
+      },
+      "nodes": [
+        "01HZ529OKw",
+        "dMo02dK6qw"
+      ],
+      "props": {
+        "gap": 0,
+        "layout": "horizontal",
+        "loopKey": "",
+        "padding": 0,
+        "borderTop": false,
+        "alignItems": "center",
+        "background": "transparent",
+        "borderLeft": false,
+        "borderColor": "#e4e4e7",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "gridColumns": 2,
+        "borderBottom": true,
+        "justifyContent": "space-between"
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "t1oa4qZ22i",
+      "isCanvas": true,
+      "displayName": "Projektkopfzeile",
+      "linkedNodes": {}
+    },
+    "t1oa4qZ22i": {
+      "type": {
+        "resolvedName": "PageHeader"
+      },
+      "nodes": [
+        "s1DaSGH1bK"
+      ],
+      "props": {
+        "id": "PAGE_HEADER",
+        "padding": 50,
+        "borderTop": false,
+        "background": "transparent",
+        "borderLeft": false,
+        "borderColor": "#e4e4e7",
+        "borderRight": false,
+        "borderStyle": "solid",
+        "borderWidth": 1,
+        "borderBottom": false,
+        "paddingBottom": 5
+      },
+      "custom": {},
+      "hidden": false,
+      "parent": "ROOT",
+      "isCanvas": true,
+      "displayName": "Kopfzeile",
+      "linkedNodes": {}
+    }
+  },
+  "subjectOrFilename": "Dokument-{{config.name}}"
+}

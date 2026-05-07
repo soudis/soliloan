@@ -2,23 +2,17 @@
 
 import { useNode } from '@craftjs/core';
 import { EditorContent } from '@tiptap/react';
-import { BubbleMenu } from '@tiptap/react/menus';
-import {
-  AlignCenter,
-  AlignJustify,
-  AlignLeft,
-  AlignRight,
-  Bold,
-  Italic,
-  PlusCircle,
-  Underline as UnderlineIcon,
-} from 'lucide-react';
+import { AlignCenter, AlignJustify, AlignLeft, AlignRight, PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
+import { buildLoopMergeTagFallbackHtml } from '@/lib/templates/tiptap-merge-loop';
+import { useEditorMetadata } from '../editor-context';
 import { useMergeTagConfig } from '../merge-tag-context';
 import { MergeTagDropdown } from '../merge-tag-dropdown';
+import { useMergeTagInsertionLoops } from '../use-merge-tag-insertion-loops';
 import { editorRegistry, useEditorRegistry } from './tiptap/editor-registry';
+import { TemplateTiptapBubbleMenu } from './tiptap/template-tiptap-bubble-menu';
 import { TextEditorProvider } from './tiptap/text-editor-context';
 import { useTiptapEditor } from './tiptap/use-tiptap-editor';
 import './tiptap/tiptap.css';
@@ -101,46 +95,7 @@ export const Text = ({ text, fontSize = 16, color = '#000000', textAlign = 'left
         }}
         className={`relative w-full min-h-[1em] group ${selected ? 'outline-1 outline-blue-500' : ''}`}
       >
-        {editor && (
-          <BubbleMenu
-            editor={editor}
-            pluginKey="bubbleMenu"
-            shouldShow={({ editor }) => {
-              // Only show when there is a selection
-              return !editor.state.selection.empty;
-            }}
-          >
-            <div className="flex bg-zinc-900 text-white rounded-md shadow-lg border border-zinc-800 p-0.5 z-[1000] overflow-hidden">
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleBold().run()}
-                className={`p-1.5 hover:bg-zinc-800 rounded transition-colors ${
-                  editor.isActive('bold') ? 'text-blue-400 bg-zinc-800' : 'text-zinc-400'
-                }`}
-              >
-                <Bold className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleItalic().run()}
-                className={`p-1.5 hover:bg-zinc-800 rounded transition-colors ${
-                  editor.isActive('italic') ? 'text-blue-400 bg-zinc-800' : 'text-zinc-400'
-                }`}
-              >
-                <Italic className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleUnderline().run()}
-                className={`p-1.5 hover:bg-zinc-800 rounded transition-colors ${
-                  editor.isActive('underline') ? 'text-blue-400 bg-zinc-800' : 'text-zinc-400'
-                }`}
-              >
-                <UnderlineIcon className="w-4 h-4" />
-              </button>
-            </div>
-          </BubbleMenu>
-        )}
+        {editor && <TemplateTiptapBubbleMenu editor={editor} pluginKey="bubbleMenu" />}
 
         {/* Editor content - captures mouse events when selected/editable */}
         <div
@@ -196,6 +151,8 @@ export const Text = ({ text, fontSize = 16, color = '#000000', textAlign = 'left
 
 export const TextSettings = () => {
   const t = useTranslations('templates.editor.components.text');
+  const tTpl = useTranslations('templates.editor');
+  const editorMeta = useEditorMetadata();
 
   const {
     actions: { setProp },
@@ -211,6 +168,8 @@ export const TextSettings = () => {
     id: node.id,
   }));
 
+  const ancestorLoopsInnermostFirst = useMergeTagInsertionLoops(id, false);
+
   // Get editor instance from registry since we are in a different React tree (Sidebar)
   const registryData = useEditorRegistry(id);
   const editor = registryData?.editor || null;
@@ -222,32 +181,42 @@ export const TextSettings = () => {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleMergeTagSelect = (item: MergeTagField | MergeTagLoop) => {
-    const mergeTag = {
-      id: String('id' in item ? item.id : item.key),
-      label: item.label,
-      value: ('startTag' in item ? item.startTag : item.value).replace(/[{}]/g, ''),
-    };
+    const isLoopItem = (it: MergeTagField | MergeTagLoop): it is MergeTagLoop => 'startTag' in it && 'endTag' in it;
 
     if (editor) {
-      // 1. Get position BEFORE calling any focus methods
       const pos = lastSelection.current?.from ?? editor.state.selection.from;
 
-      // 2. Chain focus(pos) followed by insertion
-      if ('insertMergeTag' in editor.commands) {
-        editor.chain().focus(pos).insertMergeTag(mergeTag).run();
+      if (isLoopItem(item)) {
+        if ('insertMergeTagLoop' in editor.commands) {
+          editor.chain().focus(pos).insertMergeTagLoop(item).run();
+        } else {
+          editor
+            .chain()
+            .focus(pos)
+            .insertContent(buildLoopMergeTagFallbackHtml(item, tTpl('mergeTags.loopBodyPlaceholder')))
+            .run();
+        }
       } else {
-        // Fallback: insert at current selection using chain for better type safety
-        const mergeTagHtml = `<span data-merge-tag="${mergeTag.value}" data-merge-tag-id="${mergeTag.id}" data-merge-tag-label="${mergeTag.label}" class="merge-tag-pill">${mergeTag.label}</span>`;
-        editor.chain().focus(pos).insertContent(mergeTagHtml).run();
+        const mergeTag = {
+          id: String(item.key),
+          label: item.label,
+          value: item.value.replace(/\{\{|\}\}/g, ''),
+        };
+        if ('insertMergeTag' in editor.commands) {
+          editor.chain().focus(pos).insertMergeTag(mergeTag).run();
+        } else {
+          const mergeTagHtml = `<span data-merge-tag="${mergeTag.value}" data-merge-tag-id="${mergeTag.id}" data-merge-tag-label="${mergeTag.label}" class="merge-tag-pill">${mergeTag.label}</span>`;
+          editor.chain().focus(pos).insertContent(mergeTagHtml).run();
+        }
       }
 
-      // 3. Clear lastSelection to avoid stale data
       lastSelection.current = null;
     } else {
-      // Emergency fallback: append to text
       setProp((props: TextProps) => {
-        const mergeTagHtml = `<span data-merge-tag="${mergeTag.value}" data-merge-tag-id="${mergeTag.id}" data-merge-tag-label="${mergeTag.label}" class="merge-tag-pill">${mergeTag.label}</span>`;
-        props.text = props.text ? `${props.text}${mergeTagHtml}` : mergeTagHtml;
+        const append = isLoopItem(item)
+          ? buildLoopMergeTagFallbackHtml(item, tTpl('mergeTags.loopBodyPlaceholder'))
+          : `<span data-merge-tag="${item.value.replace(/\{\{|\}\}/g, '')}" data-merge-tag-id="${String(item.key)}" data-merge-tag-label="${item.label}" class="merge-tag-pill">${item.label}</span>`;
+        props.text = props.text ? `${props.text}${append}` : append;
       });
     }
     setDropdownOpen(false);
@@ -265,7 +234,7 @@ export const TextSettings = () => {
           value={fontSize}
           onChange={(e) =>
             setProp((props: TextProps) => {
-              props.fontSize = Number.parseInt(e.target.value);
+              props.fontSize = Number.parseInt(e.target.value, 10);
             })
           }
           className="w-full px-2 py-1 border rounded text-sm"
@@ -344,6 +313,10 @@ export const TextSettings = () => {
           onSelect={handleMergeTagSelect}
           config={config}
           position={dropdownPos}
+          insertionContext={{
+            ancestorLoopsInnermostFirst,
+            dataset: editorMeta.dataset,
+          }}
         />
       )}
     </div>

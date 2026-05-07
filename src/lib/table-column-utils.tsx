@@ -4,7 +4,7 @@ import moment from 'moment';
 import { Badge } from '@/components/ui/badge';
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { formatCurrency, formatDateShort, getLenderName, NumberParser } from '@/lib/utils';
+import { formatCurrency, getLenderName, NumberParser } from '@/lib/utils';
 import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat } from './schemas/common';
 
 // Define the custom filter function for compound text fields
@@ -108,7 +108,7 @@ export function createCurrencyColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,
   t: (key: string) => string,
-  locale: string,
+  _: string,
 ): ColumnDef<T> {
   const parser = new NumberParser('de-DE');
   const column = createColumn<T>(
@@ -143,7 +143,12 @@ export function createDateColumn<T>(
       cell: ({ row }) => {
         const dateStr = row.getValue(accessorKey) as string;
         if (!dateStr) return '';
-        return <div className="tabular-nums">{formatDateShort(dateStr, locale ?? 'de')}</div>;
+        try {
+          const date = new Date(dateStr);
+          return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('de-DE');
+        } catch (_) {
+          return '';
+        }
       },
     },
     t,
@@ -471,24 +476,24 @@ export function createAdditionalFieldsColumns<T>(
   }) ?? []) as ColumnDef<T>[];
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: needed
 export function createAdditionalFieldDefaultColumnVisibility<T>(
   accessorKey: string,
   config: AdditionalFieldConfig[] | undefined | null,
 ) {
   const defaultColumnVisibility: VisibilityState = {};
-  // biome-ignore lint/complexity/noForEach: <explanation>
   config?.forEach((field) => {
     defaultColumnVisibility[`${accessorKey}.${field.id}`] = false;
   });
   return defaultColumnVisibility;
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: needed
 export function createAdditionalFieldFilters<T>(
   accessorKey: string,
   config: AdditionalFieldConfig[] | undefined | null,
 ) {
   const filters: DataTableColumnFilters = {};
-  // biome-ignore lint/complexity/noForEach: <explanation>
   config?.forEach((field) => {
     if (field.type === AdditionalFieldType.TEXT) {
       filters[`${accessorKey}.${field.id}`] = {
@@ -557,7 +562,13 @@ export function createLenderColumn<
 
 type TerminationModalitiesData = Pick<
   Loan,
-  'terminationType' | 'signDate' | 'endDate' | 'duration' | 'durationType' | 'terminationPeriod' | 'terminationPeriodType'
+  | 'terminationType'
+  | 'signDate'
+  | 'endDate'
+  | 'duration'
+  | 'durationType'
+  | 'terminationPeriod'
+  | 'terminationPeriodType'
 >;
 
 export function formatTerminationModalities(
@@ -602,7 +613,13 @@ export function formatTerminationModalities(
 export function createTerminationModalitiesColumn<
   T extends Pick<
     Loan,
-    'terminationType' | 'signDate' | 'endDate' | 'duration' | 'durationType' | 'terminationPeriod' | 'terminationPeriodType'
+    | 'terminationType'
+    | 'signDate'
+    | 'endDate'
+    | 'duration'
+    | 'durationType'
+    | 'terminationPeriod'
+    | 'terminationPeriodType'
   >,
 >(t: (key: string) => string, commonT: (key: string) => string): ColumnDef<T> {
   return createColumn<T>(

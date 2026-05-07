@@ -10,6 +10,7 @@ import {
   getTransactionContext,
   removeNullFields,
 } from '@/lib/audit-trail';
+import { sendTransactionNotificationToLender } from '@/lib/email';
 import { db } from '@/lib/db';
 import { transactionFormSchema } from '@/lib/schemas/transaction';
 import { loanAction } from '@/lib/utils/safe-action';
@@ -86,6 +87,14 @@ export const addTransactionAction = loanAction
 
     // Revalidate the lender page (loans are viewed within lender detail)
     revalidatePath(`/lenders/${loan.lenderId}`);
+
+    if (data.notifyLender && loan.lender.email) {
+      await sendTransactionNotificationToLender({
+        to: loan.lender.email,
+        transactionId: transaction.id,
+        projectId: loan.lender.projectId,
+      });
+    }
 
     return { transaction };
   });

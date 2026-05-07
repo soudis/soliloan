@@ -14,3 +14,14 @@ export type CommunicationTemplateWithProject = Omit<
     name: string;
   };
 };
+
+export type GlobalTemplateListItem = {
+  id: string;
+  name: string;
+  description: string | null;
+  type: 'EMAIL' | 'DOCUMENT';
+  dataset: CommunicationTemplate['dataset'];
+  isGlobal: boolean;
+  isSystem: boolean;
+  systemKey: string | null;
+};

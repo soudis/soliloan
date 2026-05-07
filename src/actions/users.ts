@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db';
-import { sendPasswordInvitationEmail } from '@/lib/email';
+import { sendPasswordInvitationEmail, type LenderInviteContext } from '@/lib/email';
 import { lenderIdSchema } from '@/lib/schemas/common';
 import { generateToken } from '@/lib/token';
 import { lenderAction } from '@/lib/utils/safe-action';
@@ -54,13 +54,22 @@ export const sendInvitationEmailAction = lenderAction
       },
     });
 
-    // Send the invitation email
+    const lenderContext: LenderInviteContext = {
+      lenderId: lender.id,
+      lenderName: user.name || lender.firstName || 'User',
+      lenderEmail: lender.email,
+      projectId: lender.project.id,
+      projectName: lender.project.configuration.name,
+      configData: lender.project.configuration as unknown as Record<string, unknown>,
+    };
+
     await sendPasswordInvitationEmail(
       lender.email,
       user.name || lender.firstName || 'User',
       token,
       user.language || 'de',
       lender.project.configuration.name,
+      lenderContext,
     );
 
     // Revalidate the lender page to update the lastInvited timestamp
