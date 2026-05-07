@@ -222,7 +222,8 @@ export const ButtonSettings = () => {
             </select>
             {systemUrlKey && (
               <p className="text-[10px] text-muted-foreground font-mono">
-                {'{{'}system.{systemUrlKey}{'}}'}
+                {'{{'}system.{systemUrlKey}
+                {'}}'}
               </p>
             )}
           </div>

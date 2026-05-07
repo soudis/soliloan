@@ -4,11 +4,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "BfcSV7RQKT",
-        "LR97xenyTg",
-        "aJpApaErKN"
-      ],
+      "nodes": ["BfcSV7RQKT", "LR97xenyTg", "aJpApaErKN"],
       "props": {
         "id": "ROOT",
         "gap": 0,
@@ -53,10 +49,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "9n1xujUkV-",
-        "MLp2UMb-Cj"
-      ],
+      "nodes": ["9n1xujUkV-", "MLp2UMb-Cj"],
       "props": {
         "gap": 0,
         "layout": "horizontal",
@@ -84,10 +77,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "ocTNCvgGzw",
-        "PR6iTWl5L9"
-      ],
+      "nodes": ["ocTNCvgGzw", "PR6iTWl5L9"],
       "props": {
         "gap": 0,
         "layout": "vertical",
@@ -155,9 +145,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "nKH3a-fKSb"
-      ],
+      "nodes": ["nKH3a-fKSb"],
       "props": {
         "gap": 0,
         "layout": "vertical",

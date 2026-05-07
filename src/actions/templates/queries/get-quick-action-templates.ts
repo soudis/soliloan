@@ -40,10 +40,7 @@ export const getQuickActionTemplatesAction = managerAction
         type: { in: ['EMAIL', 'DOCUMENT'] },
         AND: [
           {
-            OR: [
-              { systemKey: null },
-              { systemKey: { notIn: [...STARTER_TEMPLATE_SYSTEM_KEYS] } },
-            ],
+            OR: [{ systemKey: null }, { systemKey: { notIn: [...STARTER_TEMPLATE_SYSTEM_KEYS] } }],
           },
         ],
       },

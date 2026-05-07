@@ -4,11 +4,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "_TwKNBsj22",
-        "06vvkaaMvG",
-        "Y52OwWRd2l"
-      ],
+      "nodes": ["_TwKNBsj22", "06vvkaaMvG", "Y52OwWRd2l"],
       "props": {
         "id": "ROOT",
         "gap": 0,
@@ -37,14 +33,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "foA5ABafaV",
-        "RqLPnlxo-J",
-        "Jzg8S45kPC",
-        "md0WrDAFRA",
-        "zjS3M45tyG",
-        "Vxkd5Pdnne"
-      ],
+      "nodes": ["foA5ABafaV", "RqLPnlxo-J", "Jzg8S45kPC", "md0WrDAFRA", "zjS3M45tyG", "Vxkd5Pdnne"],
       "props": {
         "gap": 20,
         "layout": "vertical",
@@ -190,17 +179,9 @@
         "borderRight": true,
         "borderStyle": "solid",
         "borderWidth": 1,
-        "headerTexts": [
-          "<p>Datum</p>",
-          "<p>Zahlungsart</p>",
-          "<p>Betrag</p>"
-        ],
+        "headerTexts": ["<p>Datum</p>", "<p>Zahlungsart</p>", "<p>Betrag</p>"],
         "borderBottom": true,
-        "columnWidths": [
-          1,
-          1,
-          1
-        ],
+        "columnWidths": [1, 1, 1],
         "headerStyles": [
           {
             "color": "#000000",
@@ -230,9 +211,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "a2zyCtvYbb"
-      ],
+      "nodes": ["a2zyCtvYbb"],
       "props": {
         "gap": 0,
         "layout": "horizontal",
@@ -261,9 +240,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "K6AUvysDBD"
-      ],
+      "nodes": ["K6AUvysDBD"],
       "props": {
         "gap": 0,
         "layout": "vertical",
@@ -292,10 +269,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "RQmcGOMM_I",
-        "LQT_hy5ggJ"
-      ],
+      "nodes": ["RQmcGOMM_I", "LQT_hy5ggJ"],
       "props": {
         "gap": 0,
         "layout": "horizontal",

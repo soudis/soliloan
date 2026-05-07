@@ -37,9 +37,7 @@ export function FormCheckbox({ name, label, hint, className }: FormCheckboxProps
             ) : null}
           </div>
           {hint ? (
-            <FormDescription
-              className={cn('text-sm text-muted-foreground/80', label ? 'ps-7' : undefined)}
-            >
+            <FormDescription className={cn('text-sm text-muted-foreground/80', label ? 'ps-7' : undefined)}>
               {hint}
             </FormDescription>
           ) : null}

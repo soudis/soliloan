@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { sendInvitationEmailAction } from '@/actions/users';
 import { InfoItem } from '@/components/ui/info-item';
-import { formatDateTimeLong } from '@/lib/utils';
+import { formatDateLong } from '@/lib/utils';
 import { hasAdditionalFields } from '@/lib/utils/additional-fields';
 import { formatAddressPlace } from '@/lib/utils/format';
 import type { LenderDetailsWithCalculations } from '@/types/lenders';
@@ -131,7 +131,7 @@ export function LenderContactSection({ lender }: LenderContactSectionProps) {
                   label={t('details.lastLogin')}
                   value={
                     lender.user.lastLogin ? (
-                      formatDateTimeLong(lender.user.lastLogin, locale)
+                      formatDateLong(lender.user.lastLogin, locale)
                     ) : (
                       <span className="text-muted-foreground italic">{t('details.neverLoggedIn')}</span>
                     )
@@ -142,7 +142,7 @@ export function LenderContactSection({ lender }: LenderContactSectionProps) {
                     label={t('details.lastInvited')}
                     value={
                       lender.user.lastInvited ? (
-                        formatDateTimeLong(lender.user.lastInvited, locale)
+                        formatDateLong(lender.user.lastInvited, locale)
                       ) : (
                         <span className="text-muted-foreground italic">{t('details.neverInvited')}</span>
                       )

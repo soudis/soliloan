@@ -1,20 +1,16 @@
 'use server';
 
 import { db } from '@/lib/db';
-import {
-  getLenderEmailFromTemplateMergeData,
-  renderAndSendCommunicationTemplateEmail,
-} from '@/lib/email';
+import { getLenderEmailFromTemplateMergeData, renderAndSendCommunicationTemplateEmail } from '@/lib/email';
 import { buildTemplateUseSearchParams, parseTemplateDownloadQuery } from '@/lib/templates/template-download-query';
 import { getTemplateData } from '@/lib/templates/template-data';
 import { assertManagerCanUseCommunicationTemplate } from '@/lib/templates/template-use-access';
 import { sendCommunicationTemplateEmailSchema } from '@/lib/schemas/templates';
 import { managerAction } from '@/lib/utils/safe-action';
 
-function assertQuickActionPayload<T extends { lenderId?: string; loanId?: string; transactionId?: string; year?: number }>(
-  dataset: import('@prisma/client').TemplateDataset,
-  data: T,
-) {
+function assertQuickActionPayload<
+  T extends { lenderId?: string; loanId?: string; transactionId?: string; year?: number },
+>(dataset: import('@prisma/client').TemplateDataset, data: T) {
   switch (dataset) {
     case 'LENDER':
       if (!data.lenderId) {

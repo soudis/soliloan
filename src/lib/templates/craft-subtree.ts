@@ -24,10 +24,7 @@ function generateId(): string {
  * Returns a flat map containing only the root node and all its descendants.
  * Throws if rootId is a structural node or not found.
  */
-export function extractCraftSubtree(
-  design: Record<string, unknown>,
-  rootId: string,
-): NodesMap {
+export function extractCraftSubtree(design: Record<string, unknown>, rootId: string): NodesMap {
   const allNodes = getNodesMapFromDesign(design) as NodesMap;
 
   if (!allNodes[rootId]) {

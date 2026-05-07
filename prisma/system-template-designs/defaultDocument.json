@@ -4,11 +4,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "t1oa4qZ22i",
-        "04WRhdIeAA",
-        "eXfKLdLsxS"
-      ],
+      "nodes": ["t1oa4qZ22i", "04WRhdIeAA", "eXfKLdLsxS"],
       "props": {
         "id": "ROOT",
         "gap": 0,
@@ -86,9 +82,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "W3ysQo92FQ"
-      ],
+      "nodes": ["W3ysQo92FQ"],
       "props": {
         "gap": 0,
         "layout": "vertical",
@@ -137,9 +131,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "fy9uVUoTcF"
-      ],
+      "nodes": ["fy9uVUoTcF"],
       "props": {
         "gap": 0,
         "layout": "vertical",
@@ -168,9 +160,7 @@
       "type": {
         "resolvedName": "PageFooter"
       },
-      "nodes": [
-        "QvfOL02FXl"
-      ],
+      "nodes": ["QvfOL02FXl"],
       "props": {
         "id": "PAGE_FOOTER",
         "padding": 50,
@@ -215,10 +205,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "01HZ529OKw",
-        "dMo02dK6qw"
-      ],
+      "nodes": ["01HZ529OKw", "dMo02dK6qw"],
       "props": {
         "gap": 0,
         "layout": "horizontal",
@@ -247,9 +234,7 @@
       "type": {
         "resolvedName": "PageHeader"
       },
-      "nodes": [
-        "s1DaSGH1bK"
-      ],
+      "nodes": ["s1DaSGH1bK"],
       "props": {
         "id": "PAGE_HEADER",
         "padding": 50,
