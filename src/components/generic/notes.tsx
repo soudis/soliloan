@@ -2,14 +2,13 @@
 
 import type { Note } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { de, enUS } from 'date-fns/locale';
 import { FileText, Lock, Pencil, Plus, Trash2, Unlock } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { deleteNoteAction } from '@/actions/notes/mutations/delete-note';
+import { formatDateLong } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { Button } from '../ui/button';
 import { ConfirmDialog } from './confirm-dialog';
@@ -31,7 +30,6 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
   const t = useTranslations('dashboard.notes');
   const commonT = useTranslations('common');
   const locale = useLocale();
-  const dateLocale = locale === 'de' ? de : enUS;
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<
     (Note & { createdBy: { id: string; name: string | null } }) | undefined
@@ -104,11 +102,7 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
                     {commonT('terms.loan')} #{loans.find((loan) => loan.id === note.loanId)?.loanNumber}
                   </div>
                 )}
-                <div className="text-xs text-muted-foreground">
-                  {format(new Date(note.createdAt), 'PPP', {
-                    locale: dateLocale,
-                  })}
-                </div>
+                <div className="text-xs text-muted-foreground">{formatDateLong(note.createdAt, locale)}</div>
                 <div className="text-xs text-muted-foreground">• {note.createdBy.name}</div>
                 {note.public ? (
                   <div className="flex items-center text-xs text-muted-foreground">

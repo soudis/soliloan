@@ -170,8 +170,7 @@ export const Container = ({
     connectors: { connect },
     loopRibbonTitle,
   } = useNode((node) => ({
-    loopRibbonTitle:
-      typeof node.data.displayName === 'string' ? node.data.displayName.trim() : '',
+    loopRibbonTitle: typeof node.data.displayName === 'string' ? node.data.displayName.trim() : '',
   }));
 
   const hasLoop = loopKey.trim().length > 0;

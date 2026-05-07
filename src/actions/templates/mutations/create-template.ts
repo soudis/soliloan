@@ -4,10 +4,7 @@ import type { Prisma, TemplateType } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db';
 import { createTemplateSchema } from '@/lib/schemas/templates';
-import {
-  getDefaultStarterTemplateContent,
-  isEmptyDesignJson,
-} from '@/lib/templates/default-starter-templates';
+import { getDefaultStarterTemplateContent, isEmptyDesignJson } from '@/lib/templates/default-starter-templates';
 import { adminAction, projectAction } from '@/lib/utils/safe-action';
 
 async function resolveDesignAndSubjectForCreate(input: {
@@ -29,8 +26,7 @@ async function resolveDesignAndSubjectForCreate(input: {
   }
 
   const raw = input.subjectOrFilename;
-  let subjectOrFilename: string | null =
-    typeof raw === 'string' && raw.trim() !== '' ? raw.trim() : null;
+  let subjectOrFilename: string | null = typeof raw === 'string' && raw.trim() !== '' ? raw.trim() : null;
 
   if (isEmptyDesignJson(designJson)) {
     const starter = await getDefaultStarterTemplateContent(input.type);

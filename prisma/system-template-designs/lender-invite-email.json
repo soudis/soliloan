@@ -4,11 +4,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "kxLfnsE00R",
-        "8JUD_d5uyV",
-        "8RchCNyK7R"
-      ],
+      "nodes": ["kxLfnsE00R", "8JUD_d5uyV", "8RchCNyK7R"],
       "props": {
         "id": "ROOT",
         "gap": 0,
@@ -57,10 +53,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "0Beagmtsv-",
-        "zurtR-fNAa"
-      ],
+      "nodes": ["0Beagmtsv-", "zurtR-fNAa"],
       "props": {
         "gap": 0,
         "layout": "vertical",
@@ -89,9 +82,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "e9mzmOalDj"
-      ],
+      "nodes": ["e9mzmOalDj"],
       "props": {
         "gap": 0,
         "layout": "vertical",
@@ -177,10 +168,7 @@
       "type": {
         "resolvedName": "Container"
       },
-      "nodes": [
-        "VZr3GxhXW3",
-        "RgQqa5Zbjs"
-      ],
+      "nodes": ["VZr3GxhXW3", "RgQqa5Zbjs"],
       "props": {
         "gap": 0,
         "layout": "horizontal",

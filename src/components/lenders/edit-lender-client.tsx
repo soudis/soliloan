@@ -8,6 +8,7 @@ import { updateLenderAction } from '@/actions/lenders';
 import { LenderForm } from '@/components/lenders/lender-form';
 import { useRouter } from '@/i18n/navigation';
 import type { LenderFormData } from '@/lib/schemas/lender';
+import type { FormSubmitResult } from '@/types/forms';
 import type { LenderDetailsWithCalculations } from '@/types/lenders';
 
 interface EditLenderClientProps {
@@ -20,7 +21,7 @@ export function EditLenderClient({ lender }: EditLenderClientProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (data: LenderFormData) => {
+  const handleSubmit = async (data: LenderFormData): Promise<FormSubmitResult> => {
     try {
       setIsSubmitting(true);
       setError(null);
@@ -33,10 +34,12 @@ export function EditLenderClient({ lender }: EditLenderClientProps) {
 
       toast.success(t('edit.form.success'));
       router.push(`/lenders/${lender.id}`);
+      return undefined;
     } catch (error) {
       console.error('Error submitting form:', error);
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
       toast.error(t('edit.form.error'));
+      return undefined;
     } finally {
       setIsSubmitting(false);
     }

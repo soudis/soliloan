@@ -399,9 +399,7 @@ export function TemplateQuickActions({
           <DialogContent className="flex max-h-[90vh] max-w-3xl flex-col gap-4">
             <DialogHeader>
               <DialogTitle>{t('emailPreviewTitle')}</DialogTitle>
-              {emailPreview ? (
-                <p className="text-sm font-medium text-foreground">{emailPreview.templateName}</p>
-              ) : null}
+              {emailPreview ? <p className="text-sm font-medium text-foreground">{emailPreview.templateName}</p> : null}
             </DialogHeader>
             {previewLoading || !emailPreview ? (
               <div className="py-8 text-center text-sm text-muted-foreground">{commonT('ui.status.loading')}</div>
@@ -409,8 +407,7 @@ export function TemplateQuickActions({
               <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
                 <div className="shrink-0 space-y-2 text-sm">
                   <div className="break-all">
-                    <span className="font-medium text-muted-foreground">{t('emailPreviewTo')}</span>{' '}
-                    {emailPreview.to}
+                    <span className="font-medium text-muted-foreground">{t('emailPreviewTo')}</span> {emailPreview.to}
                   </div>
                   <div className="break-words">
                     <span className="font-medium text-muted-foreground">{t('emailPreviewSubject')}</span>{' '}
@@ -572,9 +569,7 @@ export function TemplateQuickActions({
         <DialogContent className="flex max-h-[90vh] max-w-3xl flex-col gap-4">
           <DialogHeader>
             <DialogTitle>{t('emailPreviewTitle')}</DialogTitle>
-            {emailPreview ? (
-              <p className="text-sm font-medium text-foreground">{emailPreview.templateName}</p>
-            ) : null}
+            {emailPreview ? <p className="text-sm font-medium text-foreground">{emailPreview.templateName}</p> : null}
           </DialogHeader>
           {previewLoading || !emailPreview ? (
             <div className="py-8 text-center text-sm text-muted-foreground">{commonT('ui.status.loading')}</div>
@@ -582,8 +577,7 @@ export function TemplateQuickActions({
             <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
               <div className="shrink-0 space-y-2 text-sm">
                 <div className="break-all">
-                  <span className="font-medium text-muted-foreground">{t('emailPreviewTo')}</span>{' '}
-                  {emailPreview.to}
+                  <span className="font-medium text-muted-foreground">{t('emailPreviewTo')}</span> {emailPreview.to}
                 </div>
                 <div className="break-words">
                   <span className="font-medium text-muted-foreground">{t('emailPreviewSubject')}</span>{' '}

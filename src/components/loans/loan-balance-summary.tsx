@@ -65,7 +65,7 @@ export function LoanBalanceSummary({ loan, readOnly }: LoanBalanceSummaryProps) 
 
   return (
     <div className="pt-0">
-      <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('table.totals')}</h4>
+      <h4 className="text-sm font-medium text-muted-foreground mb-2 border-b pb-3">{t('table.totals')}</h4>
       <div className="space-y-0">
         {deposits !== 0 && (
           <div className={rowClass}>

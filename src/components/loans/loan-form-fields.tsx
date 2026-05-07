@@ -1,9 +1,9 @@
 'use client';
 
 import { ContractStatus, type Lender } from '@prisma/client';
+import { FileX } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-
 import { FormDatePicker } from '@/components/form/form-date-picker';
 import { FormField } from '@/components/form/form-field';
 import { FormNumberInput } from '@/components/form/form-number-input';
@@ -88,8 +88,8 @@ export function LoanFormFields({ lenders, isEditMode = false }: LoanFormFieldsPr
       </FormSection>
 
       {/* Termination Information Section */}
-      <FormSection title={t('new.form.terminationInfo')}>
-        <TerminationFormFields />
+      <FormSection icon={<FileX className="w-4 h-4 text-muted-foreground" />} title={t('new.form.terminationInfo')}>
+        <TerminationFormFields hideTerminationDate />
       </FormSection>
 
       {/* Additional Information Section */}

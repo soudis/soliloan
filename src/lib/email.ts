@@ -169,11 +169,7 @@ export function buildCommunicationTemplateEmailContent(args: {
 }): { html: string; subject: string } | null {
   const html = renderSystemEmailTemplate(args.designJson, args.mergeData, { logoUrl: args.logoUrl });
   if (!html) return null;
-  const subject = resolveTemplateSubject(
-    args.subjectOrFilename,
-    args.mergeData,
-    args.fallbackSubject,
-  );
+  const subject = resolveTemplateSubject(args.subjectOrFilename, args.mergeData, args.fallbackSubject);
   return { html, subject };
 }
 

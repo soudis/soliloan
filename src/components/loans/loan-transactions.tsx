@@ -2,8 +2,6 @@
 
 import type { Transaction } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { de, enUS } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
@@ -12,7 +10,7 @@ import { toast } from 'sonner';
 import { deleteTransactionAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
-import { cn, formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency, formatDateLong } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 
 import { Button } from '../ui/button';
@@ -55,7 +53,6 @@ export function LoanTransactions({
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const locale = useLocale();
-  const dateLocale = locale === 'de' ? de : enUS;
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [showBookings, setShowBookings] = useState(true);
@@ -136,9 +133,7 @@ export function LoanTransactions({
               </div>
               <div>
                 <div className="text-sm font-medium">{commonT(`enums.transaction.type.${transaction.type}`)}</div>
-                <div className="text-xs text-muted-foreground">
-                  {format(new Date(transaction.date), 'PPP', { locale: dateLocale })}
-                </div>
+                <div className="text-xs text-muted-foreground">{formatDateLong(transaction.date, locale)}</div>
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
@@ -204,16 +199,14 @@ export function LoanTransactions({
       </div>
 
       {!readOnly && (
-        <>
-          <ConfirmDialog
-            open={isConfirmOpen}
-            onOpenChange={setIsConfirmOpen}
-            onConfirm={handleConfirmDelete}
-            title={t('transactions.delete.confirmTitle')}
-            description={t('transactions.delete.confirmDescription')}
-            confirmText={commonT('ui.actions.delete')}
-          />
-        </>
+        <ConfirmDialog
+          open={isConfirmOpen}
+          onOpenChange={setIsConfirmOpen}
+          onConfirm={handleConfirmDelete}
+          title={t('transactions.delete.confirmTitle')}
+          description={t('transactions.delete.confirmDescription')}
+          confirmText={commonT('ui.actions.delete')}
+        />
       )}
     </>
   );

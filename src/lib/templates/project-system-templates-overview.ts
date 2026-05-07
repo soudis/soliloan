@@ -19,7 +19,9 @@ export type ProjectSystemTemplateOverviewRow = {
   createdAt: string;
 };
 
-export async function getProjectSystemTemplatesOverviewRows(projectId: string): Promise<ProjectSystemTemplateOverviewRow[]> {
+export async function getProjectSystemTemplatesOverviewRows(
+  projectId: string,
+): Promise<ProjectSystemTemplateOverviewRow[]> {
   const globals = await db.communicationTemplate.findMany({
     where: {
       isGlobal: true,

@@ -1,3 +1,4 @@
+import account from './account.json';
 import auth from './auth.json';
 import common from './common.json';
 import dashboard from './dashboard.json';
@@ -11,6 +12,7 @@ import validation from './validation.json';
 import views from './views.json';
 
 export default {
+  account,
   error,
   auth,
   common,

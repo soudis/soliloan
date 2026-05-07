@@ -13,6 +13,7 @@ import type { LoanFormData } from '@/lib/schemas/loan';
 import { loanFormSchema } from '@/lib/schemas/loan';
 import { emptyStringToNull, formatNumber } from '@/lib/utils';
 import { additionalFieldDefaults, validateAdditionalFields } from '@/lib/utils/additional-fields';
+import type { FormSubmitHandler } from '@/types/forms';
 import type { LoanWithRelations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { LoanFormFields } from './loan-form-fields';
@@ -22,7 +23,7 @@ interface LoanFormProps {
   submitButtonText: string;
   submittingButtonText: string;
   cancelButtonText: string;
-  onSubmit: (data: LoanFormData) => Promise<Record<string, string> | undefined>;
+  onSubmit: FormSubmitHandler<LoanFormData>;
   initialData?: Partial<LoanWithRelations>;
   isLoading?: boolean;
   error?: string | null;
@@ -65,7 +66,6 @@ export function LoanForm({
     contractStatus: initialData?.contractStatus || 'PENDING',
     terminationType: initialData?.terminationType || 'TERMINATION',
     endDate: initialData?.endDate || '',
-    terminationDate: initialData?.terminationDate || '',
     terminationPeriod: initialData?.terminationPeriod || '',
     terminationPeriodType: initialData?.terminationPeriodType || DurationType.MONTHS,
     duration: initialData?.duration || '',

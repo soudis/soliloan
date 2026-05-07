@@ -18,17 +18,12 @@ export const updateTemplateAction = templateAction
     }
 
     // System templates: editor may save design; settings dialog must not rename or change description.
-    if (
-      existing.isSystem &&
-      (data.name !== undefined || data.description !== undefined)
-    ) {
+    if (existing.isSystem && (data.name !== undefined || data.description !== undefined)) {
       throw new Error('error.template.systemFieldsOnly');
     }
 
     const optionalPublicChange =
-      data.isPublic !== undefined && existing.type === 'DOCUMENT'
-        ? { isPublic: data.isPublic }
-        : {};
+      data.isPublic !== undefined && existing.type === 'DOCUMENT' ? { isPublic: data.isPublic } : {};
 
     const dataToApply = existing.isSystem
       ? {

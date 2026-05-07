@@ -1,10 +1,8 @@
 'use client';
 
-import { format } from 'date-fns';
-import { de, enUS } from 'date-fns/locale';
 import { useLocale, useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
-import { cn, formatCurrency, formatPercentage } from '@/lib/utils';
+import { cn, formatCurrency, formatDateLong, formatPercentage } from '@/lib/utils';
 import type { LoanWithCalculations } from '@/types/loans';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 
@@ -15,7 +13,6 @@ interface LoanSelectorItemRowProps {
 
 export function LoanSelectorItemRow({ loan, highlightActive = true }: LoanSelectorItemRowProps) {
   const locale = useLocale();
-  const dateLocale = locale === 'de' ? de : enUS;
   const tCommon = useTranslations('common');
   const tLoan = useTranslations('dashboard.loans');
   const [loanId] = useQueryState('loanId', parseAsString);
@@ -23,9 +20,7 @@ export function LoanSelectorItemRow({ loan, highlightActive = true }: LoanSelect
   const amountStr = formatCurrency(loan.amount);
   const interestRateStr = `${formatPercentage(loan.interestRate)}%`;
   const balanceStr = formatCurrency(loan.balance);
-  const contractDateStr = format(loan.signDate, 'PPP', {
-    locale: dateLocale,
-  });
+  const contractDateStr = formatDateLong(loan.signDate, locale);
 
   const loanNumberAndBadgeCell = (
     <div className="align-middle p-2 pl-3 table-cell min-w-35">

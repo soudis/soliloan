@@ -33,7 +33,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         if (!user.password) {
-          throw new Error('User has no password');
+          throw new Error('error.account.noPassword');
         }
 
         const { verifyPassword } = await import('./utils/password');
@@ -71,11 +71,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       };
     },
 
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger, session: updateSession }) {
       if (account && account.type === 'credentials') {
         //(2)
         token.user = user;
       }
+
+      if (
+        trigger === 'update' &&
+        updateSession &&
+        typeof updateSession === 'object' &&
+        'user' in updateSession &&
+        updateSession.user &&
+        typeof updateSession.user === 'object'
+      ) {
+        token.user = {
+          ...(typeof token.user === 'object' && token.user !== null ? token.user : {}),
+          ...updateSession.user,
+        };
+      }
+
       return token;
     },
   },
