@@ -12,8 +12,6 @@ services:
         DOCKER_BUILDKIT: 1
     restart: no
     pull_policy: build
-    labels:
-      - traefik.http.routers.cfe-${DOCKER_IMAGE_TAG:?}.rule=Host(`soliloan.localhost`)
     environment:
       - NODE_ENV=development
       - DATABASE_URL=${DATABASE_URL:?}

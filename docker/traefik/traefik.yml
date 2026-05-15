@@ -27,7 +27,7 @@ api:
 providers:
   docker:
     exposedByDefault: false
-    network: directloan_traefik_network
+    network: soliloan_traefik_network
   file:
     directory: /etc/traefik/dynamic
 

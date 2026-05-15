@@ -1,0 +1,28 @@
+#
+# Production: pull prebuilt image from Docker Hub; runtime env from .env on the server.
+#
+
+services:
+  app:
+    image: ${DOCKERHUB_REPOSITORY:?}:${DOCKER_IMAGE_TAG:?}
+    pull_policy: always
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL:?}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:?}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:?}
+      - NEXTAUTH_URL_INTERNAL=${NEXTAUTH_URL_INTERNAL:?}
+      - SOLILOAN_DOMAIN=${SOLILOAN_DOMAIN:?}
+      - SOLILOAN_URL=${SOLILOAN_URL:?}
+      - SOLILOAN_PROJECT_NAME=${SOLILOAN_PROJECT_NAME:?}
+      - SOLILOAN_DEFAULT_LANGUAGE=${SOLILOAN_DEFAULT_LANGUAGE:-de}
+      - SOLILOAN_INVITE_VALID_DAYS=${SOLILOAN_INVITE_VALID_DAYS:-14}
+      - SOLILOAN_ADMIN_EMAIL=${SOLILOAN_ADMIN_EMAIL:?}
+      - SOLILOAN_ADMIN_PASSWORD=${SOLILOAN_ADMIN_PASSWORD:?}
+      - SMTP_HOST=${SMTP_HOST:?}
+      - SMTP_PORT=${SMTP_PORT:?}
+      - SMTP_SECURE=${SMTP_SECURE:-false}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_FROM=${SMTP_FROM:?}
+      - ENVIRONMENT=production

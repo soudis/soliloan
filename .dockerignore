@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.github
+*.md
+.env
+.env.*
+!.env.example
+coverage
+.swc

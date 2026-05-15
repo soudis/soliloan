@@ -18,4 +18,4 @@ volumes:
 networks:
   traefik_network:
     external: true
-    name: directloan_traefik_network
+    name: soliloan_traefik_network
