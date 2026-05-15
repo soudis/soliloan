@@ -93,7 +93,7 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          SOLILOAN_ADMIN_PASSWORD: ${{ vars.SOLILOAN_ADMIN_PASSWORD }}
+          SOLILOAN_ADMIN_PASSWORD: ${{ secrets.SOLILOAN_ADMIN_PASSWORD }}
         run: |
           set -euo pipefail
           mkdir -p ~/.ssh
