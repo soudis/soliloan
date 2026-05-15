@@ -10,9 +10,10 @@ services:
       - postgres
     labels:
       - traefik.enable=true
-      - traefik.http.routers.cfe-${DOCKER_IMAGE_TAG:?}.rule=Host(`${TRAEFIK_HOST:?}`)
-      - traefik.http.routers.cfe-${DOCKER_IMAGE_TAG:?}.entrypoints=websecure
-      - traefik.http.services.cfe-${DOCKER_IMAGE_TAG:?}.loadbalancer.server.port=3000
+      - traefik.http.routers.soliloan.rule=Host(`${TRAEFIK_HOST:?}`)
+      - traefik.http.routers.soliloan.entrypoints=websecure
+      - traefik.http.routers.soliloan.service=soliloan
+      - traefik.http.services.soliloan.loadbalancer.server.port=3000
     environment:
       - TZ=Europe/Berlin
       - NEXT_PUBLIC_SOLILOAN_PROJECT_NAME=${SOLILOAN_PROJECT_NAME:?}

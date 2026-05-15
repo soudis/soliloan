@@ -15,6 +15,8 @@
     "prisma:studio": "bash -c 'source <(grep -E \"^POSTGRES_\" .env) && DATABASE_URL=\"postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}\" prisma studio'",
     "prisma:push": "bash -c 'source <(grep -E \"^POSTGRES_\" .env) && DATABASE_URL=\"postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}\" prisma db push'",
     "prisma:seed": "bash -c 'source <(grep -E \"^POSTGRES_\" .env) && DATABASE_URL=\"postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}\" prisma db seed'",
+    "prisma:migrate:dev": "bash -c 'source <(grep -E \"^POSTGRES_\" .env) && DATABASE_URL=\"postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}\" prisma migrate dev'",
+    "prisma:migrate:reset": "bash -c 'source <(grep -E \"^POSTGRES_\" .env) && DATABASE_URL=\"postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}\" prisma migrate reset'",
     "format": "biome format src prisma",
     "format:fix": "biome format src prisma --write",
     "typecheck": "tsc --noEmit",

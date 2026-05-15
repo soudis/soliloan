@@ -59,9 +59,14 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Keep Prisma CLI/config/migrations in the runtime image so startup can apply
-# production migrations before Next.js begins accepting traffic.
+# production migrations and seed data before Next.js begins accepting traffic.
 COPY --from=builder /app .
+RUN test -f prisma.config.ts \
+  && test -d prisma/migrations \
+  && test -d prisma/system-template-designs \
+  && test -x node_modules/.bin/prisma \
+  && test -x node_modules/.bin/tsx
 
-CMD ["sh", "-c", "pnpm exec prisma migrate deploy && exec next start"]
+CMD ["sh", "-c", "pnpm exec prisma migrate deploy && pnpm exec prisma db seed && exec next start"]
 
 # ------------------------------------------------------------------------

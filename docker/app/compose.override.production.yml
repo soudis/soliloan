@@ -6,12 +6,16 @@ services:
   app:
     image: ${DOCKERHUB_REPOSITORY:?}:${DOCKER_IMAGE_TAG:?}
     pull_policy: always
+    labels:
+      - traefik.http.routers.soliloan.tls=true
+      - traefik.http.routers.soliloan.tls.certresolver=letsencrypt
     environment:
       - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL:?}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:?}
       - NEXTAUTH_URL=${NEXTAUTH_URL:?}
       - NEXTAUTH_URL_INTERNAL=${NEXTAUTH_URL_INTERNAL:?}
+      - AUTH_TRUST_HOST=${AUTH_TRUST_HOST:-true}
       - SOLILOAN_DOMAIN=${SOLILOAN_DOMAIN:?}
       - SOLILOAN_URL=${SOLILOAN_URL:?}
       - SOLILOAN_PROJECT_NAME=${SOLILOAN_PROJECT_NAME:?}

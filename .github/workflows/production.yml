@@ -113,6 +113,7 @@ jobs:
             echo "NEXTAUTH_SECRET=${NEXTAUTH_SECRET}"
             echo "NEXTAUTH_URL=https://${{ vars.SOLILOAN_DOMAIN }}"
             echo "NEXTAUTH_URL_INTERNAL=http://localhost:3000"
+            echo "AUTH_TRUST_HOST=true"
             echo "SOLILOAN_DOMAIN=${{ vars.SOLILOAN_DOMAIN }}"
             echo "SOLILOAN_URL=https://${{ vars.SOLILOAN_DOMAIN }}"
             echo "SOLILOAN_PROJECT_NAME=${{ vars.SOLILOAN_PROJECT_NAME }}"
