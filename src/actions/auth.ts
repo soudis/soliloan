@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db';
 import { sendPasswordResetEmail } from '@/lib/email';
 import { generateToken } from '@/lib/token';
+import { normalizeStoredEmail } from '@/lib/utils/email';
 import { hashPassword } from '@/lib/utils/password';
 
 /**
@@ -64,9 +65,10 @@ export async function setPassword(token: string, password: string) {
  */
 export async function requestPasswordReset(email: string) {
   try {
+    const normalizedEmail = normalizeStoredEmail(email);
     // Get the user from the database
     const user = await db.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
       select: {
         id: true,
         email: true,

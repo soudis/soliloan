@@ -159,6 +159,20 @@ export function getLenderEmailFromTemplateMergeData(mergeData: Record<string, un
   return trimmed.length > 0 ? trimmed : null;
 }
 
+/** Render subject + HTML for a communication template without sending. */
+export function buildCommunicationTemplateEmailContent(args: {
+  designJson: unknown;
+  subjectOrFilename: string | null;
+  mergeData: Record<string, unknown>;
+  fallbackSubject: string;
+  logoUrl: string | null;
+}): { html: string; subject: string } | null {
+  const html = renderSystemEmailTemplate(args.designJson, args.mergeData, { logoUrl: args.logoUrl });
+  if (!html) return null;
+  const subject = resolveTemplateSubject(args.subjectOrFilename, args.mergeData, args.fallbackSubject);
+  return { html, subject };
+}
+
 /** Render a stored communication template (design JSON) and send to one recipient. */
 export async function renderAndSendCommunicationTemplateEmail(args: {
   designJson: unknown;
@@ -168,10 +182,15 @@ export async function renderAndSendCommunicationTemplateEmail(args: {
   fallbackSubject: string;
   logoUrl: string | null;
 }): Promise<boolean> {
-  const html = renderSystemEmailTemplate(args.designJson, args.mergeData, { logoUrl: args.logoUrl });
-  if (!html) return false;
-  const finalSubject = resolveTemplateSubject(args.subjectOrFilename, args.mergeData, args.fallbackSubject);
-  await sendRawEmail(args.to, finalSubject, html);
+  const built = buildCommunicationTemplateEmailContent({
+    designJson: args.designJson,
+    subjectOrFilename: args.subjectOrFilename,
+    mergeData: args.mergeData,
+    fallbackSubject: args.fallbackSubject,
+    logoUrl: args.logoUrl,
+  });
+  if (!built) return false;
+  await sendRawEmail(args.to, built.subject, built.html);
   return true;
 }
 

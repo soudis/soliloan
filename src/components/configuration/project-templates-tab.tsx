@@ -5,13 +5,15 @@ import { useMemo } from 'react';
 import { ProjectSystemTemplatesTable } from '@/components/configuration/project-system-templates-table';
 import { TemplateDialog } from '@/components/templates/template-dialog';
 import { TemplateList } from '@/components/templates/template-list';
+import type { ProjectSystemTemplateOverviewRow } from '@/lib/templates/project-system-templates-overview';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
 interface ProjectTemplatesTabProps {
   project: ProjectWithConfiguration;
+  systemTemplatesOverviewRows: ProjectSystemTemplateOverviewRow[];
 }
 
-export function ProjectTemplatesTab({ project }: ProjectTemplatesTabProps) {
+export function ProjectTemplatesTab({ project, systemTemplatesOverviewRows }: ProjectTemplatesTabProps) {
   const t = useTranslations('templates');
 
   const nonSystemTemplates = useMemo(
@@ -52,7 +54,7 @@ export function ProjectTemplatesTab({ project }: ProjectTemplatesTabProps) {
           <h3 className="text-lg font-medium">{t('project.sections.systemTitle')}</h3>
           <p className="text-sm text-muted-foreground">{t('project.sections.systemDescription')}</p>
         </div>
-        <ProjectSystemTemplatesTable projectId={project.id} />
+        <ProjectSystemTemplatesTable projectId={project.id} initialRows={systemTemplatesOverviewRows} />
       </div>
     </div>
   );

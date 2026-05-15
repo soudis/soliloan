@@ -12,7 +12,15 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter });
 const SYSTEM_TEMPLATE_DESIGNS_DIR = path.join(process.cwd(), 'prisma', 'system-template-designs');
 
-const SYSTEM_TEMPLATES = [
+const SYSTEM_TEMPLATES: Array<{
+  systemKey: string;
+  name: string;
+  description: string;
+  type: 'EMAIL' | 'DOCUMENT';
+  dataset: TemplateDataset;
+  /** DOCUMENT only: lenders with portal access can download from their loan dashboard when true. */
+  isPublic?: boolean;
+}> = [
   {
     systemKey: 'password-reset-email',
     name: 'Passwort zurücksetzen',
@@ -47,6 +55,7 @@ const SYSTEM_TEMPLATES = [
     description: 'Jährliche Kontomitteilung für Kreditgeber',
     type: 'DOCUMENT' as const,
     dataset: TemplateDataset.LENDER_YEARLY,
+    isPublic: true,
   },
   {
     systemKey: 'defaultEmail',
@@ -134,11 +143,16 @@ async function seedSystemTemplates(adminUserId: string) {
           subjectOrFilename,
           isGlobal: true,
           isSystem: true,
+          isPublic: tpl.type === 'DOCUMENT' && Boolean(tpl.isPublic),
           createdBy: { connect: { id: adminUserId } },
         },
       });
     }
   }
+  await prisma.communicationTemplate.updateMany({
+    where: { systemKey: 'yearly-account-notification', projectId: null },
+    data: { isPublic: true },
+  });
   console.info(`Seeded ${SYSTEM_TEMPLATES.length} system templates`);
 }
 

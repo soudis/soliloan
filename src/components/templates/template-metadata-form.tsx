@@ -18,9 +18,10 @@ import { getTemplatesAction } from '@/actions/templates/queries/get-templates';
 import { MergeTagDropdown } from '@/components/templates/merge-tag-dropdown';
 import { Button } from '@/components/ui/button';
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
@@ -32,12 +33,14 @@ const NONE_VALUE = '__none__';
 
 const systemSubjectSchema = z.object({
   subjectOrFilename: z.string().max(500).nullable().optional(),
+  isPublic: z.boolean().optional(),
 });
 
 const editMetadataSchema = z.object({
   name: z.string().min(1, 'error.template.nameRequired').max(100),
   description: z.string().max(500).nullable().optional(),
   subjectOrFilename: z.string().max(500).nullable().optional(),
+  isPublic: z.boolean().optional(),
 });
 
 export type TemplateMetadataInitial = {
@@ -48,6 +51,7 @@ export type TemplateMetadataInitial = {
   dataset: TemplateDataset;
   subjectOrFilename: string | null;
   isSystem: boolean;
+  isPublic: boolean;
 };
 
 type CreateProps = {
@@ -84,11 +88,18 @@ export function TemplateCreateFormContent({ projectId, isAdmin, onCreated }: Cre
       isGlobal: Boolean(isAdmin) && !projectId,
       designJson: {},
       sourceTemplateId: undefined,
+      isPublic: false,
     },
   });
 
   const watchedDataset = form.watch('dataset');
   const watchedType = form.watch('type');
+
+  useEffect(() => {
+    if (watchedType !== 'DOCUMENT') {
+      form.setValue('isPublic', false);
+    }
+  }, [watchedType, form]);
 
   const filteredGlobalTemplates = globalTemplates.filter(
     (tpl) => tpl.dataset === watchedDataset && tpl.type === watchedType,
@@ -112,6 +123,7 @@ export function TemplateCreateFormContent({ projectId, isAdmin, onCreated }: Cre
         type: data.type,
         dataset: data.dataset,
         designJson: data.designJson,
+        isPublic: data.type === 'DOCUMENT' ? Boolean(data.isPublic) : undefined,
       });
     } else {
       result = await createTemplate({
@@ -229,6 +241,24 @@ export function TemplateCreateFormContent({ projectId, isAdmin, onCreated }: Cre
             projectId={projectId}
             templateType={watchedType}
           />
+
+          {watchedType === 'DOCUMENT' && (
+            <FormField
+              control={form.control}
+              name="isPublic"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between gap-4 rounded-lg border p-3">
+                  <div className="min-w-0 space-y-0.5">
+                    <FormLabel className="text-base">{t('dialog.fields.isPublic')}</FormLabel>
+                    <FormDescription>{t('dialog.fields.isPublicHint')}</FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          )}
 
           {isProjectLevel && filteredGlobalTemplates.length > 0 && (
             <FormField
@@ -393,13 +423,17 @@ export function TemplateSettingsFormContent({ initial, systemOnly, onSaved, merg
       name: initial.name,
       description: initial.description,
       subjectOrFilename: initial.subjectOrFilename ?? null,
+      isPublic: initial.type === 'DOCUMENT' ? (initial.isPublic ?? false) : false,
     }),
     [initial],
   );
 
   const systemForm = useForm<z.infer<typeof systemSubjectSchema>>({
     resolver: zodResolver(systemSubjectSchema),
-    defaultValues: { subjectOrFilename: initial.subjectOrFilename ?? null },
+    defaultValues: {
+      subjectOrFilename: initial.subjectOrFilename ?? null,
+      isPublic: initial.type === 'DOCUMENT' ? (initial.isPublic ?? false) : false,
+    },
   });
 
   const editForm = useForm<z.infer<typeof editMetadataSchema>>({
@@ -408,8 +442,11 @@ export function TemplateSettingsFormContent({ initial, systemOnly, onSaved, merg
   });
 
   useEffect(() => {
-    systemForm.reset({ subjectOrFilename: initial.subjectOrFilename ?? null });
-  }, [initial.subjectOrFilename, systemForm]);
+    systemForm.reset({
+      subjectOrFilename: initial.subjectOrFilename ?? null,
+      isPublic: initial.type === 'DOCUMENT' ? (initial.isPublic ?? false) : false,
+    });
+  }, [initial.subjectOrFilename, initial.isPublic, initial.type, systemForm]);
 
   useEffect(() => {
     editForm.reset(fullDefaults);
@@ -421,6 +458,7 @@ export function TemplateSettingsFormContent({ initial, systemOnly, onSaved, merg
     const result = await updateTemplate({
       templateId: initial.id,
       subjectOrFilename: data.subjectOrFilename ?? null,
+      ...(initial.type === 'DOCUMENT' ? { isPublic: Boolean(data.isPublic) } : {}),
     });
     if (result?.serverError) {
       toast.error(result.serverError);
@@ -436,6 +474,7 @@ export function TemplateSettingsFormContent({ initial, systemOnly, onSaved, merg
       name: data.name,
       description: data.description,
       subjectOrFilename: data.subjectOrFilename ?? null,
+      ...(initial.type === 'DOCUMENT' ? { isPublic: Boolean(data.isPublic) } : {}),
     });
     if (result?.serverError) {
       toast.error(result.serverError);
@@ -460,6 +499,23 @@ export function TemplateSettingsFormContent({ initial, systemOnly, onSaved, merg
               projectId={mergeTagProjectId}
               templateType={initial.type}
             />
+            {initial.type === 'DOCUMENT' && (
+              <FormField
+                control={systemForm.control}
+                name="isPublic"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between gap-4 rounded-lg border p-3">
+                    <div className="min-w-0 space-y-0.5">
+                      <FormLabel className="text-base">{t('dialog.fields.isPublic')}</FormLabel>
+                      <FormDescription>{t('dialog.fields.isPublicHint')}</FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            )}
             <DialogFooter>
               <Button type="submit" disabled={isExecuting}>
                 {isExecuting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
@@ -525,6 +581,23 @@ export function TemplateSettingsFormContent({ initial, systemOnly, onSaved, merg
             projectId={mergeTagProjectId}
             templateType={initial.type}
           />
+          {initial.type === 'DOCUMENT' && (
+            <FormField
+              control={editForm.control}
+              name="isPublic"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between gap-4 rounded-lg border p-3">
+                  <div className="min-w-0 space-y-0.5">
+                    <FormLabel className="text-base">{t('dialog.fields.isPublic')}</FormLabel>
+                    <FormDescription>{t('dialog.fields.isPublicHint')}</FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          )}
           <DialogFooter>
             <Button type="submit" disabled={isExecuting}>
               {isExecuting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

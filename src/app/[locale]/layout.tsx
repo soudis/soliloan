@@ -1,8 +1,10 @@
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 
+import { SiteFooter } from '@/components/site-footer/site-footer';
 import { Toaster } from '@/components/ui/sonner';
 import { LOCALES } from '@/i18n/routing';
+import { auth } from '@/lib/auth';
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -25,9 +27,14 @@ export default async function LocaleLayout({
     notFound();
   }
 
+  const session = await auth();
+
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      {children}
+      <div className="flex min-h-dvh flex-col">
+        <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+        {session ? null : <SiteFooter />}
+      </div>
       <Toaster />
     </NextIntlClientProvider>
   );

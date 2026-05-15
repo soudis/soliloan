@@ -103,7 +103,6 @@ export function LoanTemplateDialog({ configurationId, initialValues, open, onOpe
                   name: values.name,
                   terminationType: values.terminationType,
                   endDate: values.endDate,
-                  terminationDate: values.terminationDate,
                 });
               })(event);
             }}

@@ -7,7 +7,7 @@ import { db } from '@/lib/db';
 import { lenderIdSchema, projectSampleListSchema } from '@/lib/schemas/common';
 import { getMergeTagValuesInputSchema } from '@/lib/schemas/templates';
 import { getTemplateData, type TemplateDataOptions } from '@/lib/templates/template-data';
-import { adminAction, lenderAction, managerAction, projectAction } from '@/lib/utils/safe-action';
+import { adminAction, authAction, lenderAction, managerAction, projectAction } from '@/lib/utils/safe-action';
 
 /**
  * All projects (id + display name) for global template preview sample data.
@@ -259,20 +259,42 @@ export const getMergeTagValuesAction = managerAction
 /**
  * Years available for `LENDER_YEARLY` sample data: from first lender transaction through last complete calendar year.
  */
+async function buildLenderYearsList(lenderId: string): Promise<number[]> {
+  const lastCompleteYear = new Date().getFullYear() - 1;
+  const agg = await db.transaction.aggregate({
+    where: { loan: { lenderId } },
+    _min: { date: true },
+  });
+  const minDate = agg._min.date;
+  if (!minDate) return [];
+  const firstYear = new Date(minDate).getFullYear();
+  const years: number[] = [];
+  for (let y = firstYear; y <= lastCompleteYear; y++) {
+    years.push(y);
+  }
+  return years.reverse();
+}
+
 export const getSampleLenderYearsAction = lenderAction
   .schema(lenderIdSchema)
   .action(async ({ parsedInput: { lenderId } }) => {
-    const lastCompleteYear = new Date().getFullYear() - 1;
-    const agg = await db.transaction.aggregate({
-      where: { loan: { lenderId } },
-      _min: { date: true },
-    });
-    const minDate = agg._min.date;
-    if (!minDate) return [];
-    const firstYear = new Date(minDate).getFullYear();
-    const years: number[] = [];
-    for (let y = firstYear; y <= lastCompleteYear; y++) {
-      years.push(y);
+    return buildLenderYearsList(lenderId);
+  });
+
+/** Lender portal: same year list as managers, but only for the signed-in lender identity. */
+export const getLenderSampleLenderYearsAction = authAction
+  .inputSchema(lenderIdSchema)
+  .action(async ({ parsedInput: { lenderId }, ctx }) => {
+    const email = ctx.session.user.email;
+    if (!email) {
+      throw new Error('error.unauthorized');
     }
-    return years.reverse();
+    const lender = await db.lender.findUnique({
+      where: { id: lenderId },
+      select: { email: true },
+    });
+    if (!lender || lender.email !== email) {
+      throw new Error('error.unauthorized');
+    }
+    return buildLenderYearsList(lenderId);
   });

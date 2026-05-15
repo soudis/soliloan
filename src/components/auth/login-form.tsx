@@ -68,7 +68,7 @@ export function LoginForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField name="email" label={t('email')} placeholder={t('email')} type="email" />
         <FormField name="password" label={t('password')} placeholder="********" type="password" />
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center sm:gap-0">
           <div className="flex items-center space-x-2">
             <Checkbox
               id="rememberMe"

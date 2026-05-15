@@ -24,4 +24,5 @@ export type GlobalTemplateListItem = {
   isGlobal: boolean;
   isSystem: boolean;
   systemKey: string | null;
+  isPublic: boolean;
 };

@@ -1,0 +1,156 @@
+# Production deploy on GitHub Release (published).
+#
+# Required GitHub Actions secrets:
+#   PROD_SSH_KEY          — private key for SSH to the server
+#   DOCKERHUB_TOKEN       — Docker Hub access token (or password)
+#   DATABASE_URL          — Postgres URL for the app (and migrations if you run them separately)
+#   NEXTAUTH_SECRET
+#   POSTGRES_PASSWORD     — if this compose stack runs Postgres on the same host
+#   SMTP_PASSWORD         — optional; use empty only if your SMTP relay needs no auth
+#
+# Required repository variables (Settings → Secrets and variables → Actions → Variables):
+#   PROD_SSH_HOST, PROD_SSH_USER
+#   DOCKERHUB_USERNAME      — Docker Hub login user (namespace for `docker login`)
+#   DOCKERHUB_REPOSITORY    — image repo path without registry, e.g. "myuser/soliloan"
+#   TRAEFIK_HOST            — public hostname Traefik routes to this app, e.g. "app.example.com"
+#   SOLILOAN_PROJECT_NAME, SOLILOAN_DOMAIN, SOLILOAN_URL
+#   NEXTAUTH_URL, NEXTAUTH_URL_INTERNAL
+#   POSTGRES_DB, POSTGRES_USER
+#   SMTP_HOST, SMTP_PORT, SMTP_FROM
+#   NEXT_PUBLIC_SOLILOAN_PROJECT_NAME — baked into the client at build time
+#   NEXT_PUBLIC_SOLILOAN_URL         — optional; public site URL for client-side merge links
+#
+# Optional variables:
+#   PROD_SSH_PORT (default 22)
+#   COMPOSE_PROJECT_NAME (default: github.repository name)
+#   SMTP_USER, SMTP_SECURE (true/false), SOLILOAN_INVITE_VALID_DAYS, SOLILOAN_DEFAULT_LANGUAGE
+
+name: 'Production: Deployment'
+
+on:
+  release:
+    types: [released]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TAG: ${{ github.event.release.tag_name }}
+  COMPOSE_PROJECT_NAME: soliloan
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/app/Dockerfile
+          push: true
+          tags: ${{ vars.DOCKERHUB_REPOSITORY }}:${{ env.TAG }}
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NEXT_PUBLIC_SOLILOAN_PROJECT_NAME=${{ vars.SOLILOAN_PROJECT_NAME }}
+            NEXT_PUBLIC_SOLILOAN_URL=https://${{ vars.SOLILOAN_DOMAIN }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: needs.build.result == 'success'
+    env:
+      PROD_SSH_PORT: ${{ vars.PROD_SSH_PORT || 22 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PROD_SSH_KEY }}
+
+      - name: Write production .env and deploy
+        env:
+          DATABASE_URL: postgresql://soliloan:${{ secrets.POSTGRES_PASSWORD }}@db:5432/soliloan
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          SOLILOAN_ADMIN_PASSWORD: ${{ vars.SOLILOAN_ADMIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${PROD_SSH_PORT}" "${{ vars.PROD_SSH_HOST }}" >> ~/.ssh/known_hosts
+
+          umask 077
+          {
+            echo "COMPOSE_PROJECT_NAME=soliloan"
+            echo "DOCKER_IMAGE_TAG=${{ env.TAG }}"
+            echo "DOCKERHUB_REPOSITORY=${{ vars.DOCKERHUB_REPOSITORY }}"
+            echo "TRAEFIK_HOST=${{ vars.SOLILOAN_DOMAIN }}"
+            echo "ENVIRONMENT=production"
+            echo "POSTGRES_DB=soliloan"
+            echo "POSTGRES_USER=soliloan"
+            echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
+            echo "DATABASE_URL=${DATABASE_URL}"
+            echo "NEXTAUTH_SECRET=${NEXTAUTH_SECRET}"
+            echo "NEXTAUTH_URL=https://${{ vars.SOLILOAN_DOMAIN }}"
+            echo "NEXTAUTH_URL_INTERNAL=http://localhost:3000"
+            echo "SOLILOAN_DOMAIN=${{ vars.SOLILOAN_DOMAIN }}"
+            echo "SOLILOAN_URL=https://${{ vars.SOLILOAN_DOMAIN }}"
+            echo "SOLILOAN_PROJECT_NAME=${{ vars.SOLILOAN_PROJECT_NAME }}"
+            echo "SOLILOAN_DEFAULT_LANGUAGE=de"
+            echo "SOLILOAN_INVITE_VALID_DAYS=14"
+            echo "SOLILOAN_ADMIN_EMAIL=${{ vars.SOLILOAN_ADMIN_EMAIL }}"
+            echo "SOLILOAN_ADMIN_PASSWORD=${SOLILOAN_ADMIN_PASSWORD}"
+            echo "SMTP_HOST=${{ vars.SMTP_HOST }}"
+            echo "SMTP_PORT=${{ vars.SMTP_PORT }}"
+            echo "SMTP_USER=${{ vars.SMTP_USER }}"
+            echo "SMTP_PASSWORD=${SMTP_PASSWORD}"
+            echo "SMTP_SECURE=${{ vars.SMTP_SECURE || 'false' }}"
+            echo "SMTP_FROM=${{ vars.SMTP_FROM }}"
+          } > .env
+
+          docker compose -f docker/compose.production.yml --env-file .env --project-directory . config > compose.deploy.yml
+
+          REMOTE_DIR="/docker/soliloan/${{ env.TAG }}"
+          SSH_TARGET="${{ vars.PROD_SSH_USER }}@${{ vars.PROD_SSH_HOST }}"
+
+          ssh -p "${PROD_SSH_PORT}" "${SSH_TARGET}" "mkdir -p ~/${REMOTE_DIR}"
+
+          scp -P "${PROD_SSH_PORT}" compose.deploy.yml "${SSH_TARGET}:~/${REMOTE_DIR}/compose.yml"
+          scp -P "${PROD_SSH_PORT}" .env "${SSH_TARGET}:~/${REMOTE_DIR}/.env"
+
+          REMOTE_SH="/tmp/soliloan-remote-deploy-$$.sh"
+          printf '%s\n' \
+            'set -euo pipefail' \
+            'cd "$(dirname "$0")"' \
+            'echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin' \
+            'docker compose -f compose.yml --env-file .env pull app' \
+            'docker compose -f compose.yml --env-file .env up -d' \
+            'docker image prune -f' \
+            'docker logout' > "${REMOTE_SH}"
+          scp -P "${PROD_SSH_PORT}" "${REMOTE_SH}" "${SSH_TARGET}:~/${REMOTE_DIR}/remote-deploy.sh"
+          rm -f "${REMOTE_SH}"
+
+          USER_Q=$(printf '%q' '${{ vars.DOCKERHUB_USERNAME }}')
+          TOKEN_Q=$(printf '%q' "${DOCKERHUB_TOKEN}")
+          ssh -p "${PROD_SSH_PORT}" "${SSH_TARGET}" \
+            "DOCKERHUB_USERNAME=${USER_Q} DOCKERHUB_TOKEN=${TOKEN_Q} bash -c $(printf '%q' "cd ~/${REMOTE_DIR} && bash ./remote-deploy.sh")"

@@ -145,7 +145,13 @@ export function createDateColumn<T>(
         if (!dateStr) return '';
         try {
           const date = new Date(dateStr);
-          return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(resolveIntlLocaleForDates(locale ?? 'de'));
+          return Number.isNaN(date.getTime())
+            ? ''
+            : date.toLocaleDateString(resolveIntlLocaleForDates(locale ?? 'de'), {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+              });
         } catch (_) {
           return '';
         }

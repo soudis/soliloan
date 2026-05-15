@@ -6,7 +6,27 @@ import { auth } from './lib/auth';
 import { db } from './lib/db';
 import { PROJECT_ID_KEY } from './lib/params';
 
-const PUBLIC_PAGES = ['/auth/login', '/auth/forgot-password', '/auth/register', '/auth/set-password'];
+/** Paths that do not require a session (login flow + legal notice). */
+const ANONYMOUS_ALLOWED_PATHS = [
+  '/auth/login',
+  '/auth/forgot-password',
+  '/auth/register',
+  '/auth/set-password',
+  '/legal',
+];
+
+/** Authenticated users are sent to home from these (auth UI only), not from /legal. */
+const GUEST_ONLY_WHEN_AUTHENTICATED_PATHS = [
+  '/auth/login',
+  '/auth/forgot-password',
+  '/auth/register',
+  '/auth/set-password',
+];
+
+function pathMatchesOneOf(pathname: string, paths: string[]): boolean {
+  const alternation = paths.flatMap((p) => (p === '/' ? ['', '/'] : p)).join('|');
+  return new RegExp(`^(/(${LOCALES.join('|')}))?(${alternation})/?$`, 'i').test(pathname);
+}
 
 const handleI18nRouting = createIntlMiddleware(routing);
 
@@ -48,18 +68,15 @@ export async function proxy(request: NextRequest) {
   // Handle authentication
   // ---
   const authResponse = await auth(async (authRequest) => {
-    const publicPathnameRegex = RegExp(
-      `^(/(${LOCALES.join('|')}))?(${PUBLIC_PAGES.flatMap((p) => (p === '/' ? ['', '/'] : p)).join('|')})/?$`,
-      'i',
-    );
-    const isPublicPage = publicPathnameRegex.test(authRequest.nextUrl.pathname);
+    const isAnonymousAllowed = pathMatchesOneOf(authRequest.nextUrl.pathname, ANONYMOUS_ALLOWED_PATHS);
+    const isGuestOnlyAuthPage = pathMatchesOneOf(authRequest.nextUrl.pathname, GUEST_ONLY_WHEN_AUTHENTICATED_PATHS);
 
-    if (!authRequest.auth && !isPublicPage) {
+    if (!authRequest.auth && !isAnonymousAllowed) {
       // Redirect to login page if not authenticated and trying to access private page
       return NextResponse.redirect(new URL('/auth/login', authRequest.nextUrl.origin));
     }
-    if (authRequest.auth && isPublicPage) {
-      // Redirect to root if authenticated and trying to access public page
+    if (authRequest.auth && isGuestOnlyAuthPage) {
+      // Redirect to root if authenticated and trying to access auth pages (not /legal)
       return NextResponse.redirect(new URL('/', authRequest.nextUrl.origin));
     }
   })(request, { params: Promise.resolve({}) });

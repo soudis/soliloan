@@ -4,3 +4,4 @@ export { deleteLenderAction } from './mutations/delete-lender';
 export { updateLenderAction } from './mutations/update-lender';
 export { getLenderAction } from './queries/get-lender';
 export { getLendersByProjectAction } from './queries/get-lenders-by-project';
+export { getLendersByUser } from './queries/get-lenders-by-user';

@@ -7,6 +7,7 @@ import { createAuditEntry, getLenderContext, removeNullFields } from '@/lib/audi
 import { db } from '@/lib/db';
 import { lenderFormSchema } from '@/lib/schemas/lender';
 import { getLenderName } from '@/lib/utils';
+import { normalizeStoredEmail } from '@/lib/utils/email';
 import { projectAction } from '@/lib/utils/safe-action';
 
 async function getNextLenderNumber(projectId: string): Promise<number> {
@@ -40,6 +41,8 @@ export const createLenderAction = projectAction.inputSchema(lenderFormSchema).ac
     if (existing) return { fieldErrors: { lenderNumber: 'error.lender.numberAlreadyExists' } };
   }
 
+  const lenderEmail = data.email ? normalizeStoredEmail(data.email) : null;
+
   const lender = await db.lender.create({
     data: {
       lenderNumber,
@@ -60,12 +63,12 @@ export const createLenderAction = projectAction.inputSchema(lenderFormSchema).ac
       bic: data.bic,
       notificationType: data.notificationType,
       additionalFields: data.additionalFields ?? {},
-      ...(data.email && {
+      ...(lenderEmail && {
         user: {
           connectOrCreate: {
-            where: { email: data.email },
+            where: { email: lenderEmail },
             create: {
-              email: data.email,
+              email: lenderEmail,
               name: getLenderName(data),
               language: userLanguage,
               theme: userTheme,

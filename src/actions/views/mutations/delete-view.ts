@@ -4,31 +4,29 @@ import { z } from 'zod';
 
 import { db } from '@/lib/db';
 import { authAction } from '@/lib/utils/safe-action';
+import { assertCanModifyView } from '@/lib/views/access';
 
 export const deleteViewAction = authAction
   .schema(z.object({ viewId: z.string(), projectId: z.string().optional() }))
   .action(async ({ parsedInput: { viewId }, ctx }) => {
-    // Fetch the view
+    const userId = ctx.session.user?.id;
+    if (!userId) {
+      throw new Error('error.unauthorized');
+    }
+    const isAdmin = ctx.session.user.isAdmin ?? false;
+
     const view = await db.view.findUnique({
-      where: {
-        id: viewId,
-      },
+      where: { id: viewId },
     });
 
     if (!view) {
       throw new Error('View not found');
     }
 
-    // Check if the user has access to the view
-    if (view.userId !== ctx.session.user.id) {
-      throw new Error('error.unauthorized');
-    }
+    await assertCanModifyView(view, userId, isAdmin);
 
-    // Delete the view
     await db.view.delete({
-      where: {
-        id: viewId,
-      },
+      where: { id: viewId },
     });
 
     return { success: true };

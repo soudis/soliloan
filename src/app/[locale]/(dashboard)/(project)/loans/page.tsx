@@ -20,7 +20,7 @@ export default async function LoansPage({ searchParams }: PageProps) {
       where: { id: projectId },
       select: { managers: true },
     }),
-    getViewsByType(ViewType.LOAN),
+    getViewsByType(ViewType.LOAN, projectId),
   ]);
 
   const project = {

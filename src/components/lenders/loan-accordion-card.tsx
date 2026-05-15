@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, Pencil, ShieldX, Trash2, Undo2 } from 'lucide-react';
+import { ChevronDown, Pencil, ShieldX, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useRef, useState } from 'react';
@@ -16,7 +16,8 @@ import { cn, formatCurrency, formatDateLong, formatDateShort, formatPercentage }
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { LoanStatus } from '@/types/loans';
 import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-items';
-import { BalanceTable } from '../loans/balance-table';
+import { LoanAddTransactionControl } from '../loans/loan-add-transaction-control';
+import { LoanBalanceSummary } from '../loans/loan-balance-summary';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 import { LoanTransactions } from '../loans/loan-transactions';
 import { TerminationDialog } from '../loans/termination-dialog';
@@ -162,78 +163,79 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
 
       {/* Expandable content */}
       {isOpen && (
-        <div className="border-t px-4 pb-4 pt-4">
-          {/* Loan details + balance in two columns */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <InfoItem label={t('table.signDate')} value={formatDateLong(loan.signDate, locale)} />
-              <InfoItem
-                label={t('table.amount')}
-                value={
-                  <span>
-                    <span className="whitespace-nowrap">{formatCurrency(loan.amount)}</span>{' '}
-                    <span className="text-muted-foreground text-sm">{t('table.for')}</span>{' '}
-                    <span className="whitespace-nowrap">{formatPercentage(loan.interestRate)} %</span>
-                  </span>
-                }
-              />
-              <InfoItem label={t('table.terminationModalities')} value={getTerminationModalities()} />
-              {canTerminateLoan && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-destructive text-destructive hover:bg-destructive/10"
-                  onClick={() => setIsTerminateOpen(true)}
-                >
-                  <ShieldX className="h-4 w-4 mr-1.5" />
-                  {t('terminate.button')}
-                </Button>
-              )}
-              {loan.terminationDate && loan.terminationType === 'TERMINATION' && (
-                <div className="flex items-end gap-2">
-                  <InfoItem label={t('table.terminationDate')} value={formatDateLong(loan.terminationDate, locale)} />
-                  {loan.isTerminated && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                      onClick={() => setIsRevertTerminateOpen(true)}
-                    >
-                      <Undo2 className="h-4 w-4 mr-1.5 text-muted-foreground" />
-                      {t('terminate.revertButton')}
-                    </Button>
-                  )}
-                </div>
-              )}
-              {loan.repayDate &&
-                loan.status !== 'REPAID' &&
-                loan.status !== 'NOTDEPOSITED' &&
-                loan.terminationType !== 'ENDDATE' && (
-                  <InfoItem label={t('table.repayDate')} value={formatDateLong(loan.repayDate, locale)} />
-                )}
-              {loan.status === 'REPAID' && loan.transactions.at(-1)?.date && (
+        <>
+          <div className="border-t px-4 pb-4 pt-4">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <div className="space-y-3">
+                <InfoItem label={t('table.signDate')} value={formatDateLong(loan.signDate, locale)} />
                 <InfoItem
-                  label={t('table.repaidDate')}
-                  value={formatDateLong(loan.transactions.at(-1)?.date, locale)}
-                />
-              )}
-              <div className="grid grid-cols-2 gap-3">
-                <AdditionalFieldInfoItems
-                  additionalFields={loan.additionalFields}
-                  configuration={project.configuration.loanAdditionalFields}
+                  label={t('table.amount')}
+                  value={
+                    <span>
+                      <span className="whitespace-nowrap">{formatCurrency(loan.amount)}</span>{' '}
+                      <span className="text-muted-foreground text-sm">{t('table.for')}</span>{' '}
+                      <span className="whitespace-nowrap">{formatPercentage(loan.interestRate)} %</span>
+                    </span>
+                  }
                 />
               </div>
-            </div>
-            <div>
-              <BalanceTable className="lg:mt-0" totals={loan} />
+              <div className="space-y-3">
+                <InfoItem label={t('table.terminationModalities')} value={getTerminationModalities()} />
+                {canTerminateLoan && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-destructive text-destructive hover:bg-destructive/10"
+                    onClick={() => setIsTerminateOpen(true)}
+                  >
+                    <ShieldX className="h-4 w-4 mr-1.5" />
+                    {t('terminate.button')}
+                  </Button>
+                )}
+                {loan.terminationDate && loan.terminationType === 'TERMINATION' && (
+                  <InfoItem label={t('table.terminationDate')} value={formatDateLong(loan.terminationDate, locale)} />
+                )}
+                {loan.repayDate &&
+                  loan.status !== 'REPAID' &&
+                  loan.status !== 'NOTDEPOSITED' &&
+                  loan.terminationType !== 'ENDDATE' && (
+                    <InfoItem label={t('table.repayDate')} value={formatDateLong(loan.repayDate, locale)} />
+                  )}
+                {loan.status === 'REPAID' && loan.transactions.at(-1)?.date && (
+                  <InfoItem
+                    label={t('table.repaidDate')}
+                    value={formatDateLong(loan.transactions.at(-1)?.date ?? '', locale)}
+                  />
+                )}
+                <div className="grid grid-cols-2 gap-3">
+                  <AdditionalFieldInfoItems
+                    additionalFields={loan.additionalFields}
+                    configuration={project.configuration.loanAdditionalFields}
+                  />
+                </div>
+              </div>
             </div>
           </div>
-
-          {/* Transactions */}
-          <div className="mt-4 pt-4 border-t">
-            <LoanTransactions loanId={loan.id} transactions={loan.transactions} loan={loan} />
+          <div className="border-t pb-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 lg:items-stretch">
+              <div className="space-y-1 px-4 py-4">
+                <LoanTransactions
+                  loanId={loan.id}
+                  transactions={loan.transactions}
+                  loan={loan}
+                  showBalanceSummary={false}
+                  showAddTransaction={false}
+                />
+                <LoanAddTransactionControl loanId={loan.id} loan={loan} />
+              </div>
+              <div className="flex min-h-0 flex-col border-t border-border lg:border-t-0 lg:border-l lg:border-border">
+                <div className="flex flex-1 flex-col space-y-3 px-4 pb-4 pt-4 lg:py-4 lg:pl-6 lg:pr-4">
+                  <LoanBalanceSummary loan={loan} readOnly={false} />
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       <ConfirmDialog

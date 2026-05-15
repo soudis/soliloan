@@ -3,10 +3,13 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { generateTemplatePdfBuffer } from '@/lib/templates/generate-template-pdf';
-import { parseTemplateDownloadQuery } from '@/lib/templates/template-download-query';
 import { getTemplateData } from '@/lib/templates/template-data';
+import { parseTemplateDownloadQuery } from '@/lib/templates/template-download-query';
 import { resolveTemplateFilename } from '@/lib/templates/template-subject-filename';
-import { assertManagerCanUseCommunicationTemplate } from '@/lib/templates/template-use-access';
+import {
+  assertLenderCanUsePublicCommunicationTemplate,
+  assertManagerCanUseCommunicationTemplate,
+} from '@/lib/templates/template-use-access';
 
 /**
  * GET /api/templates/[id]/download
@@ -41,14 +44,27 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       return new NextResponse(parsed.message, { status: 400 });
     }
 
-    const canAccess = await assertManagerCanUseCommunicationTemplate({
+    const managerAccess = await assertManagerCanUseCommunicationTemplate({
       userId,
       isAdmin,
       template: { projectId: template.projectId, isGlobal: template.isGlobal },
       dataset: template.dataset,
       parsed,
     });
-    if (!canAccess) {
+    const lenderAccess =
+      !managerAccess &&
+      (await assertLenderCanUsePublicCommunicationTemplate({
+        userEmail: session.user.email,
+        template: {
+          projectId: template.projectId,
+          isGlobal: template.isGlobal,
+          type: template.type,
+          isPublic: template.isPublic,
+        },
+        dataset: template.dataset,
+        parsed,
+      }));
+    if (!managerAccess && !lenderAccess) {
       return new NextResponse('Not found', { status: 404 });
     }
 

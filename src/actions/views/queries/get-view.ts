@@ -2,6 +2,7 @@
 
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { assertCanModifyView } from '@/lib/views/access';
 
 export async function getViewById(viewId: string) {
   try {
@@ -10,21 +11,19 @@ export async function getViewById(viewId: string) {
       throw new Error('Unauthorized');
     }
 
-    // Fetch the view
     const view = await db.view.findUnique({
-      where: {
-        id: viewId,
-      },
+      where: { id: viewId },
     });
 
     if (!view) {
       throw new Error('View not found');
     }
 
-    // Check if the user has access to the view
-    if (view.userId !== session.user.id) {
-      throw new Error('You do not have access to this view');
+    const userId = session.user?.id;
+    if (!userId) {
+      throw new Error('Unauthorized');
     }
+    await assertCanModifyView(view, userId, session.user.isAdmin ?? false);
 
     return { view };
   } catch (error) {

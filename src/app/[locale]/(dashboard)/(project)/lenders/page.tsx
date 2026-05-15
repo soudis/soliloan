@@ -11,12 +11,12 @@ interface PageProps {
 export default async function LendersPage({ searchParams }: PageProps) {
   const { projectId } = searchParamsCache.parse(await searchParams);
 
-  const [lendersResult, views] = await Promise.all([
+  const [lendersResult, viewsResult] = await Promise.all([
     getLendersByProjectIdUnsafe(projectId),
-    getViewsByType(ViewType.LENDER),
+    getViewsByType(ViewType.LENDER, projectId),
   ]);
 
   const lenders = lendersResult.lenders ?? [];
 
-  return <LenderTable lenders={lenders} views={views?.views ?? []} />;
+  return <LenderTable lenders={lenders} views={viewsResult?.views ?? []} />;
 }

@@ -4,7 +4,7 @@ services:
     restart: always
     shm_size: 128mb
     volumes:
-      - directloan-db:/var/lib/postgresql
+      - soliloan-db:/var/lib/postgresql
     networks:
       - backend_network
     environment:
@@ -13,9 +13,9 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
 
 volumes:
-  directloan-db:
+  soliloan-db:
 
 networks:
   backend_network:
     external: true
-    name: directloan_backend_network
+    name: soliloan_backend_network

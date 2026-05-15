@@ -2,7 +2,7 @@
 
 import type { Transaction } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowDownIcon, ArrowUpIcon, ChevronLeft, ChevronRight, Percent, Plus, Receipt, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -11,12 +11,19 @@ import { deleteTransactionAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { cn, formatCurrency, formatDateLong } from '@/lib/utils';
-import { type LoanDetailsWithCalculations, LoanStatus } from '@/types/loans';
+import type { LoanDetailsWithCalculations } from '@/types/loans';
 
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Switch } from '../ui/switch';
-import { TransactionDialog } from './transaction-dialog';
+import { LoanAddTransactionControl } from './loan-add-transaction-control';
+import {
+  LoanBalanceSummary,
+  TRANSACTION_ACTIONS_SLOT_CLASS,
+  TRANSACTION_AMOUNT_CLASS,
+  transactionIcon,
+  transactionIconBackground,
+} from './loan-balance-summary';
 
 const PAGE_SIZE = 10;
 
@@ -24,13 +31,28 @@ interface LoanTransactionsProps {
   loanId: string;
   transactions: Transaction[];
   loan: LoanDetailsWithCalculations;
+  /** Hide mutations, templates, add — for lender portal */
+  readOnly?: boolean;
+  /** Show deposit/interest/withdrawal totals and balance below the list (same data as BalanceTable sums) */
+  showBalanceSummary?: boolean;
+  /**
+   * When false, the add control is omitted so the parent can render {@link LoanAddTransactionControl} elsewhere
+   * (e.g. above {@link LoanBalanceSummary}).
+   */
+  showAddTransaction?: boolean;
 }
 
-export function LoanTransactions({ loanId, transactions, loan }: LoanTransactionsProps) {
+export function LoanTransactions({
+  loanId,
+  transactions,
+  loan,
+  readOnly = false,
+  showBalanceSummary = false,
+  showAddTransaction = true,
+}: LoanTransactionsProps) {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const locale = useLocale();
-  const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [showBookings, setShowBookings] = useState(true);
@@ -67,44 +89,17 @@ export function LoanTransactions({ loanId, transactions, loan }: LoanTransaction
     setTransactionToDelete(null);
   };
 
-  const getTransactionIcon = (type: Transaction['type']) => {
-    switch (type) {
-      case 'DEPOSIT':
-        return <ArrowDownIcon className="h-4 w-4 text-green-500" />;
-      case 'INTEREST':
-        return <Percent className="h-4 w-4 text-green-500" />;
-      case 'WITHDRAWAL':
-      case 'INTERESTPAYMENT':
-      case 'TERMINATION':
-        return <ArrowUpIcon className="h-4 w-4 text-blue-500" />;
-      default:
-        return <Receipt className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  const getTransactionIconBackground = (type: Transaction['type']) => {
-    switch (type) {
-      case 'DEPOSIT':
-      case 'INTEREST':
-        return 'bg-green-500/20';
-      case 'WITHDRAWAL':
-      case 'INTERESTPAYMENT':
-      case 'TERMINATION':
-        return 'bg-blue-500/20';
-      default:
-        return 'bg-gray-500/20';
-    }
-  };
-
   const lastNonInterest = transactions.findLast((tx) => tx.type !== 'INTEREST');
+
+  const addTransactionEnabled = !readOnly && showAddTransaction;
 
   return (
     <>
       <div className="space-y-1">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('table.transactions')}</h4>
+          <h4 className="mb-2 text-sm font-medium text-muted-foreground">{t('table.transactions')}</h4>
 
-          <div className="flex items-center justify-between pb-2 space-x-4">
+          <div className="flex items-center justify-between space-x-4 pb-2">
             <div className="flex items-center gap-2">
               <Switch
                 id="bookings-mode"
@@ -114,7 +109,7 @@ export function LoanTransactions({ loanId, transactions, loan }: LoanTransaction
                   setPage(0);
                 }}
               />
-              <Label htmlFor="bookings-mode" className="text-xs text-muted-foreground cursor-pointer">
+              <Label htmlFor="bookings-mode" className="cursor-pointer text-xs text-muted-foreground">
                 {showBookings ? t('table.bookings') : t('table.transactions')}
               </Label>
             </div>
@@ -124,58 +119,52 @@ export function LoanTransactions({ loanId, transactions, loan }: LoanTransaction
           </div>
         </div>
 
-        {/* Transaction list */}
         {paginated.map((transaction) => (
           <div
             key={transaction.id}
             className={cn(
-              'flex items-center justify-between rounded-md px-2 py-1.5 border-t first:border-t-0',
+              'flex items-center justify-between rounded-md border-t px-2 py-1.5 first:border-t-0',
               transaction.type === 'INTEREST' && 'opacity-60',
             )}
           >
-            <div className="flex items-center space-x-3">
-              <div className={cn('rounded-full p-1', getTransactionIconBackground(transaction.type))}>
-                {getTransactionIcon(transaction.type)}
+            <div className="flex min-w-0 flex-1 items-center space-x-3">
+              <div className={cn('rounded-full p-1', transactionIconBackground(transaction.type))}>
+                {transactionIcon(transaction.type)}
               </div>
               <div>
                 <div className="text-sm font-medium">{commonT(`enums.transaction.type.${transaction.type}`)}</div>
                 <div className="text-xs text-muted-foreground">{formatDateLong(transaction.date, locale)}</div>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="font-medium font-mono text-sm">{formatCurrency(transaction.amount)}</div>
-              {transaction.type !== 'INTEREST' && (
-                <TemplateQuickActions
-                  projectId={loan.lender.projectId}
-                  mode="transaction"
-                  lenderId={loan.lender.id}
-                  loanId={loan.id}
-                  transactionId={transaction.id}
-                  density="compact"
-                />
+            <div className="flex shrink-0 items-center gap-2">
+              <div className={TRANSACTION_AMOUNT_CLASS}>{formatCurrency(transaction.amount)}</div>
+              {!readOnly && (
+                <div className={TRANSACTION_ACTIONS_SLOT_CLASS}>
+                  {transaction.type !== 'INTEREST' ? (
+                    <TemplateQuickActions
+                      projectId={loan.lender.projectId}
+                      mode="transaction"
+                      lenderId={loan.lender.id}
+                      loanId={loan.id}
+                      transactionId={transaction.id}
+                      rowMenu={{
+                        showDelete: transaction.id === lastNonInterest?.id,
+                        onDelete: () => handleDeleteClick(transaction.id),
+                      }}
+                    />
+                  ) : (
+                    <span className="inline-flex h-7 w-7" aria-hidden />
+                  )}
+                </div>
               )}
-              <div className="w-8 flex justify-end">
-                {transaction.id === lastNonInterest?.id && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => handleDeleteClick(transaction.id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                    <span className="sr-only">{commonT('ui.actions.delete')}</span>
-                  </Button>
-                )}
-              </div>
             </div>
           </div>
         ))}
 
         {filtered.length === 0 && (
-          <div className="text-center text-sm text-muted-foreground py-4">{t('transactions.noTransactions')}</div>
+          <div className="py-4 text-center text-sm text-muted-foreground">{t('transactions.noTransactions')}</div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 pt-2">
             <Button
@@ -202,28 +191,23 @@ export function LoanTransactions({ loanId, transactions, loan }: LoanTransaction
           </div>
         )}
 
-        <Button
-          variant="outline"
-          className="w-full border-dashed py-6"
-          size="sm"
-          onClick={() => setIsTransactionDialogOpen(true)}
-          disabled={loan.status === LoanStatus.REPAID}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          {commonT('terms.transaction')}
-        </Button>
+        {showBalanceSummary && <LoanBalanceSummary loan={loan} readOnly={readOnly} />}
+
+        {addTransactionEnabled && (
+          <LoanAddTransactionControl loanId={loanId} loan={loan} className="w-full border-dashed py-6" />
+        )}
       </div>
 
-      <TransactionDialog loanId={loanId} open={isTransactionDialogOpen} onOpenChange={setIsTransactionDialogOpen} />
-
-      <ConfirmDialog
-        open={isConfirmOpen}
-        onOpenChange={setIsConfirmOpen}
-        onConfirm={handleConfirmDelete}
-        title={t('transactions.delete.confirmTitle')}
-        description={t('transactions.delete.confirmDescription')}
-        confirmText={commonT('ui.actions.delete')}
-      />
+      {!readOnly && (
+        <ConfirmDialog
+          open={isConfirmOpen}
+          onOpenChange={setIsConfirmOpen}
+          onConfirm={handleConfirmDelete}
+          title={t('transactions.delete.confirmTitle')}
+          description={t('transactions.delete.confirmDescription')}
+          confirmText={commonT('ui.actions.delete')}
+        />
+      )}
     </>
   );
 }

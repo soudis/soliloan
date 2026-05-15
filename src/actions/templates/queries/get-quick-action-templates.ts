@@ -16,6 +16,7 @@ const quickSelect = {
   isSystem: true,
   systemKey: true,
   projectId: true,
+  isPublic: true,
 } as const satisfies Prisma.CommunicationTemplateSelect;
 
 /**
@@ -48,5 +49,10 @@ export const getQuickActionTemplatesAction = managerAction
       orderBy: [{ isGlobal: 'desc' }, { name: 'asc' }],
     });
 
-    return { templates };
+    return {
+      templates: templates.filter(
+        (tpl) =>
+          !templates.some((t) => t.systemKey === tpl.systemKey && tpl.id !== t.id && !!t.projectId && !tpl.projectId),
+      ),
+    };
   });

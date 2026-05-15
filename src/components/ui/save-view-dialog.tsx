@@ -22,18 +22,35 @@ import { Form } from '@/components/ui/form';
 const saveViewSchema = z.object({
   name: z.string().min(1),
   isDefault: z.boolean(),
+  saveForProject: z.boolean(),
+  showInSidebar: z.boolean(),
 });
 
 type SaveViewFormData = z.infer<typeof saveViewSchema>;
 
 interface SaveViewDialogProps {
   disabled?: boolean;
-  onSave: (name: string, isDefault: boolean) => Promise<void>;
+  onSave: (name: string, isDefault: boolean, saveForProject: boolean, showInSidebar: boolean) => Promise<void>;
   isLoading?: boolean;
+  allowSidebar?: boolean;
+  hasProject?: boolean;
+  /** No icon trigger — opened from parent (e.g. save menu). */
+  hideTrigger?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function SaveViewDialog({ onSave, isLoading = false, disabled = false }: SaveViewDialogProps) {
-  const [open, setOpen] = useState(false);
+export function SaveViewDialog({
+  onSave,
+  isLoading = false,
+  disabled = false,
+  allowSidebar = false,
+  hasProject = false,
+  hideTrigger = false,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+}: SaveViewDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const t = useTranslations('views');
 
   const form = useForm<SaveViewFormData>({
@@ -41,21 +58,82 @@ export function SaveViewDialog({ onSave, isLoading = false, disabled = false }: 
     defaultValues: {
       name: '',
       isDefault: false,
+      saveForProject: false,
+      showInSidebar: false,
     },
   });
 
   const handleSubmit = async (values: SaveViewFormData) => {
-    await onSave(values.name, values.isDefault);
-    setOpen(false);
+    const showInSidebar = allowSidebar ? values.showInSidebar : false;
+    const saveForProject = hasProject ? values.saveForProject : false;
+    await onSave(values.name, values.isDefault, saveForProject, showInSidebar);
+    if (hideTrigger) {
+      controlledOnOpenChange?.(false);
+    } else {
+      setInternalOpen(false);
+    }
     form.reset();
   };
 
+  const formBody = (
+    <>
+      <DialogHeader>
+        <DialogTitle>{t('saveView.title')}</DialogTitle>
+        <DialogDescription>{t('saveView.description')}</DialogDescription>
+      </DialogHeader>
+      <Form {...form}>
+        <form
+          onSubmit={(event) => {
+            event.stopPropagation();
+            form.handleSubmit(handleSubmit)(event);
+          }}
+          className="space-y-4"
+        >
+          <FormField name="name" label={t('saveView.name')} placeholder={t('saveView.namePlaceholder')} required />
+          <FormCheckbox name="isDefault" label={t('saveView.isDefault')} />
+          <FormCheckbox
+            name="saveForProject"
+            label={t('saveView.saveForProject')}
+            hint={!hasProject ? t('saveView.saveForProjectNeedProject') : t('saveView.saveForProjectHint')}
+            disabled={!hasProject}
+          />
+          {allowSidebar ? (
+            <FormCheckbox
+              name="showInSidebar"
+              label={t('saveView.showInSidebar')}
+              hint={t('saveView.showInSidebarHint')}
+            />
+          ) : null}
+          <DialogFooter>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? t('saveView.saving') : t('saveView.save')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </Form>
+    </>
+  );
+
+  if (hideTrigger) {
+    return (
+      <Dialog
+        open={controlledOpen ?? false}
+        onOpenChange={(v) => {
+          controlledOnOpenChange?.(v);
+          if (!v) form.reset();
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">{formBody}</DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog
-      open={open}
-      onOpenChange={(isOpen) => {
-        setOpen(isOpen);
-        if (!isOpen) form.reset();
+      open={internalOpen}
+      onOpenChange={(v) => {
+        setInternalOpen(v);
+        if (!v) form.reset();
       }}
     >
       <DialogTrigger asChild>
@@ -63,29 +141,7 @@ export function SaveViewDialog({ onSave, isLoading = false, disabled = false }: 
           <Save className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{t('saveView.title')}</DialogTitle>
-          <DialogDescription>{t('saveView.description')}</DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form
-            onSubmit={(event) => {
-              event.stopPropagation();
-              form.handleSubmit(handleSubmit)(event);
-            }}
-            className="space-y-4"
-          >
-            <FormField name="name" label={t('saveView.name')} placeholder={t('saveView.namePlaceholder')} required />
-            <FormCheckbox name="isDefault" label={t('saveView.isDefault')} />
-            <DialogFooter>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? t('saveView.saving') : t('saveView.save')}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
+      <DialogContent className="sm:max-w-[425px]">{formBody}</DialogContent>
     </Dialog>
   );
 }

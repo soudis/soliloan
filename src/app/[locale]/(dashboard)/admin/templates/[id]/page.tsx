@@ -53,6 +53,7 @@ export default async function AdminTemplateEditorPage({ params }: PageProps) {
           projectId: data.template.projectId,
           isGlobal: data.template.isGlobal,
           isSystem: data.template.isSystem,
+          isPublic: data.template.isPublic,
         }}
         pageData={pageData}
         isAdmin

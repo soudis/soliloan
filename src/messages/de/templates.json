@@ -66,7 +66,9 @@
       "insertMergeTag": "Platzhalter einfügen",
       "sourceTemplate": "Vorlage als Basis",
       "sourceTemplatePlaceholder": "Globale Vorlage auswählen",
-      "sourceTemplateNone": "Keine (leere Vorlage)"
+      "sourceTemplateNone": "Keine (leere Vorlage)",
+      "isPublic": "Für Darlehensgeber sichtbar",
+      "isPublicHint": "Wenn aktiv, können Darlehensgeber dieses Dokument bei ihrem Darlehensvertrag als PDF laden (nur Dokumentvorlagen)."
     }
   },
   "editor": {
@@ -344,6 +346,7 @@
     "copy": "Kopie",
     "global": "Global",
     "system": "System",
+    "publicLender": "Für Kreditgeber*innen verfügbar",
     "duplicated": "Vorlage dupliziert",
     "deleted": "Vorlage gelöscht",
     "columns": {

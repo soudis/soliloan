@@ -122,6 +122,11 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
                 {t('list.global')}
               </Badge>
             )}
+            {row.original.type === 'DOCUMENT' && row.original.isPublic && (
+              <Badge variant="outline" className="text-xs">
+                {t('list.publicLender')}
+              </Badge>
+            )}
           </div>
         ),
       },
