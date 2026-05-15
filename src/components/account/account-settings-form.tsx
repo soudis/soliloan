@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { Language } from '@prisma/client';
+import type { User } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
@@ -15,11 +15,7 @@ import type { UpdateProfileFormData } from '@/lib/schemas/account';
 import { updateProfileSchema } from '@/lib/schemas/account';
 import { AccountSettingsFormFields } from './account-settings-form-fields';
 
-interface AccountSettingsFormProps {
-  email: string;
-  name: string;
-  language: Language;
-}
+type AccountSettingsFormProps = Pick<User, 'email' | 'name' | 'language'>;
 
 export function AccountSettingsForm({ email, name, language }: AccountSettingsFormProps) {
   const t = useTranslations('account.profile');

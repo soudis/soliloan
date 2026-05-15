@@ -9,7 +9,7 @@ export default async function LoginPage() {
   return (
     <div className="space-y-4 md:space-y-8">
       <Card className="border-none gap-4 py-4 md:gap-6 md:py-6">
-        <CardHeader>
+        <CardHeader className="hidden md:block">
           <CardTitle>{t('title')}</CardTitle>
           <CardDescription>{t('description')}</CardDescription>
         </CardHeader>

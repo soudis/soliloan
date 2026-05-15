@@ -1,6 +1,6 @@
 'use client';
 
-import type { Language } from '@prisma/client';
+import type { User } from '@prisma/client';
 import { AlertTriangle, KeyRound, UserCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -10,11 +10,7 @@ import { ChangePasswordForm } from './change-password-form';
 import { DeleteAccountSection } from './delete-account-section';
 
 interface AccountPageContentProps {
-  user: {
-    email: string;
-    name: string;
-    language: Language;
-  };
+  user: Pick<User, 'email' | 'name' | 'language'>;
 }
 
 export function AccountPageContent({ user }: AccountPageContentProps) {

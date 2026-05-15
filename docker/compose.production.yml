@@ -1,0 +1,26 @@
+# Production stack (Traefik + Postgres + app). Prerequisite on the host:
+#   docker network create soliloan_traefik_network
+#   docker network create soliloan_backend_network
+#
+# First-time DB: from the release directory on the server, run migrations if needed:
+#   docker compose -f compose.yml --env-file .env run --rm app pnpm exec prisma migrate deploy
+#
+# Configure via .env (see repository .env.example and GitHub Actions workflow comments).
+
+include:
+#  - path:
+#      - "./docker/traefik/compose.yml"
+
+  - path:
+      - "./docker/postgres/compose.base.yml"
+      - "./docker/postgres/compose.override.production.yml"
+
+  - path:
+      - "./docker/app/compose.base.yml"
+      - "./docker/app/compose.override.production.yml"
+    project_directory: "."
+
+networks:
+  traefik_network:
+    external: true
+    name: soliloan_traefik_network
