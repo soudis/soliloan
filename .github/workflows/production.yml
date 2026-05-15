@@ -134,10 +134,10 @@ jobs:
           REMOTE_DIR="/docker/soliloan/${{ env.TAG }}"
           SSH_TARGET="${{ vars.PROD_SSH_USER }}@${{ vars.PROD_SSH_HOST }}"
 
-          ssh -p "${PROD_SSH_PORT}" "${SSH_TARGET}" "mkdir -p ~/${REMOTE_DIR}"
+          ssh -p "${PROD_SSH_PORT}" "${SSH_TARGET}" "mkdir -p ${REMOTE_DIR}"
 
-          scp -P "${PROD_SSH_PORT}" compose.deploy.yml "${SSH_TARGET}:~/${REMOTE_DIR}/compose.yml"
-          scp -P "${PROD_SSH_PORT}" .env "${SSH_TARGET}:~/${REMOTE_DIR}/.env"
+          scp -P "${PROD_SSH_PORT}" compose.deploy.yml "${SSH_TARGET}:${REMOTE_DIR}/compose.yml"
+          scp -P "${PROD_SSH_PORT}" .env "${SSH_TARGET}:${REMOTE_DIR}/.env"
 
           REMOTE_SH="/tmp/soliloan-remote-deploy-$$.sh"
           printf '%s\n' \
@@ -148,10 +148,10 @@ jobs:
             'docker compose -f compose.yml --env-file .env up -d' \
             'docker image prune -f' \
             'docker logout' > "${REMOTE_SH}"
-          scp -P "${PROD_SSH_PORT}" "${REMOTE_SH}" "${SSH_TARGET}:~/${REMOTE_DIR}/remote-deploy.sh"
+          scp -P "${PROD_SSH_PORT}" "${REMOTE_SH}" "${SSH_TARGET}:${REMOTE_DIR}/remote-deploy.sh"
           rm -f "${REMOTE_SH}"
 
           USER_Q=$(printf '%q' '${{ vars.DOCKERHUB_USERNAME }}')
           TOKEN_Q=$(printf '%q' "${DOCKERHUB_TOKEN}")
           ssh -p "${PROD_SSH_PORT}" "${SSH_TARGET}" \
-            "DOCKERHUB_USERNAME=${USER_Q} DOCKERHUB_TOKEN=${TOKEN_Q} bash -c $(printf '%q' "cd ~/${REMOTE_DIR} && bash ./remote-deploy.sh")"
+            "DOCKERHUB_USERNAME=${USER_Q} DOCKERHUB_TOKEN=${TOKEN_Q} bash -c $(printf '%q' "cd ${REMOTE_DIR} && bash ./remote-deploy.sh")"

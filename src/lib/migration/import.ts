@@ -429,9 +429,12 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
         for (const txn of data.transaction) {
           const loanId = contractToLoanMap.get(txn.contract_id);
           if (!loanId) {
-            throw new Error(
-              `Migration abgebrochen: Transaction #${txn.id} referenziert Contract #${txn.contract_id}, der nicht im Datenpaket existiert.`,
-            );
+            warnings.push({
+              entity: 'transaction',
+              legacyId: txn.id,
+              message: `Contract #${txn.contract_id} nicht im Datenpaket gefunden -> Transaction #${txn.id} wird übersprungen`,
+            });
+            continue;
           }
 
           if (txn.transaction_date === null || txn.transaction_date === undefined) {
