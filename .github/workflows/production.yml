@@ -88,7 +88,7 @@ jobs:
 
       - name: Write production .env and deploy
         env:
-          DATABASE_URL: postgresql://soliloan:${{ secrets.POSTGRES_PASSWORD }}@db:5432/soliloan
+          DATABASE_URL: postgresql://soliloan:${{ secrets.POSTGRES_PASSWORD }}@postgres:5432/soliloan
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}

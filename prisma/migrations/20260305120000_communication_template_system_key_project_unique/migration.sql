@@ -1,9 +1,14 @@
+-- Add columns before indexing them. This migration runs before the original
+-- system-template migration in timestamp order.
+ALTER TABLE "CommunicationTemplate" ADD COLUMN IF NOT EXISTS "isSystem" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "CommunicationTemplate" ADD COLUMN IF NOT EXISTS "systemKey" TEXT;
+
 -- Drop single-column unique on systemKey
 DROP INDEX IF EXISTS "CommunicationTemplate_systemKey_key";
 
 -- Composite uniqueness: same systemKey may exist once per project (and once with NULL projectId for global)
-CREATE UNIQUE INDEX "CommunicationTemplate_systemKey_projectId_key" ON "CommunicationTemplate"("systemKey", "projectId");
+CREATE UNIQUE INDEX IF NOT EXISTS "CommunicationTemplate_systemKey_projectId_key" ON "CommunicationTemplate"("systemKey", "projectId");
 
 -- Enforce a single global row per systemKey (NULLs are not equal in PostgreSQL composite UNIQUE)
-CREATE UNIQUE INDEX "CommunicationTemplate_systemKey_global_unique" ON "CommunicationTemplate"("systemKey")
+CREATE UNIQUE INDEX IF NOT EXISTS "CommunicationTemplate_systemKey_global_unique" ON "CommunicationTemplate"("systemKey")
 WHERE "projectId" IS NULL AND "systemKey" IS NOT NULL;
