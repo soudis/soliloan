@@ -103,6 +103,9 @@ export interface Dkpv1DataPackage {
 export interface Dkpv1ProjectInfoDefaults {
   interest_method?: string | null;
   interest_methods_alternative?: (string | null)[];
+  termination_type?: string | null;
+  termination_period_type?: string | null;
+  termination_period?: number | null;
   country?: string;
   relationships?: string[];
 }

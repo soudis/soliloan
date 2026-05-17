@@ -47,7 +47,7 @@ export default function DashboardNavigation({
         )}
 
         {/* Main Content */}
-        <main className="relative flex-1 overflow-y-auto bg-background">
+        <main className="relative flex-1 overflow-y-auto bg-[color-mix(in_oklch,var(--background)_50%,var(--muted)_50%)]">
           {isProjectSwitching && (
             <div
               className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-background/70 backdrop-blur-[2px]"

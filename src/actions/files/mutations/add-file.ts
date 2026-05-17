@@ -1,11 +1,5 @@
 'use server';
 
-import { exec } from 'node:child_process';
-import { readFile, unlink, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { promisify } from 'node:util';
-
 import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
@@ -19,9 +13,8 @@ import {
 } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
 import { fileSchema } from '@/lib/schemas/file';
+import { createThumbnail } from '@/lib/utils/file';
 import { lenderAction } from '@/lib/utils/safe-action';
-
-const execAsync = promisify(exec);
 
 export const addFileAction = lenderAction
   .inputSchema(
@@ -56,42 +49,7 @@ export const addFileAction = lenderAction
     // Convert base64 back to Uint8Array
     const binaryData = Buffer.from(base64Data, 'base64');
 
-    // Generate thumbnail for image files and PDFs
-    let thumbnailData: Uint8Array | undefined;
-    if (mimeType.startsWith('image/') || mimeType === 'application/pdf') {
-      try {
-        // Create temporary files
-        const tempInputPath = join(tmpdir(), `${Date.now()}-input`);
-        const tempOutputPath = join(tmpdir(), `${Date.now()}-output`);
-
-        // Write the original file
-        await writeFile(tempInputPath, binaryData);
-
-        // Generate thumbnail using convert command
-        if (mimeType === 'application/pdf') {
-          // For PDFs, use higher density and explicit format
-          await execAsync(
-            `convert -density 300 "${tempInputPath}[0]" -background white -alpha remove -alpha off -resize 384x384^ -gravity center -extent 384x384 -quality 90 "${tempOutputPath}.png"`,
-          );
-          // Rename the output file to match the expected path
-          await execAsync(`mv "${tempOutputPath}.png" "${tempOutputPath}"`);
-        } else {
-          // For images, use the standard conversion
-          await execAsync(
-            `convert "${tempInputPath}" -resize 384x384^ -gravity center -extent 384x384 "${tempOutputPath}"`,
-          );
-        }
-
-        // Read the thumbnail
-        thumbnailData = await readFile(tempOutputPath);
-
-        // Clean up temporary files
-        await Promise.all([unlink(tempInputPath), unlink(tempOutputPath)]);
-      } catch (error) {
-        console.error('Error generating thumbnail:', error);
-        // Continue without thumbnail if generation fails
-      }
-    }
+    const thumbnailData = await createThumbnail(binaryData, mimeType);
 
     // Create the file
     const file = await db.file.create({
@@ -99,7 +57,7 @@ export const addFileAction = lenderAction
         name: data.name,
         mimeType,
         data: new Uint8Array(binaryData),
-        thumbnail: thumbnailData ? new Uint8Array(thumbnailData) : undefined,
+        thumbnail: thumbnailData,
         public: data.public ?? false,
         description: data.description,
         // Fix conditional connect syntax

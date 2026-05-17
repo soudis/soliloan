@@ -27,6 +27,8 @@ export function calculateLenderFields(lender: LenderWithRelations, options: Calc
     balanceInterestRate: 0,
     totalLoans: loans?.length ?? 0,
     activeLoans: loans?.filter((loan) => loan.status === LoanStatus.ACTIVE).length ?? 0,
+    activeAmount:
+      loans?.filter((loan) => loan.status === LoanStatus.ACTIVE).reduce((acc, loan) => acc + loan.amount, 0) ?? 0,
   };
 
   // Use forEach instead of reduce to avoid TypeScript issues
