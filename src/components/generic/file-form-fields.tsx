@@ -28,7 +28,7 @@ export function FileFormFields({ loans, loanId }: FileFormFieldsProps) {
         <input
           id="file"
           type="file"
-          className="w-full cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium"
+          className="w-full cursor-pointer rounded-md border border-border bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium"
           required
           onChange={(e) => {
             const file = e.target.files?.[0];

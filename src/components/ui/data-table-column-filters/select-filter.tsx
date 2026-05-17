@@ -11,7 +11,7 @@ export function SelectFilter({ filterState, options, onFilterChange }: SelectFil
   const t = useTranslations('common.ui');
   return (
     <select
-      className="h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+      className="h-8 w-full rounded-md border border-border bg-background px-3 py-1 text-sm"
       value={(filterState?.value as string) ?? ''}
       onChange={(e) => onFilterChange(e.target.value)}
     >
