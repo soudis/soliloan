@@ -362,7 +362,9 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
             signDate = new Date(contract.sign_date);
           }
 
-          const terminationType = mapTerminationType(contract.termination_type);
+          const terminationType = mapTerminationType(
+            contract.termination_type ?? projectInfo.defaults?.termination_type ?? null,
+          );
           let endDate: Date | null = null;
           let terminationDate: Date | null = null;
 
@@ -384,8 +386,16 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
               terminationType,
               endDate,
               terminationDate,
-              terminationPeriod: contract.termination_period ? Math.round(contract.termination_period) : null,
-              terminationPeriodType: mapTerminationPeriodType(contract.termination_period_type, warnings, contract.id),
+              terminationPeriod: contract.termination_period
+                ? Math.round(contract.termination_period)
+                : projectInfo.defaults?.termination_period
+                  ? Math.round(projectInfo.defaults?.termination_period)
+                  : null,
+              terminationPeriodType: mapTerminationPeriodType(
+                contract.termination_period_type ?? projectInfo.defaults?.termination_period_type ?? null,
+                warnings,
+                contract.id,
+              ),
               amount: contract.amount,
               interestRate,
               altInterestMethod: mapInterestMethod(contract.interest_method, warnings, contract.id),
