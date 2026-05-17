@@ -44,7 +44,7 @@ export function SidebarViewItems({ views, viewType, basePath }: SidebarViewItems
 
   const pathMatches = pathname.includes(basePath);
   /** Already on /lenders or /loans — only search params change; use nuqs, not router.push. */
-  const onSameTableRoute = pathname.includes(basePath);
+  const onSameTableRoute = pathname.endsWith(basePath);
 
   return (
     <ul className="ml-8 space-y-0.5 border-l border-border pl-2">

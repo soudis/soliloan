@@ -31,7 +31,7 @@ export function ProjectTableNavItem({ basePath, icon: Icon, label }: ProjectTabl
     projectId != null && projectId !== '' ? `${basePath}?${PROJECT_ID_KEY}=${encodeURIComponent(projectId)}` : basePath;
 
   const pathOnly = href.split('?')[0] ?? basePath;
-  const onSameTableRoute = pathname.includes(basePath);
+  const onSameTableRoute = pathname.endsWith(basePath);
 
   const isActive =
     pathname === pathOnly ||
