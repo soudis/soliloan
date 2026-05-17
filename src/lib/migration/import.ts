@@ -9,6 +9,7 @@ import { InterestMethod } from '@prisma/client';
 import AdmZip from 'adm-zip';
 import { isAfter } from 'date-fns';
 import { normalizeStoredEmail } from '@/lib/utils/email';
+import { createThumbnail } from '@/lib/utils/file';
 import {
   emptyToNull,
   ensureUniqueSlug,
@@ -496,11 +497,14 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
             continue;
           }
 
+          const thumbnailData = await createThumbnail(fileData, file.mime);
+
           await tx.file.create({
             data: {
               name: file.filename,
               mimeType: file.mime,
               data: new Uint8Array(fileData),
+              thumbnail: thumbnailData,
               public: file.public === 1,
               description: emptyToNull(file.description),
               lenderId,
