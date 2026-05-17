@@ -184,7 +184,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                 {canTerminateLoan && (
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="xs"
                     className="border-destructive text-destructive hover:bg-destructive/10"
                     onClick={() => setIsTerminateOpen(true)}
                   >
