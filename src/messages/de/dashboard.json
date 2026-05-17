@@ -302,6 +302,7 @@
       "notReclaimed": "Nicht zurückgefordert",
       "totalLoans": "Kredite (gesamt)",
       "activeLoans": "Kredite (aktiv)",
+      "amountActive": "Kredithöhe (aktiv)",
       "interestRateAvg": "Zinssatz (durchschnittlich)",
       "amountTotal": "Kredithöhe (gesamt)",
       "for": "zu",

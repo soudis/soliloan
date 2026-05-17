@@ -35,7 +35,7 @@ export function LenderFinancialsSection({ lender }: LenderFinancialsSectionProps
         )}
 
         {hasTransactionData && (
-          <SectionCard title={t('table.balance')} icon={<BarChart3 className="h-4 w-4 text-muted-foreground" />}>
+          <SectionCard title={t('table.totals')} icon={<BarChart3 className="h-4 w-4 text-muted-foreground" />}>
             <BalanceTable totals={lender} variant="sums" />
           </SectionCard>
         )}
