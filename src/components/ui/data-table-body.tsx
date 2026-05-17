@@ -10,9 +10,19 @@ const ROW_CLICK_SUPPRESS_MS_AFTER_ACTIONS_MENU = 400;
 
 interface DataTableBodyProps<TData> {
   table: TanstackTable<TData>;
+  /** When set, rows use transparent hover — cell backgrounds mirror selection only (no muted hover tint). */
   onRowClick?: (row: TData) => void;
   hasBulkSelect?: boolean;
   lastRowActionsMenuClosedAtRef?: RefObject<number>;
+}
+
+function nonActionsCellBg(onRowClick: boolean | undefined) {
+  const base = 'bg-background transition-colors';
+  const selected = 'group-data-[state=selected]/row:bg-muted';
+  if (onRowClick) {
+    return cn(base, selected);
+  }
+  return cn(base, 'group-hover/row:bg-muted/50', selected);
 }
 
 export function DataTableBody<TData>({
@@ -36,8 +46,9 @@ export function DataTableBody<TData>({
                     className={cn(
                       header.column.columnDef.meta?.style?.textAlign &&
                         `text-${header.column.columnDef.meta.style.textAlign}`,
+                      'bg-background',
                       header.column.columnDef.meta?.fixed &&
-                        'sticky right-0 z-10 bg-background before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
+                        'sticky right-0 z-10 before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
                       header.column.columnDef.meta?.bulkSelectColumn &&
                         'relative w-10 min-w-[2.5rem] max-w-[2.5rem] !p-0 text-center align-middle',
                       header.column.columnDef.meta?.actionsColumn &&
@@ -96,8 +107,9 @@ export function DataTableBody<TData>({
                     {...(cell.column.columnDef.meta?.actionsColumn ? { 'data-actions-cell': '' } : {})}
                     {...(cell.column.columnDef.meta?.bulkSelectColumn ? { 'data-bulk-select-cell': '' } : {})}
                     className={cn(
+                      nonActionsCellBg(!!onRowClick),
                       cell.column.columnDef.meta?.fixed &&
-                        'sticky right-0 z-10 bg-background transition-colors data-[state=selected]:bg-muted before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
+                        'sticky right-0 z-10 before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
                       cell.column.columnDef.meta?.bulkSelectColumn &&
                         'relative w-10 min-w-[2.5rem] max-w-[2.5rem] !p-0 align-top leading-none',
                       cell.column.columnDef.meta?.actionsColumn &&
@@ -111,7 +123,10 @@ export function DataTableBody<TData>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={table.getAllColumns().length} className="h-24 text-center">
+              <TableCell
+                colSpan={table.getAllColumns().length}
+                className="h-24 bg-background text-center dark:bg-background"
+              >
                 {t('noResults')}
               </TableCell>
             </TableRow>
