@@ -3,6 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { splitIbanIntoGroups } from '@/lib/utils/iban';
 
 interface FormIbanInputProps {
   name: string;
@@ -14,16 +15,7 @@ export function FormIbanInput({ name, label, placeholder }: FormIbanInputProps) 
   const form = useFormContext();
 
   const handleIbanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Remove all non-alphanumeric characters
-    const cleaned = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-
-    // Split into blocks of 4 characters
-    const blocks = cleaned.match(/.{1,4}/g) || [];
-
-    // Join blocks with spaces
-    const formatted = blocks.join(' ');
-
-    // Update form value
+    const formatted = splitIbanIntoGroups(e.target.value).join(' ');
     form.setValue(name, formatted, { shouldValidate: true });
   };
 

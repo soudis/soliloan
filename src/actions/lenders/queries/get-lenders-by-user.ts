@@ -48,6 +48,7 @@ export async function getLendersByUser(): Promise<
                 name: true,
                 logo: true,
                 loanAdditionalFields: true,
+                email: true,
               },
             },
           },

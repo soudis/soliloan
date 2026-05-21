@@ -2,13 +2,16 @@
 
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
+import { Mail, Phone } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { ProjectLogo } from '@/components/dashboard/project-logo';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
+import { Button } from '@/components/ui/button';
 import { InfoItem } from '@/components/ui/info-item';
 import { formatCurrency, formatPercentage, getLenderName } from '@/lib/utils';
 import { formatAddressPlace } from '@/lib/utils/format';
+import { splitIbanIntoGroups } from '@/lib/utils/iban';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { LoanBalanceSummary } from '../loans/loan-balance-summary';
@@ -59,16 +62,14 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
   const lender = loan.lender;
   const lenderName = getLenderName(lender);
   const project = lender.project as ProjectWithConfiguration;
+  const projectEmail = project.configuration.email;
 
-  const contactLines = [
-    lenderName,
-    [lender.street, lender.addon].filter(Boolean).join(', ') || null,
-    lender.zip || lender.place ? formatAddressPlace(lender) : null,
-    lender.telNo || null,
-    lender.email || null,
-  ].filter(Boolean);
+  const addressLine = [lender.street, lender.addon].filter(Boolean).join(', ') || null;
+  const placeLine = lender.zip || lender.place ? formatAddressPlace(lender) : null;
+  const hasContact = Boolean(lenderName || addressLine || placeLine || lender.telNo || lender.email);
 
   const bankingLines = [lender.iban || null, lender.bic || null].filter(Boolean);
+  const ibanGroups = lender.iban ? splitIbanIntoGroups(lender.iban) : [];
 
   return (
     <div className="scroll-mt-24 rounded-lg border bg-card text-card-foreground shadow-sm">
@@ -98,8 +99,17 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
               onClick={(e) => {
                 e.stopPropagation();
               }}
-              className="flex items-center"
+              className="flex items-center gap-2"
             >
+              {projectEmail && (
+                <Button asChild variant="outline" size="sm" className="h-9 px-3 sm:px-3">
+                  <a href={`mailto:${projectEmail}`}>
+                    <Mail className="h-4 w-4 shrink-0" />
+                    <span className="hidden sm:ml-2 sm:inline">{tMy('contact')}</span>
+                    <span className="sr-only sm:hidden">{tMy('contact')}</span>
+                  </a>
+                </Button>
+              )}
               <TemplateQuickActions
                 lenderSelfService
                 projectId={lender.projectId}
@@ -166,8 +176,24 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
                 <InfoItem
                   label={tMy('contact')}
                   value={
-                    contactLines.length > 0 ? (
-                      <span className="text-lg font-medium whitespace-pre-line">{contactLines.join('\n')}</span>
+                    hasContact ? (
+                      <div className="leading-tight space-y-0.5">
+                        {lenderName && <span className="block text-lg font-medium">{lenderName}</span>}
+                        {addressLine && <span className="block text-sm">{addressLine}</span>}
+                        {placeLine && <span className="block text-sm">{placeLine}</span>}
+                        {lender.telNo && (
+                          <span className="flex items-center gap-1.5 text-sm">
+                            <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+                            {lender.telNo}
+                          </span>
+                        )}
+                        {lender.email && (
+                          <span className="flex items-center gap-1.5 text-sm">
+                            <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+                            {lender.email}
+                          </span>
+                        )}
+                      </div>
                     ) : undefined
                   }
                   emptyMessage={commonT('ui.status.noResults')}
@@ -177,7 +203,13 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
                   value={
                     bankingLines.length > 0 ? (
                       <span className="whitespace-pre-line">
-                        {lender.iban && <span className="block">{lender.iban}</span>}
+                        {lender.iban && (
+                          <span className="flex flex-wrap gap-x-1 font-mono">
+                            {ibanGroups.map((group, index) => (
+                              <span key={`${ibanGroups.slice(0, index).join('')}-${group}`}>{group}</span>
+                            ))}
+                          </span>
+                        )}
                         {lender.bic && <span className="block text-muted-foreground text-sm">{lender.bic}</span>}
                       </span>
                     ) : undefined
