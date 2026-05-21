@@ -10,9 +10,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const { projects, sidebarViews } = await getProjects();
 
   return (
-    <div className="min-h-full bg-background">
+    <div className="flex min-h-0 flex-1 flex-col bg-background">
       <DashboardNavigation session={session} projects={projects} sidebarViews={sidebarViews}>
-        <div className="h-full">{children}</div>
+        {children}
       </DashboardNavigation>
     </div>
   );

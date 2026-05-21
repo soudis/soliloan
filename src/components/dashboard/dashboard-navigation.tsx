@@ -33,7 +33,7 @@ export default function DashboardNavigation({
   const showSidebar = session.user.isManager;
 
   return (
-    <>
+    <div className="flex h-dvh flex-col">
       <TopNav
         session={session}
         isSidebarOpen={isSidebarOpen}
@@ -41,7 +41,7 @@ export default function DashboardNavigation({
         showSidebarToggle={showSidebar}
       />
 
-      <div className="flex h-[calc(100vh-4rem)]">
+      <div className="flex min-h-0 flex-1">
         {showSidebar && (
           <SidebarNav isSidebarOpen={isSidebarOpen} session={session} projects={projects} sidebarViews={sidebarViews} />
         )}
@@ -63,6 +63,6 @@ export default function DashboardNavigation({
           </div>
         </main>
       </div>
-    </>
+    </div>
   );
 }
