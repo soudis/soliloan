@@ -397,7 +397,7 @@ export function DataTable<TData, TValue>({
       <div
         className={cn(
           'py-24 text-center text-muted-foreground',
-          fillHeight && 'flex flex-1 items-center justify-center py-0',
+          fillHeight && 'flex max-h-full items-center justify-center py-0',
         )}
       >
         {tableState.globalFilter ? 'Suchen...' : 'Laden...'}
@@ -406,7 +406,7 @@ export function DataTable<TData, TValue>({
   }
 
   return (
-    <div className={cn(fillHeight && 'flex min-h-0 flex-1 flex-col')}>
+    <div className={cn(fillHeight && 'flex min-h-0 max-h-full flex-col overflow-hidden')}>
       {!hideHeader && (
         <div className={cn(fillHeight && 'shrink-0')}>
           <DataTableHeader<TData>
