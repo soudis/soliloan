@@ -50,7 +50,12 @@ export default function DashboardNavigation({
         )}
 
         {/* Main Content */}
-        <main className="relative flex-1 overflow-y-auto bg-[color-mix(in_oklch,var(--background)_50%,var(--muted)_50%)]">
+        <main
+          className={cn(
+            'relative flex-1 bg-[color-mix(in_oklch,var(--background)_50%,var(--muted)_50%)]',
+            isFullWidthTablePage ? 'flex min-h-0 flex-col overflow-hidden' : 'overflow-y-auto',
+          )}
+        >
           {isProjectSwitching && (
             <div
               className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-background/70 backdrop-blur-[2px]"
@@ -63,10 +68,10 @@ export default function DashboardNavigation({
           )}
           <div
             className={cn(
-              'mx-auto w-full py-8 px-6',
+              'mx-auto w-full px-6',
               isFullWidthTablePage
-                ? 'max-w-none'
-                : cn('container', showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg'),
+                ? 'flex min-h-0 flex-1 flex-col py-8 max-w-none'
+                : cn('container py-8', showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg'),
             )}
           >
             {children}

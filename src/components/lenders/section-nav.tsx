@@ -18,7 +18,7 @@ export function SectionNavSidebar({ items }: SectionNavProps) {
   const [activeId, setActiveId] = useScrollSpy(items);
 
   return (
-    <nav className="hidden lg:flex flex-col gap-1 sticky top-8 self-start w-48 shrink-0">
+    <nav className="hidden lg:flex flex-col gap-1 sticky top-24 self-start w-48 shrink-0">
       {items.map((item) => (
         <button
           key={item.id}

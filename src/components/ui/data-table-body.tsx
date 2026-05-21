@@ -14,6 +14,8 @@ interface DataTableBodyProps<TData> {
   onRowClick?: (row: TData) => void;
   hasBulkSelect?: boolean;
   lastRowActionsMenuClosedAtRef?: RefObject<number>;
+  /** Scroll table rows vertically; column headers stay sticky at the top of the scroll area. */
+  fillHeight?: boolean;
 }
 
 function nonActionsCellBg(onRowClick: boolean | undefined) {
@@ -30,25 +32,31 @@ export function DataTableBody<TData>({
   onRowClick,
   hasBulkSelect,
   lastRowActionsMenuClosedAtRef,
+  fillHeight = false,
 }: DataTableBodyProps<TData>) {
   const t = useTranslations('dataTable');
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead
-                    key={header.id}
-                    className={cn(
-                      header.column.columnDef.meta?.style?.textAlign &&
-                        `text-${header.column.columnDef.meta.style.textAlign}`,
-                      'bg-background',
-                      header.column.columnDef.meta?.fixed &&
-                        'sticky right-0 z-10 before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
+    <div className={cn('rounded-md border', fillHeight && 'flex min-h-0 flex-1 flex-col overflow-hidden')}>
+      <div className={cn(fillHeight && 'min-h-0 flex-1 overflow-auto')}>
+        <Table containerClassName={fillHeight ? 'overflow-visible' : undefined}>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead
+                      key={header.id}
+                      className={cn(
+                        header.column.columnDef.meta?.style?.textAlign &&
+                          `text-${header.column.columnDef.meta.style.textAlign}`,
+                        'bg-background',
+                        fillHeight && 'sticky top-0 z-10 shadow-[inset_0_-1px_0_0_var(--border)]',
+                        header.column.columnDef.meta?.fixed &&
+                          cn(
+                            'sticky right-0 before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
+                            fillHeight ? 'z-20' : 'z-10',
+                          ),
                       header.column.columnDef.meta?.bulkSelectColumn &&
                         'relative w-10 min-w-[2.5rem] max-w-[2.5rem] !p-0 text-center align-middle',
                       header.column.columnDef.meta?.actionsColumn &&
@@ -131,8 +139,9 @@ export function DataTableBody<TData>({
               </TableCell>
             </TableRow>
           )}
-        </TableBody>
-      </Table>
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

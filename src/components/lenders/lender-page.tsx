@@ -61,7 +61,9 @@ export const LenderPage = ({ lender }: Props) => {
 
   return (
     <div className="flex flex-col gap-6 mb-256">
-      <LenderPageHeader lender={lender} />
+      <div className="lg:sticky lg:top-0 lg:z-30 lg:-mx-6 lg:px-6 lg:pb-4 lg:bg-[color-mix(in_oklch,var(--background)_50%,var(--muted)_50%)] lg:backdrop-blur-sm lg:border-b lg:border-border/60">
+        <LenderPageHeader lender={lender} />
+      </div>
 
       {/* Mobile/Tablet: horizontal nav bar */}
       <SectionNavBar items={navItems} />
