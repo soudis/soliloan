@@ -238,6 +238,7 @@ export function LogbookTable({ changes, views }: LogbookTableProps) {
   return (
     <>
       <DataTable
+        fillHeight
         columns={columns}
         data={changes}
         onRowClick={(row) => setSelectedChange(row)}

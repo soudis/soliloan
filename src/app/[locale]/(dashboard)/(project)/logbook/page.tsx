@@ -39,8 +39,8 @@ export default async function LogbookPage({ searchParams }: PageProps) {
   const t = await getTranslations('logbook');
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="mb-6 flex shrink-0 items-center justify-between">
         <h1 className="text-3xl font-bold">{t('title')}</h1>
       </div>
       <LogbookTable changes={project?.changes ?? []} views={viewsResult?.views ?? []} />

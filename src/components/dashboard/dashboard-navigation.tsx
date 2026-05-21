@@ -27,7 +27,10 @@ export default function DashboardNavigation({
   const isProjectSwitching = useNavigationUiStore((s) => s.isProjectSwitching);
   const pathname = usePathname();
   const t = useTranslations('navigation');
-  const isFullWidthTablePage = pathname === '/lenders' || pathname === '/loans';
+  const isFillHeightPage =
+    pathname === '/lenders' || pathname === '/loans' || pathname === '/logbook' || pathname === '/projects';
+
+  const isFullWidthPage = pathname === '/lenders' || pathname === '/loans';
 
   if (!session) {
     return null;
@@ -53,7 +56,7 @@ export default function DashboardNavigation({
         <main
           className={cn(
             'relative flex-1 bg-[color-mix(in_oklch,var(--background)_50%,var(--muted)_50%)]',
-            isFullWidthTablePage ? 'flex min-h-0 flex-col overflow-hidden' : 'overflow-y-auto',
+            isFillHeightPage ? 'flex min-h-0 flex-col overflow-hidden' : 'overflow-y-auto',
           )}
         >
           {isProjectSwitching && (
@@ -69,8 +72,11 @@ export default function DashboardNavigation({
           <div
             className={cn(
               'mx-auto w-full px-6',
-              isFullWidthTablePage
-                ? 'flex min-h-0 flex-1 flex-col py-8 max-w-none'
+              isFillHeightPage || isFullWidthPage
+                ? cn(
+                    'flex min-h-0 flex-1 flex-col py-8',
+                    isFullWidthPage ? 'max-w-none' : showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg',
+                  )
                 : cn('container py-8', showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg'),
             )}
           >
