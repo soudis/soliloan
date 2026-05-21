@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import type { Session } from 'next-auth';
 import { useTranslations } from 'next-intl';
 
+import { usePathname } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { useAppStore, useNavigationUiStore } from '@/store';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -24,7 +25,9 @@ export default function DashboardNavigation({
 }) {
   const { isSidebarOpen, toggleSidebar } = useAppStore();
   const isProjectSwitching = useNavigationUiStore((s) => s.isProjectSwitching);
+  const pathname = usePathname();
   const t = useTranslations('navigation');
+  const isFullWidthTablePage = pathname === '/lenders' || pathname === '/loans';
 
   if (!session) {
     return null;
@@ -58,7 +61,14 @@ export default function DashboardNavigation({
               <p className="text-sm font-medium text-muted-foreground">{t('switchingProject')}</p>
             </div>
           )}
-          <div className={cn('container mx-auto py-8 px-6', showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg')}>
+          <div
+            className={cn(
+              'mx-auto w-full py-8 px-6',
+              isFullWidthTablePage
+                ? 'max-w-none'
+                : cn('container', showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg'),
+            )}
+          >
             {children}
           </div>
         </main>
