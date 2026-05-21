@@ -23,11 +23,12 @@ export type ConfigurationTabValue = 'general' | 'lender' | 'loans' | 'templates'
 
 type Props = {
   project: ProjectWithConfiguration;
+  germanLoansCount: number;
   inviteValidDays: number;
   systemTemplatesOverviewRows: ProjectSystemTemplateOverviewRow[];
 };
 
-export const ConfigurationPage = ({ project, inviteValidDays, systemTemplatesOverviewRows }: Props) => {
+export const ConfigurationPage = ({ project, germanLoansCount, inviteValidDays, systemTemplatesOverviewRows }: Props) => {
   const t = useTranslations('dashboard.configuration');
   const [activeTab, setActiveTab] = useQueryState(
     'tab',
@@ -108,6 +109,7 @@ export const ConfigurationPage = ({ project, inviteValidDays, systemTemplatesOve
         <ConfigurationFormLoans
           onSubmit={handleSubmit}
           project={project}
+          germanLoansCount={germanLoansCount}
           hasHistoricTransactions={project.hasHistoricTransactions}
           initialData={project.configuration}
           isLoading={isExecuting}

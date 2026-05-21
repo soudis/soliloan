@@ -59,7 +59,7 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
     });
 
     if (!matchingType) {
-      return { fieldErrors: { interestRate: 'error.loan.investmentTypeRequired' } };
+      return { fieldErrors: { investmentType: 'error.loan.investmentTypeRequired' } };
     }
 
     investmentTypeId = matchingType.id;

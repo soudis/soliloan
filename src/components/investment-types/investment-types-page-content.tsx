@@ -39,9 +39,7 @@ type InvestmentTypeWithLoans = InvestmentType & {
 type InvestmentTypeTableRow = InvestmentTypeWithLoans & {
   metrics: InvestmentTypeMetrics;
   numberOfLoans: number;
-  numberOfEffectiveLoans: number;
   totalAmount: number;
-  totalAmountWithinTimeframe: number | null;
   usedCapacity: number;
   freeCapacity: number;
 };
@@ -72,10 +70,7 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
         ...investmentType,
         metrics,
         numberOfLoans: metrics.numberOfLoans,
-        numberOfEffectiveLoans: metrics.effectiveLoans.length,
         totalAmount: calcTotalAmount(investmentType.loans),
-        totalAmountWithinTimeframe:
-          investmentType.limitationType === LimitationType.TOTAL_AMOUNT_OVER_TIME_PERIOD ? metrics.usedCapacity : null,
         usedCapacity: metrics.usedCapacity,
         freeCapacity: metrics.capacityLimit - metrics.usedCapacity,
       };
@@ -83,6 +78,8 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
   }, [investmentTypes, effectiveDate]);
 
   const columns: ColumnDef<InvestmentTypeTableRow>[] = [
+    createPercentageColumn<InvestmentTypeTableRow>('interestRate', 'table.interestRate', t, locale),
+
     createColumn<InvestmentTypeTableRow>(
       {
         accessorKey: 'name',
@@ -93,12 +90,27 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
       t,
     ),
 
-    createPercentageColumn<InvestmentTypeTableRow>('interestRate', 'table.interestRate', t, locale),
+    createColumn<InvestmentTypeTableRow>(
+      {
+        accessorKey: 'limitationType',
+        header: 'table.limitationType',
+        cell: ({ row }) => <LimitationTypeBadge limitationType={row.original.limitationType} />,
+        filterFn: enumFilter,
+        sortingFn: (rowA, rowB, columnId) => {
+          const a = rowA.getValue(columnId) as LimitationType;
+          const b = rowB.getValue(columnId) as LimitationType;
+          return commonT(`enums.limitationType.${a}`, { timePeriod: LIMITATION_TYPE_TIME_PERIOD }).localeCompare(
+            commonT(`enums.limitationType.${b}`, { timePeriod: LIMITATION_TYPE_TIME_PERIOD }),
+          );
+        },
+      },
+      t,
+    ),
 
     createColumn<InvestmentTypeTableRow>(
       {
         accessorKey: 'usedCapacity',
-        header: 'table.capacity',
+        header: 'table.usedCapacity',
         align: 'right',
         filterFn: 'inNumberRange',
         cell: ({ row }) => (
@@ -121,42 +133,9 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
       t,
     ),
 
-    createColumn<InvestmentTypeTableRow>(
-      {
-        accessorKey: 'limitationType',
-        header: 'table.limitationType',
-        cell: ({ row }) => <LimitationTypeBadge limitationType={row.original.limitationType} />,
-        filterFn: enumFilter,
-        sortingFn: (rowA, rowB, columnId) => {
-          const a = rowA.getValue(columnId) as LimitationType;
-          const b = rowB.getValue(columnId) as LimitationType;
-          return commonT(`enums.limitationType.${a}`, { timePeriod: LIMITATION_TYPE_TIME_PERIOD }).localeCompare(
-            commonT(`enums.limitationType.${b}`, { timePeriod: LIMITATION_TYPE_TIME_PERIOD }),
-          );
-        },
-      },
-      t,
-    ),
-
     createNumberColumn<InvestmentTypeTableRow>('numberOfLoans', 'table.numberOfLoans', t, locale),
 
-    createNumberColumn<InvestmentTypeTableRow>('numberOfEffectiveLoans', 'table.numberOfEffectiveLoans', t, locale),
-
     createCurrencyColumn<InvestmentTypeTableRow>('totalAmount', 'table.totalAmount', t, locale),
-
-    createColumn<InvestmentTypeTableRow>(
-      {
-        accessorKey: 'totalAmountWithinTimeframe',
-        header: 'table.totalAmountWithinTimeframe',
-        align: 'right',
-        filterFn: 'inNumberRange',
-        cell: ({ row }) => {
-          const value = row.original.totalAmountWithinTimeframe;
-          return <div className="text-right tabular-nums">{value === null ? '—' : formatCurrency(value, locale)}</div>;
-        },
-      },
-      t,
-    ),
   ];
 
   const columnFilters = {
@@ -180,21 +159,13 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
       type: 'number' as const,
       label: t('table.numberOfLoans'),
     },
-    numberOfEffectiveLoans: {
-      type: 'number' as const,
-      label: t('table.numberOfEffectiveLoans'),
-    },
     totalAmount: {
       type: 'number' as const,
       label: t('table.totalAmount'),
     },
-    totalAmountWithinTimeframe: {
-      type: 'number' as const,
-      label: t('table.totalAmountWithinTimeframe'),
-    },
     usedCapacity: {
       type: 'number' as const,
-      label: t('table.capacity'),
+      label: t('table.usedCapacity'),
     },
     freeCapacity: {
       type: 'number' as const,
@@ -206,10 +177,8 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
     interestRate: true,
     name: true,
     limitationType: true,
-    numberOfLoans: false,
-    numberOfEffectiveLoans: false,
+    numberOfLoans: true,
     totalAmount: false,
-    totalAmountWithinTimeframe: false,
     usedCapacity: true,
     freeCapacity: true,
   };

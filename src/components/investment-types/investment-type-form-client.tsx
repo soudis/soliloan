@@ -52,7 +52,7 @@ export function InvestmentTypeFormClient({
   const defaultValues = {
     interestRate: initialData ? formatNumber(initialData.interestRate, 0, 3) : prefilledInterestRate || ('' as const),
     limitationType: initialData?.limitationType ?? LimitationType.TOTAL_AMOUNT_OVER_TIME_PERIOD,
-    name: initialData?.name || null,
+    name: initialData?.name ?? '',
   };
 
   const form = useForm({

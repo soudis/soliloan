@@ -53,7 +53,8 @@
   "investmentType": {
     "notFound": "Anlageart nicht gefunden.",
     "interestRateAlreadyExists": "Für diesen Zinssatz existiert bereits eine Anlageart.",
-    "cannotChangeInterestRateWithLoans": "Der Zinssatz kann nicht geändert werden, da bereits Kredite zugeordnet sind."
+    "cannotChangeInterestRateWithLoans": "Der Zinssatz kann nicht geändert werden, da bereits Kredite zugeordnet sind.",
+    "cannotDeleteWithLoans": "Die Anlageart kann nicht gelöscht werden, da ihr Kredite zugeordnet sind."
   },
   "migration": {
     "fetchFailed": "Datenpaket konnte nicht von der DKP-v1 API heruntergeladen werden. Bitte URL und Token prüfen.",

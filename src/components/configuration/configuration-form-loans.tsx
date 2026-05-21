@@ -16,6 +16,7 @@ type Props = {
   onSubmit: (data: ConfigurationFormLoanData) => Promise<void>;
   hasHistoricTransactions?: boolean;
   project: ProjectWithConfiguration;
+  germanLoansCount: number;
   initialData?: ConfigurationFormLoanData;
   isLoading?: boolean;
   error?: string | null;
@@ -24,6 +25,7 @@ type Props = {
 export function ConfigurationFormLoans({
   onSubmit,
   project,
+  germanLoansCount,
   hasHistoricTransactions,
   initialData,
   isLoading,
@@ -55,7 +57,11 @@ export function ConfigurationFormLoans({
     <FormLayout error={error}>
       <Form {...form}>
         <form onSubmit={handleSubmit}>
-          <ConfigurationFormFieldsLoans hasHistoricTransactions={hasHistoricTransactions} project={project} />
+          <ConfigurationFormFieldsLoans
+            hasHistoricTransactions={hasHistoricTransactions}
+            project={project}
+            germanLoansCount={germanLoansCount}
+          />
 
           <FormActions
             submitButtonText={t('form.submit')}

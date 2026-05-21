@@ -40,7 +40,7 @@ export function InvestmentTypeFormFields({
     <div className="flex flex-col gap-8">
       <div className="flex min-h-0 min-w-0 flex-col">
         <FormSection
-          title={t('interestRate')}
+          title={t('generalInfo')}
           className={sectionCardStretchClass}
           contentClassName={sectionContentStretchClass}
           innerClassName={sectionInnerStretchClass}
@@ -99,7 +99,7 @@ export function InvestmentTypeFormFields({
                             timePeriod: `${PERIOD_MONTHS} Monate`,
                           })}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-sm text-muted-foreground">
                           {t('limitationTypeTotalAmountDescription', {
                             limit: formatCurrency(MAX_TOTAL_AMOUNT_EUR),
                             timePeriod: `${PERIOD_MONTHS} Monaten`,
@@ -130,7 +130,7 @@ export function InvestmentTypeFormFields({
                         <p className="text-sm font-medium leading-tight">
                           {t('limitationTypeNotMoreThanNUnits', { limit: MAX_UNITS })}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-sm text-muted-foreground">
                           {t('limitationTypeNotMoreThanNUnitsDescription', { limit: MAX_UNITS })}
                         </p>
                       </div>

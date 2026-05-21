@@ -8,15 +8,20 @@ import type { ProjectWithConfiguration } from '@/types/projects';
 import { FormFieldConfigurator } from '../form/form-field-configurator';
 import { FormMultiSelect } from '../form/form-multi-select';
 import { FormSelect } from '../form/form-select';
-import { FormSwitch } from '../form/form-switch';
 import { LoanTemplateTable } from './loan-template-table';
+import { DeInvestmentActComplianceSwitch } from './de-investment-act-compliance-switch';
 
 interface ConfigurationFormFieldsLoansProps {
   hasHistoricTransactions?: boolean;
   project: ProjectWithConfiguration;
+  germanLoansCount: number;
 }
 
-export function ConfigurationFormFieldsLoans({ hasHistoricTransactions, project }: ConfigurationFormFieldsLoansProps) {
+export function ConfigurationFormFieldsLoans({
+  hasHistoricTransactions,
+  project,
+  germanLoansCount,
+}: ConfigurationFormFieldsLoansProps) {
   const t = useTranslations('dashboard.configuration');
   const commonT = useTranslations('common');
 
@@ -27,15 +32,10 @@ export function ConfigurationFormFieldsLoans({ hasHistoricTransactions, project 
           title={t('form.deInvestmentActCompliance.title')}
           icon={<Scale className="h-4 w-4 text-muted-foreground" />}
         >
-          <FormSwitch
-            name="deInvestmentActCompliance"
-            label={t('form.deInvestmentActCompliance.label')}
-            hint={t('form.deInvestmentActCompliance.hint')}
-            labelPlacement="inline"
-          />
+          <DeInvestmentActComplianceSwitch projectId={project.id} germanLoansCount={germanLoansCount} />
         </FormSection>
         <FormSection title="Was kommt hier denn hin?" icon={<Scale className="h-4 w-4 text-muted-foreground" />}>
-          <div>Ich weiß es nocht nicht </div>
+          <div>Es bleibt spannend ...</div>
         </FormSection>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

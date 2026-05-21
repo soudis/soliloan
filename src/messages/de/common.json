@@ -36,6 +36,10 @@
     "copy": "In die Zwischenablage kopieren",
     "copied": "Kopiert!"
   },
+  "infoText": {
+    "more": "Mehr…",
+    "less": "Weniger"
+  },
   "qrCode": {
     "title": "Zahlungs-QR-Code",
     "description": "Scanne diesen QR-Code mit deiner Banking-App, um die Zahlungsinformationen zu erhalten",

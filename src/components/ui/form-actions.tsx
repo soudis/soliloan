@@ -20,7 +20,7 @@ export function FormActions({
   children,
 }: FormActionsProps) {
   return (
-    <div className="flex justify-end space-x-4 py-8">
+    <div className="flex justify-end space-x-4 pt-8 pb-0">
       <Button
         type="button"
         size="lg"

@@ -7,7 +7,7 @@ import { cn, formatCurrency } from '@/lib/utils';
 
 interface Props {
   currentAmount?: number | null;
-  size?: 'default' | 'large' | 'xlarge';
+  size?: 'small' | 'default' | 'large' | 'xlarge';
   className?: string;
 }
 
@@ -15,6 +15,7 @@ export function TotalAmountCapacityIndicator({ currentAmount, className, size = 
   const t = useTranslations('dashboard.investmentTypes.capacity');
 
   const indicatorValue = currentAmount ?? 0;
+  const isSmall = size === 'small';
   const isLarge = size === 'large' || size === 'xlarge';
   const isXLarge = size === 'xlarge';
 
@@ -22,21 +23,26 @@ export function TotalAmountCapacityIndicator({ currentAmount, className, size = 
     <div
       className={cn(
         'flex w-full min-w-0 flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start',
+        isSmall && 'gap-x-5 gap-y-3',
         isLarge && 'gap-x-6 gap-y-3',
         isXLarge && 'gap-x-8 gap-y-4',
         className,
       )}
     >
-      <DonutIndicator
-        value={indicatorValue}
-        limit={MAX_TOTAL_AMOUNT_EUR}
-        className={cn('shrink-0', isXLarge ? 'h-48 w-48' : isLarge ? 'h-40 w-40' : 'h-28 w-28')}
-      >
-        <span className={cn('font-semibold', isXLarge ? 'text-xl' : isLarge ? 'text-lg' : 'text-sm')}>€</span>
-      </DonutIndicator>
+      <div className={cn('flex shrink-0 items-center self-center', isSmall && 'm-1')}>
+        <DonutIndicator
+          value={indicatorValue}
+          limit={MAX_TOTAL_AMOUNT_EUR}
+          className={cn(
+            isXLarge ? 'h-48 w-48' : isLarge ? 'h-40 w-40' : isSmall ? 'h-20 w-20' : 'h-28 w-28',
+          )}
+        >
+          <span className={cn('font-semibold', isXLarge ? 'text-xl' : isLarge ? 'text-lg' : 'text-sm')}>€</span>
+        </DonutIndicator>
+      </div>
       <div
         className={cn(
-          'min-w-0 max-w-full shrink-0',
+          'flex min-w-0 max-w-full shrink-0 flex-col justify-center self-center',
           isXLarge ? 'text-xl sm:text-2xl' : isLarge ? 'text-lg sm:text-xl' : 'text-sm sm:text-base',
         )}
       >

@@ -12,10 +12,15 @@ export const deleteInvestmentTypeAction = projectAction
   .action(async ({ ctx, parsedInput }) => {
     const investmentType = await db.investmentType.findUnique({
       where: { id: parsedInput.investmentTypeId },
+      include: { _count: { select: { loans: true } } },
     });
 
     if (!investmentType) {
       throw new Error('error.investmentType.notFound');
+    }
+
+    if (investmentType._count.loans > 0) {
+      throw new Error('error.investmentType.cannotDeleteWithLoans');
     }
 
     await db.investmentType.delete({

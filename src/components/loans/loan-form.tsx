@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DurationType } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { getLendersByProjectAction } from '@/actions/lenders';
 import { Form } from '@/components/ui/form';
@@ -80,6 +81,7 @@ export function LoanForm({
     resolver: zodResolver(schema),
     defaultValues: defaultValues,
   });
+  const [missingInvestmentTypeWarning, setMissingInvestmentTypeWarning] = useState(false);
 
   if (isLoadingLenders) {
     return null;
@@ -92,17 +94,29 @@ export function LoanForm({
 
     const fieldErrors = await onSubmit(processedData);
     if (fieldErrors) {
+      if ('investmentType' in fieldErrors) {
+        setMissingInvestmentTypeWarning(true);
+      }
       for (const [field, message] of Object.entries(fieldErrors)) {
+        if (field === 'investmentType') continue;
         form.setError(field as keyof LoanFormData, { type: 'server', message });
       }
+      return;
     }
+
+    setMissingInvestmentTypeWarning(false);
   });
 
   return (
     <FormLayout title={title} error={error}>
       <Form {...form}>
         <form onSubmit={handleSubmit}>
-          <LoanFormFields lenders={lenders} isEditMode={isEditMode} currentLoanId={initialData?.id} />
+          <LoanFormFields
+            lenders={lenders}
+            isEditMode={isEditMode}
+            currentLoanId={initialData?.id}
+            missingInvestmentTypeWarning={missingInvestmentTypeWarning}
+          />
 
           <FormActions
             submitButtonText={submitButtonText}

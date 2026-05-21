@@ -1,10 +1,10 @@
 'use client';
 
-import { isValid } from 'date-fns';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { isValid } from 'date-fns';
 import { Plus, Scale } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { getInvestmentTypeByInterestRateAction } from '@/actions/investment-types';
 import { InvestmentTypeFormClient } from '@/components/investment-types/investment-type-form-client';
@@ -12,21 +12,46 @@ import { NotMoreThanNUnitsCapacityIndicator } from '@/components/investment-type
 import { TotalAmountCapacityIndicator } from '@/components/investment-types/total-amount-capacity-indicator';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FormSection } from '@/components/ui/form-section';
 import { calcInvestmentTypeMetrics } from '@/lib/investment-types/calc-investment-type-metrics';
 import type { LoanFormClientData } from '@/lib/schemas/loan';
-import { NumberParser } from '@/lib/utils';
+import { cn, NumberParser } from '@/lib/utils';
 import { useProject } from '../providers/project-provider';
 
 interface LoanInvestmentTypeSectionProps {
-  hasSelectedLender: boolean;
   isActive: boolean;
   currentLoanId?: string;
+  missingInvestmentTypeWarning?: boolean;
 }
 
-export function LoanInvestmentTypeSection({ hasSelectedLender, isActive, currentLoanId }: LoanInvestmentTypeSectionProps) {
+function InvestmentTypeBlock({
+  title,
+  headerSuffix,
+  children,
+}: {
+  title: string;
+  headerSuffix?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="space-y-3 rounded-lg border border-border/60 bg-muted/30 p-4">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <Scale className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <p className="text-sm font-medium">
+          {title}
+          {headerSuffix && <> – {headerSuffix}</>}
+        </p>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export function LoanInvestmentTypeSection({
+  isActive,
+  currentLoanId,
+  missingInvestmentTypeWarning = false,
+}: LoanInvestmentTypeSectionProps) {
   const t = useTranslations('dashboard.loans.investmentType');
-  const formT = useTranslations('dashboard.loans.new.form');
   const investmentTypeFormT = useTranslations('dashboard.investmentTypes.form');
   const { project } = useProject();
   const form = useFormContext<LoanFormClientData>();
@@ -94,70 +119,53 @@ export function LoanInvestmentTypeSection({ hasSelectedLender, isActive, current
     return otherLoans;
   }, [data, capacityAmount, signDate, currentLoanId]);
 
-  if (!hasSelectedLender || !hasValues) {
-    const missingFields: string[] = [];
-    if (!hasSelectedLender) missingFields.push(formT('lender'));
-    if (!signDate) missingFields.push(formT('signDate'));
-    if (interestRate === '') missingFields.push(formT('interestRate'));
-
-    return (
-      <div className="opacity-50 pointer-events-none select-none">
-        <FormSection icon={<Scale className="w-4 h-4 text-muted-foreground" />} title={t('title')}>
-          <p className="text-sm text-muted-foreground">
-            {t('missingRequirements', { fields: missingFields.join(', ') })}
-          </p>
-        </FormSection>
-      </div>
-    );
-  }
-
   if (!isActive) {
     return (
-      <FormSection icon={<Scale className="w-4 h-4 text-muted-foreground" />} title={t('title')}>
+      <InvestmentTypeBlock title={t('title')}>
         <p className="text-sm text-muted-foreground">{t('onlyForGermanLenders')}</p>
-      </FormSection>
+      </InvestmentTypeBlock>
     );
   }
 
   if (isLoading) {
     return (
-      <FormSection icon={<Scale className="w-4 h-4 text-muted-foreground" />} title={t('title')}>
+      <InvestmentTypeBlock title={t('title')}>
         <p className="text-sm text-muted-foreground">{t('loading')}</p>
-      </FormSection>
+      </InvestmentTypeBlock>
     );
   }
 
-  if (data) {
+  if (data && signDate) {
     const investmentTypeName = data.name?.trim();
     const effectiveDate = signDate instanceof Date ? signDate : new Date(signDate);
-    const metrics = calcInvestmentTypeMetrics({ limitationType: data.limitationType, loans: capacityLoans }, effectiveDate);
+    const metrics = calcInvestmentTypeMetrics(
+      { limitationType: data.limitationType, loans: capacityLoans },
+      effectiveDate,
+    );
 
     return (
-      <FormSection
-        icon={<Scale className="w-4 h-4 text-muted-foreground" />}
+      <InvestmentTypeBlock
         title={investmentTypeName ? `${t('title')} (${investmentTypeName})` : t('title')}
+        headerSuffix={t('usedCapacity')}
       >
-        <div className="space-y-6">
-          <p className="text-sm text-muted-foreground">{t('capacity')}</p>
-          {data.limitationType === 'NOT_MORE_THAN_N_UNITS' ? (
-            <NotMoreThanNUnitsCapacityIndicator currentUnits={metrics.usedCapacity} size="xlarge" />
-          ) : (
-            <TotalAmountCapacityIndicator currentAmount={metrics.usedCapacity} size="xlarge" />
-          )}
-        </div>
-      </FormSection>
+        {data.limitationType === 'NOT_MORE_THAN_N_UNITS' ? (
+          <NotMoreThanNUnitsCapacityIndicator currentUnits={metrics.usedCapacity} size="small" />
+        ) : (
+          <TotalAmountCapacityIndicator currentAmount={metrics.usedCapacity} size="small" />
+        )}
+      </InvestmentTypeBlock>
     );
   }
 
   return (
-    <FormSection icon={<Scale className="w-4 h-4 text-muted-foreground" />} title={t('title')}>
-      <p className="text-sm text-muted-foreground mb-3">
+    <InvestmentTypeBlock title={t('title')}>
+      <p className={cn('text-sm', missingInvestmentTypeWarning ? 'text-destructive' : 'text-muted-foreground')}>
         {t.rich('noInvestmentType', {
           strong: (chunks) => <strong>{chunks}</strong>,
         })}
       </p>
-      <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => setIsDialogOpen(true)}>
-        <Plus className="w-4 h-4 mr-2" />
+      <Button type="button" variant="outline" size="sm" onClick={() => setIsDialogOpen(true)}>
+        <Plus className="mr-2 h-4 w-4" />
         {t('createNow')}
       </Button>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -178,6 +186,6 @@ export function LoanInvestmentTypeSection({ hasSelectedLender, isActive, current
           />
         </DialogContent>
       </Dialog>
-    </FormSection>
+    </InvestmentTypeBlock>
   );
 }
