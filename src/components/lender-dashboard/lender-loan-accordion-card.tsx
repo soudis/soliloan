@@ -2,14 +2,14 @@
 
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
-import { Mail, Phone } from 'lucide-react';
+import { ChevronDown, Mail, Phone } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { ProjectLogo } from '@/components/dashboard/project-logo';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { Button } from '@/components/ui/button';
 import { InfoItem } from '@/components/ui/info-item';
-import { formatCurrency, formatPercentage, getLenderName } from '@/lib/utils';
+import { cn, formatCurrency, formatPercentage, getLenderName } from '@/lib/utils';
 import { formatAddressPlace } from '@/lib/utils/format';
 import { splitIbanIntoGroups } from '@/lib/utils/iban';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
@@ -120,12 +120,21 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
               />
             </div>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-t pt-3">
             <div>
               <div className="text-xs text-muted-foreground">{tMy('balance')}</div>
               <div className="text-xl font-semibold tabular-nums">{formatCurrency(loan.balance)}</div>
             </div>
-            <LoanStatusBadge status={loan.status} />
+            <ChevronDown
+              className={cn(
+                'h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200',
+                isOpen && 'rotate-180',
+              )}
+              aria-hidden
+            />
+            <div className="justify-self-end">
+              <LoanStatusBadge status={loan.status} />
+            </div>
           </div>
         </div>
       </div>
