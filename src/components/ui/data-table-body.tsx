@@ -51,14 +51,18 @@ export function DataTableBody<TData>({
                         header.column.columnDef.meta?.style?.textAlign &&
                           `text-${header.column.columnDef.meta.style.textAlign}`,
                         'bg-background',
-                        fillHeight && 'sticky top-0 z-10 shadow-[inset_0_-1px_0_0_var(--border)]',
+                        fillHeight && 'sticky top-0 z-20 shadow-[inset_0_-1px_0_0_var(--border)]',
                         header.column.columnDef.meta?.fixed &&
                           cn(
                             'sticky right-0 before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
-                            fillHeight ? 'z-20' : 'z-10',
+                            fillHeight ? 'z-30' : 'z-10',
                           ),
-                      header.column.columnDef.meta?.bulkSelectColumn &&
-                        'relative w-10 min-w-[2.5rem] max-w-[2.5rem] !p-0 text-center align-middle',
+                        header.column.columnDef.meta?.bulkSelectColumn &&
+                          cn(
+                            'w-10 min-w-[2.5rem] max-w-[2.5rem] !p-0 text-center align-middle',
+                            !fillHeight && 'relative',
+                            fillHeight && 'z-20',
+                          ),
                       header.column.columnDef.meta?.actionsColumn &&
                         'w-9 min-w-[2.25rem] max-w-[2.25rem] !p-0 text-center align-middle',
                     )}
