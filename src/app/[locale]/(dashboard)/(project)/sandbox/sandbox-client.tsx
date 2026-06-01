@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import { ActionButton } from '@/components/ui/action-button';
 import { DonutIndicator } from '@/components/ui/donut-indicator';
-import { GridIndicator5x4 } from '@/components/ui/grid-indicator-5x4';
+import { GridIndicator } from '@/components/ui/grid-indicator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -199,12 +199,12 @@ export function SandboxClient() {
 
       <Separator />
 
-      {/* GridIndicator5x4 */}
-      <Section title="GridIndicator5x4">
+      {/* GridIndicator */}
+      <Section title="GridIndicator">
         <Showcase label="Interaktiv">
           <div className="flex items-center gap-6">
             <div className="h-24 w-24">
-              <GridIndicator5x4 value={gridValue} className="h-full w-full" />
+              <GridIndicator value={gridValue} rows={5} cols={4} className="h-full w-full" />
             </div>
             <div className="space-y-2">
               <p className="text-sm font-medium tabular-nums">{gridValue} / 20</p>

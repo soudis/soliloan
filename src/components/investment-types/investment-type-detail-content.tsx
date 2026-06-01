@@ -1,8 +1,8 @@
 'use client';
 
-import { LimitationType, type InvestmentType, type Lender, type Loan } from '@prisma/client';
-import { format } from 'date-fns';
-import { Pencil, Trash2 } from 'lucide-react';
+import { type InvestmentType, type Lender, LimitationType, type Loan } from '@prisma/client';
+import { format, isValid } from 'date-fns';
+import { Calendar, Pencil, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
@@ -21,6 +21,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { DonutIndicator } from '@/components/ui/donut-indicator';
+import { GridIndicator } from '@/components/ui/grid-indicator';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useRouter } from '@/i18n/navigation';
@@ -28,11 +30,10 @@ import {
   calcInvestmentTypeMetrics,
   type InvestmentTypeMetrics,
 } from '@/lib/investment-types/calc-investment-type-metrics';
-import { formatCurrency, formatDateShort, getLenderName } from '@/lib/utils';
+import { MAX_TOTAL_AMOUNT_EUR, MAX_UNITS } from '@/lib/schemas/investment-type';
+import { cn, formatCurrency, formatDateShort, getLenderName } from '@/lib/utils';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { LimitationTypeBadge } from './limitation-type-badge';
-import { NotMoreThanNUnitsCapacityIndicator } from './not-more-than-n-units-capacity-indicator';
-import { TotalAmountCapacityIndicator } from './total-amount-capacity-indicator';
 
 const LOAN_FILTERS = ['active', 'inactive', 'all'] as const;
 type LoanTimeframeFilter = (typeof LOAN_FILTERS)[number];
@@ -73,17 +74,16 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
       ? initialMetrics
       : calcInvestmentTypeMetrics(investmentType, effectiveDateValue);
   const isTotalAmountOverTimePeriod = investmentType.limitationType === LimitationType.TOTAL_AMOUNT_OVER_TIME_PERIOD;
-  const effectiveDateLabel = formatDateShort(effectiveDateValue, locale);
   const relevantLoanIds = new Set(metrics.effectiveLoans.map((loan) => loan.id));
   const relevantLoans = investmentType.loans.filter((loan) => relevantLoanIds.has(loan.id));
   const loansOutsideTimeframe = investmentType.loans.filter((loan) => !relevantLoanIds.has(loan.id));
 
   const loanFilterDescription = isTotalAmountOverTimePeriod
     ? loanFilter === 'active'
-      ? t('detail.relevantLoansDescription', { effectiveDate: effectiveDateLabel })
+      ? t('detail.relevantLoansDescription')
       : loanFilter === 'inactive'
-        ? t('detail.loansOutsideTimeframeDescription', { effectiveDate: effectiveDateLabel })
-        : t('detail.allLoansDescription', { effectiveDate: effectiveDateLabel })
+        ? t('detail.loansOutsideTimeframeDescription')
+        : t('detail.allLoansDescription')
     : undefined;
 
   const handleDelete = async () => {
@@ -112,25 +112,6 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
         </Button>
       </div>
 
-      {needsEffectiveDate && (
-        <div className="flex items-center justify-end gap-3">
-          <label htmlFor="effectiveDate" className="text-sm font-medium whitespace-nowrap">
-            {t('effectiveDate')}
-          </label>
-          <Input
-            id="effectiveDate"
-            type="date"
-            value={effectiveDate}
-            onChange={(e) => {
-              if (e.target.value) {
-                setEffectiveDate(e.target.value);
-              }
-            }}
-            className="w-auto"
-          />
-        </div>
-      )}
-
       <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
         <section className="flex flex-col rounded-lg border p-6">
           <h2 className="text-sm font-medium text-muted-foreground">{t('detail.information')}</h2>
@@ -154,17 +135,9 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
           <div className="mt-6 flex flex-1 items-center justify-center md:justify-start">
             <div className="w-full">
               {investmentType.limitationType === 'NOT_MORE_THAN_N_UNITS' ? (
-                <NotMoreThanNUnitsCapacityIndicator
-                  currentUnits={metrics.usedCapacity}
-                  size="large"
-                  className="justify-center md:justify-start"
-                />
+                <NotMoreThanNUnitsCapacityIndicator currentUnits={metrics.usedCapacity} />
               ) : (
-                <TotalAmountCapacityIndicator
-                  currentAmount={metrics.usedCapacity}
-                  size="large"
-                  className="justify-center md:justify-start"
-                />
+                <TotalAmountCapacityIndicator currentAmount={metrics.usedCapacity} effectiveDate={effectiveDateValue} />
               )}
             </div>
           </div>
@@ -174,19 +147,37 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">{t('detail.loans')}</h2>
         {isTotalAmountOverTimePeriod && (
-          <div className="flex flex-wrap items-center gap-1">
-            {LOAN_FILTERS.map((key) => (
-              <Button
-                key={key}
-                type="button"
-                size="sm"
-                variant={loanFilter === key ? 'default' : 'outline'}
-                className="text-xs"
-                onClick={() => setLoanFilter(key)}
-              >
-                {t(`detail.loanFilter.${key}`)}
-              </Button>
-            ))}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div className="flex flex-wrap items-center gap-1">
+              {LOAN_FILTERS.map((key) => (
+                <Button
+                  key={key}
+                  type="button"
+                  size="sm"
+                  variant={loanFilter === key ? 'default' : 'outline'}
+                  className="text-xs"
+                  onClick={() => setLoanFilter(key)}
+                >
+                  {t(`detail.loanFilter.${key}`)}
+                </Button>
+              ))}
+            </div>
+            <div className="ml-auto flex items-center gap-3">
+              <label htmlFor="effectiveDate" className="text-sm font-medium whitespace-nowrap">
+                {t('effectiveDate')}
+              </label>
+              <Input
+                id="effectiveDate"
+                type="date"
+                value={effectiveDate}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    setEffectiveDate(e.target.value);
+                  }
+                }}
+                className="w-auto"
+              />
+            </div>
           </div>
         )}
         {loanFilterDescription && (
@@ -214,6 +205,9 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
           projectId={project.id}
           locale={locale}
           t={t}
+          allowSignDateSelection={isTotalAmountOverTimePeriod}
+          effectiveDate={effectiveDate}
+          onSignDateSelect={setEffectiveDate}
         />
       </section>
 
@@ -251,18 +245,78 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
   );
 }
 
+function TotalAmountCapacityIndicator({
+  currentAmount,
+  effectiveDate,
+}: {
+  currentAmount: number;
+  effectiveDate?: Date | null;
+}) {
+  const t = useTranslations('dashboard.investmentTypes.capacity');
+  const investmentTypesT = useTranslations('dashboard.investmentTypes');
+  const locale = useLocale();
+
+  return (
+    <div className="flex w-full min-w-0 flex-wrap items-center justify-center gap-x-6 gap-y-3 md:justify-start">
+      <div className="flex shrink-0 items-center self-center">
+        <DonutIndicator value={currentAmount} limit={MAX_TOTAL_AMOUNT_EUR} className="h-40 w-40">
+          <span className="text-lg font-semibold">€</span>
+        </DonutIndicator>
+      </div>
+      <div className="flex min-w-0 max-w-full shrink-0 flex-col justify-center self-center text-lg sm:text-xl">
+        <p className="font-semibold tabular-nums">
+          {formatCurrency(currentAmount)} / {formatCurrency(MAX_TOTAL_AMOUNT_EUR)}
+        </p>
+        <p className="mt-1 text-base text-muted-foreground">{t('totalAmount')}</p>
+        {effectiveDate && isValid(effectiveDate) && (
+          <p className="mt-4 flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Calendar className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            <span>
+              {investmentTypesT('effectiveDate')}: {formatDateShort(effectiveDate, locale)}
+            </span>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function NotMoreThanNUnitsCapacityIndicator({ currentUnits }: { currentUnits: number }) {
+  const t = useTranslations('dashboard.investmentTypes.capacity');
+
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-8 md:justify-start">
+      <div className="mr-2 shrink-0">
+        <GridIndicator value={currentUnits} rows={4} cols={5} className="h-40 w-[12.5rem] gap-1.5" />
+      </div>
+      <div>
+        <p className="text-lg font-semibold tabular-nums sm:text-xl">
+          {currentUnits} / {MAX_UNITS}
+        </p>
+        <p className="mt-0.5 text-base text-muted-foreground">{t('units')}</p>
+      </div>
+    </div>
+  );
+}
+
 function LoanTableSection({
   emptyMessage,
   loans,
   projectId,
   locale,
   t,
+  allowSignDateSelection = false,
+  effectiveDate,
+  onSignDateSelect,
 }: {
   emptyMessage: string;
   loans: LoanWithLender[];
   projectId: string;
   locale: string;
   t: ReturnType<typeof useTranslations<'dashboard.investmentTypes'>>;
+  allowSignDateSelection?: boolean;
+  effectiveDate?: string;
+  onSignDateSelect?: (date: string) => void;
 }) {
   return (
     <div className="border rounded-md">
@@ -284,22 +338,48 @@ function LoanTableSection({
               </TableCell>
             </TableRow>
           ) : (
-            loans.map((loan) => (
-              <TableRow key={loan.id}>
-                <TableCell>
-                  <Link
-                    href={`/loans/${loan.id}/edit?projectId=${projectId}`}
-                    className="font-medium hover:underline"
-                  >
-                    #{loan.loanNumber}
-                  </Link>
-                </TableCell>
-                <TableCell>{getLenderName(loan.lender)}</TableCell>
-                <TableCell>{formatDateShort(loan.signDate, locale)}</TableCell>
-                <TableCell className="text-right">{formatCurrency(loan.amount, locale)}</TableCell>
-                <TableCell className="text-right">{loan.interestRate}%</TableCell>
-              </TableRow>
-            ))
+            loans.map((loan) => {
+              const signDateValue = format(new Date(loan.signDate), 'yyyy-MM-dd');
+              const isSelectedEffectiveDate = allowSignDateSelection && effectiveDate === signDateValue;
+
+              return (
+                <TableRow key={loan.id}>
+                  <TableCell>
+                    <Link
+                      href={`/loans/${loan.id}/edit?projectId=${projectId}`}
+                      className="font-medium hover:underline"
+                    >
+                      #{loan.loanNumber}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{getLenderName(loan.lender)}</TableCell>
+                  <TableCell>
+                    {allowSignDateSelection && onSignDateSelect ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        title={t('detail.setEffectiveDateFromSignDate')}
+                        aria-label={t('detail.setEffectiveDateFromSignDate')}
+                        aria-current={isSelectedEffectiveDate ? 'date' : undefined}
+                        onClick={() => onSignDateSelect(signDateValue)}
+                        className={cn(
+                          'h-auto px-2 py-1 font-normal tabular-nums',
+                          isSelectedEffectiveDate && 'border-primary text-primary hover:text-primary',
+                        )}
+                      >
+                        <Calendar aria-hidden />
+                        {formatDateShort(loan.signDate, locale)}
+                      </Button>
+                    ) : (
+                      formatDateShort(loan.signDate, locale)
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">{formatCurrency(loan.amount, locale)}</TableCell>
+                  <TableCell className="text-right">{loan.interestRate}%</TableCell>
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
       </Table>

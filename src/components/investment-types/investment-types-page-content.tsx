@@ -198,23 +198,6 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
         </Button>
       </div>
 
-      <div className="flex items-center justify-end gap-3">
-        <label htmlFor="effectiveDate" className="text-sm font-medium whitespace-nowrap">
-          {t('effectiveDate')}
-        </label>
-        <Input
-          id="effectiveDate"
-          type="date"
-          value={effectiveDate}
-          onChange={(e) => {
-            if (e.target.value) {
-              setEffectiveDate(e.target.value);
-            }
-          }}
-          className="w-auto"
-        />
-      </div>
-
       <DataTable
         columns={columns}
         data={tableData}
@@ -223,6 +206,24 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
         viewType={ViewType.INVESTMENT_TYPE}
         views={views}
         showFilter={true}
+        toolbarContent={
+          <div className="flex items-center gap-3">
+            <label htmlFor="effectiveDate" className="text-sm font-medium whitespace-nowrap">
+              {t('effectiveDate')}
+            </label>
+            <Input
+              id="effectiveDate"
+              type="date"
+              value={effectiveDate}
+              onChange={(e) => {
+                if (e.target.value) {
+                  setEffectiveDate(e.target.value);
+                }
+              }}
+              className="w-auto"
+            />
+          </div>
+        }
         onRowClick={(row) => {
           router.push(`/investment-types/${row.id}?projectId=${project.id}&effectiveDate=${effectiveDate}`);
         }}

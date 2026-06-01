@@ -5,13 +5,13 @@ import { useTranslations } from 'next-intl';
 import { useFormContext } from 'react-hook-form';
 import { FormField } from '@/components/form/form-field';
 import { FormNumberInput } from '@/components/form/form-number-input';
+import { DonutIndicator } from '@/components/ui/donut-indicator';
 import { FormControl, FormField as FormFieldWrapper, FormItem, FormMessage } from '@/components/ui/form';
 import { FormSection } from '@/components/ui/form-section';
+import { GridIndicator } from '@/components/ui/grid-indicator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { MAX_TOTAL_AMOUNT_EUR, MAX_UNITS, PERIOD_MONTHS } from '@/lib/schemas/investment-type';
 import { cn, formatCurrency } from '@/lib/utils';
-import { NotMoreThanNUnitsCapacityIndicator } from './not-more-than-n-units-capacity-indicator';
-import { TotalAmountCapacityIndicator } from './total-amount-capacity-indicator';
 
 interface Props {
   isInterestRateDisabled: boolean;
@@ -19,7 +19,6 @@ interface Props {
   /** Nur Anlage: Fokus auf Zinssatz, sofern das Feld nicht deaktiviert ist (z. B. fixer Zinssatz). */
   interestRateAutoFocus?: boolean;
   currentCapacityAmount: number | null;
-  currentCapacityUnits: number | null;
 }
 
 export function InvestmentTypeFormFields({
@@ -27,7 +26,6 @@ export function InvestmentTypeFormFields({
   showInterestRateDisabledHint = false,
   interestRateAutoFocus = false,
   currentCapacityAmount,
-  currentCapacityUnits,
 }: Props) {
   const t = useTranslations('dashboard.investmentTypes.form');
   const form = useFormContext();
@@ -57,7 +55,9 @@ export function InvestmentTypeFormFields({
             disabled={isInterestRateDisabled}
             autoFocus={interestRateAutoFocus && !isInterestRateDisabled}
           />
-          {showInterestRateDisabledHint && <p className="text-xs text-muted-foreground">{t('interestRateHintDisabled')}</p>}
+          {showInterestRateDisabledHint && (
+            <p className="text-xs text-muted-foreground">{t('interestRateHintDisabled')}</p>
+          )}
           <FormField name="name" label={t('name')} placeholder={t('namePlaceholder')} />
         </FormSection>
       </div>
@@ -135,7 +135,7 @@ export function InvestmentTypeFormFields({
                         </p>
                       </div>
                       <div className="flex w-full min-w-0 justify-center sm:justify-start">
-                        <NotMoreThanNUnitsCapacityIndicator currentUnits={currentCapacityUnits} />
+                        <NotMoreThanNUnitsCapacityIndicator />
                       </div>
                     </div>
                   </label>
@@ -145,6 +145,47 @@ export function InvestmentTypeFormFields({
             </FormItem>
           )}
         />
+      </div>
+    </div>
+  );
+}
+
+function TotalAmountCapacityIndicator({ currentAmount }: { currentAmount?: number | null }) {
+  const t = useTranslations('dashboard.investmentTypes.capacity');
+  const indicatorValue = currentAmount ?? 0;
+
+  return (
+    <div className="flex w-full min-w-0 flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
+      <div className="flex shrink-0 items-center self-center">
+        <DonutIndicator value={indicatorValue} limit={MAX_TOTAL_AMOUNT_EUR} className="h-28 w-28">
+          <span className="text-sm font-semibold">€</span>
+        </DonutIndicator>
+      </div>
+      <div className="flex min-w-0 max-w-full shrink-0 flex-col justify-center self-center text-sm sm:text-base">
+        <p className="font-semibold tabular-nums">
+          {currentAmount == null
+            ? `Maximal ${formatCurrency(MAX_TOTAL_AMOUNT_EUR)}`
+            : `${formatCurrency(currentAmount)} / ${formatCurrency(MAX_TOTAL_AMOUNT_EUR)}`}
+        </p>
+        <p className="text-muted-foreground">{t('totalAmount')}</p>
+      </div>
+    </div>
+  );
+}
+
+function NotMoreThanNUnitsCapacityIndicator() {
+  const t = useTranslations('dashboard.investmentTypes.capacity');
+
+  return (
+    <div className="flex w-full min-w-0 flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
+      <div className="mb-4 shrink-0">
+        <GridIndicator value={0} rows={4} cols={5} className="h-28 w-[8.75rem]" />
+      </div>
+      <div className="flex min-w-0 max-w-full shrink-0 flex-col justify-center self-center">
+        <p className="text-sm font-semibold tabular-nums sm:text-base">
+          Maximal {MAX_UNITS} {t('units')}
+        </p>
+        <p className="text-muted-foreground">Zeitlich unbegrenzt</p>
       </div>
     </div>
   );

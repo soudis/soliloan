@@ -7,7 +7,7 @@ import { isEqual } from 'lodash';
 import { ChevronDown, Save, SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
-import { useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { createViewAction } from '@/actions/views/mutations/create-view';
 import { deleteViewAction } from '@/actions/views/mutations/delete-view';
 import { updateViewAction } from '@/actions/views/mutations/update-view';
@@ -45,6 +45,7 @@ interface DataTableHeaderProps<TData> {
   tableState: TableUrlState;
   setTableState: SetTableUrlState;
   allowSidebarViews?: boolean;
+  toolbarContent?: ReactNode;
 }
 
 export function DataTableHeader<TData>({
@@ -59,6 +60,7 @@ export function DataTableHeader<TData>({
   tableState,
   setTableState,
   allowSidebarViews = false,
+  toolbarContent,
 }: DataTableHeaderProps<TData>) {
   const projectId = useProjectId();
   const router = useRouter();
@@ -186,9 +188,9 @@ export function DataTableHeader<TData>({
 
   return (
     <>
-      <div className="flex items-center py-4">
+      <div className="flex flex-wrap items-center gap-3 py-4">
         {showFilter && (
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-center gap-3">
             <Input
               placeholder={t('globalFilter') || 'Search all columns...'}
               value={tableState.globalFilter}
@@ -197,6 +199,7 @@ export function DataTableHeader<TData>({
               }}
               className="max-w-sm bg-background dark:bg-background"
             />
+            {toolbarContent}
           </div>
         )}
         <div className="ml-auto flex items-center space-x-2">

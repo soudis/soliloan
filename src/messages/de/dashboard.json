@@ -199,6 +199,9 @@
         "success": "Kreditgeber*in erfolgreich erstellt"
       }
     },
+    "sanityChecks": {
+      "countryChangeToGermany": "Wenn sich das Land der Kreditgeber*in ändert, dann gilt dies auch für bestehende Kredite. Wir empfehlen nicht das Land zu ändern, sondern eine neue Kreditgeber*in anzulegen."
+    },
     "edit": {
       "title": "Kreditgeber*in bearbeiten",
       "form": {
@@ -354,6 +357,10 @@
         "submit": "Kredit erstellen",
         "submitting": "Wird erstellt..."
       }
+    },
+    "sanityChecks": {
+      "investmentTypeCapacityExceededTotalAmount": "Die Kapazität der Anlageart ist überschritten ({used} von maximal {limit}).",
+      "investmentTypeCapacityExceededUnits": "Die maximale Anzahl an Anlagen würde durch diesen Kredit überschritten ({used} von maximal {limit})."
     },
     "investmentType": {
       "title": "Anlageart",
@@ -726,7 +733,7 @@
     "create": "Anlageart erstellen",
     "table": {
       "name": "Name",
-      "limitationType": "Art der Begrenzung",
+      "limitationType": "Bagatellgrenze",
       "interestRate": "Zinssatz",
       "numberOfLoans": "Kredite",
       "totalAmount": "Summe",
@@ -742,12 +749,12 @@
       "loans": "Zugeordnete Kredite",
       "noLoans": "Keine Kredite zugeordnet.",
       "relevantLoans": "Relevante Kredite",
-      "relevantLoansDescription": "Für die Kapazität der Anlageart zum Stichtag ({effectiveDate}) sind Kredite relevant die innerhalb von 12 Monate vor oder nach dem Stichtag liegen.",
+      "relevantLoansDescription": "Für die Kapazität der Anlageart zum Stichtag sind nur Kredite relevant, die bis zu 12 Monate vor oder nach dem Stichtag liegen.",
       "noRelevantLoans": "Keine relevanten Kredite im Zeitraum.",
       "loansOutsideTimeframe": "Kredite außerhalb des Zeitraums",
-      "loansOutsideTimeframeDescription": "Folgende Kredite sind Teil der Anlageart, aber haben zum Stichtag ({effectiveDate}) keinen Einfluss auf die Kapazität.",
+      "loansOutsideTimeframeDescription": "Folgende Kredite sind Teil der Anlageart, haben aber zum Stichtag keinen Einfluss auf die Kapazität.",
       "noLoansOutsideTimeframe": "Keine Kredite außerhalb des Zeitraums.",
-      "allLoansDescription": "Alle zugeordneten Kredite. Auch solche die zum Stichtag ({effectiveDate}) keinen Einfluss auf die Kapazität haben.",
+      "allLoansDescription": "Alle zugeordneten Kredite. Auch solche, die zum Stichtag keinen Einfluss auf die Kapazität haben.",
       "loanFilter": {
         "active": "Relevant",
         "all": "Alle",
@@ -756,6 +763,7 @@
       "loanNumber": "Nummer",
       "lender": "Kreditgeber*in",
       "signDate": "Vertragsdatum",
+      "setEffectiveDateFromSignDate": "Als Stichtag setzen",
       "amount": "Betrag",
       "interestRate": "Zinssatz",
       "confirmDelete": "Anlageart löschen?",
@@ -774,7 +782,7 @@
       "interestRateHintDisabled": "Der Zinssatz kann nicht geändert werden, da bereits Kredite zugeordnet sind.",
       "name": "Name",
       "namePlaceholder": "Optionaler Name",
-      "limitationType": "Art der Begrenzung",
+      "limitationType": "Bagatellgrenze",
       "limitationTypeSectionDescription": "Welche Ausnahmeregelung soll für diese Anlegeart genutzt werden?",
       "limitationTypeNotMoreThanNUnits": "Begrenzte Anzahl der Anlagen",
       "limitationTypeNotMoreThanNUnitsDescription": "Es dürfen nicht mehr als {limit} Anlagen dieser Anlageart existieren.",

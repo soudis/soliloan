@@ -14,7 +14,7 @@ import {
 } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useTableUrlState } from '@/lib/hooks/use-table-url-state';
 import { cn } from '@/lib/utils';
 
@@ -148,6 +148,7 @@ interface DataTableProps<TData, TValue> {
   /** Lender/loan: offer "pin to sidebar" in save dialog. */
   allowSidebarViews?: boolean;
   getRowId?: (row: TData) => string;
+  toolbarContent?: ReactNode;
   /** Fill parent height: toolbar and pagination stay fixed; table body scrolls vertically. */
   fillHeight?: boolean;
 }
@@ -169,6 +170,7 @@ export function DataTable<TData, TValue>({
   actions,
   bulkActions,
   getRowId = (row) => (row as Record<string, unknown>).id as string,
+  toolbarContent,
   fillHeight = false,
 }: DataTableProps<TData, TValue>) {
   const t = useTranslations('dataTable');
@@ -421,6 +423,7 @@ export function DataTable<TData, TValue>({
             tableState={tableState}
             setTableState={setTableState}
             allowSidebarViews={allowSidebarViews}
+            toolbarContent={toolbarContent}
           />
         </div>
       )}

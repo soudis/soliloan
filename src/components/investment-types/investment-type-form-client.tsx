@@ -112,7 +112,6 @@ export function InvestmentTypeFormClient({
             showInterestRateDisabledHint={hasLoans}
             interestRateAutoFocus={!isEditMode && !fixInterestRate}
             currentCapacityAmount={null}
-            currentCapacityUnits={null}
           />
           <FormActions
             submitButtonText={t('submit')}

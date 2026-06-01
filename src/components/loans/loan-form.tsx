@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { getLendersByProjectAction } from '@/actions/lenders';
+import { FormSanityChecksProvider } from '@/components/form/form-sanity-checks-provider';
 import { Form } from '@/components/ui/form';
 import { FormActions } from '@/components/ui/form-actions';
 import { FormLayout } from '@/components/ui/form-layout';
@@ -109,23 +110,25 @@ export function LoanForm({
 
   return (
     <FormLayout title={title} error={error}>
-      <Form {...form}>
-        <form onSubmit={handleSubmit}>
-          <LoanFormFields
-            lenders={lenders}
-            isEditMode={isEditMode}
-            currentLoanId={initialData?.id}
-            missingInvestmentTypeWarning={missingInvestmentTypeWarning}
-          />
+      <FormSanityChecksProvider>
+        <Form {...form}>
+          <form onSubmit={handleSubmit}>
+            <LoanFormFields
+              lenders={lenders}
+              isEditMode={isEditMode}
+              currentLoanId={initialData?.id}
+              missingInvestmentTypeWarning={missingInvestmentTypeWarning}
+            />
 
-          <FormActions
-            submitButtonText={submitButtonText}
-            submittingButtonText={submittingButtonText}
-            cancelButtonText={cancelButtonText}
-            isLoading={isLoading}
-          />
-        </form>
-      </Form>
+            <FormActions
+              submitButtonText={submitButtonText}
+              submittingButtonText={submittingButtonText}
+              cancelButtonText={cancelButtonText}
+              isLoading={isLoading}
+            />
+          </form>
+        </Form>
+      </FormSanityChecksProvider>
     </FormLayout>
   );
 }

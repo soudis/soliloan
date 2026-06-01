@@ -4,18 +4,26 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { isValid } from 'date-fns';
 import { Plus, Scale } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { getInvestmentTypeByInterestRateAction } from '@/actions/investment-types';
+import { useFormSanityChecks } from '@/components/form/form-sanity-checks-provider';
 import { InvestmentTypeFormClient } from '@/components/investment-types/investment-type-form-client';
-import { NotMoreThanNUnitsCapacityIndicator } from '@/components/investment-types/not-more-than-n-units-capacity-indicator';
-import { TotalAmountCapacityIndicator } from '@/components/investment-types/total-amount-capacity-indicator';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DonutIndicator } from '@/components/ui/donut-indicator';
+import { GridIndicator } from '@/components/ui/grid-indicator';
 import { calcInvestmentTypeMetrics } from '@/lib/investment-types/calc-investment-type-metrics';
+import {
+  buildCapacityLoansForLoanForm,
+  evaluateInvestmentTypeCapacitySanityCheck,
+} from '@/lib/investment-types/investment-type-capacity-sanity-check';
+import { MAX_TOTAL_AMOUNT_EUR, MAX_UNITS } from '@/lib/schemas/investment-type';
 import type { LoanFormClientData } from '@/lib/schemas/loan';
-import { cn, NumberParser } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { useProject } from '../providers/project-provider';
+
+const CAPACITY_EXCEEDED_WARNING_ID = 'investment-type-capacity-exceeded';
 
 interface LoanInvestmentTypeSectionProps {
   isActive: boolean;
@@ -33,7 +41,7 @@ function InvestmentTypeBlock({
   children: ReactNode;
 }) {
   return (
-    <div className="space-y-3 rounded-lg border border-border/60 bg-muted/30 p-4">
+    <div className="space-y-3 rounded-lg border border-border/60 p-4">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <Scale className="h-4 w-4 shrink-0 text-muted-foreground" />
         <p className="text-sm font-medium">
@@ -46,14 +54,54 @@ function InvestmentTypeBlock({
   );
 }
 
+function TotalAmountCapacityIndicator({ currentAmount }: { currentAmount: number }) {
+  const t = useTranslations('dashboard.investmentTypes.capacity');
+
+  return (
+    <div className="flex w-full min-w-0 flex-wrap items-center justify-center gap-x-5 gap-y-3 sm:justify-start">
+      <div className="m-1 flex shrink-0 items-center self-center">
+        <DonutIndicator value={currentAmount} limit={MAX_TOTAL_AMOUNT_EUR} className="h-20 w-20">
+          <span className="text-sm font-semibold">€</span>
+        </DonutIndicator>
+      </div>
+      <div className="flex min-w-0 max-w-full shrink-0 flex-col justify-center self-center text-sm sm:text-base">
+        <p className="font-semibold tabular-nums">
+          {formatCurrency(currentAmount)} / {formatCurrency(MAX_TOTAL_AMOUNT_EUR)}
+        </p>
+        <p className="text-muted-foreground">{t('totalAmount')}</p>
+      </div>
+    </div>
+  );
+}
+
+function NotMoreThanNUnitsCapacityIndicator({ currentUnits }: { currentUnits?: number | null }) {
+  const t = useTranslations('dashboard.investmentTypes.capacity');
+  const indicatorValue = currentUnits ?? 0;
+
+  return (
+    <div className="flex w-full flex-wrap items-center justify-center gap-5 sm:justify-start">
+      <div className="shrink-0 p-3 pr-1">
+        <GridIndicator value={indicatorValue} rows={4} cols={5} className="h-20 w-[6.25rem] gap-0.5" />
+      </div>
+      <div className="text-center sm:text-left">
+        <p className="text-lg font-semibold tabular-nums">
+          {currentUnits} / {MAX_UNITS} {t('units')}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function LoanInvestmentTypeSection({
   isActive,
   currentLoanId,
   missingInvestmentTypeWarning = false,
 }: LoanInvestmentTypeSectionProps) {
   const t = useTranslations('dashboard.loans.investmentType');
+  const sanityT = useTranslations('dashboard.loans.sanityChecks');
   const investmentTypeFormT = useTranslations('dashboard.investmentTypes.form');
   const { project } = useProject();
+  const { setWarning } = useFormSanityChecks();
   const form = useFormContext<LoanFormClientData>();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -77,47 +125,64 @@ export function LoanInvestmentTypeSection({
     enabled: isActive && hasValues,
   });
 
-  const capacityAmount = data?.limitationType === 'TOTAL_AMOUNT_OVER_TIME_PERIOD' ? amount : null;
-
   const capacityLoans = useMemo(() => {
     if (!data || !signDate) return [];
 
+    return buildCapacityLoansForLoanForm({
+      limitationType: data.limitationType,
+      loans: data.loans,
+      signDate,
+      amount,
+      currentLoanId,
+    });
+  }, [data, signDate, amount, currentLoanId]);
+
+  const capacityMetrics = useMemo(() => {
+    if (!data || !signDate) return null;
+
     const effectiveDate = signDate instanceof Date ? signDate : new Date(signDate);
-    const isTotalAmountLimitation = data.limitationType === 'TOTAL_AMOUNT_OVER_TIME_PERIOD';
+    if (!isValid(effectiveDate)) return null;
 
-    const otherLoans = data.loans
-      .filter((loan) => !currentLoanId || loan.id !== currentLoanId)
-      .map((loan) => ({
-        id: loan.id,
-        amount: loan.amount,
-        signDate: new Date(loan.signDate),
-      }));
+    return calcInvestmentTypeMetrics(
+      { limitationType: data.limitationType, loans: capacityLoans },
+      effectiveDate,
+    );
+  }, [data, signDate, capacityLoans]);
 
-    if (!isValid(effectiveDate)) {
-      return otherLoans;
+  useEffect(() => {
+    if (!isActive || isLoading || !data || !signDate) {
+      setWarning(CAPACITY_EXCEEDED_WARNING_ID, null);
+      return;
     }
 
-    if (!isTotalAmountLimitation) {
-      otherLoans.push({
-        id: currentLoanId ?? '__current__',
-        amount: 0,
-        signDate: effectiveDate,
-      });
-      return otherLoans;
+    const exceededMetrics = evaluateInvestmentTypeCapacitySanityCheck({
+      limitationType: data.limitationType,
+      loans: data.loans,
+      signDate,
+      amount,
+      currentLoanId,
+    });
+
+    if (!exceededMetrics) {
+      setWarning(CAPACITY_EXCEEDED_WARNING_ID, null);
+      return;
     }
 
-    const parser = new NumberParser('de-DE');
-    const parsedAmount = typeof capacityAmount === 'string' ? parser.parse(capacityAmount) : null;
-    if (parsedAmount && !Number.isNaN(parsedAmount) && parsedAmount > 0) {
-      otherLoans.push({
-        id: currentLoanId ?? '__current__',
-        amount: parsedAmount,
-        signDate: effectiveDate,
-      });
-    }
+    const isTotalAmount = data.limitationType === 'TOTAL_AMOUNT_OVER_TIME_PERIOD';
+    const message = isTotalAmount
+      ? sanityT('investmentTypeCapacityExceededTotalAmount', {
+          used: formatCurrency(exceededMetrics.usedCapacity),
+          limit: formatCurrency(exceededMetrics.capacityLimit),
+        })
+      : sanityT('investmentTypeCapacityExceededUnits', {
+          used: exceededMetrics.usedCapacity,
+          limit: exceededMetrics.capacityLimit,
+        });
 
-    return otherLoans;
-  }, [data, capacityAmount, signDate, currentLoanId]);
+    setWarning(CAPACITY_EXCEEDED_WARNING_ID, { id: CAPACITY_EXCEEDED_WARNING_ID, message });
+
+    return () => setWarning(CAPACITY_EXCEEDED_WARNING_ID, null);
+  }, [isActive, isLoading, data, signDate, amount, currentLoanId, setWarning, sanityT]);
 
   if (!isActive) {
     return (
@@ -135,13 +200,8 @@ export function LoanInvestmentTypeSection({
     );
   }
 
-  if (data && signDate) {
+  if (data && signDate && capacityMetrics) {
     const investmentTypeName = data.name?.trim();
-    const effectiveDate = signDate instanceof Date ? signDate : new Date(signDate);
-    const metrics = calcInvestmentTypeMetrics(
-      { limitationType: data.limitationType, loans: capacityLoans },
-      effectiveDate,
-    );
 
     return (
       <InvestmentTypeBlock
@@ -149,9 +209,9 @@ export function LoanInvestmentTypeSection({
         headerSuffix={t('usedCapacity')}
       >
         {data.limitationType === 'NOT_MORE_THAN_N_UNITS' ? (
-          <NotMoreThanNUnitsCapacityIndicator currentUnits={metrics.usedCapacity} size="small" />
+          <NotMoreThanNUnitsCapacityIndicator currentUnits={capacityMetrics.usedCapacity} />
         ) : (
-          <TotalAmountCapacityIndicator currentAmount={metrics.usedCapacity} size="small" />
+          <TotalAmountCapacityIndicator currentAmount={capacityMetrics.usedCapacity} />
         )}
       </InvestmentTypeBlock>
     );

@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { LenderRequiredField, LenderType, NotificationType } from '@prisma/client';
 import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
+import { FormSanityChecksProvider } from '@/components/form/form-sanity-checks-provider';
 import { Form } from '@/components/ui/form';
 import { FormActions } from '@/components/ui/form-actions';
 import { FormLayout } from '@/components/ui/form-layout';
@@ -19,6 +20,7 @@ import { additionalFieldDefaults, validateAdditionalFields } from '@/lib/utils/a
 import type { FormSubmitHandler } from '@/types/forms';
 import type { LenderWithRelations } from '@/types/lenders';
 import { useProject } from '../providers/project-provider';
+import { LenderCountryChangeSanityCheck } from './lender-country-change-sanity-check';
 import { LenderFormFields } from './lender-form-fields';
 
 interface LenderFormProps {
@@ -118,17 +120,27 @@ export function LenderForm({
 
   return (
     <FormLayout title={title} error={error}>
-      <Form {...form}>
-        <form onSubmit={handleSubmit}>
-          <LenderFormFields isEditMode={isEditMode} />
-          <FormActions
-            submitButtonText={submitButtonText}
-            submittingButtonText={submittingButtonText}
-            cancelButtonText={cancelButtonText}
-            isLoading={isLoading}
-          />
-        </form>
-      </Form>
+      <FormSanityChecksProvider>
+        <Form {...form}>
+          <form onSubmit={handleSubmit}>
+            <LenderFormFields isEditMode={isEditMode} />
+            {isEditMode &&
+              project.configuration.deInvestmentActCompliance &&
+              (initialData?.loans?.length ?? 0) > 0 && (
+              <LenderCountryChangeSanityCheck
+                initialCountry={initialData?.country}
+                loanCount={initialData?.loans?.length ?? 0}
+              />
+            )}
+            <FormActions
+              submitButtonText={submitButtonText}
+              submittingButtonText={submittingButtonText}
+              cancelButtonText={cancelButtonText}
+              isLoading={isLoading}
+            />
+          </form>
+        </Form>
+      </FormSanityChecksProvider>
     </FormLayout>
   );
 }
