@@ -22,7 +22,7 @@
     "typecheck": "tsc --noEmit",
     "docker:build": "docker build -f docker/app/Dockerfile -t soudis/soliloan:local --build-arg NEXT_PUBLIC_SOLILOAN_PROJECT_NAME=Soliloan --build-arg NEXT_PUBLIC_SOLILOAN_URL=http://localhost:3000 .",
     "docker:dev": "docker compose -f docker/compose.dev.yml --project-directory .",
-    "docker:dev:up": "docker compose -f docker/compose.dev.yml --project-directory . up --no-attach mailhog"
+    "docker:dev:up": "docker compose -f docker/compose.dev.yml --project-directory . up --no-attach mailpit"
   },
   "dependencies": {
     "@auth/core": "^0.41.2",
