@@ -236,6 +236,168 @@ export const calculateLoanPerYear = (
   }));
 };
 
+type LoanPeriodAccumulator = {
+  year: number;
+  month: number;
+  begin: Prisma.Decimal;
+  withdrawals: Prisma.Decimal;
+  deposits: Prisma.Decimal;
+  notReclaimed: Prisma.Decimal;
+  interest: Prisma.Decimal;
+  interestPaid: Prisma.Decimal;
+  interestBaseAmount: Prisma.Decimal;
+  end: Prisma.Decimal;
+  interestError: Prisma.Decimal;
+};
+
+const createEmptyLoanPeriod = (year: number, month: number): LoanPeriodAccumulator => ({
+  year,
+  month,
+  begin: new Prisma.Decimal(0),
+  withdrawals: new Prisma.Decimal(0),
+  deposits: new Prisma.Decimal(0),
+  notReclaimed: new Prisma.Decimal(0),
+  interest: new Prisma.Decimal(0),
+  interestPaid: new Prisma.Decimal(0),
+  interestBaseAmount: new Prisma.Decimal(0),
+  end: new Prisma.Decimal(0),
+  interestError: new Prisma.Decimal(0),
+});
+
+export const calculateLoanPerMonth = (
+  loan: LoanWithRelations,
+  toDateParameter?: Date,
+  currentTransactionId?: string,
+) => {
+  let toDate = moment(toDateParameter);
+  const repaymentDate = isRepaid(loan, toDate.toDate());
+  if (repaymentDate && loan.transactions[loan.transactions.length - 1]?.id !== currentTransactionId) {
+    toDate = moment(repaymentDate);
+  }
+
+  const method = loan.altInterestMethod ?? loan.lender.project.configuration.interestMethod;
+
+  if (!method) {
+    throw new Error('NO_INTEREST_METHOD');
+  }
+
+  const compound = method.split('_')[2] === 'COMPOUND';
+  const transactions = loan.transactions.sort(transactionSorter);
+  const firstTransaction = transactions[0];
+  if (!firstTransaction) {
+    return [];
+  }
+
+  const firstMonth = moment(firstTransaction.date).startOf('month');
+  const lastMonth = toDate.clone().startOf('month');
+  if (firstMonth.isAfter(lastMonth, 'month')) {
+    return [];
+  }
+
+  const months: LoanPeriodAccumulator[] = [
+    createEmptyLoanPeriod(firstMonth.year(), firstMonth.month() + 1),
+  ];
+
+  for (let cursor = firstMonth.clone(); cursor.isSameOrBefore(lastMonth, 'month'); cursor.add(1, 'month')) {
+    const currentMonth = months.at(-1);
+    if (!currentMonth) {
+      throw new Error('CURRENT_MONTH_NOT_FOUND');
+    }
+
+    const isLastMonth = cursor.isSame(lastMonth, 'month');
+    const monthEnd = isLastMonth ? toDate : cursor.clone().endOf('month');
+    let amount = new Prisma.Decimal(currentMonth.begin);
+    let interestBaseAmount = currentMonth.interestBaseAmount;
+    let interest = new Prisma.Decimal(0);
+    let terminationDate: Moment | undefined;
+
+    transactions
+      .filter((transaction) => moment(transaction.date).isSame(cursor, 'month'))
+      .forEach((transaction) => {
+        if (toDate.isSameOrAfter(transaction.date) && currentTransactionId !== transaction.id) {
+          amount = amount.plus(transaction.amount);
+          if (compound || transaction.type !== TransactionType.INTERESTPAYMENT) {
+            interestBaseAmount = interestBaseAmount.plus(transaction.amount);
+            if (amount.lessThanOrEqualTo(1)) {
+              terminationDate = moment(transaction.date);
+              interestBaseAmount = new Prisma.Decimal(0);
+            } else {
+              interest = interest.plus(
+                calculateInterestDaily(
+                  moment(transaction.date),
+                  monthEnd,
+                  new Prisma.Decimal(transaction.amount),
+                  new Prisma.Decimal(loan.interestRate),
+                  method,
+                ),
+              );
+            }
+          }
+          switch (transaction.type) {
+            case TransactionType.WITHDRAWAL:
+            case TransactionType.TERMINATION:
+              currentMonth.withdrawals = currentMonth.withdrawals.plus(transaction.amount);
+              break;
+            case TransactionType.DEPOSIT:
+              currentMonth.deposits = currentMonth.deposits.plus(transaction.amount);
+              break;
+            case TransactionType.NOTRECLAIMED:
+            case TransactionType.NOTRECLAIMEDPARTIAL:
+              currentMonth.notReclaimed = currentMonth.notReclaimed.plus(transaction.amount);
+              break;
+            case TransactionType.INTERESTPAYMENT:
+              currentMonth.interestPaid = currentMonth.interestPaid.plus(transaction.amount);
+              break;
+          }
+        }
+      });
+
+    interest = interest.plus(
+      calculateInterestDaily(
+        cursor.clone().startOf('month'),
+        terminationDate ?? monthEnd,
+        currentMonth.interestBaseAmount,
+        new Prisma.Decimal(loan.interestRate),
+        method,
+      ),
+    );
+
+    currentMonth.interest = new Prisma.Decimal(interest.toFixed(2));
+    currentMonth.end = new Prisma.Decimal(amount.plus(currentMonth.interest).toFixed(2));
+
+    if (!isLastMonth) {
+      const nextMonth = cursor.clone().add(1, 'month');
+      months.push({
+        ...createEmptyLoanPeriod(nextMonth.year(), nextMonth.month() + 1),
+        begin: new Prisma.Decimal(currentMonth.end),
+        interestBaseAmount: interestBaseAmount.plus(compound ? currentMonth.interest : 0),
+      });
+    } else if (
+      terminationDate &&
+      loan.transactions.at(-1)?.id !== currentTransactionId &&
+      !currentMonth.end.equals(0)
+    ) {
+      currentMonth.interestError = currentMonth.interest.minus(currentMonth.end);
+      currentMonth.interest = currentMonth.interest.minus(currentMonth.end);
+      currentMonth.end = new Prisma.Decimal(0);
+    }
+  }
+
+  return months.map((entry) => ({
+    year: entry.year,
+    month: entry.month,
+    begin: entry.begin,
+    end: entry.end,
+    withdrawals: entry.withdrawals,
+    deposits: entry.deposits,
+    notReclaimed: entry.notReclaimed,
+    interestPaid: entry.interestPaid,
+    interestBaseAmount: entry.interestBaseAmount,
+    interest: entry.interest,
+    interestError: entry.interestError,
+  }));
+};
+
 const calculateNumbersToDate = (
   loan: LoanWithRelations,
   toDate: Date | undefined = undefined,
