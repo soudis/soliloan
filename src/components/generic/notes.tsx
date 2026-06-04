@@ -14,6 +14,7 @@ import { Button } from '../ui/button';
 import { ConfirmDialog } from './confirm-dialog';
 import { LoanReferenceLink } from './loan-reference-link';
 import { NoteDialog } from './note-dialog';
+import { NoteRichTextRenderer } from './notes/note-rich-text-renderer';
 
 interface NotesProps {
   notes: (Note & {
@@ -69,7 +70,7 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
                   <FileText className={`h-4 w-4 ${note.public ? 'text-amber-500' : 'text-blue-500'}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm whitespace-pre-line">{note.text}</div>
+                  <NoteRichTextRenderer content={note.text} />
                 </div>
               </div>
 
