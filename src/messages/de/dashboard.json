@@ -19,7 +19,10 @@
     "fieldWidth": "Breite",
     "width": {
       "quarter": "Viertel",
+      "third": "Drittel",
       "half": "Halb",
+      "twoThirds": "Zwei Drittel",
+      "threeQuarters": "Drei Viertel",
       "full": "Volle Breite"
     },
     "deleteWidget": "Widget entfernen",

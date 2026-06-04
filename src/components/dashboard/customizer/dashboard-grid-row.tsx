@@ -23,7 +23,7 @@ export function DashboardGridRow({ row }: { row: DashboardLayoutRow }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-2 gap-4 p-0.5 md:grid-cols-4">
+      <div className="grid grid-cols-12 gap-4 p-0.5">
         <SortableContext items={widgetIds} strategy={rectSortingStrategy}>
           {row.widgets.map((widget) => (
             <DashboardWidgetSlot key={widget.id} widget={widget} rowId={row.id} />

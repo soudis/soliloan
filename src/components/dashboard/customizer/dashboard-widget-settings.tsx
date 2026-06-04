@@ -12,8 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { findWidgetLocation, removeWidget, updateWidget } from '@/lib/dashboard/layout-editor';
-import { DEFAULT_WIDTH_BY_TYPE } from '@/lib/dashboard/layout-utils';
-import type { DashboardWidgetType, DashboardWidgetWidth } from '@/types/dashboard-layout';
+import { DEFAULT_WIDTH_BY_TYPE, WIDGET_WIDTH_SETTINGS_ORDER } from '@/lib/dashboard/layout-utils';
+import { DASHBOARD_WIDGET_WIDTHS, type DashboardWidgetType, type DashboardWidgetWidth } from '@/types/dashboard-layout';
 import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { parsePieChartConfig, type PieChartChartSize } from '@/types/dashboard-widgets/pie-chart';
 import { parseStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
@@ -22,7 +22,7 @@ import { HistoryTableSettings } from './history-table-settings';
 import { PieChartSettings } from './pie-chart-settings';
 import { StatWidgetSettings } from './stat-widget-settings';
 
-const settingsWidthSchema = z.enum(['quarter', 'half', 'full']);
+const settingsWidthSchema = z.enum(DASHBOARD_WIDGET_WIDTHS);
 
 type SettingsFormValues = {
   title: string;
@@ -133,9 +133,11 @@ export function DashboardWidgetSettings() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="quarter">{t('width.quarter')}</SelectItem>
-                      <SelectItem value="half">{t('width.half')}</SelectItem>
-                      <SelectItem value="full">{t('width.full')}</SelectItem>
+                      {WIDGET_WIDTH_SETTINGS_ORDER.map((width) => (
+                        <SelectItem key={width} value={width}>
+                          {t(`width.${width}`)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

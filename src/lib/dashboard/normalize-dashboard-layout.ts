@@ -1,4 +1,4 @@
-import { DEFAULT_WIDTH_BY_TYPE } from '@/lib/dashboard/layout-utils';
+import { DEFAULT_WIDTH_BY_TYPE, isDashboardWidgetWidth } from '@/lib/dashboard/layout-utils';
 import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { createDefaultPieChartConfig } from '@/types/dashboard-widgets/pie-chart';
 import { createDefaultStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
@@ -6,7 +6,10 @@ import type { DashboardLayoutData, DashboardWidget, DashboardWidgetType } from '
 
 function normalizeWidget(widget: DashboardWidget & { type?: string }): DashboardWidget {
   const type = ((widget.type as string) === 'yearly_table' ? 'history_table' : widget.type) as DashboardWidgetType;
-  const width = widget.width ?? DEFAULT_WIDTH_BY_TYPE[type];
+  const width =
+    widget.width && isDashboardWidgetWidth(widget.width)
+      ? widget.width
+      : DEFAULT_WIDTH_BY_TYPE[type];
   if ((widget.type as string) === 'yearly_table') {
     return {
       ...widget,

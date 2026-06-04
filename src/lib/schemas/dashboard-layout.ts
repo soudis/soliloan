@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import { DASHBOARD_WIDGET_TYPES } from '@/types/dashboard-layout';
-import { getDesktopColspan, getRowUsedCols } from '@/lib/dashboard/layout-utils';
+import { DASHBOARD_WIDGET_TYPES, DASHBOARD_WIDGET_WIDTHS } from '@/types/dashboard-layout';
+import { DESKTOP_GRID_COLS, getDesktopColspan, getRowUsedCols } from '@/lib/dashboard/layout-utils';
 
-const dashboardWidgetWidthSchema = z.enum(['quarter', 'half', 'full']);
+const dashboardWidgetWidthSchema = z.enum(DASHBOARD_WIDGET_WIDTHS);
 
 const dashboardWidgetSchema = z
   .object({
@@ -43,7 +43,7 @@ export const dashboardLayoutDataSchema = z
   .superRefine((data, ctx) => {
     for (const [rowIndex, row] of data.rows.entries()) {
       const used = getRowUsedCols(row.widgets);
-      if (used > 4) {
+      if (used > DESKTOP_GRID_COLS) {
         ctx.addIssue({
           code: 'custom',
           message: 'dashboard.customizer.validation.rowOverflow',
@@ -51,7 +51,7 @@ export const dashboardLayoutDataSchema = z
         });
       }
       for (const [widgetIndex, widget] of row.widgets.entries()) {
-        if (getDesktopColspan(widget.width) > 4) {
+        if (getDesktopColspan(widget.width) > DESKTOP_GRID_COLS) {
           ctx.addIssue({
             code: 'custom',
             message: 'dashboard.customizer.validation.invalidWidth',

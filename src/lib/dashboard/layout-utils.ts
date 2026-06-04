@@ -1,18 +1,64 @@
 import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { createDefaultPieChartConfig } from '@/types/dashboard-widgets/pie-chart';
 import { createDefaultStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
-import type {
-  DashboardLayoutData,
-  DashboardLayoutRow,
-  DashboardWidget,
-  DashboardWidgetType,
-  DashboardWidgetWidth,
+import {
+  DASHBOARD_WIDGET_WIDTHS,
+  type DashboardLayoutData,
+  type DashboardLayoutRow,
+  type DashboardWidget,
+  type DashboardWidgetType,
+  type DashboardWidgetWidth,
 } from '@/types/dashboard-layout';
 
-export const DESKTOP_GRID_COLS = 4;
-export const MOBILE_GRID_COLS = 2;
+export const DESKTOP_GRID_COLS = 12;
+export const MOBILE_GRID_COLS = 12;
 
-const WIDTH_ORDER: DashboardWidgetWidth[] = ['full', 'half', 'quarter'];
+/** Largest first — used when shrinking to fit remaining row space */
+const WIDTH_ORDER: DashboardWidgetWidth[] = [
+  'full',
+  'threeQuarters',
+  'twoThirds',
+  'half',
+  'third',
+  'quarter',
+];
+
+/** Smallest first — width picker in settings */
+export const WIDGET_WIDTH_SETTINGS_ORDER: DashboardWidgetWidth[] = [
+  'quarter',
+  'third',
+  'half',
+  'twoThirds',
+  'threeQuarters',
+  'full',
+];
+
+const DESKTOP_COLSPAN: Record<DashboardWidgetWidth, number> = {
+  quarter: 3,
+  third: 4,
+  half: 6,
+  twoThirds: 8,
+  threeQuarters: 9,
+  full: 12,
+};
+
+const MOBILE_COLSPAN: Record<DashboardWidgetWidth, number> = {
+  quarter: 6,
+  third: 12,
+  half: 12,
+  twoThirds: 12,
+  threeQuarters: 12,
+  full: 12,
+};
+
+const WIDGET_COL_SPAN_CLASS: Record<DashboardWidgetWidth, string> = {
+  quarter: 'col-span-6 md:col-span-3',
+  third: 'col-span-12 md:col-span-4',
+  half: 'col-span-12 md:col-span-6',
+  twoThirds: 'col-span-12 md:col-span-8',
+  threeQuarters: 'col-span-12 md:col-span-9',
+  full: 'col-span-12',
+};
 
 export const DEFAULT_WIDTH_BY_TYPE: Record<DashboardWidgetType, DashboardWidgetWidth> = {
   history_table: 'full',
@@ -24,31 +70,21 @@ export const DEFAULT_WIDTH_BY_TYPE: Record<DashboardWidgetType, DashboardWidgetW
   stat: 'quarter',
 };
 
-export function getDesktopColspan(width: DashboardWidgetWidth): number {
-  switch (width) {
-    case 'quarter':
-      return 1;
-    case 'half':
-      return 2;
-    case 'full':
-      return 4;
-    default:
-      return 1;
-  }
+export function isDashboardWidgetWidth(value: unknown): value is DashboardWidgetWidth {
+  return typeof value === 'string' && (DASHBOARD_WIDGET_WIDTHS as readonly string[]).includes(value);
 }
 
-/** Tailwind col-span classes: mobile 2-col grid, desktop 4-col grid */
+export function getDesktopColspan(width: DashboardWidgetWidth): number {
+  return DESKTOP_COLSPAN[width] ?? DESKTOP_COLSPAN.quarter;
+}
+
+export function getMobileColspan(width: DashboardWidgetWidth): number {
+  return MOBILE_COLSPAN[width] ?? MOBILE_COLSPAN.quarter;
+}
+
+/** Tailwind col-span on a 12-column grid (mobile + desktop) */
 export function getWidgetColSpanClassName(width: DashboardWidgetWidth): string {
-  switch (width) {
-    case 'quarter':
-      return 'col-span-2 md:col-span-1';
-    case 'half':
-      return 'col-span-4 md:col-span-2';
-    case 'full':
-      return 'col-span-4';
-    default:
-      return 'col-span-4 md:col-span-1';
-  }
+  return WIDGET_COL_SPAN_CLASS[width] ?? WIDGET_COL_SPAN_CLASS.quarter;
 }
 
 export function getRowUsedCols(widgets: DashboardWidget[]): number {
