@@ -108,7 +108,7 @@ export function DashboardCustomizer({
   }, [activeScope]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex flex-col">
       <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-4">
           <h1 className="text-2xl font-semibold tracking-tight">{t('pageTitle')}</h1>
@@ -166,8 +166,8 @@ export function DashboardCustomizer({
         }}
       >
         <DashboardDndProvider>
-          <div className="flex min-h-0 flex-1 items-start gap-4">
-            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+          <div className="flex items-start gap-4">
+            <div className="min-w-0 flex-1">
               <DashboardGrid />
             </div>
 

@@ -27,8 +27,8 @@ export default function DashboardNavigation({
   const isProjectSwitching = useNavigationUiStore((s) => s.isProjectSwitching);
   const pathname = usePathname();
   const t = useTranslations('navigation');
+  const isDashboardPage = pathname === '/dashboard';
   const isFillHeightPage =
-    pathname === '/dashboard' ||
     pathname === '/lenders' ||
     pathname === '/loans' ||
     pathname === '/logbook' ||
@@ -60,7 +60,9 @@ export default function DashboardNavigation({
         <main
           className={cn(
             'relative flex-1 bg-[color-mix(in_oklch,var(--background)_60%,var(--muted)_40%)]',
-            isFillHeightPage ? 'flex min-h-0 flex-col overflow-hidden' : 'overflow-y-auto',
+            isFillHeightPage
+              ? 'flex min-h-0 flex-col overflow-hidden'
+              : 'min-h-0 flex-1 overflow-y-auto',
           )}
         >
           {isProjectSwitching && (
@@ -81,7 +83,11 @@ export default function DashboardNavigation({
                     'flex min-h-0 flex-1 flex-col py-8',
                     isFullWidthPage ? 'max-w-none' : showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg',
                   )
-                : cn('container py-8', showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg'),
+                : cn(
+                    'mx-auto w-full px-6 py-8',
+                    isDashboardPage || showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg',
+                    !isDashboardPage && 'container',
+                  ),
             )}
           >
             {children}
