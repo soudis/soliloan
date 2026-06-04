@@ -39,13 +39,17 @@ export function EntityFilterFieldPicker({
   fieldOptions,
   onChange,
   className,
+  translationNamespace = 'dashboard.customizer.historyTable',
+  placeholderKey = 'filterField',
 }: {
   value: string;
   fieldOptions: EntityFilterFieldOption[];
   onChange: (entity: 'loan' | 'lender', field: string) => void;
   className?: string;
+  translationNamespace?: string;
+  placeholderKey?: string;
 }) {
-  const t = useTranslations('dashboard.customizer.historyTable');
+  const t = useTranslations(translationNamespace);
   const tCommon = useTranslations('common');
   const [open, setOpen] = useState(false);
 
@@ -73,7 +77,7 @@ export function EntityFilterFieldPicker({
           aria-expanded={open}
           className={cn('h-8 w-full justify-between px-2 text-xs font-normal', className)}
         >
-          <span className="truncate">{selected?.label ?? t('filterField')}</span>
+          <span className="truncate">{selected?.label ?? t(placeholderKey)}</span>
           <ChevronsUpDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>

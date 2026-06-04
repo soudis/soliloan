@@ -17,7 +17,12 @@ const dashboardWidgetSchema = z
     config: z.record(z.string(), z.unknown()).default({}),
   })
   .superRefine((widget, ctx) => {
-    if (widget.type !== 'stat' && widget.type !== 'history_table' && !widget.title.trim()) {
+    if (
+      widget.type !== 'stat' &&
+      widget.type !== 'history_table' &&
+      widget.type !== 'pie_chart' &&
+      !widget.title.trim()
+    ) {
       ctx.addIssue({
         code: 'custom',
         message: 'dashboard.customizer.validation.titleRequired',

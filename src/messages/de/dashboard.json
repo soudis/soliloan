@@ -95,6 +95,50 @@
         "deltaRangeRequired": "Zeitraum ist für Veränderung erforderlich."
       }
     },
+    "pieChart": {
+      "filterGroupLoan": "Kredit",
+      "filterGroupLender": "Kreditgeber*in",
+      "groupByPlaceholder": "Feld wählen",
+      "chartVariant": "Diagrammform",
+      "chartVariantPie": "Kreis",
+      "chartVariantDonut": "Ring",
+      "chartSize": "Größe",
+      "chartSizeSmall": "Klein",
+      "chartSizeMedium": "Mittel",
+      "chartSizeBig": "Groß",
+      "groupBy": "Gruppierung",
+      "measure": "Kennzahl",
+      "measureAggregation": "Aggregation",
+      "measureAggregationSum": "Summe",
+      "measureAggregationCount": "Anzahl",
+      "measureAggregationAverage": "Durchschnitt",
+      "loanCountMeasureHint": "Bei „Anzahl Kredite“ entspricht Summe und Anzahl der Kredite je Gruppe.",
+      "topNCategories": "Max. Segmente (Rest → Sonstige)",
+      "numericBuckets": "Bereiche",
+      "numericBucketsHint": "Obere Grenzen eingeben (z. B. 1000, 5000). Es entstehen Bereiche bis …, dazwischen und darüber.",
+      "addBucket": "Grenze hinzufügen",
+      "removeBucket": "Grenze entfernen",
+      "dateGrouping": "Datumsgruppierung",
+      "dateGroupingOptions": {
+        "year": "Jahr",
+        "month": "Monat (Jahr-Monat)",
+        "monthOfYear": "Monat im Jahr",
+        "weekOfYear": "Kalenderwoche",
+        "dayOfWeek": "Wochentag"
+      },
+      "textTransform": "Textumwandlung",
+      "textTransformNone": "Keine",
+      "textTransformFirstChars": "Erste Zeichen",
+      "textTransformLastChars": "Letzte Zeichen",
+      "textTransformFirstWord": "Erstes Wort",
+      "textTransformCharCount": "Zeichenanzahl",
+      "textTransformCount": "Anzahl Zeichen",
+      "validation": {
+        "measureAggregation": "Für diese Kennzahl ist kein Durchschnitt möglich.",
+        "invalidBucket": "Ungültige Grenze.",
+        "duplicateBucket": "Grenzen müssen eindeutig sein."
+      }
+    },
     "placeholder": "Widget-Inhalt folgt in Kürze.",
     "dragWidget": "Widget verschieben",
     "dropHere": "Widget hier ablegen",
@@ -171,6 +215,15 @@
     },
     "stat": {
       "emptyStats": "Keine Kennzahlen konfiguriert."
+    },
+    "pieChart": {
+      "emptyData": "Keine Daten für die gewählten Einstellungen.",
+      "emptyValue": "Ohne Wert",
+      "otherCategory": "Sonstige",
+      "charCountLabel": "{count} Zeichen",
+      "numericBucketUpTo": "bis {max}",
+      "numericBucketRange": "{min} – {max}",
+      "numericBucketAbove": "über {min}"
     }
   },
   "yearlyTable": {

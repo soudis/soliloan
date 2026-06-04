@@ -8,15 +8,18 @@ import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { findWidgetLocation, removeWidget, updateWidget } from '@/lib/dashboard/layout-editor';
 import { DEFAULT_WIDTH_BY_TYPE } from '@/lib/dashboard/layout-utils';
 import type { DashboardWidgetType, DashboardWidgetWidth } from '@/types/dashboard-layout';
 import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
+import { parsePieChartConfig, type PieChartChartSize } from '@/types/dashboard-widgets/pie-chart';
 import { parseStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
 import { useDashboardLayout } from './dashboard-layout-context';
 import { HistoryTableSettings } from './history-table-settings';
+import { PieChartSettings } from './pie-chart-settings';
 import { StatWidgetSettings } from './stat-widget-settings';
 
 const settingsWidthSchema = z.enum(['quarter', 'half', 'full']);
@@ -29,7 +32,9 @@ type SettingsFormValues = {
 function createSettingsSchema(widgetType: DashboardWidgetType) {
   return z.object({
     title:
-      widgetType === 'stat' || widgetType === 'history_table' ? z.string() : z.string().min(1),
+      widgetType === 'stat' || widgetType === 'history_table' || widgetType === 'pie_chart'
+        ? z.string()
+        : z.string().min(1),
     width: settingsWidthSchema,
   });
 }
@@ -41,6 +46,7 @@ const EMPTY_SETTINGS: SettingsFormValues = {
 
 export function DashboardWidgetSettings() {
   const t = useTranslations('dashboard.customizer');
+  const tPie = useTranslations('dashboard.customizer.pieChart');
   const { layout, setLayout, selectedWidgetId, setSelectedWidgetId } = useDashboardLayout();
 
   const location = selectedWidgetId ? findWidgetLocation(layout, selectedWidgetId) : null;
@@ -136,6 +142,31 @@ export function DashboardWidgetSettings() {
                 </FormItem>
               )}
             />
+            {widget.type === 'pie_chart' ? (
+              <div className="space-y-2">
+                <Label>{tPie('chartSize')}</Label>
+                <Select
+                  value={parsePieChartConfig(widget.config).chartSize}
+                  onValueChange={(v) => {
+                    const config = parsePieChartConfig(widget.config);
+                    setLayout((prev) =>
+                      updateWidget(prev, selectedWidgetId, {
+                        config: { ...config, chartSize: v as PieChartChartSize },
+                      }),
+                    );
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="small">{tPie('chartSizeSmall')}</SelectItem>
+                    <SelectItem value="medium">{tPie('chartSizeMedium')}</SelectItem>
+                    <SelectItem value="big">{tPie('chartSizeBig')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
           </form>
         </Form>
 
@@ -155,7 +186,15 @@ export function DashboardWidgetSettings() {
             }}
           />
         ) : null}
-        {widget.type !== 'history_table' && widget.type !== 'stat' ? (
+        {widget.type === 'pie_chart' ? (
+          <PieChartSettings
+            config={parsePieChartConfig(widget.config)}
+            onConfigChange={(config) => {
+              setLayout((prev) => updateWidget(prev, selectedWidgetId, { config }));
+            }}
+          />
+        ) : null}
+        {widget.type !== 'history_table' && widget.type !== 'stat' && widget.type !== 'pie_chart' ? (
           <p className="mt-6 text-xs text-muted-foreground">{t('typeSettingsComingSoon')}</p>
         ) : null}
 

@@ -1,4 +1,5 @@
 import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
+import { createDefaultPieChartConfig } from '@/types/dashboard-widgets/pie-chart';
 import { createDefaultStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
 import type {
   DashboardLayoutData,
@@ -98,7 +99,7 @@ export function createDefaultLayoutData(): DashboardLayoutData {
 }
 
 export function widgetShowsCardHeader(widget: { type: DashboardWidgetType; title: string }): boolean {
-  if (widget.type === 'stat' || widget.type === 'history_table') {
+  if (widget.type === 'stat' || widget.type === 'history_table' || widget.type === 'pie_chart') {
     return widget.title.trim().length > 0;
   }
   return true;
@@ -119,6 +120,8 @@ export function createWidget(
         ? createDefaultHistoryTableConfig()
         : type === 'stat'
           ? createDefaultStatWidgetConfig()
-          : {},
+          : type === 'pie_chart'
+            ? createDefaultPieChartConfig()
+            : {},
   };
 }
