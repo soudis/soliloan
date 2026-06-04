@@ -42,7 +42,7 @@ export function FileDialog({ lenderId, loanId, open, loans, onOpenChange }: File
     try {
       // Get the file from the form
       const fileInput = document.getElementById('file') as HTMLInputElement;
-      if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+      if (!fileInput?.files || fileInput.files.length === 0) {
         toast.error(t('noFileSelected'));
         return;
       }

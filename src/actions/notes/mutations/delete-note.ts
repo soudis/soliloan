@@ -26,7 +26,7 @@ export const deleteNoteAction = noteAction
       },
     });
 
-    if (!note || !note.lender) {
+    if (!note?.lender) {
       throw new Error('error.note.notFound');
     }
 

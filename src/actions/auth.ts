@@ -77,7 +77,7 @@ export async function requestPasswordReset(email: string) {
       },
     });
 
-    if (!user || !user.email) {
+    if (!user?.email) {
       return { success: true }; // Return success even if user not found for security
     }
 
