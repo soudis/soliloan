@@ -5,11 +5,11 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getFilterDefinitionForField } from '@/lib/entity-filters/filter-definitions';
 import type { EntityFilter, EntityFilterFieldOption } from '@/types/entity-filters';
 
 import { EntityFilterControl } from './entity-filter-control';
+import { EntityFilterFieldPicker } from './entity-filter-field-picker';
 
 export function EntityFilterList({
   filters,
@@ -57,42 +57,16 @@ export function EntityFilterList({
       </div>
       {filters.map((filter) => {
         const definition = getFilterDefinitionForField(fieldOptions, filter.entity, filter.field);
-        const loanOptions = fieldOptions.filter((o) => o.group === 'loan');
-        const lenderOptions = fieldOptions.filter((o) => o.group === 'lender');
 
         return (
           <div key={filter.id} className="space-y-2 rounded-md border p-2">
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1 space-y-2">
-                <Select
+                <EntityFilterFieldPicker
                   value={`${filter.entity}:${filter.field}`}
-                  onValueChange={(v) => {
-                    const [entity, field] = v.split(':') as ['loan' | 'lender', string];
-                    updateFilter(filter.id, { entity, field, value: null });
-                  }}
-                >
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder={t('filterField')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>{t('filterGroupLoan')}</SelectLabel>
-                      {loanOptions.map((opt) => (
-                        <SelectItem key={`loan:${opt.field}`} value={`loan:${opt.field}`}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                    <SelectGroup>
-                      <SelectLabel>{t('filterGroupLender')}</SelectLabel>
-                      {lenderOptions.map((opt) => (
-                        <SelectItem key={`lender:${opt.field}`} value={`lender:${opt.field}`}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                  fieldOptions={fieldOptions}
+                  onChange={(entity, field) => updateFilter(filter.id, { entity, field, value: null })}
+                />
                 {definition ? (
                   <EntityFilterControl
                     definition={definition}

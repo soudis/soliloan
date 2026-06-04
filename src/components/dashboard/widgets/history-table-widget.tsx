@@ -26,8 +26,8 @@ function formatCellValue(metric: HistoryTableMetric | undefined, value: number |
 
 export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
   const t = useTranslations('dashboard.widgets.historyTable');
-  const tLoans = useTranslations('loans');
-  const tLenders = useTranslations('lenders');
+  const tLoans = useTranslations('dashboard.loans');
+  const tLenders = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
   const formatter = useFormatter();
   const { loans, toDate, project } = useDashboardData();

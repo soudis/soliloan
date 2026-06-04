@@ -1,6 +1,6 @@
 import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';
-import { loanActiveAtPeriodEnd, loanHasFirstTransactionInPeriod } from '@/lib/entity-filters/get-filter-value';
+import { loanActiveAtPeriodEnd } from '@/lib/entity-filters/get-filter-value';
 import {
   CUMULATIVE_ONLY_METRICS,
   type HistoryTableAggregation,
@@ -11,6 +11,7 @@ import type { EntityFilterFieldOption } from '@/types/entity-filters';
 
 import {
   buildHistoryPeriods,
+  buildPrecedingPeriodForStockDelta,
   buildPeriodSnapshot,
   getCumulativeNumbers,
   getPeriodNumbers,
@@ -23,8 +24,29 @@ export type HistoryTableResult = {
   cells: Record<string, Record<string, number | null>>;
 };
 
+const STOCK_COUNT_METRICS = ['loanCount', 'contractAmount'] as const;
+
 function effectiveColumnAggregation(column: HistoryTableColumnConfig): HistoryTableAggregation {
   return CUMULATIVE_ONLY_METRICS.includes(column.metric) ? 'cumulative' : column.aggregation;
+}
+
+function isStockCountDelta(column: HistoryTableColumnConfig): boolean {
+  return (
+    column.aggregation === 'delta' &&
+    STOCK_COUNT_METRICS.includes(column.metric as (typeof STOCK_COUNT_METRICS)[number])
+  );
+}
+
+/** Loans passing column filters are already matched at period end; only apply default "active" rule when unfiltered. */
+function countsAsActiveLoanAtPeriodEnd(
+  loan: DashboardLoan,
+  filters: HistoryTableColumnConfig['filters'],
+  periodEnd: Date,
+): boolean {
+  if (filters.length > 0) {
+    return true;
+  }
+  return loanActiveAtPeriodEnd(loan, periodEnd);
 }
 
 function aggregateMetric(
@@ -63,21 +85,13 @@ function aggregateMetric(
 
     switch (column.metric) {
       case 'loanCount': {
-        if (column.aggregation === 'delta') {
-          if (loanHasFirstTransactionInPeriod(loan, period.periodStart, period.periodEnd)) {
-            total += 1;
-          }
-        } else if (loanActiveAtPeriodEnd(loan, period.periodEnd)) {
+        if (countsAsActiveLoanAtPeriodEnd(loan, column.filters, period.periodEnd)) {
           total += 1;
         }
         break;
       }
       case 'contractAmount': {
-        if (column.aggregation === 'delta') {
-          if (loanHasFirstTransactionInPeriod(loan, period.periodStart, period.periodEnd)) {
-            total += Number(loan.amount);
-          }
-        } else if (loanActiveAtPeriodEnd(loan, period.periodEnd) && periodNumbers) {
+        if (countsAsActiveLoanAtPeriodEnd(loan, column.filters, period.periodEnd)) {
           total += Number(loan.amount);
         }
         break;
@@ -149,9 +163,32 @@ export function computeHistoryTable(
   }));
   const cells: Record<string, Record<string, number | null>> = {};
 
-  for (const period of periods) {
-    cells[period.key] = {};
-    for (const column of config.columns) {
+  for (const column of config.columns) {
+    if (isStockCountDelta(column)) {
+      const cumulativeColumn = { ...column, aggregation: 'cumulative' as const };
+      const cumulativeAt = (period: HistoryPeriod) =>
+        aggregateMetric(loans, cumulativeColumn, period, config, fieldOptions, commonT) ?? 0;
+
+      let previousStock = 0;
+      for (const [index, period] of periods.entries()) {
+        if (!cells[period.key]) {
+          cells[period.key] = {};
+        }
+        if (index === 0) {
+          const preceding = buildPrecedingPeriodForStockDelta(period, config.periodMode);
+          previousStock = cumulativeAt(preceding);
+        }
+        const cumulative = cumulativeAt(period);
+        cells[period.key][column.id] = cumulative - previousStock;
+        previousStock = cumulative;
+      }
+      continue;
+    }
+
+    for (const period of periods) {
+      if (!cells[period.key]) {
+        cells[period.key] = {};
+      }
       const aggregation = effectiveColumnAggregation(column);
       cells[period.key][column.id] = aggregateMetric(
         loans,

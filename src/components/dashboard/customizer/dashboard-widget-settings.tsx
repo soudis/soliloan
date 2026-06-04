@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { findWidgetLocation, removeWidget, updateWidget } from '@/lib/dashboard/layout-editor';
+import { DEFAULT_WIDTH_BY_TYPE } from '@/lib/dashboard/layout-utils';
 import type { DashboardWidgetWidth } from '@/types/dashboard-layout';
 import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 
@@ -24,6 +25,11 @@ const settingsSchema = z.object({
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
 
+const EMPTY_SETTINGS: SettingsFormValues = {
+  title: '',
+  width: 'half',
+};
+
 export function DashboardWidgetSettings() {
   const t = useTranslations('dashboard.customizer');
   const { layout, setLayout, selectedWidgetId, setSelectedWidgetId } = useDashboardLayout();
@@ -31,22 +37,21 @@ export function DashboardWidgetSettings() {
   const location = selectedWidgetId ? findWidgetLocation(layout, selectedWidgetId) : null;
   const widget = location?.widget;
 
+  const settingsValues = useMemo((): SettingsFormValues => {
+    if (!widget) {
+      return EMPTY_SETTINGS;
+    }
+    return {
+      title: widget.title,
+      width: widget.width ?? DEFAULT_WIDTH_BY_TYPE[widget.type],
+    };
+  }, [widget?.id, widget?.title, widget?.width, widget?.type]);
+
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
-    defaultValues: {
-      title: '',
-      width: 'half',
-    },
+    defaultValues: EMPTY_SETTINGS,
+    values: settingsValues,
   });
-
-  useEffect(() => {
-    if (widget) {
-      form.reset({
-        title: widget.title,
-        width: widget.width,
-      });
-    }
-  }, [widget, form]);
 
   if (!widget || !selectedWidgetId) {
     return (
@@ -57,7 +62,7 @@ export function DashboardWidgetSettings() {
   }
 
   const onSubmit = (values: SettingsFormValues) => {
-    setLayout(updateWidget(layout, selectedWidgetId, values));
+    setLayout((prev) => updateWidget(prev, selectedWidgetId, values));
   };
 
   return (
@@ -95,6 +100,7 @@ export function DashboardWidgetSettings() {
                 <FormItem>
                   <FormLabel>{t('fieldWidth')}</FormLabel>
                   <Select
+                    key={`${selectedWidgetId}-${field.value}`}
                     value={field.value}
                     onValueChange={(v) => {
                       field.onChange(v as DashboardWidgetWidth);
@@ -103,7 +109,7 @@ export function DashboardWidgetSettings() {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder={t('fieldWidth')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -123,7 +129,7 @@ export function DashboardWidgetSettings() {
           <HistoryTableSettings
             config={parseHistoryTableConfig(widget.config)}
             onConfigChange={(config) => {
-              setLayout(updateWidget(layout, selectedWidgetId, { config }));
+              setLayout((prev) => updateWidget(prev, selectedWidgetId, { config }));
             }}
           />
         ) : (
@@ -136,7 +142,7 @@ export function DashboardWidgetSettings() {
             variant="destructive"
             className="w-full"
             onClick={() => {
-              setLayout(removeWidget(layout, selectedWidgetId));
+              setLayout((prev) => removeWidget(prev, selectedWidgetId));
               setSelectedWidgetId(null);
             }}
           >

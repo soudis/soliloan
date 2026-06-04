@@ -55,11 +55,15 @@ export function DashboardCustomizer({
   const isDirty = !isEqual(layout, savedLayouts[activeScope]);
 
   const setLayout = useCallback(
-    (next: DashboardLayoutData) => {
-      setLayouts((prev) => ({
-        ...prev,
-        [activeScope]: next,
-      }));
+    (next: DashboardLayoutData | ((prev: DashboardLayoutData) => DashboardLayoutData)) => {
+      setLayouts((layoutsPrev) => {
+        const current = layoutsPrev[activeScope];
+        const resolved = typeof next === 'function' ? next(current) : next;
+        return {
+          ...layoutsPrev,
+          [activeScope]: resolved,
+        };
+      });
       setSaveStatus('idle');
     },
     [activeScope],

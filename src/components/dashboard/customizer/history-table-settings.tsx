@@ -29,8 +29,8 @@ export function HistoryTableSettings({
   onConfigChange: (config: HistoryTableWidgetConfig) => void;
 }) {
   const t = useTranslations('dashboard.customizer.historyTable');
-  const tLoans = useTranslations('loans');
-  const tLenders = useTranslations('lenders');
+  const tLoans = useTranslations('dashboard.loans');
+  const tLenders = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
   const { project } = useDashboardData();
   const [draftConfig, setDraftConfig] = useState(savedConfig);
@@ -258,8 +258,8 @@ export function HistoryTableSettings({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="delta">{t('aggregationDelta')}</SelectItem>
                           <SelectItem value="cumulative">{t('aggregationCumulative')}</SelectItem>
+                          <SelectItem value="delta">{t('aggregationDelta')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

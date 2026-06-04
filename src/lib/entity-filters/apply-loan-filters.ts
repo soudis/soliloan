@@ -33,8 +33,7 @@ export function loanMatchesFilters(
       continue;
     }
 
-    const useSnapshot =
-      filter.entity === 'loan' && isDynamicLoanFilterField(filter.field) && context.snapshot !== null;
+    const useSnapshot = filter.entity === 'loan' && isDynamicLoanFilterField(filter.field);
     const useStatic =
       isStaticLoanFilterField(filter.field, filter.entity) ||
       (filter.entity === 'lender' &&
@@ -42,13 +41,9 @@ export function loanMatchesFilters(
           filter.field,
         ));
 
-    const value = getLoanFilterValue(
-      loan,
-      filter.entity,
-      filter.field,
-      useSnapshot || (filter.entity === 'lender' && context.snapshot) ? context.snapshot : null,
-      context.commonT,
-    );
+    const snapshot =
+      useSnapshot || (filter.entity === 'lender' && context.snapshot) ? context.snapshot : null;
+    const value = getLoanFilterValue(loan, filter.entity, filter.field, snapshot, context.commonT);
 
     if (!matchesFilterByType(value, filter.value, definition.type)) {
       return false;

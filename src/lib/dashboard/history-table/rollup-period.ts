@@ -118,6 +118,36 @@ export function limitPeriods(
   });
 }
 
+/** Period immediately before `period` — used as baseline for stock-count deltas on the first visible row. */
+export function buildPrecedingPeriodForStockDelta(
+  period: HistoryPeriod,
+  mode: 'yearly' | 'monthly',
+): HistoryPeriod {
+  if (mode === 'yearly') {
+    const year = period.year - 1;
+    return {
+      key: String(year),
+      label: '',
+      year,
+      periodStart: moment({ year }).startOf('year').toDate(),
+      periodEnd: moment({ year }).endOf('year').toDate(),
+      isPartial: false,
+    };
+  }
+  const prev = moment({ year: period.year, month: (period.month ?? 1) - 1 }).subtract(1, 'month');
+  const year = prev.year();
+  const month = prev.month() + 1;
+  return {
+    key: `${year}-${month}`,
+    label: '',
+    year,
+    month,
+    periodStart: prev.startOf('month').toDate(),
+    periodEnd: prev.endOf('month').toDate(),
+    isPartial: false,
+  };
+}
+
 export function buildHistoryPeriods(
   loans: DashboardLoan[],
   mode: 'yearly' | 'monthly',
@@ -294,13 +324,11 @@ export function buildPeriodSnapshot(
   loan: DashboardLoan & { transactions?: { date: Date }[] },
   period: HistoryPeriod,
   mode: 'yearly' | 'monthly',
-): PeriodSnapshot | null {
+): PeriodSnapshot {
+  const status = getLoanStatusAtPeriod(loan, period.periodEnd);
   const numbers = getPeriodNumbers(loan, period, mode);
   if (!numbers) {
-    return null;
+    return { ...emptyNumbers(), status };
   }
-  return {
-    ...numbers,
-    status: getLoanStatusAtPeriod(loan, period.periodEnd),
-  };
+  return { ...numbers, status };
 }

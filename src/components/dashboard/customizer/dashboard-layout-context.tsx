@@ -4,9 +4,13 @@ import { createContext, useContext } from 'react';
 
 import type { DashboardLayoutData, DashboardLayoutScopeKey } from '@/types/dashboard-layout';
 
+export type SetDashboardLayout = (
+  layout: DashboardLayoutData | ((prev: DashboardLayoutData) => DashboardLayoutData),
+) => void;
+
 export type DashboardLayoutContextValue = {
   layout: DashboardLayoutData;
-  setLayout: (layout: DashboardLayoutData) => void;
+  setLayout: SetDashboardLayout;
   scope: DashboardLayoutScopeKey;
   projectId: string;
   isCustomizing: boolean;

@@ -14,7 +14,7 @@ const historyTableColumnSchema = z
     id: z.string(),
     title: z.string().min(1),
     metric: z.enum(HISTORY_TABLE_METRICS),
-    aggregation: z.enum(['delta', 'cumulative']),
+    aggregation: z.enum(['cumulative', 'delta']),
     filters: z.array(entityFilterSchema).default([]),
   })
   .superRefine((col, ctx) => {
