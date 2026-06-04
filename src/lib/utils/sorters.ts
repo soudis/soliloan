@@ -12,6 +12,9 @@ export const transactionSorter = (a: Transaction, b: Transaction) => {
   return 0;
 };
 
+export const createdAtDescSorter = <T extends { createdAt: Date }>(a: T, b: T) =>
+  b.createdAt.getTime() - a.createdAt.getTime();
+
 export const loansSorter = <T extends { signDate: Date; status: LoanStatus | string }>(a: T, b: T) => {
   const aRepaid = a.status === LoanStatus.REPAID;
   const bRepaid = b.status === LoanStatus.REPAID;

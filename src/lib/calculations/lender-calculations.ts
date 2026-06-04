@@ -5,13 +5,22 @@ import type { CalculationOptions } from '@/types/calculation';
 import type { LenderWithRelations } from '@/types/lenders';
 
 import { LoanStatus } from '@/types/loans';
-import { loansSorter } from '../utils/sorters';
+import { mergeLenderFiles, mergeLenderNotes } from '../utils/lender-notes-files';
+import { createdAtDescSorter, loansSorter } from '../utils/sorters';
 import { calculateLoanFields } from './loan-calculations';
 
 export function calculateLenderFields(lender: LenderWithRelations, options: CalculationOptions = {}) {
   const { client = false } = options ?? {};
 
-  const loans = lender.loans?.map((loan) => calculateLoanFields({ ...loan, lender }, options));
+  const loans =
+    lender.loans?.map((loan) => {
+      const calculated = calculateLoanFields({ ...loan, lender }, options);
+      return {
+        ...calculated,
+        notes: [...calculated.notes].sort(createdAtDescSorter),
+        files: [...calculated.files].sort(createdAtDescSorter),
+      };
+    }) ?? [];
 
   // Initialize sums object
   const sums = {
@@ -57,11 +66,21 @@ export function calculateLenderFields(lender: LenderWithRelations, options: Calc
       ? new Prisma.Decimal(sums.balanceInterestRate).div(new Prisma.Decimal(sums.balance)).toNumber()
       : 0;
 
+  const notes = (client ? lender.notes.filter((note) => note.public) : lender.notes).sort(createdAtDescSorter);
+  const files = lender.files
+    .filter((file) => !client || file.public)
+    .map((file) => omit(file, 'data'))
+    .sort(createdAtDescSorter);
+
+  const lenderForMerge = { ...lender, notes, files, loans };
+
   return {
     ...lender,
-    loans: loans?.sort(loansSorter) ?? [],
-    notes: client ? lender.notes.filter((note) => !client || note.public) : lender.notes,
-    files: lender.files.filter((file) => !client || file.public).map((file) => omit(file, 'data')),
+    loans: loans.sort(loansSorter),
+    notes,
+    files,
+    allNotes: mergeLenderNotes(lenderForMerge),
+    allFiles: mergeLenderFiles(lenderForMerge),
     ...sums,
   };
 }

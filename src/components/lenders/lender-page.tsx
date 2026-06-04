@@ -18,18 +18,8 @@ type Props = {
 export const LenderPage = ({ lender }: Props) => {
   const t = useTranslations('dashboard.lenders.lenderPage');
 
-  const totalNotes =
-    lender.notes.length +
-    lender.loans.reduce(
-      (acc, loan) => acc + loan.notes.filter((n) => !lender.notes.some((ln) => ln.id === n.id)).length,
-      0,
-    );
-  const totalFiles =
-    lender.files.length +
-    lender.loans.reduce(
-      (acc, loan) => acc + loan.files.filter((f) => !lender.files.some((lf) => lf.id === f.id)).length,
-      0,
-    );
+  const totalNotes = lender.allNotes.length;
+  const totalFiles = lender.allFiles.length;
 
   const navItems: SectionNavItem[] = useMemo(
     () => [

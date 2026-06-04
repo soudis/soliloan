@@ -12,6 +12,7 @@ import { formatDateLong } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { Button } from '../ui/button';
 import { ConfirmDialog } from './confirm-dialog';
+import { LoanReferenceLink } from './loan-reference-link';
 import { NoteDialog } from './note-dialog';
 
 interface NotesProps {
@@ -98,12 +99,16 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
 
               <div className="flex items-center justify-end space-x-2 mt-auto pt-2">
                 {note.loanId && loans && (
-                  <div className="flex items-center text-xs text-muted-foreground mr-auto">
-                    {commonT('terms.loan')} #{loans.find((loan) => loan.id === note.loanId)?.loanNumber}
-                  </div>
+                  <LoanReferenceLink
+                    loanId={note.loanId}
+                    loanNumber={loans.find((loan) => loan.id === note.loanId)?.loanNumber}
+                    className="mr-auto"
+                  />
                 )}
                 <div className="text-xs text-muted-foreground">{formatDateLong(note.createdAt, locale)}</div>
-                <div className="text-xs text-muted-foreground">• {note.createdBy.name}</div>
+                <div className="text-xs text-muted-foreground">{note.createdBy.name}</div>
+                <div className="text-xs text-muted-foreground">•</div>
+
                 {note.public ? (
                   <div className="flex items-center text-xs text-muted-foreground">
                     <Unlock className="h-3 w-3 mr-1" />

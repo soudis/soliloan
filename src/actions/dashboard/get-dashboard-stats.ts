@@ -4,6 +4,12 @@ import { auth } from '@/lib/auth';
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFields, calculateLoanPerYear, getLoanStatus } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
+import {
+  lenderFilesRelation,
+  lenderNotesRelation,
+  loanFilesRelation,
+  loanNotesRelation,
+} from '@/lib/prisma/notes-files-relations';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { LoanStatus } from '@/types/loans';
 
@@ -51,36 +57,8 @@ export async function getDashboardStats(projectId: string) {
           },
         },
         user: { select: { id: true, email: true, name: true, lastLogin: true, lastInvited: true } },
-        notes: {
-          include: {
-            createdBy: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
-        files: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            public: true,
-            mimeType: true,
-            lenderId: true,
-            loanId: true,
-            thumbnail: true,
-            createdAt: true,
-            createdById: true,
-            createdBy: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
+        notes: lenderNotesRelation,
+        files: lenderFilesRelation,
       },
     });
 
@@ -101,68 +79,12 @@ export async function getDashboardStats(projectId: string) {
               },
             },
             user: { select: { id: true, email: true, name: true, lastLogin: true, lastInvited: true } },
-            notes: {
-              include: {
-                createdBy: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-              },
-            },
-            files: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                public: true,
-                mimeType: true,
-                lenderId: true,
-                loanId: true,
-                thumbnail: true,
-                createdAt: true,
-                createdById: true,
-                createdBy: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-              },
-            },
+            notes: lenderNotesRelation,
+            files: lenderFilesRelation,
           },
         },
-        notes: {
-          include: {
-            createdBy: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
-        files: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            public: true,
-            mimeType: true,
-            lenderId: true,
-            loanId: true,
-            thumbnail: true,
-            createdAt: true,
-            createdById: true,
-            createdBy: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
+        notes: loanNotesRelation,
+        files: loanFilesRelation,
       },
     });
 

@@ -14,6 +14,7 @@ import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { Button } from '../ui/button';
 import { ConfirmDialog } from './confirm-dialog';
 import { FileDialog } from './file-dialog';
+import { LoanReferenceLink } from './loan-reference-link';
 
 interface FilesProps {
   files: LoanDetailsWithCalculations['files'];
@@ -164,16 +165,20 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
                 </div>
                 <div className="flex items-center justify-end space-x-3  mt-auto pt-2">
                   {file.loanId && loans && (
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      {commonT('terms.loan')} #{loans.find((loan) => loan.id === file.loanId)?.loanNumber}
-                    </div>
+                    <LoanReferenceLink
+                      loanId={file.loanId}
+                      loanNumber={loans.find((loan) => loan.id === file.loanId)?.loanNumber}
+                      className="mr-auto"
+                    />
                   )}
+
                   {file.createdAt && (
                     <div className="flex items-center text-xs text-muted-foreground">
                       {formatDateLong(file.createdAt, locale)}
                     </div>
                   )}
-                  <div className="text-xs text-muted-foreground">• {file.createdBy.name}</div>
+                  <div className="text-xs text-muted-foreground">{file.createdBy.name}</div>
+                  <div className="text-xs text-muted-foreground">•</div>
                   {file.public ? (
                     <div className="flex items-center text-xs text-muted-foreground">
                       <Unlock className="h-3 w-3 mr-1" />
