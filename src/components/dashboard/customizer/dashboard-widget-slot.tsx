@@ -2,19 +2,12 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import {
-  BarChart3,
-  Hash,
-  LineChart,
-  PieChart,
-  Table2,
-  Users,
-} from 'lucide-react';
+import { BarChart3, GripVertical, Hash, LineChart, PieChart, Table2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 import { getWidgetColSpanClassName, widgetShowsCardHeader } from '@/lib/dashboard/layout-utils';
+import { cn } from '@/lib/utils';
 import type { DashboardWidget, DashboardWidgetType } from '@/types/dashboard-layout';
 
 import { HistoryTableWidget } from '../widgets/history-table-widget';
@@ -55,18 +48,14 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
     <div
       ref={setNodeRef}
       style={style}
-      className={cn(
-        getWidgetColSpanClassName(widget.width),
-        'touch-none min-w-0 p-0.5',
-        isDragging && 'opacity-40',
-      )}
+      className={cn(getWidgetColSpanClassName(widget.width), 'min-w-0 p-0.5', isDragging && 'z-10 opacity-50')}
     >
       <Card
         className={cn(
-          'h-full min-h-[120px] border-2 shadow-sm',
-          !showHeader && 'gap-0 py-4',
+          'h-full min-h-[120px] gap-0 overflow-hidden border-2 pb-6 shadow-sm',
+          isCustomizing ? 'pt-0' : showHeader ? 'pt-4' : 'pt-5',
           isSelected && isCustomizing ? 'border-primary' : 'border-border',
-          isCustomizing && 'cursor-pointer',
+          isCustomizing && 'ring-1 ring-primary/15',
         )}
         onClick={() => {
           if (isCustomizing) {
@@ -74,32 +63,34 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
           }
         }}
       >
-        {showHeader ? (
-          <CardHeader className="flex flex-row items-center gap-2 space-y-0 pb-2">
-            {isCustomizing && (
-              <button
-                type="button"
-                className="touch-none cursor-grab rounded p-1 text-muted-foreground hover:bg-muted active:cursor-grabbing"
-                aria-label={t('dragWidget')}
-                {...attributes}
-                {...listeners}
-              />
-            )}
-            <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <CardTitle className="truncate text-sm font-medium">{widget.title}</CardTitle>
-          </CardHeader>
-        ) : isCustomizing ? (
-          <div className="flex px-4 pt-1">
-            <button
-              type="button"
-              className="touch-none cursor-grab rounded p-1 text-muted-foreground hover:bg-muted active:cursor-grabbing"
-              aria-label={t('dragWidget')}
-              {...attributes}
-              {...listeners}
-            />
-          </div>
+        {isCustomizing ? (
+          <button
+            type="button"
+            className="flex w-full touch-none cursor-grab items-center justify-center border-b border-border/60 bg-muted/40 py-1.5 hover:bg-muted active:cursor-grabbing"
+            aria-label={t('dragWidget')}
+            onClick={(e) => e.stopPropagation()}
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
+          </button>
         ) : null}
-        <CardContent className={cn(!showHeader && 'px-4 pt-0')}>
+
+        {showHeader ? (
+          <CardHeader
+            className={cn(
+              'flex flex-row items-center gap-2 space-y-0 px-6 pb-2',
+              isCustomizing ? 'pt-4' : 'pt-0',
+            )}
+          >
+            <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <CardTitle className="min-w-0 flex-1 truncate text-sm font-medium">{widget.title}</CardTitle>
+          </CardHeader>
+        ) : null}
+
+        <CardContent
+          className={cn(!showHeader && (isCustomizing ? 'pt-5' : 'pt-0'))}
+        >
           {widget.type === 'history_table' ? (
             <HistoryTableWidget widget={widget} />
           ) : widget.type === 'stat' ? (

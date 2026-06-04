@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  closestCenter,
   DndContext,
   type DragEndEvent,
   DragOverlay,
@@ -14,10 +13,13 @@ import {
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { dashboardCollisionDetection } from '@/lib/dashboard/dashboard-collision-detection';
 import {
   addWidgetFromType,
   addWidgetFromTypeInNewRow,
+  findRowIndex,
   findWidgetLocation,
+  insertWidgetInNewRowAfter,
   moveWidgetToRow,
   removeWidget,
   reorderWidgetInRow,
@@ -83,7 +85,10 @@ export function DashboardDndProvider({ children }: { children: React.ReactNode }
     if (created) {
       setLayout(next);
     } else {
-      setLayout(addWidgetFromTypeInNewRow(layout, type, title));
+      const rowIndex = findRowIndex(layout, rowId);
+      setLayout(
+        addWidgetFromTypeInNewRow(layout, type, title, rowIndex >= 0 ? rowIndex : undefined),
+      );
     }
   };
 
@@ -126,6 +131,7 @@ export function DashboardDndProvider({ children }: { children: React.ReactNode }
     if (activeData?.kind === 'widget') {
       const widgetId = active.id as string;
       const sourceRowId = activeData.rowId as string;
+      const overWidgetLoc = findWidgetLocation(layout, over.id as string);
 
       if (overData?.kind === 'new-row') {
         const loc = findWidgetLocation(layout, widgetId);
@@ -133,19 +139,18 @@ export function DashboardDndProvider({ children }: { children: React.ReactNode }
           return;
         }
         const without = removeWidget(layout, widgetId);
-        setLayout(addWidgetFromTypeInNewRow(without, loc.widget.type, loc.widget.title));
+        setLayout(insertWidgetInNewRowAfter(without, loc.widget));
         return;
       }
 
-      if (overData?.kind === 'widget' && over.id !== active.id) {
-        const overRowId = overData.rowId as string;
+      if (overWidgetLoc && over.id !== active.id) {
+        const overRowId = overWidgetLoc.row.id;
         if (overRowId === sourceRowId) {
           setLayout(reorderWidgetInRow(layout, sourceRowId, widgetId, over.id as string));
           return;
         }
-        const targetRow = layout.rows.find((r) => r.id === overRowId);
-        const overIndex = targetRow?.widgets.findIndex((w) => w.id === over.id) ?? -1;
-        const moved = moveWidgetToRow(layout, widgetId, overRowId, overIndex >= 0 ? overIndex : undefined);
+        const overIndex = overWidgetLoc.widgetIndex;
+        const moved = moveWidgetToRow(layout, widgetId, overRowId, overIndex);
         if (moved) {
           setLayout(moved);
         }
@@ -165,13 +170,13 @@ export function DashboardDndProvider({ children }: { children: React.ReactNode }
     activeDrag?.kind === 'toolbox'
       ? t(`widgetTypes.${activeDrag.widgetType}`)
       : activeDrag?.kind === 'widget'
-        ? activeDrag.title
+        ? activeDrag.title.trim() || t(`widgetTypes.${activeDrag.widgetType}`)
         : null;
 
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={dashboardCollisionDetection}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}

@@ -2,6 +2,7 @@ import {
   createEmptyRow,
   createWidget,
   DEFAULT_WIDTH_BY_TYPE,
+  DESKTOP_GRID_COLS,
   fitWidgetWidthToRow,
   getRowRemainingCols,
 } from '@/lib/dashboard/layout-utils';
@@ -10,8 +11,11 @@ import type {
   DashboardLayoutRow,
   DashboardWidget,
   DashboardWidgetType,
-  DashboardWidgetWidth,
 } from '@/types/dashboard-layout';
+
+export function findRowIndex(layout: DashboardLayoutData, rowId: string): number {
+  return layout.rows.findIndex((r) => r.id === rowId);
+}
 
 export function findWidgetLocation(layout: DashboardLayoutData, widgetId: string) {
   for (let rowIndex = 0; rowIndex < layout.rows.length; rowIndex++) {
@@ -98,20 +102,36 @@ export function addWidgetFromType(
   return { layout, created: false };
 }
 
+export function insertWidgetInNewRowAfter(
+  layout: DashboardLayoutData,
+  widget: DashboardWidget,
+  afterRowIndex?: number,
+): DashboardLayoutData {
+  const withRow = addRow(layout, afterRowIndex);
+  const newRowIndex =
+    afterRowIndex === undefined || afterRowIndex >= layout.rows.length - 1
+      ? withRow.rows.length - 1
+      : afterRowIndex + 1;
+  const newRow = withRow.rows[newRowIndex];
+  if (!newRow) {
+    return withRow;
+  }
+  const fitted =
+    fitWidgetWidthToRow(DESKTOP_GRID_COLS, widget.width) ?? widget.width;
+  const newWidget = { ...widget, width: fitted };
+  return updateLayout(withRow, (rows) =>
+    rows.map((r) => (r.id === newRow.id ? { ...r, widgets: [newWidget] } : r)),
+  );
+}
+
 export function addWidgetFromTypeInNewRow(
   layout: DashboardLayoutData,
   type: DashboardWidgetType,
   title: string,
+  afterRowIndex?: number,
 ): DashboardLayoutData {
-  const withRow = addRow(layout);
-  const newRow = withRow.rows[withRow.rows.length - 1];
-  if (!newRow) {
-    return withRow;
-  }
   const widget = createWidget(type, title, DEFAULT_WIDTH_BY_TYPE[type]);
-  return updateLayout(withRow, (rows) =>
-    rows.map((r) => (r.id === newRow.id ? { ...r, widgets: [widget] } : r)),
-  );
+  return insertWidgetInNewRowAfter(layout, widget, afterRowIndex);
 }
 
 export function removeWidget(layout: DashboardLayoutData, widgetId: string): DashboardLayoutData {
@@ -147,7 +167,12 @@ export function moveWidgetToRow(
   if (inserted) {
     return inserted;
   }
-  return addWidgetFromTypeInNewRow(without, widget.type, widget.title);
+  const targetRowIndex = findRowIndex(without, targetRowId);
+  return insertWidgetInNewRowAfter(
+    without,
+    widget,
+    targetRowIndex >= 0 ? targetRowIndex : undefined,
+  );
 }
 
 export function reorderWidgetInRow(

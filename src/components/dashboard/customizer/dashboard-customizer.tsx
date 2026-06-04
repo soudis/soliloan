@@ -166,6 +166,9 @@ export function DashboardCustomizer({
         }}
       >
         <DashboardDndProvider>
+          {isCustomizing ? (
+            <p className="mb-3 text-sm text-muted-foreground">{t('dragReorderHint')}</p>
+          ) : null}
           <div className="flex items-start gap-4">
             <div className="min-w-0 flex-1">
               <DashboardGrid />
