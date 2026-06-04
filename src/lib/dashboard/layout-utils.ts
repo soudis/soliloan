@@ -68,7 +68,22 @@ export const DEFAULT_WIDTH_BY_TYPE: Record<DashboardWidgetType, DashboardWidgetW
   line_chart: 'half',
   bar_chart: 'half',
   stat: 'quarter',
+  divider: 'full',
 };
+
+export function widgetIsFullWidthLocked(type: DashboardWidgetType): boolean {
+  return type === 'divider';
+}
+
+export function getEffectiveWidgetColSpanClassName(widget: {
+  type: DashboardWidgetType;
+  width: DashboardWidgetWidth;
+}): string {
+  if (widgetIsFullWidthLocked(widget.type)) {
+    return WIDGET_COL_SPAN_CLASS.full;
+  }
+  return getWidgetColSpanClassName(widget.width);
+}
 
 export function isDashboardWidgetWidth(value: unknown): value is DashboardWidgetWidth {
   return typeof value === 'string' && (DASHBOARD_WIDGET_WIDTHS as readonly string[]).includes(value);
@@ -135,6 +150,9 @@ export function createDefaultLayoutData(): DashboardLayoutData {
 }
 
 export function widgetShowsCardHeader(widget: { type: DashboardWidgetType; title: string }): boolean {
+  if (widget.type === 'divider') {
+    return false;
+  }
   if (widget.type === 'stat' || widget.type === 'history_table' || widget.type === 'pie_chart') {
     return widget.title.trim().length > 0;
   }
@@ -146,11 +164,15 @@ export function createWidget(
   title: string,
   width?: DashboardWidgetWidth,
 ): DashboardWidget {
+  const resolvedWidth = widgetIsFullWidthLocked(type)
+    ? 'full'
+    : (width ?? DEFAULT_WIDTH_BY_TYPE[type]);
+
   return {
     id: crypto.randomUUID(),
     type,
     title,
-    width: width ?? DEFAULT_WIDTH_BY_TYPE[type],
+    width: resolvedWidth,
     config:
       type === 'history_table'
         ? createDefaultHistoryTableConfig()

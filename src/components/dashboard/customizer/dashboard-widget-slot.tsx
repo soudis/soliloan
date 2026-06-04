@@ -2,14 +2,15 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { BarChart3, GripVertical, Hash, LineChart, PieChart, Table2, Users } from 'lucide-react';
+import { BarChart3, GripVertical, Hash, LineChart, Minus, PieChart, Table2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getWidgetColSpanClassName, widgetShowsCardHeader } from '@/lib/dashboard/layout-utils';
+import { getEffectiveWidgetColSpanClassName, widgetShowsCardHeader } from '@/lib/dashboard/layout-utils';
 import { cn } from '@/lib/utils';
 import type { DashboardWidget, DashboardWidgetType } from '@/types/dashboard-layout';
 
+import { DividerWidget } from '../widgets/divider-widget';
 import { HistoryTableWidget } from '../widgets/history-table-widget';
 import { PieChartWidget } from '../widgets/pie-chart-widget';
 import { StatWidget } from '../widgets/stat-widget';
@@ -21,6 +22,7 @@ const WIDGET_ICONS: Record<DashboardWidgetType, React.ComponentType<{ className?
   line_chart: LineChart,
   bar_chart: BarChart3,
   stat: Hash,
+  divider: Minus,
   loan_table_view: Table2,
   lender_table_view: Users,
 };
@@ -43,19 +45,30 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
 
   const Icon = WIDGET_ICONS[widget.type];
   const showHeader = widgetShowsCardHeader(widget);
+  const isDivider = widget.type === 'divider';
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={cn(getWidgetColSpanClassName(widget.width), 'min-w-0 p-0.5', isDragging && 'z-10 opacity-50')}
+      className={cn(
+        getEffectiveWidgetColSpanClassName(widget),
+        'min-w-0 p-0.5',
+        isDragging && 'z-10 opacity-50',
+      )}
     >
       <Card
         className={cn(
-          'h-full min-h-[120px] gap-0 overflow-hidden border-2 pb-6 shadow-sm',
-          isCustomizing ? 'pt-0' : showHeader ? 'pt-4' : 'pt-5',
-          isSelected && isCustomizing ? 'border-primary' : 'border-border',
-          isCustomizing && 'ring-1 ring-primary/15',
+          'gap-0 overflow-hidden',
+          isDivider
+            ? 'min-h-0 border-0 bg-transparent pb-4 shadow-none'
+            : cn(
+                'h-full min-h-[120px] border-2 pb-6 shadow-sm',
+                isSelected && isCustomizing ? 'border-primary' : 'border-border',
+                isCustomizing && 'ring-1 ring-primary/15',
+              ),
+          isCustomizing ? 'pt-0' : showHeader ? 'pt-4' : isDivider ? 'pt-4' : 'pt-5',
+          isDivider && isCustomizing && isSelected && 'border-2 border-primary ring-1 ring-primary/15',
         )}
         onClick={() => {
           if (isCustomizing) {
@@ -89,9 +102,14 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
         ) : null}
 
         <CardContent
-          className={cn(!showHeader && (isCustomizing ? 'pt-5' : 'pt-0'))}
+          className={cn(
+            isDivider ? 'px-6 py-0' : undefined,
+            !showHeader && !isDivider && (isCustomizing ? 'pt-5' : 'pt-0'),
+          )}
         >
-          {widget.type === 'history_table' ? (
+          {widget.type === 'divider' ? (
+            <DividerWidget title={widget.title} />
+          ) : widget.type === 'history_table' ? (
             <HistoryTableWidget widget={widget} />
           ) : widget.type === 'stat' ? (
             <StatWidget widget={widget} />

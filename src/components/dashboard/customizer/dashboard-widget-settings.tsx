@@ -12,7 +12,11 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { findWidgetLocation, removeWidget, updateWidget } from '@/lib/dashboard/layout-editor';
-import { DEFAULT_WIDTH_BY_TYPE, WIDGET_WIDTH_SETTINGS_ORDER } from '@/lib/dashboard/layout-utils';
+import {
+  DEFAULT_WIDTH_BY_TYPE,
+  widgetIsFullWidthLocked,
+  WIDGET_WIDTH_SETTINGS_ORDER,
+} from '@/lib/dashboard/layout-utils';
 import { DASHBOARD_WIDGET_WIDTHS, type DashboardWidgetType, type DashboardWidgetWidth } from '@/types/dashboard-layout';
 import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { parsePieChartConfig, type PieChartChartSize } from '@/types/dashboard-widgets/pie-chart';
@@ -32,7 +36,10 @@ type SettingsFormValues = {
 function createSettingsSchema(widgetType: DashboardWidgetType) {
   return z.object({
     title:
-      widgetType === 'stat' || widgetType === 'history_table' || widgetType === 'pie_chart'
+      widgetType === 'stat' ||
+        widgetType === 'history_table' ||
+        widgetType === 'pie_chart' ||
+        widgetType === 'divider'
         ? z.string()
         : z.string().min(1),
     width: settingsWidthSchema,
@@ -105,45 +112,60 @@ export function DashboardWidgetSettings() {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('fieldTitle')}</FormLabel>
+                  <FormLabel>
+                    {widget.type === 'divider' ? t('divider.fieldTitle') : t('fieldTitle')}
+                  </FormLabel>
                   <FormControl>
-                    <Input {...field} onBlur={() => form.handleSubmit(onSubmit)()} />
+                    <Input
+                      {...field}
+                      placeholder={
+                        widget.type === 'divider' ? t('divider.titlePlaceholder') : undefined
+                      }
+                      onBlur={() => form.handleSubmit(onSubmit)()}
+                    />
                   </FormControl>
+                  {widget.type === 'divider' ? (
+                    <p className="text-xs text-muted-foreground">{t('divider.titleHint')}</p>
+                  ) : null}
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="width"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('fieldWidth')}</FormLabel>
-                  <Select
-                    key={`${selectedWidgetId}-${field.value}`}
-                    value={field.value}
-                    onValueChange={(v) => {
-                      field.onChange(v as DashboardWidgetWidth);
-                      form.handleSubmit(onSubmit)();
-                    }}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('fieldWidth')} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {WIDGET_WIDTH_SETTINGS_ORDER.map((width) => (
-                        <SelectItem key={width} value={width}>
-                          {t(`width.${width}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {widgetIsFullWidthLocked(widget.type) ? (
+              <p className="text-xs text-muted-foreground">{t('divider.fullWidthHint')}</p>
+            ) : (
+              <FormField
+                control={form.control}
+                name="width"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('fieldWidth')}</FormLabel>
+                    <Select
+                      key={`${selectedWidgetId}-${field.value}`}
+                      value={field.value}
+                      onValueChange={(v) => {
+                        field.onChange(v as DashboardWidgetWidth);
+                        form.handleSubmit(onSubmit)();
+                      }}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('fieldWidth')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {WIDGET_WIDTH_SETTINGS_ORDER.map((width) => (
+                          <SelectItem key={width} value={width}>
+                            {t(`width.${width}`)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             {widget.type === 'pie_chart' ? (
               <div className="space-y-2">
                 <Label>{tPie('chartSize')}</Label>
@@ -196,7 +218,10 @@ export function DashboardWidgetSettings() {
             }}
           />
         ) : null}
-        {widget.type !== 'history_table' && widget.type !== 'stat' && widget.type !== 'pie_chart' ? (
+        {widget.type !== 'history_table' &&
+        widget.type !== 'stat' &&
+        widget.type !== 'pie_chart' &&
+        widget.type !== 'divider' ? (
           <p className="mt-6 text-xs text-muted-foreground">{t('typeSettingsComingSoon')}</p>
         ) : null}
 

@@ -4,6 +4,7 @@ export const DASHBOARD_WIDGET_TYPES = [
   'line_chart',
   'bar_chart',
   'stat',
+  'divider',
   'loan_table_view',
   'lender_table_view',
 ] as const;

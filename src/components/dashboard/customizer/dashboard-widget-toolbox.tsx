@@ -6,6 +6,7 @@ import {
   GripVertical,
   Hash,
   LineChart,
+  Minus,
   PieChart,
   Table2,
   Users,
@@ -20,6 +21,7 @@ const TOOLBOX_ICONS: Record<DashboardWidgetType, React.ComponentType<{ className
   line_chart: LineChart,
   bar_chart: BarChart3,
   stat: Hash,
+  divider: Minus,
   loan_table_view: Table2,
   lender_table_view: Users,
 };

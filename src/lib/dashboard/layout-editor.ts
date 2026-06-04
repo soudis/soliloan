@@ -5,6 +5,7 @@ import {
   DESKTOP_GRID_COLS,
   fitWidgetWidthToRow,
   getRowRemainingCols,
+  widgetIsFullWidthLocked,
 } from '@/lib/dashboard/layout-utils';
 import type {
   DashboardLayoutData,
@@ -68,11 +69,15 @@ export function insertWidgetInRow(
     return null;
   }
   const remaining = getRowRemainingCols(row.widgets);
-  const fitted = fitWidgetWidthToRow(remaining, widget.width);
+  const preferredWidth = widgetIsFullWidthLocked(widget.type) ? 'full' : widget.width;
+  const fitted = fitWidgetWidthToRow(remaining, preferredWidth);
   if (!fitted) {
     return null;
   }
-  const newWidget = { ...widget, width: fitted };
+  const newWidget = {
+    ...widget,
+    width: widgetIsFullWidthLocked(widget.type) ? 'full' : fitted,
+  };
   return updateLayout(layout, (rows) =>
     rows.map((r) => {
       if (r.id !== rowId) {
@@ -211,7 +216,9 @@ export function updateWidget(
   if (!loc) {
     return layout;
   }
-  if (patch.width) {
+  if (widgetIsFullWidthLocked(loc.widget.type)) {
+    patch = { ...patch, width: 'full' };
+  } else if (patch.width) {
     const others = loc.row.widgets.filter((w) => w.id !== widgetId);
     const remaining = getRowRemainingCols(others);
     const fitted = fitWidgetWidthToRow(remaining, patch.width);

@@ -25,6 +25,12 @@
       "threeQuarters": "Drei Viertel",
       "full": "Volle Breite"
     },
+    "divider": {
+      "fieldTitle": "Abschnittstitel (optional)",
+      "titlePlaceholder": "z. B. Kredite",
+      "titleHint": "Leer lassen für nur eine Linie ohne Beschriftung.",
+      "fullWidthHint": "Trennlinien nutzen immer die volle Breite."
+    },
     "deleteWidget": "Widget entfernen",
     "typeSettingsComingSoon": "Typspezifische Einstellungen folgen in Kürze.",
     "historyTable": {
@@ -160,9 +166,10 @@
     "copyToProjectSuccess": "Layout in das Projekt-Dashboard kopiert",
     "copyError": "Kopieren fehlgeschlagen",
     "validation": {
-      "rowOverflow": "Zeile ist zu voll (max. 4 Spalten auf Desktop).",
+      "rowOverflow": "Zeile ist zu voll (max. 12 Spalten).",
       "invalidWidth": "Ungültige Widget-Breite.",
-      "titleRequired": "Titel ist erforderlich."
+      "titleRequired": "Titel ist erforderlich.",
+      "dividerMustBeFullWidth": "Trennlinien müssen volle Breite haben."
     },
     "widgetTypes": {
       "history_table": "Verlaufstabelle",
@@ -170,6 +177,7 @@
       "line_chart": "Liniendiagramm",
       "bar_chart": "Balkendiagramm",
       "stat": "Kennzahl",
+      "divider": "Trennlinie",
       "loan_table_view": "Kredittabelle",
       "lender_table_view": "Kreditgeber-Tabelle"
     }

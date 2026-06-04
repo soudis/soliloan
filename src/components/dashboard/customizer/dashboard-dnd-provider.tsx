@@ -105,7 +105,10 @@ export function DashboardDndProvider({ children }: { children: React.ReactNode }
     if (activeData?.kind === 'toolbox' && activeData.widgetType) {
       const type = activeData.widgetType as DashboardWidgetType;
       const title =
-        type === 'stat' || type === 'history_table' || type === 'pie_chart'
+        type === 'stat' ||
+          type === 'history_table' ||
+          type === 'pie_chart' ||
+          type === 'divider'
           ? ''
           : t(`widgetTypes.${type}`);
 

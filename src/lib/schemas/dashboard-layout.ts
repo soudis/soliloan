@@ -21,6 +21,7 @@ const dashboardWidgetSchema = z
       widget.type !== 'stat' &&
       widget.type !== 'history_table' &&
       widget.type !== 'pie_chart' &&
+      widget.type !== 'divider' &&
       !widget.title.trim()
     ) {
       ctx.addIssue({
@@ -51,6 +52,13 @@ export const dashboardLayoutDataSchema = z
         });
       }
       for (const [widgetIndex, widget] of row.widgets.entries()) {
+        if (widget.type === 'divider' && widget.width !== 'full') {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'dashboard.customizer.validation.dividerMustBeFullWidth',
+            path: ['rows', rowIndex, 'widgets', widgetIndex, 'width'],
+          });
+        }
         if (getDesktopColspan(widget.width) > DESKTOP_GRID_COLS) {
           ctx.addIssue({
             code: 'custom',
