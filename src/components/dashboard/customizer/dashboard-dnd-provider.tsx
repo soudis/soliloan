@@ -99,7 +99,8 @@ export function DashboardDndProvider({ children }: { children: React.ReactNode }
 
     if (activeData?.kind === 'toolbox' && activeData.widgetType) {
       const type = activeData.widgetType as DashboardWidgetType;
-      const title = t(`widgetTypes.${type}`);
+      const title =
+        type === 'stat' || type === 'history_table' ? '' : t(`widgetTypes.${type}`);
 
       if (overData?.kind === 'new-row') {
         setLayout(addWidgetFromTypeInNewRow(layout, type, title));

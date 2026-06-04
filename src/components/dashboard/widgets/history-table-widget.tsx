@@ -73,8 +73,8 @@ export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>{t('periodColumn')}</TableHead>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="h-10 px-3 py-2">{t('periodColumn')}</TableHead>
             {result.columns.map((col) => {
               const metric = metricByColumnId.get(col.id);
               const title = resolveMetricTitle(
@@ -82,7 +82,7 @@ export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
                 metric ? tMetrics(`metrics.${metric}`) : col.title,
               );
               return (
-                <TableHead key={col.id} className="text-right">
+                <TableHead key={col.id} className="h-10 px-3 py-2 text-right">
                   <span className="inline-flex items-center gap-1">{`${title}${col.aggregation === 'delta' ? ' (Δ)' : ''}`}</span>
                 </TableHead>
               );
@@ -91,10 +91,10 @@ export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
         </TableHeader>
         <TableBody>
           {result.periods.map((period) => (
-            <TableRow key={period.key}>
-              <TableCell className="font-medium">{period.label}</TableCell>
+            <TableRow key={period.key} className="hover:bg-transparent">
+              <TableCell className="px-3 py-2 font-medium">{period.label}</TableCell>
               {result.columns.map((col) => (
-                <TableCell key={col.id} className="text-right tabular-nums">
+                <TableCell key={col.id} className="px-3 py-2 text-right tabular-nums">
                   {formatDashboardMetricValue(
                     metricByColumnId.get(col.id),
                     result.cells[period.key]?.[col.id] ?? null,

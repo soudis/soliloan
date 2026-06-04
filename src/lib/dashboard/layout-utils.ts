@@ -97,6 +97,13 @@ export function createDefaultLayoutData(): DashboardLayoutData {
   };
 }
 
+export function widgetShowsCardHeader(widget: { type: DashboardWidgetType; title: string }): boolean {
+  if (widget.type === 'stat' || widget.type === 'history_table') {
+    return widget.title.trim().length > 0;
+  }
+  return true;
+}
+
 export function createWidget(
   type: DashboardWidgetType,
   title: string,

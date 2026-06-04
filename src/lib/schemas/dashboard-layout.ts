@@ -5,16 +5,26 @@ import { getDesktopColspan, getRowUsedCols } from '@/lib/dashboard/layout-utils'
 
 const dashboardWidgetWidthSchema = z.enum(['quarter', 'half', 'full']);
 
-const dashboardWidgetSchema = z.object({
-  id: z.string().min(1),
-  type: z.preprocess(
-    (val) => (val === 'yearly_table' ? 'history_table' : val),
-    z.enum(DASHBOARD_WIDGET_TYPES),
-  ),
-  title: z.string().min(1),
-  width: dashboardWidgetWidthSchema,
-  config: z.record(z.string(), z.unknown()).default({}),
-});
+const dashboardWidgetSchema = z
+  .object({
+    id: z.string().min(1),
+    type: z.preprocess(
+      (val) => (val === 'yearly_table' ? 'history_table' : val),
+      z.enum(DASHBOARD_WIDGET_TYPES),
+    ),
+    title: z.string(),
+    width: dashboardWidgetWidthSchema,
+    config: z.record(z.string(), z.unknown()).default({}),
+  })
+  .superRefine((widget, ctx) => {
+    if (widget.type !== 'stat' && widget.type !== 'history_table' && !widget.title.trim()) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'dashboard.customizer.validation.titleRequired',
+        path: ['title'],
+      });
+    }
+  });
 
 const dashboardLayoutRowSchema = z.object({
   id: z.string().min(1),

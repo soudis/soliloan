@@ -105,6 +105,11 @@
     "copyToUserSuccess": "Layout in dein Dashboard kopiert",
     "copyToProjectSuccess": "Layout in das Projekt-Dashboard kopiert",
     "copyError": "Kopieren fehlgeschlagen",
+    "validation": {
+      "rowOverflow": "Zeile ist zu voll (max. 4 Spalten auf Desktop).",
+      "invalidWidth": "Ungültige Widget-Breite.",
+      "titleRequired": "Titel ist erforderlich."
+    },
     "widgetTypes": {
       "history_table": "Verlaufstabelle",
       "pie_chart": "Kreisdiagramm",

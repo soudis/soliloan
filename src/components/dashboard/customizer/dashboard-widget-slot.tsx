@@ -14,7 +14,7 @@ import { useTranslations } from 'next-intl';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { getWidgetColSpanClassName } from '@/lib/dashboard/layout-utils';
+import { getWidgetColSpanClassName, widgetShowsCardHeader } from '@/lib/dashboard/layout-utils';
 import type { DashboardWidget, DashboardWidgetType } from '@/types/dashboard-layout';
 
 import { HistoryTableWidget } from '../widgets/history-table-widget';
@@ -48,6 +48,7 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
   };
 
   const Icon = WIDGET_ICONS[widget.type];
+  const showHeader = widgetShowsCardHeader(widget);
 
   return (
     <div
@@ -62,6 +63,7 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
       <Card
         className={cn(
           'h-full min-h-[120px] border-2 shadow-sm',
+          !showHeader && 'gap-0 py-4',
           isSelected && isCustomizing ? 'border-primary' : 'border-border',
           isCustomizing && 'cursor-pointer',
         )}
@@ -71,8 +73,22 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
           }
         }}
       >
-        <CardHeader className="flex flex-row items-center gap-2 space-y-0 pb-2">
-          {isCustomizing && (
+        {showHeader ? (
+          <CardHeader className="flex flex-row items-center gap-2 space-y-0 pb-2">
+            {isCustomizing && (
+              <button
+                type="button"
+                className="touch-none cursor-grab rounded p-1 text-muted-foreground hover:bg-muted active:cursor-grabbing"
+                aria-label={t('dragWidget')}
+                {...attributes}
+                {...listeners}
+              />
+            )}
+            <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <CardTitle className="truncate text-sm font-medium">{widget.title}</CardTitle>
+          </CardHeader>
+        ) : isCustomizing ? (
+          <div className="flex px-4 pt-1">
             <button
               type="button"
               className="touch-none cursor-grab rounded p-1 text-muted-foreground hover:bg-muted active:cursor-grabbing"
@@ -80,11 +96,9 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
               {...attributes}
               {...listeners}
             />
-          )}
-          <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <CardTitle className="truncate text-sm font-medium">{widget.title}</CardTitle>
-        </CardHeader>
-        <CardContent>
+          </div>
+        ) : null}
+        <CardContent className={cn(!showHeader && 'px-4 pt-0')}>
           {widget.type === 'history_table' ? (
             <HistoryTableWidget widget={widget} />
           ) : widget.type === 'stat' ? (

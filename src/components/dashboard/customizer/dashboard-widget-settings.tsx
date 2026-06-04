@@ -12,19 +12,27 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { findWidgetLocation, removeWidget, updateWidget } from '@/lib/dashboard/layout-editor';
 import { DEFAULT_WIDTH_BY_TYPE } from '@/lib/dashboard/layout-utils';
-import type { DashboardWidgetWidth } from '@/types/dashboard-layout';
+import type { DashboardWidgetType, DashboardWidgetWidth } from '@/types/dashboard-layout';
 import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { parseStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
 import { useDashboardLayout } from './dashboard-layout-context';
 import { HistoryTableSettings } from './history-table-settings';
 import { StatWidgetSettings } from './stat-widget-settings';
 
-const settingsSchema = z.object({
-  title: z.string().min(1),
-  width: z.enum(['quarter', 'half', 'full']),
-});
+const settingsWidthSchema = z.enum(['quarter', 'half', 'full']);
 
-type SettingsFormValues = z.infer<typeof settingsSchema>;
+type SettingsFormValues = {
+  title: string;
+  width: z.infer<typeof settingsWidthSchema>;
+};
+
+function createSettingsSchema(widgetType: DashboardWidgetType) {
+  return z.object({
+    title:
+      widgetType === 'stat' || widgetType === 'history_table' ? z.string() : z.string().min(1),
+    width: settingsWidthSchema,
+  });
+}
 
 const EMPTY_SETTINGS: SettingsFormValues = {
   title: '',
@@ -47,6 +55,11 @@ export function DashboardWidgetSettings() {
       width: widget.width ?? DEFAULT_WIDTH_BY_TYPE[widget.type],
     };
   }, [widget]);
+
+  const settingsSchema = useMemo(
+    () => (widget ? createSettingsSchema(widget.type) : createSettingsSchema('pie_chart')),
+    [widget],
+  );
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
