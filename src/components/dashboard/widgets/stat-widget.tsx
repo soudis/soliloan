@@ -9,7 +9,11 @@ import { resolveStatDisplayTitle } from '@/lib/dashboard/resolve-stat-display-ti
 import { computeStatValue } from '@/lib/dashboard/stat-widget/compute-stat-value';
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import type { DashboardWidget } from '@/types/dashboard-layout';
-import { parseStatWidgetConfig, type StatItemConfig } from '@/types/dashboard-widgets/stat-widget';
+import {
+  DEFAULT_STAT_GRID_COLUMNS,
+  parseStatWidgetConfig,
+  type StatItemConfig,
+} from '@/types/dashboard-widgets/stat-widget';
 
 export function StatWidget({ widget }: { widget: DashboardWidget }) {
   const t = useTranslations('dashboard.widgets.stat');
@@ -40,8 +44,17 @@ export function StatWidget({ widget }: { widget: DashboardWidget }) {
     return <p className="text-sm text-muted-foreground">{t('emptyStats')}</p>;
   }
 
+  const layoutClassName =
+    config.layoutMode === 'grid' ? 'grid gap-6' : 'flex flex-wrap gap-6';
+  const layoutStyle =
+    config.layoutMode === 'grid'
+      ? {
+          gridTemplateColumns: `repeat(${config.gridColumns ?? DEFAULT_STAT_GRID_COLUMNS}, minmax(0, 1fr))`,
+        }
+      : undefined;
+
   return (
-    <div className="flex flex-wrap gap-6">
+    <div className={layoutClassName} style={layoutStyle}>
       {computed.map(({ stat, value }) => (
         <StatItemDisplay
           key={stat.id}
@@ -67,7 +80,7 @@ function StatItemDisplay({
 }) {
   if (stat.displayType === 'main') {
     return (
-      <div className="min-w-[120px]">
+      <div className="min-w-0">
         <p className="text-xs text-muted-foreground">{label}</p>
         <p className="text-2xl font-bold tracking-tight tabular-nums">{formattedValue}</p>
       </div>
@@ -75,7 +88,7 @@ function StatItemDisplay({
   }
 
   return (
-    <div className="min-w-[100px]">
+    <div className="min-w-0">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-sm font-medium tabular-nums">{formattedValue}</p>
     </div>

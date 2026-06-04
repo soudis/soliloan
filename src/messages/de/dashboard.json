@@ -62,6 +62,10 @@
       }
     },
     "stat": {
+      "layoutMode": "Layout",
+      "layoutModeFlexible": "Flexibel",
+      "layoutModeGrid": "Raster",
+      "gridColumns": "Spalten",
       "stats": "Kennzahlen",
       "addStat": "Kennzahl hinzufügen",
       "statTitle": "Titel",
@@ -93,7 +97,8 @@
       "untitledStat": "Ohne Titel",
       "validation": {
         "metricAggregation": "Für diese Kennzahl ist nur Gesamtstand möglich.",
-        "deltaRangeRequired": "Zeitraum ist für Veränderung erforderlich."
+        "deltaRangeRequired": "Zeitraum ist für Veränderung erforderlich.",
+        "gridColumnsRequired": "Spaltenanzahl ist für Raster-Layout erforderlich."
       }
     },
     "pieChart": {

@@ -29,8 +29,20 @@ export type StatItemConfig = {
   filters: EntityFilter[];
 };
 
+export const STAT_WIDGET_LAYOUT_MODES = ['flexible', 'grid'] as const;
+
+export type StatWidgetLayoutMode = (typeof STAT_WIDGET_LAYOUT_MODES)[number];
+
+export const DEFAULT_STAT_GRID_COLUMNS = 2;
+
+export const STAT_GRID_COLUMNS_MIN = 1;
+
+export const STAT_GRID_COLUMNS_MAX = 4;
+
 export type StatWidgetConfig = {
   layoutVersion: 1;
+  layoutMode: StatWidgetLayoutMode;
+  gridColumns?: number;
   stats: StatItemConfig[];
 };
 
@@ -43,8 +55,20 @@ export function createDefaultStatDeltaRange(): StatDeltaRange {
 export function createDefaultStatWidgetConfig(): StatWidgetConfig {
   return {
     layoutVersion: 1,
+    layoutMode: 'flexible',
     stats: [],
   };
+}
+
+function parseGridColumns(raw: unknown, layoutMode: StatWidgetLayoutMode): number | undefined {
+  if (layoutMode !== 'grid') {
+    return undefined;
+  }
+  const n = Number(raw);
+  if (!Number.isFinite(n)) {
+    return DEFAULT_STAT_GRID_COLUMNS;
+  }
+  return Math.min(STAT_GRID_COLUMNS_MAX, Math.max(STAT_GRID_COLUMNS_MIN, Math.round(n)));
 }
 
 export function parseStatWidgetConfig(config: Record<string, unknown> | undefined): StatWidgetConfig {
@@ -80,8 +104,13 @@ export function parseStatWidgetConfig(config: Record<string, unknown> | undefine
       })
     : [];
 
+  const layoutMode: StatWidgetLayoutMode =
+    config.layoutMode === 'grid' ? 'grid' : 'flexible';
+
   return {
     layoutVersion: 1,
+    layoutMode,
+    gridColumns: parseGridColumns(config.gridColumns, layoutMode),
     stats,
   };
 }

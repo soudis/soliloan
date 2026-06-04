@@ -17,7 +17,10 @@ import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definiti
 import {
   CUMULATIVE_ONLY_STAT_METRICS,
   createDefaultStatDeltaRange,
+  DEFAULT_STAT_GRID_COLUMNS,
   STAT_DELTA_UNITS,
+  STAT_GRID_COLUMNS_MAX,
+  STAT_GRID_COLUMNS_MIN,
   STAT_WIDGET_METRICS,
   type StatItemConfig,
   type StatWidgetConfig,
@@ -147,8 +150,61 @@ export function StatWidgetSettings({
     });
   };
 
+  const layoutMode = draftConfig.layoutMode ?? 'flexible';
+
   return (
     <div className="mt-6 space-y-4 border-t pt-4">
+      <div className="space-y-2">
+        <Label className="text-xs">{t('layoutMode')}</Label>
+        <Select
+          value={layoutMode}
+          onValueChange={(v) => {
+            const mode = v as StatWidgetConfig['layoutMode'];
+            patchConfig(
+              {
+                layoutMode: mode,
+                gridColumns:
+                  mode === 'grid'
+                    ? (draftConfig.gridColumns ?? DEFAULT_STAT_GRID_COLUMNS)
+                    : undefined,
+              },
+              true,
+            );
+          }}
+        >
+          <SelectTrigger className="h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="flexible">{t('layoutModeFlexible')}</SelectItem>
+            <SelectItem value="grid">{t('layoutModeGrid')}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {layoutMode === 'grid' ? (
+        <div className="space-y-2">
+          <Label className="text-xs">{t('gridColumns')}</Label>
+          <Input
+            type="number"
+            min={STAT_GRID_COLUMNS_MIN}
+            max={STAT_GRID_COLUMNS_MAX}
+            className="h-8 text-xs"
+            value={draftConfig.gridColumns ?? DEFAULT_STAT_GRID_COLUMNS}
+            onChange={(e) => {
+              const parsed = Number.parseInt(e.target.value, 10);
+              if (!Number.isFinite(parsed)) {
+                return;
+              }
+              patchConfig({
+                gridColumns: Math.min(STAT_GRID_COLUMNS_MAX, Math.max(STAT_GRID_COLUMNS_MIN, parsed)),
+              });
+            }}
+            onBlur={flushConfig}
+          />
+        </div>
+      ) : null}
+
       <div className="flex items-center justify-between">
         <Label>{t('stats')}</Label>
         <Button type="button" variant="outline" size="sm" onClick={addStat}>
