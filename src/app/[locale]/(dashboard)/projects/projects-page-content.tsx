@@ -344,8 +344,8 @@ export function ProjectsPageContent({ views, projects }: ProjectsPageContentProp
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="mb-6 flex shrink-0 items-center justify-between">
         <h1 className="text-3xl font-bold">{t('title')}</h1>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => router.push('/projects/migrate-new')}>
@@ -362,6 +362,7 @@ export function ProjectsPageContent({ views, projects }: ProjectsPageContentProp
       <ProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
 
       <DataTable
+        fillHeight
         columns={columns}
         data={projects}
         columnFilters={columnFilters}

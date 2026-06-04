@@ -13,16 +13,6 @@ interface LenderNotesFilesSectionProps {
 export function LenderNotesFilesSection({ lender }: LenderNotesFilesSectionProps) {
   const t = useTranslations('dashboard.lenders.lenderPage');
 
-  const allNotes = [
-    ...lender.notes,
-    ...lender.loans.flatMap((loan) => loan.notes.filter((n) => !lender.notes.some((ln) => ln.id === n.id))),
-  ];
-
-  const allFiles = [
-    ...lender.files,
-    ...lender.loans.flatMap((loan) => loan.files.filter((f) => !lender.files.some((lf) => lf.id === f.id))),
-  ];
-
   return (
     <div id="notes-files" className="scroll-mt-24 grid grid-cols-1 md:grid-cols-2 gap-8">
       {/* Notes */}
@@ -31,10 +21,10 @@ export function LenderNotesFilesSection({ lender }: LenderNotesFilesSectionProps
           <NotebookPen className="h-4 w-4 text-muted-foreground" />
           <h3 className="text-sm font-medium text-muted-foreground">
             {t('sections.notes')}
-            {allNotes.length > 0 && <span className="ml-1.5 text-xs">({allNotes.length})</span>}
+            {lender.allNotes.length > 0 && <span className="ml-1.5 text-xs">({lender.allNotes.length})</span>}
           </h3>
         </div>
-        <Notes notes={allNotes} lenderId={lender.id} loans={lender.loans} />
+        <Notes notes={lender.allNotes} lenderId={lender.id} loans={lender.loans} />
       </div>
 
       {/* Files */}
@@ -43,10 +33,10 @@ export function LenderNotesFilesSection({ lender }: LenderNotesFilesSectionProps
           <FilesIcon className="h-4 w-4 text-muted-foreground" />
           <h3 className="text-sm font-medium text-muted-foreground">
             {t('sections.files')}
-            {allFiles.length > 0 && <span className="ml-1.5 text-xs">({allFiles.length})</span>}
+            {lender.allFiles.length > 0 && <span className="ml-1.5 text-xs">({lender.allFiles.length})</span>}
           </h3>
         </div>
-        <Files lenderId={lender.id} loans={lender.loans} files={allFiles} />
+        <Files lenderId={lender.id} loans={lender.loans} files={lender.allFiles} />
       </div>
     </div>
   );

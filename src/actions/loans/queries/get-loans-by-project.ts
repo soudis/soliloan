@@ -2,6 +2,12 @@
 
 import { calculateLoanFields } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
+import {
+  lenderFilesRelation,
+  lenderNotesRelation,
+  loanFilesRelation,
+  loanNotesRelation,
+} from '@/lib/prisma/notes-files-relations';
 import { sanitizeLoan } from '@/lib/sanitation/sanitize-loan';
 import { projectIdSchema } from '@/lib/schemas/common';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
@@ -35,43 +41,13 @@ export async function getLoansByProjectUnsafe(projectId: string) {
                 lastInvited: true,
               },
             },
-            notes: {
-              include: { createdBy: { select: { id: true, name: true } } },
-            },
-            files: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                public: true,
-                mimeType: true,
-                lenderId: true,
-                loanId: true,
-                thumbnail: true,
-                createdAt: true,
-                createdBy: { select: { id: true, name: true } },
-                createdById: true,
-              },
-            },
+            notes: lenderNotesRelation,
+            files: lenderFilesRelation,
           },
         },
         transactions: true,
-        notes: { include: { createdBy: { select: { id: true, name: true } } } },
-        files: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            public: true,
-            mimeType: true,
-            lenderId: true,
-            loanId: true,
-            thumbnail: true,
-            createdAt: true,
-            createdBy: { select: { id: true, name: true } },
-            createdById: true,
-          },
-        },
+        notes: loanNotesRelation,
+        files: loanFilesRelation,
       },
     });
 

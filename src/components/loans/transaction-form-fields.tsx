@@ -67,7 +67,7 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
     if (
       loanToDate &&
       !isLoadingLoanToDate &&
-      !!date &&
+      date &&
       (type === TransactionType.TERMINATION || type === TransactionType.NOTRECLAIMED)
     ) {
       setValue('amount', formatter.format(loanToDate.balance) as unknown as number);

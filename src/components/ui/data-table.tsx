@@ -16,6 +16,7 @@ import { MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTableUrlState } from '@/lib/hooks/use-table-url-state';
+import { cn } from '@/lib/utils';
 
 import { Checkbox } from './checkbox';
 import { DataTableBody } from './data-table-body';
@@ -147,6 +148,8 @@ interface DataTableProps<TData, TValue> {
   /** Lender/loan: offer "pin to sidebar" in save dialog. */
   allowSidebarViews?: boolean;
   getRowId?: (row: TData) => string;
+  /** Fill parent height: toolbar and pagination stay fixed; table body scrolls vertically. */
+  fillHeight?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -166,6 +169,7 @@ export function DataTable<TData, TValue>({
   actions,
   bulkActions,
   getRowId = (row) => (row as Record<string, unknown>).id as string,
+  fillHeight = false,
 }: DataTableProps<TData, TValue>) {
   const t = useTranslations('dataTable');
 
@@ -225,7 +229,10 @@ export function DataTable<TData, TValue>({
         header: ({ table }) => (
           // biome-ignore lint/a11y/noLabelWithoutControl: Radix Checkbox is not a native input; wrapping label gives full-cell hit area.
           <label
-            className="absolute inset-0 z-10 flex min-h-0 cursor-pointer items-center justify-center leading-none rounded-none transition-colors hover:bg-muted"
+            className={cn(
+              'absolute inset-0 z-10 flex min-h-0 cursor-pointer items-center justify-center bg-background leading-none rounded-none transition-colors hover:bg-muted',
+              fillHeight && 'shadow-[inset_0_-1px_0_0_var(--border)]',
+            )}
             data-bulk-select
           >
             <Checkbox
@@ -238,7 +245,7 @@ export function DataTable<TData, TValue>({
         cell: ({ row }) => (
           // biome-ignore lint/a11y/noLabelWithoutControl: Radix Checkbox is not a native input; wrapping label gives full-cell hit area.
           <label
-            className="absolute inset-0 z-10 flex min-h-0 cursor-pointer items-center justify-center leading-none rounded-none transition-colors hover:bg-muted"
+            className="absolute inset-0 z-[1] flex min-h-0 cursor-pointer items-center justify-center leading-none rounded-none transition-colors hover:bg-muted"
             data-bulk-select
           >
             <Checkbox
@@ -305,7 +312,7 @@ export function DataTable<TData, TValue>({
     }
     return cols;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [columns, actions, hasBulkActions, t]);
+  }, [columns, actions, hasBulkActions, fillHeight, t]);
 
   // Compute selected row IDs for bulk actions
   const selectedIds = useMemo(() => {
@@ -387,37 +394,46 @@ export function DataTable<TData, TValue>({
 
   if (isLoading) {
     return (
-      <div className="py-24 text-center text-muted-foreground">
+      <div
+        className={cn(
+          'py-24 text-center text-muted-foreground',
+          fillHeight && 'flex max-h-full items-center justify-center py-0',
+        )}
+      >
         {tableState.globalFilter ? 'Suchen...' : 'Laden...'}
       </div>
     );
   }
 
   return (
-    <div>
+    <div className={cn(fillHeight && 'flex min-h-0 max-h-full flex-col overflow-hidden')}>
       {!hideHeader && (
-        <DataTableHeader<TData>
-          table={table}
-          showColumnVisibility={showColumnVisibility}
-          showFilter={showFilter}
-          columnFilters={columnFilters}
-          defaultColumnVisibility={defaultColumnVisibility ?? EMPTY_COLUMN_VISIBILITY}
-          views={views || []}
-          viewType={viewType}
-          hasActiveFilters={hasActiveFilters}
-          tableState={tableState}
-          setTableState={setTableState}
-          allowSidebarViews={allowSidebarViews}
-        />
+        <div className={cn(fillHeight && 'shrink-0')}>
+          <DataTableHeader<TData>
+            table={table}
+            showColumnVisibility={showColumnVisibility}
+            showFilter={showFilter}
+            columnFilters={columnFilters}
+            defaultColumnVisibility={defaultColumnVisibility ?? EMPTY_COLUMN_VISIBILITY}
+            views={views || []}
+            viewType={viewType}
+            hasActiveFilters={hasActiveFilters}
+            tableState={tableState}
+            setTableState={setTableState}
+            allowSidebarViews={allowSidebarViews}
+          />
+        </div>
       )}
 
       {bulkActions && selectedIds.length > 0 && (
-        <DataTableBulkBar
-          selectedCount={selectedIds.length}
-          selectedIds={selectedIds}
-          bulkActions={bulkActions}
-          onComplete={handleBulkComplete}
-        />
+        <div className={cn(fillHeight && 'shrink-0')}>
+          <DataTableBulkBar
+            selectedCount={selectedIds.length}
+            selectedIds={selectedIds}
+            bulkActions={bulkActions}
+            onComplete={handleBulkComplete}
+          />
+        </div>
       )}
 
       <DataTableBody
@@ -425,10 +441,16 @@ export function DataTable<TData, TValue>({
         onRowClick={onRowClick}
         hasBulkSelect={hasBulkActions}
         lastRowActionsMenuClosedAtRef={actions && onRowClick ? lastRowActionsMenuClosedAtRef : undefined}
+        fillHeight={fillHeight}
       />
 
       {showPagination && (
-        <DataTablePagination table={table} onPageSizeChange={(pageSize) => setTableState({ pageSize, pageIndex: 0 })} />
+        <div className={cn(fillHeight && 'shrink-0')}>
+          <DataTablePagination
+            table={table}
+            onPageSizeChange={(pageSize) => setTableState({ pageSize, pageIndex: 0 })}
+          />
+        </div>
       )}
     </div>
   );

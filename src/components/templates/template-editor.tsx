@@ -97,7 +97,7 @@ export function TemplateEditor({ template, pageData, projectId, isAdmin = false 
   return (
     <div className="flex flex-col">
       {/* Toolbar */}
-      <div className="flex items-center justify-between p-4 border-b bg-background">
+      <div className="flex items-center justify-between p-4 ">
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-semibold">{template.name}</h1>
         </div>

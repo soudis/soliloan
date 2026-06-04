@@ -18,18 +18,8 @@ type Props = {
 export const LenderPage = ({ lender }: Props) => {
   const t = useTranslations('dashboard.lenders.lenderPage');
 
-  const totalNotes =
-    lender.notes.length +
-    lender.loans.reduce(
-      (acc, loan) => acc + loan.notes.filter((n) => !lender.notes.some((ln) => ln.id === n.id)).length,
-      0,
-    );
-  const totalFiles =
-    lender.files.length +
-    lender.loans.reduce(
-      (acc, loan) => acc + loan.files.filter((f) => !lender.files.some((lf) => lf.id === f.id)).length,
-      0,
-    );
+  const totalNotes = lender.allNotes.length;
+  const totalFiles = lender.allFiles.length;
 
   const navItems: SectionNavItem[] = useMemo(
     () => [
@@ -61,7 +51,9 @@ export const LenderPage = ({ lender }: Props) => {
 
   return (
     <div className="flex flex-col gap-6 mb-256">
-      <LenderPageHeader lender={lender} />
+      <div className="lg:sticky lg:top-0 lg:z-30 lg:-mx-6 lg:px-6 lg:pb-4 lg:bg-transparent lg:backdrop-blur-sm lg:border-b lg:border-border/60">
+        <LenderPageHeader lender={lender} />
+      </div>
 
       {/* Mobile/Tablet: horizontal nav bar */}
       <SectionNavBar items={navItems} />

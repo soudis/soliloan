@@ -3,6 +3,12 @@ import { Prisma, type TemplateDataset, type Transaction, TransactionType } from 
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFields, calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
+import {
+  lenderFilesRelation,
+  lenderNotesRelation,
+  loanFilesRelation,
+  loanNotesRelation,
+} from '@/lib/prisma/notes-files-relations';
 import { withSystemMergeData } from '@/lib/templates/system-merge-links';
 import { formatCurrency, formatDateLong, formatDateShort, formatPercentage, getLenderName } from '@/lib/utils';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
@@ -66,24 +72,6 @@ function paymentTypeLabel(paymentType: string | undefined, locale: string): stri
   return map[paymentType] ?? paymentType;
 }
 
-const fileSelect = {
-  id: true,
-  name: true,
-  description: true,
-  public: true,
-  mimeType: true,
-  lenderId: true,
-  loanId: true,
-  thumbnail: true,
-  createdAt: true,
-  createdById: true,
-  createdBy: { select: { id: true, name: true } },
-} satisfies Prisma.FileSelect;
-
-const noteInclude = {
-  createdBy: { select: { id: true, name: true } },
-} satisfies Prisma.NoteInclude;
-
 const lenderTemplateInclude = {
   project: {
     include: {
@@ -93,12 +81,8 @@ const lenderTemplateInclude = {
   loans: {
     include: {
       transactions: true,
-      notes: {
-        include: noteInclude,
-      },
-      files: {
-        select: fileSelect,
-      },
+      notes: loanNotesRelation,
+      files: loanFilesRelation,
     },
   },
   user: {
@@ -110,12 +94,8 @@ const lenderTemplateInclude = {
       lastInvited: true,
     },
   },
-  notes: {
-    include: noteInclude,
-  },
-  files: {
-    select: fileSelect,
-  },
+  notes: lenderNotesRelation,
+  files: lenderFilesRelation,
 } satisfies Prisma.LenderInclude;
 
 const loanTemplateInclude = {
@@ -129,17 +109,11 @@ const loanTemplateInclude = {
       loans: {
         include: {
           transactions: true,
-          notes: {
-            include: noteInclude,
-          },
-          files: {
-            select: fileSelect,
-          },
+          notes: loanNotesRelation,
+          files: loanFilesRelation,
         },
       },
-      notes: {
-        include: noteInclude,
-      },
+      notes: lenderNotesRelation,
       user: {
         select: {
           id: true,
@@ -149,18 +123,12 @@ const loanTemplateInclude = {
           lastInvited: true,
         },
       },
-      files: {
-        select: fileSelect,
-      },
+      files: lenderFilesRelation,
     },
   },
   transactions: true,
-  notes: {
-    include: noteInclude,
-  },
-  files: {
-    select: fileSelect,
-  },
+  notes: loanNotesRelation,
+  files: loanFilesRelation,
 } satisfies Prisma.LoanInclude;
 
 function getPlatformData() {

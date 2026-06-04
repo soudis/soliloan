@@ -12,7 +12,7 @@ import moment, { type Moment } from 'moment';
 import type { CalculationOptions } from '@/types/calculation';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
 
-import { transactionSorter } from '../utils/sorters';
+import { createdAtDescSorter, transactionSorter } from '../utils/sorters';
 
 export const isRepaid = (loan: LoanWithRelations, toDate: Date) => {
   // check if all money was paid back until given date
@@ -100,7 +100,7 @@ export const calculateLoanPerYear = (
   let toDate = moment(toDateParameter);
   const terminationDate = isRepaid(loan, toDate.toDate());
   // if contract is terminated and the current transaction ID is not the termination transaction only calculate until termination date
-  if (!!terminationDate && loan.transactions[loan.transactions.length - 1]?.id !== currentTransactionId) {
+  if (terminationDate && loan.transactions[loan.transactions.length - 1]?.id !== currentTransactionId) {
     toDate = moment(terminationDate);
   }
 
@@ -305,8 +305,11 @@ export function calculateLoanFields<T>(loan: LoanWithRelations & T, options: Cal
 
   return {
     ...loan,
-    notes: client ? loan.notes.filter((note) => !client || note.public) : loan.notes,
-    files: loan.files.filter((file) => !client || file.public).map((file) => omit(file, 'data')),
+    notes: (client ? loan.notes.filter((note) => note.public) : loan.notes).sort(createdAtDescSorter),
+    files: loan.files
+      .filter((file) => !client || file.public)
+      .map((file) => omit(file, 'data'))
+      .sort(createdAtDescSorter),
     repaidDate: isRepaid(loan, toDate),
     isTerminated,
     repayDate: getRepayDate(loan),

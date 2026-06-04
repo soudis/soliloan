@@ -125,7 +125,7 @@ const EditorTopbar = ({
   const previewButtonDisabled = isGeneratingPdf || (!isPreviewing && previewOpenBlocked);
 
   return (
-    <div className="flex items-center gap-4 px-4 py-2 border-b bg-zinc-50">
+    <div className="flex items-center gap-4 px-4 py-2 border-b bg-background">
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">{sampleToolbarSlot}</div>
       <div className="flex shrink-0 items-center gap-2">
         <button

@@ -10,9 +10,21 @@ const ROW_CLICK_SUPPRESS_MS_AFTER_ACTIONS_MENU = 400;
 
 interface DataTableBodyProps<TData> {
   table: TanstackTable<TData>;
+  /** When set, rows use transparent hover — cell backgrounds mirror selection only (no muted hover tint). */
   onRowClick?: (row: TData) => void;
   hasBulkSelect?: boolean;
   lastRowActionsMenuClosedAtRef?: RefObject<number>;
+  /** Scroll table rows vertically; column headers stay sticky at the top of the scroll area. */
+  fillHeight?: boolean;
+}
+
+function nonActionsCellBg(onRowClick: boolean | undefined) {
+  const base = 'bg-background transition-colors';
+  const selected = 'group-data-[state=selected]/row:bg-muted';
+  if (onRowClick) {
+    return cn(base, selected);
+  }
+  return cn(base, 'group-hover/row:bg-muted/50', selected);
 }
 
 export function DataTableBody<TData>({
@@ -20,26 +32,37 @@ export function DataTableBody<TData>({
   onRowClick,
   hasBulkSelect,
   lastRowActionsMenuClosedAtRef,
+  fillHeight = false,
 }: DataTableBodyProps<TData>) {
   const t = useTranslations('dataTable');
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead
-                    key={header.id}
-                    className={cn(
-                      header.column.columnDef.meta?.style?.textAlign &&
-                        `text-${header.column.columnDef.meta.style.textAlign}`,
-                      header.column.columnDef.meta?.fixed &&
-                        'sticky right-0 z-10 bg-background before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
-                      header.column.columnDef.meta?.bulkSelectColumn &&
-                        'relative w-10 min-w-[2.5rem] max-w-[2.5rem] !p-0 text-center align-middle',
+    <div className={cn('rounded-md border', fillHeight && 'flex min-h-0 flex-1 flex-col overflow-hidden max-h-full')}>
+      <div className={cn(fillHeight && 'min-h-0 max-h-full flex-1 overflow-auto')}>
+        <Table containerClassName={fillHeight ? 'overflow-visible' : undefined}>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead
+                      key={header.id}
+                      className={cn(
+                        header.column.columnDef.meta?.style?.textAlign &&
+                          `text-${header.column.columnDef.meta.style.textAlign}`,
+                        'bg-background',
+                        fillHeight && 'sticky top-0 z-20 shadow-[inset_0_-1px_0_0_var(--border)]',
+                        header.column.columnDef.meta?.fixed &&
+                          cn(
+                            'sticky right-0 before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
+                            fillHeight ? 'z-30' : 'z-10',
+                          ),
+                        header.column.columnDef.meta?.bulkSelectColumn &&
+                          cn(
+                            'w-10 min-w-[2.5rem] max-w-[2.5rem] !p-0 text-center align-middle',
+                            !fillHeight && 'relative',
+                            fillHeight && 'z-20',
+                          ),
                       header.column.columnDef.meta?.actionsColumn &&
                         'w-9 min-w-[2.25rem] max-w-[2.25rem] !p-0 text-center align-middle',
                     )}
@@ -96,8 +119,9 @@ export function DataTableBody<TData>({
                     {...(cell.column.columnDef.meta?.actionsColumn ? { 'data-actions-cell': '' } : {})}
                     {...(cell.column.columnDef.meta?.bulkSelectColumn ? { 'data-bulk-select-cell': '' } : {})}
                     className={cn(
+                      nonActionsCellBg(!!onRowClick),
                       cell.column.columnDef.meta?.fixed &&
-                        'sticky right-0 z-10 bg-background transition-colors data-[state=selected]:bg-muted before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
+                        'sticky right-0 z-10 before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
                       cell.column.columnDef.meta?.bulkSelectColumn &&
                         'relative w-10 min-w-[2.5rem] max-w-[2.5rem] !p-0 align-top leading-none',
                       cell.column.columnDef.meta?.actionsColumn &&
@@ -111,13 +135,17 @@ export function DataTableBody<TData>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={table.getAllColumns().length} className="h-24 text-center">
+              <TableCell
+                colSpan={table.getAllColumns().length}
+                className="h-24 bg-background text-center dark:bg-background"
+              >
                 {t('noResults')}
               </TableCell>
             </TableRow>
           )}
-        </TableBody>
-      </Table>
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

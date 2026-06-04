@@ -302,6 +302,7 @@
       "notReclaimed": "Nicht zurückgefordert",
       "totalLoans": "Kredite (gesamt)",
       "activeLoans": "Kredite (aktiv)",
+      "amountActive": "Kredithöhe (aktiv)",
       "interestRateAvg": "Zinssatz (durchschnittlich)",
       "amountTotal": "Kredithöhe (gesamt)",
       "for": "zu",
@@ -569,7 +570,15 @@
     "private": "Intern",
     "publicDescription": "Öffentliche Notizen sind für auch für Kreditgeber*innen sichtbar",
     "noNotes": "Noch keine Notizen",
-    "loan": "Kredit"
+    "loan": "Kredit",
+    "editor": {
+      "bold": "Fett",
+      "italic": "Kursiv",
+      "underline": "Unterstrichen",
+      "link": "Link setzen",
+      "unlink": "Link entfernen",
+      "linkPrompt": "URL, E-Mail (mailto:) oder Telefon (tel:) eingeben"
+    }
   },
   "files": {
     "createTitle": "Datei hochladen",

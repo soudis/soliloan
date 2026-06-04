@@ -4,6 +4,12 @@ import type { Loan } from '@prisma/client';
 import { z } from 'zod';
 import { calculateLoanFields } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
+import {
+  lenderFilesRelation,
+  lenderNotesRelation,
+  loanFilesRelation,
+  loanNotesRelation,
+} from '@/lib/prisma/notes-files-relations';
 import { loanIdSchema } from '@/lib/schemas/common';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { loanAction } from '@/lib/utils/safe-action';
@@ -24,9 +30,7 @@ async function getLoanById(loanId: string, date?: Date) {
                 configuration: { select: { interestMethod: true } },
               },
             },
-            notes: {
-              include: { createdBy: { select: { id: true, name: true } } },
-            },
+            notes: lenderNotesRelation,
             user: {
               select: {
                 name: true,
@@ -36,42 +40,12 @@ async function getLoanById(loanId: string, date?: Date) {
                 lastInvited: true,
               },
             },
-            files: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                public: true,
-                mimeType: true,
-                lenderId: true,
-                loanId: true,
-                thumbnail: true,
-                createdAt: true,
-                createdBy: { select: { id: true, name: true } },
-                createdById: true,
-              },
-            },
+            files: lenderFilesRelation,
           },
         },
         transactions: true,
-        notes: {
-          include: { createdBy: { select: { id: true, name: true } } },
-        },
-        files: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            public: true,
-            mimeType: true,
-            lenderId: true,
-            loanId: true,
-            thumbnail: true,
-            createdAt: true,
-            createdBy: { select: { id: true, name: true } },
-            createdById: true,
-          },
-        },
+        notes: loanNotesRelation,
+        files: loanFilesRelation,
       },
     });
 

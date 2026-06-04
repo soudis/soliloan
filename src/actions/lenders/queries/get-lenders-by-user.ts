@@ -5,6 +5,12 @@ import type { TransactionType } from '@prisma/client';
 import { auth } from '@/lib/auth';
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { db } from '@/lib/db';
+import {
+  lenderFilesRelation,
+  lenderNotesRelation,
+  loanFilesRelation,
+  loanNotesRelation,
+} from '@/lib/prisma/notes-files-relations';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 
 const RECENT_ACTIVITY_LIMIT = 10;
@@ -48,6 +54,7 @@ export async function getLendersByUser(): Promise<
                 name: true,
                 logo: true,
                 loanAdditionalFields: true,
+                email: true,
               },
             },
           },
@@ -55,42 +62,12 @@ export async function getLendersByUser(): Promise<
         loans: {
           include: {
             transactions: true,
-            notes: {
-              include: { createdBy: { select: { id: true, name: true } } },
-            },
-            files: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                public: true,
-                mimeType: true,
-                lenderId: true,
-                loanId: true,
-                thumbnail: true,
-                createdAt: true,
-                createdBy: { select: { id: true, name: true } },
-                createdById: true,
-              },
-            },
+            notes: loanNotesRelation,
+            files: loanFilesRelation,
           },
         },
-        notes: { include: { createdBy: { select: { id: true, name: true } } } },
-        files: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            public: true,
-            mimeType: true,
-            lenderId: true,
-            loanId: true,
-            thumbnail: true,
-            createdAt: true,
-            createdBy: { select: { id: true, name: true } },
-            createdById: true,
-          },
-        },
+        notes: lenderNotesRelation,
+        files: lenderFilesRelation,
         user: {
           select: {
             name: true,

@@ -195,7 +195,7 @@ export function DataTableHeader<TData>({
               onChange={(event) => {
                 setTableState({ globalFilter: event.target.value });
               }}
-              className="max-w-sm"
+              className="max-w-sm bg-background dark:bg-background"
             />
           </div>
         )}

@@ -290,8 +290,8 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
   };
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="mb-6 flex shrink-0 items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{t('title')}</h1>
           {selectedViewName ? (
@@ -305,6 +305,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
       </div>
 
       <DataTable
+        fillHeight
         columns={columns}
         data={loans}
         columnFilters={columnFilters}

@@ -81,23 +81,23 @@ export function LenderDashboard({ loans, aggregates, userName }: Props) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs">{t('activity.date')}</TableHead>
-                  <TableHead className="text-xs">{t('activity.project')}</TableHead>
-                  <TableHead className="text-xs">{t('activity.type')}</TableHead>
-                  <TableHead className="text-xs text-right">{t('activity.amount')}</TableHead>
+                  <TableHead className="text-sm">{t('activity.date')}</TableHead>
+                  <TableHead className="text-sm">{t('activity.project')}</TableHead>
+                  <TableHead className="text-sm">{t('activity.type')}</TableHead>
+                  <TableHead className="text-sm text-right">{t('activity.amount')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {aggregates.recentActivities.map((row) => (
                   <TableRow key={row.id}>
-                    <TableCell className="text-xs py-2">
+                    <TableCell className="text-sm py-2">
                       {format(new Date(row.date), 'P', { locale: dateLocale })}
                     </TableCell>
-                    <TableCell className="text-xs py-2 max-w-[160px] truncate" title={row.projectName}>
+                    <TableCell className="text-sm py-2 max-w-[160px] truncate" title={row.projectName}>
                       {row.projectName}
                     </TableCell>
-                    <TableCell className="text-xs py-2">{commonT(`enums.transaction.type.${row.type}`)}</TableCell>
-                    <TableCell className="text-xs py-2 text-right font-mono">{formatCurrency(row.amount)}</TableCell>
+                    <TableCell className="text-sm py-2">{commonT(`enums.transaction.type.${row.type}`)}</TableCell>
+                    <TableCell className="text-sm py-2 text-right font-mono">{formatCurrency(row.amount)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

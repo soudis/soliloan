@@ -3,9 +3,9 @@
 import { useTranslations } from 'next-intl';
 import { useFormContext } from 'react-hook-form';
 
-import { FormField } from '@/components/form/form-field';
 import { Checkbox } from '@/components/ui/checkbox';
-import { FormControl, FormField as FormFieldWrapper, FormItem, FormLabel } from '@/components/ui/form';
+import { FormControl, FormField as FormFieldWrapper, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { NoteRichTextEditor } from '@/components/generic/notes/note-rich-text-editor';
 import type { NoteFormData } from '@/lib/schemas/note';
 import type { LoanWithCalculations } from '@/types/loans';
 import { LoanDropdown } from '../lenders/loan-dropdown';
@@ -33,7 +33,23 @@ export function NoteFormFields({ loans, loanId }: NoteFormFieldsProps) {
         </FormItem>
       )}
 
-      <FormField name="text" label={t('text')} placeholder={t('textPlaceholder')} multiline={true} />
+      <FormFieldWrapper
+        control={form.control}
+        name="text"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{t('text')}</FormLabel>
+            <FormControl>
+              <NoteRichTextEditor
+                value={field.value ?? ''}
+                onChange={field.onChange}
+                placeholder={t('textPlaceholder')}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
       <FormFieldWrapper
         control={form.control}

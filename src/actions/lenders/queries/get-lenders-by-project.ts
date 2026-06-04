@@ -1,6 +1,12 @@
 'use server';
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { db } from '@/lib/db';
+import {
+  lenderFilesRelation,
+  lenderNotesRelation,
+  loanFilesRelation,
+  loanNotesRelation,
+} from '@/lib/prisma/notes-files-relations';
 import { sanitizeLender } from '@/lib/sanitation/sanitize-lender';
 import { projectIdSchema } from '@/lib/schemas/common';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
@@ -19,42 +25,12 @@ export async function getLendersByProjectIdUnsafe(projectId: string) {
         loans: {
           include: {
             transactions: true,
-            notes: {
-              include: { createdBy: { select: { id: true, name: true } } },
-            },
-            files: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                public: true,
-                mimeType: true,
-                lenderId: true,
-                loanId: true,
-                thumbnail: true,
-                createdAt: true,
-                createdBy: { select: { id: true, name: true } },
-                createdById: true,
-              },
-            },
+            notes: loanNotesRelation,
+            files: loanFilesRelation,
           },
         },
-        notes: { include: { createdBy: { select: { id: true, name: true } } } },
-        files: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            public: true,
-            mimeType: true,
-            lenderId: true,
-            loanId: true,
-            thumbnail: true,
-            createdAt: true,
-            createdBy: { select: { id: true, name: true } },
-            createdById: true,
-          },
-        },
+        notes: lenderNotesRelation,
+        files: lenderFilesRelation,
         user: {
           select: {
             name: true,

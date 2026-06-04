@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import type { Session } from 'next-auth';
 import { useTranslations } from 'next-intl';
 
+import { usePathname } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { useAppStore, useNavigationUiStore } from '@/store';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -24,7 +25,12 @@ export default function DashboardNavigation({
 }) {
   const { isSidebarOpen, toggleSidebar } = useAppStore();
   const isProjectSwitching = useNavigationUiStore((s) => s.isProjectSwitching);
+  const pathname = usePathname();
   const t = useTranslations('navigation');
+  const isFillHeightPage =
+    pathname === '/lenders' || pathname === '/loans' || pathname === '/logbook' || pathname === '/projects';
+
+  const isFullWidthPage = pathname === '/lenders' || pathname === '/loans';
 
   if (!session) {
     return null;
@@ -33,7 +39,7 @@ export default function DashboardNavigation({
   const showSidebar = session.user.isManager;
 
   return (
-    <>
+    <div className="flex h-dvh flex-col">
       <TopNav
         session={session}
         isSidebarOpen={isSidebarOpen}
@@ -41,13 +47,18 @@ export default function DashboardNavigation({
         showSidebarToggle={showSidebar}
       />
 
-      <div className="flex h-[calc(100vh-4rem)]">
+      <div className="flex min-h-0 flex-1">
         {showSidebar && (
           <SidebarNav isSidebarOpen={isSidebarOpen} session={session} projects={projects} sidebarViews={sidebarViews} />
         )}
 
         {/* Main Content */}
-        <main className="relative flex-1 overflow-y-auto bg-background">
+        <main
+          className={cn(
+            'relative flex-1 bg-[color-mix(in_oklch,var(--background)_60%,var(--muted)_40%)]',
+            isFillHeightPage ? 'flex min-h-0 flex-col overflow-hidden' : 'overflow-y-auto',
+          )}
+        >
           {isProjectSwitching && (
             <div
               className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-background/70 backdrop-blur-[2px]"
@@ -58,11 +69,21 @@ export default function DashboardNavigation({
               <p className="text-sm font-medium text-muted-foreground">{t('switchingProject')}</p>
             </div>
           )}
-          <div className={cn('container mx-auto py-8 px-6', showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg')}>
+          <div
+            className={cn(
+              'mx-auto w-full px-6',
+              isFillHeightPage || isFullWidthPage
+                ? cn(
+                    'flex min-h-0 flex-1 flex-col py-8',
+                    isFullWidthPage ? 'max-w-none' : showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg',
+                  )
+                : cn('container py-8', showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg'),
+            )}
+          >
             {children}
           </div>
         </main>
       </div>
-    </>
+    </div>
   );
 }

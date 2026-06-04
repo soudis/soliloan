@@ -174,7 +174,12 @@ export function LogbookTable({ changes, views }: LogbookTableProps) {
             return (
               <div>
                 {description.split(`#${context.loan.loanNumber}`).map((part, index, array) => (
-                  <span key={`${context.loan?.id}-${index}`}>
+                  <span
+                    key={`${context.loan?.id}-${
+                      // biome-ignore lint/suspicious/noArrayIndexKey: needed
+                      index
+                    }`}
+                  >
                     {part}
                     {index < array.length - 1 && (
                       <Link
@@ -196,7 +201,12 @@ export function LogbookTable({ changes, views }: LogbookTableProps) {
             return (
               <div>
                 {description.split(lenderName).map((part, index, array) => (
-                  <span key={`${context.lender?.id}-${index}`}>
+                  <span
+                    key={`${context.lender?.id}-${
+                      // biome-ignore lint/suspicious/noArrayIndexKey: needed
+                      index
+                    }`}
+                  >
                     {part}
                     {index < array.length - 1 && context.lender && (
                       <Link
@@ -238,6 +248,7 @@ export function LogbookTable({ changes, views }: LogbookTableProps) {
   return (
     <>
       <DataTable
+        fillHeight
         columns={columns}
         data={changes}
         onRowClick={(row) => setSelectedChange(row)}
