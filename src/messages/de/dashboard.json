@@ -1,6 +1,6 @@
 {
   "customizer": {
-    "pageTitle": "Dashboard",
+    "pageSubtitle": "Zahlen, Daten, Fakten",
     "scopeProject": "Projekt",
     "scopeUser": "Mein Dashboard",
     "customize": "Anpassen",

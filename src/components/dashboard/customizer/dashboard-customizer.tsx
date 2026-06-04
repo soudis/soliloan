@@ -16,6 +16,9 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cloneLayoutData } from '@/lib/dashboard/layout-utils';
 import type { DashboardLayoutData, DashboardLayoutScopeKey } from '@/types/dashboard-layout';
 
+import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
+import { ProjectLogo } from '@/components/dashboard/project-logo';
+
 import { DashboardDndProvider } from './dashboard-dnd-provider';
 import { DashboardEditorSidebar } from './dashboard-editor-sidebar';
 import { DashboardGrid } from './dashboard-grid';
@@ -33,6 +36,8 @@ export function DashboardCustomizer({
   initialUserLayout: DashboardLayoutData;
 }) {
   const t = useTranslations('dashboard.customizer');
+  const { project } = useDashboardData();
+  const projectName = project.configuration.name;
   const [scope, setScope] = useQueryState(
     'dashboardScope',
     parseAsStringLiteral(['project', 'user'] as const).withDefault('project'),
@@ -110,8 +115,14 @@ export function DashboardCustomizer({
   return (
     <div className="flex flex-col">
       <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-4">
-          <h1 className="text-2xl font-semibold tracking-tight">{t('pageTitle')}</h1>
+        <div className="flex min-w-0 items-center gap-4">
+          <ProjectLogo project={project} className="h-12 w-12 shrink-0 rounded-xl shadow-sm sm:h-14 sm:w-14" />
+          <div className="min-w-0">
+            <h1 className="truncate text-2xl font-semibold tracking-tight sm:text-3xl">{projectName}</h1>
+            <p className="text-sm text-muted-foreground">{t('pageSubtitle')}</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-3">
           <ToggleGroup
             type="single"
             value={activeScope}
@@ -120,17 +131,25 @@ export function DashboardCustomizer({
                 setScope(v as DashboardLayoutScopeKey);
               }
             }}
+            className="shrink-0"
           >
-            <ToggleGroupItem value="project" aria-label={t('scopeProject')}>
-              <LayoutDashboard className="mr-2 h-4 w-4" />
+            <ToggleGroupItem
+              value="project"
+              aria-label={t('scopeProject')}
+              className="min-w-[8.5rem] flex-none whitespace-nowrap px-4"
+            >
+              <LayoutDashboard className="mr-2 h-4 w-4 shrink-0" />
               {t('scopeProject')}
             </ToggleGroupItem>
-            <ToggleGroupItem value="user" aria-label={t('scopeUser')}>
+            <ToggleGroupItem
+              value="user"
+              aria-label={t('scopeUser')}
+              className="min-w-[11rem] flex-none whitespace-nowrap px-4"
+            >
               {t('scopeUser')}
             </ToggleGroupItem>
           </ToggleGroup>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
           {isCustomizing && (
             <Button type="button" disabled={!isDirty || saveStatus === 'saving'} onClick={handleSave}>
               <Save className="mr-2 h-4 w-4" />
@@ -151,6 +170,7 @@ export function DashboardCustomizer({
             <SlidersHorizontal className="mr-2 h-4 w-4" />
             {isCustomizing ? t('doneCustomize') : t('customize')}
           </Button>
+          </div>
         </div>
       </div>
 
