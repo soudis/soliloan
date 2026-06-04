@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client';
 
 import { db } from '@/lib/db';
+import { normalizeDashboardLayout } from '@/lib/dashboard/normalize-dashboard-layout';
 import { createDefaultLayoutData } from '@/lib/dashboard/layout-utils';
 import { dashboardLayoutDataSchema } from '@/lib/schemas/dashboard-layout';
 import type { DashboardLayoutData } from '@/types/dashboard-layout';
@@ -18,7 +19,7 @@ export async function getGlobalDefaultLayout(): Promise<DashboardLayoutData> {
   if (!row) {
     return createDefaultLayoutData();
   }
-  return dashboardLayoutDataSchema.parse(row.layout);
+  return normalizeDashboardLayout(dashboardLayoutDataSchema.parse(row.layout));
 }
 
 export async function resolveScopedLayout(
@@ -30,14 +31,14 @@ export async function resolveScopedLayout(
   const row = await db.dashboardLayout.findFirst({ where });
   if (row) {
     return {
-      layout: dashboardLayoutDataSchema.parse(row.layout),
+      layout: normalizeDashboardLayout(dashboardLayoutDataSchema.parse(row.layout)),
       isPersisted: true,
     };
   }
 
   const globalDefault = await getGlobalDefaultLayout();
   return {
-    layout: structuredClone(globalDefault),
+    layout: normalizeDashboardLayout(structuredClone(globalDefault)),
     isPersisted: false,
   };
 }

@@ -1,3 +1,4 @@
+import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import type {
   DashboardLayoutData,
   DashboardLayoutRow,
@@ -12,7 +13,7 @@ export const MOBILE_GRID_COLS = 2;
 const WIDTH_ORDER: DashboardWidgetWidth[] = ['full', 'half', 'quarter'];
 
 export const DEFAULT_WIDTH_BY_TYPE: Record<DashboardWidgetType, DashboardWidgetWidth> = {
-  yearly_table: 'full',
+  history_table: 'full',
   loan_table_view: 'full',
   lender_table_view: 'full',
   pie_chart: 'half',
@@ -105,6 +106,6 @@ export function createWidget(
     type,
     title,
     width: width ?? DEFAULT_WIDTH_BY_TYPE[type],
-    config: {},
+    config: type === 'history_table' ? createDefaultHistoryTableConfig() : {},
   };
 }

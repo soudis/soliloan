@@ -12,7 +12,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { findWidgetLocation, removeWidget, updateWidget } from '@/lib/dashboard/layout-editor';
 import type { DashboardWidgetWidth } from '@/types/dashboard-layout';
+import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 
+import { HistoryTableSettings } from './history-table-settings';
 import { useDashboardLayout } from './dashboard-layout-context';
 
 const settingsSchema = z.object({
@@ -117,7 +119,16 @@ export function DashboardWidgetSettings() {
           </form>
         </Form>
 
-        <p className="mt-6 text-xs text-muted-foreground">{t('typeSettingsComingSoon')}</p>
+        {widget.type === 'history_table' ? (
+          <HistoryTableSettings
+            config={parseHistoryTableConfig(widget.config)}
+            onConfigChange={(config) => {
+              setLayout(updateWidget(layout, selectedWidgetId, { config }));
+            }}
+          />
+        ) : (
+          <p className="mt-6 text-xs text-muted-foreground">{t('typeSettingsComingSoon')}</p>
+        )}
 
         <div className="mt-6 border-t pt-4">
           <Button

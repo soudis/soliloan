@@ -1,5 +1,5 @@
 export const DASHBOARD_WIDGET_TYPES = [
-  'yearly_table',
+  'history_table',
   'pie_chart',
   'line_chart',
   'bar_chart',

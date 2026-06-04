@@ -23,6 +23,42 @@
     },
     "deleteWidget": "Widget entfernen",
     "typeSettingsComingSoon": "Typspezifische Einstellungen folgen in Kürze.",
+    "historyTable": {
+      "periodMode": "Zeitraum",
+      "periodModeYearly": "Jährlich",
+      "periodModeMonthly": "Monatlich",
+      "periodCount": "Anzahl Zeiträume",
+      "periodCountPlaceholder": "Leer = alle (jährlich) bzw. 24 Monate",
+      "periodCountHint": "Monatlich maximal 24 Zeiträume",
+      "columns": "Spalten",
+      "addColumn": "Spalte hinzufügen",
+      "columnTitle": "Spaltentitel",
+      "metric": "Kennzahl",
+      "aggregation": "Aggregation",
+      "aggregationDelta": "Veränderung im Zeitraum",
+      "aggregationCumulative": "Kumuliert",
+      "filters": "Filter",
+      "addFilter": "Filter hinzufügen",
+      "filterField": "Feld",
+      "filterGroupLoan": "Kredit",
+      "filterGroupLender": "Kreditgeber*in",
+      "removeColumn": "Spalte entfernen",
+      "removeFilter": "Filter entfernen",
+      "expandColumn": "Spalte aufklappen",
+      "collapseColumn": "Spalte zuklappen",
+      "metrics": {
+        "balance": "Kontostand",
+        "deposits": "Einzahlungen",
+        "withdrawals": "Auszahlungen",
+        "notReclaimed": "Nicht zurückgefordert",
+        "interest": "Zinsen",
+        "interestPaid": "Ausbezahlte Zinsen",
+        "interestError": "Zinsabweichung",
+        "contractAmount": "Vertragsbetrag",
+        "loanCount": "Anzahl Kredite",
+        "interestRateAvg": "Ø Zinssatz (gewichtet)"
+      }
+    },
     "placeholder": "Widget-Inhalt folgt in Kürze.",
     "dragWidget": "Widget verschieben",
     "dropHere": "Widget hier ablegen",
@@ -34,7 +70,7 @@
     "copyToProjectSuccess": "Layout in das Projekt-Dashboard kopiert",
     "copyError": "Kopieren fehlgeschlagen",
     "widgetTypes": {
-      "yearly_table": "Jahrestabelle",
+      "history_table": "Verlaufstabelle",
       "pie_chart": "Kreisdiagramm",
       "line_chart": "Liniendiagramm",
       "bar_chart": "Balkendiagramm",
@@ -82,6 +118,16 @@
     "yearlyBalance": "Jährlicher Kontostand",
     "loanAmountDistribution": "Kreditbetragsverteilung",
     "loanCount": "Anzahl der Kredite"
+  },
+  "widgets": {
+    "historyTable": {
+      "periodColumn": "Zeitraum",
+      "untilNow": "bis heute",
+      "deltaColumnIndicator": "Veränderung im Zeitraum",
+      "emptyColumns": "Keine Spalten konfiguriert.",
+      "emptyPeriods": "Keine Zeiträume für die gewählten Einstellungen.",
+      "emptyData": "Keine Daten."
+    }
   },
   "yearlyTable": {
     "title": "Jährliche Kreditübersicht",

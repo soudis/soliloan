@@ -12,10 +12,12 @@ import {
 import { sanitizeLoan } from '@/lib/sanitation/sanitize-loan';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import type { LoanMonthlyHistory, LoanMonthlyNumbers } from '@/types/dashboard';
+import type { Transaction } from '@prisma/client';
 import type { LoanWithCalculations } from '@/types/loans';
 
 export type DashboardLoan = LoanWithCalculations & {
   history: LoanMonthlyHistory;
+  transactions: Transaction[];
 };
 
 function buildLoanMonthlyHistory(
@@ -119,6 +121,7 @@ export async function getDashboardStats(projectId: string, toDate: Date = new Da
       return {
         ...sanitized,
         history,
+        transactions: parsedLoan.transactions,
       };
     });
 

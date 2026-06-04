@@ -15,7 +15,7 @@ import { useTranslations } from 'next-intl';
 import { DASHBOARD_WIDGET_TYPES, type DashboardWidgetType } from '@/types/dashboard-layout';
 
 const TOOLBOX_ICONS: Record<DashboardWidgetType, React.ComponentType<{ className?: string }>> = {
-  yearly_table: Table2,
+  history_table: Table2,
   pie_chart: PieChart,
   line_chart: LineChart,
   bar_chart: BarChart3,

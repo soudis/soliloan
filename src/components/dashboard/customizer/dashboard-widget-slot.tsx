@@ -17,10 +17,11 @@ import { cn } from '@/lib/utils';
 import { getWidgetColSpanClassName } from '@/lib/dashboard/layout-utils';
 import type { DashboardWidget, DashboardWidgetType } from '@/types/dashboard-layout';
 
+import { HistoryTableWidget } from '../widgets/history-table-widget';
 import { useDashboardLayout } from './dashboard-layout-context';
 
 const WIDGET_ICONS: Record<DashboardWidgetType, React.ComponentType<{ className?: string }>> = {
-  yearly_table: Table2,
+  history_table: Table2,
   pie_chart: PieChart,
   line_chart: LineChart,
   bar_chart: BarChart3,
@@ -83,8 +84,14 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
           <CardTitle className="truncate text-sm font-medium">{widget.title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-xs text-muted-foreground">{t(`widgetTypes.${widget.type}`)}</p>
-          <p className="mt-2 text-sm text-muted-foreground/80">{t('placeholder')}</p>
+          {widget.type === 'history_table' ? (
+            <HistoryTableWidget widget={widget} />
+          ) : (
+            <>
+              <p className="text-xs text-muted-foreground">{t(`widgetTypes.${widget.type}`)}</p>
+              <p className="mt-2 text-sm text-muted-foreground/80">{t('placeholder')}</p>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
