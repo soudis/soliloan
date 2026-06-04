@@ -2,7 +2,14 @@ import 'dotenv/config';
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { InterestMethod, Language, type Prisma, PrismaClient, TemplateDataset } from '@prisma/client';
+import {
+  DashboardLayoutScope,
+  InterestMethod,
+  Language,
+  type Prisma,
+  PrismaClient,
+  TemplateDataset,
+} from '@prisma/client';
 
 import { hashPassword } from '@/lib/utils/password';
 
@@ -156,7 +163,28 @@ async function seedSystemTemplates(adminUserId: string) {
   console.info(`Seeded ${SYSTEM_TEMPLATES.length} system templates`);
 }
 
+async function seedGlobalDashboardLayout() {
+  const existing = await prisma.dashboardLayout.findFirst({
+    where: { scope: DashboardLayoutScope.GLOBAL_DEFAULT },
+  });
+  if (existing) {
+    return;
+  }
+  const rowId = crypto.randomUUID();
+  await prisma.dashboardLayout.create({
+    data: {
+      scope: DashboardLayoutScope.GLOBAL_DEFAULT,
+      layout: {
+        rows: [{ id: rowId, widgets: [] }],
+      },
+    },
+  });
+  console.info('Seeded global default dashboard layout');
+}
+
 async function main() {
+  await seedGlobalDashboardLayout();
+
   if (process.env.SOLILOAN_ADMIN_EMAIL && process.env.SOLILOAN_ADMIN_PASSWORD) {
     const passwordHashed = await hashPassword(process.env.SOLILOAN_ADMIN_PASSWORD);
     const user = await prisma.user.upsert({

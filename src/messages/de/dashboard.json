@@ -1,4 +1,48 @@
 {
+  "customizer": {
+    "pageTitle": "Dashboard",
+    "scopeProject": "Projekt",
+    "scopeUser": "Mein Dashboard",
+    "customize": "Anpassen",
+    "doneCustomize": "Fertig",
+    "save": "Speichern",
+    "saving": "Speichern…",
+    "saved": "Gespeichert",
+    "saveError": "Speichern fehlgeschlagen",
+    "tabToolbox": "Widgets",
+    "tabSettings": "Einstellungen",
+    "toolboxHint": "Widget auf das Dashboard ziehen",
+    "noSelection": "Widget auswählen, um Einstellungen zu bearbeiten",
+    "settingsTitle": "Widget-Einstellungen",
+    "fieldTitle": "Titel",
+    "fieldWidth": "Breite",
+    "width": {
+      "quarter": "Viertel",
+      "half": "Halb",
+      "full": "Volle Breite"
+    },
+    "deleteWidget": "Widget entfernen",
+    "typeSettingsComingSoon": "Typspezifische Einstellungen folgen in Kürze.",
+    "placeholder": "Widget-Inhalt folgt in Kürze.",
+    "dragWidget": "Widget verschieben",
+    "dropHere": "Widget hier ablegen",
+    "dropNewRow": "Neue Zeile: Widget hier ablegen",
+    "addRow": "Zeile hinzufügen",
+    "copyToUser": "In mein Dashboard kopieren",
+    "copyToProject": "In Projekt-Dashboard kopieren",
+    "copyToUserSuccess": "Layout in dein Dashboard kopiert",
+    "copyToProjectSuccess": "Layout in das Projekt-Dashboard kopiert",
+    "copyError": "Kopieren fehlgeschlagen",
+    "widgetTypes": {
+      "yearly_table": "Jahrestabelle",
+      "pie_chart": "Kreisdiagramm",
+      "line_chart": "Liniendiagramm",
+      "bar_chart": "Balkendiagramm",
+      "stat": "Kennzahl",
+      "loan_table_view": "Kredittabelle",
+      "lender_table_view": "Kreditgeber-Tabelle"
+    }
+  },
   "welcome": "Willkommen, {name}!",
   "description": "Hier findest du eine Übersicht über deine Kredite und Kreditgeber*innen.",
   "stats": {

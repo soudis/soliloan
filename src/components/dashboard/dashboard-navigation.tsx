@@ -28,7 +28,11 @@ export default function DashboardNavigation({
   const pathname = usePathname();
   const t = useTranslations('navigation');
   const isFillHeightPage =
-    pathname === '/lenders' || pathname === '/loans' || pathname === '/logbook' || pathname === '/projects';
+    pathname === '/dashboard' ||
+    pathname === '/lenders' ||
+    pathname === '/loans' ||
+    pathname === '/logbook' ||
+    pathname === '/projects';
 
   const isFullWidthPage = pathname === '/lenders' || pathname === '/loans';
 
