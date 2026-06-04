@@ -2,13 +2,13 @@
 
 import type { Note } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { FileText, Lock, Pencil, Plus, Trash2, Unlock } from 'lucide-react';
+import { Lock, Pencil, Plus, Trash2, Unlock } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { deleteNoteAction } from '@/actions/notes/mutations/delete-note';
-import { formatDateLong } from '@/lib/utils';
+import { cn, formatDateLong } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { Button } from '../ui/button';
 import { ConfirmDialog } from './confirm-dialog';
@@ -59,26 +59,28 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
           {notes.map((note) => (
             <div
               key={note.id}
-              className="min-h-[120px] relative group rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow duration-200 break-inside-avoid mb-4 flex flex-col"
-              style={{
-                backgroundColor: note.public ? 'hsl(48, 100%, 96%)' : 'hsl(210, 100%, 96%)',
-                border: '1px solid rgba(0,0,0,0.05)',
-              }}
+              className={cn(
+                'relative group min-h-[120px] break-inside-avoid mb-4 flex flex-col rounded-sm border p-4',
+                'shadow-[1px_2px_6px_rgba(0,0,0,0.14)] hover:shadow-[2px_4px_10px_rgba(0,0,0,0.18)] transition-shadow duration-200',
+                note.public
+                  ? 'bg-[#fff9b0] border-amber-900/15 text-amber-950'
+                  : 'bg-[#e3f2fd] border-sky-900/15 text-sky-950',
+              )}
             >
-              <div className="flex items-start space-x-3 flex-1">
-                <div className={`rounded-full p-1 mt-1 ${note.public ? 'bg-amber-500/20' : 'bg-blue-500/20'}`}>
-                  <FileText className={`h-4 w-4 ${note.public ? 'text-amber-500' : 'text-blue-500'}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <NoteRichTextRenderer content={note.text} />
-                </div>
+              <div className="flex-1 min-w-0 pr-6 leading-snug">
+                <NoteRichTextRenderer content={note.text} />
               </div>
 
               <div className="absolute top-2 right-2 flex space-x-1 z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 bg-background/50 hover:bg-background shadow-xs"
+                  className={cn(
+                    'h-8 w-8 shadow-xs',
+                    note.public
+                      ? 'bg-amber-900/5 hover:bg-amber-900/10'
+                      : 'bg-sky-900/5 hover:bg-sky-900/10',
+                  )}
                   onClick={() => {
                     setEditingNote(note);
                     setIsNoteDialogOpen(true);
@@ -90,7 +92,12 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 bg-background/50 hover:bg-background shadow-xs"
+                  className={cn(
+                    'h-8 w-8 shadow-xs',
+                    note.public
+                      ? 'bg-amber-900/5 hover:bg-amber-900/10'
+                      : 'bg-sky-900/5 hover:bg-sky-900/10',
+                  )}
                   onClick={() => setIsConfirmOpen(note.id)}
                 >
                   <Trash2 className="h-4 w-4 text-destructive" />
@@ -98,7 +105,12 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
                 </Button>
               </div>
 
-              <div className="flex items-center justify-end space-x-2 mt-auto pt-2">
+              <div
+                className={cn(
+                  'mt-3 flex items-center justify-end space-x-2 border-t pt-2 text-xs',
+                  note.public ? 'border-amber-900/10 text-amber-900/70' : 'border-sky-900/10 text-sky-900/70',
+                )}
+              >
                 {note.loanId && loans && (
                   <LoanReferenceLink
                     loanId={note.loanId}
@@ -106,17 +118,17 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
                     className="mr-auto"
                   />
                 )}
-                <div className="text-xs text-muted-foreground">{formatDateLong(note.createdAt, locale)}</div>
-                <div className="text-xs text-muted-foreground">{note.createdBy.name}</div>
-                <div className="text-xs text-muted-foreground">•</div>
+                <div>{formatDateLong(note.createdAt, locale)}</div>
+                <div>{note.createdBy.name}</div>
+                <div>•</div>
 
                 {note.public ? (
-                  <div className="flex items-center text-xs text-muted-foreground">
+                  <div className="flex items-center">
                     <Unlock className="h-3 w-3 mr-1" />
                     {t('public')}
                   </div>
                 ) : (
-                  <div className="flex items-center text-xs text-muted-foreground">
+                  <div className="flex items-center">
                     <Lock className="h-3 w-3 mr-1" />
                     {t('private')}
                   </div>
