@@ -33,6 +33,7 @@
       "columns": "Spalten",
       "addColumn": "Spalte hinzufügen",
       "columnTitle": "Spaltentitel",
+      "titlePlaceholder": "Leer = Name der Kennzahl",
       "metric": "Kennzahl",
       "aggregation": "Aggregation",
       "aggregationDelta": "Veränderung im Zeitraum",
@@ -57,6 +58,41 @@
         "contractAmount": "Vertragsbetrag",
         "loanCount": "Anzahl Kredite",
         "interestRateAvg": "Ø Zinssatz (gewichtet)"
+      }
+    },
+    "stat": {
+      "stats": "Kennzahlen",
+      "addStat": "Kennzahl hinzufügen",
+      "statTitle": "Titel",
+      "displayType": "Darstellung",
+      "displayTypeMain": "Hauptkennzahl",
+      "displayTypeSecondary": "Nebenkennzahl",
+      "metric": "Kennzahl",
+      "aggregation": "Aggregation",
+      "aggregationTotal": "Gesamt (bis heute)",
+      "aggregationDelta": "Veränderung",
+      "deltaRange": "Zeitraum",
+      "deltaUnits": {
+        "days": "Tage",
+        "weeks": "Wochen",
+        "months": "Monate",
+        "years": "Jahre"
+      },
+      "defaultTitleWithDelta": "{metric} ({range})",
+      "deltaRangeLast": {
+        "days": "{amount, plural, one {letzter Tag} other {letzte # Tage}}",
+        "weeks": "{amount, plural, one {letzte Woche} other {letzte # Wochen}}",
+        "months": "{amount, plural, one {letzter Monat} other {letzte # Monate}}",
+        "years": "{amount, plural, one {letztes Jahr} other {letzte # Jahre}}"
+      },
+      "filters": "Filter",
+      "removeStat": "Kennzahl entfernen",
+      "expandStat": "Kennzahl aufklappen",
+      "collapseStat": "Kennzahl zuklappen",
+      "untitledStat": "Ohne Titel",
+      "validation": {
+        "metricAggregation": "Für diese Kennzahl ist nur Gesamtstand möglich.",
+        "deltaRangeRequired": "Zeitraum ist für Veränderung erforderlich."
       }
     },
     "placeholder": "Widget-Inhalt folgt in Kürze.",
@@ -127,6 +163,9 @@
       "emptyColumns": "Keine Spalten konfiguriert.",
       "emptyPeriods": "Keine Zeiträume für die gewählten Einstellungen.",
       "emptyData": "Keine Daten."
+    },
+    "stat": {
+      "emptyStats": "Keine Kennzahlen konfiguriert."
     }
   },
   "yearlyTable": {

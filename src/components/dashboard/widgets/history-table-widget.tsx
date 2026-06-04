@@ -6,26 +6,15 @@ import { useMemo } from 'react';
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { computeHistoryTable } from '@/lib/dashboard/history-table/compute-history-table';
+import { resolveMetricTitle } from '@/lib/dashboard/resolve-metric-title';
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
-import { formatCurrency, formatPercentage } from '@/lib/utils';
+import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import { type HistoryTableMetric, parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 
-function formatCellValue(metric: HistoryTableMetric | undefined, value: number | null): string {
-  if (value === null || Number.isNaN(value)) {
-    return '–';
-  }
-  if (metric === 'loanCount') {
-    return String(Math.round(value));
-  }
-  if (metric === 'interestRateAvg') {
-    return formatPercentage(value);
-  }
-  return formatCurrency(value);
-}
-
 export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
   const t = useTranslations('dashboard.widgets.historyTable');
+  const tMetrics = useTranslations('dashboard.customizer.historyTable');
   const tLoans = useTranslations('dashboard.loans');
   const tLenders = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
@@ -86,11 +75,18 @@ export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
         <TableHeader>
           <TableRow>
             <TableHead>{t('periodColumn')}</TableHead>
-            {result.columns.map((col) => (
-              <TableHead key={col.id} className="text-right">
-                <span className="inline-flex items-center gap-1">{`${col.title}${col.aggregation === 'delta' ? ' (Δ)' : ''}`}</span>
-              </TableHead>
-            ))}
+            {result.columns.map((col) => {
+              const metric = metricByColumnId.get(col.id);
+              const title = resolveMetricTitle(
+                col.title,
+                metric ? tMetrics(`metrics.${metric}`) : col.title,
+              );
+              return (
+                <TableHead key={col.id} className="text-right">
+                  <span className="inline-flex items-center gap-1">{`${title}${col.aggregation === 'delta' ? ' (Δ)' : ''}`}</span>
+                </TableHead>
+              );
+            })}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -99,7 +95,11 @@ export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
               <TableCell className="font-medium">{period.label}</TableCell>
               {result.columns.map((col) => (
                 <TableCell key={col.id} className="text-right tabular-nums">
-                  {formatCellValue(metricByColumnId.get(col.id), result.cells[period.key]?.[col.id] ?? null)}
+                  {formatDashboardMetricValue(
+                    metricByColumnId.get(col.id),
+                    result.cells[period.key]?.[col.id] ?? null,
+                    col.aggregation === 'delta',
+                  )}
                 </TableCell>
               ))}
             </TableRow>

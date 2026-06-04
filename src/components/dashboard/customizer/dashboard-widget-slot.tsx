@@ -18,6 +18,7 @@ import { getWidgetColSpanClassName } from '@/lib/dashboard/layout-utils';
 import type { DashboardWidget, DashboardWidgetType } from '@/types/dashboard-layout';
 
 import { HistoryTableWidget } from '../widgets/history-table-widget';
+import { StatWidget } from '../widgets/stat-widget';
 import { useDashboardLayout } from './dashboard-layout-context';
 
 const WIDGET_ICONS: Record<DashboardWidgetType, React.ComponentType<{ className?: string }>> = {
@@ -86,6 +87,8 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
         <CardContent>
           {widget.type === 'history_table' ? (
             <HistoryTableWidget widget={widget} />
+          ) : widget.type === 'stat' ? (
+            <StatWidget widget={widget} />
           ) : (
             <>
               <p className="text-xs text-muted-foreground">{t(`widgetTypes.${widget.type}`)}</p>

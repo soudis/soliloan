@@ -1,4 +1,5 @@
 import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
+import { createDefaultStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
 import type {
   DashboardLayoutData,
   DashboardLayoutRow,
@@ -106,6 +107,11 @@ export function createWidget(
     type,
     title,
     width: width ?? DEFAULT_WIDTH_BY_TYPE[type],
-    config: type === 'history_table' ? createDefaultHistoryTableConfig() : {},
+    config:
+      type === 'history_table'
+        ? createDefaultHistoryTableConfig()
+        : type === 'stat'
+          ? createDefaultStatWidgetConfig()
+          : {},
   };
 }

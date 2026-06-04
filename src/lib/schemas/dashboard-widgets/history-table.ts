@@ -12,7 +12,7 @@ const entityFilterSchema = z.object({
 const historyTableColumnSchema = z
   .object({
     id: z.string(),
-    title: z.string().min(1),
+    title: z.string(),
     metric: z.enum(HISTORY_TABLE_METRICS),
     aggregation: z.enum(['cumulative', 'delta']),
     filters: z.array(entityFilterSchema).default([]),

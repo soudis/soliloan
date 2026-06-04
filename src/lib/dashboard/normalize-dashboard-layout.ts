@@ -1,5 +1,6 @@
 import { DEFAULT_WIDTH_BY_TYPE } from '@/lib/dashboard/layout-utils';
 import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
+import { createDefaultStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
 import type { DashboardLayoutData, DashboardWidget, DashboardWidgetType } from '@/types/dashboard-layout';
 
 function normalizeWidget(widget: DashboardWidget & { type?: string }): DashboardWidget {
@@ -21,6 +22,13 @@ function normalizeWidget(widget: DashboardWidget & { type?: string }): Dashboard
       ...widget,
       width,
       config: createDefaultHistoryTableConfig(),
+    };
+  }
+  if (widget.type === 'stat' && (!widget.config || Object.keys(widget.config).length === 0)) {
+    return {
+      ...widget,
+      width,
+      config: createDefaultStatWidgetConfig(),
     };
   }
   return { ...widget, width };

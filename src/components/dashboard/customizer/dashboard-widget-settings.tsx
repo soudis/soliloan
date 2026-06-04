@@ -14,9 +14,10 @@ import { findWidgetLocation, removeWidget, updateWidget } from '@/lib/dashboard/
 import { DEFAULT_WIDTH_BY_TYPE } from '@/lib/dashboard/layout-utils';
 import type { DashboardWidgetWidth } from '@/types/dashboard-layout';
 import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
-
-import { HistoryTableSettings } from './history-table-settings';
+import { parseStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
 import { useDashboardLayout } from './dashboard-layout-context';
+import { HistoryTableSettings } from './history-table-settings';
+import { StatWidgetSettings } from './stat-widget-settings';
 
 const settingsSchema = z.object({
   title: z.string().min(1),
@@ -45,7 +46,7 @@ export function DashboardWidgetSettings() {
       title: widget.title,
       width: widget.width ?? DEFAULT_WIDTH_BY_TYPE[widget.type],
     };
-  }, [widget?.id, widget?.title, widget?.width, widget?.type]);
+  }, [widget]);
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
@@ -132,9 +133,18 @@ export function DashboardWidgetSettings() {
               setLayout((prev) => updateWidget(prev, selectedWidgetId, { config }));
             }}
           />
-        ) : (
+        ) : null}
+        {widget.type === 'stat' ? (
+          <StatWidgetSettings
+            config={parseStatWidgetConfig(widget.config)}
+            onConfigChange={(config) => {
+              setLayout((prev) => updateWidget(prev, selectedWidgetId, { config }));
+            }}
+          />
+        ) : null}
+        {widget.type !== 'history_table' && widget.type !== 'stat' ? (
           <p className="mt-6 text-xs text-muted-foreground">{t('typeSettingsComingSoon')}</p>
-        )}
+        ) : null}
 
         <div className="mt-6 border-t pt-4">
           <Button

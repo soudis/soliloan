@@ -108,7 +108,7 @@ export function HistoryTableSettings({
           ...draftConfig.columns,
           {
             id,
-            title: t('metrics.balance'),
+            title: '',
             metric: 'balance',
             aggregation: 'cumulative',
             filters: [],
@@ -200,7 +200,7 @@ export function HistoryTableSettings({
                   {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 </Button>
                 <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                  {column.title || t(`metrics.${column.metric}`)}
+                  {column.title.trim() || t(`metrics.${column.metric}`)}
                 </span>
                 <Button
                   type="button"
@@ -219,6 +219,7 @@ export function HistoryTableSettings({
                     <Label className="text-xs">{t('columnTitle')}</Label>
                     <Input
                       value={column.title}
+                      placeholder={t('titlePlaceholder')}
                       onChange={(e) => updateColumn(column.id, { title: e.target.value })}
                       onBlur={flushConfig}
                     />

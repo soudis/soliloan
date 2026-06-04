@@ -49,7 +49,7 @@ function countsAsActiveLoanAtPeriodEnd(
   return loanActiveAtPeriodEnd(loan, periodEnd);
 }
 
-function aggregateMetric(
+export function aggregateMetric(
   loans: DashboardLoan[],
   column: HistoryTableColumnConfig,
   period: HistoryPeriod,
@@ -104,10 +104,11 @@ function aggregateMetric(
         break;
       }
       case 'balance': {
-        if (!periodNumbers) {
-          break;
+        if (column.aggregation === 'cumulative') {
+          total += getCumulativeNumbers(loan, period).end;
+        } else if (periodNumbers) {
+          total += periodNumbers.end - periodNumbers.begin;
         }
-        total += column.aggregation === 'delta' ? periodNumbers.end - periodNumbers.begin : periodNumbers.end;
         break;
       }
       case 'deposits':
