@@ -2,10 +2,11 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { findWidgetLocation, removeWidget, updateWidget } from '@/lib/dashboard/layout-editor';
 import {
   DEFAULT_WIDTH_BY_TYPE,
+  DESKTOP_GRID_COLS,
+  getDesktopColspan,
+  getRowUsedCols,
   WIDGET_WIDTH_SETTINGS_ORDER,
   widgetIsFullWidthLocked,
 } from '@/lib/dashboard/layout-utils';
@@ -67,9 +71,20 @@ export function DashboardWidgetSettings() {
   const tPie = useTranslations('dashboard.customizer.pieChart');
   const { layout, setLayout } = useDashboardLayoutData();
   const { selectedWidgetId, setSelectedWidgetId } = useDashboardEditor();
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const location = selectedWidgetId ? findWidgetLocation(layout, selectedWidgetId) : null;
   const widget = location?.widget;
+
+  // Columns still free in the row once the current widget is removed; widths larger than this
+  // can't fit and are disabled to avoid silent rejection / down-fitting in updateWidget.
+  const availableCols = useMemo(() => {
+    if (!location || !widget) {
+      return DESKTOP_GRID_COLS;
+    }
+    const others = location.row.widgets.filter((w) => w.id !== widget.id);
+    return DESKTOP_GRID_COLS - getRowUsedCols(others);
+  }, [location, widget]);
 
   const settingsValues = useMemo((): SettingsFormValues => {
     if (!widget) {
@@ -163,12 +178,19 @@ export function DashboardWidgetSettings() {
                       </FormControl>
                       <SelectContent>
                         {WIDGET_WIDTH_SETTINGS_ORDER.map((width) => (
-                          <SelectItem key={width} value={width}>
+                          <SelectItem
+                            key={width}
+                            value={width}
+                            disabled={width !== field.value && getDesktopColspan(width) > availableCols}
+                          >
                             {t(`width.${width}`)}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    {WIDGET_WIDTH_SETTINGS_ORDER.some((width) => getDesktopColspan(width) > availableCols) ? (
+                      <p className="text-xs text-muted-foreground">{t('widthDoesNotFitHint')}</p>
+                    ) : null}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -294,19 +316,23 @@ export function DashboardWidgetSettings() {
         ) : null}
 
         <div className="mt-6 border-t pt-4">
-          <Button
-            type="button"
-            variant="destructive"
-            className="w-full"
-            onClick={() => {
-              setLayout((prev) => removeWidget(prev, selectedWidgetId));
-              setSelectedWidgetId(null);
-            }}
-          >
+          <Button type="button" variant="destructive" className="w-full" onClick={() => setDeleteConfirmOpen(true)}>
             {t('deleteWidget')}
           </Button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title={t('deleteWidgetConfirmTitle')}
+        description={t('deleteWidgetConfirmDescription')}
+        confirmText={t('deleteWidget')}
+        onConfirm={() => {
+          setLayout((prev) => removeWidget(prev, selectedWidgetId));
+          setSelectedWidgetId(null);
+        }}
+      />
     </div>
   );
 }

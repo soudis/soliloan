@@ -96,7 +96,8 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
       labels: result.labels,
       datasets: result.datasets.map((ds, i) => ({
         label: ds.label,
-        data: ds.values.map((v) => (v === null ? 0 : v)),
+        // Keep nulls as gaps (no bar) to match the line chart instead of rendering a 0 bar.
+        data: ds.values.map((v) => v),
         backgroundColor: chartColorAtIndex(i),
         borderWidth: 1,
         stack: config.seriesLayout === 'stacked' ? 'stack' : undefined,

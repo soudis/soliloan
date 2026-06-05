@@ -12,6 +12,10 @@
     "saving": "Speichern…",
     "saved": "Gespeichert",
     "saveError": "Speichern fehlgeschlagen",
+    "discardChangesTitle": "Nicht gespeicherte Änderungen verwerfen?",
+    "discardChangesDescription": "Du hast nicht gespeicherte Änderungen am Layout. Wenn du den Bearbeitungsmodus verlässt, gehen diese verloren.",
+    "discardChanges": "Verwerfen",
+    "keepEditing": "Weiter bearbeiten",
     "tabToolbox": "Widgets",
     "tabSettings": "Einstellungen",
     "toolboxHint": "Neues Widget aus der Liste auf das Dashboard ziehen.",
@@ -20,6 +24,7 @@
     "settingsTitle": "Widget-Einstellungen",
     "fieldTitle": "Titel",
     "fieldWidth": "Breite",
+    "widthDoesNotFitHint": "Breiten, die nicht in die Zeile passen, sind deaktiviert.",
     "width": {
       "quarter": "Viertel",
       "third": "Drittel",
@@ -35,6 +40,8 @@
       "fullWidthHint": "Trennlinien nutzen immer die volle Breite."
     },
     "deleteWidget": "Widget entfernen",
+    "deleteWidgetConfirmTitle": "Widget entfernen?",
+    "deleteWidgetConfirmDescription": "Dieses Widget wird aus dem Layout entfernt. Die Änderung muss noch gespeichert werden.",
     "typeSettingsComingSoon": "Typspezifische Einstellungen folgen in Kürze.",
     "chartDiscriminator": {
       "filterGroupLoan": "Kredit",
@@ -273,6 +280,8 @@
     "copyToProject": "In Projekt-Dashboard kopieren",
     "copyToUserSuccess": "Layout in dein Dashboard kopiert",
     "copyToProjectSuccess": "Layout in das Projekt-Dashboard kopiert",
+    "copyOverwriteTitle": "Ziel-Layout überschreiben?",
+    "copyOverwriteDescription": "Das Ziel-Dashboard hat nicht gespeicherte Änderungen. Beim Kopieren werden diese überschrieben.",
     "copyError": "Kopieren fehlgeschlagen",
     "saveAsGlobalDefault": "Als Standard-Layout speichern",
     "saveAsGlobalDefaultConfirmTitle": "Globales Standard-Layout überschreiben?",

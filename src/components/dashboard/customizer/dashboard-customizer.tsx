@@ -13,6 +13,7 @@ import {
 import { upsertGlobalDashboardLayoutAction } from '@/actions/dashboard/mutations/upsert-global-dashboard-layout';
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { ProjectLogo } from '@/components/dashboard/project-logo';
+import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cloneLayoutData } from '@/lib/dashboard/layout-utils';
@@ -46,6 +47,7 @@ export function DashboardCustomizer({
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
 
   const [layouts, setLayouts] = useState<LayoutsState>({
     project: cloneLayoutData(initialProjectLayout),
@@ -57,8 +59,13 @@ export function DashboardCustomizer({
   });
 
   const activeScope = (scope ?? 'project') as DashboardLayoutScopeKey;
+  const otherScope: DashboardLayoutScopeKey = activeScope === 'project' ? 'user' : 'project';
   const layout = layouts[activeScope];
   const isDirty = useMemo(() => !isEqual(layout, savedLayouts[activeScope]), [layout, savedLayouts, activeScope]);
+  const isOtherScopeDirty = useMemo(
+    () => !isEqual(layouts[otherScope], savedLayouts[otherScope]),
+    [layouts, savedLayouts, otherScope],
+  );
 
   const setLayout = useCallback(
     (next: DashboardLayoutData | ((prev: DashboardLayoutData) => DashboardLayoutData)) => {
@@ -116,12 +123,37 @@ export function DashboardCustomizer({
   };
 
   const handleCopyToOtherScope = (copied: DashboardLayoutData) => {
-    const targetScope: DashboardLayoutScopeKey = activeScope === 'project' ? 'user' : 'project';
     setLayouts((prev) => ({
       ...prev,
-      [targetScope]: copied,
+      [otherScope]: copied,
     }));
     setSaveStatus('idle');
+  };
+
+  const exitCustomizing = () => {
+    setIsCustomizing(false);
+    setSelectedWidgetId(null);
+    setSaveStatus('idle');
+  };
+
+  const handleToggleCustomizing = () => {
+    if (!isCustomizing) {
+      setIsCustomizing(true);
+      return;
+    }
+    if (isDirty || isOtherScopeDirty) {
+      setExitConfirmOpen(true);
+      return;
+    }
+    exitCustomizing();
+  };
+
+  const discardEditsAndExit = () => {
+    setLayouts({
+      project: cloneLayoutData(savedLayouts.project),
+      user: cloneLayoutData(savedLayouts.user),
+    });
+    exitCustomizing();
   };
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: only reset selected widget id when scope changes
@@ -173,17 +205,7 @@ export function DashboardCustomizer({
                 {saveStatus === 'saving' ? t('saving') : t('save')}
               </Button>
             )}
-            <Button
-              type="button"
-              variant={isCustomizing ? 'secondary' : 'outline'}
-              onClick={() => {
-                setIsCustomizing((v) => !v);
-                if (isCustomizing) {
-                  setSelectedWidgetId(null);
-                  setSaveStatus('idle');
-                }
-              }}
-            >
+            <Button type="button" variant={isCustomizing ? 'secondary' : 'outline'} onClick={handleToggleCustomizing}>
               <SlidersHorizontal className="mr-2 h-4 w-4" />
               {isCustomizing ? t('doneCustomize') : t('customize')}
             </Button>
@@ -211,6 +233,7 @@ export function DashboardCustomizer({
               <aside className="sticky top-4 z-20 flex h-[calc(100dvh-14rem)] max-h-[calc(100dvh-14rem)] w-80 shrink-0 flex-col self-start overflow-hidden rounded-lg border border-border bg-background shadow-sm">
                 <DashboardEditorSidebar
                   isAdmin={isAdmin}
+                  isTargetScopeDirty={isOtherScopeDirty}
                   onCopyLayout={handleCopyToOtherScope}
                   onSaveAsGlobalDefault={handleSaveAsGlobalDefault}
                 />
@@ -219,6 +242,16 @@ export function DashboardCustomizer({
           </div>
         </DashboardDndProvider>
       </DashboardLayoutProvider>
+
+      <ConfirmDialog
+        open={exitConfirmOpen}
+        onOpenChange={setExitConfirmOpen}
+        title={t('discardChangesTitle')}
+        description={t('discardChangesDescription')}
+        confirmText={t('discardChanges')}
+        cancelText={t('keepEditing')}
+        onConfirm={discardEditsAndExit}
+      />
     </div>
   );
 }

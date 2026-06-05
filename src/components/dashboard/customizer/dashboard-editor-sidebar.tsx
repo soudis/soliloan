@@ -17,10 +17,12 @@ import { DashboardWidgetToolbox } from './dashboard-widget-toolbox';
 
 export function DashboardEditorSidebar({
   isAdmin = false,
+  isTargetScopeDirty = false,
   onCopyLayout,
   onSaveAsGlobalDefault,
 }: {
   isAdmin?: boolean;
+  isTargetScopeDirty?: boolean;
   onCopyLayout: (layout: DashboardLayoutData) => void;
   onSaveAsGlobalDefault: (layout: DashboardLayoutData) => void | Promise<void>;
 }) {
@@ -28,6 +30,7 @@ export function DashboardEditorSidebar({
   const skipSettingsOnSelectionRef = useRef(false);
   const [tab, setTab] = useState('toolbox');
   const [globalDefaultDialogOpen, setGlobalDefaultDialogOpen] = useState(false);
+  const [copyConfirmOpen, setCopyConfirmOpen] = useState(false);
   const prevSelectedIdRef = useRef<string | undefined>(undefined);
 
   const { scope, layout } = useDashboardLayoutData();
@@ -45,30 +48,29 @@ export function DashboardEditorSidebar({
     prevSelectedIdRef.current = selectedWidgetId ?? undefined;
   }, [selectedWidgetId]);
 
-  const handleCopy = (targetScope: 'project' | 'user') => {
-    const sourceScope = scope;
-    if (sourceScope === targetScope) {
-      return;
-    }
+  const targetScope: 'project' | 'user' = scope === 'project' ? 'user' : 'project';
+
+  const performCopy = () => {
     onCopyLayout(cloneLayoutData(layout));
     toast.success(targetScope === 'user' ? t('copyToUserSuccess') : t('copyToProjectSuccess'));
+  };
+
+  const handleCopy = () => {
+    if (isTargetScopeDirty) {
+      setCopyConfirmOpen(true);
+      return;
+    }
+    performCopy();
   };
 
   return (
     <TooltipProvider>
       <div className="flex h-full min-h-0 w-full flex-col">
         <div className="shrink-0 space-y-2 border-b px-4 py-3">
-          {scope === 'project' ? (
-            <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => handleCopy('user')}>
-              <Copy className="mr-2 h-4 w-4" />
-              {t('copyToUser')}
-            </Button>
-          ) : (
-            <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => handleCopy('project')}>
-              <Copy className="mr-2 h-4 w-4" />
-              {t('copyToProject')}
-            </Button>
-          )}
+          <Button type="button" variant="outline" size="sm" className="w-full" onClick={handleCopy}>
+            <Copy className="mr-2 h-4 w-4" />
+            {scope === 'project' ? t('copyToUser') : t('copyToProject')}
+          </Button>
           {isAdmin ? (
             <Button
               type="button"
@@ -82,6 +84,15 @@ export function DashboardEditorSidebar({
             </Button>
           ) : null}
         </div>
+
+        <ConfirmDialog
+          open={copyConfirmOpen}
+          onOpenChange={setCopyConfirmOpen}
+          title={t('copyOverwriteTitle')}
+          description={t('copyOverwriteDescription')}
+          confirmText={scope === 'project' ? t('copyToUser') : t('copyToProject')}
+          onConfirm={performCopy}
+        />
 
         <ConfirmDialog
           open={globalDefaultDialogOpen}

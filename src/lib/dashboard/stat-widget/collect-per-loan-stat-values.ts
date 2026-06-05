@@ -8,11 +8,17 @@ import type { LoanMetricCacheMap } from '../history-table/loan-metric-cache';
 import type { HistoryPeriod } from '../history-table/rollup-period';
 
 function loanHasHistoryBeforePeriodEnd(loan: DashboardLoan, period: HistoryPeriod): boolean {
-  if (loan.cumulativeTimeline?.length) {
-    return true;
+  const periodEnd = moment(period.periodEnd);
+
+  const timeline = loan.cumulativeTimeline;
+  if (timeline?.length) {
+    // Timeline is sorted ascending by periodEndMs, so the first entry is the loan's
+    // earliest history. Only count the loan if that entry is on or before the period end.
+    const earliest = timeline[0];
+    const periodEndMs = moment(period.periodEnd).endOf('day').valueOf();
+    return earliest !== undefined && earliest.periodEndMs <= periodEndMs;
   }
 
-  const periodEnd = moment(period.periodEnd);
   for (const yearStr of Object.keys(loan.history)) {
     const year = Number(yearStr);
     const months = loan.history[year];
