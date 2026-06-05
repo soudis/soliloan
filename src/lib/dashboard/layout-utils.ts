@@ -1,3 +1,4 @@
+import { createDefaultBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
 import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { createDefaultPieChartConfig } from '@/types/dashboard-widgets/pie-chart';
 import { createDefaultStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
@@ -153,7 +154,12 @@ export function widgetShowsCardHeader(widget: { type: DashboardWidgetType; title
   if (widget.type === 'divider') {
     return false;
   }
-  if (widget.type === 'stat' || widget.type === 'history_table' || widget.type === 'pie_chart') {
+  if (
+    widget.type === 'stat' ||
+    widget.type === 'history_table' ||
+    widget.type === 'pie_chart' ||
+    widget.type === 'bar_chart'
+  ) {
     return widget.title.trim().length > 0;
   }
   return true;
@@ -180,6 +186,8 @@ export function createWidget(
           ? createDefaultStatWidgetConfig()
           : type === 'pie_chart'
             ? createDefaultPieChartConfig()
-            : {},
+            : type === 'bar_chart'
+              ? createDefaultBarChartConfig()
+              : {},
   };
 }

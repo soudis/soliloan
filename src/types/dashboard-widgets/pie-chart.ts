@@ -1,5 +1,16 @@
 import type { EntityFilter } from '@/types/entity-filters';
 
+import {
+  CHART_DATE_GROUPINGS,
+  chartDiscriminatorToFlatFields,
+  createDefaultChartDiscriminatorConfig,
+  DEFAULT_CHART_TOP_N,
+  parseChartDiscriminatorConfig,
+  type ChartDateGrouping,
+  type ChartDiscriminatorConfig,
+  type ChartGroupBy,
+  type ChartTextTransform,
+} from './chart-discriminator';
 import { HISTORY_TABLE_METRICS, type HistoryTableMetric } from './history-table';
 
 export type PieChartMeasure = HistoryTableMetric;
@@ -14,27 +25,23 @@ export const PIE_CHART_SIZES = ['small', 'medium', 'big'] as const;
 
 export type PieChartChartSize = (typeof PIE_CHART_SIZES)[number];
 
-export const PIE_CHART_DATE_GROUPINGS = ['year', 'month', 'monthOfYear', 'weekOfYear', 'dayOfWeek'] as const;
+/** @deprecated Use ChartDateGrouping from chart-discriminator */
+export type PieChartDateGrouping = ChartDateGrouping;
 
-export type PieChartDateGrouping = (typeof PIE_CHART_DATE_GROUPINGS)[number];
+export const PIE_CHART_DATE_GROUPINGS = CHART_DATE_GROUPINGS;
 
-export type PieChartTextTransform =
-  | { kind: 'firstChars'; count: number }
-  | { kind: 'lastChars'; count: number }
-  | { kind: 'firstWord' }
-  | { kind: 'charCount' };
+/** @deprecated Use ChartTextTransform from chart-discriminator */
+export type PieChartTextTransform = ChartTextTransform;
 
-export type PieChartGroupBy = {
-  entity: 'loan' | 'lender';
-  field: string;
-};
+/** @deprecated Use ChartGroupBy from chart-discriminator */
+export type PieChartGroupBy = ChartGroupBy;
 
 export type PieChartWidgetConfig = {
   layoutVersion: 1;
-  groupBy: PieChartGroupBy;
+  groupBy: ChartGroupBy;
   numericBuckets?: number[];
-  dateGrouping?: PieChartDateGrouping;
-  textTransform?: PieChartTextTransform;
+  dateGrouping?: ChartDateGrouping;
+  textTransform?: ChartTextTransform;
   measure: PieChartMeasure;
   measureAggregation: PieChartMeasureAggregation;
   topNCategories: number;
@@ -42,6 +49,17 @@ export type PieChartWidgetConfig = {
   chartSize: PieChartChartSize;
   filters: EntityFilter[];
 };
+
+export function getPieChartDiscriminator(config: PieChartWidgetConfig): ChartDiscriminatorConfig {
+  return {
+    groupBy: config.groupBy,
+    numericBuckets: config.numericBuckets,
+    dateGrouping: config.dateGrouping,
+    textTransform: config.textTransform,
+    topNCategories: config.topNCategories,
+    filters: config.filters,
+  };
+}
 
 export function getPieChartHeightClassName(size: PieChartChartSize): string {
   switch (size) {
@@ -56,53 +74,18 @@ export function getPieChartHeightClassName(size: PieChartChartSize): string {
 
 export const PIE_CHART_MEASURES_WITHOUT_AVERAGE: PieChartMeasure[] = ['loanCount'];
 
-export const DEFAULT_PIE_CHART_TOP_N = 8;
+export const DEFAULT_PIE_CHART_TOP_N = DEFAULT_CHART_TOP_N;
 
 export function createDefaultPieChartConfig(): PieChartWidgetConfig {
+  const discriminator = createDefaultChartDiscriminatorConfig();
   return {
     layoutVersion: 1,
-    groupBy: { entity: 'loan', field: 'status' },
+    ...chartDiscriminatorToFlatFields(discriminator),
     measure: 'balance',
     measureAggregation: 'sum',
-    topNCategories: DEFAULT_PIE_CHART_TOP_N,
     chartVariant: 'pie',
     chartSize: 'medium',
-    filters: [],
   };
-}
-
-function parseNumericBuckets(raw: unknown): number[] | undefined {
-  if (!Array.isArray(raw) || raw.length === 0) {
-    return undefined;
-  }
-  const parsed = raw
-    .map((v) => Number(v))
-    .filter((n) => Number.isFinite(n))
-    .sort((a, b) => a - b);
-  const unique: number[] = [];
-  for (const n of parsed) {
-    if (unique.length === 0 || unique[unique.length - 1] !== n) {
-      unique.push(n);
-    }
-  }
-  return unique.length > 0 ? unique : undefined;
-}
-
-function parseTextTransform(raw: unknown): PieChartTextTransform | undefined {
-  if (!raw || typeof raw !== 'object') {
-    return undefined;
-  }
-  const t = raw as PieChartTextTransform;
-  if (t.kind === 'firstWord' || t.kind === 'charCount') {
-    return { kind: t.kind };
-  }
-  if (t.kind === 'firstChars' || t.kind === 'lastChars') {
-    const count = Number((t as { count?: number }).count);
-    if (Number.isFinite(count) && count > 0) {
-      return { kind: t.kind, count: Math.floor(count) };
-    }
-  }
-  return undefined;
 }
 
 export function parsePieChartConfig(config: Record<string, unknown> | undefined): PieChartWidgetConfig {
@@ -111,13 +94,7 @@ export function parsePieChartConfig(config: Record<string, unknown> | undefined)
     return defaults;
   }
 
-  const groupByRaw = config.groupBy as PieChartGroupBy | undefined;
-  const entity = groupByRaw?.entity === 'lender' ? 'lender' : 'loan';
-  const field = typeof groupByRaw?.field === 'string' ? groupByRaw.field : defaults.groupBy.field;
-
-  const dateGrouping = PIE_CHART_DATE_GROUPINGS.includes(config.dateGrouping as PieChartDateGrouping)
-    ? (config.dateGrouping as PieChartDateGrouping)
-    : undefined;
+  const discriminator = parseChartDiscriminatorConfig(config, getPieChartDiscriminator(defaults));
 
   const measureAggregation: PieChartMeasureAggregation =
     config.measureAggregation === 'count' || config.measureAggregation === 'average'
@@ -128,7 +105,6 @@ export function parsePieChartConfig(config: Record<string, unknown> | undefined)
     ? (config.measure as PieChartMeasure)
     : defaults.measure;
 
-  const topN = Number(config.topNCategories);
   const chartVariant: PieChartChartVariant = config.chartVariant === 'donut' ? 'donut' : 'pie';
   const chartSize: PieChartChartSize = PIE_CHART_SIZES.includes(config.chartSize as PieChartChartSize)
     ? (config.chartSize as PieChartChartSize)
@@ -136,15 +112,10 @@ export function parsePieChartConfig(config: Record<string, unknown> | undefined)
 
   return {
     layoutVersion: 1,
-    groupBy: { entity, field },
-    numericBuckets: parseNumericBuckets(config.numericBuckets),
-    dateGrouping,
-    textTransform: parseTextTransform(config.textTransform),
+    ...chartDiscriminatorToFlatFields(discriminator),
     measure,
     measureAggregation,
-    topNCategories: Number.isFinite(topN) && topN >= 1 && topN <= 50 ? Math.floor(topN) : DEFAULT_PIE_CHART_TOP_N,
     chartVariant,
     chartSize,
-    filters: Array.isArray(config.filters) ? (config.filters as EntityFilter[]) : [],
   };
 }

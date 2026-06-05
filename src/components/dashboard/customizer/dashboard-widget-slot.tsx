@@ -10,6 +10,7 @@ import { getEffectiveWidgetColSpanClassName, widgetShowsCardHeader } from '@/lib
 import { cn } from '@/lib/utils';
 import type { DashboardWidget, DashboardWidgetType } from '@/types/dashboard-layout';
 
+import { BarChartWidget } from '../widgets/bar-chart-widget';
 import { DividerWidget } from '../widgets/divider-widget';
 import { HistoryTableWidget } from '../widgets/history-table-widget';
 import { PieChartWidget } from '../widgets/pie-chart-widget';
@@ -115,6 +116,8 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
             <StatWidget widget={widget} />
           ) : widget.type === 'pie_chart' ? (
             <PieChartWidget widget={widget} />
+          ) : widget.type === 'bar_chart' ? (
+            <BarChartWidget widget={widget} />
           ) : (
             <>
               <p className="text-xs text-muted-foreground">{t(`widgetTypes.${widget.type}`)}</p>

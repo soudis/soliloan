@@ -3,6 +3,7 @@ import {
   isDashboardWidgetWidth,
   widgetIsFullWidthLocked,
 } from '@/lib/dashboard/layout-utils';
+import { createDefaultBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
 import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { createDefaultPieChartConfig } from '@/types/dashboard-widgets/pie-chart';
 import { createDefaultStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
@@ -45,6 +46,13 @@ function normalizeWidget(widget: DashboardWidget & { type?: string }): Dashboard
       ...widget,
       width,
       config: createDefaultPieChartConfig(),
+    };
+  }
+  if (widget.type === 'bar_chart' && (!widget.config || Object.keys(widget.config).length === 0)) {
+    return {
+      ...widget,
+      width,
+      config: createDefaultBarChartConfig(),
     };
   }
   return { ...widget, width };

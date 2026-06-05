@@ -108,6 +108,7 @@ export function DashboardDndProvider({ children }: { children: React.ReactNode }
         type === 'stat' ||
           type === 'history_table' ||
           type === 'pie_chart' ||
+          type === 'bar_chart' ||
           type === 'divider'
           ? ''
           : t(`widgetTypes.${type}`);

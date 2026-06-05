@@ -1,5 +1,7 @@
 import type { EntityFilter } from '@/types/entity-filters';
 
+import { parseChartSeriesList, type ChartSeriesConfig } from './chart-series';
+
 export const HISTORY_TABLE_METRICS = [
   'balance',
   'deposits',
@@ -19,13 +21,7 @@ export type HistoryTableAggregation = 'delta' | 'cumulative';
 
 export type HistoryTablePeriodMode = 'yearly' | 'monthly';
 
-export type HistoryTableColumnConfig = {
-  id: string;
-  title: string;
-  metric: HistoryTableMetric;
-  aggregation: HistoryTableAggregation;
-  filters: EntityFilter[];
-};
+export type HistoryTableColumnConfig = ChartSeriesConfig;
 
 export type HistoryTableWidgetConfig = {
   layoutVersion: 1;
@@ -64,17 +60,7 @@ export function parseHistoryTableConfig(config: Record<string, unknown> | undefi
     config.periodCount === null || config.periodCount === undefined
       ? null
       : Number(config.periodCount);
-  const columns = Array.isArray(config.columns)
-    ? (config.columns as HistoryTableColumnConfig[]).map((col) => ({
-        id: String(col.id ?? crypto.randomUUID()),
-        title: String(col.title ?? ''),
-        metric: (HISTORY_TABLE_METRICS.includes(col.metric as HistoryTableMetric)
-          ? col.metric
-          : 'balance') as HistoryTableMetric,
-        aggregation: (col.aggregation === 'delta' ? 'delta' : 'cumulative') as HistoryTableAggregation,
-        filters: Array.isArray(col.filters) ? (col.filters as EntityFilter[]) : [],
-      }))
-    : [];
+  const columns = parseChartSeriesList(config.columns) as HistoryTableColumnConfig[];
 
   return {
     layoutVersion: 1,

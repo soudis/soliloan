@@ -3,12 +3,15 @@ import moment from 'moment';
 import type { DataTableColumnFilterDefinition } from '@/lib/entity-filters/filter-definitions';
 import { formatCurrency, formatNumber } from '@/lib/utils';
 import type {
-  PieChartDateGrouping,
-  PieChartTextTransform,
-  PieChartWidgetConfig,
-} from '@/types/dashboard-widgets/pie-chart';
+  ChartDateGrouping,
+  ChartDiscriminatorConfig,
+  ChartTextTransform,
+} from '@/types/dashboard-widgets/chart-discriminator';
 
-export const PIE_EMPTY_GROUP_KEY = '__empty__';
+export const CHART_EMPTY_GROUP_KEY = '__empty__';
+
+/** @deprecated Use CHART_EMPTY_GROUP_KEY */
+export const PIE_EMPTY_GROUP_KEY = CHART_EMPTY_GROUP_KEY;
 
 export type GroupKeyResult = {
   key: string;
@@ -63,7 +66,7 @@ function getNumericBucketIndex(value: number, thresholds: number[]): number {
   return thresholds.length;
 }
 
-function applyTextTransform(text: string, transform: PieChartTextTransform): string {
+function applyTextTransform(text: string, transform: ChartTextTransform): string {
   switch (transform.kind) {
     case 'firstChars':
       return text.slice(0, transform.count);
@@ -78,7 +81,7 @@ function applyTextTransform(text: string, transform: PieChartTextTransform): str
   }
 }
 
-function resolveDateGroupKey(date: Date, grouping: PieChartDateGrouping, locale: string): GroupKeyResult {
+function resolveDateGroupKey(date: Date, grouping: ChartDateGrouping, locale: string): GroupKeyResult {
   const m = moment(date).locale(locale);
   switch (grouping) {
     case 'year':
@@ -135,7 +138,7 @@ function resolveSelectLabel(
 
 export function resolveGroupKey(
   rawValue: unknown,
-  config: PieChartWidgetConfig,
+  config: ChartDiscriminatorConfig,
   fieldDefinition: DataTableColumnFilterDefinition | undefined,
   formatters: {
     emptyLabel: string;
@@ -145,7 +148,7 @@ export function resolveGroupKey(
   },
 ): GroupKeyResult {
   if (rawValue === null || rawValue === undefined || rawValue === '') {
-    return { key: PIE_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
+    return { key: CHART_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
   }
 
   const field = config.groupBy.field;
@@ -153,7 +156,7 @@ export function resolveGroupKey(
   if (fieldDefinition?.type === 'number' && config.numericBuckets?.length) {
     const num = Number(rawValue);
     if (!Number.isFinite(num)) {
-      return { key: PIE_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
+      return { key: CHART_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
     }
     const index = getNumericBucketIndex(num, config.numericBuckets);
     const key = `bucket:${index}`;
@@ -164,7 +167,7 @@ export function resolveGroupKey(
   if (fieldDefinition?.type === 'date') {
     const date = rawValue instanceof Date ? rawValue : new Date(String(rawValue));
     if (Number.isNaN(date.getTime())) {
-      return { key: PIE_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
+      return { key: CHART_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
     }
     const grouping = config.dateGrouping ?? 'year';
     return resolveDateGroupKey(date, grouping, formatters.locale);
@@ -183,7 +186,7 @@ export function resolveGroupKey(
   if (fieldDefinition?.type === 'number') {
     const num = Number(rawValue);
     if (!Number.isFinite(num)) {
-      return { key: PIE_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
+      return { key: CHART_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
     }
     const label = formatNumericValue(num, field);
     return { key: `num:${num}`, label };

@@ -50,7 +50,7 @@ export function DashboardEditorSidebar({
 
   return (
     <TooltipProvider>
-      <div className="flex w-full flex-col">
+      <div className="flex h-full min-h-0 w-full flex-col">
         <div className="shrink-0 space-y-2 border-b px-4 py-3">
           {scope === 'project' ? (
             <Button
@@ -77,7 +77,7 @@ export function DashboardEditorSidebar({
           )}
         </div>
 
-        <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-col">
+        <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col">
           <div className="shrink-0 border-b px-4 py-2">
             <TabsList variant="modern" className="mt-0 flex w-full">
               <TabsTrigger variant="modern" size="sm" value="toolbox" className="min-w-0 flex-1">

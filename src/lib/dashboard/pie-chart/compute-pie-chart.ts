@@ -3,11 +3,12 @@ import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';
 import { getFilterDefinitionForField } from '@/lib/entity-filters/filter-definitions';
 import { getLoanFilterValue } from '@/lib/entity-filters/get-filter-value';
 import { buildPeriodSnapshot } from '@/lib/dashboard/history-table/rollup-period';
-import type { PieChartWidgetConfig } from '@/types/dashboard-widgets/pie-chart';
+import { getPieChartDiscriminator, type PieChartWidgetConfig } from '@/types/dashboard-widgets/pie-chart';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
 
+import { resolveGroupKey } from '@/lib/dashboard/chart/resolve-group-key';
+
 import { getLoanMetricValue } from './get-loan-metric-value';
-import { resolveGroupKey } from './resolve-group-key';
 
 export type PieChartSlice = {
   key: string;
@@ -48,10 +49,11 @@ export function computePieChart(
     commonT,
   };
 
+  const discriminator = getPieChartDiscriminator(config);
   const fieldDef = getFilterDefinitionForField(
     fieldOptions,
-    config.groupBy.entity,
-    config.groupBy.field,
+    discriminator.groupBy.entity,
+    discriminator.groupBy.field,
   );
 
   const groups = new Map<string, GroupAccumulator>();
@@ -67,19 +69,19 @@ export function computePieChart(
       isPartial: true,
     }, 'monthly');
 
-    if (!loanMatchesFilters(loan, config.filters, filterContext, fieldOptions)) {
+    if (!loanMatchesFilters(loan, discriminator.filters, filterContext, fieldOptions)) {
       continue;
     }
 
     const rawGroupValue = getLoanFilterValue(
       loan,
-      config.groupBy.entity,
-      config.groupBy.field,
+      discriminator.groupBy.entity,
+      discriminator.groupBy.field,
       filterContext.snapshot,
       commonT,
     );
 
-    const { key, label } = resolveGroupKey(rawGroupValue, config, fieldDef, {
+    const { key, label } = resolveGroupKey(rawGroupValue, discriminator, fieldDef, {
       emptyLabel,
       locale,
       commonT,
@@ -142,7 +144,7 @@ export function computePieChart(
 
   rawSlices.sort((a, b) => b.value - a.value);
 
-  const topN = Math.max(1, config.topNCategories);
+  const topN = Math.max(1, discriminator.topNCategories);
   if (rawSlices.length <= topN) {
     const total = rawSlices.reduce((s, slice) => s + slice.value, 0);
     return { slices: rawSlices, total };

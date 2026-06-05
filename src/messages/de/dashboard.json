@@ -33,6 +33,59 @@
     },
     "deleteWidget": "Widget entfernen",
     "typeSettingsComingSoon": "Typspezifische Einstellungen folgen in Kürze.",
+    "chartDiscriminator": {
+      "filterGroupLoan": "Kredit",
+      "filterGroupLender": "Kreditgeber*in",
+      "groupByPlaceholder": "Feld wählen",
+      "groupBy": "Gruppierung",
+      "topNCategories": "Max. Segmente (Rest → Sonstige)",
+      "numericBuckets": "Bereiche",
+      "numericBucketsHint": "Obere Grenzen eingeben (z. B. 1000, 5000). Es entstehen Bereiche bis …, dazwischen und darüber.",
+      "addBucket": "Grenze hinzufügen",
+      "removeBucket": "Grenze entfernen",
+      "dateGrouping": "Datumsgruppierung",
+      "dateGroupingOptions": {
+        "year": "Jahr",
+        "month": "Monat (Jahr-Monat)",
+        "monthOfYear": "Monat im Jahr",
+        "weekOfYear": "Kalenderwoche",
+        "dayOfWeek": "Wochentag"
+      },
+      "textTransform": "Textumwandlung",
+      "textTransformNone": "Keine",
+      "textTransformFirstChars": "Erste Zeichen",
+      "textTransformLastChars": "Letzte Zeichen",
+      "textTransformFirstWord": "Erstes Wort",
+      "textTransformCharCount": "Zeichenanzahl",
+      "textTransformCount": "Anzahl Zeichen",
+      "validation": {
+        "invalidBucket": "Ungültige Grenze.",
+        "duplicateBucket": "Grenzen müssen eindeutig sein."
+      }
+    },
+    "barChart": {
+      "xAxisMode": "X-Achse",
+      "xAxisTimeline": "Zeitraum",
+      "xAxisDiscriminator": "Gruppierung",
+      "seriesLayout": "Darstellung mehrerer Serien",
+      "seriesLayoutGrouped": "Gruppiert",
+      "seriesLayoutStacked": "Gestapelt",
+      "series": "Serien",
+      "addSeries": "Serie hinzufügen",
+      "columnTitle": "Serientitel",
+      "titlePlaceholder": "Leer = Name der Kennzahl",
+      "metric": "Kennzahl",
+      "aggregation": "Aggregation",
+      "aggregationDelta": "Veränderung im Zeitraum",
+      "aggregationCumulative": "Kumuliert",
+      "removeColumn": "Serie entfernen",
+      "expandColumn": "Serie aufklappen",
+      "collapseColumn": "Serie zuklappen",
+      "discriminatorSnapshotHint": "Im Gruppierungsmodus werden Kennzahlen als Stand zum Stichtag dargestellt (keine Veränderung im Zeitraum).",
+      "validation": {
+        "discriminatorNoDelta": "Veränderung im Zeitraum ist im Gruppierungsmodus nicht verfügbar."
+      }
+    },
     "historyTable": {
       "periodMode": "Zeitraum",
       "periodModeYearly": "Jährlich",
@@ -57,6 +110,10 @@
       "removeFilter": "Filter entfernen",
       "expandColumn": "Spalte aufklappen",
       "collapseColumn": "Spalte zuklappen",
+      "validation": {
+        "metricAggregation": "Für diese Kennzahl ist nur Kumuliert möglich.",
+        "maxMonths": "Monatlich maximal 24 Zeiträume."
+      },
       "metrics": {
         "balance": "Kontostand",
         "deposits": "Einzahlungen",
@@ -236,6 +293,16 @@
     },
     "pieChart": {
       "emptyData": "Keine Daten für die gewählten Einstellungen.",
+      "emptyValue": "Ohne Wert",
+      "otherCategory": "Sonstige",
+      "charCountLabel": "{count} Zeichen",
+      "numericBucketUpTo": "bis {max}",
+      "numericBucketRange": "{min} – {max}",
+      "numericBucketAbove": "über {min}"
+    },
+    "barChart": {
+      "emptySeries": "Keine Serien konfiguriert.",
+      "emptyChart": "Keine Daten für die gewählten Einstellungen.",
       "emptyValue": "Ohne Wert",
       "otherCategory": "Sonstige",
       "charCountLabel": "{count} Zeichen",

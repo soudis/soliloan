@@ -195,7 +195,7 @@ export function DashboardCustomizer({
             </div>
 
             {isCustomizing && (
-              <aside className="sticky top-0 z-20 flex w-80 max-h-[calc(100dvh-10rem)] shrink-0 flex-col self-start overflow-hidden rounded-lg border border-border bg-background shadow-sm">
+              <aside className="sticky top-4 z-20 flex h-[calc(100dvh-14rem)] max-h-[calc(100dvh-14rem)] w-80 shrink-0 flex-col self-start overflow-hidden rounded-lg border border-border bg-background shadow-sm">
                 <DashboardEditorSidebar onCopyLayout={handleCopyToOtherScope} />
               </aside>
             )}

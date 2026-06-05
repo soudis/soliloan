@@ -10,11 +10,13 @@ import { Label } from '@/components/ui/label';
 export function NumericBucketEditor({
   thresholds,
   onChange,
+  translationNamespace = 'dashboard.customizer.chartDiscriminator',
 }: {
   thresholds: number[];
   onChange: (thresholds: number[]) => void;
+  translationNamespace?: string;
 }) {
-  const t = useTranslations('dashboard.customizer.pieChart');
+  const t = useTranslations(translationNamespace);
 
   const updateThreshold = (index: number, raw: string) => {
     const parsed = Number.parseFloat(raw.replace(',', '.'));

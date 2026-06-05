@@ -9,7 +9,7 @@ const entityFilterSchema = z.object({
   value: z.unknown(),
 });
 
-const historyTableColumnSchema = z
+export const historyTableColumnSchema = z
   .object({
     id: z.string(),
     title: z.string(),
