@@ -6,6 +6,7 @@ import { useMemo } from 'react';
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { computeHistoryTable } from '@/lib/dashboard/history-table/compute-history-table';
+import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
 import { resolveMetricTitle } from '@/lib/dashboard/resolve-metric-title';
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
@@ -37,16 +38,23 @@ export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
 
   const result = useMemo(
     () =>
-      computeHistoryTable(
-        loans,
-        config,
-        toDate,
-        fieldOptions,
-        (year, month) => formatter.dateTime(new Date(year, month - 1, 1), { month: 'short', year: 'numeric' }),
-        (key, values) => commonT(key, values),
-        t('untilNow'),
-      ),
-    [loans, config, toDate, fieldOptions, formatter, commonT, t],
+      profileWidgetCompute({
+        widgetType: widget.type,
+        widgetId: widget.id,
+        loanCount: loans.length,
+        compute: () =>
+          computeHistoryTable(
+            loans,
+            config,
+            toDate,
+            fieldOptions,
+            (year, month) =>
+              formatter.dateTime(new Date(year, month - 1, 1), { month: 'short', year: 'numeric' }),
+            (key, values) => commonT(key, values),
+            t('untilNow'),
+          ),
+      }),
+    [loans, config, toDate, fieldOptions, formatter, commonT, t, widget.id, widget.type],
   );
 
   if (config.columns.length === 0) {

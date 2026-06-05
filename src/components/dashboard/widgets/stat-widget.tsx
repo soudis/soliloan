@@ -8,6 +8,7 @@ import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value'
 import { getSignedMetricValueClassName } from '@/lib/dashboard/get-signed-metric-value-class-name';
 import { cn } from '@/lib/utils';
 import { resolveStatDisplayTitle } from '@/lib/dashboard/resolve-stat-display-title';
+import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
 import { computeStatValue } from '@/lib/dashboard/stat-widget/compute-stat-value';
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import type { DashboardWidget } from '@/types/dashboard-layout';
@@ -35,11 +36,19 @@ export function StatWidget({ widget }: { widget: DashboardWidget }) {
 
   const computed = useMemo(
     () =>
-      config.stats.map((stat) => ({
-        stat,
-        value: computeStatValue(loans, stat, toDate, fieldOptions, (key, values) => commonT(key, values)),
-      })),
-    [config.stats, loans, toDate, fieldOptions, commonT],
+      profileWidgetCompute({
+        widgetType: widget.type,
+        widgetId: widget.id,
+        loanCount: loans.length,
+        compute: () =>
+          config.stats.map((stat) => ({
+            stat,
+            value: computeStatValue(loans, stat, toDate, fieldOptions, (key, values) =>
+              commonT(key, values),
+            ),
+          })),
+      }),
+    [config.stats, loans, toDate, fieldOptions, commonT, widget.id, widget.type],
   );
 
   if (config.stats.length === 0) {

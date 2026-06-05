@@ -15,6 +15,7 @@ import { Bar } from 'react-chartjs-2';
 
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { computeBarChart } from '@/lib/dashboard/bar-chart/compute-bar-chart';
+import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import { cn } from '@/lib/utils';
@@ -55,25 +56,35 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
     [project, tLoans, tLenders, commonT],
   );
 
-  const result = useMemo(() => {
-    if (config.series.length === 0) {
-      return null;
-    }
-    return computeBarChart(
-      loans,
-      config,
-      toDate,
-      fieldOptions,
-      locale,
-      (year, month) => formatter.dateTime(new Date(year, month - 1, 1), { month: 'short', year: 'numeric' }),
-      t('emptyValue'),
-      t('otherCategory'),
-      tHistoryTable('untilNow'),
-      (key, values) => commonT(key, values),
-      (key, values) => t(key, values),
-      (metric) => tHistory(`metrics.${metric}`),
-    );
-  }, [loans, config, toDate, fieldOptions, locale, formatter, t, tHistory, tHistoryTable, commonT]);
+  const result = useMemo(
+    () =>
+      profileWidgetCompute({
+        widgetType: widget.type,
+        widgetId: widget.id,
+        loanCount: loans.length,
+        compute: () => {
+          if (config.series.length === 0) {
+            return null;
+          }
+          return computeBarChart(
+            loans,
+            config,
+            toDate,
+            fieldOptions,
+            locale,
+            (year, month) =>
+              formatter.dateTime(new Date(year, month - 1, 1), { month: 'short', year: 'numeric' }),
+            t('emptyValue'),
+            t('otherCategory'),
+            tHistoryTable('untilNow'),
+            (key, values) => commonT(key, values),
+            (key, values) => t(key, values),
+            (metric) => tHistory(`metrics.${metric}`),
+          );
+        },
+      }),
+    [loans, config, toDate, fieldOptions, locale, formatter, t, tHistory, tHistoryTable, commonT, widget.id, widget.type],
+  );
 
   const chartData = useMemo(() => {
     if (!result) {

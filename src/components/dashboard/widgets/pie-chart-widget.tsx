@@ -7,6 +7,7 @@ import { Pie } from 'react-chartjs-2';
 
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { computePieChart } from '@/lib/dashboard/pie-chart/compute-pie-chart';
+import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import { cn } from '@/lib/utils';
@@ -45,18 +46,24 @@ export function PieChartWidget({ widget }: { widget: DashboardWidget }) {
 
   const result = useMemo(
     () =>
-      computePieChart(
-        loans,
-        config,
-        toDate,
-        fieldOptions,
-        locale,
-        t('emptyValue'),
-        t('otherCategory'),
-        (key, values) => commonT(key, values),
-        (key, values) => t(key, values),
-      ),
-    [loans, config, toDate, fieldOptions, locale, t, commonT],
+      profileWidgetCompute({
+        widgetType: widget.type,
+        widgetId: widget.id,
+        loanCount: loans.length,
+        compute: () =>
+          computePieChart(
+            loans,
+            config,
+            toDate,
+            fieldOptions,
+            locale,
+            t('emptyValue'),
+            t('otherCategory'),
+            (key, values) => commonT(key, values),
+            (key, values) => t(key, values),
+          ),
+      }),
+    [loans, config, toDate, fieldOptions, locale, t, commonT, widget.id, widget.type],
   );
 
   const chartData = useMemo(
