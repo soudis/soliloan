@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 import { EntityFilterList } from '@/components/dashboard/widgets/filters/entity-filter-list';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -23,6 +24,7 @@ export function ChartSeriesEditor({
   onChange,
   fieldOptions,
   hideDelta = false,
+  showColorCodeSign = false,
   columnsLabelKey = 'columns',
   addLabelKey = 'addColumn',
   translationNamespace = 'dashboard.customizer.historyTable',
@@ -32,6 +34,7 @@ export function ChartSeriesEditor({
   onChange: (series: ChartSeriesConfig[]) => void;
   fieldOptions: EntityFilterFieldOption[];
   hideDelta?: boolean;
+  showColorCodeSign?: boolean;
   columnsLabelKey?: string;
   addLabelKey?: string;
   translationNamespace?: string;
@@ -166,6 +169,23 @@ export function ChartSeriesEditor({
                         <SelectItem value="delta">{t('aggregationDelta')}</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                ) : null}
+                {showColorCodeSign ? (
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      id={`color-code-sign-${col.id}`}
+                      checked={col.colorCodeSign === true}
+                      onCheckedChange={(checked) =>
+                        updateSeries(col.id, { colorCodeSign: checked === true })
+                      }
+                    />
+                    <div className="grid gap-0.5 leading-none">
+                      <Label htmlFor={`color-code-sign-${col.id}`} className="text-xs font-normal">
+                        {t('colorCodeSign')}
+                      </Label>
+                      <p className="text-xs text-muted-foreground">{t('colorCodeSignHint')}</p>
+                    </div>
                   </div>
                 ) : null}
                 <EntityFilterList

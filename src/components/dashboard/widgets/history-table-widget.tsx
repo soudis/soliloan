@@ -9,8 +9,10 @@ import { computeHistoryTable } from '@/lib/dashboard/history-table/compute-histo
 import { resolveMetricTitle } from '@/lib/dashboard/resolve-metric-title';
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
+import { getSignedMetricValueClassName } from '@/lib/dashboard/get-signed-metric-value-class-name';
+import { cn } from '@/lib/utils';
 import type { DashboardWidget } from '@/types/dashboard-layout';
-import { type HistoryTableMetric, parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
+import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 
 export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
   const t = useTranslations('dashboard.widgets.historyTable');
@@ -28,11 +30,8 @@ export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
     [project, tLoans, tLenders, commonT],
   );
 
-  const metricByColumnId = useMemo(() => {
-    const map = new Map<string, HistoryTableMetric>();
-    for (const col of config.columns) {
-      map.set(col.id, col.metric);
-    }
+  const columnById = useMemo(() => {
+    const map = new Map(config.columns.map((col) => [col.id, col]));
     return map;
   }, [config.columns]);
 
@@ -76,7 +75,8 @@ export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
           <TableRow className="hover:bg-transparent">
             <TableHead className="h-10 px-3 py-2">{t('periodColumn')}</TableHead>
             {result.columns.map((col) => {
-              const metric = metricByColumnId.get(col.id);
+              const columnConfig = columnById.get(col.id);
+              const metric = columnConfig?.metric;
               const title = resolveMetricTitle(
                 col.title,
                 metric ? tMetrics(`metrics.${metric}`) : col.title,
@@ -93,15 +93,25 @@ export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
           {result.periods.map((period) => (
             <TableRow key={period.key} className="hover:bg-transparent">
               <TableCell className="px-3 py-2 font-medium">{period.label}</TableCell>
-              {result.columns.map((col) => (
-                <TableCell key={col.id} className="px-3 py-2 text-right tabular-nums">
-                  {formatDashboardMetricValue(
-                    metricByColumnId.get(col.id),
-                    result.cells[period.key]?.[col.id] ?? null,
-                    col.aggregation === 'delta',
-                  )}
-                </TableCell>
-              ))}
+              {result.columns.map((col) => {
+                const rawValue = result.cells[period.key]?.[col.id] ?? null;
+                const columnConfig = columnById.get(col.id);
+                return (
+                  <TableCell
+                    key={col.id}
+                    className={cn(
+                      'px-3 py-2 text-right tabular-nums',
+                      getSignedMetricValueClassName(rawValue, columnConfig?.colorCodeSign),
+                    )}
+                  >
+                    {formatDashboardMetricValue(
+                      columnConfig?.metric,
+                      rawValue,
+                      col.aggregation === 'delta',
+                    )}
+                  </TableCell>
+                );
+              })}
             </TableRow>
           ))}
         </TableBody>

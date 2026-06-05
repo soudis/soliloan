@@ -9,6 +9,7 @@ import { useDashboardData } from '@/components/dashboard/dashboard-data-provider
 import { StatDeltaRangeInput } from '@/components/dashboard/widgets/stat-delta-range-input';
 import { EntityFilterList } from '@/components/dashboard/widgets/filters/entity-filter-list';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -129,6 +130,7 @@ export function StatWidgetSettings({
             displayType: 'main',
             metric: 'balance',
             aggregation: 'total',
+            colorCodeSign: false,
             filters: [],
           },
         ],
@@ -331,6 +333,21 @@ export function StatWidgetSettings({
                     unitOptions={deltaUnitOptions}
                   />
                 ) : null}
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id={`stat-color-code-sign-${stat.id}`}
+                    checked={stat.colorCodeSign === true}
+                    onCheckedChange={(checked) =>
+                      updateStat(stat.id, { colorCodeSign: checked === true })
+                    }
+                  />
+                  <div className="grid gap-0.5 leading-none">
+                    <Label htmlFor={`stat-color-code-sign-${stat.id}`} className="text-xs font-normal">
+                      {t('colorCodeSign')}
+                    </Label>
+                    <p className="text-xs text-muted-foreground">{t('colorCodeSignHint')}</p>
+                  </div>
+                </div>
                 <EntityFilterList
                   filters={stat.filters}
                   fieldOptions={fieldOptions}

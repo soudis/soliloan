@@ -110,6 +110,8 @@
       "removeFilter": "Filter entfernen",
       "expandColumn": "Spalte aufklappen",
       "collapseColumn": "Spalte zuklappen",
+      "colorCodeSign": "Vorzeichen einfärben",
+      "colorCodeSignHint": "Positive Werte grün, negative Werte rot",
       "validation": {
         "metricAggregation": "Für diese Kennzahl ist nur Kumuliert möglich.",
         "maxMonths": "Monatlich maximal 24 Zeiträume."
@@ -161,6 +163,8 @@
       "expandStat": "Kennzahl aufklappen",
       "collapseStat": "Kennzahl zuklappen",
       "untitledStat": "Ohne Titel",
+      "colorCodeSign": "Vorzeichen einfärben",
+      "colorCodeSignHint": "Positive Werte grün, negative Werte rot",
       "validation": {
         "metricAggregation": "Für diese Kennzahl ist nur Gesamtstand möglich.",
         "deltaRangeRequired": "Zeitraum ist für Veränderung erforderlich.",

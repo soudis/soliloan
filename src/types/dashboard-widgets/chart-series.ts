@@ -19,6 +19,7 @@ export type ChartSeriesConfig = {
   title: string;
   metric: ChartSeriesMetric;
   aggregation: ChartSeriesAggregation;
+  colorCodeSign?: boolean;
   filters: EntityFilter[];
 };
 
@@ -41,6 +42,7 @@ export function parseChartSeriesList(raw: unknown): ChartSeriesConfig[] {
         ? item.metric
         : 'balance') as ChartSeriesMetric,
       aggregation: (item.aggregation === 'delta' ? 'delta' : 'cumulative') as ChartSeriesAggregation,
+      colorCodeSign: item.colorCodeSign === true,
       filters: Array.isArray(item.filters) ? (item.filters as EntityFilter[]) : [],
     };
   });
@@ -54,6 +56,7 @@ export function createDefaultChartSeries(
     title: '',
     metric: overrides?.metric ?? 'balance',
     aggregation: overrides?.aggregation ?? 'cumulative',
+    colorCodeSign: false,
     filters: [],
   };
 }

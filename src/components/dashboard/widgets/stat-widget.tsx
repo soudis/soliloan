@@ -5,6 +5,8 @@ import { useMemo } from 'react';
 
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
+import { getSignedMetricValueClassName } from '@/lib/dashboard/get-signed-metric-value-class-name';
+import { cn } from '@/lib/utils';
 import { resolveStatDisplayTitle } from '@/lib/dashboard/resolve-stat-display-title';
 import { computeStatValue } from '@/lib/dashboard/stat-widget/compute-stat-value';
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
@@ -62,6 +64,7 @@ export function StatWidget({ widget }: { widget: DashboardWidget }) {
             tStatCustomizer(key, values),
           )}
           stat={stat}
+          value={value}
           formattedValue={formatDashboardMetricValue(stat.metric, value, stat.aggregation === 'delta')}
         />
       ))}
@@ -72,17 +75,24 @@ export function StatWidget({ widget }: { widget: DashboardWidget }) {
 function StatItemDisplay({
   label,
   stat,
+  value,
   formattedValue,
 }: {
   label: string;
   stat: StatItemConfig;
+  value: number | null;
   formattedValue: string;
 }) {
+  const valueClassName = cn(
+    'tabular-nums',
+    getSignedMetricValueClassName(value, stat.colorCodeSign),
+  );
+
   if (stat.displayType === 'main') {
     return (
       <div className="min-w-0">
         <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-2xl font-bold tracking-tight tabular-nums">{formattedValue}</p>
+        <p className={cn('text-2xl font-bold tracking-tight', valueClassName)}>{formattedValue}</p>
       </div>
     );
   }
@@ -90,7 +100,7 @@ function StatItemDisplay({
   return (
     <div className="min-w-0">
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm font-medium tabular-nums">{formattedValue}</p>
+      <p className={cn('text-sm font-medium', valueClassName)}>{formattedValue}</p>
     </div>
   );
 }

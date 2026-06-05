@@ -15,6 +15,7 @@ export const historyTableColumnSchema = z
     title: z.string(),
     metric: z.enum(HISTORY_TABLE_METRICS),
     aggregation: z.enum(['cumulative', 'delta']),
+    colorCodeSign: z.boolean().default(false),
     filters: z.array(entityFilterSchema).default([]),
   })
   .superRefine((col, ctx) => {

@@ -26,6 +26,7 @@ export type StatItemConfig = {
   metric: StatWidgetMetric;
   aggregation: StatAggregation;
   deltaRange?: StatDeltaRange;
+  colorCodeSign?: boolean;
   filters: EntityFilter[];
 };
 
@@ -99,6 +100,7 @@ export function parseStatWidgetConfig(config: Record<string, unknown> | undefine
                   unit,
                 }
               : undefined,
+          colorCodeSign: stat.colorCodeSign === true,
           filters: Array.isArray(stat.filters) ? (stat.filters as EntityFilter[]) : [],
         };
       })

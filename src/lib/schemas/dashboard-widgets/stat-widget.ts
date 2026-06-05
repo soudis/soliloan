@@ -29,6 +29,7 @@ const statItemSchema = z
     metric: z.enum(STAT_WIDGET_METRICS),
     aggregation: z.enum(['total', 'delta']),
     deltaRange: statDeltaRangeSchema.optional(),
+    colorCodeSign: z.boolean().default(false),
     filters: z.array(entityFilterSchema).default([]),
   })
   .superRefine((stat, ctx) => {

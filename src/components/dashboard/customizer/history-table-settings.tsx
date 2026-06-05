@@ -91,6 +91,7 @@ export function HistoryTableSettings({
         series={draftConfig.columns}
         onChange={(columns) => patchConfig({ columns })}
         fieldOptions={fieldOptions}
+        showColorCodeSign
       />
     </div>
   );
