@@ -1,5 +1,6 @@
 'use server';
 
+import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFields, calculateLoanPerMonth } from '@/lib/calculations/loan-calculations';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
@@ -9,12 +10,16 @@ import {
   loanFilesRelation,
   loanNotesRelation,
 } from '@/lib/prisma/notes-files-relations';
+import { sanitizeLender } from '@/lib/sanitation/sanitize-lender';
 import { sanitizeLoan } from '@/lib/sanitation/sanitize-loan';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { buildCumulativeTimeline, type CumulativeTimelineEntry } from '@/lib/dashboard/history-table/cumulative-timeline';
 import type { LoanMonthlyHistory, LoanMonthlyNumbers } from '@/types/dashboard';
+import type { LenderWithCalculations } from '@/types/lenders';
 import type { Transaction } from '@prisma/client';
 import type { LoanWithCalculations } from '@/types/loans';
+
+export type DashboardLender = LenderWithCalculations;
 
 export type DashboardLoan = LoanWithCalculations & {
   history: LoanMonthlyHistory;
@@ -75,7 +80,8 @@ export async function getDashboardStats(projectId: string, toDate: Date = new Da
       return { error: 'You do not have access to this project' };
     }
 
-    const loans = await db.loan.findMany({
+    const [loans, lenders] = await Promise.all([
+      db.loan.findMany({
       where: {
         lender: {
           projectId,
@@ -109,7 +115,37 @@ export async function getDashboardStats(projectId: string, toDate: Date = new Da
         notes: loanNotesRelation,
         files: loanFilesRelation,
       },
-    });
+    }),
+      db.lender.findMany({
+        where: { projectId },
+        orderBy: { lenderNumber: 'asc' },
+        include: {
+          loans: {
+            include: {
+              transactions: true,
+              notes: loanNotesRelation,
+              files: loanFilesRelation,
+            },
+          },
+          notes: lenderNotesRelation,
+          files: lenderFilesRelation,
+          user: {
+            select: {
+              name: true,
+              id: true,
+              email: true,
+              lastLogin: true,
+              lastInvited: true,
+            },
+          },
+          project: {
+            include: {
+              configuration: { select: { interestMethod: true } },
+            },
+          },
+        },
+      }),
+    ]);
 
     const dashboardLoans: DashboardLoan[] = loans.map((loan) => {
       const parsedLoan = parseAdditionalFields({
@@ -130,9 +166,21 @@ export async function getDashboardStats(projectId: string, toDate: Date = new Da
       };
     });
 
+    const dashboardLenders: DashboardLender[] = lenders.map((lender) =>
+      sanitizeLender(
+        calculateLenderFields(
+          parseAdditionalFields({
+            ...lender,
+            loans: lender.loans.map((loan) => parseAdditionalFields(loan)),
+          }),
+        ),
+      ),
+    );
+
     return {
       toDate: toDate.toISOString(),
       loans: dashboardLoans,
+      lenders: dashboardLenders,
     };
   } catch (error) {
     console.error('Error getting dashboard stats:', error);

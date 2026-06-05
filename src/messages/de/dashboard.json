@@ -240,6 +240,26 @@
         "duplicateBucket": "Grenzen müssen eindeutig sein."
       }
     },
+    "tableView": {
+      "columns": "Spalten",
+      "moveUp": "Nach oben",
+      "moveDown": "Nach unten",
+      "defaultSort": "Standard-Sortierung",
+      "sortNone": "Keine",
+      "sortAsc": "Aufsteigend",
+      "sortDesc": "Absteigend",
+      "displayMode": "Darstellung",
+      "displayModePaged": "Seitenweise",
+      "displayModeFixed": "Feste Anzahl Zeilen",
+      "pageSize": "Zeilen pro Seite",
+      "rowLimit": "Maximale Zeilenanzahl"
+    },
+    "loanTable": {
+      "title": "Kredittabelle"
+    },
+    "lenderTable": {
+      "title": "Kreditgeber-Tabelle"
+    },
     "placeholder": "Widget-Inhalt folgt in Kürze.",
     "dragWidget": "Widget verschieben",
     "dropHere": "Widget hier ablegen",
@@ -353,6 +373,15 @@
       "numericBucketUpTo": "bis {max}",
       "numericBucketRange": "{min} – {max}",
       "numericBucketAbove": "über {min}"
+    },
+    "tableView": {
+      "fixedLimitHint": "Es werden maximal {count} Zeilen angezeigt."
+    },
+    "loanTable": {
+      "emptyData": "Keine Kredite für die gewählten Einstellungen."
+    },
+    "lenderTable": {
+      "emptyData": "Keine Kreditgeber*innen für die gewählten Einstellungen."
     }
   },
   "yearlyTable": {

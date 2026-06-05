@@ -22,12 +22,15 @@ import { parseBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
 import { parseLineChartConfig } from '@/types/dashboard-widgets/line-chart';
 import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { parsePieChartConfig, type PieChartChartSize } from '@/types/dashboard-widgets/pie-chart';
+import { parseLenderTableConfig, parseLoanTableConfig } from '@/types/dashboard-widgets/table-view';
 import { parseStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
 import { useDashboardLayout } from './dashboard-layout-context';
 import { BarChartSettings } from './bar-chart-settings';
 import { LineChartSettings } from './line-chart-settings';
 import { HistoryTableSettings } from './history-table-settings';
 import { PieChartSettings } from './pie-chart-settings';
+import { LenderTableSettings } from './lender-table-settings';
+import { LoanTableSettings } from './loan-table-settings';
 import { StatWidgetSettings } from './stat-widget-settings';
 
 const settingsWidthSchema = z.enum(DASHBOARD_WIDGET_WIDTHS);
@@ -45,6 +48,8 @@ function createSettingsSchema(widgetType: DashboardWidgetType) {
         widgetType === 'pie_chart' ||
         widgetType === 'bar_chart' ||
         widgetType === 'line_chart' ||
+        widgetType === 'loan_table_view' ||
+        widgetType === 'lender_table_view' ||
         widgetType === 'divider'
         ? z.string()
         : z.string().min(1),
@@ -264,11 +269,29 @@ export function DashboardWidgetSettings() {
             }}
           />
         ) : null}
+        {widget.type === 'loan_table_view' ? (
+          <LoanTableSettings
+            config={parseLoanTableConfig(widget.config)}
+            onConfigChange={(config) => {
+              setLayout((prev) => updateWidget(prev, selectedWidgetId, { config }));
+            }}
+          />
+        ) : null}
+        {widget.type === 'lender_table_view' ? (
+          <LenderTableSettings
+            config={parseLenderTableConfig(widget.config)}
+            onConfigChange={(config) => {
+              setLayout((prev) => updateWidget(prev, selectedWidgetId, { config }));
+            }}
+          />
+        ) : null}
         {widget.type !== 'history_table' &&
         widget.type !== 'stat' &&
         widget.type !== 'pie_chart' &&
         widget.type !== 'bar_chart' &&
         widget.type !== 'line_chart' &&
+        widget.type !== 'loan_table_view' &&
+        widget.type !== 'lender_table_view' &&
         widget.type !== 'divider' ? (
           <p className="mt-6 text-xs text-muted-foreground">{t('typeSettingsComingSoon')}</p>
         ) : null}

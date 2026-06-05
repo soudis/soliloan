@@ -15,6 +15,8 @@ import { LineChartWidget } from '../widgets/line-chart-widget';
 import { DividerWidget } from '../widgets/divider-widget';
 import { HistoryTableWidget } from '../widgets/history-table-widget';
 import { PieChartWidget } from '../widgets/pie-chart-widget';
+import { LenderTableWidget } from '../widgets/lender-table-widget';
+import { LoanTableWidget } from '../widgets/loan-table-widget';
 import { StatWidget } from '../widgets/stat-widget';
 import { useDashboardLayout } from './dashboard-layout-context';
 
@@ -121,11 +123,12 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
             <BarChartWidget widget={widget} />
           ) : widget.type === 'line_chart' ? (
             <LineChartWidget widget={widget} />
+          ) : widget.type === 'loan_table_view' ? (
+            <LoanTableWidget widget={widget} />
+          ) : widget.type === 'lender_table_view' ? (
+            <LenderTableWidget widget={widget} />
           ) : (
-            <>
-              <p className="text-xs text-muted-foreground">{t(`widgetTypes.${widget.type}`)}</p>
-              <p className="mt-2 text-sm text-muted-foreground/80">{t('placeholder')}</p>
-            </>
+            <p className="text-sm text-muted-foreground/80">{t('placeholder')}</p>
           )}
         </CardContent>
       </Card>

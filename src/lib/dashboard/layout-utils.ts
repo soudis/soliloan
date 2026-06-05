@@ -2,6 +2,7 @@ import { createDefaultBarChartConfig } from '@/types/dashboard-widgets/bar-chart
 import { createDefaultLineChartConfig } from '@/types/dashboard-widgets/line-chart';
 import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { createDefaultPieChartConfig } from '@/types/dashboard-widgets/pie-chart';
+import { createDefaultLenderTableConfig, createDefaultLoanTableConfig } from '@/types/dashboard-widgets/table-view';
 import { createDefaultStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
 import {
   DASHBOARD_WIDGET_WIDTHS,
@@ -160,7 +161,9 @@ export function widgetShowsCardHeader(widget: { type: DashboardWidgetType; title
     widget.type === 'history_table' ||
     widget.type === 'pie_chart' ||
     widget.type === 'bar_chart' ||
-    widget.type === 'line_chart'
+    widget.type === 'line_chart' ||
+    widget.type === 'loan_table_view' ||
+    widget.type === 'lender_table_view'
   ) {
     return widget.title.trim().length > 0;
   }
@@ -192,6 +195,10 @@ export function createWidget(
               ? createDefaultBarChartConfig()
               : type === 'line_chart'
                 ? createDefaultLineChartConfig()
-                : {},
+                : type === 'loan_table_view'
+                  ? createDefaultLoanTableConfig()
+                  : type === 'lender_table_view'
+                    ? createDefaultLenderTableConfig()
+                    : {},
   };
 }

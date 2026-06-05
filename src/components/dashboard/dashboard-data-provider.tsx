@@ -3,13 +3,14 @@
 import { useTranslations } from 'next-intl';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
+import type { DashboardLender, DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
 export type DashboardDataContextValue = {
   loans: DashboardLoan[];
+  lenders: DashboardLender[];
   toDate: Date;
   project: ProjectWithConfiguration;
   fieldOptions: EntityFilterFieldOption[];
@@ -21,11 +22,13 @@ const DashboardDataContext = createContext<DashboardDataContextValue | null>(nul
 export function DashboardDataProvider({
   children,
   loans,
+  lenders,
   toDate,
   project,
 }: {
   children: React.ReactNode;
   loans: DashboardLoan[];
+  lenders: DashboardLender[];
   toDate: Date;
   project: ProjectWithConfiguration;
 }) {
@@ -36,7 +39,7 @@ export function DashboardDataProvider({
 
   useEffect(() => {
     computeCacheRef.current.clear();
-  }, [loans, toDate]);
+  }, [loans, lenders, toDate]);
 
   const getOrComputeWidgetResult = useCallback(<T,>(key: string, compute: () => T): T => {
     const cached = computeCacheRef.current.get(key);
@@ -56,12 +59,13 @@ export function DashboardDataProvider({
   const value = useMemo(
     () => ({
       loans,
+      lenders,
       toDate,
       project,
       fieldOptions,
       getOrComputeWidgetResult,
     }),
-    [loans, toDate, project, fieldOptions, getOrComputeWidgetResult],
+    [loans, lenders, toDate, project, fieldOptions, getOrComputeWidgetResult],
   );
 
   return <DashboardDataContext.Provider value={value}>{children}</DashboardDataContext.Provider>;

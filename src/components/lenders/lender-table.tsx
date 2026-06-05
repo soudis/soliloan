@@ -16,16 +16,10 @@ import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useRouter } from '@/i18n/navigation';
 import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
+import { buildAllLenderTableColumns } from '@/lib/dashboard/table-widget/lender-table-column-registry';
 import {
   createAdditionalFieldDefaultColumnVisibility,
   createAdditionalFieldFilters,
-  createAdditionalFieldsColumns,
-  createColumn,
-  createCurrencyColumn,
-  createLenderAddressColumn,
-  createLenderBankingColumn,
-  createLenderEnumBadgeColumn,
-  createLenderNameColumn,
 } from '@/lib/table-column-utils';
 import type { LenderWithCalculations } from '@/types/lenders';
 import { useProject } from '../providers/project-provider';
@@ -77,85 +71,13 @@ export function LenderTable({ lenders, views }: LenderTableProps) {
     },
   ];
 
-  const columns: ColumnDef<LenderWithCalculations>[] = [
-    createColumn<LenderWithCalculations>(
-      {
-        accessorKey: 'lenderNumber',
-        header: 'table.lenderNumber',
-      },
-      t,
-    ),
-
-    createLenderNameColumn<LenderWithCalculations>(t),
-
-    createLenderEnumBadgeColumn<LenderWithCalculations>(
-      'type',
-      'table.type',
-      'enums.lender.type',
-      t,
-      commonT,
-      () => 'outline',
-    ),
-
-    createColumn<LenderWithCalculations>(
-      {
-        accessorKey: 'email',
-        header: 'table.email',
-      },
-      t,
-    ),
-
-    createColumn<LenderWithCalculations>(
-      {
-        accessorKey: 'telNo',
-        header: 'table.telNo',
-      },
-      t,
-    ),
-
-    createLenderAddressColumn<LenderWithCalculations>(t),
-
-    createLenderBankingColumn<LenderWithCalculations>(t),
-
-    createLenderEnumBadgeColumn<LenderWithCalculations>(
-      'salutation',
-      'table.salutation',
-      'enums.lender.salutation',
-      t,
-      commonT,
-      () => 'outline',
-    ),
-
-    createLenderEnumBadgeColumn<LenderWithCalculations>(
-      'notificationType',
-      'table.notificationType',
-      'enums.lender.notificationType',
-      t,
-      commonT,
-      () => 'outline',
-    ),
-
-    ...createAdditionalFieldsColumns<LenderWithCalculations>(
-      project.configuration.lenderAdditionalFields,
-      'additionalFields',
-      t,
-      locale,
-    ),
-
-    createCurrencyColumn<LenderWithCalculations>('amount', 'table.amount', tLoans, locale),
-
-    createCurrencyColumn<LenderWithCalculations>('balance', 'table.balance', tLoans, locale),
-
-    createCurrencyColumn<LenderWithCalculations>('deposits', 'table.deposits', tLoans, locale),
-
-    createCurrencyColumn<LenderWithCalculations>('withdrawals', 'table.withdrawals', tLoans, locale),
-
-    createCurrencyColumn<LenderWithCalculations>('notReclaimed', 'table.notReclaimed', tLoans, locale),
-
-    createCurrencyColumn<LenderWithCalculations>('interest', 'table.interest', tLoans, locale),
-
-    createCurrencyColumn<LenderWithCalculations>('interestPaid', 'table.interestPaid', tLoans, locale),
-  ];
+  const columns: ColumnDef<LenderWithCalculations>[] = buildAllLenderTableColumns(
+    project,
+    t,
+    tLoans,
+    commonT,
+    locale,
+  );
 
   // Define column filters based on data types
   const columnFilters = {

@@ -23,6 +23,8 @@ const dashboardWidgetSchema = z
       widget.type !== 'pie_chart' &&
       widget.type !== 'bar_chart' &&
       widget.type !== 'line_chart' &&
+      widget.type !== 'loan_table_view' &&
+      widget.type !== 'lender_table_view' &&
       widget.type !== 'divider' &&
       !widget.title.trim()
     ) {

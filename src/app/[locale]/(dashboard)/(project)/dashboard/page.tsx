@@ -30,7 +30,13 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   if ('error' in statsResult && statsResult.error) {
     return null;
   }
-  if (!project || !('loans' in statsResult) || !statsResult.loans || !statsResult.toDate) {
+  if (
+    !project ||
+    !('loans' in statsResult) ||
+    !statsResult.loans ||
+    !statsResult.lenders ||
+    !statsResult.toDate
+  ) {
     return null;
   }
 
@@ -38,6 +44,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     <DashboardDataProvider
       key={projectId}
       loans={statsResult.loans}
+      lenders={statsResult.lenders}
       toDate={new Date(statsResult.toDate)}
       project={project}
     >

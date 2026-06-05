@@ -7,6 +7,7 @@ import { createDefaultBarChartConfig } from '@/types/dashboard-widgets/bar-chart
 import { createDefaultLineChartConfig } from '@/types/dashboard-widgets/line-chart';
 import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { createDefaultPieChartConfig } from '@/types/dashboard-widgets/pie-chart';
+import { createDefaultLenderTableConfig, createDefaultLoanTableConfig } from '@/types/dashboard-widgets/table-view';
 import { createDefaultStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
 import type { DashboardLayoutData, DashboardWidget, DashboardWidgetType } from '@/types/dashboard-layout';
 
@@ -61,6 +62,20 @@ function normalizeWidget(widget: DashboardWidget & { type?: string }): Dashboard
       ...widget,
       width,
       config: createDefaultLineChartConfig(),
+    };
+  }
+  if (widget.type === 'loan_table_view' && (!widget.config || Object.keys(widget.config).length === 0)) {
+    return {
+      ...widget,
+      width,
+      config: createDefaultLoanTableConfig(),
+    };
+  }
+  if (widget.type === 'lender_table_view' && (!widget.config || Object.keys(widget.config).length === 0)) {
+    return {
+      ...widget,
+      width,
+      config: createDefaultLenderTableConfig(),
     };
   }
   return { ...widget, width };
