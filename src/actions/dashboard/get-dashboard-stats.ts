@@ -11,12 +11,15 @@ import {
 } from '@/lib/prisma/notes-files-relations';
 import { sanitizeLoan } from '@/lib/sanitation/sanitize-loan';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
+import { buildCumulativeTimeline, type CumulativeTimelineEntry } from '@/lib/dashboard/history-table/cumulative-timeline';
 import type { LoanMonthlyHistory, LoanMonthlyNumbers } from '@/types/dashboard';
 import type { Transaction } from '@prisma/client';
 import type { LoanWithCalculations } from '@/types/loans';
 
 export type DashboardLoan = LoanWithCalculations & {
   history: LoanMonthlyHistory;
+  /** Prefix cumulative totals per month — built server-side for O(log H) client lookups. */
+  cumulativeTimeline?: CumulativeTimelineEntry[];
   transactions: Transaction[];
 };
 
@@ -117,10 +120,12 @@ export async function getDashboardStats(projectId: string, toDate: Date = new Da
       const sanitized = sanitizeLoan(calculated);
       const perMonth = calculateLoanPerMonth(parsedLoan, toDate);
       const history = buildLoanMonthlyHistory(perMonth);
+      const cumulativeTimeline = buildCumulativeTimeline(history);
 
       return {
         ...sanitized,
         history,
+        cumulativeTimeline,
         transactions: parsedLoan.transactions,
       };
     });

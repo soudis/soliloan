@@ -9,8 +9,7 @@ import { getSignedMetricValueClassName } from '@/lib/dashboard/get-signed-metric
 import { cn } from '@/lib/utils';
 import { resolveStatDisplayTitle } from '@/lib/dashboard/resolve-stat-display-title';
 import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
-import { computeStatValue } from '@/lib/dashboard/stat-widget/compute-stat-value';
-import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
+import { computeAllStatValues } from '@/lib/dashboard/stat-widget/compute-stat-value';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import {
   DEFAULT_STAT_GRID_COLUMNS,
@@ -22,17 +21,10 @@ export function StatWidget({ widget }: { widget: DashboardWidget }) {
   const t = useTranslations('dashboard.widgets.stat');
   const tMetrics = useTranslations('dashboard.customizer.historyTable');
   const tStatCustomizer = useTranslations('dashboard.customizer.stat');
-  const tLoans = useTranslations('dashboard.loans');
-  const tLenders = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
-  const { loans, toDate, project } = useDashboardData();
+  const { loans, toDate, fieldOptions } = useDashboardData();
 
   const config = useMemo(() => parseStatWidgetConfig(widget.config), [widget.config]);
-
-  const fieldOptions = useMemo(
-    () => buildAllFilterFieldOptions(project, tLoans, tLenders, commonT),
-    [project, tLoans, tLenders, commonT],
-  );
 
   const computed = useMemo(
     () =>
@@ -41,12 +33,9 @@ export function StatWidget({ widget }: { widget: DashboardWidget }) {
         widgetId: widget.id,
         loanCount: loans.length,
         compute: () =>
-          config.stats.map((stat) => ({
-            stat,
-            value: computeStatValue(loans, stat, toDate, fieldOptions, (key, values) =>
-              commonT(key, values),
-            ),
-          })),
+          computeAllStatValues(loans, config.stats, toDate, fieldOptions, (key, values) =>
+            commonT(key, values),
+          ),
       }),
     [config.stats, loans, toDate, fieldOptions, commonT, widget.id, widget.type],
   );

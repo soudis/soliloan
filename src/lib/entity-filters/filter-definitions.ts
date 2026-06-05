@@ -199,6 +199,28 @@ export function isDynamicLoanFilterField(field: string): boolean {
   );
 }
 
+const LENDER_SNAPSHOT_FILTER_FIELDS = new Set([
+  'amount',
+  'balance',
+  'deposits',
+  'withdrawals',
+  'notReclaimed',
+  'interest',
+  'interestPaid',
+]);
+
+export function filtersNeedPeriodSnapshot(filters: { entity: 'loan' | 'lender'; field: string }[]): boolean {
+  for (const filter of filters) {
+    if (filter.entity === 'loan' && isDynamicLoanFilterField(filter.field)) {
+      return true;
+    }
+    if (filter.entity === 'lender' && LENDER_SNAPSHOT_FILTER_FIELDS.has(filter.field)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function parseAdditionalFieldConfigFields(
   loanAdditionalFields: AdditionalFieldConfig[],
   lenderAdditionalFields: AdditionalFieldConfig[],

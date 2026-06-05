@@ -4,6 +4,8 @@ import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import type { LoanMonthlyHistory, LoanMonthlyNumbers } from '@/types/dashboard';
 import { getLoanStatusAtPeriod, type PeriodSnapshot } from '@/lib/entity-filters/get-filter-value';
 
+import { lookupCumulativeAtDate } from './cumulative-timeline';
+
 export type HistoryPeriod = {
   key: string;
   label: string;
@@ -278,6 +280,10 @@ export function getPeriodNumbers(
 }
 
 export function getCumulativeNumbers(loan: DashboardLoan, period: HistoryPeriod): LoanMonthlyNumbers {
+  if (loan.cumulativeTimeline?.length) {
+    return lookupCumulativeAtDate(loan.cumulativeTimeline, period.periodEnd);
+  }
+
   const result = emptyNumbers();
   let firstBegin: number | null = null;
   const periodEnd = moment(period.periodEnd);

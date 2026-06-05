@@ -1,8 +1,12 @@
 import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';
-import { getFilterDefinitionForField } from '@/lib/entity-filters/filter-definitions';
+import { filtersNeedPeriodSnapshot, getFilterDefinitionForField } from '@/lib/entity-filters/filter-definitions';
 import { getLoanFilterValue } from '@/lib/entity-filters/get-filter-value';
-import { buildPeriodSnapshot } from '@/lib/dashboard/history-table/rollup-period';
+import {
+  createAggregateMetricCache,
+  getOrBuildPeriodSnapshot,
+} from '@/lib/dashboard/history-table/compute-history-table';
+import type { HistoryPeriod } from '@/lib/dashboard/history-table/rollup-period';
 import type { ChartDiscriminatorConfig } from '@/types/dashboard-widgets/chart-discriminator';
 import type { ChartSeriesConfig } from '@/types/dashboard-widgets/chart-series';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
@@ -31,12 +35,22 @@ export function computeDiscriminatorChartData(
   resolveSeriesLabel: (col: ChartSeriesConfig, metricLabel: string) => string,
   metricLabel: (metric: ChartSeriesConfig['metric']) => string,
 ): ChartDataModel {
+  const cache = createAggregateMetricCache();
   const periodEnd = toDate;
   const periodStart = new Date(toDate.getFullYear(), toDate.getMonth(), 1);
+  const discPeriod: HistoryPeriod = {
+    key: 'disc',
+    label: '',
+    year: periodEnd.getFullYear(),
+    month: periodEnd.getMonth() + 1,
+    periodStart,
+    periodEnd,
+    isPartial: true,
+  };
   const filterContext = {
     periodEnd,
     periodStart,
-    snapshot: null as ReturnType<typeof buildPeriodSnapshot> | null,
+    snapshot: null as ReturnType<typeof getOrBuildPeriodSnapshot> | null,
     commonT,
   };
 
@@ -46,22 +60,18 @@ export function computeDiscriminatorChartData(
     discriminator.groupBy.field,
   );
 
+  const needsSnapshot =
+    filtersNeedPeriodSnapshot(discriminator.filters) ||
+    filtersNeedPeriodSnapshot([
+      { entity: discriminator.groupBy.entity, field: discriminator.groupBy.field },
+    ]);
+
   const groups = new Map<string, GroupEntry>();
 
   for (const loan of loans) {
-    filterContext.snapshot = buildPeriodSnapshot(
-      loan,
-      {
-        key: 'disc',
-        label: '',
-        year: periodEnd.getFullYear(),
-        month: periodEnd.getMonth() + 1,
-        periodStart,
-        periodEnd,
-        isPartial: true,
-      },
-      'monthly',
-    );
+    filterContext.snapshot = needsSnapshot
+      ? getOrBuildPeriodSnapshot(loan, discPeriod, 'monthly', cache)
+      : null;
 
     if (!loanMatchesFilters(loan, discriminator.filters, filterContext, fieldOptions)) {
       continue;
@@ -109,7 +119,7 @@ export function computeDiscriminatorChartData(
   const labels = categories.map((c) => c.label);
   const datasets = series.map((col) => {
     const values = categories.map((cat) =>
-      aggregateSeriesSnapshot(cat.loans, col, toDate, fieldOptions, commonT),
+      aggregateSeriesSnapshot(cat.loans, col, toDate, fieldOptions, commonT, cache),
     );
     return {
       id: col.id,

@@ -9,7 +9,6 @@ import { useDashboardData } from '@/components/dashboard/dashboard-data-provider
 import { computePieChart } from '@/lib/dashboard/pie-chart/compute-pie-chart';
 import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
-import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import { cn } from '@/lib/utils';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import { getPieChartHeightClassName, parsePieChartConfig } from '@/types/dashboard-widgets/pie-chart';
@@ -31,18 +30,11 @@ const SLICE_COLORS = [
 
 export function PieChartWidget({ widget }: { widget: DashboardWidget }) {
   const t = useTranslations('dashboard.widgets.pieChart');
-  const tLoans = useTranslations('dashboard.loans');
-  const tLenders = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
   const locale = useLocale();
-  const { loans, toDate, project } = useDashboardData();
+  const { loans, toDate, fieldOptions } = useDashboardData();
 
   const config = useMemo(() => parsePieChartConfig(widget.config), [widget.config]);
-
-  const fieldOptions = useMemo(
-    () => buildAllFilterFieldOptions(project, tLoans, tLenders, commonT),
-    [project, tLoans, tLenders, commonT],
-  );
 
   const result = useMemo(
     () =>

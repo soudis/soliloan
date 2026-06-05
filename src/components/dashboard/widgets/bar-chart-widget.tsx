@@ -16,8 +16,8 @@ import { Bar } from 'react-chartjs-2';
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { computeBarChart } from '@/lib/dashboard/bar-chart/compute-bar-chart';
 import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
+import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
-import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import { cn } from '@/lib/utils';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import { parseBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
@@ -42,19 +42,12 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
   const t = useTranslations('dashboard.widgets.barChart');
   const tHistoryTable = useTranslations('dashboard.widgets.historyTable');
   const tHistory = useTranslations('dashboard.customizer.historyTable');
-  const tLoans = useTranslations('dashboard.loans');
-  const tLenders = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
   const locale = useLocale();
   const formatter = useFormatter();
-  const { loans, toDate, project } = useDashboardData();
+  const { loans, toDate, fieldOptions, getOrComputeWidgetResult } = useDashboardData();
 
   const config = useMemo(() => parseBarChartConfig(widget.config), [widget.config]);
-
-  const fieldOptions = useMemo(
-    () => buildAllFilterFieldOptions(project, tLoans, tLenders, commonT),
-    [project, tLoans, tLenders, commonT],
-  );
 
   const result = useMemo(
     () =>
@@ -66,24 +59,28 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
           if (config.series.length === 0) {
             return null;
           }
-          return computeBarChart(
-            loans,
-            config,
-            toDate,
-            fieldOptions,
-            locale,
-            (year, month) =>
-              formatter.dateTime(new Date(year, month - 1, 1), { month: 'short', year: 'numeric' }),
-            t('emptyValue'),
-            t('otherCategory'),
-            tHistoryTable('untilNow'),
-            (key, values) => commonT(key, values),
-            (key, values) => t(key, values),
-            (metric) => tHistory(`metrics.${metric}`),
+          return getOrComputeWidgetResult(
+            buildWidgetComputeCacheKey(widget.type, widget.config, loans.length, toDate.getTime()),
+            () =>
+              computeBarChart(
+                loans,
+                config,
+                toDate,
+                fieldOptions,
+                locale,
+                (year, month) =>
+                  formatter.dateTime(new Date(year, month - 1, 1), { month: 'short', year: 'numeric' }),
+                t('emptyValue'),
+                t('otherCategory'),
+                tHistoryTable('untilNow'),
+                (key, values) => commonT(key, values),
+                (key, values) => t(key, values),
+                (metric) => tHistory(`metrics.${metric}`),
+              ),
           );
         },
       }),
-    [loans, config, toDate, fieldOptions, locale, formatter, t, tHistory, tHistoryTable, commonT, widget.id, widget.type],
+    [loans, config, toDate, fieldOptions, locale, formatter, t, tHistory, tHistoryTable, commonT, widget.id, widget.type, getOrComputeWidgetResult],
   );
 
   const chartData = useMemo(() => {
