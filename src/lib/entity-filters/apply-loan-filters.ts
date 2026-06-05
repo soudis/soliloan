@@ -5,10 +5,7 @@ import type { EntityFilter, EntityFilterFieldOption } from '@/types/entity-filte
 
 import { getFilterDefinitionForField, isDynamicLoanFilterField, isStaticLoanFilterField } from './filter-definitions';
 import { matchesFilterByType } from './filter-matchers';
-import {
-  getLoanFilterValue,
-  type PeriodSnapshot,
-} from './get-filter-value';
+import { getLoanFilterValue, type PeriodSnapshot } from './get-filter-value';
 
 export type LoanFilterContext = {
   periodEnd: Date;
@@ -41,8 +38,7 @@ export function loanMatchesFilters(
           filter.field,
         ));
 
-    const snapshot =
-      useSnapshot || (filter.entity === 'lender' && context.snapshot) ? context.snapshot : null;
+    const snapshot = useSnapshot || (filter.entity === 'lender' && context.snapshot) ? context.snapshot : null;
     const value = getLoanFilterValue(loan, filter.entity, filter.field, snapshot, context.commonT);
 
     if (!matchesFilterByType(value, filter.value, definition.type)) {

@@ -14,7 +14,10 @@ import {
 import { sanitizeLender } from '@/lib/sanitation/sanitize-lender';
 import { sanitizeLoan } from '@/lib/sanitation/sanitize-loan';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
-import { buildCumulativeTimeline, type CumulativeTimelineEntry } from '@/lib/dashboard/history-table/cumulative-timeline';
+import {
+  buildCumulativeTimeline,
+  type CumulativeTimelineEntry,
+} from '@/lib/dashboard/history-table/cumulative-timeline';
 import type { LoanMonthlyHistory, LoanMonthlyNumbers } from '@/types/dashboard';
 import type { LenderWithCalculations } from '@/types/lenders';
 import type { Transaction } from '@prisma/client';
@@ -29,9 +32,7 @@ export type DashboardLoan = LoanWithCalculations & {
   transactions: Transaction[];
 };
 
-function buildLoanMonthlyHistory(
-  perMonth: ReturnType<typeof calculateLoanPerMonth>,
-): LoanMonthlyHistory {
+function buildLoanMonthlyHistory(perMonth: ReturnType<typeof calculateLoanPerMonth>): LoanMonthlyHistory {
   const history: LoanMonthlyHistory = {};
 
   for (const entry of perMonth) {
@@ -70,40 +71,40 @@ export async function getDashboardStats(projectId: string, toDate: Date = new Da
 
     const [loans, lenders] = await Promise.all([
       db.loan.findMany({
-      where: {
-        lender: {
-          projectId,
-        },
-      },
-      orderBy: {
-        signDate: 'desc',
-      },
-      include: {
-        lender: {
-          include: {
-            project: {
-              include: {
-                configuration: { select: { interestMethod: true } },
-              },
-            },
-            user: {
-              select: {
-                name: true,
-                id: true,
-                email: true,
-                lastLogin: true,
-                lastInvited: true,
-              },
-            },
-            notes: lenderNotesRelation,
-            files: lenderFilesRelation,
+        where: {
+          lender: {
+            projectId,
           },
         },
-        transactions: true,
-        notes: loanNotesRelation,
-        files: loanFilesRelation,
-      },
-    }),
+        orderBy: {
+          signDate: 'desc',
+        },
+        include: {
+          lender: {
+            include: {
+              project: {
+                include: {
+                  configuration: { select: { interestMethod: true } },
+                },
+              },
+              user: {
+                select: {
+                  name: true,
+                  id: true,
+                  email: true,
+                  lastLogin: true,
+                  lastInvited: true,
+                },
+              },
+              notes: lenderNotesRelation,
+              files: lenderFilesRelation,
+            },
+          },
+          transactions: true,
+          notes: loanNotesRelation,
+          files: loanFilesRelation,
+        },
+      }),
       db.lender.findMany({
         where: { projectId },
         orderBy: { lenderNumber: 'asc' },

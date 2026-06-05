@@ -44,13 +44,13 @@ function createSettingsSchema(widgetType: DashboardWidgetType) {
   return z.object({
     title:
       widgetType === 'stat' ||
-        widgetType === 'history_table' ||
-        widgetType === 'pie_chart' ||
-        widgetType === 'bar_chart' ||
-        widgetType === 'line_chart' ||
-        widgetType === 'loan_table_view' ||
-        widgetType === 'lender_table_view' ||
-        widgetType === 'divider'
+      widgetType === 'history_table' ||
+      widgetType === 'pie_chart' ||
+      widgetType === 'bar_chart' ||
+      widgetType === 'line_chart' ||
+      widgetType === 'loan_table_view' ||
+      widgetType === 'lender_table_view' ||
+      widgetType === 'divider'
         ? z.string()
         : z.string().min(1),
     width: settingsWidthSchema,
@@ -123,15 +123,11 @@ export function DashboardWidgetSettings() {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    {widget.type === 'divider' ? t('divider.fieldTitle') : t('fieldTitle')}
-                  </FormLabel>
+                  <FormLabel>{widget.type === 'divider' ? t('divider.fieldTitle') : t('fieldTitle')}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder={
-                        widget.type === 'divider' ? t('divider.titlePlaceholder') : undefined
-                      }
+                      placeholder={widget.type === 'divider' ? t('divider.titlePlaceholder') : undefined}
                       onBlur={() => form.handleSubmit(onSubmit)()}
                     />
                   </FormControl>

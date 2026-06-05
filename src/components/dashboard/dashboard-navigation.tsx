@@ -29,10 +29,7 @@ export default function DashboardNavigation({
   const t = useTranslations('navigation');
   const isDashboardPage = pathname === '/dashboard';
   const isFillHeightPage =
-    pathname === '/lenders' ||
-    pathname === '/loans' ||
-    pathname === '/logbook' ||
-    pathname === '/projects';
+    pathname === '/lenders' || pathname === '/loans' || pathname === '/logbook' || pathname === '/projects';
 
   const isFullWidthPage = pathname === '/lenders' || pathname === '/loans';
 
@@ -60,9 +57,7 @@ export default function DashboardNavigation({
         <main
           className={cn(
             'relative flex-1 bg-[color-mix(in_oklch,var(--background)_60%,var(--muted)_40%)]',
-            isFillHeightPage
-              ? 'flex min-h-0 flex-col overflow-hidden'
-              : 'min-h-0 flex-1 overflow-y-auto',
+            isFillHeightPage ? 'flex min-h-0 flex-col overflow-hidden' : 'min-h-0 flex-1 overflow-y-auto',
           )}
         >
           {isProjectSwitching && (

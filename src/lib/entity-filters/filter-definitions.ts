@@ -194,9 +194,16 @@ export function isStaticLoanFilterField(field: string, entity: 'loan' | 'lender'
 }
 
 export function isDynamicLoanFilterField(field: string): boolean {
-  return ['balance', 'deposits', 'withdrawals', 'notReclaimed', 'interest', 'interestPaid', 'interestError', 'status'].includes(
-    field,
-  );
+  return [
+    'balance',
+    'deposits',
+    'withdrawals',
+    'notReclaimed',
+    'interest',
+    'interestPaid',
+    'interestError',
+    'status',
+  ].includes(field);
 }
 
 const LENDER_SNAPSHOT_FILTER_FIELDS = new Set([

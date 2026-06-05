@@ -8,10 +8,7 @@ const dashboardWidgetWidthSchema = z.enum(DASHBOARD_WIDGET_WIDTHS);
 const dashboardWidgetSchema = z
   .object({
     id: z.string().min(1),
-    type: z.preprocess(
-      (val) => (val === 'yearly_table' ? 'history_table' : val),
-      z.enum(DASHBOARD_WIDGET_TYPES),
-    ),
+    type: z.preprocess((val) => (val === 'yearly_table' ? 'history_table' : val), z.enum(DASHBOARD_WIDGET_TYPES)),
     title: z.string(),
     width: dashboardWidgetWidthSchema,
     config: z.record(z.string(), z.unknown()).default({}),

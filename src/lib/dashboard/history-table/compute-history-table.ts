@@ -13,11 +13,7 @@ import {
 } from '@/types/dashboard-widgets/history-table';
 import type { EntityFilter, EntityFilterFieldOption } from '@/types/entity-filters';
 
-import {
-  buildAllLoanMetricCaches,
-  collectPeriodsForMetricCaches,
-  type LoanMetricCacheMap,
-} from './loan-metric-cache';
+import { buildAllLoanMetricCaches, collectPeriodsForMetricCaches, type LoanMetricCacheMap } from './loan-metric-cache';
 import {
   buildHistoryPeriods,
   buildPrecedingPeriodForStockDelta,
@@ -115,9 +111,7 @@ export function filterLoansForHistoryColumn(
       return false;
     }
 
-    const snapshot = needsSnapshot
-      ? getOrBuildPeriodSnapshot(loan, period, config.periodMode, cache)
-      : null;
+    const snapshot = needsSnapshot ? getOrBuildPeriodSnapshot(loan, period, config.periodMode, cache) : null;
 
     return loanMatchesFilters(
       loan,
@@ -133,11 +127,7 @@ export function filterLoansForHistoryColumn(
   });
 }
 
-function getLoanMetrics(
-  loan: DashboardLoan,
-  period: HistoryPeriod,
-  loanMetricCaches: LoanMetricCacheMap | undefined,
-) {
+function getLoanMetrics(loan: DashboardLoan, period: HistoryPeriod, loanMetricCaches: LoanMetricCacheMap | undefined) {
   const cached = loanMetricCaches?.get(loan.id);
   if (cached) {
     return {
@@ -237,19 +227,9 @@ export function aggregateMetric(
   cache?: AggregateMetricCache,
   loanMetricCaches?: LoanMetricCacheMap,
 ): number | null {
-  const metricCaches =
-    loanMetricCaches ??
-    buildAllLoanMetricCaches(loans, [period], config.periodMode);
+  const metricCaches = loanMetricCaches ?? buildAllLoanMetricCaches(loans, [period], config.periodMode);
 
-  const filtered = filterLoansForHistoryColumn(
-    loans,
-    column,
-    period,
-    config,
-    fieldOptions,
-    commonT,
-    cache,
-  );
+  const filtered = filterLoansForHistoryColumn(loans, column, period, config, fieldOptions, commonT, cache);
 
   return sumMetricForLoans(filtered, column, period, metricCaches);
 }
@@ -345,15 +325,7 @@ export function computeHistoryTable(
         cells[period.key] = {};
       }
 
-      const filtered = filterLoansForHistoryColumn(
-        loans,
-        column,
-        period,
-        config,
-        fieldOptions,
-        commonT,
-        snapshotCache,
-      );
+      const filtered = filterLoansForHistoryColumn(loans, column, period, config, fieldOptions, commonT, snapshotCache);
 
       if (index === 0) {
         const preceding = buildPrecedingPeriodForStockDelta(period, config.periodMode);

@@ -51,24 +51,24 @@ export function computePieChart(
   };
 
   const discriminator = getPieChartDiscriminator(config);
-  const fieldDef = getFilterDefinitionForField(
-    fieldOptions,
-    discriminator.groupBy.entity,
-    discriminator.groupBy.field,
-  );
+  const fieldDef = getFilterDefinitionForField(fieldOptions, discriminator.groupBy.entity, discriminator.groupBy.field);
 
   const groups = new Map<string, GroupAccumulator>();
 
   for (const loan of loans) {
-    filterContext.snapshot = buildPeriodSnapshot(loan, {
-      key: 'pie',
-      label: '',
-      year: periodEnd.getFullYear(),
-      month: periodEnd.getMonth() + 1,
-      periodStart,
-      periodEnd,
-      isPartial: true,
-    }, 'monthly');
+    filterContext.snapshot = buildPeriodSnapshot(
+      loan,
+      {
+        key: 'pie',
+        label: '',
+        year: periodEnd.getFullYear(),
+        month: periodEnd.getMonth() + 1,
+        periodStart,
+        periodEnd,
+        isPartial: true,
+      },
+      'monthly',
+    );
 
     if (!loanMatchesFilters(loan, discriminator.filters, filterContext, fieldOptions)) {
       continue;

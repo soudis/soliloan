@@ -1,10 +1,7 @@
 'use server';
 
 import { upsertScopedLayout } from '@/lib/dashboard/layout-db';
-import {
-  upsertProjectDashboardLayoutSchema,
-  upsertUserDashboardLayoutSchema,
-} from '@/lib/schemas/dashboard-layout';
+import { upsertProjectDashboardLayoutSchema, upsertUserDashboardLayoutSchema } from '@/lib/schemas/dashboard-layout';
 import { authAction, projectAction } from '@/lib/utils/safe-action';
 
 export const upsertProjectDashboardLayoutAction = projectAction

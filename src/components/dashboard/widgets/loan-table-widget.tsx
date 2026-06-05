@@ -10,10 +10,7 @@ import { useRouter } from '@/i18n/navigation';
 import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';
 import { buildLoanFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import { buildPeriodSnapshot } from '@/lib/dashboard/history-table/rollup-period';
-import {
-  buildAllLoanTableColumns,
-  getLoanSortValue,
-} from '@/lib/dashboard/table-widget/loan-table-column-registry';
+import { buildAllLoanTableColumns, getLoanSortValue } from '@/lib/dashboard/table-widget/loan-table-column-registry';
 import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
 import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
 import type { DashboardWidget } from '@/types/dashboard-layout';
@@ -31,10 +28,7 @@ export function LoanTableWidget({ widget }: { widget: DashboardWidget }) {
 
   const config = useMemo(() => parseLoanTableConfig(widget.config), [widget.config]);
 
-  const fieldOptions = useMemo(
-    () => buildLoanFilterFieldOptions(project, tLoans, commonT),
-    [project, tLoans, commonT],
-  );
+  const fieldOptions = useMemo(() => buildLoanFilterFieldOptions(project, tLoans, commonT), [project, tLoans, commonT]);
 
   const columns = useMemo(
     () => buildAllLoanTableColumns(project, tLoans, commonT, locale),

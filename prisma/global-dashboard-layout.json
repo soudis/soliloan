@@ -573,10 +573,7 @@
                 {
                   "id": "67949347-8257-4172-9a7a-6698f8e34692",
                   "field": "balance",
-                  "value": [
-                    50000,
-                    null
-                  ],
+                  "value": [50000, null],
                   "entity": "lender"
                 }
               ],

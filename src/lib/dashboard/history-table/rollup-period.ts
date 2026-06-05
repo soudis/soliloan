@@ -30,14 +30,9 @@ function ensureCurrentPeriodKey(
   toDate: Date,
 ): { year: number; month?: number }[] {
   const at = moment(toDate);
-  const current =
-    mode === 'yearly'
-      ? { year: at.year() }
-      : { year: at.year(), month: at.month() + 1 };
+  const current = mode === 'yearly' ? { year: at.year() } : { year: at.year(), month: at.month() + 1 };
 
-  const hasCurrent = periods.some(
-    (p) => p.year === current.year && (mode === 'yearly' || p.month === current.month),
-  );
+  const hasCurrent = periods.some((p) => p.year === current.year && (mode === 'yearly' || p.month === current.month));
   if (hasCurrent) {
     return periods;
   }
@@ -121,10 +116,7 @@ export function limitPeriods(
 }
 
 /** Period immediately before `period` — used as baseline for stock-count deltas on the first visible row. */
-export function buildPrecedingPeriodForStockDelta(
-  period: HistoryPeriod,
-  mode: 'yearly' | 'monthly',
-): HistoryPeriod {
+export function buildPrecedingPeriodForStockDelta(period: HistoryPeriod, mode: 'yearly' | 'monthly'): HistoryPeriod {
   if (mode === 'yearly') {
     const year = period.year - 1;
     return {
@@ -178,7 +170,9 @@ export function buildHistoryPeriods(
       };
     }
     const month = p.month ?? 1;
-    const periodStart = moment({ year: p.year, month: month - 1 }).startOf('month').toDate();
+    const periodStart = moment({ year: p.year, month: month - 1 })
+      .startOf('month')
+      .toDate();
     const naturalEnd = naturalPeriodEnd(p.year, month, 'monthly');
     const periodEnd = moment.min(naturalEnd, toDateMoment).toDate();
     const isPartial = toDateMoment.isBefore(naturalEnd, 'day');
@@ -198,11 +192,7 @@ function getMonthEntry(history: LoanMonthlyHistory, year: number, month: number)
   return history[year]?.[month] ?? null;
 }
 
-export function rollupYearFromHistory(
-  history: LoanMonthlyHistory,
-  year: number,
-  periodEnd?: Date,
-): LoanMonthlyNumbers {
+export function rollupYearFromHistory(history: LoanMonthlyHistory, year: number, periodEnd?: Date): LoanMonthlyNumbers {
   const months = history[year];
   if (!months) {
     return emptyNumbers();

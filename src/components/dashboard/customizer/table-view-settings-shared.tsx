@@ -69,9 +69,7 @@ export function TableViewSettingsShared({
     [debouncedCommit],
   );
 
-  const sortColumnOptions = columnMeta.filter((meta) =>
-    draftConfig.columns.some((col) => col.id === meta.id),
-  );
+  const sortColumnOptions = columnMeta.filter((meta) => draftConfig.columns.some((col) => col.id === meta.id));
 
   return (
     <div className="mt-6 space-y-4 border-t pt-4">
@@ -170,9 +168,7 @@ export function TableViewSettingsShared({
       </div>
 
       <div className="space-y-2">
-        <Label className="text-xs">
-          {draftConfig.displayMode === 'paged' ? t('pageSize') : t('rowLimit')}
-        </Label>
+        <Label className="text-xs">{draftConfig.displayMode === 'paged' ? t('pageSize') : t('rowLimit')}</Label>
         <Input
           type="number"
           min={TABLE_VIEW_ROW_LIMIT_MIN}

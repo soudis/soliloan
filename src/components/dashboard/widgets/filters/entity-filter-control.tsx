@@ -20,8 +20,7 @@ export function EntityFilterControl({
   value: unknown;
   onChange: (value: unknown) => void;
 }) {
-  const filterState: ColumnFilter | undefined =
-    value === '' || value == null ? undefined : { id: 'filter', value };
+  const filterState: ColumnFilter | undefined = value === '' || value == null ? undefined : { id: 'filter', value };
 
   switch (definition.type) {
     case 'select':

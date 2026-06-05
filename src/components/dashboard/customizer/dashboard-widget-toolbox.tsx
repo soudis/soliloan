@@ -1,16 +1,7 @@
 'use client';
 
 import { useDraggable } from '@dnd-kit/core';
-import {
-  BarChart3,
-  GripVertical,
-  Hash,
-  LineChart,
-  Minus,
-  PieChart,
-  Table2,
-  Users,
-} from 'lucide-react';
+import { BarChart3, GripVertical, Hash, LineChart, Minus, PieChart, Table2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { DASHBOARD_WIDGET_TYPES, type DashboardWidgetType } from '@/types/dashboard-layout';

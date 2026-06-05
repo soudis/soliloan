@@ -93,11 +93,7 @@ export function PieChartWidget({ widget }: { widget: DashboardWidget }) {
               const value = Number(context.raw) || 0;
               const total = result.total || 1;
               const percentage = Math.round((value / total) * 100);
-              const formatted = formatDashboardMetricValue(
-                config.measure,
-                value,
-                false,
-              );
+              const formatted = formatDashboardMetricValue(config.measure, value, false);
               return `${label}: ${formatted} (${percentage}%)`;
             },
           },

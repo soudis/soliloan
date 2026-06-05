@@ -35,7 +35,10 @@ export function findWidgetLocation(layout: DashboardLayoutData, widgetId: string
   return null;
 }
 
-export function updateLayout(layout: DashboardLayoutData, updater: (rows: DashboardLayoutRow[]) => DashboardLayoutRow[]) {
+export function updateLayout(
+  layout: DashboardLayoutData,
+  updater: (rows: DashboardLayoutRow[]) => DashboardLayoutRow[],
+) {
   return { rows: updater([...layout.rows]) };
 }
 
@@ -121,12 +124,9 @@ export function insertWidgetInNewRowAfter(
   if (!newRow) {
     return withRow;
   }
-  const fitted =
-    fitWidgetWidthToRow(DESKTOP_GRID_COLS, widget.width) ?? widget.width;
+  const fitted = fitWidgetWidthToRow(DESKTOP_GRID_COLS, widget.width) ?? widget.width;
   const newWidget = { ...widget, width: fitted };
-  return updateLayout(withRow, (rows) =>
-    rows.map((r) => (r.id === newRow.id ? { ...r, widgets: [newWidget] } : r)),
-  );
+  return updateLayout(withRow, (rows) => rows.map((r) => (r.id === newRow.id ? { ...r, widgets: [newWidget] } : r)));
 }
 
 export function addWidgetFromTypeInNewRow(
@@ -173,11 +173,7 @@ export function moveWidgetToRow(
     return inserted;
   }
   const targetRowIndex = findRowIndex(without, targetRowId);
-  return insertWidgetInNewRowAfter(
-    without,
-    widget,
-    targetRowIndex >= 0 ? targetRowIndex : undefined,
-  );
+  return insertWidgetInNewRowAfter(without, widget, targetRowIndex >= 0 ? targetRowIndex : undefined);
 }
 
 export function reorderWidgetInRow(

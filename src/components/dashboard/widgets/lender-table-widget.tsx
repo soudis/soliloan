@@ -40,7 +40,6 @@ export function LenderTableWidget({ widget }: { widget: DashboardWidget }) {
     [project, tLenders, tLoans, commonT, locale],
   );
 
-
   const filteredLenders = useMemo(
     () =>
       profileWidgetCompute({
@@ -48,9 +47,8 @@ export function LenderTableWidget({ widget }: { widget: DashboardWidget }) {
         widgetId: widget.id,
         loanCount: lenders.length,
         compute: () =>
-          getOrComputeWidgetResult(
-            buildWidgetComputeCacheKey(widget.type, widget.config, lenders.length, 0),
-            () => lenders.filter((lender) => lenderMatchesFilters(lender, config.filters, fieldOptions)),
+          getOrComputeWidgetResult(buildWidgetComputeCacheKey(widget.type, widget.config, lenders.length, 0), () =>
+            lenders.filter((lender) => lenderMatchesFilters(lender, config.filters, fieldOptions)),
           ),
       }),
     [widget.type, widget.id, widget.config, lenders, config.filters, fieldOptions, getOrComputeWidgetResult],

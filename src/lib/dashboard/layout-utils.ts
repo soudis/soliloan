@@ -17,14 +17,7 @@ export const DESKTOP_GRID_COLS = 12;
 export const MOBILE_GRID_COLS = 12;
 
 /** Largest first — used when shrinking to fit remaining row space */
-const WIDTH_ORDER: DashboardWidgetWidth[] = [
-  'full',
-  'threeQuarters',
-  'twoThirds',
-  'half',
-  'third',
-  'quarter',
-];
+const WIDTH_ORDER: DashboardWidgetWidth[] = ['full', 'threeQuarters', 'twoThirds', 'half', 'third', 'quarter'];
 
 /** Smallest first — width picker in settings */
 export const WIDGET_WIDTH_SETTINGS_ORDER: DashboardWidgetWidth[] = [
@@ -170,14 +163,8 @@ export function widgetShowsCardHeader(widget: { type: DashboardWidgetType; title
   return true;
 }
 
-export function createWidget(
-  type: DashboardWidgetType,
-  title: string,
-  width?: DashboardWidgetWidth,
-): DashboardWidget {
-  const resolvedWidth = widgetIsFullWidthLocked(type)
-    ? 'full'
-    : (width ?? DEFAULT_WIDTH_BY_TYPE[type]);
+export function createWidget(type: DashboardWidgetType, title: string, width?: DashboardWidgetWidth): DashboardWidget {
+  const resolvedWidth = widgetIsFullWidthLocked(type) ? 'full' : (width ?? DEFAULT_WIDTH_BY_TYPE[type]);
 
   return {
     id: crypto.randomUUID(),

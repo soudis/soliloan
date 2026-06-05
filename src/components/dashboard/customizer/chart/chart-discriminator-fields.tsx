@@ -38,11 +38,7 @@ export function ChartDiscriminatorFields({
   const t = useTranslations(translationNamespace);
 
   const groupByValue = toFieldValue(value.groupBy.entity, value.groupBy.field);
-  const groupFieldDef = getFilterDefinitionForField(
-    fieldOptions,
-    value.groupBy.entity,
-    value.groupBy.field,
-  );
+  const groupFieldDef = getFilterDefinitionForField(fieldOptions, value.groupBy.entity, value.groupBy.field);
 
   const patch = (partial: Partial<ChartDiscriminatorConfig>) => {
     onChange({ ...value, ...partial });
@@ -79,9 +75,7 @@ export function ChartDiscriminatorFields({
       {groupFieldDef?.type === 'number' ? (
         <NumericBucketEditor
           thresholds={value.numericBuckets ?? []}
-          onChange={(numericBuckets) =>
-            patch({ numericBuckets: numericBuckets.length ? numericBuckets : undefined })
-          }
+          onChange={(numericBuckets) => patch({ numericBuckets: numericBuckets.length ? numericBuckets : undefined })}
           translationNamespace={translationNamespace}
         />
       ) : null}
@@ -128,8 +122,7 @@ export function ChartDiscriminatorFields({
             onChange={(e) => {
               const n = Number.parseInt(e.target.value, 10);
               patch({
-                topNCategories:
-                  Number.isFinite(n) && n >= 1 && n <= 50 ? n : DEFAULT_CHART_TOP_N,
+                topNCategories: Number.isFinite(n) && n >= 1 && n <= 50 ? n : DEFAULT_CHART_TOP_N,
               });
             }}
           />

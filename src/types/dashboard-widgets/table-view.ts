@@ -39,13 +39,7 @@ export const DEFAULT_LOAN_TABLE_VISIBLE_COLUMNS = [
   'status',
 ] as const;
 
-export const DEFAULT_LENDER_TABLE_VISIBLE_COLUMNS = [
-  'lenderNumber',
-  'name',
-  'type',
-  'balance',
-  'amount',
-] as const;
+export const DEFAULT_LENDER_TABLE_VISIBLE_COLUMNS = ['lenderNumber', 'name', 'type', 'balance', 'amount'] as const;
 
 function clampRowLimit(value: unknown): number {
   const n = typeof value === 'number' ? value : Number(value);
@@ -66,10 +60,7 @@ function parseTableViewSort(value: unknown): TableViewSort {
   return { columnId: sort.columnId, desc: sort.desc === true };
 }
 
-function parseTableViewColumns(
-  value: unknown,
-  defaultVisibleIds: readonly string[],
-): TableViewColumnConfig[] {
+function parseTableViewColumns(value: unknown, defaultVisibleIds: readonly string[]): TableViewColumnConfig[] {
   if (!Array.isArray(value) || value.length === 0) {
     return defaultVisibleIds.map((id) => ({ id, visible: true }));
   }
@@ -87,15 +78,14 @@ function parseEntityFilters(value: unknown): EntityFilter[] {
   if (!Array.isArray(value)) {
     return [];
   }
-  return value.filter(
-    (item): item is EntityFilter =>
-      Boolean(
-        item &&
-          typeof item === 'object' &&
-          typeof (item as EntityFilter).id === 'string' &&
-          typeof (item as EntityFilter).field === 'string' &&
-          ((item as EntityFilter).entity === 'loan' || (item as EntityFilter).entity === 'lender'),
-      ),
+  return value.filter((item): item is EntityFilter =>
+    Boolean(
+      item &&
+        typeof item === 'object' &&
+        typeof (item as EntityFilter).id === 'string' &&
+        typeof (item as EntityFilter).field === 'string' &&
+        ((item as EntityFilter).entity === 'loan' || (item as EntityFilter).entity === 'lender'),
+    ),
   );
 }
 
@@ -103,8 +93,7 @@ function parseTableViewConfigBase(
   config: Record<string, unknown> | undefined,
   defaultVisibleIds: readonly string[],
 ): TableViewWidgetConfigBase {
-  const displayMode: TableViewDisplayMode =
-    config?.displayMode === 'fixed' ? 'fixed' : 'paged';
+  const displayMode: TableViewDisplayMode = config?.displayMode === 'fixed' ? 'fixed' : 'paged';
 
   return {
     layoutVersion: 1,

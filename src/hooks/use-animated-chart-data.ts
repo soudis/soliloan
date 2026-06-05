@@ -3,11 +3,7 @@
 import type { ChartData, ChartType } from 'chart.js';
 import { useEffect, useRef, useState } from 'react';
 
-import {
-  chartDataValuesSnapshotKey,
-  chartDataVisualSnapshotKey,
-  zeroChartData,
-} from '@/lib/dashboard/chart-animation';
+import { chartDataValuesSnapshotKey, chartDataVisualSnapshotKey, zeroChartData } from '@/lib/dashboard/chart-animation';
 
 /**
  * Chart.js animates updates, not always the first paint when data is already final.

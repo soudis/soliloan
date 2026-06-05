@@ -35,13 +35,7 @@ export function DashboardGrid() {
           >
             <span className="text-xs text-muted-foreground">{t('dropNewRow')}</span>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="w-fit"
-            onClick={() => setLayout(addRow(layout))}
-          >
+          <Button type="button" variant="outline" size="sm" className="w-fit" onClick={() => setLayout(addRow(layout))}>
             {t('addRow')}
           </Button>
         </div>

@@ -6,19 +6,17 @@ import { useTranslations } from 'next-intl';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-
-import { upsertGlobalDashboardLayoutAction } from '@/actions/dashboard/mutations/upsert-global-dashboard-layout';
 import {
   upsertProjectDashboardLayoutAction,
   upsertUserDashboardLayoutAction,
 } from '@/actions/dashboard/mutations/upsert-dashboard-layout';
+import { upsertGlobalDashboardLayoutAction } from '@/actions/dashboard/mutations/upsert-global-dashboard-layout';
+import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
+import { ProjectLogo } from '@/components/dashboard/project-logo';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cloneLayoutData } from '@/lib/dashboard/layout-utils';
 import type { DashboardLayoutData, DashboardLayoutScopeKey } from '@/types/dashboard-layout';
-
-import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
-import { ProjectLogo } from '@/components/dashboard/project-logo';
 
 import { DashboardDndProvider } from './dashboard-dnd-provider';
 import { DashboardEditorSidebar } from './dashboard-editor-sidebar';
@@ -126,6 +124,7 @@ export function DashboardCustomizer({
     setSaveStatus('idle');
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only reset selected widget id when scope changes
   useEffect(() => {
     setSelectedWidgetId(null);
   }, [activeScope]);
@@ -168,26 +167,26 @@ export function DashboardCustomizer({
             </ToggleGroupItem>
           </ToggleGroup>
           <div className="flex flex-wrap items-center gap-2">
-          {isCustomizing && (
-            <Button type="button" disabled={!isDirty || saveStatus === 'saving'} onClick={handleSave}>
-              <Save className="mr-2 h-4 w-4" />
-              {saveStatus === 'saving' ? t('saving') : t('save')}
+            {isCustomizing && (
+              <Button type="button" disabled={!isDirty || saveStatus === 'saving'} onClick={handleSave}>
+                <Save className="mr-2 h-4 w-4" />
+                {saveStatus === 'saving' ? t('saving') : t('save')}
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant={isCustomizing ? 'secondary' : 'outline'}
+              onClick={() => {
+                setIsCustomizing((v) => !v);
+                if (isCustomizing) {
+                  setSelectedWidgetId(null);
+                  setSaveStatus('idle');
+                }
+              }}
+            >
+              <SlidersHorizontal className="mr-2 h-4 w-4" />
+              {isCustomizing ? t('doneCustomize') : t('customize')}
             </Button>
-          )}
-          <Button
-            type="button"
-            variant={isCustomizing ? 'secondary' : 'outline'}
-            onClick={() => {
-              setIsCustomizing((v) => !v);
-              if (isCustomizing) {
-                setSelectedWidgetId(null);
-                setSaveStatus('idle');
-              }
-            }}
-          >
-            <SlidersHorizontal className="mr-2 h-4 w-4" />
-            {isCustomizing ? t('doneCustomize') : t('customize')}
-          </Button>
           </div>
         </div>
       </div>
@@ -204,9 +203,7 @@ export function DashboardCustomizer({
         }}
       >
         <DashboardDndProvider>
-          {isCustomizing ? (
-            <p className="mb-3 text-sm text-muted-foreground">{t('dragReorderHint')}</p>
-          ) : null}
+          {isCustomizing ? <p className="mb-3 text-sm text-muted-foreground">{t('dragReorderHint')}</p> : null}
           <div className="flex items-start gap-4">
             <div className="min-w-0 flex-1">
               <DashboardGrid />

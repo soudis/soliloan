@@ -39,7 +39,13 @@ export function NumericBucketEditor({
       <Label className="text-xs">{t('numericBuckets')}</Label>
       <p className="text-xs text-muted-foreground">{t('numericBucketsHint')}</p>
       {thresholds.map((value, index) => (
-        <div key={`bucket-${index}`} className="flex items-center gap-2">
+        <div
+          key={`bucket-${
+            // biome-ignore lint/suspicious/noArrayIndexKey: index is used as key
+            index
+          }`}
+          className="flex items-center gap-2"
+        >
           <Input
             type="number"
             step="any"

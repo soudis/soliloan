@@ -98,9 +98,7 @@ export function TableViewWidget<T>({
     return filteredSortedRows;
   }, [filteredSortedRows, config.displayMode, config.rowLimit, getSortValue]);
 
-  const sorting: SortingState = effectiveSort
-    ? [{ id: effectiveSort.columnId, desc: effectiveSort.desc }]
-    : [];
+  const sorting: SortingState = effectiveSort ? [{ id: effectiveSort.columnId, desc: effectiveSort.desc }] : [];
 
   const table = useReactTable({
     data: displayRows,
@@ -159,10 +157,7 @@ export function TableViewWidget<T>({
               onClick={() => onRowClick?.(row.original)}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCell
-                  key={cell.id}
-                  style={(cell.column.columnDef.meta as { style?: CSSProperties })?.style}
-                >
+                <TableCell key={cell.id} style={(cell.column.columnDef.meta as { style?: CSSProperties })?.style}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}

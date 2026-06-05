@@ -1,26 +1,18 @@
 'use client';
 
-import {
-  BarElement,
-  CategoryScale,
-  Chart as ChartJS,
-  Legend,
-  LinearScale,
-  type ChartOptions,
-  Tooltip,
-} from 'chart.js';
+import { BarElement, CategoryScale, Chart as ChartJS, type ChartOptions, Legend, LinearScale, Tooltip } from 'chart.js';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
+import { useAnimatedChartData } from '@/hooks/use-animated-chart-data';
+import { computeBarChart } from '@/lib/dashboard/bar-chart/compute-bar-chart';
 import { chartColorAtIndex } from '@/lib/dashboard/chart/chart-dataset-colors';
 import { DASHBOARD_CHART_ANIMATION } from '@/lib/dashboard/chart-animation';
-import { computeBarChart } from '@/lib/dashboard/bar-chart/compute-bar-chart';
-import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
-import { useAnimatedChartData } from '@/hooks/use-animated-chart-data';
-import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
+import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
+import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
 import { cn } from '@/lib/utils';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import { parseBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
@@ -39,6 +31,7 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
 
   const config = useMemo(() => parseBarChartConfig(widget.config), [widget.config]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only recompute result when widget config changes
   const result = useMemo(
     () =>
       profileWidgetCompute({
@@ -58,8 +51,7 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
                 toDate,
                 fieldOptions,
                 locale,
-                (year, month) =>
-                  formatter.dateTime(new Date(year, month - 1, 1), { month: 'short', year: 'numeric' }),
+                (year, month) => formatter.dateTime(new Date(year, month - 1, 1), { month: 'short', year: 'numeric' }),
                 t('emptyValue'),
                 t('otherCategory'),
                 tHistoryTable('untilNow'),
@@ -70,7 +62,21 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
           );
         },
       }),
-    [loans, config, toDate, fieldOptions, locale, formatter, t, tHistory, tHistoryTable, commonT, widget.id, widget.type, getOrComputeWidgetResult],
+    [
+      loans,
+      config,
+      toDate,
+      fieldOptions,
+      locale,
+      formatter,
+      t,
+      tHistory,
+      tHistoryTable,
+      commonT,
+      widget.id,
+      widget.type,
+      getOrComputeWidgetResult,
+    ],
   );
 
   const chartData = useMemo(() => {
@@ -106,11 +112,7 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
               if (!series || raw === null || raw === undefined) {
                 return '';
               }
-              const formatted = formatDashboardMetricValue(
-                series.metric,
-                Number(raw),
-                series.aggregation === 'delta',
-              );
+              const formatted = formatDashboardMetricValue(series.metric, Number(raw), series.aggregation === 'delta');
               return `${ctx.dataset.label}: ${formatted}`;
             },
           },

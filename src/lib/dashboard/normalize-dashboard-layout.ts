@@ -1,8 +1,4 @@
-import {
-  DEFAULT_WIDTH_BY_TYPE,
-  isDashboardWidgetWidth,
-  widgetIsFullWidthLocked,
-} from '@/lib/dashboard/layout-utils';
+import { DEFAULT_WIDTH_BY_TYPE, isDashboardWidgetWidth, widgetIsFullWidthLocked } from '@/lib/dashboard/layout-utils';
 import { createDefaultBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
 import { createDefaultLineChartConfig } from '@/types/dashboard-widgets/line-chart';
 import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
@@ -24,9 +20,7 @@ function normalizeWidget(widget: DashboardWidget & { type?: string }): Dashboard
       type: 'history_table',
       width,
       config:
-        widget.config && Object.keys(widget.config).length > 0
-          ? widget.config
-          : createDefaultHistoryTableConfig(),
+        widget.config && Object.keys(widget.config).length > 0 ? widget.config : createDefaultHistoryTableConfig(),
     };
   }
   if (widget.type === 'history_table' && (!widget.config || Object.keys(widget.config).length === 0)) {

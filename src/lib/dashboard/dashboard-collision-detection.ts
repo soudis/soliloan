@@ -5,9 +5,7 @@ import { closestCenter, pointerWithin } from '@dnd-kit/core';
 export const dashboardCollisionDetection: CollisionDetection = (args) => {
   const pointerCollisions = pointerWithin(args);
   if (pointerCollisions.length > 0) {
-    const widgets = pointerCollisions.filter(
-      (c) => c.data?.droppableContainer?.data?.current?.kind === 'widget',
-    );
+    const widgets = pointerCollisions.filter((c) => c.data?.droppableContainer?.data?.current?.kind === 'widget');
     if (widgets.length > 0) {
       return widgets;
     }

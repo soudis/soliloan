@@ -5,11 +5,7 @@ import type { HistoryTableMetric } from '@/types/dashboard-widgets/history-table
 import { buildStatPeriodAtDate } from '../stat-widget/build-stat-period';
 import { getCumulativeNumbers, getPeriodNumbers } from '../history-table/rollup-period';
 
-export function getLoanMetricValue(
-  loan: DashboardLoan,
-  metric: HistoryTableMetric,
-  toDate: Date,
-): number | null {
+export function getLoanMetricValue(loan: DashboardLoan, metric: HistoryTableMetric, toDate: Date): number | null {
   const period = buildStatPeriodAtDate(toDate);
   const periodNumbers = getPeriodNumbers(loan, period, 'monthly');
   const cumulative = getCumulativeNumbers(loan, period);

@@ -6,17 +6,10 @@ import {
 } from '@/lib/dashboard/history-table/compute-history-table';
 import { buildAllLoanMetricCaches } from '@/lib/dashboard/history-table/loan-metric-cache';
 import type { HistoryTableColumnConfig, HistoryTableWidgetConfig } from '@/types/dashboard-widgets/history-table';
-import {
-  createDefaultStatDeltaRange,
-  type StatItemConfig,
-} from '@/types/dashboard-widgets/stat-widget';
+import { createDefaultStatDeltaRange, type StatItemConfig } from '@/types/dashboard-widgets/stat-widget';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
 
-import {
-  buildStatBaselinePeriodBefore,
-  buildStatPeriodAtDate,
-  getStatDeltaRangeStart,
-} from './build-stat-period';
+import { buildStatBaselinePeriodBefore, buildStatPeriodAtDate, getStatDeltaRangeStart } from './build-stat-period';
 import { computeStatAggregateValue } from './compute-stat-aggregate';
 
 const STAT_HISTORY_CONFIG: HistoryTableWidgetConfig = {
@@ -172,7 +165,8 @@ function computeStatValueWithSharedCaches(
   const baselineEnd = buildStatBaselinePeriodBefore(rangeStart).periodEnd;
 
   const endValue = metricAtPeriod(loans, stat, toDate, fieldOptions, commonT, snapshotCache, loanMetricCaches) ?? 0;
-  const baseValue = metricAtPeriod(loans, stat, baselineEnd, fieldOptions, commonT, snapshotCache, loanMetricCaches) ?? 0;
+  const baseValue =
+    metricAtPeriod(loans, stat, baselineEnd, fieldOptions, commonT, snapshotCache, loanMetricCaches) ?? 0;
 
   return endValue - baseValue;
 }

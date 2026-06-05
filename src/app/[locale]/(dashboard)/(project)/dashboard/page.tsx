@@ -29,13 +29,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const projectLayout = layoutResult.error ? fallback : (layoutResult.project?.layout ?? fallback);
   const userLayout = layoutResult.error ? fallback : (layoutResult.user?.layout ?? fallback);
 
-  if (
-    !project ||
-    'error' in statsResult ||
-    !statsResult.loans ||
-    !statsResult.lenders ||
-    !statsResult.toDate
-  ) {
+  if (!project || 'error' in statsResult || !statsResult.loans || !statsResult.lenders || !statsResult.toDate) {
     const t = await getTranslations('dashboard.page');
     return (
       <div className="flex h-[60vh] items-center justify-center">

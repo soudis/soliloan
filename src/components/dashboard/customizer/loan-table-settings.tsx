@@ -28,10 +28,7 @@ export function LoanTableSettings({
     }));
   }, [project, tLoans]);
 
-  const fieldOptions = useMemo(
-    () => buildLoanFilterFieldOptions(project, tLoans, commonT),
-    [project, tLoans, commonT],
-  );
+  const fieldOptions = useMemo(() => buildLoanFilterFieldOptions(project, tLoans, commonT), [project, tLoans, commonT]);
 
   return (
     <TableViewSettingsShared

@@ -2,7 +2,6 @@ import {
   LINE_CHART_FILL_OPACITY,
   LINE_CHART_POINT_RADIUS,
   type LineChartDashStyle,
-  type LineChartLineShape,
   type LineChartSeriesConfig,
 } from '@/types/dashboard-widgets/line-chart-series';
 

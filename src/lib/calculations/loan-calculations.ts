@@ -294,9 +294,7 @@ export const calculateLoanPerMonth = (
     return [];
   }
 
-  const months: LoanPeriodAccumulator[] = [
-    createEmptyLoanPeriod(firstMonth.year(), firstMonth.month() + 1),
-  ];
+  const months: LoanPeriodAccumulator[] = [createEmptyLoanPeriod(firstMonth.year(), firstMonth.month() + 1)];
 
   for (let cursor = firstMonth.clone(); cursor.isSameOrBefore(lastMonth, 'month'); cursor.add(1, 'month')) {
     const currentMonth = months.at(-1);

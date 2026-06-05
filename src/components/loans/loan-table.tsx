@@ -17,10 +17,7 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useRouter } from '@/i18n/navigation';
 import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
 import { buildAllLoanTableColumns } from '@/lib/dashboard/table-widget/loan-table-column-registry';
-import {
-  createAdditionalFieldDefaultColumnVisibility,
-  createAdditionalFieldFilters,
-} from '@/lib/table-column-utils';
+import { createAdditionalFieldDefaultColumnVisibility, createAdditionalFieldFilters } from '@/lib/table-column-utils';
 import { LoanStatus, type LoanWithCalculations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 

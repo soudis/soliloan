@@ -26,9 +26,7 @@ export function ChartTimelineFields({
         <Label>{t('periodMode')}</Label>
         <Select
           value={value.periodMode}
-          onValueChange={(v) =>
-            onChange({ ...value, periodMode: v as BarChartTimelineConfig['periodMode'] })
-          }
+          onValueChange={(v) => onChange({ ...value, periodMode: v as BarChartTimelineConfig['periodMode'] })}
         >
           <SelectTrigger>
             <SelectValue />

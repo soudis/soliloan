@@ -5,12 +5,12 @@ import { useMemo } from 'react';
 
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { computeHistoryTable } from '@/lib/dashboard/history-table/compute-history-table';
-import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
-import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
-import { resolveMetricTitle } from '@/lib/dashboard/resolve-metric-title';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
 import { getSignedMetricValueClassName } from '@/lib/dashboard/get-signed-metric-value-class-name';
+import { computeHistoryTable } from '@/lib/dashboard/history-table/compute-history-table';
+import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
+import { resolveMetricTitle } from '@/lib/dashboard/resolve-metric-title';
+import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
 import { cn } from '@/lib/utils';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
@@ -29,6 +29,7 @@ export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
     return map;
   }, [config.columns]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only recompute result when widget config changes
   const result = useMemo(
     () =>
       profileWidgetCompute({
@@ -44,8 +45,7 @@ export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
                 config,
                 toDate,
                 fieldOptions,
-                (year, month) =>
-                  formatter.dateTime(new Date(year, month - 1, 1), { month: 'short', year: 'numeric' }),
+                (year, month) => formatter.dateTime(new Date(year, month - 1, 1), { month: 'short', year: 'numeric' }),
                 (key, values) => commonT(key, values),
                 t('untilNow'),
               ),
@@ -82,10 +82,7 @@ export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
             {result.columns.map((col) => {
               const columnConfig = columnById.get(col.id);
               const metric = columnConfig?.metric;
-              const title = resolveMetricTitle(
-                col.title,
-                metric ? tMetrics(`metrics.${metric}`) : col.title,
-              );
+              const title = resolveMetricTitle(col.title, metric ? tMetrics(`metrics.${metric}`) : col.title);
               return (
                 <TableHead key={col.id} className="h-10 px-3 py-2 text-right">
                   <span className="inline-flex items-center gap-1">{`${title}${col.aggregation === 'delta' ? ' (Δ)' : ''}`}</span>
@@ -109,11 +106,7 @@ export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
                       getSignedMetricValueClassName(rawValue, columnConfig?.colorCodeSign),
                     )}
                   >
-                    {formatDashboardMetricValue(
-                      columnConfig?.metric,
-                      rawValue,
-                      col.aggregation === 'delta',
-                    )}
+                    {formatDashboardMetricValue(columnConfig?.metric, rawValue, col.aggregation === 'delta')}
                   </TableCell>
                 );
               })}

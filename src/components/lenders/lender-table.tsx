@@ -17,10 +17,7 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useRouter } from '@/i18n/navigation';
 import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
 import { buildAllLenderTableColumns } from '@/lib/dashboard/table-widget/lender-table-column-registry';
-import {
-  createAdditionalFieldDefaultColumnVisibility,
-  createAdditionalFieldFilters,
-} from '@/lib/table-column-utils';
+import { createAdditionalFieldDefaultColumnVisibility, createAdditionalFieldFilters } from '@/lib/table-column-utils';
 import type { LenderWithCalculations } from '@/types/lenders';
 import { useProject } from '../providers/project-provider';
 
@@ -71,13 +68,7 @@ export function LenderTable({ lenders, views }: LenderTableProps) {
     },
   ];
 
-  const columns: ColumnDef<LenderWithCalculations>[] = buildAllLenderTableColumns(
-    project,
-    t,
-    tLoans,
-    commonT,
-    locale,
-  );
+  const columns: ColumnDef<LenderWithCalculations>[] = buildAllLenderTableColumns(project, t, tLoans, commonT, locale);
 
   // Define column filters based on data types
   const columnFilters = {

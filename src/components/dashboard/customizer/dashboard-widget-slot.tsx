@@ -55,11 +55,7 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
     <div
       ref={setNodeRef}
       style={style}
-      className={cn(
-        getEffectiveWidgetColSpanClassName(widget),
-        'min-w-0 p-0.5',
-        isDragging && 'z-10 opacity-50',
-      )}
+      className={cn(getEffectiveWidgetColSpanClassName(widget), 'min-w-0 p-0.5', isDragging && 'z-10 opacity-50')}
     >
       <Card
         className={cn(
@@ -95,10 +91,7 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
 
         {showHeader ? (
           <CardHeader
-            className={cn(
-              'flex flex-row items-center gap-2 space-y-0 px-6 pb-2',
-              isCustomizing ? 'pt-4' : 'pt-0',
-            )}
+            className={cn('flex flex-row items-center gap-2 space-y-0 px-6 pb-2', isCustomizing ? 'pt-4' : 'pt-0')}
           >
             <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
             <CardTitle className="min-w-0 flex-1 truncate text-sm font-medium">{widget.title}</CardTitle>

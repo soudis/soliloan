@@ -58,7 +58,9 @@ export function buildCumulativeTimeline(history: LoanMonthlyHistory): Cumulative
       entries.push({
         year,
         month,
-        periodEndMs: moment({ year, month: month - 1 }).endOf('month').valueOf(),
+        periodEndMs: moment({ year, month: month - 1 })
+          .endOf('month')
+          .valueOf(),
         cumulative: { ...running },
       });
     }
@@ -67,10 +69,7 @@ export function buildCumulativeTimeline(history: LoanMonthlyHistory): Cumulative
   return entries;
 }
 
-export function lookupCumulativeAtDate(
-  timeline: CumulativeTimelineEntry[],
-  periodEnd: Date,
-): LoanMonthlyNumbers {
+export function lookupCumulativeAtDate(timeline: CumulativeTimelineEntry[], periodEnd: Date): LoanMonthlyNumbers {
   if (timeline.length === 0) {
     return emptyNumbers();
   }

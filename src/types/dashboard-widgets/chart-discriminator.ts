@@ -89,8 +89,7 @@ export function parseChartDiscriminatorConfig(
         ? (nested.dateGrouping as ChartDateGrouping)
         : undefined,
       textTransform: parseChartTextTransform(nested.textTransform),
-      topNCategories:
-        Number.isFinite(topN) && topN >= 1 && topN <= 50 ? Math.floor(topN) : defaults.topNCategories,
+      topNCategories: Number.isFinite(topN) && topN >= 1 && topN <= 50 ? Math.floor(topN) : defaults.topNCategories,
       filters: Array.isArray(nested.filters) ? (nested.filters as EntityFilter[]) : [],
     };
   }

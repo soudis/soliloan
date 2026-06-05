@@ -1,9 +1,6 @@
 import type { TableViewDisplayMode, TableViewSort } from '@/types/dashboard-widgets/table-view';
 
-export type SortValueReader<T> = (
-  row: T,
-  columnId: string,
-) => string | number | Date | null | undefined;
+export type SortValueReader<T> = (row: T, columnId: string) => string | number | Date | null | undefined;
 
 function compareSortValues(
   a: string | number | Date | null | undefined,
@@ -27,11 +24,7 @@ function compareSortValues(
   return String(a).localeCompare(String(b));
 }
 
-export function sortTableRows<T>(
-  rows: T[],
-  sort: TableViewSort,
-  getSortValue: SortValueReader<T>,
-): T[] {
+export function sortTableRows<T>(rows: T[], sort: TableViewSort, getSortValue: SortValueReader<T>): T[] {
   if (!sort) {
     return rows;
   }
@@ -44,11 +37,7 @@ export function sortTableRows<T>(
   return sorted;
 }
 
-export function applyTableViewSlice<T>(
-  rows: T[],
-  displayMode: TableViewDisplayMode,
-  rowLimit: number,
-): T[] {
+export function applyTableViewSlice<T>(rows: T[], displayMode: TableViewDisplayMode, rowLimit: number): T[] {
   if (displayMode === 'fixed') {
     return rows.slice(0, rowLimit);
   }

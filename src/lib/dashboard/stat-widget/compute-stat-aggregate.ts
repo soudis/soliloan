@@ -11,10 +11,7 @@ import type { HistoryTableWidgetConfig } from '@/types/dashboard-widgets/history
 import type { StatAggregation, StatItemConfig } from '@/types/dashboard-widgets/stat-widget';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
 
-import {
-  getPerLoanStatSnapshotValue,
-  median,
-} from './collect-per-loan-stat-values';
+import { getPerLoanStatSnapshotValue, median } from './collect-per-loan-stat-values';
 
 const STAT_HISTORY_CONFIG: HistoryTableWidgetConfig = {
   layoutVersion: 1,
@@ -117,26 +114,10 @@ export function computeStatAggregateValue(
   loanMetricCaches: LoanMetricCacheMap,
 ): number | null {
   if (aggregation === 'average' && stat.metric === 'interestRateAvg') {
-    return computeWeightedInterestRateAverage(
-      loans,
-      stat,
-      period,
-      fieldOptions,
-      commonT,
-      cache,
-      loanMetricCaches,
-    );
+    return computeWeightedInterestRateAverage(loans, stat, period, fieldOptions, commonT, cache, loanMetricCaches);
   }
 
-  const values = collectPerLoanValues(
-    loans,
-    stat,
-    period,
-    fieldOptions,
-    commonT,
-    cache,
-    loanMetricCaches,
-  );
+  const values = collectPerLoanValues(loans, stat, period, fieldOptions, commonT, cache, loanMetricCaches);
 
   if (values.length === 0) {
     return null;

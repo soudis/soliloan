@@ -11,10 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { resolveMetricTitle } from '@/lib/dashboard/resolve-metric-title';
-import {
-  CHART_CUMULATIVE_ONLY_METRICS,
-  CHART_SERIES_METRICS,
-} from '@/types/dashboard-widgets/chart-series';
+import { CHART_CUMULATIVE_ONLY_METRICS, CHART_SERIES_METRICS } from '@/types/dashboard-widgets/chart-series';
 import {
   createDefaultLineChartSeries,
   LINE_CHART_DASH_STYLES,
@@ -254,10 +251,7 @@ export function LineChartSeriesEditor({
                         updateSeries(
                           col.id,
                           {
-                            lineWidth: Math.min(
-                              LINE_CHART_LINE_WIDTH_MAX,
-                              Math.max(LINE_CHART_LINE_WIDTH_MIN, parsed),
-                            ),
+                            lineWidth: Math.min(LINE_CHART_LINE_WIDTH_MAX, Math.max(LINE_CHART_LINE_WIDTH_MIN, parsed)),
                           },
                           true,
                         );

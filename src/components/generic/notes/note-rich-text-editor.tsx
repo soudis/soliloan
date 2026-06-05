@@ -63,7 +63,12 @@ export function NoteRichTextEditor({ value, onChange, placeholder, className }: 
   }
 
   return (
-    <div className={cn('flex min-h-[120px] flex-col overflow-hidden rounded-md border border-input bg-background', className)}>
+    <div
+      className={cn(
+        'flex min-h-[120px] flex-col overflow-hidden rounded-md border border-input bg-background',
+        className,
+      )}
+    >
       <NoteEditorToolbar editor={editor} />
       <div className="relative flex-1 px-3 py-2">
         {placeholder && isEmpty && !isFocused ? (

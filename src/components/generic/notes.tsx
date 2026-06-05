@@ -77,9 +77,7 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
                   size="icon"
                   className={cn(
                     'h-8 w-8 shadow-xs',
-                    note.public
-                      ? 'bg-amber-900/5 hover:bg-amber-900/10'
-                      : 'bg-sky-900/5 hover:bg-sky-900/10',
+                    note.public ? 'bg-amber-900/5 hover:bg-amber-900/10' : 'bg-sky-900/5 hover:bg-sky-900/10',
                   )}
                   onClick={() => {
                     setEditingNote(note);
@@ -94,9 +92,7 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
                   size="icon"
                   className={cn(
                     'h-8 w-8 shadow-xs',
-                    note.public
-                      ? 'bg-amber-900/5 hover:bg-amber-900/10'
-                      : 'bg-sky-900/5 hover:bg-sky-900/10',
+                    note.public ? 'bg-amber-900/5 hover:bg-amber-900/10' : 'bg-sky-900/5 hover:bg-sky-900/10',
                   )}
                   onClick={() => setIsConfirmOpen(note.id)}
                 >

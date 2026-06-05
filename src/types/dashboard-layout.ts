@@ -11,14 +11,7 @@ export const DASHBOARD_WIDGET_TYPES = [
 
 export type DashboardWidgetType = (typeof DASHBOARD_WIDGET_TYPES)[number];
 
-export const DASHBOARD_WIDGET_WIDTHS = [
-  'quarter',
-  'third',
-  'half',
-  'twoThirds',
-  'threeQuarters',
-  'full',
-] as const;
+export const DASHBOARD_WIDGET_WIDTHS = ['quarter', 'third', 'half', 'twoThirds', 'threeQuarters', 'full'] as const;
 
 export type DashboardWidgetWidth = (typeof DASHBOARD_WIDGET_WIDTHS)[number];
 

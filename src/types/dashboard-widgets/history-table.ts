@@ -1,6 +1,4 @@
-import type { EntityFilter } from '@/types/entity-filters';
-
-import { parseChartSeriesList, type ChartSeriesConfig } from './chart-series';
+import { type ChartSeriesConfig, parseChartSeriesList } from './chart-series';
 
 export const HISTORY_TABLE_METRICS = [
   'balance',
@@ -32,10 +30,7 @@ export type HistoryTableWidgetConfig = {
 
 export const CUMULATIVE_ONLY_METRICS: HistoryTableMetric[] = ['interestRateAvg'];
 
-export function isHistoryMetricColumnValid(
-  metric: HistoryTableMetric,
-  aggregation: HistoryTableAggregation,
-): boolean {
+export function isHistoryMetricColumnValid(metric: HistoryTableMetric, aggregation: HistoryTableAggregation): boolean {
   if (CUMULATIVE_ONLY_METRICS.includes(metric) && aggregation === 'delta') {
     return false;
   }
@@ -57,9 +52,7 @@ export function parseHistoryTableConfig(config: Record<string, unknown> | undefi
   }
   const periodMode = config.periodMode === 'monthly' ? 'monthly' : 'yearly';
   const periodCount =
-    config.periodCount === null || config.periodCount === undefined
-      ? null
-      : Number(config.periodCount);
+    config.periodCount === null || config.periodCount === undefined ? null : Number(config.periodCount);
   const columns = parseChartSeriesList(config.columns) as HistoryTableColumnConfig[];
 
   return {

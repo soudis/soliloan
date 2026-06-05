@@ -82,11 +82,7 @@ export function matchesMultiSelectFilter(value: unknown, filterValue: unknown): 
   return filterValue.includes(String(value));
 }
 
-export function matchesFilterByType(
-  value: unknown,
-  filterValue: unknown,
-  type: DataTableColumnFilterType,
-): boolean {
+export function matchesFilterByType(value: unknown, filterValue: unknown, type: DataTableColumnFilterType): boolean {
   switch (type) {
     case 'number':
       return matchesNumberRangeFilter(value, filterValue);

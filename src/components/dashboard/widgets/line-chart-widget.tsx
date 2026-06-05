@@ -62,8 +62,7 @@ export function LineChartWidget({ widget }: { widget: DashboardWidget }) {
                 toDate,
                 fieldOptions,
                 locale,
-                (year, month) =>
-                  formatter.dateTime(new Date(year, month - 1, 1), { month: 'short', year: 'numeric' }),
+                (year, month) => formatter.dateTime(new Date(year, month - 1, 1), { month: 'short', year: 'numeric' }),
                 t('emptyValue'),
                 t('otherCategory'),
                 tHistoryTable('untilNow'),
@@ -74,7 +73,22 @@ export function LineChartWidget({ widget }: { widget: DashboardWidget }) {
           );
         },
       }),
-    [loans, config, toDate, fieldOptions, locale, formatter, t, tHistory, tHistoryTable, commonT, widget.config, widget.id, widget.type, getOrComputeWidgetResult],
+    [
+      loans,
+      config,
+      toDate,
+      fieldOptions,
+      locale,
+      formatter,
+      t,
+      tHistory,
+      tHistoryTable,
+      commonT,
+      widget.config,
+      widget.id,
+      widget.type,
+      getOrComputeWidgetResult,
+    ],
   );
 
   const chartData = useMemo(() => {
@@ -113,11 +127,7 @@ export function LineChartWidget({ widget }: { widget: DashboardWidget }) {
               if (!series || raw === null || raw === undefined) {
                 return '';
               }
-              const formatted = formatDashboardMetricValue(
-                series.metric,
-                Number(raw),
-                series.aggregation === 'delta',
-              );
+              const formatted = formatDashboardMetricValue(series.metric, Number(raw), series.aggregation === 'delta');
               return `${ctx.dataset.label}: ${formatted}`;
             },
           },

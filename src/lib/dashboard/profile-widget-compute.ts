@@ -62,9 +62,7 @@ class WidgetComputeProfiler {
       `[dashboard compute] ${entries.length} widget(s), ${loanCount} loans, total ${totalMs.toFixed(1)}ms`,
     );
     for (const entry of entries) {
-      console.log(
-        `${entry.widgetType} (${entry.widgetId.slice(0, 8)}): ${entry.durationMs.toFixed(2)}ms`,
-      );
+      console.log(`${entry.widgetType} (${entry.widgetId.slice(0, 8)}): ${entry.durationMs.toFixed(2)}ms`);
     }
     console.groupEnd();
   }

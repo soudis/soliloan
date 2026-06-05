@@ -33,9 +33,7 @@ export function StatWidget({ widget }: { widget: DashboardWidget }) {
         widgetId: widget.id,
         loanCount: loans.length,
         compute: () =>
-          computeAllStatValues(loans, config.stats, toDate, fieldOptions, (key, values) =>
-            commonT(key, values),
-          ),
+          computeAllStatValues(loans, config.stats, toDate, fieldOptions, (key, values) => commonT(key, values)),
       }),
     [config.stats, loans, toDate, fieldOptions, commonT, widget.id, widget.type],
   );
@@ -44,8 +42,7 @@ export function StatWidget({ widget }: { widget: DashboardWidget }) {
     return <p className="text-sm text-muted-foreground">{t('emptyStats')}</p>;
   }
 
-  const layoutClassName =
-    config.layoutMode === 'grid' ? 'grid gap-x-3 gap-y-2' : 'flex flex-wrap items-end';
+  const layoutClassName = config.layoutMode === 'grid' ? 'grid gap-x-3 gap-y-2' : 'flex flex-wrap items-end';
   const layoutStyle =
     config.layoutMode === 'grid'
       ? {
@@ -98,10 +95,7 @@ function StatItemDisplay({
   value: number | null;
   formattedValue: string;
 }) {
-  const valueClassName = cn(
-    'tabular-nums',
-    getSignedMetricValueClassName(value, stat.colorCodeSign),
-  );
+  const valueClassName = cn('tabular-nums', getSignedMetricValueClassName(value, stat.colorCodeSign));
 
   if (stat.displayType === 'main') {
     return (

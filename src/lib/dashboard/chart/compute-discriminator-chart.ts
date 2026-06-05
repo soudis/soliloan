@@ -54,24 +54,16 @@ export function computeDiscriminatorChartData(
     commonT,
   };
 
-  const fieldDef = getFilterDefinitionForField(
-    fieldOptions,
-    discriminator.groupBy.entity,
-    discriminator.groupBy.field,
-  );
+  const fieldDef = getFilterDefinitionForField(fieldOptions, discriminator.groupBy.entity, discriminator.groupBy.field);
 
   const needsSnapshot =
     filtersNeedPeriodSnapshot(discriminator.filters) ||
-    filtersNeedPeriodSnapshot([
-      { entity: discriminator.groupBy.entity, field: discriminator.groupBy.field },
-    ]);
+    filtersNeedPeriodSnapshot([{ entity: discriminator.groupBy.entity, field: discriminator.groupBy.field }]);
 
   const groups = new Map<string, GroupEntry>();
 
   for (const loan of loans) {
-    filterContext.snapshot = needsSnapshot
-      ? getOrBuildPeriodSnapshot(loan, discPeriod, 'monthly', cache)
-      : null;
+    filterContext.snapshot = needsSnapshot ? getOrBuildPeriodSnapshot(loan, discPeriod, 'monthly', cache) : null;
 
     if (!loanMatchesFilters(loan, discriminator.filters, filterContext, fieldOptions)) {
       continue;
@@ -130,9 +122,7 @@ export function computeDiscriminatorChartData(
       // Rate/average metrics are not additive, so re-aggregate the combined loans.
       valuesByGroup.set(
         otherEntry.key,
-        series.map((col) =>
-          aggregateSeriesSnapshot(otherEntry.loans, col, toDate, fieldOptions, commonT, cache),
-        ),
+        series.map((col) => aggregateSeriesSnapshot(otherEntry.loans, col, toDate, fieldOptions, commonT, cache)),
       );
     }
     categories = top;

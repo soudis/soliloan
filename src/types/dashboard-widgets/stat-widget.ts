@@ -57,10 +57,7 @@ export function isStatAvgMedianAggregation(aggregation: StatAggregation): boolea
   return aggregation === 'average' || aggregation === 'median';
 }
 
-export function isStatAggregationValidForMetric(
-  metric: StatWidgetMetric,
-  aggregation: StatAggregation,
-): boolean {
+export function isStatAggregationValidForMetric(metric: StatWidgetMetric, aggregation: StatAggregation): boolean {
   if (CUMULATIVE_ONLY_STAT_METRICS.includes(metric) && aggregation === 'delta') {
     return false;
   }
@@ -70,10 +67,7 @@ export function isStatAggregationValidForMetric(
   return true;
 }
 
-export function normalizeStatAggregation(
-  metric: StatWidgetMetric,
-  aggregation: StatAggregation,
-): StatAggregation {
+export function normalizeStatAggregation(metric: StatWidgetMetric, aggregation: StatAggregation): StatAggregation {
   return isStatAggregationValidForMetric(metric, aggregation) ? aggregation : 'total';
 }
 
@@ -112,9 +106,9 @@ export function parseStatWidgetConfig(config: Record<string, unknown> | undefine
           ? (stat.deltaRange?.unit as StatDeltaUnit)
           : 'months';
         const displayType: StatDisplayType = stat.displayType === 'secondary' ? 'secondary' : 'main';
-        const metric = (STAT_WIDGET_METRICS.includes(stat.metric as StatWidgetMetric)
-          ? stat.metric
-          : 'balance') as StatWidgetMetric;
+        const metric = (
+          STAT_WIDGET_METRICS.includes(stat.metric as StatWidgetMetric) ? stat.metric : 'balance'
+        ) as StatWidgetMetric;
         const rawAggregation: StatAggregation =
           stat.aggregation === 'delta'
             ? 'delta'
@@ -143,8 +137,7 @@ export function parseStatWidgetConfig(config: Record<string, unknown> | undefine
       })
     : [];
 
-  const layoutMode: StatWidgetLayoutMode =
-    config.layoutMode === 'grid' ? 'grid' : 'flexible';
+  const layoutMode: StatWidgetLayoutMode = config.layoutMode === 'grid' ? 'grid' : 'flexible';
 
   return {
     layoutVersion: 1,

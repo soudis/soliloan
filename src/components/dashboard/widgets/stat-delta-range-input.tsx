@@ -37,10 +37,7 @@ export function StatDeltaRangeInput({
           }}
           className="h-8 flex-1 rounded-r-none border-r-0 text-xs [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         />
-        <Select
-          value={value.unit}
-          onValueChange={(unit) => onChange({ ...value, unit: unit as StatDeltaUnit })}
-        >
+        <Select value={value.unit} onValueChange={(unit) => onChange({ ...value, unit: unit as StatDeltaUnit })}>
           <CustomSelectTrigger className="h-8 w-[100px] rounded-l-none text-xs">
             <SelectValue />
           </CustomSelectTrigger>

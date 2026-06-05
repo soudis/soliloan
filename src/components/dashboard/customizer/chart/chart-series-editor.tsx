@@ -176,9 +176,7 @@ export function ChartSeriesEditor({
                     <Checkbox
                       id={`color-code-sign-${col.id}`}
                       checked={col.colorCodeSign === true}
-                      onCheckedChange={(checked) =>
-                        updateSeries(col.id, { colorCodeSign: checked === true })
-                      }
+                      onCheckedChange={(checked) => updateSeries(col.id, { colorCodeSign: checked === true })}
                     />
                     <div className="grid gap-0.5 leading-none">
                       <Label htmlFor={`color-code-sign-${col.id}`} className="text-xs font-normal">

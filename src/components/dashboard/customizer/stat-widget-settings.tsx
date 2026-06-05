@@ -167,10 +167,7 @@ export function StatWidgetSettings({
             patchConfig(
               {
                 layoutMode: mode,
-                gridColumns:
-                  mode === 'grid'
-                    ? (draftConfig.gridColumns ?? DEFAULT_STAT_GRID_COLUMNS)
-                    : undefined,
+                gridColumns: mode === 'grid' ? (draftConfig.gridColumns ?? DEFAULT_STAT_GRID_COLUMNS) : undefined,
               },
               true,
             );
@@ -287,7 +284,8 @@ export function StatWidgetSettings({
                       const patch: Partial<StatItemConfig> = {
                         metric,
                         aggregation,
-                        deltaRange: aggregation === 'delta' ? (stat.deltaRange ?? createDefaultStatDeltaRange()) : undefined,
+                        deltaRange:
+                          aggregation === 'delta' ? (stat.deltaRange ?? createDefaultStatDeltaRange()) : undefined,
                       };
                       updateStat(stat.id, patch, true);
                     }}
@@ -314,7 +312,8 @@ export function StatWidgetSettings({
                         stat.id,
                         {
                           aggregation,
-                          deltaRange: aggregation === 'delta' ? (stat.deltaRange ?? createDefaultStatDeltaRange()) : undefined,
+                          deltaRange:
+                            aggregation === 'delta' ? (stat.deltaRange ?? createDefaultStatDeltaRange()) : undefined,
                         },
                         true,
                       );
@@ -347,9 +346,7 @@ export function StatWidgetSettings({
                   <Checkbox
                     id={`stat-color-code-sign-${stat.id}`}
                     checked={stat.colorCodeSign === true}
-                    onCheckedChange={(checked) =>
-                      updateStat(stat.id, { colorCodeSign: checked === true })
-                    }
+                    onCheckedChange={(checked) => updateStat(stat.id, { colorCodeSign: checked === true })}
                   />
                   <div className="grid gap-0.5 leading-none">
                     <Label htmlFor={`stat-color-code-sign-${stat.id}`} className="text-xs font-normal">

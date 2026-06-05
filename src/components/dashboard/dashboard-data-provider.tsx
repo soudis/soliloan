@@ -37,6 +37,7 @@ export function DashboardDataProvider({
   const commonT = useTranslations('common');
   const computeCacheRef = useRef(new Map<string, unknown>());
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only clear cache when loans, lenders or toDate changes
   useEffect(() => {
     computeCacheRef.current.clear();
   }, [loans, lenders, toDate]);

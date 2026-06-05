@@ -75,20 +75,13 @@ export function DashboardDndProvider({ children }: { children: React.ReactNode }
     setActiveDrag(null);
   };
 
-  const insertToolboxWidget = (
-    type: DashboardWidgetType,
-    title: string,
-    rowId: string,
-    index?: number,
-  ) => {
+  const insertToolboxWidget = (type: DashboardWidgetType, title: string, rowId: string, index?: number) => {
     const { created, layout: next } = addWidgetFromType(layout, rowId, type, title, index);
     if (created) {
       setLayout(next);
     } else {
       const rowIndex = findRowIndex(layout, rowId);
-      setLayout(
-        addWidgetFromTypeInNewRow(layout, type, title, rowIndex >= 0 ? rowIndex : undefined),
-      );
+      setLayout(addWidgetFromTypeInNewRow(layout, type, title, rowIndex >= 0 ? rowIndex : undefined));
     }
   };
 

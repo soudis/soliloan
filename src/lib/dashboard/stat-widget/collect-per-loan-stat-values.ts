@@ -34,11 +34,7 @@ function loanHasHistoryBeforePeriodEnd(loan: DashboardLoan, period: HistoryPerio
   return false;
 }
 
-function getCachedLoanMetrics(
-  loan: DashboardLoan,
-  period: HistoryPeriod,
-  loanMetricCaches: LoanMetricCacheMap,
-) {
+function getCachedLoanMetrics(loan: DashboardLoan, period: HistoryPeriod, loanMetricCaches: LoanMetricCacheMap) {
   const cached = loanMetricCaches.get(loan.id);
   return {
     periodNumbers: cached?.periodByPeriodKey.get(period.key) ?? null,
