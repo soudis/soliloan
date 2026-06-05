@@ -4,10 +4,9 @@ import { Copy, Plus, Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
 import { cloneLayoutData } from '@/lib/dashboard/layout-utils';
 import type { DashboardLayoutData } from '@/types/dashboard-layout';
 
@@ -15,11 +14,7 @@ import { useDashboardLayout } from './dashboard-layout-context';
 import { DashboardWidgetSettings } from './dashboard-widget-settings';
 import { DashboardWidgetToolbox } from './dashboard-widget-toolbox';
 
-export function DashboardEditorSidebar({
-  onCopyLayout,
-}: {
-  onCopyLayout: (layout: DashboardLayoutData) => void;
-}) {
+export function DashboardEditorSidebar({ onCopyLayout }: { onCopyLayout: (layout: DashboardLayoutData) => void }) {
   const t = useTranslations('dashboard.customizer');
   const skipSettingsOnSelectionRef = useRef(false);
   const [tab, setTab] = useState('toolbox');
@@ -53,24 +48,12 @@ export function DashboardEditorSidebar({
       <div className="flex h-full min-h-0 w-full flex-col">
         <div className="shrink-0 space-y-2 border-b px-4 py-3">
           {scope === 'project' ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={() => handleCopy('user')}
-            >
+            <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => handleCopy('user')}>
               <Copy className="mr-2 h-4 w-4" />
               {t('copyToUser')}
             </Button>
           ) : (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={() => handleCopy('project')}
-            >
+            <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => handleCopy('project')}>
               <Copy className="mr-2 h-4 w-4" />
               {t('copyToProject')}
             </Button>
@@ -80,7 +63,7 @@ export function DashboardEditorSidebar({
         <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col">
           <div className="shrink-0 border-b px-4 py-2">
             <TabsList variant="modern" className="mt-0 flex w-full">
-              <TabsTrigger variant="modern" size="sm" value="toolbox" className="min-w-0 flex-1">
+              <TabsTrigger variant="modern" size="sm" value="toolbox" className="min-w-0 flex-1 md:flex-1">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Plus />
@@ -88,7 +71,7 @@ export function DashboardEditorSidebar({
                   <TooltipContent>{t('tabToolbox')}</TooltipContent>
                 </Tooltip>
               </TabsTrigger>
-              <TabsTrigger variant="modern" size="sm" value="settings" className="min-w-0 flex-1">
+              <TabsTrigger variant="modern" size="sm" value="settings" className="min-w-0 flex-1 md:flex-1">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Settings />

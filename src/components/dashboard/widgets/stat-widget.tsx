@@ -45,7 +45,7 @@ export function StatWidget({ widget }: { widget: DashboardWidget }) {
   }
 
   const layoutClassName =
-    config.layoutMode === 'grid' ? 'grid gap-6' : 'flex flex-wrap gap-6';
+    config.layoutMode === 'grid' ? 'grid gap-x-3 gap-y-2' : 'flex flex-wrap items-end';
   const layoutStyle =
     config.layoutMode === 'grid'
       ? {
@@ -55,17 +55,34 @@ export function StatWidget({ widget }: { widget: DashboardWidget }) {
 
   return (
     <div className={layoutClassName} style={layoutStyle}>
-      {computed.map(({ stat, value }) => (
-        <StatItemDisplay
-          key={stat.id}
-          label={resolveStatDisplayTitle(stat, tMetrics(`metrics.${stat.metric}`), (key, values) =>
-            tStatCustomizer(key, values),
-          )}
-          stat={stat}
-          value={value}
-          formattedValue={formatDashboardMetricValue(stat.metric, value, stat.aggregation === 'delta')}
-        />
-      ))}
+      {computed.map(({ stat, value }, index) => {
+        const prevDisplayType = index > 0 ? computed[index - 1].stat.displayType : undefined;
+
+        return (
+          <div
+            key={stat.id}
+            className={cn(
+              'min-w-0',
+              stat.displayType === 'main'
+                ? config.layoutMode === 'grid'
+                  ? 'py-1'
+                  : 'mb-4 mr-6 last:mr-0'
+                : config.layoutMode === 'grid'
+                  ? 'py-0'
+                  : cn('mb-1 mr-3 last:mr-0', prevDisplayType === 'main' && 'mt-1'),
+            )}
+          >
+            <StatItemDisplay
+              label={resolveStatDisplayTitle(stat, tMetrics(`metrics.${stat.metric}`), (key, values) =>
+                tStatCustomizer(key, values),
+              )}
+              stat={stat}
+              value={value}
+              formattedValue={formatDashboardMetricValue(stat.metric, value, stat.aggregation === 'delta')}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -96,9 +113,9 @@ function StatItemDisplay({
   }
 
   return (
-    <div className="min-w-0">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={cn('text-sm font-medium', valueClassName)}>{formattedValue}</p>
+    <div className="flex min-w-0 flex-col gap-0.5">
+      <p className="text-[11px] leading-none text-muted-foreground">{label}</p>
+      <p className={cn('text-sm font-medium leading-tight', valueClassName)}>{formattedValue}</p>
     </div>
   );
 }
