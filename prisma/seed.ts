@@ -2,14 +2,7 @@ import 'dotenv/config';
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { PrismaPg } from '@prisma/adapter-pg';
-import {
-  DashboardLayoutScope,
-  InterestMethod,
-  Language,
-  type Prisma,
-  PrismaClient,
-  TemplateDataset,
-} from '@prisma/client';
+import { DashboardLayoutScope, InterestMethod, Language, Prisma, PrismaClient, TemplateDataset } from '@prisma/client';
 
 import { hashPassword } from '@/lib/utils/password';
 
@@ -194,25 +187,29 @@ async function loadGlobalDashboardLayout(): Promise<LoadedGlobalDashboardLayoutF
 }
 
 async function seedGlobalDashboardLayout() {
-  const existing = await prisma.dashboardLayout.findFirst({
-    where: { scope: DashboardLayoutScope.GLOBAL_DEFAULT },
-  });
-  if (existing) {
-    return;
-  }
-
   const loaded = await loadGlobalDashboardLayout();
   const rowId = crypto.randomUUID();
   const fallbackLayout = {
     rows: [{ id: rowId, widgets: [] }],
   } satisfies Prisma.InputJsonValue;
 
-  await prisma.dashboardLayout.create({
-    data: {
-      scope: DashboardLayoutScope.GLOBAL_DEFAULT,
-      layout: loaded?.layout ?? fallbackLayout,
-    },
-  });
+  // Idempotent + race-safe: the partial unique index on scope = GLOBAL_DEFAULT
+  // guarantees at most one row, so we rely on the unique violation instead of a
+  // non-atomic findFirst + create.
+  try {
+    await prisma.dashboardLayout.create({
+      data: {
+        scope: DashboardLayoutScope.GLOBAL_DEFAULT,
+        layout: loaded?.layout ?? fallbackLayout,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      console.info('Global default dashboard layout already present, skipping');
+      return;
+    }
+    throw error;
+  }
   console.info(
     loaded
       ? 'Seeded global default dashboard layout from prisma/global-dashboard-layout.json'

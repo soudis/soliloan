@@ -1,12 +1,11 @@
 import { z } from 'zod';
-
-import { PIE_CHART_SIZES } from '@/types/dashboard-widgets/pie-chart';
 import {
   LINE_CHART_DASH_STYLES,
   LINE_CHART_LINE_SHAPES,
   LINE_CHART_LINE_WIDTH_MAX,
   LINE_CHART_LINE_WIDTH_MIN,
 } from '@/types/dashboard-widgets/line-chart-series';
+import { PIE_CHART_SIZES } from '@/types/dashboard-widgets/pie-chart';
 
 import { chartDiscriminatorSchema } from './chart-discriminator';
 import { historyTableColumnSchema } from './history-table';
@@ -34,7 +33,7 @@ export const lineChartWidgetConfigSchema = z
       topNCategories: 8,
       filters: [],
     }),
-    series: z.array(lineChartSeriesSchema).default([]),
+    series: z.array(lineChartSeriesSchema).max(50).default([]),
     beginAtZero: z.boolean().default(true),
     chartSize: z.enum(PIE_CHART_SIZES).default('medium'),
   })

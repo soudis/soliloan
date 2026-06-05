@@ -136,6 +136,10 @@ model DashboardLayout {
   project   Project?             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user      User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Two DB invariants are enforced via raw SQL (see migration
+  // 20260605120000_dashboard_layout_constraints) because Prisma cannot express them:
+  // - a partial unique index guaranteeing a single GLOBAL_DEFAULT row, and
+  // - a CHECK tying `scope` to the matching owner column (projectId / userId / neither).
   @@index([scope])
 }
 

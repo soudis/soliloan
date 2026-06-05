@@ -20,7 +20,7 @@ export const barChartWidgetConfigSchema = z
       topNCategories: 8,
       filters: [],
     }),
-    series: z.array(historyTableColumnSchema).default([]),
+    series: z.array(historyTableColumnSchema).max(50).default([]),
     seriesLayout: z.enum(['grouped', 'stacked']).default('grouped'),
     chartSize: z.enum(PIE_CHART_SIZES).default('medium'),
   })

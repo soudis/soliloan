@@ -1,9 +1,8 @@
 import type { Prisma } from '@prisma/client';
-
-import { db } from '@/lib/db';
-import { normalizeDashboardLayout } from '@/lib/dashboard/normalize-dashboard-layout';
 import { createDefaultLayoutData } from '@/lib/dashboard/layout-utils';
-import { dashboardLayoutDataSchema } from '@/lib/schemas/dashboard-layout';
+import { normalizeDashboardLayout } from '@/lib/dashboard/normalize-dashboard-layout';
+import { db } from '@/lib/db';
+import { dashboardLayoutDataSaveSchema, dashboardLayoutDataSchema } from '@/lib/schemas/dashboard-layout';
 import type { DashboardLayoutData } from '@/types/dashboard-layout';
 
 const SCOPE_GLOBAL_DEFAULT = 'GLOBAL_DEFAULT' as const;
@@ -44,7 +43,7 @@ export async function resolveScopedLayout(
 }
 
 export async function upsertGlobalDefaultLayout(layout: DashboardLayoutData): Promise<void> {
-  const parsed = dashboardLayoutDataSchema.parse(layout);
+  const parsed = dashboardLayoutDataSaveSchema.parse(layout);
   const layoutJson = parsed as unknown as Prisma.InputJsonValue;
 
   const existing = await db.dashboardLayout.findFirst({
@@ -72,7 +71,7 @@ export async function upsertScopedLayout(
   layout: DashboardLayoutData,
   id: string,
 ): Promise<void> {
-  const parsed = dashboardLayoutDataSchema.parse(layout);
+  const parsed = dashboardLayoutDataSaveSchema.parse(layout);
   const layoutJson = parsed as unknown as Prisma.InputJsonValue;
 
   if (scope === SCOPE_PROJECT) {

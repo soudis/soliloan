@@ -8,12 +8,7 @@ import {
   TABLE_VIEW_ROW_LIMIT_MIN,
 } from '@/types/dashboard-widgets/table-view';
 
-const entityFilterSchema = z.object({
-  id: z.string(),
-  field: z.string(),
-  entity: z.enum(['loan', 'lender']),
-  value: z.unknown(),
-});
+import { entityFiltersSchema } from './shared';
 
 const tableViewSortSchema = z
   .object({
@@ -33,8 +28,9 @@ export const loanTableWidgetConfigSchema = z.object({
   columns: z
     .array(tableViewColumnSchema)
     .min(1)
+    .max(200)
     .default(DEFAULT_LOAN_TABLE_VISIBLE_COLUMNS.map((id) => ({ id, visible: true }))),
-  filters: z.array(entityFilterSchema).default([]),
+  filters: entityFiltersSchema,
   defaultSort: tableViewSortSchema,
   displayMode: z.enum(TABLE_VIEW_DISPLAY_MODES).default('paged'),
   rowLimit: z

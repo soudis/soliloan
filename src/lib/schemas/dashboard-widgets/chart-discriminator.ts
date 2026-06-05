@@ -2,12 +2,7 @@ import { z } from 'zod';
 
 import { CHART_DATE_GROUPINGS } from '@/types/dashboard-widgets/chart-discriminator';
 
-const entityFilterSchema = z.object({
-  id: z.string(),
-  field: z.string(),
-  entity: z.enum(['loan', 'lender']),
-  value: z.unknown(),
-});
+import { entityFiltersSchema } from './shared';
 
 const chartGroupBySchema = z.object({
   entity: z.enum(['loan', 'lender']),
@@ -24,11 +19,11 @@ const chartTextTransformSchema = z.discriminatedUnion('kind', [
 export const chartDiscriminatorSchema = z
   .object({
     groupBy: chartGroupBySchema,
-    numericBuckets: z.array(z.number()).optional(),
+    numericBuckets: z.array(z.number()).max(100).optional(),
     dateGrouping: z.enum(CHART_DATE_GROUPINGS).optional(),
     textTransform: chartTextTransformSchema.optional(),
     topNCategories: z.number().int().min(1).max(50).default(8),
-    filters: z.array(entityFilterSchema).default([]),
+    filters: entityFiltersSchema,
   })
   .superRefine((config, ctx) => {
     if (config.numericBuckets) {

@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import {
   CUMULATIVE_ONLY_STAT_METRICS,
+  isStatAvgMedianAggregation,
   STAT_AGGREGATIONS,
   STAT_DELTA_UNITS,
   STAT_GRID_COLUMNS_MAX,
@@ -9,15 +10,9 @@ import {
   STAT_METRICS_WITHOUT_AVG_MEDIAN,
   STAT_WIDGET_LAYOUT_MODES,
   STAT_WIDGET_METRICS,
-  isStatAvgMedianAggregation,
 } from '@/types/dashboard-widgets/stat-widget';
 
-const entityFilterSchema = z.object({
-  id: z.string(),
-  field: z.string(),
-  entity: z.enum(['loan', 'lender']),
-  value: z.unknown(),
-});
+import { entityFiltersSchema } from './shared';
 
 const statDeltaRangeSchema = z.object({
   amount: z.number().int().positive(),
@@ -33,7 +28,7 @@ const statItemSchema = z
     aggregation: z.enum(STAT_AGGREGATIONS),
     deltaRange: statDeltaRangeSchema.optional(),
     colorCodeSign: z.boolean().default(false),
-    filters: z.array(entityFilterSchema).default([]),
+    filters: entityFiltersSchema,
   })
   .superRefine((stat, ctx) => {
     if (CUMULATIVE_ONLY_STAT_METRICS.includes(stat.metric) && stat.aggregation === 'delta') {
@@ -64,7 +59,7 @@ export const statWidgetConfigSchema = z
     layoutVersion: z.literal(1).default(1),
     layoutMode: z.enum(STAT_WIDGET_LAYOUT_MODES).default('flexible'),
     gridColumns: z.number().int().min(STAT_GRID_COLUMNS_MIN).max(STAT_GRID_COLUMNS_MAX).optional(),
-    stats: z.array(statItemSchema).default([]),
+    stats: z.array(statItemSchema).max(50).default([]),
   })
   .superRefine((config, ctx) => {
     if (config.layoutMode === 'grid' && config.gridColumns == null) {
