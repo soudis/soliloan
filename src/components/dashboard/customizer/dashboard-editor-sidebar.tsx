@@ -1,9 +1,10 @@
 'use client';
 
-import { Copy, Plus, Settings } from 'lucide-react';
+import { Copy, Globe, Plus, Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -14,10 +15,19 @@ import { useDashboardLayout } from './dashboard-layout-context';
 import { DashboardWidgetSettings } from './dashboard-widget-settings';
 import { DashboardWidgetToolbox } from './dashboard-widget-toolbox';
 
-export function DashboardEditorSidebar({ onCopyLayout }: { onCopyLayout: (layout: DashboardLayoutData) => void }) {
+export function DashboardEditorSidebar({
+  isAdmin = false,
+  onCopyLayout,
+  onSaveAsGlobalDefault,
+}: {
+  isAdmin?: boolean;
+  onCopyLayout: (layout: DashboardLayoutData) => void;
+  onSaveAsGlobalDefault: (layout: DashboardLayoutData) => void | Promise<void>;
+}) {
   const t = useTranslations('dashboard.customizer');
   const skipSettingsOnSelectionRef = useRef(false);
   const [tab, setTab] = useState('toolbox');
+  const [globalDefaultDialogOpen, setGlobalDefaultDialogOpen] = useState(false);
   const prevSelectedIdRef = useRef<string | undefined>(undefined);
 
   const { scope, layout, selectedWidgetId } = useDashboardLayout();
@@ -58,7 +68,30 @@ export function DashboardEditorSidebar({ onCopyLayout }: { onCopyLayout: (layout
               {t('copyToProject')}
             </Button>
           )}
+          {isAdmin ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => setGlobalDefaultDialogOpen(true)}
+            >
+              <Globe className="mr-2 h-4 w-4" />
+              {t('saveAsGlobalDefault')}
+            </Button>
+          ) : null}
         </div>
+
+        <ConfirmDialog
+          open={globalDefaultDialogOpen}
+          onOpenChange={setGlobalDefaultDialogOpen}
+          title={t('saveAsGlobalDefaultConfirmTitle')}
+          description={t('saveAsGlobalDefaultConfirmDescription', {
+            scope: scope === 'project' ? t('scopeProject') : t('scopeUser'),
+          })}
+          confirmText={t('saveAsGlobalDefault')}
+          onConfirm={() => onSaveAsGlobalDefault(cloneLayoutData(layout))}
+        />
 
         <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col">
           <div className="shrink-0 border-b px-4 py-2">

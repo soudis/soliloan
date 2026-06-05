@@ -43,6 +43,30 @@ export async function resolveScopedLayout(
   };
 }
 
+export async function upsertGlobalDefaultLayout(layout: DashboardLayoutData): Promise<void> {
+  const parsed = dashboardLayoutDataSchema.parse(layout);
+  const layoutJson = parsed as unknown as Prisma.InputJsonValue;
+
+  const existing = await db.dashboardLayout.findFirst({
+    where: { scope: SCOPE_GLOBAL_DEFAULT },
+  });
+
+  if (existing) {
+    await db.dashboardLayout.update({
+      where: { id: existing.id },
+      data: { layout: layoutJson },
+    });
+    return;
+  }
+
+  await db.dashboardLayout.create({
+    data: {
+      scope: SCOPE_GLOBAL_DEFAULT,
+      layout: layoutJson,
+    },
+  });
+}
+
 export async function upsertScopedLayout(
   scope: PersistedDashboardLayoutScope,
   layout: DashboardLayoutData,

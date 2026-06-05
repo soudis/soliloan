@@ -251,6 +251,11 @@
     "copyToUserSuccess": "Layout in dein Dashboard kopiert",
     "copyToProjectSuccess": "Layout in das Projekt-Dashboard kopiert",
     "copyError": "Kopieren fehlgeschlagen",
+    "saveAsGlobalDefault": "Als Standard-Layout speichern",
+    "saveAsGlobalDefaultConfirmTitle": "Globales Standard-Layout überschreiben?",
+    "saveAsGlobalDefaultConfirmDescription": "Das aktuelle {scope}-Layout (inkl. nicht gespeicherter Änderungen) wird als Standard für neue Projekt- und Benutzer-Dashboards verwendet, die noch kein eigenes Layout haben.",
+    "saveAsGlobalDefaultSuccess": "Globales Standard-Layout gespeichert",
+    "saveAsGlobalDefaultError": "Speichern des globalen Standard-Layouts fehlgeschlagen",
     "validation": {
       "rowOverflow": "Zeile ist zu voll (max. 12 Spalten).",
       "invalidWidth": "Ungültige Widget-Breite.",

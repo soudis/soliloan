@@ -86,3 +86,7 @@ export const copyDashboardLayoutSchema = z.object({
   sourceScope: z.enum(['project', 'user']),
   targetScope: z.enum(['project', 'user']),
 });
+
+export const upsertGlobalDashboardLayoutSchema = z.object({
+  layout: dashboardLayoutDataSchema,
+});

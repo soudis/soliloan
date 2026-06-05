@@ -7,6 +7,7 @@ import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import { upsertGlobalDashboardLayoutAction } from '@/actions/dashboard/mutations/upsert-global-dashboard-layout';
 import {
   upsertProjectDashboardLayoutAction,
   upsertUserDashboardLayoutAction,
@@ -30,10 +31,12 @@ export function DashboardCustomizer({
   projectId,
   initialProjectLayout,
   initialUserLayout,
+  isAdmin = false,
 }: {
   projectId: string;
   initialProjectLayout: DashboardLayoutData;
   initialUserLayout: DashboardLayoutData;
+  isAdmin?: boolean;
 }) {
   const t = useTranslations('dashboard.customizer');
   const { project } = useDashboardData();
@@ -96,6 +99,21 @@ export function DashboardCustomizer({
     } catch {
       setSaveStatus('error');
       toast.error(t('saveError'));
+    }
+  };
+
+  const handleSaveAsGlobalDefault = async (layoutToSave: DashboardLayoutData) => {
+    try {
+      const result = await upsertGlobalDashboardLayoutAction({ layout: layoutToSave });
+
+      if (result?.serverError || result?.validationErrors) {
+        toast.error(t('saveAsGlobalDefaultError'));
+        return;
+      }
+
+      toast.success(t('saveAsGlobalDefaultSuccess'));
+    } catch {
+      toast.error(t('saveAsGlobalDefaultError'));
     }
   };
 
@@ -196,7 +214,11 @@ export function DashboardCustomizer({
 
             {isCustomizing && (
               <aside className="sticky top-4 z-20 flex h-[calc(100dvh-14rem)] max-h-[calc(100dvh-14rem)] w-80 shrink-0 flex-col self-start overflow-hidden rounded-lg border border-border bg-background shadow-sm">
-                <DashboardEditorSidebar onCopyLayout={handleCopyToOtherScope} />
+                <DashboardEditorSidebar
+                  isAdmin={isAdmin}
+                  onCopyLayout={handleCopyToOtherScope}
+                  onSaveAsGlobalDefault={handleSaveAsGlobalDefault}
+                />
               </aside>
             )}
           </div>
