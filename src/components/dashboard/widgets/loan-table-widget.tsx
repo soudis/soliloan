@@ -8,7 +8,7 @@ import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { useRouter } from '@/i18n/navigation';
 import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';
-import { buildLoanFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
+import { buildLoanFilterFieldOptions, filtersNeedPeriodSnapshot } from '@/lib/entity-filters/filter-definitions';
 import { buildPeriodSnapshot } from '@/lib/dashboard/history-table/rollup-period';
 import { buildAllLoanTableColumns, getLoanSortValue } from '@/lib/dashboard/table-widget/loan-table-column-registry';
 import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
@@ -56,8 +56,10 @@ export function LoanTableWidget({ widget }: { widget: DashboardWidget }) {
                 periodEnd,
                 isPartial: true,
               };
+              // Only the as-of-date snapshot is expensive; skip it entirely when no filter needs it.
+              const needsSnapshot = filtersNeedPeriodSnapshot(config.filters);
               return loans.filter((loan) => {
-                const snapshot = buildPeriodSnapshot(loan, period, 'monthly');
+                const snapshot = needsSnapshot ? buildPeriodSnapshot(loan, period, 'monthly') : null;
                 return loanMatchesFilters(
                   loan,
                   config.filters,

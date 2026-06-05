@@ -19,7 +19,7 @@ export const isRepaid = (loan: LoanWithRelations, toDate: Date) => {
   if (loan.transactions.length <= 1) {
     return undefined;
   }
-  const transactions = loan.transactions.sort(transactionSorter);
+  const transactions = [...loan.transactions].sort(transactionSorter);
   const lastTransaction = transactions[transactions.length - 1];
   if (!lastTransaction) {
     return undefined;
@@ -111,7 +111,7 @@ export const calculateLoanPerYear = (
   }
 
   const compound = method.split('_')[2] === 'COMPOUND';
-  const transactions = loan.transactions.sort(transactionSorter);
+  const transactions = [...loan.transactions].sort(transactionSorter);
   const firstTransaction = transactions[0];
   if (!firstTransaction) {
     return [];
@@ -282,7 +282,7 @@ export const calculateLoanPerMonth = (
   }
 
   const compound = method.split('_')[2] === 'COMPOUND';
-  const transactions = loan.transactions.sort(transactionSorter);
+  const transactions = [...loan.transactions].sort(transactionSorter);
   const firstTransaction = transactions[0];
   if (!firstTransaction) {
     return [];

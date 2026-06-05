@@ -5,12 +5,6 @@ import { calculateLoanFields, calculateLoanPerMonth } from '@/lib/calculations/l
 import { auth } from '@/lib/auth';
 import { assertCanManageProject } from '@/lib/views/access';
 import { db } from '@/lib/db';
-import {
-  lenderFilesRelation,
-  lenderNotesRelation,
-  loanFilesRelation,
-  loanNotesRelation,
-} from '@/lib/prisma/notes-files-relations';
 import { sanitizeLender } from '@/lib/sanitation/sanitize-lender';
 import { sanitizeLoan } from '@/lib/sanitation/sanitize-loan';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
@@ -69,98 +63,70 @@ export async function getDashboardStats(projectId: string, toDate: Date = new Da
       return { error: 'You do not have access to this project' };
     }
 
-    const [loans, lenders] = await Promise.all([
-      db.loan.findMany({
-        where: {
-          lender: {
-            projectId,
+    // Single source query: every project loan is reachable through its lender, so we
+    // avoid a second overlapping loan fetch. Notes/files are not used anywhere on the
+    // dashboard, so we don't join them (the shared calc helpers get empty arrays).
+    const lenders = await db.lender.findMany({
+      where: { projectId },
+      orderBy: { lenderNumber: 'asc' },
+      include: {
+        loans: {
+          include: {
+            transactions: true,
           },
         },
-        orderBy: {
-          signDate: 'desc',
-        },
-        include: {
-          lender: {
-            include: {
-              project: {
-                include: {
-                  configuration: { select: { interestMethod: true } },
-                },
-              },
-              user: {
-                select: {
-                  name: true,
-                  id: true,
-                  email: true,
-                  lastLogin: true,
-                  lastInvited: true,
-                },
-              },
-              notes: lenderNotesRelation,
-              files: lenderFilesRelation,
-            },
-          },
-          transactions: true,
-          notes: loanNotesRelation,
-          files: loanFilesRelation,
-        },
-      }),
-      db.lender.findMany({
-        where: { projectId },
-        orderBy: { lenderNumber: 'asc' },
-        include: {
-          loans: {
-            include: {
-              transactions: true,
-              notes: loanNotesRelation,
-              files: loanFilesRelation,
-            },
-          },
-          notes: lenderNotesRelation,
-          files: lenderFilesRelation,
-          user: {
-            select: {
-              name: true,
-              id: true,
-              email: true,
-              lastLogin: true,
-              lastInvited: true,
-            },
-          },
-          project: {
-            include: {
-              configuration: { select: { interestMethod: true } },
-            },
+        user: {
+          select: {
+            name: true,
+            id: true,
+            email: true,
+            lastLogin: true,
+            lastInvited: true,
           },
         },
-      }),
-    ]);
-
-    const dashboardLoans: DashboardLoan[] = loans.map((loan) => {
-      const parsedLoan = parseAdditionalFields({
-        ...loan,
-        lender: parseAdditionalFields(loan.lender),
-      });
-      const calculated = calculateLoanFields(parsedLoan, { toDate });
-      const sanitized = sanitizeLoan(calculated);
-      const perMonth = calculateLoanPerMonth(parsedLoan, toDate);
-      const history = buildLoanMonthlyHistory(perMonth);
-      const cumulativeTimeline = buildCumulativeTimeline(history);
-
-      return {
-        ...sanitized,
-        history,
-        cumulativeTimeline,
-        transactions: parsedLoan.transactions,
-      };
+        project: {
+          include: {
+            configuration: { select: { interestMethod: true } },
+          },
+        },
+      },
     });
+
+    const dashboardLoans: DashboardLoan[] = [];
+    for (const lender of lenders) {
+      const { loans: lenderLoans, ...lenderRest } = lender;
+      const parsedLender = parseAdditionalFields({ ...lenderRest, notes: [], files: [] });
+      for (const loan of lenderLoans) {
+        const parsedLoan = parseAdditionalFields({
+          ...loan,
+          notes: [],
+          files: [],
+          lender: parsedLender,
+        });
+        const calculated = calculateLoanFields(parsedLoan, { toDate });
+        const sanitized = sanitizeLoan(calculated);
+        const perMonth = calculateLoanPerMonth(parsedLoan, toDate);
+        const history = buildLoanMonthlyHistory(perMonth);
+        const cumulativeTimeline = buildCumulativeTimeline(history);
+
+        dashboardLoans.push({
+          ...sanitized,
+          history,
+          cumulativeTimeline,
+          transactions: parsedLoan.transactions,
+        });
+      }
+    }
+    dashboardLoans.sort((a, b) => new Date(b.signDate).getTime() - new Date(a.signDate).getTime());
 
     const dashboardLenders: DashboardLender[] = lenders.map((lender) =>
       sanitizeLender(
         calculateLenderFields(
           parseAdditionalFields({
             ...lender,
-            loans: lender.loans.map((loan) => parseAdditionalFields(loan)),
+            notes: [],
+            files: [],
+            loans: lender.loans.map((loan) => parseAdditionalFields({ ...loan, notes: [], files: [] })),
           }),
         ),
       ),

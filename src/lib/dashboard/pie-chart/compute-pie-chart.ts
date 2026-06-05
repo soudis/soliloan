@@ -1,8 +1,12 @@
 import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';
-import { getFilterDefinitionForField } from '@/lib/entity-filters/filter-definitions';
+import { filtersNeedPeriodSnapshot, getFilterDefinitionForField } from '@/lib/entity-filters/filter-definitions';
 import { getLoanFilterValue } from '@/lib/entity-filters/get-filter-value';
-import { buildPeriodSnapshot } from '@/lib/dashboard/history-table/rollup-period';
+import {
+  createAggregateMetricCache,
+  getOrBuildPeriodSnapshot,
+} from '@/lib/dashboard/history-table/compute-history-table';
+import type { HistoryPeriod } from '@/lib/dashboard/history-table/rollup-period';
 import { interestRateAverageWeight } from '@/lib/dashboard/interest-rate-average';
 import { getPieChartDiscriminator, type PieChartWidgetConfig } from '@/types/dashboard-widgets/pie-chart';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
@@ -43,32 +47,36 @@ export function computePieChart(
 ): PieChartResult {
   const periodEnd = toDate;
   const periodStart = new Date(toDate.getFullYear(), toDate.getMonth(), 1);
+  const discPeriod: HistoryPeriod = {
+    key: 'pie',
+    label: '',
+    year: periodEnd.getFullYear(),
+    month: periodEnd.getMonth() + 1,
+    periodStart,
+    periodEnd,
+    isPartial: true,
+  };
+  const cache = createAggregateMetricCache();
   const filterContext = {
     periodEnd,
     periodStart,
-    snapshot: null as ReturnType<typeof buildPeriodSnapshot> | null,
+    snapshot: null as ReturnType<typeof getOrBuildPeriodSnapshot> | null,
     commonT,
   };
 
   const discriminator = getPieChartDiscriminator(config);
   const fieldDef = getFilterDefinitionForField(fieldOptions, discriminator.groupBy.entity, discriminator.groupBy.field);
 
+  // Building the as-of-date snapshot is the expensive part; skip it unless a filter
+  // or the group-by field actually needs it.
+  const needsSnapshot =
+    filtersNeedPeriodSnapshot(discriminator.filters) ||
+    filtersNeedPeriodSnapshot([{ entity: discriminator.groupBy.entity, field: discriminator.groupBy.field }]);
+
   const groups = new Map<string, GroupAccumulator>();
 
   for (const loan of loans) {
-    filterContext.snapshot = buildPeriodSnapshot(
-      loan,
-      {
-        key: 'pie',
-        label: '',
-        year: periodEnd.getFullYear(),
-        month: periodEnd.getMonth() + 1,
-        periodStart,
-        periodEnd,
-        isPartial: true,
-      },
-      'monthly',
-    );
+    filterContext.snapshot = needsSnapshot ? getOrBuildPeriodSnapshot(loan, discPeriod, 'monthly', cache) : null;
 
     if (!loanMatchesFilters(loan, discriminator.filters, filterContext, fieldOptions)) {
       continue;
