@@ -166,6 +166,108 @@
         ]
       },
       {
+        "id": "e071a183-104c-4bcd-8c1e-cc5670ca4687",
+        "widgets": [
+          {
+            "id": "3d4bdff8-766a-480d-be57-ca07c24a9301",
+            "type": "loan_table_view",
+            "title": "",
+            "width": "full",
+            "config": {
+              "columns": [
+                {
+                  "id": "loanNumber",
+                  "visible": true
+                },
+                {
+                  "id": "lenderName",
+                  "visible": true
+                },
+                {
+                  "id": "signDate",
+                  "visible": false
+                },
+                {
+                  "id": "amount",
+                  "visible": false
+                },
+                {
+                  "id": "balance",
+                  "visible": true
+                },
+                {
+                  "id": "interestRate",
+                  "visible": false
+                },
+                {
+                  "id": "status",
+                  "visible": true
+                },
+                {
+                  "id": "lenderNumber",
+                  "visible": false
+                },
+                {
+                  "id": "deposits",
+                  "visible": false
+                },
+                {
+                  "id": "withdrawals",
+                  "visible": false
+                },
+                {
+                  "id": "notReclaimed",
+                  "visible": false
+                },
+                {
+                  "id": "interest",
+                  "visible": false
+                },
+                {
+                  "id": "interestPaid",
+                  "visible": false
+                },
+                {
+                  "id": "terminationType",
+                  "visible": false
+                },
+                {
+                  "id": "terminationModalities",
+                  "visible": false
+                },
+                {
+                  "id": "repayDate",
+                  "visible": true
+                },
+                {
+                  "id": "altInterestMethod",
+                  "visible": false
+                },
+                {
+                  "id": "contractStatus",
+                  "visible": false
+                }
+              ],
+              "filters": [
+                {
+                  "id": "f355d57e-03a8-4e05-8639-f6ef0fd70fee",
+                  "field": "status",
+                  "value": "TERMINATED",
+                  "entity": "loan"
+                }
+              ],
+              "rowLimit": 5,
+              "defaultSort": {
+                "desc": false,
+                "columnId": "repayDate"
+              },
+              "displayMode": "paged",
+              "layoutVersion": 1
+            }
+          }
+        ]
+      },
+      {
         "id": "fcf1571c-370e-4d9e-a7e4-d23c28870fa2",
         "widgets": [
           {
@@ -419,6 +521,71 @@
                 },
                 "topNCategories": 8
               },
+              "layoutVersion": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "6a2e8e33-da75-47f6-8a4f-508e42b42613",
+        "widgets": [
+          {
+            "id": "956dcb13-d89f-4d8a-a910-1bc5957d71d4",
+            "type": "divider",
+            "title": "Beispieltabelle Kreditgeber*innen",
+            "width": "full",
+            "config": {}
+          }
+        ]
+      },
+      {
+        "id": "efdb238a-0ed5-4e98-8cca-22a4e43e64f5",
+        "widgets": [
+          {
+            "id": "a2d65ac2-d17e-430f-b441-1bad1ed623db",
+            "type": "lender_table_view",
+            "title": "Hall of Fame ",
+            "width": "full",
+            "config": {
+              "columns": [
+                {
+                  "id": "lenderNumber",
+                  "visible": true
+                },
+                {
+                  "id": "name",
+                  "visible": true
+                },
+                {
+                  "id": "type",
+                  "visible": true
+                },
+                {
+                  "id": "balance",
+                  "visible": true
+                },
+                {
+                  "id": "amount",
+                  "visible": true
+                }
+              ],
+              "filters": [
+                {
+                  "id": "67949347-8257-4172-9a7a-6698f8e34692",
+                  "field": "balance",
+                  "value": [
+                    50000,
+                    null
+                  ],
+                  "entity": "lender"
+                }
+              ],
+              "rowLimit": 10,
+              "defaultSort": {
+                "desc": true,
+                "columnId": "balance"
+              },
+              "displayMode": "paged",
               "layoutVersion": 1
             }
           }

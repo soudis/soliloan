@@ -1,6 +1,6 @@
 'use client';
 
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
@@ -19,15 +19,14 @@ export function LoanTableSettings({
 }) {
   const tLoans = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
-  const locale = useLocale();
   const { project } = useDashboardData();
 
   const columnMeta = useMemo(() => {
-    return buildLoanTableColumnMeta(project, tLoans, commonT, locale).map((meta) => ({
+    return buildLoanTableColumnMeta(project).map((meta) => ({
       id: meta.id,
       label: meta.customLabel ?? (meta.labelKey ? tLoans(meta.labelKey) : meta.id),
     }));
-  }, [project, tLoans, commonT, locale]);
+  }, [project, tLoans]);
 
   const fieldOptions = useMemo(
     () => buildLoanFilterFieldOptions(project, tLoans, commonT),

@@ -2,7 +2,6 @@ import { ContractStatus } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
 
 import {
-  accessorKeyToColumnId,
   createAdditionalFieldsColumns,
   createColumn,
   createCurrencyColumn,
@@ -23,16 +22,26 @@ export type LoanTableColumnMeta = {
   customLabel?: string;
 };
 
-function resolveColumnId(column: ColumnDef<LoanWithCalculations>): string {
-  if (column.id) {
-    return column.id;
-  }
-  const accessorKey = 'accessorKey' in column ? column.accessorKey : undefined;
-  if (typeof accessorKey === 'string') {
-    return accessorKeyToColumnId(accessorKey);
-  }
-  return '';
-}
+const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
+  { id: 'loanNumber', labelKey: 'table.loanNumber' },
+  { id: 'lenderNumber', labelKey: 'table.lenderNumber' },
+  { id: 'signDate', labelKey: 'table.signDate' },
+  { id: 'lenderName', labelKey: 'table.lenderName' },
+  { id: 'amount', labelKey: 'table.amount' },
+  { id: 'balance', labelKey: 'table.balance' },
+  { id: 'deposits', labelKey: 'table.deposits' },
+  { id: 'withdrawals', labelKey: 'table.withdrawals' },
+  { id: 'notReclaimed', labelKey: 'table.notReclaimed' },
+  { id: 'interestRate', labelKey: 'table.interestRate' },
+  { id: 'interest', labelKey: 'table.interest' },
+  { id: 'interestPaid', labelKey: 'table.interestPaid' },
+  { id: 'terminationType', labelKey: 'table.terminationType' },
+  { id: 'terminationModalities', labelKey: 'table.terminationModalities' },
+  { id: 'repayDate', labelKey: 'table.repayDate' },
+  { id: 'status', labelKey: 'table.status' },
+  { id: 'altInterestMethod', labelKey: 'table.altInterestMethod' },
+  { id: 'contractStatus', labelKey: 'table.contractStatus' },
+];
 
 export function buildAllLoanTableColumns(
   project: ProjectWithConfiguration,
@@ -136,29 +145,15 @@ export function buildAllLoanTableColumns(
   ];
 }
 
-export function buildLoanTableColumnMeta(
-  project: ProjectWithConfiguration,
-  t: (key: string) => string,
-  commonT: (key: string) => string,
-  locale: string,
-): LoanTableColumnMeta[] {
-  const columns = buildAllLoanTableColumns(project, t, commonT, locale);
+export function buildLoanTableColumnMeta(project: ProjectWithConfiguration): LoanTableColumnMeta[] {
+  const additionalFieldMeta =
+    project.configuration.loanAdditionalFields?.map((field) => ({
+      id: `additionalFields.${field.id}`,
+      labelKey: null,
+      customLabel: field.name,
+    })) ?? [];
 
-  return columns.map((column) => {
-    const id = resolveColumnId(column);
-    const config = column as ColumnDef<LoanWithCalculations> & { header?: string };
-    const headerKey = typeof config.header === 'string' ? config.header : null;
-
-    const additionalField = project.configuration.loanAdditionalFields?.find(
-      (field) => id === `additionalFields.${field.id}`,
-    );
-
-    return {
-      id,
-      labelKey: additionalField ? null : headerKey,
-      customLabel: additionalField?.name,
-    };
-  });
+  return [...LOAN_TABLE_STATIC_COLUMN_META, ...additionalFieldMeta];
 }
 
 function readNestedValue(row: LoanWithCalculations, field: string): unknown {

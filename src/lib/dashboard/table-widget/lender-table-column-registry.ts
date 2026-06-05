@@ -1,7 +1,6 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
 import {
-  accessorKeyToColumnId,
   createAdditionalFieldsColumns,
   createColumn,
   createCurrencyColumn,
@@ -18,18 +17,28 @@ export type LenderTableColumnMeta = {
   id: string;
   labelKey: string | null;
   customLabel?: string;
+  /** Aggregate columns use dashboard.loans translation keys */
+  useLoansTranslations?: boolean;
 };
 
-function resolveColumnId(column: ColumnDef<LenderWithCalculations>): string {
-  if (column.id) {
-    return column.id;
-  }
-  const accessorKey = 'accessorKey' in column ? column.accessorKey : undefined;
-  if (typeof accessorKey === 'string') {
-    return accessorKeyToColumnId(accessorKey);
-  }
-  return '';
-}
+const LENDER_TABLE_STATIC_COLUMN_META: LenderTableColumnMeta[] = [
+  { id: 'lenderNumber', labelKey: 'table.lenderNumber' },
+  { id: 'name', labelKey: 'table.name' },
+  { id: 'type', labelKey: 'table.type' },
+  { id: 'email', labelKey: 'table.email' },
+  { id: 'telNo', labelKey: 'table.telNo' },
+  { id: 'address', labelKey: 'table.address' },
+  { id: 'banking', labelKey: 'table.banking' },
+  { id: 'salutation', labelKey: 'table.salutation' },
+  { id: 'notificationType', labelKey: 'table.notificationType' },
+  { id: 'amount', labelKey: 'table.amount', useLoansTranslations: true },
+  { id: 'balance', labelKey: 'table.balance', useLoansTranslations: true },
+  { id: 'deposits', labelKey: 'table.deposits', useLoansTranslations: true },
+  { id: 'withdrawals', labelKey: 'table.withdrawals', useLoansTranslations: true },
+  { id: 'notReclaimed', labelKey: 'table.notReclaimed', useLoansTranslations: true },
+  { id: 'interest', labelKey: 'table.interest', useLoansTranslations: true },
+  { id: 'interestPaid', labelKey: 'table.interestPaid', useLoansTranslations: true },
+];
 
 export function buildAllLenderTableColumns(
   project: ProjectWithConfiguration,
@@ -119,35 +128,18 @@ export function buildAllLenderTableColumns(
   ];
 }
 
-export function buildLenderTableColumnMeta(
-  project: ProjectWithConfiguration,
-  t: (key: string) => string,
-  tLoans: (key: string) => string,
-  commonT: (key: string) => string,
-  locale: string,
-): LenderTableColumnMeta[] {
-  const columns = buildAllLenderTableColumns(project, t, tLoans, commonT, locale);
+export function buildLenderTableColumnMeta(project: ProjectWithConfiguration): LenderTableColumnMeta[] {
+  const staticBeforeAdditional = LENDER_TABLE_STATIC_COLUMN_META.slice(0, 9);
+  const staticAfterAdditional = LENDER_TABLE_STATIC_COLUMN_META.slice(9);
 
-  return columns.map((column) => {
-    const id = resolveColumnId(column);
-    const config = column as ColumnDef<LenderWithCalculations> & { header?: string };
-    const headerKey = typeof config.header === 'string' ? config.header : null;
+  const additionalFieldMeta =
+    project.configuration.lenderAdditionalFields?.map((field) => ({
+      id: `additionalFields.${field.id}`,
+      labelKey: null,
+      customLabel: field.name,
+    })) ?? [];
 
-    const additionalField = project.configuration.lenderAdditionalFields?.find(
-      (field) => id === `additionalFields.${field.id}`,
-    );
-
-    let resolvedLabelKey = headerKey;
-    if (id === 'amount' || id === 'balance' || id === 'deposits' || id === 'withdrawals' || id === 'notReclaimed' || id === 'interest' || id === 'interestPaid') {
-      resolvedLabelKey = `table.${id}`;
-    }
-
-    return {
-      id,
-      labelKey: additionalField ? null : resolvedLabelKey,
-      customLabel: additionalField?.name,
-    };
-  });
+  return [...staticBeforeAdditional, ...additionalFieldMeta, ...staticAfterAdditional];
 }
 
 function readNestedValue(row: LenderWithCalculations, field: string): unknown {
