@@ -19,11 +19,13 @@ import {
 } from '@/lib/dashboard/layout-utils';
 import { DASHBOARD_WIDGET_WIDTHS, type DashboardWidgetType, type DashboardWidgetWidth } from '@/types/dashboard-layout';
 import { parseBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
+import { parseLineChartConfig } from '@/types/dashboard-widgets/line-chart';
 import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { parsePieChartConfig, type PieChartChartSize } from '@/types/dashboard-widgets/pie-chart';
 import { parseStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
 import { useDashboardLayout } from './dashboard-layout-context';
 import { BarChartSettings } from './bar-chart-settings';
+import { LineChartSettings } from './line-chart-settings';
 import { HistoryTableSettings } from './history-table-settings';
 import { PieChartSettings } from './pie-chart-settings';
 import { StatWidgetSettings } from './stat-widget-settings';
@@ -42,6 +44,7 @@ function createSettingsSchema(widgetType: DashboardWidgetType) {
         widgetType === 'history_table' ||
         widgetType === 'pie_chart' ||
         widgetType === 'bar_chart' ||
+        widgetType === 'line_chart' ||
         widgetType === 'divider'
         ? z.string()
         : z.string().min(1),
@@ -169,18 +172,29 @@ export function DashboardWidgetSettings() {
                 )}
               />
             )}
-            {widget.type === 'pie_chart' || widget.type === 'bar_chart' ? (
+            {widget.type === 'pie_chart' || widget.type === 'bar_chart' || widget.type === 'line_chart' ? (
               <div className="space-y-2">
                 <Label>{tPie('chartSize')}</Label>
                 <Select
                   value={
                     widget.type === 'bar_chart'
                       ? parseBarChartConfig(widget.config).chartSize
-                      : parsePieChartConfig(widget.config).chartSize
+                      : widget.type === 'line_chart'
+                        ? parseLineChartConfig(widget.config).chartSize
+                        : parsePieChartConfig(widget.config).chartSize
                   }
                   onValueChange={(v) => {
                     if (widget.type === 'bar_chart') {
                       const config = parseBarChartConfig(widget.config);
+                      setLayout((prev) =>
+                        updateWidget(prev, selectedWidgetId, {
+                          config: { ...config, chartSize: v as PieChartChartSize },
+                        }),
+                      );
+                      return;
+                    }
+                    if (widget.type === 'line_chart') {
+                      const config = parseLineChartConfig(widget.config);
                       setLayout((prev) =>
                         updateWidget(prev, selectedWidgetId, {
                           config: { ...config, chartSize: v as PieChartChartSize },
@@ -242,10 +256,19 @@ export function DashboardWidgetSettings() {
             }}
           />
         ) : null}
+        {widget.type === 'line_chart' ? (
+          <LineChartSettings
+            config={parseLineChartConfig(widget.config)}
+            onConfigChange={(config) => {
+              setLayout((prev) => updateWidget(prev, selectedWidgetId, { config }));
+            }}
+          />
+        ) : null}
         {widget.type !== 'history_table' &&
         widget.type !== 'stat' &&
         widget.type !== 'pie_chart' &&
         widget.type !== 'bar_chart' &&
+        widget.type !== 'line_chart' &&
         widget.type !== 'divider' ? (
           <p className="mt-6 text-xs text-muted-foreground">{t('typeSettingsComingSoon')}</p>
         ) : null}

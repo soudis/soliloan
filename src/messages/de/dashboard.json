@@ -63,6 +63,26 @@
         "duplicateBucket": "Grenzen müssen eindeutig sein."
       }
     },
+    "lineChart": {
+      "lineStyleSection": "Liniendarstellung",
+      "filled": "Fläche füllen",
+      "showPoints": "Punkte anzeigen",
+      "lineShape": "Linienform",
+      "lineShapeOptions": {
+        "straight": "Gerade",
+        "smooth": "Glatt",
+        "stepped": "Treppenförmig"
+      },
+      "dashStyle": "Linienstil",
+      "dashStyleOptions": {
+        "solid": "Durchgezogen",
+        "dashed": "Gestrichelt",
+        "dotted": "Gepunktet"
+      },
+      "lineWidth": "Linienstärke",
+      "beginAtZero": "Y-Achse bei 0 beginnen",
+      "beginAtZeroHint": "Wenn deaktiviert, skaliert die Y-Achse automatisch anhand der Daten."
+    },
     "barChart": {
       "xAxisMode": "X-Achse",
       "xAxisTimeline": "Zeitraum",
@@ -310,6 +330,16 @@
       "numericBucketAbove": "über {min}"
     },
     "barChart": {
+      "emptySeries": "Keine Serien konfiguriert.",
+      "emptyChart": "Keine Daten für die gewählten Einstellungen.",
+      "emptyValue": "Ohne Wert",
+      "otherCategory": "Sonstige",
+      "charCountLabel": "{count} Zeichen",
+      "numericBucketUpTo": "bis {max}",
+      "numericBucketRange": "{min} – {max}",
+      "numericBucketAbove": "über {min}"
+    },
+    "lineChart": {
       "emptySeries": "Keine Serien konfiguriert.",
       "emptyChart": "Keine Daten für die gewählten Einstellungen.",
       "emptyValue": "Ohne Wert",

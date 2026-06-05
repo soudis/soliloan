@@ -1,35 +1,39 @@
 'use client';
 
 import {
-  BarElement,
   CategoryScale,
   Chart as ChartJS,
+  Filler,
   Legend,
   LinearScale,
+  LineElement,
+  PointElement,
   type ChartOptions,
   Tooltip,
 } from 'chart.js';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
-import { Bar } from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2';
 
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
-import { chartColorAtIndex } from '@/lib/dashboard/chart/chart-dataset-colors';
-import { DASHBOARD_CHART_ANIMATION } from '@/lib/dashboard/chart-animation';
-import { computeBarChart } from '@/lib/dashboard/bar-chart/compute-bar-chart';
-import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
 import { useAnimatedChartData } from '@/hooks/use-animated-chart-data';
-import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
+import { chartColorAtIndex } from '@/lib/dashboard/chart/chart-dataset-colors';
+import { resolveLineChartDatasetStyle } from '@/lib/dashboard/chart/line-chart-dataset-style';
+import { zeroLinePlugin } from '@/lib/dashboard/chart/zero-line-plugin';
+import { DASHBOARD_CHART_ANIMATION } from '@/lib/dashboard/chart-animation';
+import { computeLineChart } from '@/lib/dashboard/line-chart/compute-line-chart';
+import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
+import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
 import { cn } from '@/lib/utils';
 import type { DashboardWidget } from '@/types/dashboard-layout';
-import { parseBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
+import { parseLineChartConfig } from '@/types/dashboard-widgets/line-chart';
 import { getPieChartHeightClassName } from '@/types/dashboard-widgets/pie-chart';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Tooltip, Legend, Filler, zeroLinePlugin);
 
-export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
-  const t = useTranslations('dashboard.widgets.barChart');
+export function LineChartWidget({ widget }: { widget: DashboardWidget }) {
+  const t = useTranslations('dashboard.widgets.lineChart');
   const tHistoryTable = useTranslations('dashboard.widgets.historyTable');
   const tHistory = useTranslations('dashboard.customizer.historyTable');
   const commonT = useTranslations('common');
@@ -37,7 +41,7 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
   const formatter = useFormatter();
   const { loans, toDate, fieldOptions, getOrComputeWidgetResult } = useDashboardData();
 
-  const config = useMemo(() => parseBarChartConfig(widget.config), [widget.config]);
+  const config = useMemo(() => parseLineChartConfig(widget.config), [widget.config]);
 
   const result = useMemo(
     () =>
@@ -52,7 +56,7 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
           return getOrComputeWidgetResult(
             buildWidgetComputeCacheKey(widget.type, widget.config, loans.length, toDate.getTime()),
             () =>
-              computeBarChart(
+              computeLineChart(
                 loans,
                 config,
                 toDate,
@@ -70,7 +74,7 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
           );
         },
       }),
-    [loans, config, toDate, fieldOptions, locale, formatter, t, tHistory, tHistoryTable, commonT, widget.id, widget.type, getOrComputeWidgetResult],
+    [loans, config, toDate, fieldOptions, locale, formatter, t, tHistory, tHistoryTable, commonT, widget.config, widget.id, widget.type, getOrComputeWidgetResult],
   );
 
   const chartData = useMemo(() => {
@@ -79,19 +83,22 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
     }
     return {
       labels: result.labels,
-      datasets: result.datasets.map((ds, i) => ({
-        label: ds.label,
-        data: ds.values.map((v) => (v === null ? 0 : v)),
-        backgroundColor: chartColorAtIndex(i),
-        borderWidth: 1,
-        stack: config.seriesLayout === 'stacked' ? 'stack' : undefined,
-      })),
+      datasets: result.datasets.map((ds, i) => {
+        const series = config.series[i];
+        const color = chartColorAtIndex(i);
+        const style = series ? resolveLineChartDatasetStyle(series, color) : { borderColor: color };
+        return {
+          label: ds.label,
+          data: ds.values.map((v) => v),
+          ...style,
+        };
+      }),
     };
-  }, [result, config.seriesLayout]);
+  }, [result, config.series]);
 
   const animatedChartData = useAnimatedChartData(chartData);
 
-  const options: ChartOptions<'bar'> = useMemo(
+  const options: ChartOptions<'line'> = useMemo(
     () => ({
       responsive: true,
       maintainAspectRatio: false,
@@ -117,16 +124,13 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
         },
       },
       scales: {
-        x: {
-          stacked: config.seriesLayout === 'stacked',
-        },
+        x: {},
         y: {
-          stacked: config.seriesLayout === 'stacked',
-          beginAtZero: true,
+          beginAtZero: config.beginAtZero,
         },
       },
     }),
-    [config.series, config.seriesLayout],
+    [config.beginAtZero, config.series],
   );
 
   if (config.series.length === 0) {
@@ -139,7 +143,7 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
 
   return (
     <div className={cn('w-full', getPieChartHeightClassName(config.chartSize))}>
-      {animatedChartData ? <Bar data={animatedChartData} options={options} /> : null}
+      {animatedChartData ? <Line data={animatedChartData} options={options} /> : null}
     </div>
   );
 }
