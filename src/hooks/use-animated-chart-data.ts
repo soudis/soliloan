@@ -1,7 +1,7 @@
 'use client';
 
 import type { ChartData, ChartType } from 'chart.js';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { chartDataValuesSnapshotKey, chartDataVisualSnapshotKey, zeroChartData } from '@/lib/dashboard/chart-animation';
 
@@ -13,9 +13,12 @@ import { chartDataValuesSnapshotKey, chartDataVisualSnapshotKey, zeroChartData }
 export function useAnimatedChartData<T extends ChartType>(
   chartData: ChartData<T> | null | undefined,
 ): ChartData<T> | null {
-  const valuesKey = chartData ? chartDataValuesSnapshotKey(chartData) : null;
-  const visualKey = chartData ? chartDataVisualSnapshotKey(chartData) : null;
-  const renderKey = valuesKey && visualKey ? `${valuesKey}\u0000${visualKey}` : null;
+  // The snapshot keys require two JSON.stringify passes; only recompute them when
+  // the (memoized) chartData reference actually changes rather than on every render.
+  const renderKey = useMemo(
+    () => (chartData ? `${chartDataValuesSnapshotKey(chartData)}\u0000${chartDataVisualSnapshotKey(chartData)}` : null),
+    [chartData],
+  );
   const chartDataRef = useRef(chartData);
   chartDataRef.current = chartData;
   const prevValuesKeyRef = useRef<string | null>(null);

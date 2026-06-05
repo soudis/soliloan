@@ -141,10 +141,16 @@ export function addWidgetFromTypeInNewRow(
 
 export function removeWidget(layout: DashboardLayoutData, widgetId: string): DashboardLayoutData {
   const next = updateLayout(layout, (rows) =>
-    rows.map((row) => ({
-      ...row,
-      widgets: row.widgets.filter((w) => w.id !== widgetId),
-    })),
+    rows.map((row) => {
+      // Preserve untouched row references so memoized rows can skip re-rendering.
+      if (!row.widgets.some((w) => w.id === widgetId)) {
+        return row;
+      }
+      return {
+        ...row,
+        widgets: row.widgets.filter((w) => w.id !== widgetId),
+      };
+    }),
   );
   const cleaned = next.rows
     .map((row) => (row.widgets.length === 0 && next.rows.length > 1 ? null : row))
@@ -224,10 +230,17 @@ export function updateWidget(
     patch = { ...patch, width: fitted };
   }
   return updateLayout(layout, (rows) =>
-    rows.map((row) => ({
-      ...row,
-      widgets: row.widgets.map((w) => (w.id === widgetId ? { ...w, ...patch } : w)),
-    })),
+    rows.map((row) => {
+      // Preserve the reference of rows that don't contain the edited widget so
+      // memoized rows can skip re-rendering.
+      if (!row.widgets.some((w) => w.id === widgetId)) {
+        return row;
+      }
+      return {
+        ...row,
+        widgets: row.widgets.map((w) => (w.id === widgetId ? { ...w, ...patch } : w)),
+      };
+    }),
   );
 }
 

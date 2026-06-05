@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cloneLayoutData } from '@/lib/dashboard/layout-utils';
 import type { DashboardLayoutData } from '@/types/dashboard-layout';
 
-import { useDashboardLayout } from './dashboard-layout-context';
+import { useDashboardEditor, useDashboardLayoutData } from './dashboard-layout-context';
 import { DashboardWidgetSettings } from './dashboard-widget-settings';
 import { DashboardWidgetToolbox } from './dashboard-widget-toolbox';
 
@@ -30,7 +30,8 @@ export function DashboardEditorSidebar({
   const [globalDefaultDialogOpen, setGlobalDefaultDialogOpen] = useState(false);
   const prevSelectedIdRef = useRef<string | undefined>(undefined);
 
-  const { scope, layout, selectedWidgetId } = useDashboardLayout();
+  const { scope, layout } = useDashboardLayoutData();
+  const { selectedWidgetId } = useDashboardEditor();
 
   useEffect(() => {
     if (skipSettingsOnSelectionRef.current) {

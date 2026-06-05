@@ -4,7 +4,7 @@ import { isEqual } from 'lodash';
 import { LayoutDashboard, Save, SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import {
   upsertProjectDashboardLayoutAction,
@@ -58,7 +58,7 @@ export function DashboardCustomizer({
 
   const activeScope = (scope ?? 'project') as DashboardLayoutScopeKey;
   const layout = layouts[activeScope];
-  const isDirty = !isEqual(layout, savedLayouts[activeScope]);
+  const isDirty = useMemo(() => !isEqual(layout, savedLayouts[activeScope]), [layout, savedLayouts, activeScope]);
 
   const setLayout = useCallback(
     (next: DashboardLayoutData | ((prev: DashboardLayoutData) => DashboardLayoutData)) => {
@@ -192,15 +192,13 @@ export function DashboardCustomizer({
       </div>
 
       <DashboardLayoutProvider
-        value={{
-          layout,
-          setLayout,
-          scope: activeScope,
-          projectId,
-          isCustomizing,
-          selectedWidgetId,
-          setSelectedWidgetId,
-        }}
+        layout={layout}
+        setLayout={setLayout}
+        scope={activeScope}
+        projectId={projectId}
+        isCustomizing={isCustomizing}
+        selectedWidgetId={selectedWidgetId}
+        setSelectedWidgetId={setSelectedWidgetId}
       >
         <DashboardDndProvider>
           {isCustomizing ? <p className="mb-3 text-sm text-muted-foreground">{t('dragReorderHint')}</p> : null}

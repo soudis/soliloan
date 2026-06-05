@@ -3,23 +3,24 @@
 import { useDroppable } from '@dnd-kit/core';
 import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import { useTranslations } from 'next-intl';
+import { memo, useMemo } from 'react';
 
 import { cn } from '@/lib/utils';
 import type { DashboardLayoutRow } from '@/types/dashboard-layout';
 
-import { useDashboardLayout } from './dashboard-layout-context';
+import { useDashboardEditor } from './dashboard-layout-context';
 import { DashboardWidgetSlot } from './dashboard-widget-slot';
 
-export function DashboardGridRow({ row }: { row: DashboardLayoutRow }) {
+function DashboardGridRowComponent({ row }: { row: DashboardLayoutRow }) {
   const t = useTranslations('dashboard.customizer');
-  const { isCustomizing } = useDashboardLayout();
+  const { isCustomizing } = useDashboardEditor();
   const { setNodeRef, isOver } = useDroppable({
     id: `row-drop-${row.id}`,
     data: { kind: 'row', rowId: row.id },
     disabled: !isCustomizing,
   });
 
-  const widgetIds = row.widgets.map((w) => w.id);
+  const widgetIds = useMemo(() => row.widgets.map((w) => w.id), [row.widgets]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -47,3 +48,5 @@ export function DashboardGridRow({ row }: { row: DashboardLayoutRow }) {
     </div>
   );
 }
+
+export const DashboardGridRow = memo(DashboardGridRowComponent);

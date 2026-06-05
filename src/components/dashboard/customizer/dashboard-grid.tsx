@@ -6,12 +6,13 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { addRow } from '@/lib/dashboard/layout-editor';
 
-import { useDashboardLayout } from './dashboard-layout-context';
+import { useDashboardEditor, useDashboardLayoutData } from './dashboard-layout-context';
 import { DashboardGridRow } from './dashboard-grid-row';
 
 export function DashboardGrid() {
   const t = useTranslations('dashboard.customizer');
-  const { layout, setLayout, isCustomizing } = useDashboardLayout();
+  const { layout, setLayout } = useDashboardLayoutData();
+  const { isCustomizing } = useDashboardEditor();
 
   const { setNodeRef, isOver } = useDroppable({
     id: 'new-row',

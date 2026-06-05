@@ -4,6 +4,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { BarChart3, GripVertical, Hash, LineChart, Minus, PieChart, Table2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { memo, useMemo } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getEffectiveWidgetColSpanClassName, widgetShowsCardHeader } from '@/lib/dashboard/layout-utils';
@@ -11,14 +12,14 @@ import { cn } from '@/lib/utils';
 import type { DashboardWidget, DashboardWidgetType } from '@/types/dashboard-layout';
 
 import { BarChartWidget } from '../widgets/bar-chart-widget';
-import { LineChartWidget } from '../widgets/line-chart-widget';
 import { DividerWidget } from '../widgets/divider-widget';
 import { HistoryTableWidget } from '../widgets/history-table-widget';
-import { PieChartWidget } from '../widgets/pie-chart-widget';
 import { LenderTableWidget } from '../widgets/lender-table-widget';
+import { LineChartWidget } from '../widgets/line-chart-widget';
 import { LoanTableWidget } from '../widgets/loan-table-widget';
+import { PieChartWidget } from '../widgets/pie-chart-widget';
 import { StatWidget } from '../widgets/stat-widget';
-import { useDashboardLayout } from './dashboard-layout-context';
+import { useDashboardEditor } from './dashboard-layout-context';
 
 const WIDGET_ICONS: Record<DashboardWidgetType, React.ComponentType<{ className?: string }>> = {
   history_table: Table2,
@@ -31,9 +32,9 @@ const WIDGET_ICONS: Record<DashboardWidgetType, React.ComponentType<{ className?
   lender_table_view: Users,
 };
 
-export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget; rowId: string }) {
+function DashboardWidgetSlotComponent({ widget, rowId }: { widget: DashboardWidget; rowId: string }) {
   const t = useTranslations('dashboard.customizer');
-  const { isCustomizing, selectedWidgetId, setSelectedWidgetId } = useDashboardLayout();
+  const { isCustomizing, selectedWidgetId, setSelectedWidgetId } = useDashboardEditor();
   const isSelected = selectedWidgetId === widget.id;
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -50,6 +51,31 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
   const Icon = WIDGET_ICONS[widget.type];
   const showHeader = widgetShowsCardHeader(widget);
   const isDivider = widget.type === 'divider';
+
+  // Keyed only on the widget so selection/customize-mode re-renders of this slot
+  // don't force the (expensive) widget body to re-render.
+  const widgetBody = useMemo(() => {
+    switch (widget.type) {
+      case 'divider':
+        return <DividerWidget title={widget.title} />;
+      case 'history_table':
+        return <HistoryTableWidget widget={widget} />;
+      case 'stat':
+        return <StatWidget widget={widget} />;
+      case 'pie_chart':
+        return <PieChartWidget widget={widget} />;
+      case 'bar_chart':
+        return <BarChartWidget widget={widget} />;
+      case 'line_chart':
+        return <LineChartWidget widget={widget} />;
+      case 'loan_table_view':
+        return <LoanTableWidget widget={widget} />;
+      case 'lender_table_view':
+        return <LenderTableWidget widget={widget} />;
+      default:
+        return <p className="text-sm text-muted-foreground/80">{t('placeholder')}</p>;
+    }
+  }, [widget, t]);
 
   return (
     <div
@@ -104,27 +130,11 @@ export function DashboardWidgetSlot({ widget, rowId }: { widget: DashboardWidget
             !showHeader && !isDivider && (isCustomizing ? 'pt-5' : 'pt-0'),
           )}
         >
-          {widget.type === 'divider' ? (
-            <DividerWidget title={widget.title} />
-          ) : widget.type === 'history_table' ? (
-            <HistoryTableWidget widget={widget} />
-          ) : widget.type === 'stat' ? (
-            <StatWidget widget={widget} />
-          ) : widget.type === 'pie_chart' ? (
-            <PieChartWidget widget={widget} />
-          ) : widget.type === 'bar_chart' ? (
-            <BarChartWidget widget={widget} />
-          ) : widget.type === 'line_chart' ? (
-            <LineChartWidget widget={widget} />
-          ) : widget.type === 'loan_table_view' ? (
-            <LoanTableWidget widget={widget} />
-          ) : widget.type === 'lender_table_view' ? (
-            <LenderTableWidget widget={widget} />
-          ) : (
-            <p className="text-sm text-muted-foreground/80">{t('placeholder')}</p>
-          )}
+          {widgetBody}
         </CardContent>
       </Card>
     </div>
   );
 }
+
+export const DashboardWidgetSlot = memo(DashboardWidgetSlotComponent);

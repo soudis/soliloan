@@ -26,7 +26,7 @@ import {
 } from '@/lib/dashboard/layout-editor';
 import type { DashboardWidgetType } from '@/types/dashboard-layout';
 
-import { useDashboardLayout } from './dashboard-layout-context';
+import { useDashboardEditor, useDashboardLayoutData } from './dashboard-layout-context';
 
 type ActiveDrag =
   | { kind: 'toolbox'; widgetType: DashboardWidgetType }
@@ -35,7 +35,8 @@ type ActiveDrag =
 
 export function DashboardDndProvider({ children }: { children: React.ReactNode }) {
   const t = useTranslations('dashboard.customizer');
-  const { layout, setLayout, isCustomizing } = useDashboardLayout();
+  const { layout, setLayout } = useDashboardLayoutData();
+  const { isCustomizing } = useDashboardEditor();
   const [activeDrag, setActiveDrag] = useState<ActiveDrag>(null);
 
   const sensors = useSensors(

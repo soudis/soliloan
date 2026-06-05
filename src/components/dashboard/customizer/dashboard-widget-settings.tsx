@@ -8,29 +8,29 @@ import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { findWidgetLocation, removeWidget, updateWidget } from '@/lib/dashboard/layout-editor';
 import {
   DEFAULT_WIDTH_BY_TYPE,
-  widgetIsFullWidthLocked,
   WIDGET_WIDTH_SETTINGS_ORDER,
+  widgetIsFullWidthLocked,
 } from '@/lib/dashboard/layout-utils';
 import { DASHBOARD_WIDGET_WIDTHS, type DashboardWidgetType, type DashboardWidgetWidth } from '@/types/dashboard-layout';
 import { parseBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
-import { parseLineChartConfig } from '@/types/dashboard-widgets/line-chart';
 import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
-import { parsePieChartConfig, type PieChartChartSize } from '@/types/dashboard-widgets/pie-chart';
-import { parseLenderTableConfig, parseLoanTableConfig } from '@/types/dashboard-widgets/table-view';
+import { parseLineChartConfig } from '@/types/dashboard-widgets/line-chart';
+import { type PieChartChartSize, parsePieChartConfig } from '@/types/dashboard-widgets/pie-chart';
 import { parseStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
-import { useDashboardLayout } from './dashboard-layout-context';
+import { parseLenderTableConfig, parseLoanTableConfig } from '@/types/dashboard-widgets/table-view';
 import { BarChartSettings } from './bar-chart-settings';
-import { LineChartSettings } from './line-chart-settings';
+import { useDashboardEditor, useDashboardLayoutData } from './dashboard-layout-context';
 import { HistoryTableSettings } from './history-table-settings';
-import { PieChartSettings } from './pie-chart-settings';
 import { LenderTableSettings } from './lender-table-settings';
+import { LineChartSettings } from './line-chart-settings';
 import { LoanTableSettings } from './loan-table-settings';
+import { PieChartSettings } from './pie-chart-settings';
 import { StatWidgetSettings } from './stat-widget-settings';
 
 const settingsWidthSchema = z.enum(DASHBOARD_WIDGET_WIDTHS);
@@ -65,7 +65,8 @@ const EMPTY_SETTINGS: SettingsFormValues = {
 export function DashboardWidgetSettings() {
   const t = useTranslations('dashboard.customizer');
   const tPie = useTranslations('dashboard.customizer.pieChart');
-  const { layout, setLayout, selectedWidgetId, setSelectedWidgetId } = useDashboardLayout();
+  const { layout, setLayout } = useDashboardLayoutData();
+  const { selectedWidgetId, setSelectedWidgetId } = useDashboardEditor();
 
   const location = selectedWidgetId ? findWidgetLocation(layout, selectedWidgetId) : null;
   const widget = location?.widget;
