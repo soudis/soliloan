@@ -3,6 +3,7 @@ import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';
 import { getFilterDefinitionForField } from '@/lib/entity-filters/filter-definitions';
 import { getLoanFilterValue } from '@/lib/entity-filters/get-filter-value';
 import { buildPeriodSnapshot } from '@/lib/dashboard/history-table/rollup-period';
+import { interestRateAverageWeight } from '@/lib/dashboard/interest-rate-average';
 import { getPieChartDiscriminator, type PieChartWidgetConfig } from '@/types/dashboard-widgets/pie-chart';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
 
@@ -103,13 +104,11 @@ export function computePieChart(
     }
 
     if (config.measure === 'interestRateAvg') {
-      const weight = Number(loan.amount);
+      const weight = interestRateAverageWeight(loan);
       if (weight > 0) {
         acc.rateWeighted += measureValue * weight;
         acc.weightSum += weight;
       }
-    } else if (config.measure === 'loanCount') {
-      acc.sum += measureValue;
     } else {
       acc.sum += measureValue;
     }
@@ -119,22 +118,16 @@ export function computePieChart(
 
   for (const [key, acc] of groups) {
     let value: number;
-    switch (config.measureAggregation) {
-      case 'count':
-        value = acc.count;
-        break;
-      case 'average':
-        if (config.measure === 'interestRateAvg') {
-          value = acc.weightSum > 0 ? acc.rateWeighted / acc.weightSum : 0;
-        } else if (config.measure === 'loanCount') {
-          value = acc.count > 0 ? acc.sum / acc.count : 0;
-        } else {
-          value = acc.count > 0 ? acc.sum / acc.count : 0;
-        }
-        break;
-      default:
-        value = config.measure === 'loanCount' ? acc.sum : acc.sum;
-        break;
+    if (config.measureAggregation === 'count') {
+      value = acc.count;
+    } else if (config.measure === 'interestRateAvg') {
+      // A rate is never summable: always render the contract-amount weighted
+      // average regardless of the selected aggregation.
+      value = acc.weightSum > 0 ? acc.rateWeighted / acc.weightSum : 0;
+    } else if (config.measureAggregation === 'average') {
+      value = acc.count > 0 ? acc.sum / acc.count : 0;
+    } else {
+      value = acc.sum;
     }
     if (config.measureAggregation !== 'count' && config.measure !== 'loanCount' && acc.count === 0) {
       continue;

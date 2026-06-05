@@ -17,7 +17,7 @@ export function matchesNumberRangeFilter(value: unknown, filterValue: unknown): 
     return true;
   }
   const range = filterValue as [number | null, number | null];
-  if (!range[0] && !range[1]) {
+  if (range[0] == null && range[1] == null) {
     return true;
   }
   const rowValue = Number(value);

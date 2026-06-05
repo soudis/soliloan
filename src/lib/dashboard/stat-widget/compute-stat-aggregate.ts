@@ -4,6 +4,7 @@ import {
   filterLoansForHistoryColumn,
   type AggregateMetricCache,
 } from '@/lib/dashboard/history-table/compute-history-table';
+import { interestRateAverageWeight } from '@/lib/dashboard/interest-rate-average';
 import type { LoanMetricCacheMap } from '@/lib/dashboard/history-table/loan-metric-cache';
 import type { HistoryPeriod } from '@/lib/dashboard/history-table/rollup-period';
 import type { HistoryTableWidgetConfig } from '@/types/dashboard-widgets/history-table';
@@ -58,7 +59,7 @@ function collectPerLoanValues(
   return values;
 }
 
-function computeBalanceWeightedInterestRateAverage(
+function computeWeightedInterestRateAverage(
   loans: DashboardLoan[],
   stat: StatItemConfig,
   period: HistoryPeriod,
@@ -91,12 +92,15 @@ function computeBalanceWeightedInterestRateAverage(
     if (rate === null || Number.isNaN(rate)) {
       continue;
     }
+    // Include only loans active at period end (positive balance), but weight by
+    // contract amount to stay consistent with history and pie widgets.
     const balance = getPerLoanStatSnapshotValue(loan, 'balance', period, loanMetricCaches) ?? 0;
     if (balance <= 0) {
       continue;
     }
-    rateWeighted += rate * balance;
-    weightSum += balance;
+    const weight = interestRateAverageWeight(loan);
+    rateWeighted += rate * weight;
+    weightSum += weight;
   }
 
   return weightSum > 0 ? rateWeighted / weightSum : null;
@@ -113,7 +117,7 @@ export function computeStatAggregateValue(
   loanMetricCaches: LoanMetricCacheMap,
 ): number | null {
   if (aggregation === 'average' && stat.metric === 'interestRateAvg') {
-    return computeBalanceWeightedInterestRateAverage(
+    return computeWeightedInterestRateAverage(
       loans,
       stat,
       period,

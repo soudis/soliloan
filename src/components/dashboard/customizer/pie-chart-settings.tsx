@@ -14,6 +14,7 @@ import {
   getPieChartDiscriminator,
   PIE_CHART_MEASURES,
   PIE_CHART_MEASURES_WITHOUT_AVERAGE,
+  PIE_CHART_MEASURES_WITHOUT_SUM,
   type PieChartWidgetConfig,
 } from '@/types/dashboard-widgets/pie-chart';
 
@@ -77,9 +78,14 @@ export function PieChartSettings({
   };
 
   const hideAverage = PIE_CHART_MEASURES_WITHOUT_AVERAGE.includes(draftConfig.measure);
+  const hideSum = PIE_CHART_MEASURES_WITHOUT_SUM.includes(draftConfig.measure);
 
   const effectiveAggregation =
-    hideAverage && draftConfig.measureAggregation === 'average' ? 'sum' : draftConfig.measureAggregation;
+    hideAverage && draftConfig.measureAggregation === 'average'
+      ? 'sum'
+      : hideSum && draftConfig.measureAggregation === 'sum'
+        ? 'average'
+        : draftConfig.measureAggregation;
 
   return (
     <div className="mt-6 space-y-4 border-t pt-4">
@@ -118,6 +124,9 @@ export function PieChartSettings({
             if (PIE_CHART_MEASURES_WITHOUT_AVERAGE.includes(measure) && draftConfig.measureAggregation === 'average') {
               patch.measureAggregation = 'sum';
             }
+            if (PIE_CHART_MEASURES_WITHOUT_SUM.includes(measure) && draftConfig.measureAggregation === 'sum') {
+              patch.measureAggregation = 'average';
+            }
             patchConfig(patch, true);
           }}
         >
@@ -146,7 +155,7 @@ export function PieChartSettings({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="sum">{t('measureAggregationSum')}</SelectItem>
+            {!hideSum ? <SelectItem value="sum">{t('measureAggregationSum')}</SelectItem> : null}
             <SelectItem value="count">{t('measureAggregationCount')}</SelectItem>
             {!hideAverage ? <SelectItem value="average">{t('measureAggregationAverage')}</SelectItem> : null}
           </SelectContent>

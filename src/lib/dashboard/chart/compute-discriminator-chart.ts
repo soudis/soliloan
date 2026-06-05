@@ -100,7 +100,21 @@ export function computeDiscriminatorChartData(
     entry.loans.push(loan);
   }
 
-  const sorted = [...groups.values()].sort((a, b) => b.loans.length - a.loans.length);
+  // Aggregate each group's series values once. Used both for value-based ranking
+  // (consistent with the pie chart) and reused as the final dataset values, so no
+  // category is aggregated twice.
+  const valuesByGroup = new Map<string, (number | null)[]>();
+  for (const group of groups.values()) {
+    valuesByGroup.set(
+      group.key,
+      series.map((col) => aggregateSeriesSnapshot(group.loans, col, toDate, fieldOptions, commonT, cache)),
+    );
+  }
+
+  const rankingScore = (key: string): number =>
+    (valuesByGroup.get(key) ?? []).reduce<number>((sum, value) => sum + (value ?? 0), 0);
+
+  const sorted = [...groups.values()].sort((a, b) => rankingScore(b.key) - rankingScore(a.key));
   const topN = Math.max(1, discriminator.topNCategories);
   let categories: GroupEntry[];
 
@@ -111,22 +125,25 @@ export function computeDiscriminatorChartData(
     const rest = sorted.slice(topN);
     const otherLoans = rest.flatMap((g) => g.loans);
     if (otherLoans.length > 0) {
-      top.push({ key: '__other__', label: otherLabel, loans: otherLoans });
+      const otherEntry: GroupEntry = { key: '__other__', label: otherLabel, loans: otherLoans };
+      top.push(otherEntry);
+      // Rate/average metrics are not additive, so re-aggregate the combined loans.
+      valuesByGroup.set(
+        otherEntry.key,
+        series.map((col) =>
+          aggregateSeriesSnapshot(otherEntry.loans, col, toDate, fieldOptions, commonT, cache),
+        ),
+      );
     }
     categories = top;
   }
 
   const labels = categories.map((c) => c.label);
-  const datasets = series.map((col) => {
-    const values = categories.map((cat) =>
-      aggregateSeriesSnapshot(cat.loans, col, toDate, fieldOptions, commonT, cache),
-    );
-    return {
-      id: col.id,
-      label: resolveSeriesLabel(col, metricLabel(col.metric)),
-      values,
-    };
-  });
+  const datasets = series.map((col, seriesIndex) => ({
+    id: col.id,
+    label: resolveSeriesLabel(col, metricLabel(col.metric)),
+    values: categories.map((cat) => valuesByGroup.get(cat.key)?.[seriesIndex] ?? null),
+  }));
 
   return { labels, datasets };
 }

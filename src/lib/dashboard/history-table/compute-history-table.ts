@@ -4,6 +4,7 @@ import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';
 import { filtersNeedPeriodSnapshot } from '@/lib/entity-filters/filter-definitions';
 import { loanActiveAtPeriodEnd, type PeriodSnapshot } from '@/lib/entity-filters/get-filter-value';
+import { interestRateAverageWeight } from '@/lib/dashboard/interest-rate-average';
 import {
   CUMULATIVE_ONLY_METRICS,
   type HistoryTableAggregation,
@@ -180,9 +181,12 @@ function sumMetricForLoans(
         break;
       }
       case 'interestRateAvg': {
+        // Include only loans active at period end (positive balance), but weight
+        // by contract amount to stay consistent with stat and pie widgets.
         if (periodNumbers && periodNumbers.end > 0) {
-          rateWeighted += Number(loan.interestRate) * periodNumbers.end;
-          weightSum += periodNumbers.end;
+          const weight = interestRateAverageWeight(loan);
+          rateWeighted += Number(loan.interestRate) * weight;
+          weightSum += weight;
         }
         break;
       }

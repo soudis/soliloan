@@ -74,6 +74,9 @@ export function getPieChartHeightClassName(size: PieChartChartSize): string {
 
 export const PIE_CHART_MEASURES_WITHOUT_AVERAGE: PieChartMeasure[] = ['loanCount'];
 
+/** Rate metrics are not summable; only `average`/`count` aggregations are meaningful. */
+export const PIE_CHART_MEASURES_WITHOUT_SUM: PieChartMeasure[] = ['interestRateAvg'];
+
 export const DEFAULT_PIE_CHART_TOP_N = DEFAULT_CHART_TOP_N;
 
 export function createDefaultPieChartConfig(): PieChartWidgetConfig {
@@ -96,7 +99,7 @@ export function parsePieChartConfig(config: Record<string, unknown> | undefined)
 
   const discriminator = parseChartDiscriminatorConfig(config, getPieChartDiscriminator(defaults));
 
-  const measureAggregation: PieChartMeasureAggregation =
+  let measureAggregation: PieChartMeasureAggregation =
     config.measureAggregation === 'count' || config.measureAggregation === 'average'
       ? config.measureAggregation
       : 'sum';
@@ -104,6 +107,13 @@ export function parsePieChartConfig(config: Record<string, unknown> | undefined)
   const measure = PIE_CHART_MEASURES.includes(config.measure as PieChartMeasure)
     ? (config.measure as PieChartMeasure)
     : defaults.measure;
+
+  if (PIE_CHART_MEASURES_WITHOUT_SUM.includes(measure) && measureAggregation === 'sum') {
+    measureAggregation = 'average';
+  }
+  if (PIE_CHART_MEASURES_WITHOUT_AVERAGE.includes(measure) && measureAggregation === 'average') {
+    measureAggregation = 'sum';
+  }
 
   const chartVariant: PieChartChartVariant = config.chartVariant === 'donut' ? 'donut' : 'pie';
   const chartSize: PieChartChartSize = PIE_CHART_SIZES.includes(config.chartSize as PieChartChartSize)

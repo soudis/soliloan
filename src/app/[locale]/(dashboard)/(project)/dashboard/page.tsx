@@ -1,3 +1,5 @@
+import { getTranslations } from 'next-intl/server';
+
 import { getDashboardStats } from '@/actions/dashboard/get-dashboard-stats';
 import { getDashboardLayoutsForPage } from '@/actions/dashboard/queries/get-dashboard-layouts';
 import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
@@ -27,17 +29,19 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const projectLayout = layoutResult.error ? fallback : (layoutResult.project?.layout ?? fallback);
   const userLayout = layoutResult.error ? fallback : (layoutResult.user?.layout ?? fallback);
 
-  if ('error' in statsResult && statsResult.error) {
-    return null;
-  }
   if (
     !project ||
-    !('loans' in statsResult) ||
+    'error' in statsResult ||
     !statsResult.loans ||
     !statsResult.lenders ||
     !statsResult.toDate
   ) {
-    return null;
+    const t = await getTranslations('dashboard.page');
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <p className="text-muted-foreground">{t('loadError')}</p>
+      </div>
+    );
   }
 
   return (

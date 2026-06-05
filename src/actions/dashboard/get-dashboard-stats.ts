@@ -3,6 +3,7 @@
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFields, calculateLoanPerMonth } from '@/lib/calculations/loan-calculations';
 import { auth } from '@/lib/auth';
+import { assertCanManageProject } from '@/lib/views/access';
 import { db } from '@/lib/db';
 import {
   lenderFilesRelation,
@@ -57,26 +58,13 @@ function buildLoanMonthlyHistory(
 export async function getDashboardStats(projectId: string, toDate: Date = new Date()) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.id) {
       return { error: 'Unauthorized' };
     }
 
-    const project = await db.project.findUnique({
-      where: {
-        id: projectId,
-      },
-      include: {
-        managers: true,
-      },
-    });
-
-    if (!project) {
-      return { error: 'Project not found' };
-    }
-
-    const hasAccess = project.managers.some((manager) => manager.id === session.user.id);
-
-    if (!hasAccess) {
+    try {
+      await assertCanManageProject(projectId, session.user.id, session.user.isAdmin ?? false);
+    } catch {
       return { error: 'You do not have access to this project' };
     }
 

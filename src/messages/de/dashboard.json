@@ -1,4 +1,7 @@
 {
+  "page": {
+    "loadError": "Dashboard konnte nicht geladen werden. Bitte versuche es später erneut."
+  },
   "customizer": {
     "pageSubtitle": "Zahlen, Daten, Fakten",
     "scopeProject": "Projekt",
