@@ -22,20 +22,38 @@ export function chartDataValuesSnapshotKey<T extends ChartType>(data: ChartData<
   });
 }
 
+type ChartDatasetVisualProps = {
+  label?: unknown;
+  backgroundColor?: unknown;
+  borderColor?: unknown;
+  borderWidth?: unknown;
+  borderDash?: unknown;
+  fill?: unknown;
+  tension?: unknown;
+  stepped?: unknown;
+  pointRadius?: unknown;
+  stack?: unknown;
+};
+
 export function chartDataVisualSnapshotKey<T extends ChartType>(data: ChartData<T>): string {
   return JSON.stringify(
-    data.datasets.map((dataset) => ({
-      label: dataset.label,
-      backgroundColor: dataset.backgroundColor,
-      borderColor: dataset.borderColor,
-      borderWidth: dataset.borderWidth,
-      borderDash: dataset.borderDash,
-      fill: dataset.fill,
-      tension: dataset.tension,
-      stepped: dataset.stepped,
-      pointRadius: dataset.pointRadius,
-      stack: dataset.stack,
-    })),
+    data.datasets.map((dataset) => {
+      // Visual props are chart-type specific (e.g. fill/tension only exist on line
+      // datasets), so read them loosely — this is only used to build a memo key.
+      const d = dataset as ChartDatasetVisualProps;
+      return {
+        label: d.label,
+        backgroundColor: d.backgroundColor,
+        borderColor: d.borderColor,
+        borderWidth: d.borderWidth,
+        borderDash: d.borderDash,
+        fill: d.fill,
+        tension: d.tension,
+        stepped: d.stepped,
+        pointRadius: d.pointRadius,
+        stack: d.stack,
+      };
+    }),
   );
 }
 

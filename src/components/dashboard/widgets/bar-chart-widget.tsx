@@ -1,6 +1,15 @@
 'use client';
 
-import { BarElement, CategoryScale, Chart as ChartJS, type ChartOptions, Legend, LinearScale, Tooltip } from 'chart.js';
+import {
+  BarElement,
+  CategoryScale,
+  type ChartData,
+  Chart as ChartJS,
+  type ChartOptions,
+  Legend,
+  LinearScale,
+  Tooltip,
+} from 'chart.js';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
@@ -79,7 +88,7 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
     ],
   );
 
-  const chartData = useMemo(() => {
+  const chartData = useMemo<ChartData<'bar'> | null>(() => {
     if (!result) {
       return null;
     }
@@ -135,7 +144,7 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
     return <p className="text-sm text-muted-foreground">{t('emptySeries')}</p>;
   }
 
-  if (!chartData || chartData.labels.length === 0) {
+  if (!chartData?.labels?.length) {
     return <p className="text-sm text-muted-foreground">{t('emptyChart')}</p>;
   }
 

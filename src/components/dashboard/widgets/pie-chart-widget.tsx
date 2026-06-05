@@ -1,16 +1,16 @@
 'use client';
 
-import { ArcElement, Chart as ChartJS, type ChartOptions, Legend, Tooltip } from 'chart.js';
+import { ArcElement, type ChartData, Chart as ChartJS, type ChartOptions, Legend, Tooltip } from 'chart.js';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { Pie } from 'react-chartjs-2';
 
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
+import { useAnimatedChartData } from '@/hooks/use-animated-chart-data';
 import { DASHBOARD_CHART_ANIMATION } from '@/lib/dashboard/chart-animation';
+import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
 import { computePieChart } from '@/lib/dashboard/pie-chart/compute-pie-chart';
 import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
-import { useAnimatedChartData } from '@/hooks/use-animated-chart-data';
-import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
 import { cn } from '@/lib/utils';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import { getPieChartHeightClassName, parsePieChartConfig } from '@/types/dashboard-widgets/pie-chart';
@@ -60,7 +60,7 @@ export function PieChartWidget({ widget }: { widget: DashboardWidget }) {
     [loans, config, toDate, fieldOptions, locale, t, commonT, widget.id, widget.type],
   );
 
-  const chartData = useMemo(
+  const chartData = useMemo<ChartData<'pie'>>(
     () => ({
       labels: result.slices.map((s) => s.label),
       datasets: [

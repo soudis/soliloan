@@ -2,13 +2,14 @@
 
 import {
   CategoryScale,
+  type ChartData,
   Chart as ChartJS,
+  type ChartOptions,
   Filler,
   Legend,
   LinearScale,
   LineElement,
   PointElement,
-  type ChartOptions,
   Tooltip,
 } from 'chart.js';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
@@ -21,9 +22,9 @@ import { chartColorAtIndex } from '@/lib/dashboard/chart/chart-dataset-colors';
 import { resolveLineChartDatasetStyle } from '@/lib/dashboard/chart/line-chart-dataset-style';
 import { zeroLinePlugin } from '@/lib/dashboard/chart/zero-line-plugin';
 import { DASHBOARD_CHART_ANIMATION } from '@/lib/dashboard/chart-animation';
+import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
 import { computeLineChart } from '@/lib/dashboard/line-chart/compute-line-chart';
 import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
-import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
 import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
 import { cn } from '@/lib/utils';
 import type { DashboardWidget } from '@/types/dashboard-layout';
@@ -91,7 +92,7 @@ export function LineChartWidget({ widget }: { widget: DashboardWidget }) {
     ],
   );
 
-  const chartData = useMemo(() => {
+  const chartData = useMemo<ChartData<'line'> | null>(() => {
     if (!result) {
       return null;
     }
@@ -147,7 +148,7 @@ export function LineChartWidget({ widget }: { widget: DashboardWidget }) {
     return <p className="text-sm text-muted-foreground">{t('emptySeries')}</p>;
   }
 
-  if (!chartData || chartData.labels.length === 0) {
+  if (!chartData?.labels?.length) {
     return <p className="text-sm text-muted-foreground">{t('emptyChart')}</p>;
   }
 
