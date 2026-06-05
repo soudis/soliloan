@@ -32,11 +32,13 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
   return (
     <DashboardDataProvider
+      key={projectId}
       loans={statsResult.loans}
       toDate={new Date(statsResult.toDate)}
       project={project}
     >
       <DashboardCustomizer
+        key={projectId}
         projectId={projectId}
         initialProjectLayout={projectLayout}
         initialUserLayout={userLayout}
