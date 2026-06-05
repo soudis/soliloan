@@ -4,11 +4,15 @@ import type { StatDeltaRange } from '@/types/dashboard-widgets/stat-widget';
 
 export function buildStatPeriodAtDate(end: Date): HistoryPeriod {
   const periodEnd = moment(end).endOf('day');
+  const year = periodEnd.year();
+  const month = periodEnd.month() + 1;
+  const day = periodEnd.date();
+
   return {
-    key: 'stat-end',
+    key: `${year}-${month}-${day}`,
     label: '',
-    year: periodEnd.year(),
-    month: periodEnd.month() + 1,
+    year,
+    month,
     periodStart: periodEnd.clone().startOf('month').toDate(),
     periodEnd: periodEnd.toDate(),
     isPartial: true,

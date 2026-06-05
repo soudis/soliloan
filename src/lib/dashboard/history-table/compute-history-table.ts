@@ -94,7 +94,7 @@ export function getOrBuildPeriodSnapshot(
   return snapshot;
 }
 
-function filterLoansForColumn(
+export function filterLoansForHistoryColumn(
   loans: DashboardLoan[],
   column: HistoryTableColumnConfig,
   period: HistoryPeriod,
@@ -237,7 +237,7 @@ export function aggregateMetric(
     loanMetricCaches ??
     buildAllLoanMetricCaches(loans, [period], config.periodMode);
 
-  const filtered = filterLoansForColumn(
+  const filtered = filterLoansForHistoryColumn(
     loans,
     column,
     period,
@@ -310,7 +310,7 @@ export function computeHistoryTable(
 
     for (const groupedColumns of filterGroups.values()) {
       const representative = groupedColumns[0];
-      const filtered = filterLoansForColumn(
+      const filtered = filterLoansForHistoryColumn(
         loans,
         representative,
         period,
@@ -341,7 +341,7 @@ export function computeHistoryTable(
         cells[period.key] = {};
       }
 
-      const filtered = filterLoansForColumn(
+      const filtered = filterLoansForHistoryColumn(
         loans,
         column,
         period,
@@ -353,7 +353,7 @@ export function computeHistoryTable(
 
       if (index === 0) {
         const preceding = buildPrecedingPeriodForStockDelta(period, config.periodMode);
-        const precedingFiltered = filterLoansForColumn(
+        const precedingFiltered = filterLoansForHistoryColumn(
           loans,
           column,
           preceding,

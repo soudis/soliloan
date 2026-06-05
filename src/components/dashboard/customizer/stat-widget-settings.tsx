@@ -17,7 +17,9 @@ import { resolveStatDisplayTitle } from '@/lib/dashboard/resolve-stat-display-ti
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import {
   CUMULATIVE_ONLY_STAT_METRICS,
+  STAT_METRICS_WITHOUT_AVG_MEDIAN,
   createDefaultStatDeltaRange,
+  normalizeStatAggregation,
   DEFAULT_STAT_GRID_COLUMNS,
   STAT_DELTA_UNITS,
   STAT_GRID_COLUMNS_MAX,
@@ -218,6 +220,7 @@ export function StatWidgetSettings({
       {draftConfig.stats.map((stat) => {
         const isExpanded = expandedStatIds.has(stat.id);
         const cumulativeOnly = CUMULATIVE_ONLY_STAT_METRICS.includes(stat.metric);
+        const avgMedDisabled = STAT_METRICS_WITHOUT_AVG_MEDIAN.includes(stat.metric);
 
         return (
           <div key={stat.id} className="rounded-md border">
@@ -280,11 +283,12 @@ export function StatWidgetSettings({
                     value={stat.metric}
                     onValueChange={(v) => {
                       const metric = v as StatItemConfig['metric'];
-                      const patch: Partial<StatItemConfig> = { metric };
-                      if (CUMULATIVE_ONLY_STAT_METRICS.includes(metric)) {
-                        patch.aggregation = 'total';
-                        patch.deltaRange = undefined;
-                      }
+                      const aggregation = normalizeStatAggregation(metric, stat.aggregation);
+                      const patch: Partial<StatItemConfig> = {
+                        metric,
+                        aggregation,
+                        deltaRange: aggregation === 'delta' ? (stat.deltaRange ?? createDefaultStatDeltaRange()) : undefined,
+                      };
                       updateStat(stat.id, patch, true);
                     }}
                   >
@@ -321,6 +325,12 @@ export function StatWidgetSettings({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="total">{t('aggregationTotal')}</SelectItem>
+                      {!avgMedDisabled ? (
+                        <>
+                          <SelectItem value="average">{t('aggregationAverage')}</SelectItem>
+                          <SelectItem value="median">{t('aggregationMedian')}</SelectItem>
+                        </>
+                      ) : null}
                       {!cumulativeOnly ? <SelectItem value="delta">{t('aggregationDelta')}</SelectItem> : null}
                     </SelectContent>
                   </Select>

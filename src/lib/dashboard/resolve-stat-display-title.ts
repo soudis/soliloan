@@ -20,6 +20,12 @@ export function resolveStatDisplayTitle(
   if (customTitle.length > 0) {
     return customTitle;
   }
+  if (stat.aggregation === 'average') {
+    return tStat('defaultTitleWithAverage', { metric: metricLabel });
+  }
+  if (stat.aggregation === 'median') {
+    return tStat('defaultTitleWithMedian', { metric: metricLabel });
+  }
   if (stat.aggregation !== 'delta') {
     return metricLabel;
   }

@@ -17,6 +17,7 @@ import {
   buildStatPeriodAtDate,
   getStatDeltaRangeStart,
 } from './build-stat-period';
+import { computeStatAggregateValue } from './compute-stat-aggregate';
 
 const STAT_HISTORY_CONFIG: HistoryTableWidgetConfig = {
   layoutVersion: 1,
@@ -70,6 +71,20 @@ export function computeStatValue(
   if (stat.aggregation === 'total') {
     const loanMetricCaches = buildAllLoanMetricCaches(loans, [endPeriod], 'monthly');
     return metricAtPeriod(loans, stat, toDate, fieldOptions, commonT, cache, loanMetricCaches);
+  }
+
+  if (stat.aggregation === 'average' || stat.aggregation === 'median') {
+    const loanMetricCaches = buildAllLoanMetricCaches(loans, [endPeriod], 'monthly');
+    return computeStatAggregateValue(
+      loans,
+      stat,
+      stat.aggregation,
+      endPeriod,
+      fieldOptions,
+      commonT,
+      cache,
+      loanMetricCaches,
+    );
   }
 
   const range = stat.deltaRange ?? createDefaultStatDeltaRange();
@@ -137,6 +152,19 @@ function computeStatValueWithSharedCaches(
 ): number | null {
   if (stat.aggregation === 'total') {
     return metricAtPeriod(loans, stat, toDate, fieldOptions, commonT, snapshotCache, loanMetricCaches);
+  }
+
+  if (stat.aggregation === 'average' || stat.aggregation === 'median') {
+    return computeStatAggregateValue(
+      loans,
+      stat,
+      stat.aggregation,
+      buildStatPeriodAtDate(toDate),
+      fieldOptions,
+      commonT,
+      snapshotCache,
+      loanMetricCaches,
+    );
   }
 
   const range = stat.deltaRange ?? createDefaultStatDeltaRange();

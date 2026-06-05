@@ -8,7 +8,9 @@ export const STAT_WIDGET_METRICS = HISTORY_TABLE_METRICS;
 
 export type StatDisplayType = 'main' | 'secondary';
 
-export type StatAggregation = 'total' | 'delta';
+export const STAT_AGGREGATIONS = ['total', 'delta', 'average', 'median'] as const;
+
+export type StatAggregation = (typeof STAT_AGGREGATIONS)[number];
 
 export const STAT_DELTA_UNITS = ['days', 'weeks', 'months', 'years'] as const;
 
@@ -49,6 +51,32 @@ export type StatWidgetConfig = {
 
 export const CUMULATIVE_ONLY_STAT_METRICS: StatWidgetMetric[] = ['interestRateAvg'];
 
+export const STAT_METRICS_WITHOUT_AVG_MEDIAN: StatWidgetMetric[] = ['loanCount'];
+
+export function isStatAvgMedianAggregation(aggregation: StatAggregation): boolean {
+  return aggregation === 'average' || aggregation === 'median';
+}
+
+export function isStatAggregationValidForMetric(
+  metric: StatWidgetMetric,
+  aggregation: StatAggregation,
+): boolean {
+  if (CUMULATIVE_ONLY_STAT_METRICS.includes(metric) && aggregation === 'delta') {
+    return false;
+  }
+  if (STAT_METRICS_WITHOUT_AVG_MEDIAN.includes(metric) && isStatAvgMedianAggregation(aggregation)) {
+    return false;
+  }
+  return true;
+}
+
+export function normalizeStatAggregation(
+  metric: StatWidgetMetric,
+  aggregation: StatAggregation,
+): StatAggregation {
+  return isStatAggregationValidForMetric(metric, aggregation) ? aggregation : 'total';
+}
+
 export function createDefaultStatDeltaRange(): StatDeltaRange {
   return { amount: 1, unit: 'months' };
 }
@@ -84,14 +112,23 @@ export function parseStatWidgetConfig(config: Record<string, unknown> | undefine
           ? (stat.deltaRange?.unit as StatDeltaUnit)
           : 'months';
         const displayType: StatDisplayType = stat.displayType === 'secondary' ? 'secondary' : 'main';
-        const aggregation: StatAggregation = stat.aggregation === 'delta' ? 'delta' : 'total';
+        const metric = (STAT_WIDGET_METRICS.includes(stat.metric as StatWidgetMetric)
+          ? stat.metric
+          : 'balance') as StatWidgetMetric;
+        const rawAggregation: StatAggregation =
+          stat.aggregation === 'delta'
+            ? 'delta'
+            : stat.aggregation === 'average'
+              ? 'average'
+              : stat.aggregation === 'median'
+                ? 'median'
+                : 'total';
+        const aggregation = normalizeStatAggregation(metric, rawAggregation);
         return {
           id: String(stat.id ?? crypto.randomUUID()),
           title: String(stat.title ?? ''),
           displayType,
-          metric: (STAT_WIDGET_METRICS.includes(stat.metric as StatWidgetMetric)
-            ? stat.metric
-            : 'balance') as StatWidgetMetric,
+          metric,
           aggregation,
           deltaRange:
             stat.aggregation === 'delta'

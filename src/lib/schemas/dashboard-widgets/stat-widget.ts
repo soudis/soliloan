@@ -2,11 +2,14 @@ import { z } from 'zod';
 
 import {
   CUMULATIVE_ONLY_STAT_METRICS,
+  STAT_AGGREGATIONS,
   STAT_DELTA_UNITS,
   STAT_GRID_COLUMNS_MAX,
   STAT_GRID_COLUMNS_MIN,
+  STAT_METRICS_WITHOUT_AVG_MEDIAN,
   STAT_WIDGET_LAYOUT_MODES,
   STAT_WIDGET_METRICS,
+  isStatAvgMedianAggregation,
 } from '@/types/dashboard-widgets/stat-widget';
 
 const entityFilterSchema = z.object({
@@ -27,7 +30,7 @@ const statItemSchema = z
     title: z.string(),
     displayType: z.enum(['main', 'secondary']),
     metric: z.enum(STAT_WIDGET_METRICS),
-    aggregation: z.enum(['total', 'delta']),
+    aggregation: z.enum(STAT_AGGREGATIONS),
     deltaRange: statDeltaRangeSchema.optional(),
     colorCodeSign: z.boolean().default(false),
     filters: z.array(entityFilterSchema).default([]),
@@ -37,6 +40,13 @@ const statItemSchema = z
       ctx.addIssue({
         code: 'custom',
         message: 'dashboard.customizer.stat.validation.metricAggregation',
+        path: ['aggregation'],
+      });
+    }
+    if (STAT_METRICS_WITHOUT_AVG_MEDIAN.includes(stat.metric) && isStatAvgMedianAggregation(stat.aggregation)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'dashboard.customizer.stat.validation.metricAggregationAvgMed',
         path: ['aggregation'],
       });
     }

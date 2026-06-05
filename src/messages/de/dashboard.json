@@ -143,7 +143,11 @@
       "metric": "Kennzahl",
       "aggregation": "Aggregation",
       "aggregationTotal": "Gesamt (bis heute)",
+      "aggregationAverage": "Durchschnitt",
+      "aggregationMedian": "Median",
       "aggregationDelta": "Veränderung",
+      "defaultTitleWithAverage": "Ø {metric}",
+      "defaultTitleWithMedian": "Median {metric}",
       "deltaRange": "Zeitraum",
       "deltaUnits": {
         "days": "Tage",
@@ -167,6 +171,7 @@
       "colorCodeSignHint": "Positive Werte grün, negative Werte rot",
       "validation": {
         "metricAggregation": "Für diese Kennzahl ist nur Gesamtstand möglich.",
+        "metricAggregationAvgMed": "Für diese Kennzahl sind Durchschnitt und Median nicht möglich.",
         "deltaRangeRequired": "Zeitraum ist für Veränderung erforderlich.",
         "gridColumnsRequired": "Spaltenanzahl ist für Raster-Layout erforderlich."
       }
