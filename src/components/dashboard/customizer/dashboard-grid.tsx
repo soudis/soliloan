@@ -5,9 +5,8 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { addRow } from '@/lib/dashboard/layout-editor';
-
-import { useDashboardEditor, useDashboardLayoutData } from './dashboard-layout-context';
 import { DashboardGridRow } from './dashboard-grid-row';
+import { useDashboardEditor, useDashboardLayoutData } from './dashboard-layout-context';
 
 export function DashboardGrid() {
   const t = useTranslations('dashboard.customizer');

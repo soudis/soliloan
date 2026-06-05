@@ -2,14 +2,14 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { BarChart3, GripVertical, Hash, LineChart, Minus, PieChart, Table2, Users } from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { memo, useMemo } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getEffectiveWidgetColSpanClassName, widgetShowsCardHeader } from '@/lib/dashboard/layout-utils';
 import { cn } from '@/lib/utils';
-import type { DashboardWidget, DashboardWidgetType } from '@/types/dashboard-layout';
+import type { DashboardWidget } from '@/types/dashboard-layout';
 
 import { BarChartWidget } from '../widgets/bar-chart-widget';
 import { DividerWidget } from '../widgets/divider-widget';
@@ -20,17 +20,7 @@ import { LoanTableWidget } from '../widgets/loan-table-widget';
 import { PieChartWidget } from '../widgets/pie-chart-widget';
 import { StatWidget } from '../widgets/stat-widget';
 import { useDashboardEditor } from './dashboard-layout-context';
-
-const WIDGET_ICONS: Record<DashboardWidgetType, React.ComponentType<{ className?: string }>> = {
-  history_table: Table2,
-  pie_chart: PieChart,
-  line_chart: LineChart,
-  bar_chart: BarChart3,
-  stat: Hash,
-  divider: Minus,
-  loan_table_view: Table2,
-  lender_table_view: Users,
-};
+import { WIDGET_TYPE_ICONS } from './widget-icons';
 
 function DashboardWidgetSlotComponent({ widget, rowId }: { widget: DashboardWidget; rowId: string }) {
   const t = useTranslations('dashboard.customizer');
@@ -48,7 +38,7 @@ function DashboardWidgetSlotComponent({ widget, rowId }: { widget: DashboardWidg
     transition,
   };
 
-  const Icon = WIDGET_ICONS[widget.type];
+  const Icon = WIDGET_TYPE_ICONS[widget.type];
   const showHeader = widgetShowsCardHeader(widget);
   const isDivider = widget.type === 'divider';
 
@@ -101,6 +91,20 @@ function DashboardWidgetSlotComponent({ widget, rowId }: { widget: DashboardWidg
             setSelectedWidgetId(widget.id);
           }
         }}
+        {...(isCustomizing
+          ? {
+              role: 'button',
+              tabIndex: 0,
+              'aria-pressed': isSelected,
+              'aria-label': widget.title.trim() || t(`widgetTypes.${widget.type}`),
+              onKeyDown: (e: React.KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSelectedWidgetId(widget.id);
+                }
+              },
+            }
+          : {})}
       >
         {isCustomizing ? (
           <button

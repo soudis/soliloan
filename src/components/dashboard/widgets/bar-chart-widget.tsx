@@ -10,18 +10,16 @@ import {
   LinearScale,
   Tooltip,
 } from 'chart.js';
-import { useFormatter, useLocale, useTranslations } from 'next-intl';
-import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 
-import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { useAnimatedChartData } from '@/hooks/use-animated-chart-data';
+import { type ChartComputeContext, useDashboardChartResult } from '@/hooks/use-dashboard-chart-result';
 import { computeBarChart } from '@/lib/dashboard/bar-chart/compute-bar-chart';
 import { chartColorAtIndex } from '@/lib/dashboard/chart/chart-dataset-colors';
 import { DASHBOARD_CHART_ANIMATION } from '@/lib/dashboard/chart-animation';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
-import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
-import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
 import { cn } from '@/lib/utils';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import { parseBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
@@ -34,59 +32,29 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
   const tHistoryTable = useTranslations('dashboard.widgets.historyTable');
   const tHistory = useTranslations('dashboard.customizer.historyTable');
   const commonT = useTranslations('common');
-  const locale = useLocale();
-  const formatter = useFormatter();
-  const { loans, toDate, fieldOptions, getOrComputeWidgetResult } = useDashboardData();
 
   const config = useMemo(() => parseBarChartConfig(widget.config), [widget.config]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: only recompute result when widget config changes
-  const result = useMemo(
-    () =>
-      profileWidgetCompute({
-        widgetType: widget.type,
-        widgetId: widget.id,
-        loanCount: loans.length,
-        compute: () => {
-          if (config.series.length === 0) {
-            return null;
-          }
-          return getOrComputeWidgetResult(
-            buildWidgetComputeCacheKey(widget.type, widget.config, loans.length, toDate.getTime()),
-            () =>
-              computeBarChart(
-                loans,
-                config,
-                toDate,
-                fieldOptions,
-                locale,
-                (year, month) => formatter.dateTime(new Date(year, month - 1, 1), { month: 'short', year: 'numeric' }),
-                t('emptyValue'),
-                t('otherCategory'),
-                tHistoryTable('untilNow'),
-                (key, values) => commonT(key, values),
-                (key, values) => t(key, values),
-                (metric) => tHistory(`metrics.${metric}`),
-              ),
-          );
-        },
-      }),
-    [
-      loans,
-      config,
-      toDate,
-      fieldOptions,
-      locale,
-      formatter,
-      t,
-      tHistory,
-      tHistoryTable,
-      commonT,
-      widget.id,
-      widget.type,
-      getOrComputeWidgetResult,
-    ],
+  const compute = useCallback(
+    ({ loans, toDate, fieldOptions, locale, formatMonth }: ChartComputeContext) =>
+      computeBarChart(
+        loans,
+        config,
+        toDate,
+        fieldOptions,
+        locale,
+        formatMonth,
+        t('emptyValue'),
+        t('otherCategory'),
+        tHistoryTable('untilNow'),
+        (key, values) => commonT(key, values),
+        (key, values) => t(key, values),
+        (metric) => tHistory(`metrics.${metric}`),
+      ),
+    [config, t, tHistory, tHistoryTable, commonT],
   );
+
+  const result = useDashboardChartResult(widget, config.series.length > 0, compute);
 
   const chartData = useMemo<ChartData<'bar'> | null>(() => {
     if (!result) {

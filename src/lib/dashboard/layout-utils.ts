@@ -1,9 +1,3 @@
-import { createDefaultBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
-import { createDefaultLineChartConfig } from '@/types/dashboard-widgets/line-chart';
-import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
-import { createDefaultPieChartConfig } from '@/types/dashboard-widgets/pie-chart';
-import { createDefaultLenderTableConfig, createDefaultLoanTableConfig } from '@/types/dashboard-widgets/table-view';
-import { createDefaultStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
 import {
   DASHBOARD_WIDGET_WIDTHS,
   type DashboardLayoutData,
@@ -12,6 +6,12 @@ import {
   type DashboardWidgetType,
   type DashboardWidgetWidth,
 } from '@/types/dashboard-layout';
+import { createDefaultBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
+import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
+import { createDefaultLineChartConfig } from '@/types/dashboard-widgets/line-chart';
+import { createDefaultPieChartConfig } from '@/types/dashboard-widgets/pie-chart';
+import { createDefaultStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
+import { createDefaultLenderTableConfig, createDefaultLoanTableConfig } from '@/types/dashboard-widgets/table-view';
 
 export const DESKTOP_GRID_COLS = 12;
 export const MOBILE_GRID_COLS = 12;
@@ -163,6 +163,28 @@ export function widgetShowsCardHeader(widget: { type: DashboardWidgetType; title
   return true;
 }
 
+/** Single source of truth for the default config of each widget type (used on create + normalize). */
+export function createDefaultWidgetConfig(type: DashboardWidgetType): Record<string, unknown> {
+  switch (type) {
+    case 'history_table':
+      return createDefaultHistoryTableConfig();
+    case 'stat':
+      return createDefaultStatWidgetConfig();
+    case 'pie_chart':
+      return createDefaultPieChartConfig();
+    case 'bar_chart':
+      return createDefaultBarChartConfig();
+    case 'line_chart':
+      return createDefaultLineChartConfig();
+    case 'loan_table_view':
+      return createDefaultLoanTableConfig();
+    case 'lender_table_view':
+      return createDefaultLenderTableConfig();
+    default:
+      return {};
+  }
+}
+
 export function createWidget(type: DashboardWidgetType, title: string, width?: DashboardWidgetWidth): DashboardWidget {
   const resolvedWidth = widgetIsFullWidthLocked(type) ? 'full' : (width ?? DEFAULT_WIDTH_BY_TYPE[type]);
 
@@ -171,21 +193,6 @@ export function createWidget(type: DashboardWidgetType, title: string, width?: D
     type,
     title,
     width: resolvedWidth,
-    config:
-      type === 'history_table'
-        ? createDefaultHistoryTableConfig()
-        : type === 'stat'
-          ? createDefaultStatWidgetConfig()
-          : type === 'pie_chart'
-            ? createDefaultPieChartConfig()
-            : type === 'bar_chart'
-              ? createDefaultBarChartConfig()
-              : type === 'line_chart'
-                ? createDefaultLineChartConfig()
-                : type === 'loan_table_view'
-                  ? createDefaultLoanTableConfig()
-                  : type === 'lender_table_view'
-                    ? createDefaultLenderTableConfig()
-                    : {},
+    config: createDefaultWidgetConfig(type),
   };
 }

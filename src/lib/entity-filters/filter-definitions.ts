@@ -1,7 +1,6 @@
 import { ContractStatus, InterestMethod, NotificationType, Salutation, TerminationType } from '@prisma/client';
 
 import { createAdditionalFieldFilters } from '@/lib/table-column-utils';
-import type { AdditionalFieldConfig } from '@/lib/schemas/common';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
@@ -157,42 +156,6 @@ export function getFilterDefinitionForField(
   return fieldOptions.find((o) => o.entity === entity && o.field === field);
 }
 
-const STATIC_LOAN_FILTER_FIELDS = new Set([
-  'loanNumber',
-  'lenderNumber',
-  'lenderName',
-  'signDate',
-  'amount',
-  'interestRate',
-  'terminationType',
-  'repayDate',
-  'altInterestMethod',
-  'contractStatus',
-  'terminationModalities',
-]);
-
-const STATIC_LENDER_FILTER_FIELDS = new Set([
-  'lenderNumber',
-  'type',
-  'name',
-  'email',
-  'telNo',
-  'address',
-  'banking',
-  'salutation',
-  'notificationType',
-]);
-
-export function isStaticLoanFilterField(field: string, entity: 'loan' | 'lender'): boolean {
-  if (field.startsWith('additionalFields.')) {
-    return true;
-  }
-  if (entity === 'lender') {
-    return STATIC_LENDER_FILTER_FIELDS.has(field);
-  }
-  return STATIC_LOAN_FILTER_FIELDS.has(field);
-}
-
 export function isDynamicLoanFilterField(field: string): boolean {
   return [
     'balance',
@@ -226,12 +189,4 @@ export function filtersNeedPeriodSnapshot(filters: { entity: 'loan' | 'lender'; 
     }
   }
   return false;
-}
-
-export function parseAdditionalFieldConfigFields(
-  loanAdditionalFields: AdditionalFieldConfig[],
-  lenderAdditionalFields: AdditionalFieldConfig[],
-): void {
-  void loanAdditionalFields;
-  void lenderAdditionalFields;
 }

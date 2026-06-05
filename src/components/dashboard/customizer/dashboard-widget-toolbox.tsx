@@ -1,21 +1,12 @@
 'use client';
 
 import { useDraggable } from '@dnd-kit/core';
-import { BarChart3, GripVertical, Hash, LineChart, Minus, PieChart, Table2, Users } from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { DASHBOARD_WIDGET_TYPES, type DashboardWidgetType } from '@/types/dashboard-layout';
 
-const TOOLBOX_ICONS: Record<DashboardWidgetType, React.ComponentType<{ className?: string }>> = {
-  history_table: Table2,
-  pie_chart: PieChart,
-  line_chart: LineChart,
-  bar_chart: BarChart3,
-  stat: Hash,
-  divider: Minus,
-  loan_table_view: Table2,
-  lender_table_view: Users,
-};
+import { WIDGET_TYPE_ICONS } from './widget-icons';
 
 function ToolboxItem({ type }: { type: DashboardWidgetType }) {
   const t = useTranslations('dashboard.customizer');
@@ -24,7 +15,7 @@ function ToolboxItem({ type }: { type: DashboardWidgetType }) {
     data: { kind: 'toolbox', widgetType: type },
   });
 
-  const Icon = TOOLBOX_ICONS[type];
+  const Icon = WIDGET_TYPE_ICONS[type];
 
   return (
     <div

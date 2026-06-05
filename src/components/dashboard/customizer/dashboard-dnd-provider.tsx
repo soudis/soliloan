@@ -1,17 +1,21 @@
 'use client';
 
 import {
+  type Announcements,
   DndContext,
   type DragEndEvent,
   DragOverlay,
   type DragStartEvent,
+  KeyboardSensor,
   MouseSensor,
   PointerSensor,
+  type ScreenReaderInstructions,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { dashboardCollisionDetection } from '@/lib/dashboard/dashboard-collision-detection';
 import {
@@ -46,6 +50,28 @@ export function DashboardDndProvider({ children }: { children: React.ReactNode }
     useSensor(MouseSensor, {
       activationConstraint: { distance: 5 },
     }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const screenReaderInstructions: ScreenReaderInstructions = useMemo(
+    () => ({ draggable: t('a11y.dragInstructions') }),
+    [t],
+  );
+
+  const announcements: Announcements = useMemo(
+    () => ({
+      onDragStart: ({ active }) => t('a11y.dragStart', { item: String(active.id) }),
+      onDragOver: ({ active, over }) =>
+        over ? t('a11y.dragOver', { item: String(active.id), over: String(over.id) }) : undefined,
+      onDragEnd: ({ active, over }) =>
+        over
+          ? t('a11y.dragEnd', { item: String(active.id), over: String(over.id) })
+          : t('a11y.dragEndNoTarget', { item: String(active.id) }),
+      onDragCancel: ({ active }) => t('a11y.dragCancel', { item: String(active.id) }),
+    }),
+    [t],
   );
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -168,6 +194,7 @@ export function DashboardDndProvider({ children }: { children: React.ReactNode }
     <DndContext
       sensors={sensors}
       collisionDetection={dashboardCollisionDetection}
+      accessibility={{ announcements, screenReaderInstructions }}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}

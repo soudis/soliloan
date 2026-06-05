@@ -272,6 +272,14 @@
     },
     "placeholder": "Widget-Inhalt folgt in Kürze.",
     "dragWidget": "Widget verschieben",
+    "a11y": {
+      "dragInstructions": "Mit der Leertaste aufnehmen. Mit den Pfeiltasten verschieben. Mit der Leertaste ablegen, mit Escape abbrechen.",
+      "dragStart": "Widget {item} aufgenommen.",
+      "dragOver": "Widget {item} über Position {over}.",
+      "dragEnd": "Widget {item} bei Position {over} abgelegt.",
+      "dragEndNoTarget": "Widget {item} abgelegt.",
+      "dragCancel": "Verschieben von Widget {item} abgebrochen."
+    },
     "dropHere": "Widget hier ablegen",
     "dropRowEnd": "Ans Ende der Zeile ziehen",
     "dropNewRow": "Neue Zeile: Widget hier ablegen",

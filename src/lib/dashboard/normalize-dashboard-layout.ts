@@ -1,78 +1,40 @@
-import { DEFAULT_WIDTH_BY_TYPE, isDashboardWidgetWidth, widgetIsFullWidthLocked } from '@/lib/dashboard/layout-utils';
-import { createDefaultBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
-import { createDefaultLineChartConfig } from '@/types/dashboard-widgets/line-chart';
-import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
-import { createDefaultPieChartConfig } from '@/types/dashboard-widgets/pie-chart';
-import { createDefaultLenderTableConfig, createDefaultLoanTableConfig } from '@/types/dashboard-widgets/table-view';
-import { createDefaultStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
+import {
+  createDefaultWidgetConfig,
+  DEFAULT_WIDTH_BY_TYPE,
+  isDashboardWidgetWidth,
+  widgetIsFullWidthLocked,
+} from '@/lib/dashboard/layout-utils';
 import type { DashboardLayoutData, DashboardWidget, DashboardWidgetType } from '@/types/dashboard-layout';
 
+const TYPES_WITH_DEFAULT_CONFIG: DashboardWidgetType[] = [
+  'history_table',
+  'stat',
+  'pie_chart',
+  'bar_chart',
+  'line_chart',
+  'loan_table_view',
+  'lender_table_view',
+];
+
 function normalizeWidget(widget: DashboardWidget & { type?: string }): DashboardWidget {
-  const type = ((widget.type as string) === 'yearly_table' ? 'history_table' : widget.type) as DashboardWidgetType;
+  // Legacy alias: the old `yearly_table` type maps onto `history_table`.
+  const isLegacyYearlyTable = (widget.type as string) === 'yearly_table';
+  const type = (isLegacyYearlyTable ? 'history_table' : widget.type) as DashboardWidgetType;
   const width = widgetIsFullWidthLocked(type)
     ? 'full'
     : widget.width && isDashboardWidgetWidth(widget.width)
       ? widget.width
       : DEFAULT_WIDTH_BY_TYPE[type];
-  if ((widget.type as string) === 'yearly_table') {
-    return {
-      ...widget,
-      type: 'history_table',
-      width,
-      config:
-        widget.config && Object.keys(widget.config).length > 0 ? widget.config : createDefaultHistoryTableConfig(),
-    };
-  }
-  if (widget.type === 'history_table' && (!widget.config || Object.keys(widget.config).length === 0)) {
-    return {
-      ...widget,
-      width,
-      config: createDefaultHistoryTableConfig(),
-    };
-  }
-  if (widget.type === 'stat' && (!widget.config || Object.keys(widget.config).length === 0)) {
-    return {
-      ...widget,
-      width,
-      config: createDefaultStatWidgetConfig(),
-    };
-  }
-  if (widget.type === 'pie_chart' && (!widget.config || Object.keys(widget.config).length === 0)) {
-    return {
-      ...widget,
-      width,
-      config: createDefaultPieChartConfig(),
-    };
-  }
-  if (widget.type === 'bar_chart' && (!widget.config || Object.keys(widget.config).length === 0)) {
-    return {
-      ...widget,
-      width,
-      config: createDefaultBarChartConfig(),
-    };
-  }
-  if (widget.type === 'line_chart' && (!widget.config || Object.keys(widget.config).length === 0)) {
-    return {
-      ...widget,
-      width,
-      config: createDefaultLineChartConfig(),
-    };
-  }
-  if (widget.type === 'loan_table_view' && (!widget.config || Object.keys(widget.config).length === 0)) {
-    return {
-      ...widget,
-      width,
-      config: createDefaultLoanTableConfig(),
-    };
-  }
-  if (widget.type === 'lender_table_view' && (!widget.config || Object.keys(widget.config).length === 0)) {
-    return {
-      ...widget,
-      width,
-      config: createDefaultLenderTableConfig(),
-    };
-  }
-  return { ...widget, width };
+
+  const configIsEmpty = !widget.config || Object.keys(widget.config).length === 0;
+  const shouldSeedConfig = configIsEmpty && (isLegacyYearlyTable || TYPES_WITH_DEFAULT_CONFIG.includes(type));
+
+  return {
+    ...widget,
+    type,
+    width,
+    config: shouldSeedConfig ? createDefaultWidgetConfig(type) : widget.config,
+  };
 }
 
 export function normalizeDashboardLayout(layout: DashboardLayoutData): DashboardLayoutData {

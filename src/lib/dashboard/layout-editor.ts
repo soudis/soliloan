@@ -243,7 +243,3 @@ export function updateWidget(
     }),
   );
 }
-
-export function setLayoutFromCopy(layout: DashboardLayoutData): DashboardLayoutData {
-  return structuredClone(layout);
-}

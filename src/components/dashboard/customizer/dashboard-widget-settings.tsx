@@ -119,6 +119,21 @@ export function DashboardWidgetSettings() {
     setLayout((prev) => updateWidget(prev, selectedWidgetId, values));
   };
 
+  const handleConfigChange = (config: Record<string, unknown>) => {
+    setLayout((prev) => updateWidget(prev, selectedWidgetId, { config }));
+  };
+
+  const parseChartConfig =
+    widget.type === 'bar_chart'
+      ? parseBarChartConfig
+      : widget.type === 'line_chart'
+        ? parseLineChartConfig
+        : parsePieChartConfig;
+
+  const handleChartSizeChange = (size: PieChartChartSize) => {
+    handleConfigChange({ ...parseChartConfig(widget.config), chartSize: size });
+  };
+
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div className="shrink-0 border-b bg-zinc-50 px-4 py-3">
@@ -200,39 +215,8 @@ export function DashboardWidgetSettings() {
               <div className="space-y-2">
                 <Label>{tPie('chartSize')}</Label>
                 <Select
-                  value={
-                    widget.type === 'bar_chart'
-                      ? parseBarChartConfig(widget.config).chartSize
-                      : widget.type === 'line_chart'
-                        ? parseLineChartConfig(widget.config).chartSize
-                        : parsePieChartConfig(widget.config).chartSize
-                  }
-                  onValueChange={(v) => {
-                    if (widget.type === 'bar_chart') {
-                      const config = parseBarChartConfig(widget.config);
-                      setLayout((prev) =>
-                        updateWidget(prev, selectedWidgetId, {
-                          config: { ...config, chartSize: v as PieChartChartSize },
-                        }),
-                      );
-                      return;
-                    }
-                    if (widget.type === 'line_chart') {
-                      const config = parseLineChartConfig(widget.config);
-                      setLayout((prev) =>
-                        updateWidget(prev, selectedWidgetId, {
-                          config: { ...config, chartSize: v as PieChartChartSize },
-                        }),
-                      );
-                      return;
-                    }
-                    const config = parsePieChartConfig(widget.config);
-                    setLayout((prev) =>
-                      updateWidget(prev, selectedWidgetId, {
-                        config: { ...config, chartSize: v as PieChartChartSize },
-                      }),
-                    );
-                  }}
+                  value={parseChartConfig(widget.config).chartSize}
+                  onValueChange={(v) => handleChartSizeChange(v as PieChartChartSize)}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -249,60 +233,25 @@ export function DashboardWidgetSettings() {
         </Form>
 
         {widget.type === 'history_table' ? (
-          <HistoryTableSettings
-            config={parseHistoryTableConfig(widget.config)}
-            onConfigChange={(config) => {
-              setLayout((prev) => updateWidget(prev, selectedWidgetId, { config }));
-            }}
-          />
+          <HistoryTableSettings config={parseHistoryTableConfig(widget.config)} onConfigChange={handleConfigChange} />
         ) : null}
         {widget.type === 'stat' ? (
-          <StatWidgetSettings
-            config={parseStatWidgetConfig(widget.config)}
-            onConfigChange={(config) => {
-              setLayout((prev) => updateWidget(prev, selectedWidgetId, { config }));
-            }}
-          />
+          <StatWidgetSettings config={parseStatWidgetConfig(widget.config)} onConfigChange={handleConfigChange} />
         ) : null}
         {widget.type === 'pie_chart' ? (
-          <PieChartSettings
-            config={parsePieChartConfig(widget.config)}
-            onConfigChange={(config) => {
-              setLayout((prev) => updateWidget(prev, selectedWidgetId, { config }));
-            }}
-          />
+          <PieChartSettings config={parsePieChartConfig(widget.config)} onConfigChange={handleConfigChange} />
         ) : null}
         {widget.type === 'bar_chart' ? (
-          <BarChartSettings
-            config={parseBarChartConfig(widget.config)}
-            onConfigChange={(config) => {
-              setLayout((prev) => updateWidget(prev, selectedWidgetId, { config }));
-            }}
-          />
+          <BarChartSettings config={parseBarChartConfig(widget.config)} onConfigChange={handleConfigChange} />
         ) : null}
         {widget.type === 'line_chart' ? (
-          <LineChartSettings
-            config={parseLineChartConfig(widget.config)}
-            onConfigChange={(config) => {
-              setLayout((prev) => updateWidget(prev, selectedWidgetId, { config }));
-            }}
-          />
+          <LineChartSettings config={parseLineChartConfig(widget.config)} onConfigChange={handleConfigChange} />
         ) : null}
         {widget.type === 'loan_table_view' ? (
-          <LoanTableSettings
-            config={parseLoanTableConfig(widget.config)}
-            onConfigChange={(config) => {
-              setLayout((prev) => updateWidget(prev, selectedWidgetId, { config }));
-            }}
-          />
+          <LoanTableSettings config={parseLoanTableConfig(widget.config)} onConfigChange={handleConfigChange} />
         ) : null}
         {widget.type === 'lender_table_view' ? (
-          <LenderTableSettings
-            config={parseLenderTableConfig(widget.config)}
-            onConfigChange={(config) => {
-              setLayout((prev) => updateWidget(prev, selectedWidgetId, { config }));
-            }}
-          />
+          <LenderTableSettings config={parseLenderTableConfig(widget.config)} onConfigChange={handleConfigChange} />
         ) : null}
         {widget.type !== 'history_table' &&
         widget.type !== 'stat' &&

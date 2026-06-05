@@ -7,6 +7,7 @@ import { Pie } from 'react-chartjs-2';
 
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { useAnimatedChartData } from '@/hooks/use-animated-chart-data';
+import { chartColorAtIndex } from '@/lib/dashboard/chart/chart-dataset-colors';
 import { DASHBOARD_CHART_ANIMATION } from '@/lib/dashboard/chart-animation';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
 import { computePieChart } from '@/lib/dashboard/pie-chart/compute-pie-chart';
@@ -16,19 +17,6 @@ import type { DashboardWidget } from '@/types/dashboard-layout';
 import { getPieChartHeightClassName, parsePieChartConfig } from '@/types/dashboard-widgets/pie-chart';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
-
-const SLICE_COLORS = [
-  '#0088FE',
-  '#00C49F',
-  '#FFBB28',
-  '#FF8042',
-  '#8884D8',
-  '#82ca9d',
-  '#ffc658',
-  '#a4de6c',
-  '#d0ed57',
-  '#8dd1e1',
-];
 
 export function PieChartWidget({ widget }: { widget: DashboardWidget }) {
   const t = useTranslations('dashboard.widgets.pieChart');
@@ -66,7 +54,7 @@ export function PieChartWidget({ widget }: { widget: DashboardWidget }) {
       datasets: [
         {
           data: result.slices.map((s) => s.value),
-          backgroundColor: result.slices.map((_, i) => SLICE_COLORS[i % SLICE_COLORS.length]),
+          backgroundColor: result.slices.map((_, i) => chartColorAtIndex(i)),
           borderWidth: 1,
         },
       ],

@@ -27,7 +27,6 @@ export function DashboardEditorSidebar({
   onSaveAsGlobalDefault: (layout: DashboardLayoutData) => void | Promise<void>;
 }) {
   const t = useTranslations('dashboard.customizer');
-  const skipSettingsOnSelectionRef = useRef(false);
   const [tab, setTab] = useState('toolbox');
   const [globalDefaultDialogOpen, setGlobalDefaultDialogOpen] = useState(false);
   const [copyConfirmOpen, setCopyConfirmOpen] = useState(false);
@@ -37,11 +36,6 @@ export function DashboardEditorSidebar({
   const { selectedWidgetId } = useDashboardEditor();
 
   useEffect(() => {
-    if (skipSettingsOnSelectionRef.current) {
-      skipSettingsOnSelectionRef.current = false;
-      prevSelectedIdRef.current = selectedWidgetId ?? undefined;
-      return;
-    }
     if (selectedWidgetId !== undefined && selectedWidgetId !== prevSelectedIdRef.current) {
       setTab('settings');
     }
@@ -108,7 +102,13 @@ export function DashboardEditorSidebar({
         <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col">
           <div className="shrink-0 border-b px-4 py-2">
             <TabsList variant="modern" className="mt-0 flex w-full">
-              <TabsTrigger variant="modern" size="sm" value="toolbox" className="min-w-0 flex-1 md:flex-1">
+              <TabsTrigger
+                variant="modern"
+                size="sm"
+                value="toolbox"
+                aria-label={t('tabToolbox')}
+                className="min-w-0 flex-1 md:flex-1"
+              >
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Plus />
@@ -116,7 +116,13 @@ export function DashboardEditorSidebar({
                   <TooltipContent>{t('tabToolbox')}</TooltipContent>
                 </Tooltip>
               </TabsTrigger>
-              <TabsTrigger variant="modern" size="sm" value="settings" className="min-w-0 flex-1 md:flex-1">
+              <TabsTrigger
+                variant="modern"
+                size="sm"
+                value="settings"
+                aria-label={t('tabSettings')}
+                className="min-w-0 flex-1 md:flex-1"
+              >
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Settings />
