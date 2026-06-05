@@ -14,8 +14,10 @@ import { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
+import { DASHBOARD_CHART_ANIMATION } from '@/lib/dashboard/chart-animation';
 import { computeBarChart } from '@/lib/dashboard/bar-chart/compute-bar-chart';
 import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
+import { useAnimatedChartData } from '@/hooks/use-animated-chart-data';
 import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
 import { cn } from '@/lib/utils';
@@ -99,10 +101,13 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
     };
   }, [result, config.seriesLayout]);
 
+  const animatedChartData = useAnimatedChartData(chartData);
+
   const options: ChartOptions<'bar'> = useMemo(
     () => ({
       responsive: true,
       maintainAspectRatio: false,
+      animation: DASHBOARD_CHART_ANIMATION,
       plugins: {
         legend: { position: 'bottom' },
         tooltip: {
@@ -146,7 +151,7 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
 
   return (
     <div className={cn('w-full', getPieChartHeightClassName(config.chartSize))}>
-      <Bar data={chartData} options={options} />
+      {animatedChartData ? <Bar data={animatedChartData} options={options} /> : null}
     </div>
   );
 }

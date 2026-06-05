@@ -6,8 +6,10 @@ import { useMemo } from 'react';
 import { Pie } from 'react-chartjs-2';
 
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
+import { DASHBOARD_CHART_ANIMATION } from '@/lib/dashboard/chart-animation';
 import { computePieChart } from '@/lib/dashboard/pie-chart/compute-pie-chart';
 import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
+import { useAnimatedChartData } from '@/hooks/use-animated-chart-data';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
 import { cn } from '@/lib/utils';
 import type { DashboardWidget } from '@/types/dashboard-layout';
@@ -72,10 +74,13 @@ export function PieChartWidget({ widget }: { widget: DashboardWidget }) {
     [result.slices],
   );
 
+  const animatedChartData = useAnimatedChartData(chartData);
+
   const options: ChartOptions<'pie'> = useMemo(
     () => ({
       responsive: true,
       maintainAspectRatio: false,
+      animation: DASHBOARD_CHART_ANIMATION,
       cutout: config.chartVariant === 'donut' ? '55%' : '0%',
       plugins: {
         legend: {
@@ -108,7 +113,7 @@ export function PieChartWidget({ widget }: { widget: DashboardWidget }) {
 
   return (
     <div className={cn('w-full', getPieChartHeightClassName(config.chartSize))}>
-      <Pie data={chartData} options={options} />
+      {animatedChartData ? <Pie data={animatedChartData} options={options} /> : null}
     </div>
   );
 }
