@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type KeyboardEvent, type ReactNode, useState } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -14,13 +14,6 @@ export function InfoTextMore({ children }: InfoTextMoreProps) {
   const t = useTranslations('common.infoText');
 
   const handleToggle = () => setOpen((prev) => !prev);
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLSpanElement>) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      handleToggle();
-    }
-  };
 
   return (
     <span className="inline">
@@ -35,18 +28,14 @@ export function InfoTextMore({ children }: InfoTextMoreProps) {
           {children}
         </span>
       </span>
-      <span
-        role="button"
-        tabIndex={0}
+      {open && <span className="block h-4" aria-hidden />}
+      <button
+        type="button"
         onClick={handleToggle}
-        onKeyDown={handleKeyDown}
-        className={cn(
-          'inline cursor-pointer text-foreground underline-offset-4 hover:underline',
-          open && 'ml-1',
-        )}
+        className="inline cursor-pointer appearance-none border-0 bg-transparent p-0 text-foreground underline-offset-4 hover:underline"
       >
         {open ? t('less') : t('more')}
-      </span>
+      </button>
     </span>
   );
 }

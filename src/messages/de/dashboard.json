@@ -520,8 +520,8 @@
       "deInvestmentActCompliance": {
         "title": "Rechtliches",
         "label": "Anlagearten-Modul (Schutz vor dem deutschen Anlegerschutz)",
-        "hint": "Funktionen zur Einhaltung der Bagatellgrenzen nach § 2 Nr. 3 VermAnlG. <more>\n Nach dem Vermögensanlagengesetz (VermAnlG) unterliegen Vermögensanlagen die in Deutschland öffentlich angeboten werden grundsätzlich der Prospektpflicht nach § 6 VermAnlG sowie der Pflicht ein Vermögensanlagen-Informationsblatt zu veröffentlichen.\n\n<strong>Ausnahmen von der Pflicht</strong> ermöglichen die Bagatellgrenzen nach § 2 VermAnlG. \n(1) von derselben Vermögensanlage im Sinne des § 1 Abs. 2 VermAnlG nicht mehr als 20 Anteile angeboten werden,\n(2) der Verkaufspreis der im Zeitraum von zwölf Monaten angebotenen Anteile insgesamt 100.000 € nicht übersteigt,\n\nDas Anlagearten-Modul unterstützt Projekte bei der Einhaltung dieser Bagatellgrenzen.</more>",
-        "enabledWithoutLoans": "Das Modul wurde aktiviert.",
+        "hint": "Funktionen zur Einhaltung der Bagatellgrenzen nach <link-1>§ 2 Nr. 3 VermAnlG</link-1>. <more>Nach dem Vermögensanlagengesetz (VermAnlG) unterliegen Vermögensanlagen die in Deutschland öffentlich angeboten werden grundsätzlich der Prospektpflicht nach § 6 VermAnlG sowie der Pflicht ein Vermögensanlagen-Informationsblatt zu veröffentlichen.\n\n<strong>Ausnahmen von der Pflicht</strong> ergeben sich aus § 2 VermAnlG. So besteht keine Prospektpflicht, wenn: \n(1) von derselben Vermögensanlage nicht mehr als 20 Anteile angeboten werden.\n(2) der Verkaufspreis der im Zeitraum von zwölf Monaten angebotenen Anteile insgesamt 100.000 € nicht übersteigt.\n\nDas Anlagearten-Modul unterstützt Projekte bei der Einhaltung dieser Bagatellgrenzen.\n</more>",
+        "enabledWithoutLoans": "Das Anlagearten-Modul wurde aktiviert.",
         "disabled": "Das Anlagearten-Modul wurde deaktiviert.",
         "enableDialog": {
           "title": "Anlagearten-Modul aktivieren",
@@ -728,7 +728,7 @@
 
   "investmentTypes": {
     "title": "Anlagearten",
-    "description": "Verwalten Sie Anlagearten zur Einhaltung des deutschen Anlegerschutzes-Gesetzes.",
+    "description": "Verwalten Sie Anlagearten zur Einhaltung der Bagatellgrenzen des deutschen Anlegerschutzes-Gesetzes.",
     "effectiveDate": "Stichtag",
     "create": "Anlageart erstellen",
     "table": {

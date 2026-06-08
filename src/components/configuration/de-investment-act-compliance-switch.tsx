@@ -152,7 +152,7 @@ export function DeInvestmentActComplianceSwitch({
               </FormControl>
             </div>
             <FormDescription className="text-sm text-muted-foreground/80">
-              <InfoText t={t} messageKey="hint" />
+              <InfoText t={t} messageKey="hint" externalLinks={deInvestmentActComplianceLinks} />
             </FormDescription>
           </FormItem>
         )}
@@ -206,3 +206,5 @@ export function DeInvestmentActComplianceSwitch({
     </>
   );
 }
+
+const deInvestmentActComplianceLinks = ['https://www.gesetze-im-internet.de/vermanlg/__2.html'];
