@@ -4,7 +4,7 @@ import moment from 'moment';
 import { Badge } from '@/components/ui/badge';
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { formatCurrency, getLenderName, NumberParser, resolveIntlLocaleForDates } from '@/lib/utils';
+import { formatCurrency, formatPercentage, getLenderName, NumberParser, resolveIntlLocaleForDates } from '@/lib/utils';
 import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat } from './schemas/common';
 
 // Define the custom filter function for compound text fields
@@ -189,7 +189,7 @@ export function createPercentageColumn<T>(
       align,
       cell: ({ row }) => {
         const value = parser.parse(row.getValue(accessorKey) as string) || 0;
-        return <div className={`${getTextAlignClass(align)} tabular-nums`}>{`${value.toFixed(2)}%`}</div>;
+        return <div className={`${getTextAlignClass(align)} tabular-nums`}>{formatPercentage(value, locale)}</div>;
       },
     },
     t,

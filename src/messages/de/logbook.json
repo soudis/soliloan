@@ -26,9 +26,9 @@
     "deleted": "Eine Notiz wurde für den #{loanNumber} von {lenderName} gelöscht"
   },
   "investmentType": {
-    "created": "Eine Anlageart ({interestRate}%) {name} wurde erstellt",
-    "updated": "Die Anlageart ({interestRate}%) {name} wurde aktualisiert",
-    "deleted": "Die Anlageart ({interestRate}%) {name} wurde gelöscht"
+    "created": "Eine Anlageart ({interestRate}) {name} wurde erstellt",
+    "updated": "Die Anlageart ({interestRate}) {name} wurde aktualisiert",
+    "deleted": "Die Anlageart ({interestRate}) {name} wurde gelöscht"
   },
   "lender": {
     "created": "Ein neuer Kreditgeber {lenderName} wurde erstellt",

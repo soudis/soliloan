@@ -10,7 +10,7 @@ import { YearlyDataChart } from '@/components/dashboard/yearly-data-chart';
 import { YearlyTable } from '@/components/dashboard/yearly-table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatPercentage } from '@/lib/utils';
 import type { LoanWithCalculations } from '@/types/loans';
 
 interface LoanStatusBreakdown {
@@ -126,7 +126,7 @@ export function DashboardContent({ statsData, loansDistribution, loans, userName
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(statsData.totalLoanAmount)}</div>
               <p className="text-xs text-muted-foreground">
-                {t('stats.avgInterestRate')}: {statsData.avgInterestRate.toFixed(2)}%
+                {t('stats.avgInterestRate')}: {formatPercentage(statsData.avgInterestRate)}
               </p>
             </CardContent>
           </Card>

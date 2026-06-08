@@ -31,7 +31,7 @@ import {
   type InvestmentTypeMetrics,
 } from '@/lib/investment-types/calc-investment-type-metrics';
 import { MAX_TOTAL_AMOUNT_EUR, MAX_UNITS } from '@/lib/schemas/investment-type';
-import { cn, formatCurrency, formatDateShort, getLenderName } from '@/lib/utils';
+import { cn, formatCurrency, formatDateShort, formatPercentage, getLenderName } from '@/lib/utils';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { LimitationTypeBadge } from './limitation-type-badge';
 
@@ -119,7 +119,9 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
           <dl className="mt-6 space-y-4 text-sm">
             <div>
               <dt className="text-muted-foreground">{t('form.interestRate')}</dt>
-              <dd className="mt-1 text-base font-semibold tabular-nums">{investmentType.interestRate}%</dd>
+              <dd className="mt-1 text-base font-semibold tabular-nums">
+                {formatPercentage(investmentType.interestRate, locale)}
+              </dd>
             </div>
             <div>
               <dt className="text-muted-foreground">{t('table.limitationType')}</dt>
@@ -376,7 +378,7 @@ function LoanTableSection({
                     )}
                   </TableCell>
                   <TableCell className="text-right">{formatCurrency(loan.amount, locale)}</TableCell>
-                  <TableCell className="text-right">{loan.interestRate}%</TableCell>
+                  <TableCell className="text-right">{formatPercentage(loan.interestRate, locale)}</TableCell>
                 </TableRow>
               );
             })

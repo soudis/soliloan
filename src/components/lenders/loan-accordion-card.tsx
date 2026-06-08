@@ -107,7 +107,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
             <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
               <span>{formatCurrency(loan.amount)}</span>
               <span>·</span>
-              <span>{formatPercentage(loan.interestRate)} %</span>
+              <span>{formatPercentage(loan.interestRate)}</span>
               <span>·</span>
               <span>{formatDateShort(loan.signDate, locale)}</span>
             </div>
@@ -174,7 +174,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                     <span>
                       <span className="whitespace-nowrap">{formatCurrency(loan.amount)}</span>{' '}
                       <span className="text-muted-foreground text-sm">{t('table.for')}</span>{' '}
-                      <span className="whitespace-nowrap">{formatPercentage(loan.interestRate)} %</span>
+                      <span className="whitespace-nowrap">{formatPercentage(loan.interestRate)}</span>
                     </span>
                   }
                 />
