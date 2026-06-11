@@ -40,7 +40,6 @@ export async function proxy(request: NextRequest) {
         const refererUrl = new URL(referer);
         const prevProjectId = refererUrl.searchParams.get(PROJECT_ID_KEY);
         if (prevProjectId) {
-          console.log('prevProjectId', prevProjectId);
           const newUrl = request.nextUrl.clone();
           newUrl.searchParams.set(PROJECT_ID_KEY, prevProjectId);
           return NextResponse.redirect(newUrl);
