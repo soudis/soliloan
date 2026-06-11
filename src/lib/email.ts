@@ -1,23 +1,41 @@
 import { render } from '@react-email/render';
 import nodemailer from 'nodemailer';
+import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 import React from 'react';
-
 import { db } from '@/lib/db';
 import { renderSystemEmailTemplate, resolveSystemTemplate } from '@/lib/templates/resolve-system-template';
 import { getAppBaseUrl, getDefaultSystemLinkMergeData } from '@/lib/templates/system-merge-links';
 import { getTemplateData } from '@/lib/templates/template-data';
 import { resolveTemplateSubject } from '@/lib/templates/template-subject-filename';
 
-// Create a transporter using environment variables
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: process.env.SMTP_SECURE === 'true',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-});
+function getSmtpTransportOptions(): SMTPTransport.Options {
+  const port = Number(process.env.SMTP_PORT) || 587;
+  const secureEnv = process.env.SMTP_SECURE;
+
+  // Port 465 uses implicit TLS (SMTPS). Port 587 uses plain connect + STARTTLS upgrade.
+  // Mismatching port and `secure` causes OpenSSL "wrong version number" on connect.
+  let secure: boolean;
+  if (secureEnv === 'true') {
+    secure = true;
+  } else if (secureEnv === 'false') {
+    secure = false;
+  } else {
+    secure = port === 465;
+  }
+
+  return {
+    host: process.env.SMTP_HOST,
+    port,
+    secure,
+    requireTLS: port === 587 && !secure,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
+    },
+  };
+}
+
+const transporter = nodemailer.createTransport(getSmtpTransportOptions());
 
 /**
  * Send an email using nodemailer with a React email component.
@@ -330,7 +348,7 @@ export async function sendPasswordResetEmail(to: string, name: string, token: st
       return;
     }
   } catch (err) {
-    console.error('Failed to render password reset template, falling back to legacy', err);
+    console.error('Failed to send password reset via system template, falling back to legacy', err);
   }
 
   // Import the email template dynamically to avoid SSR issues
