@@ -216,6 +216,11 @@
       "NOT_MORE_THAN_N_UNITS": "Anzahl Anlagen",
       "TOTAL_AMOUNT_OVER_TIME_PERIOD": "Anlagesumme"
     },
+    "limitationTypeTimePeriod": {
+      "default": "{months} Monate",
+      "dative": "{months} Monaten",
+      "parenthesized": "({months} Monate)"
+    },
     "theme": {
       "default": "Standard",
       "ocean": "Ozean",

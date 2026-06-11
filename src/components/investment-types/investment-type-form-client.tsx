@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { type InvestmentType, LimitationType, type Loan } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
-import type { FormEvent } from 'react';
+import type { ComponentProps } from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -19,6 +19,7 @@ import type { ProjectWithConfiguration } from '@/types/projects';
 import { InvestmentTypeFormFields } from './investment-type-form-fields';
 
 type InvestmentTypeWithLoans = InvestmentType & { loans: Loan[]; _count: { loans: number } };
+type FormSubmitHandler = NonNullable<ComponentProps<'form'>['onSubmit']>;
 
 interface Props {
   project: ProjectWithConfiguration;
@@ -98,7 +99,7 @@ export function InvestmentTypeFormClient({
   const isLoading = isCreating || isUpdating;
   const isInterestRateDisabled = hasLoans || fixInterestRate;
 
-  const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit: FormSubmitHandler = (event) => {
     event.stopPropagation();
     void handleSubmit(event);
   };
@@ -110,8 +111,6 @@ export function InvestmentTypeFormClient({
           <InvestmentTypeFormFields
             isInterestRateDisabled={isInterestRateDisabled}
             showInterestRateDisabledHint={hasLoans}
-            interestRateAutoFocus={!isEditMode && !fixInterestRate}
-            currentCapacityAmount={null}
           />
           <FormActions
             submitButtonText={t('submit')}

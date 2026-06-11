@@ -16,21 +16,16 @@ import { cn, formatCurrency } from '@/lib/utils';
 interface Props {
   isInterestRateDisabled: boolean;
   showInterestRateDisabledHint?: boolean;
-  /** Nur Anlage: Fokus auf Zinssatz, sofern das Feld nicht deaktiviert ist (z. B. fixer Zinssatz). */
-  interestRateAutoFocus?: boolean;
-  currentCapacityAmount: number | null;
 }
 
-export function InvestmentTypeFormFields({
-  isInterestRateDisabled,
-  showInterestRateDisabledHint = false,
-  interestRateAutoFocus = false,
-  currentCapacityAmount,
-}: Props) {
+export function InvestmentTypeFormFields({ isInterestRateDisabled, showInterestRateDisabledHint = false }: Props) {
   const t = useTranslations('dashboard.investmentTypes.form');
+  const commonT = useTranslations('common');
   const form = useFormContext();
+  const limitationTypeTimePeriod = commonT('enums.limitationTypeTimePeriod.default', { months: PERIOD_MONTHS });
+  const limitationTypeTimePeriodDative = commonT('enums.limitationTypeTimePeriod.dative', { months: PERIOD_MONTHS });
 
-  const sectionCardStretchClass = 'flex h-full min-h-0 flex-col';
+  const sectionCardStretchClass = 'flex h-full min-h-0 flex-col bg-background';
   const sectionContentStretchClass = 'flex min-h-0 flex-1 flex-col';
   const sectionInnerStretchClass = 'flex h-full min-h-0 flex-1 flex-col';
 
@@ -53,7 +48,7 @@ export function InvestmentTypeFormFields({
             min={0}
             step={0.01}
             disabled={isInterestRateDisabled}
-            autoFocus={interestRateAutoFocus && !isInterestRateDisabled}
+            autoFocus={!isInterestRateDisabled}
           />
           {showInterestRateDisabledHint && (
             <p className="text-xs text-muted-foreground">{t('interestRateHintDisabled')}</p>
@@ -80,7 +75,7 @@ export function InvestmentTypeFormFields({
                   <label
                     htmlFor="limitation-type-total-amount"
                     className={cn(
-                      'flex h-full cursor-pointer items-start gap-3 rounded-lg border p-4 text-left transition-colors',
+                      'flex h-full cursor-pointer items-start gap-3 rounded-lg border bg-background p-4 text-left transition-colors',
                       field.value === LimitationType.TOTAL_AMOUNT_OVER_TIME_PERIOD
                         ? 'border-primary'
                         : 'border-border hover:border-primary/50',
@@ -96,25 +91,25 @@ export function InvestmentTypeFormFields({
                         <p className="text-sm font-medium leading-tight">
                           {t('limitationTypeTotalAmount', {
                             limit: formatCurrency(MAX_TOTAL_AMOUNT_EUR),
-                            timePeriod: `${PERIOD_MONTHS} Monate`,
+                            timePeriod: limitationTypeTimePeriod,
                           })}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {t('limitationTypeTotalAmountDescription', {
                             limit: formatCurrency(MAX_TOTAL_AMOUNT_EUR),
-                            timePeriod: `${PERIOD_MONTHS} Monaten`,
+                            timePeriod: limitationTypeTimePeriodDative,
                           })}
                         </p>
                       </div>
                       <div className="flex w-full min-w-0 justify-center sm:justify-start">
-                        <TotalAmountCapacityIndicator currentAmount={currentCapacityAmount} />
+                        <TotalAmountCapacityIndicator />
                       </div>
                     </div>
                   </label>
                   <label
                     htmlFor="limitation-type-not-more-than-n-units"
                     className={cn(
-                      'flex h-full cursor-pointer items-start gap-3 rounded-lg border p-4 text-left transition-colors',
+                      'flex h-full cursor-pointer items-start gap-3 rounded-lg border bg-background p-4 text-left transition-colors',
                       field.value === LimitationType.NOT_MORE_THAN_N_UNITS
                         ? 'border-primary'
                         : 'border-border hover:border-primary/50',
@@ -150,23 +145,18 @@ export function InvestmentTypeFormFields({
   );
 }
 
-function TotalAmountCapacityIndicator({ currentAmount }: { currentAmount?: number | null }) {
+function TotalAmountCapacityIndicator() {
   const t = useTranslations('dashboard.investmentTypes.capacity');
-  const indicatorValue = currentAmount ?? 0;
 
   return (
     <div className="flex w-full min-w-0 flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
       <div className="flex shrink-0 items-center self-center">
-        <DonutIndicator value={indicatorValue} limit={MAX_TOTAL_AMOUNT_EUR} className="h-28 w-28">
+        <DonutIndicator value={0} limit={MAX_TOTAL_AMOUNT_EUR} className="h-28 w-28">
           <span className="text-sm font-semibold">€</span>
         </DonutIndicator>
       </div>
       <div className="flex min-w-0 max-w-full shrink-0 flex-col justify-center self-center text-sm sm:text-base">
-        <p className="font-semibold tabular-nums">
-          {currentAmount == null
-            ? `Maximal ${formatCurrency(MAX_TOTAL_AMOUNT_EUR)}`
-            : `${formatCurrency(currentAmount)} / ${formatCurrency(MAX_TOTAL_AMOUNT_EUR)}`}
-        </p>
+        <p className="font-semibold tabular-nums">Maximal {formatCurrency(MAX_TOTAL_AMOUNT_EUR)}</p>
         <p className="text-muted-foreground">{t('totalAmount')}</p>
       </div>
     </div>

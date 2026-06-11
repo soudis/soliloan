@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { FormSanityChecksProvider } from '@/components/form/form-sanity-checks-provider';
 import { Form } from '@/components/ui/form';
-import { FormActions } from '@/components/ui/form-actions';
+import { FormActionsWithSanityWarnings } from '@/components/ui/form-actions';
 import { FormLayout } from '@/components/ui/form-layout';
 import {
   type AdditionalFieldValues,
@@ -64,6 +64,7 @@ export function LenderForm({
   });
 
   const isEditMode = !!initialData?.id;
+  const loanCount = initialData?.loans?.length ?? 0;
 
   const defaultValues = useMemo(() => {
     return {
@@ -117,6 +118,7 @@ export function LenderForm({
       }
     }
   });
+  const lenderCountryChangeSanityCheck = isEditMode && project.configuration.deInvestmentActCompliance && loanCount > 0;
 
   return (
     <FormLayout title={title} error={error}>
@@ -124,15 +126,10 @@ export function LenderForm({
         <Form {...form}>
           <form onSubmit={handleSubmit}>
             <LenderFormFields isEditMode={isEditMode} />
-            {isEditMode &&
-              project.configuration.deInvestmentActCompliance &&
-              (initialData?.loans?.length ?? 0) > 0 && (
-              <LenderCountryChangeSanityCheck
-                initialCountry={initialData?.country}
-                loanCount={initialData?.loans?.length ?? 0}
-              />
+            {lenderCountryChangeSanityCheck && (
+              <LenderCountryChangeSanityCheck initialCountry={initialData?.country} loanCount={loanCount} />
             )}
-            <FormActions
+            <FormActionsWithSanityWarnings
               submitButtonText={submitButtonText}
               submittingButtonText={submittingButtonText}
               cancelButtonText={cancelButtonText}

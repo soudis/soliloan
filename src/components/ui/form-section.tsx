@@ -1,7 +1,7 @@
 import { Info } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { SectionCard } from '../generic/section-card';
 import { cn } from '@/lib/utils';
+import { SectionCard } from '../generic/section-card';
 
 interface FormSectionProps {
   title: string;

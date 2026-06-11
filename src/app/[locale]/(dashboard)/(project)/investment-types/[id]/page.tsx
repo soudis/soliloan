@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation';
-import { format } from 'date-fns';
-import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
 import { getInvestmentTypeUnsafe } from '@/actions/investment-types/queries/get-investment-type';
+import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
 import { InvestmentTypeDetailContent } from '@/components/investment-types/investment-type-detail-content';
 import { calcInvestmentTypeMetrics } from '@/lib/investment-types/calc-investment-type-metrics';
+import { getEffectiveDateOrDefault } from '@/lib/investment-types/effective-date';
 import { searchParamsCache } from '@/lib/params';
 
 interface PageProps {
@@ -15,10 +15,7 @@ export default async function InvestmentTypeDetailPage({ params, searchParams }:
   const { id } = await params;
   const rawSearchParams = await searchParams;
   const { projectId } = searchParamsCache.parse(rawSearchParams);
-  const effectiveDate =
-    typeof rawSearchParams.effectiveDate === 'string' && rawSearchParams.effectiveDate
-      ? rawSearchParams.effectiveDate
-      : format(new Date(), 'yyyy-MM-dd');
+  const effectiveDate = getEffectiveDateOrDefault(rawSearchParams.effectiveDate);
   const project = await getProjectUnsafe(projectId);
 
   if (!project.configuration.deInvestmentActCompliance) {

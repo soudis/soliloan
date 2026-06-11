@@ -28,7 +28,6 @@ const CAPACITY_EXCEEDED_WARNING_ID = 'investment-type-capacity-exceeded';
 interface LoanInvestmentTypeSectionProps {
   isActive: boolean;
   currentLoanId?: string;
-  missingInvestmentTypeWarning?: boolean;
 }
 
 function InvestmentTypeBlock({
@@ -95,7 +94,6 @@ function NotMoreThanNUnitsCapacityIndicator({ currentUnits }: { currentUnits?: n
 export function LoanInvestmentTypeSection({
   isActive,
   currentLoanId,
-  missingInvestmentTypeWarning = false,
 }: LoanInvestmentTypeSectionProps) {
   const t = useTranslations('dashboard.loans.investmentType');
   const sanityT = useTranslations('dashboard.loans.sanityChecks');
@@ -111,6 +109,7 @@ export function LoanInvestmentTypeSection({
   const amount = form.watch('amount');
 
   const hasValues = interestRate !== '' && !!signDate;
+  const hasMissingInvestmentTypeError = !!form.formState.errors.root?.investmentType;
 
   const { data, isLoading } = useQuery({
     queryKey: ['investmentType', project.id, interestRate],
@@ -219,7 +218,7 @@ export function LoanInvestmentTypeSection({
 
   return (
     <InvestmentTypeBlock title={t('title')}>
-      <p className={cn('text-sm', missingInvestmentTypeWarning ? 'text-destructive' : 'text-muted-foreground')}>
+      <p className={cn('text-sm', hasMissingInvestmentTypeError ? 'text-destructive' : 'text-muted-foreground')}>
         {t.rich('noInvestmentType', {
           strong: (chunks) => <strong>{chunks}</strong>,
         })}

@@ -15,7 +15,6 @@ interface FormActionsProps {
   isLoading?: boolean;
   onCancel?: () => void;
   children?: ReactNode;
-  /** Wenn nicht gesetzt, werden Warnungen aus FormSanityChecksProvider gelesen. */
   warnings?: FormWarning[];
 }
 
@@ -26,10 +25,8 @@ export function FormActions({
   isLoading,
   onCancel,
   children,
-  warnings: warningsProp,
+  warnings = [],
 }: FormActionsProps) {
-  const sanityChecksContext = useFormSanityChecksOptional();
-  const warnings = warningsProp ?? sanityChecksContext?.warnings ?? [];
   const hasWarnings = warnings.length > 0;
 
   return (
@@ -67,4 +64,10 @@ export function FormActions({
       </div>
     </div>
   );
+}
+
+export function FormActionsWithSanityWarnings(props: Omit<FormActionsProps, 'warnings'>) {
+  const sanityChecksContext = useFormSanityChecksOptional();
+
+  return <FormActions {...props} warnings={sanityChecksContext?.warnings ?? []} />;
 }

@@ -8,8 +8,8 @@ import type { ProjectWithConfiguration } from '@/types/projects';
 import { FormFieldConfigurator } from '../form/form-field-configurator';
 import { FormMultiSelect } from '../form/form-multi-select';
 import { FormSelect } from '../form/form-select';
-import { LoanTemplateTable } from './loan-template-table';
 import { DeInvestmentActComplianceSwitch } from './de-investment-act-compliance-switch';
+import { LoanTemplateTable } from './loan-template-table';
 
 interface ConfigurationFormFieldsLoansProps {
   hasHistoricTransactions?: boolean;

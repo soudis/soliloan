@@ -104,8 +104,8 @@ model Configuration {
   interestMethod         InterestMethod
   altInterestMethods     InterestMethod[]
   defaultLoanTemplateId  String?
-  loanTemplates              LoanTemplate[]
-  project                    Project?
+  loanTemplates          LoanTemplate[]
+  project                Project?
   lenderAdditionalFields     Json           @default("[]")
   loanAdditionalFields       Json           @default("[]")
   deInvestmentActCompliance  Boolean        @default(false)

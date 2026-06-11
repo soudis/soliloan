@@ -55,7 +55,7 @@ export const updateLoanAction = loanAction
       });
 
       if (!matchingType) {
-        return { fieldErrors: { investmentType: 'error.loan.investmentTypeRequired' } };
+        return { formErrors: { investmentType: 'error.loan.investmentTypeRequired' } };
       }
 
       investmentTypeId = matchingType.id;

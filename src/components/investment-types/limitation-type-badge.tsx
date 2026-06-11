@@ -14,13 +14,14 @@ interface Props {
 
 export function LimitationTypeBadge({ limitationType, className }: Props) {
   const commonT = useTranslations('common');
+  const limitationTypeTimePeriod = commonT('enums.limitationTypeTimePeriod.parenthesized', { months: PERIOD_MONTHS });
 
   const label =
     limitationType === 'NOT_MORE_THAN_N_UNITS'
       ? commonT('enums.limitationType.NOT_MORE_THAN_N_UNITS', { limit: MAX_UNITS })
       : commonT('enums.limitationType.TOTAL_AMOUNT_OVER_TIME_PERIOD', {
           limit: new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(MAX_TOTAL_AMOUNT_EUR),
-          timePeriod: `${PERIOD_MONTHS} Monate`,
+          timePeriod: limitationTypeTimePeriod,
         });
 
   const Icon = limitationType === 'NOT_MORE_THAN_N_UNITS' ? Square : Circle;

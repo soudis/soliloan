@@ -1,5 +1,5 @@
-import { TerminationType } from '@prisma/client';
 import type { ContractStatus, DurationType, InterestMethod } from '@prisma/client';
+import { TerminationType } from '@prisma/client';
 import { z } from 'zod';
 
 import {

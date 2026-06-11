@@ -2,7 +2,6 @@
 
 import { type InvestmentType, LimitationType, type Loan, type View, ViewType } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
-import { format } from 'date-fns';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
@@ -12,11 +11,13 @@ import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import { useRouter } from '@/i18n/navigation';
+import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
 import {
   calcInvestmentTypeMetrics,
   calcTotalAmount,
   type InvestmentTypeMetrics,
 } from '@/lib/investment-types/calc-investment-type-metrics';
+import { getDefaultEffectiveDate } from '@/lib/investment-types/effective-date';
 import { PERIOD_MONTHS } from '@/lib/schemas/investment-type';
 import {
   createColumn,
@@ -28,8 +29,6 @@ import {
 import { formatCurrency } from '@/lib/utils';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { LimitationTypeBadge } from './limitation-type-badge';
-
-const LIMITATION_TYPE_TIME_PERIOD = `(${PERIOD_MONTHS} Monate)`;
 
 type InvestmentTypeWithLoans = InvestmentType & {
   loans: Pick<Loan, 'id' | 'amount' | 'signDate'>[];
@@ -55,9 +54,11 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
   const commonT = useTranslations('common');
   const router = useRouter();
   const locale = useLocale();
+  const selectedViewName = useSelectedViewName(views);
+  const limitationTypeTimePeriod = commonT('enums.limitationTypeTimePeriod.parenthesized', { months: PERIOD_MONTHS });
   const [effectiveDate, setEffectiveDate] = useQueryState(
     'effectiveDate',
-    parseAsString.withDefault(format(new Date(), 'yyyy-MM-dd')),
+    parseAsString.withDefault(getDefaultEffectiveDate()),
   );
 
   const tableData = useMemo<InvestmentTypeTableRow[]>(() => {
@@ -99,8 +100,8 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
         sortingFn: (rowA, rowB, columnId) => {
           const a = rowA.getValue(columnId) as LimitationType;
           const b = rowB.getValue(columnId) as LimitationType;
-          return commonT(`enums.limitationType.${a}`, { timePeriod: LIMITATION_TYPE_TIME_PERIOD }).localeCompare(
-            commonT(`enums.limitationType.${b}`, { timePeriod: LIMITATION_TYPE_TIME_PERIOD }),
+          return commonT(`enums.limitationType.${a}`, { timePeriod: limitationTypeTimePeriod }).localeCompare(
+            commonT(`enums.limitationType.${b}`, { timePeriod: limitationTypeTimePeriod }),
           );
         },
       },
@@ -151,7 +152,7 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
       type: 'select' as const,
       label: t('table.limitationType'),
       options: Object.entries(LimitationType).map(([key, value]) => ({
-        label: commonT(`enums.limitationType.${key}`, { timePeriod: LIMITATION_TYPE_TIME_PERIOD }),
+        label: commonT(`enums.limitationType.${key}`, { timePeriod: limitationTypeTimePeriod }),
         value,
       })),
     },
@@ -184,11 +185,13 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="mb-6 flex shrink-0 items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{t('title')}</h1>
-          <p className="text-muted-foreground">{t('description')}</p>
+          <h1 className="text-3xl font-bold">{t('title')}</h1>
+          <p className="mt-0.5 text-base font-normal text-muted-foreground">
+            {selectedViewName ?? t('description')}
+          </p>
         </div>
         <Button asChild>
           <Link href={`/investment-types/new?projectId=${project.id}`}>
@@ -199,6 +202,7 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
       </div>
 
       <DataTable
+        fillHeight
         columns={columns}
         data={tableData}
         columnFilters={columnFilters}

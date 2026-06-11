@@ -58,7 +58,7 @@ async function auditLoanUpdate(
   });
 }
 
-/** Regel 1: Nicht-DE-Kreditgeber dürfen keine Anlageart haben. */
+/** Rule 1: Non-DE lenders may not have an investment type. */
 export async function removeInvestmentTypeFromNonGermanLoans(
   db: PrismaClient,
   loans: LoanForMaintenance[],
@@ -91,7 +91,7 @@ export async function removeInvestmentTypeFromNonGermanLoans(
   return { fixed, skipped, investmentTypesCreated: 0 };
 }
 
-/** Regel 2: DE-Kredite mit Zins-Mismatch — Zuweisung aufheben (Neuzuweisung in Regel 3). */
+/** Rule 2: Clear assignments for DE loans with interest rate mismatches;  */
 export async function fixGermanLoanInvestmentTypeRateMismatch(
   db: PrismaClient,
   loans: LoanForMaintenance[],
@@ -132,7 +132,7 @@ export async function fixGermanLoanInvestmentTypeRateMismatch(
   return { fixed, skipped, investmentTypesCreated };
 }
 
-/** Regel 3: DE-Kredite ohne Anlageart — zuweisen oder Anlageart anlegen. */
+/** Rule 3: Assign DE loans without an investment type, creating one if needed. */
 export async function assignInvestmentTypeToGermanLoansWithoutType(
   db: PrismaClient,
   loans: LoanForMaintenance[],

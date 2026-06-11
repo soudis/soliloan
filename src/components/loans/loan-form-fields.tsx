@@ -9,6 +9,7 @@ import { FormDatePicker } from '@/components/form/form-date-picker';
 import { FormField } from '@/components/form/form-field';
 import { FormNumberInput } from '@/components/form/form-number-input';
 import { FormSelect } from '@/components/form/form-select';
+import { InterestRateInput } from '@/components/loans/interest-rate-input';
 import { LenderCombobox } from '@/components/loans/lender-combobox';
 import { FormSection } from '@/components/ui/form-section';
 import type { LoanFormClientData } from '@/lib/schemas/loan';
@@ -21,14 +22,12 @@ interface LoanFormFieldsProps {
   lenders: Lender[];
   isEditMode?: boolean;
   currentLoanId?: string;
-  missingInvestmentTypeWarning?: boolean;
 }
 
 export function LoanFormFields({
   lenders,
   isEditMode = false,
   currentLoanId,
-  missingInvestmentTypeWarning = false,
 }: LoanFormFieldsProps) {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
@@ -41,12 +40,10 @@ export function LoanFormFields({
   const signDate = form.watch('signDate');
   const interestRate = form.watch('interestRate');
   const selectedLender = lenders.find((lender) => lender.id === lenderId);
+  const deInvestmentActComplianceEnabled = project.configuration.deInvestmentActCompliance === true;
   const isInvestmentTypeSectionActive = selectedLender?.country === 'DE';
   const showInvestmentTypeSection =
-    project.configuration.deInvestmentActCompliance &&
-    !!selectedLender &&
-    !!signDate &&
-    interestRate !== '';
+    deInvestmentActComplianceEnabled && !!selectedLender && !!signDate && interestRate !== '';
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -86,15 +83,14 @@ export function LoanFormFields({
             step={0.01}
           />
 
-          <FormNumberInput
-            name="interestRate"
+          <InterestRateInput
             label={`${t('new.form.interestRate')} *`}
             placeholder={commonT('ui.form.enterPlaceholder')}
-            prefix="%"
             minimumFractionDigits={0}
             maximumFractionDigits={3}
             min={0}
             step={0.01}
+            enableInvestmentTypeDropdown={deInvestmentActComplianceEnabled}
           />
         </div>
 
@@ -103,7 +99,6 @@ export function LoanFormFields({
             <LoanInvestmentTypeSection
               isActive={isInvestmentTypeSectionActive}
               currentLoanId={currentLoanId}
-              missingInvestmentTypeWarning={missingInvestmentTypeWarning}
             />
           </div>
         )}
