@@ -1,12 +1,13 @@
 import DOMPurify from 'isomorphic-dompurify';
 
 const NOTE_ALLOWED_TAGS = ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'a'];
+const NOTE_A_ALLOWED_ATTRS = new Set(['href', 'target', 'rel', 'class']);
+
 export function sanitizeNoteHtml(html: string): string {
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS: NOTE_ALLOWED_TAGS,
-    ALLOWED_ATTR: {
-      a: ['href', 'target', 'rel', 'class'],
-    },
+    ALLOWED_ATTR: [],
+    ADD_ATTR: (attr, tag) => tag === 'a' && NOTE_A_ALLOWED_ATTRS.has(attr),
     ALLOW_DATA_ATTR: false,
   });
 }
