@@ -157,7 +157,7 @@ function TotalAmountCapacityIndicator() {
       </div>
       <div className="flex min-w-0 max-w-full shrink-0 flex-col justify-center self-center text-sm sm:text-base">
         <p className="font-semibold tabular-nums">Maximal {formatCurrency(MAX_TOTAL_AMOUNT_EUR)}</p>
-        <p className="text-muted-foreground">{t('totalAmount')}</p>
+        <p className="text-muted-foreground">{t('totalAmountInPeriod')}</p>
       </div>
     </div>
   );

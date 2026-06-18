@@ -55,6 +55,7 @@ function InvestmentTypeBlock({
 
 function TotalAmountCapacityIndicator({ currentAmount }: { currentAmount: number }) {
   const t = useTranslations('dashboard.investmentTypes.capacity');
+  const freeAmount = MAX_TOTAL_AMOUNT_EUR - currentAmount;
 
   return (
     <div className="flex w-full min-w-0 flex-wrap items-center justify-center gap-x-5 gap-y-3 sm:justify-start">
@@ -67,7 +68,7 @@ function TotalAmountCapacityIndicator({ currentAmount }: { currentAmount: number
         <p className="font-semibold tabular-nums">
           {formatCurrency(currentAmount)} / {formatCurrency(MAX_TOTAL_AMOUNT_EUR)}
         </p>
-        <p className="text-muted-foreground">{t('totalAmount')}</p>
+        <p className="text-muted-foreground">{t('freeCapacity', { freeCapacity: formatCurrency(freeAmount) })}</p>
       </div>
     </div>
   );

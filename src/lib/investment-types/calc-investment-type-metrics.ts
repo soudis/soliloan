@@ -18,9 +18,18 @@ type InvestmentTypeMetricsInput = {
 export type InvestmentTypeMetrics = {
   numberOfLoans: number;
   effectiveLoans: InvestmentTypeMetricsLoan[];
+  investmentAmount: number;
   usedCapacity: number;
   capacityLimit: number;
   capacityUnit: 'currency' | 'units';
+  usedProbe?: TotalAmountProbe;
+  effectiveDateProbe?: TotalAmountProbe;
+};
+
+export type TotalAmountProbe = {
+  effectiveDate: Date;
+  effectiveLoans: InvestmentTypeMetricsLoan[];
+  totalAmount: number;
 };
 
 export function calcInvestmentTypeMetrics(
@@ -42,6 +51,7 @@ export function calcNotMoreThanNUnitsMetrics(loans: InvestmentTypeMetricsLoan[])
   return {
     numberOfLoans: effectiveLoans.length,
     effectiveLoans,
+    investmentAmount: calcTotalAmount(effectiveLoans),
     usedCapacity: effectiveLoans.length,
     capacityLimit: MAX_UNITS,
     capacityUnit: 'units',
@@ -56,26 +66,22 @@ export function calcTotalAmountMetrics(loans: InvestmentTypeMetricsLoan[], effec
   const futureLoans = getFutureLoans(loans, effectiveDate);
   const futureSignDates = futureLoans.map((loan) => loan.signDate);
 
-  const probeDates = [...futureSignDates, effectiveDate];
-  const probes = calcTotalAmountProbes(loans, probeDates);
+  const effectiveDateProbe = calcTotalAmountProbe(effectiveDate, loans);
+  const futureProbes = calcTotalAmountProbes(loans, futureSignDates);
+  const probes = [effectiveDateProbe, ...futureProbes];
   const relevantProbe = pickProbeWithMaximalAmount(probes);
-
-  const usedCapacity = relevantProbe.totalAmount;
 
   return {
     numberOfLoans: loans.length,
     effectiveLoans: relevantProbe.effectiveLoans,
-    usedCapacity,
+    investmentAmount: effectiveDateProbe.totalAmount,
+    usedCapacity: relevantProbe.totalAmount,
     capacityLimit: MAX_TOTAL_AMOUNT_EUR,
     capacityUnit: 'currency',
+    usedProbe: relevantProbe,
+    effectiveDateProbe,
   };
 }
-
-type TotalAmountProbe = {
-  effectiveDate: Date;
-  effectiveLoans: InvestmentTypeMetricsLoan[];
-  totalAmount: number;
-};
 
 function calcTotalAmountProbes(loans: InvestmentTypeMetricsLoan[], probeDates: Date[]): TotalAmountProbe[] {
   return probeDates.map((probeDate) => calcTotalAmountProbe(probeDate, loans));
@@ -95,7 +101,7 @@ function calcTotalAmountProbe(effectiveDate: Date, loans: InvestmentTypeMetricsL
   };
 }
 
-export function getFutureLoans(loans: InvestmentTypeMetricsLoan[], date: Date): InvestmentTypeMetricsLoan[] {
+export function getFutureLoans<T extends InvestmentTypeMetricsLoan>(loans: T[], date: Date): T[] {
   const startDate = startOfDay(date);
   const endDate = endOfDay(addMonths(date, PERIOD_MONTHS));
 
@@ -105,7 +111,7 @@ export function getFutureLoans(loans: InvestmentTypeMetricsLoan[], date: Date): 
   });
 }
 
-export function getPastLoans(loans: InvestmentTypeMetricsLoan[], date: Date): InvestmentTypeMetricsLoan[] {
+export function getPastLoans<T extends InvestmentTypeMetricsLoan>(loans: T[], date: Date): T[] {
   const endDate = endOfDay(date);
   const startDate = startOfDay(addMonths(endDate, -PERIOD_MONTHS));
 

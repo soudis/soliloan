@@ -1,13 +1,13 @@
 'use client';
 
 import { type InvestmentType, type Lender, LimitationType, type Loan } from '@prisma/client';
-import { format, isValid } from 'date-fns';
-import { Calendar, Pencil, Trash2 } from 'lucide-react';
+import { addMonths, format, startOfDay } from 'date-fns';
+import { Calendar, Pencil, Telescope, Trash2, TriangleAlert, X } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { parseAsString, useQueryState } from 'nuqs';
-import { useState } from 'react';
+import { createContext, type ReactNode, useContext, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { deleteInvestmentTypeAction } from '@/actions/investment-types';
 import { LoanStatusBadge } from '@/components/loans/loan-status-badge';
@@ -24,17 +24,19 @@ import {
 import { Button } from '@/components/ui/button';
 import { DonutIndicator } from '@/components/ui/donut-indicator';
 import { GridIndicator } from '@/components/ui/grid-indicator';
+import { InfoText } from '@/components/ui/info-text';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useRouter } from '@/i18n/navigation';
 import {
+  calcTotalAmount,
   calcInvestmentTypeMetrics,
-  calcTotalAmountMetrics,
-  type InvestmentTypeMetrics,
+  calcNotMoreThanNUnitsMetrics,
+  getPastLoans,
 } from '@/lib/investment-types/calc-investment-type-metrics';
 import { getDefaultEffectiveDate } from '@/lib/investment-types/effective-date';
-import { MAX_TOTAL_AMOUNT_EUR, MAX_UNITS } from '@/lib/schemas/investment-type';
+import { MAX_TOTAL_AMOUNT_EUR, MAX_UNITS, PERIOD_MONTHS } from '@/lib/schemas/investment-type';
 import { cn, formatCurrency, formatDateShort, formatPercentage, getLenderName } from '@/lib/utils';
 import { LoanStatus } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -50,24 +52,17 @@ type InvestmentTypeWithRelations = InvestmentType & {
 interface Props {
   investmentType: InvestmentTypeWithRelations;
   project: ProjectWithConfiguration;
-  initialEffectiveDate?: string;
-  initialMetrics: InvestmentTypeMetrics;
 }
 
-export function InvestmentTypeDetailContent({ investmentType, project, initialEffectiveDate, initialMetrics }: Props) {
+export function InvestmentTypeDetailContent({ investmentType, project }: Props) {
   const t = useTranslations('dashboard.investmentTypes');
   const commonT = useTranslations('common');
   const locale = useLocale();
   const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showCompletedLoans, setShowCompletedLoans] = useState(false);
-  const [effectiveDate, setEffectiveDate] = useQueryState(
-    'effectiveDate',
-    parseAsString.withDefault(getDefaultEffectiveDate()),
-  );
-  const effectiveDateValue = new Date(effectiveDate);
-  const needsEffectiveDate = investmentType.limitationType !== LimitationType.NOT_MORE_THAN_N_UNITS;
   const isNotMoreThanNUnits = investmentType.limitationType === LimitationType.NOT_MORE_THAN_N_UNITS;
+  const [loanTableEffectiveDate, setLoanTableEffectiveDate] = useState('');
 
   const { executeAsync: deleteAction, isExecuting: isDeleting } = useAction(deleteInvestmentTypeAction);
   const hasAssignedLoans = investmentType._count.loans > 0;
@@ -76,11 +71,8 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
       ? investmentType.loans.filter((loan) => loan.status !== LoanStatus.REPAID)
       : investmentType.loans;
 
-  const metrics =
-    !needsEffectiveDate || effectiveDate === initialEffectiveDate
-      ? initialMetrics
-      : calcInvestmentTypeMetrics(investmentType, effectiveDateValue);
   const isTotalAmountOverTimePeriod = investmentType.limitationType === LimitationType.TOTAL_AMOUNT_OVER_TIME_PERIOD;
+  const unitsMetrics = useMemo(() => calcNotMoreThanNUnitsMetrics(investmentType.loans), [investmentType.loans]);
 
   const handleDelete = async () => {
     const result = await deleteAction({ projectId: project.id, investmentTypeId: investmentType.id });
@@ -92,6 +84,96 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
     }
     setShowDeleteDialog(false);
   };
+
+  const informationSection = (
+    <section className="flex flex-col rounded-lg border bg-background p-6">
+      <h2 className="text-sm font-medium text-muted-foreground">{t('detail.information')}</h2>
+      <h1 className="mt-3 text-2xl font-bold tracking-tight">{investmentType.name?.trim() || t('detail.title')}</h1>
+      <dl className="mt-6 space-y-4 text-sm">
+        <div>
+          <dt className="text-muted-foreground">{t('form.interestRate')}</dt>
+          <dd className="mt-1 text-base font-semibold tabular-nums">
+            {formatPercentage(investmentType.interestRate, locale)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-muted-foreground">{t('table.limitationType')}</dt>
+          <dd className="mt-2">
+            <LimitationTypeBadge limitationType={investmentType.limitationType} />
+          </dd>
+        </div>
+      </dl>
+    </section>
+  );
+
+  const capacitySection = (
+    <section className="flex flex-col justify-center rounded-lg border bg-background p-6 md:min-h-[280px]">
+      {isTotalAmountOverTimePeriod ? (
+        <CapacityCalculator investmentType={investmentType} />
+      ) : (
+        <>
+          <h2 className="text-sm font-medium text-muted-foreground">{t('table.capacity')}</h2>
+          <div className="mt-6 flex flex-1 items-center justify-center md:justify-start">
+            <div className="w-full">
+              <NotMoreThanNUnitsCapacityIndicator currentUnits={unitsMetrics.usedCapacity} />
+            </div>
+          </div>
+        </>
+      )}
+    </section>
+  );
+
+  const loansSection = (
+    <section className="space-y-4 rounded-lg border bg-background p-6">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <h2 className="text-lg font-semibold">{t('detail.loans')}</h2>
+        {isNotMoreThanNUnits && (
+          <div className="flex items-center gap-2">
+            <Switch id="showCompletedLoans" checked={showCompletedLoans} onCheckedChange={setShowCompletedLoans} />
+            <label htmlFor="showCompletedLoans" className="text-sm font-medium">
+              {t('detail.showCompletedLoans')}
+            </label>
+          </div>
+        )}
+        {isTotalAmountOverTimePeriod && (
+          <TotalAmountOverTimePeriodLoanTableControls
+            effectiveDate={loanTableEffectiveDate}
+            setEffectiveDate={setLoanTableEffectiveDate}
+            t={t}
+          />
+        )}
+      </div>
+      {isTotalAmountOverTimePeriod ? (
+        <TotalAmountOverTimePeriodLoanTableSection
+          emptyMessage={t('detail.noLoans')}
+          loans={investmentType.loans}
+          projectId={project.id}
+          locale={locale}
+          t={t}
+          effectiveDate={loanTableEffectiveDate}
+          setEffectiveDate={setLoanTableEffectiveDate}
+        />
+      ) : (
+        <NotMoreThanNUnitsLoanTableSection
+          emptyMessage={showCompletedLoans ? t('detail.noLoans') : t('detail.noOpenLoans')}
+          loans={visibleLoans}
+          projectId={project.id}
+          locale={locale}
+          t={t}
+        />
+      )}
+    </section>
+  );
+
+  const detailSections = (
+    <>
+      <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
+        {informationSection}
+        {capacitySection}
+      </div>
+      {loansSection}
+    </>
+  );
 
   return (
     <div className="space-y-6">
@@ -108,91 +190,11 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
-        <section className="flex flex-col rounded-lg border bg-background p-6">
-          <h2 className="text-sm font-medium text-muted-foreground">{t('detail.information')}</h2>
-          <h1 className="mt-3 text-2xl font-bold tracking-tight">{investmentType.name?.trim() || t('detail.title')}</h1>
-          <dl className="mt-6 space-y-4 text-sm">
-            <div>
-              <dt className="text-muted-foreground">{t('form.interestRate')}</dt>
-              <dd className="mt-1 text-base font-semibold tabular-nums">
-                {formatPercentage(investmentType.interestRate, locale)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">{t('table.limitationType')}</dt>
-              <dd className="mt-2">
-                <LimitationTypeBadge limitationType={investmentType.limitationType} />
-              </dd>
-            </div>
-          </dl>
-        </section>
-
-        <section className="flex flex-col justify-center rounded-lg border bg-background p-6 md:min-h-[280px]">
-          <h2 className="text-sm font-medium text-muted-foreground">{t('table.capacity')}</h2>
-          <div className="mt-6 flex flex-1 items-center justify-center md:justify-start">
-            <div className="w-full">
-              {isNotMoreThanNUnits ? (
-                <NotMoreThanNUnitsCapacityIndicator currentUnits={metrics.usedCapacity} />
-              ) : (
-                <TotalAmountCapacityIndicator currentAmount={metrics.usedCapacity} effectiveDate={effectiveDateValue} />
-              )}
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <section className="space-y-4 rounded-lg border bg-background p-6">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <h2 className="text-lg font-semibold">{t('detail.loans')}</h2>
-          {isNotMoreThanNUnits && (
-            <div className="flex items-center gap-2">
-              <Switch id="showCompletedLoans" checked={showCompletedLoans} onCheckedChange={setShowCompletedLoans} />
-              <label htmlFor="showCompletedLoans" className="text-sm font-medium">
-                {t('detail.showCompletedLoans')}
-              </label>
-            </div>
-          )}
-          {isTotalAmountOverTimePeriod && (
-            <div className="flex items-center gap-3">
-              <label htmlFor="effectiveDate" className="text-sm font-medium whitespace-nowrap">
-                {t('effectiveDate')}
-              </label>
-              <Input
-                id="effectiveDate"
-                type="date"
-                value={effectiveDate}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    setEffectiveDate(e.target.value);
-                  }
-                }}
-                className="w-auto"
-              />
-            </div>
-          )}
-        </div>
-        {isTotalAmountOverTimePeriod ? (
-          <TotalAmountOverTimePeriodLoanTableSection
-            emptyMessage={t('detail.noLoans')}
-            loans={investmentType.loans}
-            capacityLoans={investmentType.loans}
-            projectId={project.id}
-            locale={locale}
-            t={t}
-            effectiveDate={effectiveDate}
-            onSignDateSelect={setEffectiveDate}
-          />
-        ) : (
-          <NotMoreThanNUnitsLoanTableSection
-            emptyMessage={showCompletedLoans ? t('detail.noLoans') : t('detail.noOpenLoans')}
-            loans={visibleLoans}
-            projectId={project.id}
-            locale={locale}
-            t={t}
-          />
-        )}
-      </section>
+      {isTotalAmountOverTimePeriod ? (
+        <TotalAmountEffectiveDateScope>{detailSections}</TotalAmountEffectiveDateScope>
+      ) : (
+        detailSections
+      )}
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
@@ -228,37 +230,90 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
   );
 }
 
-function TotalAmountCapacityIndicator({
-  currentAmount,
-  effectiveDate,
-}: {
-  currentAmount: number;
-  effectiveDate?: Date | null;
-}) {
+type EffectiveDateContextValue = {
+  effectiveDate: string;
+  setEffectiveDate: (date: string) => void;
+};
+
+const EffectiveDateContext = createContext<EffectiveDateContextValue | null>(null);
+
+function useTotalAmountEffectiveDate() {
+  const context = useContext(EffectiveDateContext);
+  if (!context) {
+    throw new Error('useTotalAmountEffectiveDate must be used within TotalAmountEffectiveDateScope');
+  }
+  return context;
+}
+
+function TotalAmountEffectiveDateScope({ children }: { children: ReactNode }) {
+  const [effectiveDate, setEffectiveDate] = useQueryState(
+    'effectiveDate',
+    parseAsString.withDefault(getDefaultEffectiveDate()),
+  );
+  const value = useMemo(
+    () => ({
+      effectiveDate,
+      setEffectiveDate,
+    }),
+    [effectiveDate, setEffectiveDate],
+  );
+
+  return <EffectiveDateContext.Provider value={value}>{children}</EffectiveDateContext.Provider>;
+}
+
+function CapacityCalculator({ investmentType }: { investmentType: InvestmentTypeWithRelations }) {
+  const { effectiveDate, setEffectiveDate } = useTotalAmountEffectiveDate();
   const t = useTranslations('dashboard.investmentTypes.capacity');
   const investmentTypesT = useTranslations('dashboard.investmentTypes');
   const locale = useLocale();
+  const metrics = useMemo(
+    () => calcInvestmentTypeMetrics(investmentType, new Date(effectiveDate)),
+    [investmentType, effectiveDate],
+  );
+  const currentAmount = metrics.usedCapacity;
+  const freeAmount = MAX_TOTAL_AMOUNT_EUR - currentAmount;
+  const futureLoansLimitCapacity =
+    metrics.usedProbe !== undefined &&
+    metrics.effectiveDateProbe !== undefined &&
+    metrics.usedProbe !== metrics.effectiveDateProbe;
 
   return (
-    <div className="flex w-full min-w-0 flex-wrap items-center justify-center gap-x-6 gap-y-3 md:justify-start">
-      <div className="flex shrink-0 items-center self-center">
-        <DonutIndicator value={currentAmount} limit={MAX_TOTAL_AMOUNT_EUR} className="h-40 w-40">
-          <span className="text-lg font-semibold">€</span>
-        </DonutIndicator>
+    <div className="flex w-full min-w-0 flex-col gap-6">
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="text-sm font-medium text-muted-foreground">{t('calculator')}</h2>
+        <Input
+          id="effectiveDate"
+          type="date"
+          value={effectiveDate}
+          onChange={(e) => {
+            if (e.target.value) {
+              setEffectiveDate(e.target.value);
+            }
+          }}
+          className="w-auto shrink-0"
+          aria-label={investmentTypesT('effectiveDate')}
+        />
       </div>
-      <div className="flex min-w-0 max-w-full shrink-0 flex-col justify-center self-center text-lg sm:text-xl">
-        <p className="font-semibold tabular-nums">
-          {formatCurrency(currentAmount)} / {formatCurrency(MAX_TOTAL_AMOUNT_EUR)}
-        </p>
-        <p className="mt-1 text-base text-muted-foreground">{t('totalAmount')}</p>
-        {effectiveDate && isValid(effectiveDate) && (
-          <p className="mt-4 flex items-center gap-1.5 text-sm text-muted-foreground">
-            <Calendar className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            <span>
-              {investmentTypesT('effectiveDate')}: {formatDateShort(effectiveDate, locale)}
-            </span>
+      <div className="flex w-full min-w-0 items-center justify-center gap-6 md:justify-start">
+        <div className="shrink-0">
+          <DonutIndicator value={currentAmount} limit={MAX_TOTAL_AMOUNT_EUR} className="h-40 w-40">
+            <span className="text-lg font-semibold">€</span>
+          </DonutIndicator>
+        </div>
+        <div className="min-w-0 flex-1 flex flex-col justify-center text-lg sm:text-xl">
+          <p className="font-semibold tabular-nums">
+            {formatCurrency(currentAmount)} / {formatCurrency(MAX_TOTAL_AMOUNT_EUR)}
           </p>
-        )}
+          <p className="mt-1 text-base text-muted-foreground">
+            {t('freeCapacity', { freeCapacity: formatCurrency(freeAmount, locale) })}
+          </p>
+          {futureLoansLimitCapacity && (
+            <p className="mt-3 text-sm text-muted-foreground">
+              <Telescope className="mr-1.5 inline h-4 w-4 shrink-0 align-text-bottom" aria-hidden />
+              <InfoText t={t} messageKey="futureLoansLimitCapacity" />
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -341,96 +396,172 @@ function NotMoreThanNUnitsLoanTableSection({ emptyMessage, loans, projectId, loc
 function TotalAmountOverTimePeriodLoanTableSection({
   emptyMessage,
   loans,
-  capacityLoans,
   projectId,
   locale,
   t,
   effectiveDate,
-  onSignDateSelect,
+  setEffectiveDate,
 }: LoanTableSectionProps & {
-  capacityLoans: LoanWithLender[];
   effectiveDate: string;
-  onSignDateSelect: (date: string) => void;
+  setEffectiveDate: (date: string) => void;
+}) {
+  const effectiveDateValue = useMemo(
+    () => (effectiveDate ? new Date(`${effectiveDate}T00:00:00`) : null),
+    [effectiveDate],
+  );
+  const displayedLoans = useMemo(
+    () =>
+      [...(effectiveDateValue ? getPastLoans(loans, effectiveDateValue) : loans)].sort(
+        (a, b) => a.signDate.getTime() - b.signDate.getTime(),
+      ),
+    [loans, effectiveDateValue],
+  );
+  const effectiveDatePeriod = useMemo(
+    () =>
+      effectiveDateValue
+        ? {
+            startDate: startOfDay(addMonths(effectiveDateValue, -PERIOD_MONTHS)),
+            endDate: effectiveDateValue,
+          }
+        : null,
+    [effectiveDateValue],
+  );
+
+  return (
+    <div className="space-y-3">
+      {effectiveDatePeriod && (
+        <p className="pb-1 text-sm text-muted-foreground">
+          {t('detail.effectiveDatePeriodDescription', {
+            startDate: formatDateShort(effectiveDatePeriod.startDate, locale),
+            endDate: formatDateShort(effectiveDatePeriod.endDate, locale),
+          })}
+        </p>
+      )}
+      <div className="border rounded-md">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-0 whitespace-nowrap">{t('detail.signDate')}</TableHead>
+              <TableHead>{t('detail.loanNumber')}</TableHead>
+              <TableHead>{t('detail.lender')}</TableHead>
+              <TableHead className="text-right">{t('detail.amount')}</TableHead>
+              <TableHead className="text-right">{t('detail.interestRate')}</TableHead>
+              <TableHead className="w-0 whitespace-nowrap text-right">
+                {t('detail.investmentAmountAtSignDate')}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {displayedLoans.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  {effectiveDate ? t('detail.noRelevantLoans') : emptyMessage}
+                </TableCell>
+              </TableRow>
+            ) : (
+              displayedLoans.map((loan) => {
+                const signDateValue = format(new Date(loan.signDate), 'yyyy-MM-dd');
+                const isSelectedEffectiveDate = effectiveDate === signDateValue;
+                const investmentAmountAtSignDate = calcTotalAmount(getPastLoans(loans, loan.signDate));
+                const investmentAmountExceedsLimit = investmentAmountAtSignDate > MAX_TOTAL_AMOUNT_EUR;
+
+                return (
+                  <TableRow key={loan.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="outline"
+                          title={t('detail.setEffectiveDateFromSignDate')}
+                          aria-label={t('detail.setEffectiveDateFromSignDate')}
+                          onClick={() => setEffectiveDate(signDateValue)}
+                          className={cn(
+                            'size-7',
+                            isSelectedEffectiveDate && 'border-primary text-primary hover:text-primary',
+                          )}
+                        >
+                          <Calendar aria-hidden />
+                        </Button>
+                        <span
+                          className={cn(
+                            'whitespace-nowrap tabular-nums select-text',
+                            isSelectedEffectiveDate && 'text-primary',
+                          )}
+                          aria-current={isSelectedEffectiveDate ? 'date' : undefined}
+                        >
+                          {formatDateShort(loan.signDate, locale)}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Link
+                        href={`/loans/${loan.id}/edit?projectId=${projectId}`}
+                        className="font-medium hover:underline"
+                      >
+                        #{loan.loanNumber}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{getLenderName(loan.lender)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(loan.amount, locale)}</TableCell>
+                    <TableCell className="text-right">{formatPercentage(loan.interestRate, locale)}</TableCell>
+                    <TableCell className="whitespace-nowrap text-right tabular-nums">
+                      <span className="inline-flex items-center justify-end gap-1.5">
+                        {investmentAmountExceedsLimit && (
+                          <>
+                            <TriangleAlert className="h-4 w-4 text-destructive" aria-hidden />
+                            <span className="sr-only">{t('detail.investmentAmountAboveLimit')}</span>
+                          </>
+                        )}
+                        {formatCurrency(investmentAmountAtSignDate, locale)}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
+
+function TotalAmountOverTimePeriodLoanTableControls({
+  effectiveDate,
+  setEffectiveDate,
+  t,
+}: {
+  effectiveDate: string;
+  setEffectiveDate: (date: string) => void;
+  t: ReturnType<typeof useTranslations<'dashboard.investmentTypes'>>;
 }) {
   return (
-    <div className="border rounded-md">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t('detail.loanNumber')}</TableHead>
-            <TableHead>{t('detail.lender')}</TableHead>
-            <TableHead>{t('detail.status')}</TableHead>
-            <TableHead className="w-0 whitespace-nowrap">{t('detail.signDate')}</TableHead>
-            <TableHead className="w-0 whitespace-nowrap">{t('detail.usedCapacityAtSignDate')}</TableHead>
-            <TableHead className="text-right">{t('detail.amount')}</TableHead>
-            <TableHead className="text-right">{t('detail.interestRate')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {loans.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                {emptyMessage}
-              </TableCell>
-            </TableRow>
-          ) : (
-            loans.map((loan) => {
-              const signDateValue = format(new Date(loan.signDate), 'yyyy-MM-dd');
-              const isSelectedEffectiveDate = effectiveDate === signDateValue;
-              const usedCapacityAtSignDate = calcTotalAmountMetrics(capacityLoans, loan.signDate).usedCapacity;
-
-              return (
-                <TableRow key={loan.id}>
-                  <TableCell>
-                    <Link
-                      href={`/lenders/${loan.lender.id}?projectId=${projectId}&loanId=${loan.id}`}
-                      className="font-medium hover:underline"
-                    >
-                      #{loan.loanNumber}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{getLenderName(loan.lender)}</TableCell>
-                  <TableCell>
-                    <LoanStatusBadge status={loan.status} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="outline"
-                        title={t('detail.setEffectiveDateFromSignDate')}
-                        aria-label={t('detail.setEffectiveDateFromSignDate')}
-                        onClick={() => onSignDateSelect(signDateValue)}
-                        className={cn(
-                          'size-7',
-                          isSelectedEffectiveDate && 'border-primary text-primary hover:text-primary',
-                        )}
-                      >
-                        <Calendar aria-hidden />
-                      </Button>
-                      <span
-                        className={cn(
-                          'whitespace-nowrap tabular-nums select-text',
-                          isSelectedEffectiveDate && 'text-primary',
-                        )}
-                        aria-current={isSelectedEffectiveDate ? 'date' : undefined}
-                      >
-                        {formatDateShort(loan.signDate, locale)}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap tabular-nums">
-                    {formatCurrency(usedCapacityAtSignDate, locale)} / {formatCurrency(MAX_TOTAL_AMOUNT_EUR, locale)}
-                  </TableCell>
-                  <TableCell className="text-right">{formatCurrency(loan.amount, locale)}</TableCell>
-                  <TableCell className="text-right">{formatPercentage(loan.interestRate, locale)}</TableCell>
-                </TableRow>
-              );
-            })
-          )}
-        </TableBody>
-      </Table>
+    <div className="flex items-center gap-2">
+      <label htmlFor="loanTableEffectiveDate" className="text-sm font-medium whitespace-nowrap">
+        {t('effectiveDate')}
+      </label>
+      <Input
+        id="loanTableEffectiveDate"
+        type="date"
+        value={effectiveDate}
+        onChange={(e) => setEffectiveDate(e.target.value)}
+        className="w-auto shrink-0"
+        aria-label={t('effectiveDate')}
+      />
+      {effectiveDate && (
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          title={t('detail.clearEffectiveDate')}
+          aria-label={t('detail.clearEffectiveDate')}
+          onClick={() => setEffectiveDate('')}
+          className="size-9 shrink-0"
+        >
+          <X aria-hidden />
+        </Button>
+      )}
     </div>
   );
 }
