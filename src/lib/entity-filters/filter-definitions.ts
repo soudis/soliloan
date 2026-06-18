@@ -190,7 +190,7 @@ export function isDynamicLoanFilterField(field: string): boolean {
   ].includes(field);
 }
 
-const LENDER_SNAPSHOT_FILTER_FIELDS = new Set([
+const LENDER_AGGREGATE_FILTER_FIELDS = new Set([
   'amount',
   'balance',
   'deposits',
@@ -200,12 +200,13 @@ const LENDER_SNAPSHOT_FILTER_FIELDS = new Set([
   'interestPaid',
 ]);
 
+export function isLenderAggregateFilterField(field: string): boolean {
+  return LENDER_AGGREGATE_FILTER_FIELDS.has(field);
+}
+
 export function filtersNeedPeriodSnapshot(filters: { entity: 'loan' | 'lender'; field: string }[]): boolean {
   for (const filter of filters) {
     if (filter.entity === 'loan' && isDynamicLoanFilterField(filter.field)) {
-      return true;
-    }
-    if (filter.entity === 'lender' && LENDER_SNAPSHOT_FILTER_FIELDS.has(filter.field)) {
       return true;
     }
   }

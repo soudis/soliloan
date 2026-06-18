@@ -7,9 +7,38 @@ import type { LoanMonthlyNumbers } from '@/types/dashboard';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
 import { getLoanStatus } from '@/lib/calculations/loan-calculations';
 
+import { isLenderAggregateFilterField } from './filter-definitions';
+
 export type PeriodSnapshot = LoanMonthlyNumbers & {
   status: LoanStatus;
 };
+
+export function getPeriodSnapshotMetricValue(
+  snapshot: PeriodSnapshot | null | undefined,
+  field: string,
+): number | LoanStatus | undefined {
+  if (!snapshot) {
+    return undefined;
+  }
+  if (field === 'balance') {
+    return snapshot.end;
+  }
+  if (field === 'status') {
+    return snapshot.status;
+  }
+  if (field in snapshot) {
+    return snapshot[field as keyof LoanMonthlyNumbers];
+  }
+  return undefined;
+}
+
+function getLenderAggregateMetricValue(lender: DashboardLoan['lender'], field: string): unknown {
+  if (!isLenderAggregateFilterField(field)) {
+    return undefined;
+  }
+  const value = (lender as Record<string, unknown>)[field];
+  return typeof value === 'number' ? value : undefined;
+}
 
 export function getLenderDisplayName(lender: DashboardLoan['lender']): string {
   if (lender.organisationName) {
@@ -84,8 +113,13 @@ export function getLoanFilterValue(
       case 'withdrawals':
       case 'notReclaimed':
       case 'interest':
-      case 'interestPaid':
-        return snapshot?.[field as keyof LoanMonthlyNumbers];
+      case 'interestPaid': {
+        const lenderAggregate = getLenderAggregateMetricValue(lender, field);
+        if (lenderAggregate !== undefined) {
+          return lenderAggregate;
+        }
+        return getPeriodSnapshotMetricValue(snapshot, field);
+      }
       default:
         return undefined;
     }
@@ -126,9 +160,9 @@ export function getLoanFilterValue(
     case 'interest':
     case 'interestPaid':
     case 'interestError':
-      return snapshot?.[field as keyof LoanMonthlyNumbers];
+      return getPeriodSnapshotMetricValue(snapshot, field);
     case 'status':
-      return snapshot?.status;
+      return getPeriodSnapshotMetricValue(snapshot, 'status');
     default:
       return undefined;
   }

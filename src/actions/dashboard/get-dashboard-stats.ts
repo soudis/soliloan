@@ -93,15 +93,39 @@ export async function getDashboardStats(projectId: string, toDate: Date = new Da
     });
 
     const dashboardLoans: DashboardLoan[] = [];
+    const dashboardLenders: DashboardLender[] = [];
+
     for (const lender of lenders) {
       const { loans: lenderLoans, ...lenderRest } = lender;
-      const parsedLender = parseAdditionalFields({ ...lenderRest, notes: [], files: [] });
+      const calculatedLender = calculateLenderFields(
+        parseAdditionalFields({
+          ...lender,
+          notes: [],
+          files: [],
+          loans: lender.loans.map((loan) => parseAdditionalFields({ ...loan, notes: [], files: [] })),
+        }),
+        { toDate },
+      );
+      const sanitizedLender = sanitizeLender(calculatedLender);
+      dashboardLenders.push(sanitizedLender);
+
+      const lenderWithAggregates = {
+        ...parseAdditionalFields({ ...lenderRest, notes: [], files: [] }),
+        amount: sanitizedLender.amount,
+        balance: sanitizedLender.balance,
+        deposits: sanitizedLender.deposits,
+        withdrawals: sanitizedLender.withdrawals,
+        notReclaimed: sanitizedLender.notReclaimed,
+        interest: sanitizedLender.interest,
+        interestPaid: sanitizedLender.interestPaid,
+      };
+
       for (const loan of lenderLoans) {
         const parsedLoan = parseAdditionalFields({
           ...loan,
           notes: [],
           files: [],
-          lender: parsedLender,
+          lender: lenderWithAggregates,
         });
         const calculated = calculateLoanFields(parsedLoan, { toDate });
         const sanitized = sanitizeLoan(calculated);
@@ -118,19 +142,6 @@ export async function getDashboardStats(projectId: string, toDate: Date = new Da
       }
     }
     dashboardLoans.sort((a, b) => new Date(b.signDate).getTime() - new Date(a.signDate).getTime());
-
-    const dashboardLenders: DashboardLender[] = lenders.map((lender) =>
-      sanitizeLender(
-        calculateLenderFields(
-          parseAdditionalFields({
-            ...lender,
-            notes: [],
-            files: [],
-            loans: lender.loans.map((loan) => parseAdditionalFields({ ...loan, notes: [], files: [] })),
-          }),
-        ),
-      ),
-    );
 
     return {
       toDate: toDate.toISOString(),
