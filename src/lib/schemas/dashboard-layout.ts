@@ -163,3 +163,9 @@ export const copyDashboardLayoutSchema = z.object({
 export const upsertGlobalDashboardLayoutSchema = z.object({
   layout: dashboardLayoutDataSaveSchema,
 });
+
+export const resetProjectDashboardLayoutSchema = z.object({
+  projectId: z.string(),
+});
+
+export const resetUserDashboardLayoutSchema = z.object({});

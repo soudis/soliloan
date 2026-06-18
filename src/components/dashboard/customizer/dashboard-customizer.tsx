@@ -7,6 +7,10 @@ import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import {
+  resetProjectDashboardLayoutAction,
+  resetUserDashboardLayoutAction,
+} from '@/actions/dashboard/mutations/reset-dashboard-layout';
+import {
   upsertProjectDashboardLayoutAction,
   upsertUserDashboardLayoutAction,
 } from '@/actions/dashboard/mutations/upsert-dashboard-layout';
@@ -127,7 +131,38 @@ export function DashboardCustomizer({
       ...prev,
       [otherScope]: copied,
     }));
+    setSelectedWidgetId(null);
+    setScope(otherScope);
     setSaveStatus('idle');
+  };
+
+  const handleResetToGlobalDefault = async () => {
+    try {
+      const result =
+        activeScope === 'project'
+          ? await resetProjectDashboardLayoutAction({ projectId })
+          : await resetUserDashboardLayoutAction({});
+
+      if (result?.serverError || result?.validationErrors || !result?.data?.layout) {
+        toast.error(t('resetToGlobalDefaultError'));
+        return;
+      }
+
+      const resetLayout = cloneLayoutData(result.data.layout);
+      setLayouts((prev) => ({
+        ...prev,
+        [activeScope]: resetLayout,
+      }));
+      setSavedLayouts((prev) => ({
+        ...prev,
+        [activeScope]: resetLayout,
+      }));
+      setSelectedWidgetId(null);
+      setSaveStatus('saved');
+      toast.success(t('resetToGlobalDefaultSuccess'));
+    } catch {
+      toast.error(t('resetToGlobalDefaultError'));
+    }
   };
 
   const exitCustomizing = () => {
@@ -236,6 +271,7 @@ export function DashboardCustomizer({
                   isTargetScopeDirty={isOtherScopeDirty}
                   onCopyLayout={handleCopyToOtherScope}
                   onSaveAsGlobalDefault={handleSaveAsGlobalDefault}
+                  onResetToGlobalDefault={handleResetToGlobalDefault}
                 />
               </aside>
             )}

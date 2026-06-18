@@ -1,6 +1,6 @@
 'use client';
 
-import { Copy, Globe, Plus, Settings } from 'lucide-react';
+import { Copy, Globe, Plus, RotateCcw, Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -20,15 +20,18 @@ export function DashboardEditorSidebar({
   isTargetScopeDirty = false,
   onCopyLayout,
   onSaveAsGlobalDefault,
+  onResetToGlobalDefault,
 }: {
   isAdmin?: boolean;
   isTargetScopeDirty?: boolean;
   onCopyLayout: (layout: DashboardLayoutData) => void;
   onSaveAsGlobalDefault: (layout: DashboardLayoutData) => void | Promise<void>;
+  onResetToGlobalDefault: () => void | Promise<void>;
 }) {
   const t = useTranslations('dashboard.customizer');
   const [tab, setTab] = useState('toolbox');
   const [globalDefaultDialogOpen, setGlobalDefaultDialogOpen] = useState(false);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [copyConfirmOpen, setCopyConfirmOpen] = useState(false);
   const prevSelectedIdRef = useRef<string | undefined>(undefined);
 
@@ -65,6 +68,16 @@ export function DashboardEditorSidebar({
             <Copy className="mr-2 h-4 w-4" />
             {scope === 'project' ? t('copyToUser') : t('copyToProject')}
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={() => setResetDialogOpen(true)}
+          >
+            <RotateCcw className="mr-2 h-4 w-4" />
+            {t('resetToGlobalDefault')}
+          </Button>
           {isAdmin ? (
             <Button
               type="button"
@@ -86,6 +99,17 @@ export function DashboardEditorSidebar({
           description={t('copyOverwriteDescription')}
           confirmText={scope === 'project' ? t('copyToUser') : t('copyToProject')}
           onConfirm={performCopy}
+        />
+
+        <ConfirmDialog
+          open={resetDialogOpen}
+          onOpenChange={setResetDialogOpen}
+          title={t('resetToGlobalDefaultConfirmTitle')}
+          description={t('resetToGlobalDefaultConfirmDescription', {
+            scope: scope === 'project' ? t('scopeProject') : t('scopeUser'),
+          })}
+          confirmText={t('resetToGlobalDefault')}
+          onConfirm={onResetToGlobalDefault}
         />
 
         <ConfirmDialog

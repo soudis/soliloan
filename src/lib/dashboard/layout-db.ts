@@ -66,6 +66,15 @@ export async function upsertGlobalDefaultLayout(layout: DashboardLayoutData): Pr
   });
 }
 
+export async function deleteScopedLayout(scope: PersistedDashboardLayoutScope, id: string): Promise<void> {
+  if (scope === SCOPE_PROJECT) {
+    await db.dashboardLayout.deleteMany({ where: { projectId: id } });
+    return;
+  }
+
+  await db.dashboardLayout.deleteMany({ where: { userId: id } });
+}
+
 export async function upsertScopedLayout(
   scope: PersistedDashboardLayoutScope,
   layout: DashboardLayoutData,
