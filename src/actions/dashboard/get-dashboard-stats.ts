@@ -1,20 +1,20 @@
 'use server';
 
+import type { Transaction } from '@prisma/client';
+import { auth } from '@/lib/auth';
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFields, calculateLoanPerMonth } from '@/lib/calculations/loan-calculations';
-import { auth } from '@/lib/auth';
-import { assertCanManageProject } from '@/lib/views/access';
-import { db } from '@/lib/db';
-import { sanitizeLender } from '@/lib/sanitation/sanitize-lender';
-import { sanitizeLoan } from '@/lib/sanitation/sanitize-loan';
-import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import {
   buildCumulativeTimeline,
   type CumulativeTimelineEntry,
 } from '@/lib/dashboard/history-table/cumulative-timeline';
+import { db } from '@/lib/db';
+import { sanitizeLender } from '@/lib/sanitation/sanitize-lender';
+import { sanitizeLoan } from '@/lib/sanitation/sanitize-loan';
+import { parseAdditionalFields } from '@/lib/utils/additional-fields';
+import { assertCanManageProject } from '@/lib/views/access';
 import type { LoanMonthlyHistory, LoanMonthlyNumbers } from '@/types/dashboard';
 import type { LenderWithCalculations } from '@/types/lenders';
-import type { Transaction } from '@prisma/client';
 import type { LoanWithCalculations } from '@/types/loans';
 
 export type DashboardLender = LenderWithCalculations;

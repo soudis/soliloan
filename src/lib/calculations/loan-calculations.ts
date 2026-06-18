@@ -55,6 +55,30 @@ const getBaseDays = (method: InterestMethod, date: Moment) => {
   return Number.parseInt(method.split('_')[1] ?? '360', 10);
 };
 
+export const getInterestDays = (
+  fromDateParameter: Moment | undefined,
+  toDateParameter: Moment | undefined,
+  interestMethod: InterestMethod,
+) => {
+  const fromDate = fromDateParameter ? fromDateParameter : moment(toDateParameter).startOf('year');
+  const toDate = toDateParameter ? toDateParameter : moment(fromDateParameter).endOf('year');
+  const firstYear = !toDateParameter;
+  const lastYear = !fromDateParameter;
+  if (interestMethod.startsWith('E30_360')) {
+    if (toDate.isSameOrBefore(moment(fromDate).endOf('month'))) {
+      return moment(toDate).diff(fromDate, 'days');
+    }
+    let interestDays = Math.max(30 - fromDate.date() + 1, 0);
+    const months = moment(toDate).month() - fromDate.month() - 1;
+    interestDays += months * 30;
+    interestDays += Math.min(moment(toDate).date(), 30);
+    interestDays -= lastYear ? 1 : 0;
+    interestDays -= !lastYear && !firstYear ? 1 : 0;
+    return interestDays;
+  }
+  return toDate.diff(fromDate, 'days');
+};
+
 export const calculateInterestDaily = (
   fromDateParameter: Moment | undefined,
   toDateParameter: Moment | undefined,
@@ -62,34 +86,82 @@ export const calculateInterestDaily = (
   rate: Prisma.Decimal,
   interestMethod: InterestMethod,
 ) => {
-  const fromDate = fromDateParameter ? fromDateParameter : moment(toDateParameter).startOf('year');
   const toDate = toDateParameter ? toDateParameter : moment(fromDateParameter).endOf('year');
-  const firstYear = !toDateParameter;
-  const lastYear = !fromDateParameter;
-  let interestDays = 0;
-  if (interestMethod.startsWith('E30_360')) {
-    if (toDate.isSameOrBefore(moment(fromDate).endOf('month'))) {
-      // if the dates are in the same month
-      interestDays = moment(toDate).diff(fromDate, 'days');
-    } else {
-      // days in first month
-      interestDays = Math.max(30 - fromDate.date() + 1, 0);
-      // months * 30
-      const months = moment(toDate).month() - fromDate.month() - 1;
-      interestDays += months * 30;
-      // days in last month
-      interestDays += Math.min(moment(toDate).date(), 30);
-      interestDays -= lastYear ? 1 : 0;
-      interestDays -= !lastYear && !firstYear ? 1 : 0;
-    }
-  } else {
-    interestDays = toDate.diff(fromDate, 'days');
-  }
+  const interestDays = getInterestDays(fromDateParameter, toDateParameter, interestMethod);
   return new Prisma.Decimal(amount)
     .times(rate)
     .dividedBy(100)
     .times(interestDays)
     .dividedBy(getBaseDays(interestMethod, toDate));
+};
+
+const getYearInterestPeriodBounds = (year: number, firstTransactionDate: Moment, toDate: Moment) => {
+  const yearStart = moment({ year }).startOf('year');
+  const yearEnd = moment({ year }).endOf('year');
+  return {
+    start: moment.max(firstTransactionDate.clone().startOf('day'), yearStart),
+    end: moment.min(toDate.clone().endOf('day'), yearEnd),
+  };
+};
+
+const allocateYearlyInterestToMonths = (
+  yearInterest: Prisma.Decimal,
+  monthsInYear: { year: number; month: number }[],
+  periodStart: Moment,
+  periodEnd: Moment,
+  method: InterestMethod,
+) => {
+  const allocations = new Map<string, Prisma.Decimal>();
+  const weights: { key: string; days: number }[] = [];
+  let totalDays = 0;
+
+  for (const { year, month } of monthsInYear) {
+    const monthStart = moment({ year, month: month - 1 }).startOf('month');
+    const monthEnd = moment({ year, month: month - 1 }).endOf('month');
+    const effectiveStart = moment.max(monthStart, periodStart);
+    const effectiveEnd = moment.min(monthEnd, periodEnd);
+    if (effectiveStart.isAfter(effectiveEnd, 'day')) {
+      continue;
+    }
+    const days = getInterestDays(effectiveStart, effectiveEnd, method);
+    if (days <= 0) {
+      continue;
+    }
+    weights.push({ key: `${year}-${month}`, days });
+    totalDays += days;
+  }
+
+  if (weights.length === 0 || yearInterest.isZero()) {
+    for (const { year, month } of monthsInYear) {
+      allocations.set(`${year}-${month}`, new Prisma.Decimal(0));
+    }
+    return allocations;
+  }
+
+  let allocated = new Prisma.Decimal(0);
+  for (let index = 0; index < weights.length; index++) {
+    const weight = weights[index];
+    if (!weight) {
+      continue;
+    }
+    if (index === weights.length - 1) {
+      allocations.set(weight.key, yearInterest.minus(allocated));
+      continue;
+    }
+    const share = yearInterest.times(weight.days).dividedBy(totalDays).toFixed(2);
+    const amount = new Prisma.Decimal(share);
+    allocations.set(weight.key, amount);
+    allocated = allocated.plus(amount);
+  }
+
+  for (const { year, month } of monthsInYear) {
+    const key = `${year}-${month}`;
+    if (!allocations.has(key)) {
+      allocations.set(key, new Prisma.Decimal(0));
+    }
+  }
+
+  return allocations;
 };
 
 export const calculateLoanPerYear = (
@@ -288,10 +360,43 @@ export const calculateLoanPerMonth = (
     return [];
   }
 
+  const perYear = calculateLoanPerYear(loan, toDateParameter, currentTransactionId);
+  const perYearByYear = new Map(perYear.map((yearEntry) => [yearEntry.year, yearEntry]));
+
   const firstMonth = moment(firstTransaction.date).startOf('month');
   const lastMonth = toDate.clone().startOf('month');
   if (firstMonth.isAfter(lastMonth, 'month')) {
     return [];
+  }
+
+  const monthsInYearMap = new Map<number, { year: number; month: number }[]>();
+  for (let cursor = firstMonth.clone(); cursor.isSameOrBefore(lastMonth, 'month'); cursor.add(1, 'month')) {
+    const year = cursor.year();
+    const month = cursor.month() + 1;
+    const monthsInYear = monthsInYearMap.get(year) ?? [];
+    monthsInYear.push({ year, month });
+    monthsInYearMap.set(year, monthsInYear);
+  }
+
+  const interestByMonthKey = new Map<string, Prisma.Decimal>();
+  const interestErrorByMonthKey = new Map<string, Prisma.Decimal>();
+
+  for (const [year, monthsInYear] of monthsInYearMap) {
+    const yearEntry = perYearByYear.get(year);
+    if (!yearEntry) {
+      continue;
+    }
+    const { start, end } = getYearInterestPeriodBounds(year, moment(firstTransaction.date), toDate);
+    const allocations = allocateYearlyInterestToMonths(yearEntry.interest, monthsInYear, start, end, method);
+    for (const [key, amount] of allocations) {
+      interestByMonthKey.set(key, amount);
+    }
+    if (!yearEntry.interestError.isZero()) {
+      const lastMonthInYear = monthsInYear.at(-1);
+      if (lastMonthInYear) {
+        interestErrorByMonthKey.set(`${lastMonthInYear.year}-${lastMonthInYear.month}`, yearEntry.interestError);
+      }
+    }
   }
 
   const months: LoanPeriodAccumulator[] = [createEmptyLoanPeriod(firstMonth.year(), firstMonth.month() + 1)];
@@ -303,10 +408,12 @@ export const calculateLoanPerMonth = (
     }
 
     const isLastMonth = cursor.isSame(lastMonth, 'month');
-    const monthEnd = isLastMonth ? toDate : cursor.clone().endOf('month');
+    const year = cursor.year();
+    const month = cursor.month() + 1;
+    const monthKey = `${year}-${month}`;
+
     let amount = new Prisma.Decimal(currentMonth.begin);
     let interestBaseAmount = currentMonth.interestBaseAmount;
-    let interest = new Prisma.Decimal(0);
     let terminationDate: Moment | undefined;
 
     transactions
@@ -319,16 +426,6 @@ export const calculateLoanPerMonth = (
             if (amount.lessThanOrEqualTo(1)) {
               terminationDate = moment(transaction.date);
               interestBaseAmount = new Prisma.Decimal(0);
-            } else {
-              interest = interest.plus(
-                calculateInterestDaily(
-                  moment(transaction.date),
-                  monthEnd,
-                  new Prisma.Decimal(transaction.amount),
-                  new Prisma.Decimal(loan.interestRate),
-                  method,
-                ),
-              );
             }
           }
           switch (transaction.type) {
@@ -350,34 +447,34 @@ export const calculateLoanPerMonth = (
         }
       });
 
-    interest = interest.plus(
-      calculateInterestDaily(
-        cursor.clone().startOf('month'),
-        terminationDate ?? monthEnd,
-        currentMonth.interestBaseAmount,
-        new Prisma.Decimal(loan.interestRate),
-        method,
-      ),
-    );
-
-    currentMonth.interest = new Prisma.Decimal(interest.toFixed(2));
+    currentMonth.interest = interestByMonthKey.get(monthKey) ?? new Prisma.Decimal(0);
+    currentMonth.interestError = interestErrorByMonthKey.get(monthKey) ?? new Prisma.Decimal(0);
     currentMonth.end = new Prisma.Decimal(amount.plus(currentMonth.interest).toFixed(2));
+
+    const lastYearEntry = perYear.at(-1);
+    if (
+      isLastMonth &&
+      lastYearEntry?.end.isZero() &&
+      !currentMonth.end.isZero() &&
+      terminationDate &&
+      loan.transactions.at(-1)?.id !== currentTransactionId
+    ) {
+      currentMonth.interestError = currentMonth.interestError.plus(currentMonth.end);
+      currentMonth.interest = currentMonth.interest.minus(currentMonth.end);
+      currentMonth.end = new Prisma.Decimal(0);
+    }
 
     if (!isLastMonth) {
       const nextMonth = cursor.clone().add(1, 'month');
+      const crossesYearBoundary = nextMonth.year() !== year;
+      const yearEntry = perYearByYear.get(year);
       months.push({
         ...createEmptyLoanPeriod(nextMonth.year(), nextMonth.month() + 1),
         begin: new Prisma.Decimal(currentMonth.end),
-        interestBaseAmount: interestBaseAmount.plus(compound ? currentMonth.interest : 0),
+        interestBaseAmount: interestBaseAmount.plus(
+          compound && crossesYearBoundary && yearEntry ? yearEntry.interest : 0,
+        ),
       });
-    } else if (
-      terminationDate &&
-      loan.transactions.at(-1)?.id !== currentTransactionId &&
-      !currentMonth.end.equals(0)
-    ) {
-      currentMonth.interestError = currentMonth.interest.minus(currentMonth.end);
-      currentMonth.interest = currentMonth.interest.minus(currentMonth.end);
-      currentMonth.end = new Prisma.Decimal(0);
     }
   }
 

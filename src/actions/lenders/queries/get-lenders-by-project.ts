@@ -1,13 +1,7 @@
 'use server';
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { db } from '@/lib/db';
-import {
-  lenderFilesRelation,
-  lenderNotesRelation,
-  loanFilesRelation,
-  loanNotesRelation,
-} from '@/lib/prisma/notes-files-relations';
-import { sanitizeLender } from '@/lib/sanitation/sanitize-lender';
+import { sanitizeLenderForList } from '@/lib/sanitation/sanitize-lender';
 import { projectIdSchema } from '@/lib/schemas/common';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { projectAction } from '@/lib/utils/safe-action';
@@ -25,12 +19,8 @@ export async function getLendersByProjectIdUnsafe(projectId: string) {
         loans: {
           include: {
             transactions: true,
-            notes: loanNotesRelation,
-            files: loanFilesRelation,
           },
         },
-        notes: lenderNotesRelation,
-        files: lenderFilesRelation,
         user: {
           select: {
             name: true,
@@ -50,9 +40,14 @@ export async function getLendersByProjectIdUnsafe(projectId: string) {
 
     // Calculate virtual fields for each lender
     const lendersWithCalculations = lenders.map((lender) =>
-      sanitizeLender(
+      sanitizeLenderForList(
         calculateLenderFields(
-          parseAdditionalFields({ ...lender, loans: lender.loans.map((loan) => parseAdditionalFields(loan)) }),
+          parseAdditionalFields({
+            ...lender,
+            notes: [],
+            files: [],
+            loans: lender.loans.map((loan) => parseAdditionalFields({ ...loan, notes: [], files: [] })),
+          }),
         ),
       ),
     );

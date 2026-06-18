@@ -10,7 +10,7 @@ import {
   createLenderNameColumn,
 } from '@/lib/table-column-utils';
 import { getLenderName } from '@/lib/utils';
-import type { LenderWithCalculations } from '@/types/lenders';
+import type { LenderListItem } from '@/types/lenders';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
 export type LenderTableColumnMeta = {
@@ -46,9 +46,9 @@ export function buildAllLenderTableColumns(
   tLoans: (key: string) => string,
   commonT: (key: string) => string,
   locale: string,
-): ColumnDef<LenderWithCalculations>[] {
+): ColumnDef<LenderListItem>[] {
   return [
-    createColumn<LenderWithCalculations>(
+    createColumn<LenderListItem>(
       {
         accessorKey: 'lenderNumber',
         header: 'table.lenderNumber',
@@ -56,9 +56,9 @@ export function buildAllLenderTableColumns(
       t,
     ),
 
-    createLenderNameColumn<LenderWithCalculations>(t),
+    createLenderNameColumn<LenderListItem>(t),
 
-    createLenderEnumBadgeColumn<LenderWithCalculations>(
+    createLenderEnumBadgeColumn<LenderListItem>(
       'type',
       'table.type',
       'enums.lender.type',
@@ -67,7 +67,7 @@ export function buildAllLenderTableColumns(
       () => 'outline',
     ),
 
-    createColumn<LenderWithCalculations>(
+    createColumn<LenderListItem>(
       {
         accessorKey: 'email',
         header: 'table.email',
@@ -75,7 +75,7 @@ export function buildAllLenderTableColumns(
       t,
     ),
 
-    createColumn<LenderWithCalculations>(
+    createColumn<LenderListItem>(
       {
         accessorKey: 'telNo',
         header: 'table.telNo',
@@ -83,11 +83,11 @@ export function buildAllLenderTableColumns(
       t,
     ),
 
-    createLenderAddressColumn<LenderWithCalculations>(t),
+    createLenderAddressColumn<LenderListItem>(t),
 
-    createLenderBankingColumn<LenderWithCalculations>(t),
+    createLenderBankingColumn<LenderListItem>(t),
 
-    createLenderEnumBadgeColumn<LenderWithCalculations>(
+    createLenderEnumBadgeColumn<LenderListItem>(
       'salutation',
       'table.salutation',
       'enums.lender.salutation',
@@ -96,7 +96,7 @@ export function buildAllLenderTableColumns(
       () => 'outline',
     ),
 
-    createLenderEnumBadgeColumn<LenderWithCalculations>(
+    createLenderEnumBadgeColumn<LenderListItem>(
       'notificationType',
       'table.notificationType',
       'enums.lender.notificationType',
@@ -105,26 +105,26 @@ export function buildAllLenderTableColumns(
       () => 'outline',
     ),
 
-    ...createAdditionalFieldsColumns<LenderWithCalculations>(
+    ...createAdditionalFieldsColumns<LenderListItem>(
       project.configuration.lenderAdditionalFields,
       'additionalFields',
       t,
       locale,
     ),
 
-    createCurrencyColumn<LenderWithCalculations>('amount', 'table.amount', tLoans, locale),
+    createCurrencyColumn<LenderListItem>('amount', 'table.amount', tLoans, locale),
 
-    createCurrencyColumn<LenderWithCalculations>('balance', 'table.balance', tLoans, locale),
+    createCurrencyColumn<LenderListItem>('balance', 'table.balance', tLoans, locale),
 
-    createCurrencyColumn<LenderWithCalculations>('deposits', 'table.deposits', tLoans, locale),
+    createCurrencyColumn<LenderListItem>('deposits', 'table.deposits', tLoans, locale),
 
-    createCurrencyColumn<LenderWithCalculations>('withdrawals', 'table.withdrawals', tLoans, locale),
+    createCurrencyColumn<LenderListItem>('withdrawals', 'table.withdrawals', tLoans, locale),
 
-    createCurrencyColumn<LenderWithCalculations>('notReclaimed', 'table.notReclaimed', tLoans, locale),
+    createCurrencyColumn<LenderListItem>('notReclaimed', 'table.notReclaimed', tLoans, locale),
 
-    createCurrencyColumn<LenderWithCalculations>('interest', 'table.interest', tLoans, locale),
+    createCurrencyColumn<LenderListItem>('interest', 'table.interest', tLoans, locale),
 
-    createCurrencyColumn<LenderWithCalculations>('interestPaid', 'table.interestPaid', tLoans, locale),
+    createCurrencyColumn<LenderListItem>('interestPaid', 'table.interestPaid', tLoans, locale),
   ];
 }
 
@@ -142,16 +142,16 @@ export function buildLenderTableColumnMeta(project: ProjectWithConfiguration): L
   return [...staticBeforeAdditional, ...additionalFieldMeta, ...staticAfterAdditional];
 }
 
-function readNestedValue(row: LenderWithCalculations, field: string): unknown {
+function readNestedValue(row: LenderListItem, field: string): unknown {
   if (field.startsWith('additionalFields.')) {
     const key = field.replace('additionalFields.', '');
     return row.additionalFields?.[key];
   }
-  return row[field as keyof LenderWithCalculations];
+  return row[field as keyof LenderListItem];
 }
 
 export function getLenderSortValue(
-  row: LenderWithCalculations,
+  row: LenderListItem,
   columnId: string,
   commonT: (key: string) => string,
 ): string | number | null {

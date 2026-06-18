@@ -14,3 +14,9 @@ export function sanitizeLender(lender: ReturnType<typeof calculateLenderFields>)
     loans: lenderLoans?.map(sanitizeLoanWithoutLender),
   };
 }
+
+/** List views only need aggregate fields — omit nested loans and merged notes/files (incl. thumbnails). */
+export function sanitizeLenderForList(lender: ReturnType<typeof calculateLenderFields>) {
+  const { allNotes, allFiles, loans, ...lenderForList } = sanitizeLender(lender);
+  return lenderForList;
+}
