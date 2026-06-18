@@ -12,6 +12,7 @@ import moment, { type Moment } from 'moment';
 import type { CalculationOptions } from '@/types/calculation';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
 
+import { getLoanTermDays, getRepaymentPeriodDays } from './loan-duration-metrics';
 import { createdAtDescSorter, transactionSorter } from '../utils/sorters';
 
 export const isRepaid = (loan: LoanWithRelations, toDate: Date) => {
@@ -582,6 +583,8 @@ export function calculateLoanFields<T>(loan: LoanWithRelations & T, options: Cal
     interest: numbers.toDate.interest.toNumber(),
     // if interest calculation found large errors show warning
     interestError: numbers.toDate.interestError.toNumber(),
+    loanTermDays: getLoanTermDays(loan, toDate),
+    repaymentPeriodDays: getRepaymentPeriodDays(loan, toDate),
     // add interests per year as virtual transactions
     transactions: loan.transactions
       .map((transaction) => ({

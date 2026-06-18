@@ -21,6 +21,7 @@ export function StatWidget({ widget }: { widget: DashboardWidget }) {
   const t = useTranslations('dashboard.widgets.stat');
   const tMetrics = useTranslations('dashboard.customizer.historyTable');
   const tStatCustomizer = useTranslations('dashboard.customizer.stat');
+  const tDuration = useTranslations('common.duration');
   const commonT = useTranslations('common');
   const { loans, toDate, fieldOptions } = useDashboardData();
 
@@ -75,7 +76,12 @@ export function StatWidget({ widget }: { widget: DashboardWidget }) {
               )}
               stat={stat}
               value={value}
-              formattedValue={formatDashboardMetricValue(stat.metric, value, stat.aggregation === 'delta')}
+              formattedValue={formatDashboardMetricValue(
+                stat.metric,
+                value,
+                stat.aggregation === 'delta',
+                (key, values) => tDuration(key, values),
+              )}
             />
           </div>
         );

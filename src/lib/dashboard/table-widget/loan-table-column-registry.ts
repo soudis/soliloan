@@ -6,6 +6,7 @@ import {
   createColumn,
   createCurrencyColumn,
   createDateColumn,
+  createDurationDaysColumn,
   createEnumBadgeColumn,
   createLenderColumn,
   createNumberColumn,
@@ -38,6 +39,8 @@ const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
   { id: 'terminationType', labelKey: 'table.terminationType' },
   { id: 'terminationModalities', labelKey: 'table.terminationModalities' },
   { id: 'repayDate', labelKey: 'table.repayDate' },
+  { id: 'loanTermDays', labelKey: 'table.loanTerm' },
+  { id: 'repaymentPeriodDays', labelKey: 'table.repaymentPeriod' },
   { id: 'status', labelKey: 'table.status' },
   { id: 'altInterestMethod', labelKey: 'table.altInterestMethod' },
   { id: 'contractStatus', labelKey: 'table.contractStatus' },
@@ -48,6 +51,7 @@ export function buildAllLoanTableColumns(
   t: (key: string) => string,
   commonT: (key: string) => string,
   locale: string,
+  durationT: (key: string, values?: Record<string, number>) => string,
 ): ColumnDef<LoanWithCalculations>[] {
   return [
     createNumberColumn<LoanWithCalculations>('loanNumber', 'table.loanNumber', t, locale),
@@ -97,6 +101,10 @@ export function buildAllLoanTableColumns(
     createTerminationModalitiesColumn<LoanWithCalculations>(t, commonT),
 
     createDateColumn<LoanWithCalculations>('repayDate', 'table.repayDate', t, locale),
+
+    createDurationDaysColumn<LoanWithCalculations>('loanTermDays', 'table.loanTerm', t, durationT),
+
+    createDurationDaysColumn<LoanWithCalculations>('repaymentPeriodDays', 'table.repaymentPeriod', t, durationT),
 
     createEnumBadgeColumn<LoanWithCalculations>('status', 'table.status', 'enums.loan.status', t, commonT, (value) => {
       switch (value) {
@@ -235,6 +243,8 @@ export const LOAN_TABLE_COLUMN_IDS = [
   'terminationType',
   'terminationModalities',
   'repayDate',
+  'loanTermDays',
+  'repaymentPeriodDays',
   'status',
   'altInterestMethod',
   'contractStatus',

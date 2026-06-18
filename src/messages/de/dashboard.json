@@ -165,7 +165,10 @@
         "interestError": "Zinsabweichung",
         "contractAmount": "Vertragsbetrag",
         "loanCount": "Anzahl Kredite",
-        "interestRateAvg": "Ø Zinssatz (gewichtet)"
+        "interestRateAvg": "Ø Zinssatz (gewichtet)",
+        "lenderCount": "Anzahl Kreditgeber*innen",
+        "loanTerm": "Kreditlaufzeit",
+        "repaymentPeriod": "Rückzahlungszeitraum"
       }
     },
     "stat": {
@@ -184,9 +187,18 @@
       "aggregationTotal": "Gesamt (bis heute)",
       "aggregationAverage": "Durchschnitt",
       "aggregationMedian": "Median",
+      "aggregationAverageByLender": "Ø je Kreditgeber*in",
+      "aggregationMedianByLender": "Median je Kreditgeber*in",
       "aggregationDelta": "Veränderung",
       "defaultTitleWithAverage": "Ø {metric}",
       "defaultTitleWithMedian": "Median {metric}",
+      "defaultTitleWithAverageByLender": "Ø {metric} je Kreditgeber*in",
+      "defaultTitleWithMedianByLender": "Median {metric} je Kreditgeber*in",
+      "metrics": {
+        "lenderCount": "Anzahl Kreditgeber*innen",
+        "loanTerm": "Kreditlaufzeit",
+        "repaymentPeriod": "Rückzahlungszeitraum"
+      },
       "deltaRange": "Zeitraum",
       "deltaUnits": {
         "days": "Tage",
@@ -679,6 +691,8 @@
       "contractStatus": "Vertragsstatus",
       "signDate": "Vertragsdatum",
       "repayDate": "Rückzahlungsfrist",
+      "loanTerm": "Kreditlaufzeit",
+      "repaymentPeriod": "Rückzahlungszeitraum",
       "repaidDate": "Rückzahlungsdatum",
       "transactions": "Zahlungen",
       "bookings": "Buchungen",

@@ -23,8 +23,11 @@ import {
   STAT_DELTA_UNITS,
   STAT_GRID_COLUMNS_MAX,
   STAT_GRID_COLUMNS_MIN,
-  STAT_METRICS_WITHOUT_AVG_MEDIAN,
+  STAT_METRICS_AVG_MEDIAN_ONLY,
+  STAT_METRICS_TOTAL_ONLY,
+  STAT_ONLY_METRICS,
   STAT_WIDGET_METRICS,
+  supportsStatByLenderAggregation,
   type StatItemConfig,
   type StatWidgetConfig,
 } from '@/types/dashboard-widgets/stat-widget';
@@ -154,6 +157,16 @@ export function StatWidgetSettings({
     });
   };
 
+  const metricLabel = useCallback(
+    (metric: StatItemConfig['metric']) => {
+      if ((STAT_ONLY_METRICS as readonly string[]).includes(metric)) {
+        return t(`metrics.${metric}`);
+      }
+      return tHistory(`metrics.${metric}`);
+    },
+    [t, tHistory],
+  );
+
   const layoutMode = draftConfig.layoutMode ?? 'flexible';
 
   return (
@@ -217,7 +230,9 @@ export function StatWidgetSettings({
       {draftConfig.stats.map((stat) => {
         const isExpanded = expandedStatIds.has(stat.id);
         const cumulativeOnly = CUMULATIVE_ONLY_STAT_METRICS.includes(stat.metric);
-        const avgMedDisabled = STAT_METRICS_WITHOUT_AVG_MEDIAN.includes(stat.metric);
+        const totalOnly = STAT_METRICS_TOTAL_ONLY.includes(stat.metric);
+        const avgMedOnly = STAT_METRICS_AVG_MEDIAN_ONLY.includes(stat.metric);
+        const supportsByLender = supportsStatByLenderAggregation(stat.metric);
 
         return (
           <div key={stat.id} className="rounded-md border">
@@ -233,7 +248,7 @@ export function StatWidgetSettings({
                 {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
               </Button>
               <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                {resolveStatDisplayTitle(stat, tHistory(`metrics.${stat.metric}`), (key, values) => t(key, values))}
+                {resolveStatDisplayTitle(stat, metricLabel(stat.metric), (key, values) => t(key, values))}
               </span>
               <Button
                 type="button"
@@ -270,7 +285,7 @@ export function StatWidgetSettings({
                     <SelectContent>
                       {STAT_WIDGET_METRICS.map((m) => (
                         <SelectItem key={m} value={m}>
-                          {tHistory(`metrics.${m}`)}
+                          {metricLabel(m)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -324,14 +339,22 @@ export function StatWidgetSettings({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="total">{t('aggregationTotal')}</SelectItem>
-                      {!avgMedDisabled ? (
+                      {!avgMedOnly ? <SelectItem value="total">{t('aggregationTotal')}</SelectItem> : null}
+                      {!totalOnly ? (
                         <>
                           <SelectItem value="average">{t('aggregationAverage')}</SelectItem>
                           <SelectItem value="median">{t('aggregationMedian')}</SelectItem>
                         </>
                       ) : null}
-                      {!cumulativeOnly ? <SelectItem value="delta">{t('aggregationDelta')}</SelectItem> : null}
+                      {supportsByLender ? (
+                        <>
+                          <SelectItem value="averageByLender">{t('aggregationAverageByLender')}</SelectItem>
+                          <SelectItem value="medianByLender">{t('aggregationMedianByLender')}</SelectItem>
+                        </>
+                      ) : null}
+                      {!cumulativeOnly && !avgMedOnly && !totalOnly ? (
+                        <SelectItem value="delta">{t('aggregationDelta')}</SelectItem>
+                      ) : null}
                     </SelectContent>
                   </Select>
                 </div>

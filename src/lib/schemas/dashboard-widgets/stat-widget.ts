@@ -1,13 +1,11 @@
 import { z } from 'zod';
 
 import {
-  CUMULATIVE_ONLY_STAT_METRICS,
-  isStatAvgMedianAggregation,
+  isStatAggregationValidForMetric,
   STAT_AGGREGATIONS,
   STAT_DELTA_UNITS,
   STAT_GRID_COLUMNS_MAX,
   STAT_GRID_COLUMNS_MIN,
-  STAT_METRICS_WITHOUT_AVG_MEDIAN,
   STAT_WIDGET_LAYOUT_MODES,
   STAT_WIDGET_METRICS,
 } from '@/types/dashboard-widgets/stat-widget';
@@ -31,17 +29,10 @@ const statItemSchema = z
     filters: entityFiltersSchema,
   })
   .superRefine((stat, ctx) => {
-    if (CUMULATIVE_ONLY_STAT_METRICS.includes(stat.metric) && stat.aggregation === 'delta') {
+    if (!isStatAggregationValidForMetric(stat.metric, stat.aggregation)) {
       ctx.addIssue({
         code: 'custom',
         message: 'dashboard.customizer.stat.validation.metricAggregation',
-        path: ['aggregation'],
-      });
-    }
-    if (STAT_METRICS_WITHOUT_AVG_MEDIAN.includes(stat.metric) && isStatAvgMedianAggregation(stat.aggregation)) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'dashboard.customizer.stat.validation.metricAggregationAvgMed',
         path: ['aggregation'],
       });
     }

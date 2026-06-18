@@ -22,6 +22,7 @@ export function LoanTableWidget({ widget }: { widget: DashboardWidget }) {
   const t = useTranslations('dashboard.widgets.loanTable');
   const tLoans = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
+  const tDuration = useTranslations('common.duration');
   const locale = useLocale();
   const router = useRouter();
   const { loans, toDate, project, getOrComputeWidgetResult } = useDashboardData();
@@ -31,8 +32,8 @@ export function LoanTableWidget({ widget }: { widget: DashboardWidget }) {
   const fieldOptions = useMemo(() => buildLoanFilterFieldOptions(project, tLoans, commonT), [project, tLoans, commonT]);
 
   const columns = useMemo(
-    () => buildAllLoanTableColumns(project, tLoans, commonT, locale),
-    [project, tLoans, commonT, locale],
+    () => buildAllLoanTableColumns(project, tLoans, commonT, locale, (key, values) => tDuration(key, values)),
+    [project, tLoans, commonT, locale, tDuration],
   );
 
   const filteredLoans = useMemo(

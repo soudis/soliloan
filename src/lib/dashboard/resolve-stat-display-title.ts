@@ -26,6 +26,12 @@ export function resolveStatDisplayTitle(
   if (stat.aggregation === 'median') {
     return tStat('defaultTitleWithMedian', { metric: metricLabel });
   }
+  if (stat.aggregation === 'averageByLender') {
+    return tStat('defaultTitleWithAverageByLender', { metric: metricLabel });
+  }
+  if (stat.aggregation === 'medianByLender') {
+    return tStat('defaultTitleWithMedianByLender', { metric: metricLabel });
+  }
   if (stat.aggregation !== 'delta') {
     return metricLabel;
   }

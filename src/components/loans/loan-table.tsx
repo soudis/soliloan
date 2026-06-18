@@ -31,6 +31,7 @@ interface LoanTableProps {
 export function LoanTable({ loans, project, projectId, views }: LoanTableProps) {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
+  const tDuration = useTranslations('common.duration');
   const router = useRouter();
   const locale = useLocale();
   const selectedViewName = useSelectedViewName(views);
@@ -68,7 +69,13 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
     },
   ];
 
-  const columns: ColumnDef<LoanWithCalculations>[] = buildAllLoanTableColumns(project, t, commonT, locale);
+  const columns: ColumnDef<LoanWithCalculations>[] = buildAllLoanTableColumns(
+    project,
+    t,
+    commonT,
+    locale,
+    (key, values) => tDuration(key, values),
+  );
 
   // Define column filters based on data types
   const columnFilters = {
@@ -136,6 +143,14 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
       type: 'date' as const,
       label: t('table.repayDate'),
     },
+    loanTermDays: {
+      type: 'number' as const,
+      label: t('table.loanTerm'),
+    },
+    repaymentPeriodDays: {
+      type: 'number' as const,
+      label: t('table.repaymentPeriod'),
+    },
     status: {
       type: 'select' as const,
       label: t('table.status'),
@@ -180,6 +195,8 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
     terminationType: false,
     terminationModalities: false,
     repayDate: false,
+    loanTermDays: false,
+    repaymentPeriodDays: false,
     status: true,
     altInterestMethod: false,
     contractStatus: false,

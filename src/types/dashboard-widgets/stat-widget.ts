@@ -2,13 +2,26 @@ import type { EntityFilter } from '@/types/entity-filters';
 
 import { HISTORY_TABLE_METRICS, type HistoryTableMetric } from './history-table';
 
-export type StatWidgetMetric = HistoryTableMetric;
+export const STAT_ONLY_METRICS = ['lenderCount', 'loanTerm', 'repaymentPeriod'] as const;
 
-export const STAT_WIDGET_METRICS = HISTORY_TABLE_METRICS;
+export type StatOnlyMetric = (typeof STAT_ONLY_METRICS)[number];
+
+export type HistoryTableStatMetric = HistoryTableMetric;
+
+export const STAT_WIDGET_METRICS = [...HISTORY_TABLE_METRICS, ...STAT_ONLY_METRICS] as const;
+
+export type StatWidgetMetric = (typeof STAT_WIDGET_METRICS)[number];
 
 export type StatDisplayType = 'main' | 'secondary';
 
-export const STAT_AGGREGATIONS = ['total', 'delta', 'average', 'median'] as const;
+export const STAT_AGGREGATIONS = [
+  'total',
+  'delta',
+  'average',
+  'median',
+  'averageByLender',
+  'medianByLender',
+] as const;
 
 export type StatAggregation = (typeof STAT_AGGREGATIONS)[number];
 
@@ -51,24 +64,63 @@ export type StatWidgetConfig = {
 
 export const CUMULATIVE_ONLY_STAT_METRICS: StatWidgetMetric[] = ['interestRateAvg'];
 
-export const STAT_METRICS_WITHOUT_AVG_MEDIAN: StatWidgetMetric[] = ['loanCount'];
+export const STAT_METRICS_TOTAL_ONLY: StatWidgetMetric[] = ['loanCount', 'lenderCount'];
+
+export const STAT_METRICS_AVG_MEDIAN_ONLY: StatWidgetMetric[] = ['loanTerm', 'repaymentPeriod'];
+
+export const STAT_METRICS_WITHOUT_BY_LENDER: StatWidgetMetric[] = [
+  'interestRateAvg',
+  'loanTerm',
+  'repaymentPeriod',
+  'loanCount',
+  'lenderCount',
+];
+
+export function isHistoryTableStatMetric(metric: StatWidgetMetric): metric is HistoryTableStatMetric {
+  return !(STAT_ONLY_METRICS as readonly string[]).includes(metric);
+}
 
 export function isStatAvgMedianAggregation(aggregation: StatAggregation): boolean {
   return aggregation === 'average' || aggregation === 'median';
+}
+
+export function isStatByLenderAggregation(aggregation: StatAggregation): boolean {
+  return aggregation === 'averageByLender' || aggregation === 'medianByLender';
+}
+
+export function isStatAggregateAggregation(aggregation: StatAggregation): boolean {
+  return isStatAvgMedianAggregation(aggregation) || isStatByLenderAggregation(aggregation);
+}
+
+export function supportsStatByLenderAggregation(metric: StatWidgetMetric): boolean {
+  return !STAT_METRICS_WITHOUT_BY_LENDER.includes(metric);
 }
 
 export function isStatAggregationValidForMetric(metric: StatWidgetMetric, aggregation: StatAggregation): boolean {
   if (CUMULATIVE_ONLY_STAT_METRICS.includes(metric) && aggregation === 'delta') {
     return false;
   }
-  if (STAT_METRICS_WITHOUT_AVG_MEDIAN.includes(metric) && isStatAvgMedianAggregation(aggregation)) {
+  if (STAT_METRICS_TOTAL_ONLY.includes(metric) && aggregation !== 'total') {
+    return false;
+  }
+  if (STAT_METRICS_AVG_MEDIAN_ONLY.includes(metric) && !isStatAvgMedianAggregation(aggregation)) {
+    return false;
+  }
+  if (isStatByLenderAggregation(aggregation) && !supportsStatByLenderAggregation(metric)) {
     return false;
   }
   return true;
 }
 
 export function normalizeStatAggregation(metric: StatWidgetMetric, aggregation: StatAggregation): StatAggregation {
-  return isStatAggregationValidForMetric(metric, aggregation) ? aggregation : 'total';
+  return isStatAggregationValidForMetric(metric, aggregation) ? aggregation : defaultStatAggregationForMetric(metric);
+}
+
+export function defaultStatAggregationForMetric(metric: StatWidgetMetric): StatAggregation {
+  if (STAT_METRICS_AVG_MEDIAN_ONLY.includes(metric)) {
+    return 'average';
+  }
+  return 'total';
 }
 
 export function createDefaultStatDeltaRange(): StatDeltaRange {
@@ -94,6 +146,22 @@ function parseGridColumns(raw: unknown, layoutMode: StatWidgetLayoutMode): numbe
   return Math.min(STAT_GRID_COLUMNS_MAX, Math.max(STAT_GRID_COLUMNS_MIN, Math.round(n)));
 }
 
+function parseStatAggregation(raw: unknown, metric: StatWidgetMetric): StatAggregation {
+  const aggregation: StatAggregation =
+    raw === 'delta'
+      ? 'delta'
+      : raw === 'average'
+        ? 'average'
+        : raw === 'median'
+          ? 'median'
+          : raw === 'averageByLender'
+            ? 'averageByLender'
+            : raw === 'medianByLender'
+              ? 'medianByLender'
+              : 'total';
+  return normalizeStatAggregation(metric, aggregation);
+}
+
 export function parseStatWidgetConfig(config: Record<string, unknown> | undefined): StatWidgetConfig {
   if (!config || typeof config !== 'object') {
     return createDefaultStatWidgetConfig();
@@ -109,15 +177,7 @@ export function parseStatWidgetConfig(config: Record<string, unknown> | undefine
         const metric = (
           STAT_WIDGET_METRICS.includes(stat.metric as StatWidgetMetric) ? stat.metric : 'balance'
         ) as StatWidgetMetric;
-        const rawAggregation: StatAggregation =
-          stat.aggregation === 'delta'
-            ? 'delta'
-            : stat.aggregation === 'average'
-              ? 'average'
-              : stat.aggregation === 'median'
-                ? 'median'
-                : 'total';
-        const aggregation = normalizeStatAggregation(metric, rawAggregation);
+        const aggregation = parseStatAggregation(stat.aggregation, metric);
         return {
           id: String(stat.id ?? crypto.randomUUID()),
           title: String(stat.title ?? ''),
@@ -125,7 +185,7 @@ export function parseStatWidgetConfig(config: Record<string, unknown> | undefine
           metric,
           aggregation,
           deltaRange:
-            stat.aggregation === 'delta'
+            aggregation === 'delta'
               ? {
                   amount: Number.isFinite(amount) && amount > 0 ? amount : 1,
                   unit,
