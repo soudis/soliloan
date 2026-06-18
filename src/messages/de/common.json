@@ -189,8 +189,8 @@
         "INTEREST": "Zinsen",
         "INTERESTPAYMENT": "Zinsauszahlung",
         "TERMINATION": "Rückzahlung",
-        "NOTRECLAIMEDPARTIAL": "Teilabschreibung",
-        "NOTRECLAIMED": "Abschreibung"
+        "NOTRECLAIMEDPARTIAL": "Teilerlassung",
+        "NOTRECLAIMED": "Erlassung"
       },
       "paymentType": {
         "BANK": "Banküberweisung",

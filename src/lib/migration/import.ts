@@ -35,6 +35,8 @@ import type {
 } from './types';
 
 const SIGN_DATE_FALLBACK = new Date('2000-01-01');
+/** File import + thumbnail generation can exceed Prisma's default 5s interactive transaction limit. */
+const MIGRATION_TRANSACTION_TIMEOUT_MS = 600_000;
 
 interface MigrationInput {
   baseUrl: string;
@@ -537,7 +539,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
           },
         };
       },
-      { timeout: 120_000 },
+      { timeout: MIGRATION_TRANSACTION_TIMEOUT_MS },
     );
 
     return {
