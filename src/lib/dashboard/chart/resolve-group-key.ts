@@ -133,6 +133,9 @@ function resolveSelectLabel(
   if (field === 'notificationType' && str) {
     return commonT(`enums.lender.notificationType.${str}`);
   }
+  if (field === 'country' && str) {
+    return commonT(`countries.${str.toLowerCase()}`);
+  }
   return str;
 }
 

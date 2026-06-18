@@ -22,14 +22,34 @@ export function getLenderFilterValue(lender: LenderWithCalculations, field: stri
       return lender.type;
     case 'name':
       return getLenderName(lender);
+    case 'firstName':
+      return lender.firstName;
+    case 'lastName':
+      return lender.lastName;
+    case 'organisationName':
+      return lender.organisationName;
     case 'email':
       return lender.email;
     case 'telNo':
       return lender.telNo;
     case 'address':
       return getLenderAddress(lender);
+    case 'street':
+      return lender.street;
+    case 'addon':
+      return lender.addon;
+    case 'zip':
+      return lender.zip;
+    case 'place':
+      return lender.place;
+    case 'country':
+      return lender.country;
     case 'banking':
       return getLenderBanking(lender);
+    case 'iban':
+      return lender.iban;
+    case 'bic':
+      return lender.bic;
     case 'salutation':
       return lender.salutation;
     case 'notificationType':

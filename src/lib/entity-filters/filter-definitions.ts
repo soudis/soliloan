@@ -1,4 +1,4 @@
-import { ContractStatus, InterestMethod, NotificationType, Salutation, TerminationType } from '@prisma/client';
+import { ContractStatus, Country, InterestMethod, NotificationType, Salutation, TerminationType } from '@prisma/client';
 
 import { createAdditionalFieldFilters } from '@/lib/table-column-utils';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
@@ -18,6 +18,13 @@ const LOAN_STATUS_OPTIONS = [
   { labelKey: 'TERMINATED', value: 'TERMINATED' },
   { labelKey: 'NOTDEPOSITED', value: 'NOTDEPOSITED' },
 ];
+
+function buildCountryFilterOptions(commonT: (key: string) => string) {
+  return Object.values(Country).map((value) => ({
+    label: commonT(`countries.${value.toLowerCase()}`),
+    value,
+  }));
+}
 
 export function buildLoanFilterFieldOptions(
   project: ProjectWithConfiguration,
@@ -98,10 +105,24 @@ export function buildLenderFilterFieldOptions(
       ],
     },
     name: { type: 'text', label: t('table.name') },
+    firstName: { type: 'text', label: t('table.firstName') },
+    lastName: { type: 'text', label: t('table.lastName') },
+    organisationName: { type: 'text', label: t('table.organisationName') },
     email: { type: 'text', label: t('table.email') },
     telNo: { type: 'text', label: t('table.telNo') },
     address: { type: 'text', label: t('table.address') },
+    street: { type: 'text', label: t('table.street') },
+    addon: { type: 'text', label: t('table.addon') },
+    zip: { type: 'text', label: t('table.zip') },
+    place: { type: 'text', label: t('table.place') },
+    country: {
+      type: 'select',
+      label: t('table.country'),
+      options: buildCountryFilterOptions(commonT),
+    },
     banking: { type: 'text', label: t('table.banking') },
+    iban: { type: 'text', label: t('table.iban') },
+    bic: { type: 'text', label: t('table.bic') },
     salutation: {
       type: 'select',
       label: t('table.salutation'),
