@@ -2,8 +2,8 @@
 
 import type { ColumnFilter } from '@tanstack/react-table';
 
+import { EntityDateFilter } from '@/components/dashboard/widgets/filters/entity-date-filter';
 import {
-  DateFilter,
   MultiSelectFilter,
   NumberFilter,
   SelectFilter,
@@ -42,7 +42,7 @@ export function EntityFilterControl({
     case 'number':
       return <NumberFilter filterState={filterState} onFilterChange={(v) => onChange(v)} />;
     case 'date':
-      return <DateFilter filterState={filterState} onFilterChange={(v) => onChange(v)} />;
+      return <EntityDateFilter value={value} onChange={onChange} />;
     default:
       return (
         <TextFilter

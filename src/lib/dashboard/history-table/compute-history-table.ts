@@ -121,6 +121,7 @@ export function filterLoansForHistoryColumn(
         periodStart: period.periodStart,
         snapshot,
         commonT,
+        referenceDate: period.periodEnd,
       },
       fieldOptions,
     );

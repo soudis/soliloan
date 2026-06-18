@@ -62,6 +62,7 @@ export function computePieChart(
     periodStart,
     snapshot: null as ReturnType<typeof getOrBuildPeriodSnapshot> | null,
     commonT,
+    referenceDate: periodEnd,
   };
 
   const discriminator = getPieChartDiscriminator(config);

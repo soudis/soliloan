@@ -12,6 +12,7 @@ export type LoanFilterContext = {
   periodStart: Date;
   snapshot: PeriodSnapshot | null;
   commonT: (key: string, values?: Record<string, string>) => string;
+  referenceDate: Date;
 };
 
 export function loanMatchesFilters(
@@ -35,7 +36,7 @@ export function loanMatchesFilters(
     const snapshot = useSnapshot ? context.snapshot : null;
     const value = getLoanFilterValue(loan, filter.entity, filter.field, snapshot, context.commonT);
 
-    if (!matchesFilterByType(value, filter.value, definition.type)) {
+    if (!matchesFilterByType(value, filter.value, definition.type, { referenceDate: context.referenceDate })) {
       return false;
     }
   }

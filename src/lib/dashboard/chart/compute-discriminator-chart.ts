@@ -52,6 +52,7 @@ export function computeDiscriminatorChartData(
     periodStart,
     snapshot: null as ReturnType<typeof getOrBuildPeriodSnapshot> | null,
     commonT,
+    referenceDate: periodEnd,
   };
 
   const fieldDef = getFilterDefinitionForField(fieldOptions, discriminator.groupBy.entity, discriminator.groupBy.field);

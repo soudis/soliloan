@@ -68,6 +68,7 @@ export function LoanTableWidget({ widget }: { widget: DashboardWidget }) {
                     periodStart,
                     snapshot,
                     commonT,
+                    referenceDate: periodEnd,
                   },
                   fieldOptions,
                 );
