@@ -1,0 +1,593 @@
+{
+  "layout": {
+    "rows": [
+      {
+        "id": "5fdf5fac-94c1-45b1-8682-b03305545580",
+        "widgets": [
+          {
+            "id": "1642c531-3bc5-4b6d-8393-4e234f2e08f1",
+            "type": "stat",
+            "title": "",
+            "width": "third",
+            "config": {
+              "stats": [
+                {
+                  "id": "ca8c0803-7817-47bb-8822-0bf1de4d457f",
+                  "title": "Aktive Kredite",
+                  "metric": "loanCount",
+                  "filters": [
+                    {
+                      "id": "d4f1c7e0-fa0c-405c-aade-a33f6fe2c7f1",
+                      "field": "status",
+                      "value": "ACTIVE",
+                      "entity": "loan"
+                    }
+                  ],
+                  "aggregation": "total",
+                  "displayType": "main",
+                  "colorCodeSign": false
+                },
+                {
+                  "id": "e187ce34-3b73-44d8-8696-90d482397c15",
+                  "title": "Gekündigte Kredite",
+                  "metric": "loanCount",
+                  "filters": [
+                    {
+                      "id": "6fe3f240-5adb-48f6-8d47-180632210657",
+                      "field": "status",
+                      "value": "TERMINATED",
+                      "entity": "loan"
+                    }
+                  ],
+                  "aggregation": "total",
+                  "displayType": "secondary",
+                  "colorCodeSign": false
+                },
+                {
+                  "id": "f0a62d61-1fd6-42d4-891e-157c1bd0927a",
+                  "title": "Zurückgezahlte Kredite",
+                  "metric": "loanCount",
+                  "filters": [
+                    {
+                      "id": "7ae1709f-c44d-41ef-9a8f-fe12ca5dde6f",
+                      "field": "status",
+                      "value": "REPAID",
+                      "entity": "loan"
+                    }
+                  ],
+                  "aggregation": "total",
+                  "displayType": "secondary",
+                  "colorCodeSign": false
+                }
+              ],
+              "layoutMode": "grid",
+              "gridColumns": 1,
+              "layoutVersion": 1
+            }
+          },
+          {
+            "id": "c973c0b9-d948-4c05-aed9-c2464f6edc45",
+            "type": "stat",
+            "title": "",
+            "width": "third",
+            "config": {
+              "stats": [
+                {
+                  "id": "44e21754-09bd-4215-9c62-f8e5216109ef",
+                  "title": "Kontostand",
+                  "metric": "balance",
+                  "filters": [],
+                  "aggregation": "total",
+                  "displayType": "main",
+                  "colorCodeSign": false
+                },
+                {
+                  "id": "0c001979-09d6-49f7-a946-8977126f8c13",
+                  "title": "",
+                  "metric": "balance",
+                  "filters": [],
+                  "deltaRange": {
+                    "unit": "months",
+                    "amount": 12
+                  },
+                  "aggregation": "delta",
+                  "displayType": "secondary",
+                  "colorCodeSign": false
+                },
+                {
+                  "id": "4c57e05f-9a78-4a9f-a2f8-39533b6f787b",
+                  "title": "",
+                  "metric": "interest",
+                  "filters": [],
+                  "deltaRange": {
+                    "unit": "months",
+                    "amount": 12
+                  },
+                  "aggregation": "delta",
+                  "displayType": "secondary",
+                  "colorCodeSign": false
+                }
+              ],
+              "layoutMode": "grid",
+              "gridColumns": 1,
+              "layoutVersion": 1
+            }
+          },
+          {
+            "id": "f50a6a4c-60b0-45a0-bb4f-ba162ed638d0",
+            "type": "stat",
+            "title": "",
+            "width": "third",
+            "config": {
+              "stats": [
+                {
+                  "id": "cf81583a-7b60-47e3-a85f-2febc6b7c74c",
+                  "title": "",
+                  "metric": "contractAmount",
+                  "filters": [
+                    {
+                      "id": "de139af8-76ad-4094-b9eb-7f495a0f5840",
+                      "field": "status",
+                      "value": "ACTIVE",
+                      "entity": "loan"
+                    }
+                  ],
+                  "aggregation": "average",
+                  "displayType": "main",
+                  "colorCodeSign": false
+                },
+                {
+                  "id": "4dd45309-6c65-441f-b891-5ec16cb4b4bc",
+                  "title": "",
+                  "metric": "contractAmount",
+                  "filters": [],
+                  "aggregation": "median",
+                  "displayType": "main",
+                  "colorCodeSign": false
+                }
+              ],
+              "layoutMode": "grid",
+              "gridColumns": 1,
+              "layoutVersion": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "447a7d30-4221-441e-a678-e796997aaf28",
+        "widgets": [
+          {
+            "id": "db494a61-f1ef-4ad0-9479-71d845524976",
+            "type": "divider",
+            "title": "Anstehende Rückzahlungen",
+            "width": "full",
+            "config": {}
+          }
+        ]
+      },
+      {
+        "id": "e071a183-104c-4bcd-8c1e-cc5670ca4687",
+        "widgets": [
+          {
+            "id": "3d4bdff8-766a-480d-be57-ca07c24a9301",
+            "type": "loan_table_view",
+            "title": "",
+            "width": "full",
+            "config": {
+              "columns": [
+                {
+                  "id": "loanNumber",
+                  "visible": true
+                },
+                {
+                  "id": "lenderName",
+                  "visible": true
+                },
+                {
+                  "id": "signDate",
+                  "visible": false
+                },
+                {
+                  "id": "amount",
+                  "visible": false
+                },
+                {
+                  "id": "balance",
+                  "visible": true
+                },
+                {
+                  "id": "interestRate",
+                  "visible": false
+                },
+                {
+                  "id": "status",
+                  "visible": true
+                },
+                {
+                  "id": "lenderNumber",
+                  "visible": false
+                },
+                {
+                  "id": "deposits",
+                  "visible": false
+                },
+                {
+                  "id": "withdrawals",
+                  "visible": false
+                },
+                {
+                  "id": "notReclaimed",
+                  "visible": false
+                },
+                {
+                  "id": "interest",
+                  "visible": false
+                },
+                {
+                  "id": "interestPaid",
+                  "visible": false
+                },
+                {
+                  "id": "terminationType",
+                  "visible": false
+                },
+                {
+                  "id": "terminationModalities",
+                  "visible": false
+                },
+                {
+                  "id": "repayDate",
+                  "visible": true
+                },
+                {
+                  "id": "altInterestMethod",
+                  "visible": false
+                },
+                {
+                  "id": "contractStatus",
+                  "visible": false
+                }
+              ],
+              "filters": [
+                {
+                  "id": "f355d57e-03a8-4e05-8639-f6ef0fd70fee",
+                  "field": "status",
+                  "value": "TERMINATED",
+                  "entity": "loan"
+                }
+              ],
+              "rowLimit": 5,
+              "defaultSort": {
+                "desc": false,
+                "columnId": "repayDate"
+              },
+              "displayMode": "paged",
+              "layoutVersion": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "fcf1571c-370e-4d9e-a7e4-d23c28870fa2",
+        "widgets": [
+          {
+            "id": "3fff7723-140e-496f-874a-f701307aca41",
+            "type": "divider",
+            "title": "Verteilungen",
+            "width": "full",
+            "config": {}
+          }
+        ]
+      },
+      {
+        "id": "da43a3ac-ec48-4329-ba02-4e1169cd09e1",
+        "widgets": [
+          {
+            "id": "c0b3fe63-72f3-4294-b3b2-a45311b15077",
+            "type": "pie_chart",
+            "title": "Kontostand nach Beziehung zum Projekt",
+            "width": "third",
+            "config": {
+              "filters": [],
+              "groupBy": {
+                "field": "additionalFields.relationship",
+                "entity": "lender"
+              },
+              "measure": "balance",
+              "chartSize": "big",
+              "chartVariant": "pie",
+              "layoutVersion": 1,
+              "topNCategories": 8,
+              "measureAggregation": "sum"
+            }
+          },
+          {
+            "id": "212801a5-2094-400d-a8a2-fed6dd5fe9cb",
+            "type": "pie_chart",
+            "title": "Vertragsabschluss nach Monat",
+            "width": "third",
+            "config": {
+              "filters": [],
+              "groupBy": {
+                "field": "signDate",
+                "entity": "loan"
+              },
+              "measure": "loanCount",
+              "chartSize": "big",
+              "chartVariant": "donut",
+              "dateGrouping": "monthOfYear",
+              "layoutVersion": 1,
+              "topNCategories": 12,
+              "measureAggregation": "sum"
+            }
+          },
+          {
+            "id": "b75b4d1d-3ae8-448c-8f6a-cdeb270490ce",
+            "type": "pie_chart",
+            "title": "Kontostand nach E-Mail TLD",
+            "width": "third",
+            "config": {
+              "filters": [],
+              "groupBy": {
+                "field": "email",
+                "entity": "lender"
+              },
+              "measure": "balance",
+              "chartSize": "big",
+              "chartVariant": "pie",
+              "layoutVersion": 1,
+              "textTransform": {
+                "kind": "lastChars",
+                "count": 3
+              },
+              "topNCategories": 5,
+              "measureAggregation": "sum"
+            }
+          }
+        ]
+      },
+      {
+        "id": "22cff57d-dbdf-46c6-bda3-3e5de239d02e",
+        "widgets": [
+          {
+            "id": "6c82908d-5c6f-4117-bb92-d10d5f5a8d31",
+            "type": "divider",
+            "title": "Ein- und Auszahlungen",
+            "width": "full",
+            "config": {}
+          }
+        ]
+      },
+      {
+        "id": "eb132b47-f637-4933-ad34-fac574748a27",
+        "widgets": [
+          {
+            "id": "d3a7716a-7b3c-4784-b007-6663afa956e8",
+            "type": "bar_chart",
+            "title": "Ein- und Auszahlungen (letzte 2 Jahre)",
+            "width": "half",
+            "config": {
+              "series": [
+                {
+                  "id": "e1efcbea-0e10-4a34-a637-bf9d6ac6fac1",
+                  "title": "",
+                  "metric": "deposits",
+                  "filters": [],
+                  "aggregation": "delta"
+                },
+                {
+                  "id": "72bfe1f0-921a-46c2-b731-f2487d9809da",
+                  "title": "",
+                  "metric": "withdrawals",
+                  "filters": [],
+                  "aggregation": "delta"
+                }
+              ],
+              "timeline": {
+                "periodMode": "monthly",
+                "periodCount": null
+              },
+              "chartSize": "big",
+              "xAxisMode": "timeline",
+              "seriesLayout": "grouped",
+              "discriminator": {
+                "filters": [],
+                "groupBy": {
+                  "field": "status",
+                  "entity": "loan"
+                },
+                "topNCategories": 8
+              },
+              "layoutVersion": 1
+            }
+          },
+          {
+            "id": "fc3ef3cf-9e1b-4051-b853-dd8336c76085",
+            "type": "history_table",
+            "title": " Ein- und Auszahlungen (letztes Jahr)",
+            "width": "half",
+            "config": {
+              "columns": [
+                {
+                  "id": "a88e8fd0-c664-4a0f-a116-16ef5df1cb5c",
+                  "title": "Kontostand",
+                  "metric": "balance",
+                  "filters": [],
+                  "aggregation": "delta",
+                  "colorCodeSign": true
+                },
+                {
+                  "id": "f7d95608-ae7c-4138-a8a4-092e7dc02e64",
+                  "title": "",
+                  "metric": "deposits",
+                  "filters": [],
+                  "aggregation": "delta",
+                  "colorCodeSign": true
+                }
+              ],
+              "periodMode": "monthly",
+              "periodCount": 12,
+              "layoutVersion": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "1072b800-86e1-4431-ad30-f4c5f533402b",
+        "widgets": [
+          {
+            "id": "f3d7e63d-9d16-4e13-924a-aec77852e982",
+            "type": "divider",
+            "title": "Verschuldung",
+            "width": "full",
+            "config": {}
+          }
+        ]
+      },
+      {
+        "id": "3b453d7e-3511-4f26-b02a-eb1d8ea20056",
+        "widgets": [
+          {
+            "id": "72936c4e-fab2-4705-846f-3b8092ff63fb",
+            "type": "line_chart",
+            "title": "Verschuldung seit Projektstart",
+            "width": "half",
+            "config": {
+              "series": [
+                {
+                  "id": "afe60d0c-75fc-430e-8db2-cc10d5e68ff1",
+                  "title": "",
+                  "filled": true,
+                  "metric": "balance",
+                  "filters": [],
+                  "dashStyle": "dashed",
+                  "lineShape": "smooth",
+                  "lineWidth": 2,
+                  "showPoints": false,
+                  "aggregation": "cumulative",
+                  "colorCodeSign": false
+                }
+              ],
+              "timeline": {
+                "periodMode": "yearly",
+                "periodCount": null
+              },
+              "chartSize": "medium",
+              "xAxisMode": "timeline",
+              "discriminator": {
+                "filters": [],
+                "groupBy": {
+                  "field": "status",
+                  "entity": "loan"
+                },
+                "topNCategories": 8
+              },
+              "layoutVersion": 1
+            }
+          },
+          {
+            "id": "a5bf03c8-7a95-4a3a-9139-1383070e1049",
+            "type": "line_chart",
+            "title": "Verschuldung in den letzten 24 Monaten",
+            "width": "half",
+            "config": {
+              "series": [
+                {
+                  "id": "500e24ba-5612-46d1-88a7-e725645cf6de",
+                  "title": "",
+                  "filled": true,
+                  "metric": "balance",
+                  "filters": [],
+                  "dashStyle": "solid",
+                  "lineShape": "stepped",
+                  "lineWidth": 2,
+                  "showPoints": false,
+                  "aggregation": "cumulative",
+                  "colorCodeSign": false
+                }
+              ],
+              "timeline": {
+                "periodMode": "monthly",
+                "periodCount": null
+              },
+              "chartSize": "medium",
+              "xAxisMode": "timeline",
+              "beginAtZero": false,
+              "discriminator": {
+                "filters": [],
+                "groupBy": {
+                  "field": "status",
+                  "entity": "loan"
+                },
+                "topNCategories": 8
+              },
+              "layoutVersion": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "6a2e8e33-da75-47f6-8a4f-508e42b42613",
+        "widgets": [
+          {
+            "id": "956dcb13-d89f-4d8a-a910-1bc5957d71d4",
+            "type": "divider",
+            "title": "Beispieltabelle Kreditgeber*innen",
+            "width": "full",
+            "config": {}
+          }
+        ]
+      },
+      {
+        "id": "efdb238a-0ed5-4e98-8cca-22a4e43e64f5",
+        "widgets": [
+          {
+            "id": "a2d65ac2-d17e-430f-b441-1bad1ed623db",
+            "type": "lender_table_view",
+            "title": "Hall of Fame ",
+            "width": "full",
+            "config": {
+              "columns": [
+                {
+                  "id": "lenderNumber",
+                  "visible": true
+                },
+                {
+                  "id": "name",
+                  "visible": true
+                },
+                {
+                  "id": "type",
+                  "visible": true
+                },
+                {
+                  "id": "balance",
+                  "visible": true
+                },
+                {
+                  "id": "amount",
+                  "visible": true
+                }
+              ],
+              "filters": [
+                {
+                  "id": "67949347-8257-4172-9a7a-6698f8e34692",
+                  "field": "balance",
+                  "value": [50000, null],
+                  "entity": "lender"
+                }
+              ],
+              "rowLimit": 10,
+              "defaultSort": {
+                "desc": true,
+                "columnId": "balance"
+              },
+              "displayMode": "paged",
+              "layoutVersion": 1
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

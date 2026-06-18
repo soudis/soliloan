@@ -1,10 +1,49 @@
-import { exec } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { readFile, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
+
+const THUMBNAIL_SIZE = '384x384';
+
+async function cropToSquareThumbnail(inputPath: string, outputPath: string): Promise<void> {
+  await execFileAsync('convert', [
+    inputPath,
+    '-background',
+    'white',
+    '-gravity',
+    'center',
+    '-resize',
+    `${THUMBNAIL_SIZE}^`,
+    '-extent',
+    THUMBNAIL_SIZE,
+    outputPath,
+  ]);
+}
+
+async function createPdfThumbnail(inputPath: string, outputPath: string): Promise<void> {
+  const pagePrefix = `${outputPath}-page`;
+
+  // ImageMagick needs Ghostscript for PDFs, which is not installed in our Docker image.
+  // poppler-utils (pdftoppm) is available and handles PDF rendering directly.
+  await execFileAsync('pdftoppm', [
+    '-png',
+    '-f',
+    '1',
+    '-l',
+    '1',
+    '-singlefile',
+    '-scale-to',
+    '384',
+    inputPath,
+    pagePrefix,
+  ]);
+
+  await cropToSquareThumbnail(`${pagePrefix}.png`, outputPath);
+  await unlink(`${pagePrefix}.png`).catch(() => {});
+}
 
 function toPrismaBytes(data: Buffer): Uint8Array<ArrayBuffer> {
   const result = new Uint8Array(data.byteLength);
@@ -12,7 +51,7 @@ function toPrismaBytes(data: Buffer): Uint8Array<ArrayBuffer> {
   return result as Uint8Array<ArrayBuffer>;
 }
 
-/** Generates a 384×384 thumbnail for images and the first page of PDFs via ImageMagick `convert`. */
+/** Generates a 384×384 thumbnail for images (ImageMagick) and PDFs (pdftoppm + ImageMagick). */
 export async function createThumbnail(
   data: Buffer | Uint8Array,
   mimeType: string,
@@ -21,31 +60,25 @@ export async function createThumbnail(
     return undefined;
   }
 
+  const tempInputPath = join(tmpdir(), `${Date.now()}-input`);
+  const tempOutputPath = join(tmpdir(), `${Date.now()}-output`);
+
   try {
     const binaryData = Buffer.isBuffer(data) ? data : Buffer.from(data);
-    const tempInputPath = join(tmpdir(), `${Date.now()}-input`);
-    const tempOutputPath = join(tmpdir(), `${Date.now()}-output`);
-
     await writeFile(tempInputPath, binaryData);
 
     if (mimeType === 'application/pdf') {
-      await execAsync(
-        `convert -density 300 "${tempInputPath}[0]" -background white -alpha remove -alpha off -resize 384x384^ -gravity center -extent 384x384 -quality 90 "${tempOutputPath}.png"`,
-      );
-      await execAsync(`mv "${tempOutputPath}.png" "${tempOutputPath}"`);
+      await createPdfThumbnail(tempInputPath, tempOutputPath);
     } else {
-      await execAsync(
-        `convert "${tempInputPath}" -resize 384x384^ -gravity center -extent 384x384 "${tempOutputPath}"`,
-      );
+      await cropToSquareThumbnail(tempInputPath, tempOutputPath);
     }
 
     const thumbnailBuffer = await readFile(tempOutputPath);
-
-    await Promise.all([unlink(tempInputPath), unlink(tempOutputPath)]);
-
     return toPrismaBytes(thumbnailBuffer);
   } catch (error) {
     console.error('Error generating thumbnail:', error);
     return undefined;
+  } finally {
+    await Promise.all([unlink(tempInputPath), unlink(tempOutputPath)]).catch(() => {});
   }
 }

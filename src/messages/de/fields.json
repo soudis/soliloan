@@ -27,7 +27,7 @@
     "withdrawals": "Auszahlungen",
     "interestPaid": "Ausgezahlte Zinsen",
     "interestError": "Fehlerkorrektur",
-    "notReclaimed": "Nicht zurückgefordert",
+    "notReclaimed": "Erlassungen",
     "amount": "Gesamtbetrag",
     "interestRate": "Durchschn. Zinssatz",
     "balanceInterestRate": "Gewichteter Zinssatz",
@@ -53,7 +53,7 @@
     "withdrawals": "Auszahlungen",
     "interestPaid": "Ausgezahlte Zinsen",
     "interestError": "Fehlerkorrektur",
-    "notReclaimed": "Nicht zurückgefordert",
+    "notReclaimed": "Erlassungen",
     "repaidDate": "Rückzahlungsdatum (kurz)",
     "repaidDateLong": "Rückzahlungsdatum (lang)",
     "repayDate": "Fälligkeitsdatum (kurz)",
@@ -93,7 +93,7 @@
     "withdrawals": "Auszahlungen (Jahr)",
     "interest": "Zinsen (Jahr)",
     "interestPaid": "Ausgezahlte Zinsen (Jahr)",
-    "notReclaimed": "Nicht zurückgefordert (Jahr)",
+    "notReclaimed": "Erlassungen (Jahr)",
     "interestError": "Fehlerkorrektur (Jahr)"
   },
   "loanYearly": {
@@ -104,7 +104,7 @@
     "withdrawals": "Auszahlungen (Jahr)",
     "interest": "Zinsen (Jahr)",
     "interestPaid": "Ausgezahlte Zinsen (Jahr)",
-    "notReclaimed": "Nicht zurückgefordert (Jahr)",
+    "notReclaimed": "Erlassungen (Jahr)",
     "interestError": "Fehlerkorrektur (Jahr)"
   },
   "config": {

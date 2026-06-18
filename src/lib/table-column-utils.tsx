@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { formatCurrency, formatPercentage, getLenderName, NumberParser, resolveIntlLocaleForDates } from '@/lib/utils';
+import { formatDurationDays } from '@/lib/format-duration';
 import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat } from './schemas/common';
 
 // Define the custom filter function for compound text fields
@@ -171,6 +172,27 @@ export function createDateColumn<T>(
 type PercentageColumnFormattingOptions = {
   align?: 'left' | 'right' | 'center';
 };
+export function createDurationDaysColumn<T>(
+  accessorKey: string,
+  headerKey: string | undefined,
+  t: (key: string) => string,
+  durationT: (key: string, values?: Record<string, number>) => string,
+): ColumnDef<T> {
+  const column = createColumn<T>(
+    {
+      accessorKey,
+      header: headerKey,
+      cell: ({ row }) => {
+        const value = row.getValue(accessorKey) as number | null | undefined;
+        return <div className="tabular-nums">{formatDurationDays(value, durationT)}</div>;
+      },
+    },
+    t,
+  );
+
+  column.filterFn = 'inNumberRange';
+  return column;
+}
 
 // Create a percentage column
 export function createPercentageColumn<T>(

@@ -63,86 +63,86 @@ export function DataTableBody<TData>({
                             !fillHeight && 'relative',
                             fillHeight && 'z-20',
                           ),
-                      header.column.columnDef.meta?.actionsColumn &&
-                        'w-9 min-w-[2.25rem] max-w-[2.25rem] !p-0 text-center align-middle',
-                    )}
-                  >
-                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && 'selected'}
-                className={cn(
-                  'group/row transition-colors',
-                  onRowClick &&
-                    'data-table-clickable-row cursor-pointer hover:bg-transparent data-[state=selected]:hover:bg-muted',
-                )}
-                onClick={(e) => {
-                  const target = e.target as HTMLElement;
-                  // Prevent row click when clicking the bulk select checkbox
-                  if (hasBulkSelect && target.closest('[data-bulk-select]')) return;
-                  // Prevent row click when opening/using the row actions trigger (…)
-                  if (target.closest('[data-row-actions]')) return;
-                  // Portaled row-actions menu / menu items are not under the row; ghost click can still hit the row
-                  if (
-                    e.nativeEvent.composedPath().some((node) => {
-                      if (!(node instanceof HTMLElement)) return false;
-                      return (
-                        node.getAttribute('role') === 'menu' ||
-                        node.getAttribute('role') === 'menuitem' ||
-                        node.hasAttribute('data-row-actions-menu-content')
-                      );
-                    })
-                  ) {
-                    return;
-                  }
-                  if (
-                    lastRowActionsMenuClosedAtRef &&
-                    Date.now() - lastRowActionsMenuClosedAtRef.current < ROW_CLICK_SUPPRESS_MS_AFTER_ACTIONS_MENU
-                  ) {
-                    return;
-                  }
-                  onRowClick?.(row.original);
-                }}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    {...(cell.column.columnDef.meta?.actionsColumn ? { 'data-actions-cell': '' } : {})}
-                    {...(cell.column.columnDef.meta?.bulkSelectColumn ? { 'data-bulk-select-cell': '' } : {})}
-                    className={cn(
-                      nonActionsCellBg(!!onRowClick),
-                      cell.column.columnDef.meta?.fixed &&
-                        'sticky right-0 z-10 before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
-                      cell.column.columnDef.meta?.bulkSelectColumn &&
-                        'relative w-10 min-w-[2.5rem] max-w-[2.5rem] !p-0 align-top leading-none',
-                      cell.column.columnDef.meta?.actionsColumn &&
-                        'w-9 min-w-[2.25rem] max-w-[2.25rem] !p-0 align-top leading-none',
-                    )}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+                        header.column.columnDef.meta?.actionsColumn &&
+                          'w-9 min-w-[2.25rem] max-w-[2.25rem] !p-0 text-center align-middle',
+                      )}
+                    >
+                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell
-                colSpan={table.getAllColumns().length}
-                className="h-24 bg-background text-center dark:bg-background"
-              >
-                {t('noResults')}
-              </TableCell>
-            </TableRow>
-          )}
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                  className={cn(
+                    'group/row transition-colors',
+                    onRowClick &&
+                      'data-table-clickable-row cursor-pointer hover:bg-transparent data-[state=selected]:hover:bg-muted',
+                  )}
+                  onClick={(e) => {
+                    const target = e.target as HTMLElement;
+                    // Prevent row click when clicking the bulk select checkbox
+                    if (hasBulkSelect && target.closest('[data-bulk-select]')) return;
+                    // Prevent row click when opening/using the row actions trigger (…)
+                    if (target.closest('[data-row-actions]')) return;
+                    // Portaled row-actions menu / menu items are not under the row; ghost click can still hit the row
+                    if (
+                      e.nativeEvent.composedPath().some((node) => {
+                        if (!(node instanceof HTMLElement)) return false;
+                        return (
+                          node.getAttribute('role') === 'menu' ||
+                          node.getAttribute('role') === 'menuitem' ||
+                          node.hasAttribute('data-row-actions-menu-content')
+                        );
+                      })
+                    ) {
+                      return;
+                    }
+                    if (
+                      lastRowActionsMenuClosedAtRef &&
+                      Date.now() - lastRowActionsMenuClosedAtRef.current < ROW_CLICK_SUPPRESS_MS_AFTER_ACTIONS_MENU
+                    ) {
+                      return;
+                    }
+                    onRowClick?.(row.original);
+                  }}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      {...(cell.column.columnDef.meta?.actionsColumn ? { 'data-actions-cell': '' } : {})}
+                      {...(cell.column.columnDef.meta?.bulkSelectColumn ? { 'data-bulk-select-cell': '' } : {})}
+                      className={cn(
+                        nonActionsCellBg(!!onRowClick),
+                        cell.column.columnDef.meta?.fixed &&
+                          'sticky right-0 z-10 before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
+                        cell.column.columnDef.meta?.bulkSelectColumn &&
+                          'relative w-10 min-w-[2.5rem] max-w-[2.5rem] !p-0 align-top leading-none',
+                        cell.column.columnDef.meta?.actionsColumn &&
+                          'w-9 min-w-[2.25rem] max-w-[2.25rem] !p-0 align-top leading-none',
+                      )}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={table.getAllColumns().length}
+                  className="h-24 bg-background text-center dark:bg-background"
+                >
+                  {t('noResults')}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

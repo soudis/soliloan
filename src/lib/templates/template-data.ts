@@ -30,8 +30,8 @@ const TRANSACTION_TYPE_LABELS_DE: Record<string, string> = {
   WITHDRAWAL: 'Teilrückzahlung',
   TERMINATION: 'Rückzahlung',
   INTERESTPAYMENT: 'Zinsauszahlung',
-  NOTRECLAIMEDPARTIAL: 'Teilabschreibung',
-  NOTRECLAIMED: 'Abschreibung',
+  NOTRECLAIMEDPARTIAL: 'Teilerlassung',
+  NOTRECLAIMED: 'Erlassung',
   YEAR_OPENING_BALANCE: 'Anfangssaldo',
   YEAR_CLOSING_BALANCE: 'Endsaldo',
 };

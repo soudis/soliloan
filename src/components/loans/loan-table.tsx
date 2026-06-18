@@ -16,19 +16,8 @@ import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useRouter } from '@/i18n/navigation';
 import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
-import {
-  createAdditionalFieldDefaultColumnVisibility,
-  createAdditionalFieldFilters,
-  createAdditionalFieldsColumns,
-  createColumn,
-  createCurrencyColumn,
-  createDateColumn,
-  createEnumBadgeColumn,
-  createLenderColumn,
-  createNumberColumn,
-  createPercentageColumn,
-  createTerminationModalitiesColumn,
-} from '@/lib/table-column-utils';
+import { buildAllLoanTableColumns } from '@/lib/dashboard/table-widget/loan-table-column-registry';
+import { createAdditionalFieldDefaultColumnVisibility, createAdditionalFieldFilters } from '@/lib/table-column-utils';
 import { LoanStatus, type LoanWithCalculations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
@@ -42,6 +31,7 @@ interface LoanTableProps {
 export function LoanTable({ loans, project, projectId, views }: LoanTableProps) {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
+  const tDuration = useTranslations('common.duration');
   const router = useRouter();
   const locale = useLocale();
   const selectedViewName = useSelectedViewName(views);
@@ -79,99 +69,13 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
     },
   ];
 
-  const columns: ColumnDef<LoanWithCalculations>[] = [
-    createNumberColumn<LoanWithCalculations>('loanNumber', 'table.loanNumber', t, locale),
-
-    createColumn<LoanWithCalculations>(
-      {
-        accessorKey: 'lenderNumber',
-        header: 'table.lenderNumber',
-        accessorFn: (row: LoanWithCalculations) => row.lender?.lenderNumber,
-        cell: ({ row }) => {
-          const value = row.original.lender?.lenderNumber || 0;
-          return value.toFixed(0);
-        },
-      },
-      t,
-    ),
-
-    createDateColumn<LoanWithCalculations>('signDate', 'table.signDate', t, locale),
-
-    createLenderColumn<LoanWithCalculations>(t),
-
-    createCurrencyColumn<LoanWithCalculations>('amount', 'table.amount', t, locale),
-
-    createCurrencyColumn<LoanWithCalculations>('balance', 'table.balance', t, locale),
-
-    createCurrencyColumn<LoanWithCalculations>('deposits', 'table.deposits', t, locale),
-
-    createCurrencyColumn<LoanWithCalculations>('withdrawals', 'table.withdrawals', t, locale),
-
-    createCurrencyColumn<LoanWithCalculations>('notReclaimed', 'table.notReclaimed', t, locale),
-
-    createPercentageColumn<LoanWithCalculations>('interestRate', 'table.interestRate', t, locale),
-
-    createCurrencyColumn<LoanWithCalculations>('interest', 'table.interest', t, locale),
-
-    createCurrencyColumn<LoanWithCalculations>('interestPaid', 'table.interestPaid', t, locale),
-
-    createEnumBadgeColumn<LoanWithCalculations>(
-      'terminationType',
-      'table.terminationType',
-      'enums.loan.terminationType',
-      t,
-      commonT,
-      () => 'outline',
-    ),
-
-    createTerminationModalitiesColumn<LoanWithCalculations>(t, commonT),
-
-    createDateColumn<LoanWithCalculations>('repayDate', 'table.repayDate', t, locale),
-
-    createEnumBadgeColumn<LoanWithCalculations>('status', 'table.status', 'enums.loan.status', t, commonT, (value) => {
-      switch (value) {
-        case 'ACTIVE':
-          return 'default';
-        case 'TERMINATED':
-          return 'destructive';
-        case 'PENDING':
-          return 'secondary';
-        default:
-          return 'outline';
-      }
-    }),
-
-    createEnumBadgeColumn<LoanWithCalculations>(
-      'altInterestMethod',
-      'table.altInterestMethod',
-      'enums.interestMethod',
-      t,
-      commonT,
-      () => 'outline',
-    ),
-
-    createEnumBadgeColumn<LoanWithCalculations>(
-      'contractStatus',
-      'table.contractStatus',
-      'enums.loan.contractStatus',
-      t,
-      commonT,
-      (value) => {
-        switch (value) {
-          case ContractStatus.COMPLETED:
-            return 'default';
-          default:
-            return 'outline';
-        }
-      },
-    ),
-    ...createAdditionalFieldsColumns<LoanWithCalculations>(
-      project.configuration.loanAdditionalFields,
-      'additionalFields',
-      t,
-      locale,
-    ),
-  ];
+  const columns: ColumnDef<LoanWithCalculations>[] = buildAllLoanTableColumns(
+    project,
+    t,
+    commonT,
+    locale,
+    (key, values) => tDuration(key, values),
+  );
 
   // Define column filters based on data types
   const columnFilters = {
@@ -239,6 +143,14 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
       type: 'date' as const,
       label: t('table.repayDate'),
     },
+    loanTermDays: {
+      type: 'number' as const,
+      label: t('table.loanTerm'),
+    },
+    repaymentPeriodDays: {
+      type: 'number' as const,
+      label: t('table.repaymentPeriod'),
+    },
     status: {
       type: 'select' as const,
       label: t('table.status'),
@@ -283,6 +195,8 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
     terminationType: false,
     terminationModalities: false,
     repayDate: false,
+    loanTermDays: false,
+    repaymentPeriodDays: false,
     status: true,
     altInterestMethod: false,
     contractStatus: false,

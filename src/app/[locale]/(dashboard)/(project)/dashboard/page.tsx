@@ -1,64 +1,58 @@
+import { getTranslations } from 'next-intl/server';
+
 import { getDashboardStats } from '@/actions/dashboard/get-dashboard-stats';
-import { getLoansByProjectUnsafe } from '@/actions/loans/queries/get-loans-by-project';
-import { DashboardContent } from '@/components/dashboard/dashboard-content';
+import { getDashboardLayoutsForPage } from '@/actions/dashboard/queries/get-dashboard-layouts';
+import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
 import { auth } from '@/lib/auth';
+import { DashboardCustomizer } from '@/components/dashboard/customizer/dashboard-customizer';
+import { DashboardDataProvider } from '@/components/dashboard/dashboard-data-provider';
+import { createDefaultLayoutData } from '@/lib/dashboard/layout-utils';
 import { searchParamsCache } from '@/lib/params';
-import type { LoanWithCalculations } from '@/types/loans';
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-// Calculate loan amount distribution on the server
-function calculateLoanAmountDistribution(loans: LoanWithCalculations[]) {
-  const ranges = [
-    { min: 0, max: 1000, label: '0 - 1,000' },
-    { min: 1001, max: 5000, label: '1,001 - 5,000' },
-    { min: 5001, max: 10000, label: '5,001 - 10,000' },
-    { min: 10001, max: 25000, label: '10,001 - 25,000' },
-    { min: 25001, max: 50000, label: '25,001 - 50,000' },
-    { min: 50001, max: 100000, label: '50,001 - 100,000' },
-    { min: 100001, max: Number.POSITIVE_INFINITY, label: '100,001+' },
-  ];
-
-  const distribution = ranges.map((range) => ({
-    range: range.label,
-    count: 0,
-    totalAmount: 0,
-  }));
-
-  for (const loan of loans) {
-    const amount = Number(loan.amount);
-    const rangeIndex = ranges.findIndex((range) => amount >= range.min && amount <= range.max);
-    if (rangeIndex !== -1) {
-      distribution[rangeIndex].count++;
-      distribution[rangeIndex].totalAmount += amount;
-    }
-  }
-
-  return distribution.filter((item) => item.count > 0);
-}
-
 export default async function DashboardPage({ searchParams }: PageProps) {
   const { projectId } = searchParamsCache.parse(await searchParams);
-  const session = await auth();
 
-  const [statsResult, loansResult] = await Promise.all([
+  const [layoutResult, statsResult, project, session] = await Promise.all([
+    getDashboardLayoutsForPage(projectId),
     getDashboardStats(projectId),
-    getLoansByProjectUnsafe(projectId),
+    getProjectUnsafe(projectId),
+    auth(),
   ]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const statsData = statsResult.error ? null : (statsResult.stats ?? null);
-  const loans = loansResult.loans ?? [];
-  const loansDistribution = calculateLoanAmountDistribution(loans);
+  const isAdmin = session?.user?.isAdmin ?? false;
+
+  const fallback = createDefaultLayoutData();
+  const projectLayout = layoutResult.error ? fallback : (layoutResult.project?.layout ?? fallback);
+  const userLayout = layoutResult.error ? fallback : (layoutResult.user?.layout ?? fallback);
+
+  if (!project || 'error' in statsResult || !statsResult.loans || !statsResult.lenders || !statsResult.toDate) {
+    const t = await getTranslations('dashboard.page');
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <p className="text-muted-foreground">{t('loadError')}</p>
+      </div>
+    );
+  }
 
   return (
-    <DashboardContent
-      statsData={statsData}
-      loansDistribution={loansDistribution}
-      loans={loans}
-      userName={session?.user?.name || 'User'}
-    />
+    <DashboardDataProvider
+      key={projectId}
+      loans={statsResult.loans}
+      lenders={statsResult.lenders}
+      toDate={new Date(statsResult.toDate)}
+      project={project}
+    >
+      <DashboardCustomizer
+        key={projectId}
+        projectId={projectId}
+        initialProjectLayout={projectLayout}
+        initialUserLayout={userLayout}
+        isAdmin={isAdmin}
+      />
+    </DashboardDataProvider>
   );
 }

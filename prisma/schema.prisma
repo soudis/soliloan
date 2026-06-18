@@ -62,6 +62,7 @@ model User {
   managerOf     Project[]      @relation("ProjectManager")
   templates     CommunicationTemplate[]
   predefinedBlocks PredefinedCraftBlock[]
+  dashboardLayouts DashboardLayout[]
 }
 
 model LoanTemplate {
@@ -123,6 +124,25 @@ model Project {
   predefinedBlocks PredefinedCraftBlock[]
   views           View[]
   investmentTypes InvestmentType[]
+  dashboardLayout DashboardLayout?
+}
+
+model DashboardLayout {
+  id        String               @id @default(cuid())
+  scope     DashboardLayoutScope
+  projectId String?              @unique
+  userId    String?              @unique
+  layout    Json
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+  project   Project?             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Two DB invariants are enforced via raw SQL (see migration
+  // 20260605120000_dashboard_layout_constraints) because Prisma cannot express them:
+  // - a partial unique index guaranteeing a single GLOBAL_DEFAULT row, and
+  // - a CHECK tying `scope` to the matching owner column (projectId / userId / neither).
+  @@index([scope])
 }
 
 model Lender {
@@ -373,6 +393,12 @@ enum ViewType {
   LOGBOOK
   INVESTMENT_TYPE
   PROJECT
+}
+
+enum DashboardLayoutScope {
+  GLOBAL_DEFAULT
+  PROJECT
+  USER
 }
 
 enum TerminationType {

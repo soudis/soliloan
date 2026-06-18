@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { InterestMethod, Language, type Prisma, PrismaClient, TemplateDataset } from '@prisma/client';
+import { DashboardLayoutScope, InterestMethod, Language, Prisma, PrismaClient, TemplateDataset } from '@prisma/client';
 
 import { hashPassword } from '@/lib/utils/password';
 
@@ -11,6 +11,7 @@ const adapter = new PrismaPg({
 });
 const prisma = new PrismaClient({ adapter });
 const SYSTEM_TEMPLATE_DESIGNS_DIR = path.join(process.cwd(), 'prisma', 'system-template-designs');
+const GLOBAL_DASHBOARD_LAYOUT_FILE = path.join(process.cwd(), 'prisma', 'global-dashboard-layout.json');
 
 const SYSTEM_TEMPLATES: Array<{
   systemKey: string;
@@ -156,7 +157,69 @@ async function seedSystemTemplates(adminUserId: string) {
   console.info(`Seeded ${SYSTEM_TEMPLATES.length} system templates`);
 }
 
+type LoadedGlobalDashboardLayoutFile = {
+  layout: Prisma.InputJsonValue;
+};
+
+/**
+ * Loads `prisma/global-dashboard-layout.json`.
+ * Format from `scripts/export-global-dashboard-layout.ts`: `{ layout }`.
+ */
+async function loadGlobalDashboardLayout(): Promise<LoadedGlobalDashboardLayoutFile | null> {
+  try {
+    const fileContent = await readFile(GLOBAL_DASHBOARD_LAYOUT_FILE, 'utf8');
+    const parsed: unknown = JSON.parse(fileContent);
+    if (parsed && typeof parsed === 'object' && parsed !== null && 'layout' in parsed) {
+      const o = parsed as { layout?: unknown };
+      return {
+        layout: (o.layout ?? { rows: [] }) as Prisma.InputJsonValue,
+      };
+    }
+    return {
+      layout: parsed as Prisma.InputJsonValue,
+    };
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return null;
+    }
+    throw error;
+  }
+}
+
+async function seedGlobalDashboardLayout() {
+  const loaded = await loadGlobalDashboardLayout();
+  const rowId = crypto.randomUUID();
+  const fallbackLayout = {
+    rows: [{ id: rowId, widgets: [] }],
+  } satisfies Prisma.InputJsonValue;
+
+  // Idempotent + race-safe: the partial unique index on scope = GLOBAL_DEFAULT
+  // guarantees at most one row, so we rely on the unique violation instead of a
+  // non-atomic findFirst + create.
+  try {
+    await prisma.dashboardLayout.create({
+      data: {
+        scope: DashboardLayoutScope.GLOBAL_DEFAULT,
+        layout: loaded?.layout ?? fallbackLayout,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      console.info('Global default dashboard layout already present, skipping');
+      return;
+    }
+    throw error;
+  }
+  console.info(
+    loaded
+      ? 'Seeded global default dashboard layout from prisma/global-dashboard-layout.json'
+      : 'Seeded global default dashboard layout (empty fallback)',
+  );
+}
+
 async function main() {
+  await seedGlobalDashboardLayout();
+
   if (process.env.SOLILOAN_ADMIN_EMAIL && process.env.SOLILOAN_ADMIN_PASSWORD) {
     const passwordHashed = await hashPassword(process.env.SOLILOAN_ADMIN_PASSWORD);
     const user = await prisma.user.upsert({
