@@ -6,8 +6,8 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
-import { StatDeltaRangeInput } from '@/components/dashboard/widgets/stat-delta-range-input';
 import { EntityFilterList } from '@/components/dashboard/widgets/filters/entity-filter-list';
+import { StatDeltaRangeInput } from '@/components/dashboard/widgets/stat-delta-range-input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -17,13 +17,13 @@ import { resolveStatDisplayTitle } from '@/lib/dashboard/resolve-stat-display-ti
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import {
   CUMULATIVE_ONLY_STAT_METRICS,
-  STAT_METRICS_WITHOUT_AVG_MEDIAN,
   createDefaultStatDeltaRange,
-  normalizeStatAggregation,
   DEFAULT_STAT_GRID_COLUMNS,
+  normalizeStatAggregation,
   STAT_DELTA_UNITS,
   STAT_GRID_COLUMNS_MAX,
   STAT_GRID_COLUMNS_MIN,
+  STAT_METRICS_WITHOUT_AVG_MEDIAN,
   STAT_WIDGET_METRICS,
   type StatItemConfig,
   type StatWidgetConfig,
@@ -249,32 +249,6 @@ export function StatWidgetSettings({
             {isExpanded ? (
               <div className="space-y-3 border-t p-3">
                 <div className="space-y-2">
-                  <Label className="text-xs">{t('statTitle')}</Label>
-                  <Input
-                    value={stat.title}
-                    placeholder={tHistory('titlePlaceholder')}
-                    onChange={(e) => updateStat(stat.id, { title: e.target.value })}
-                    onBlur={flushConfig}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">{t('displayType')}</Label>
-                  <Select
-                    value={stat.displayType}
-                    onValueChange={(v) =>
-                      updateStat(stat.id, { displayType: v as StatItemConfig['displayType'] }, true)
-                    }
-                  >
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="main">{t('displayTypeMain')}</SelectItem>
-                      <SelectItem value="secondary">{t('displayTypeSecondary')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
                   <Label className="text-xs">{t('metric')}</Label>
                   <Select
                     value={stat.metric}
@@ -302,6 +276,33 @@ export function StatWidgetSettings({
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('statTitle')}</Label>
+                  <Input
+                    value={stat.title}
+                    placeholder={tHistory('titlePlaceholder')}
+                    onChange={(e) => updateStat(stat.id, { title: e.target.value })}
+                    onBlur={flushConfig}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('displayType')}</Label>
+                  <Select
+                    value={stat.displayType}
+                    onValueChange={(v) =>
+                      updateStat(stat.id, { displayType: v as StatItemConfig['displayType'] }, true)
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="main">{t('displayTypeMain')}</SelectItem>
+                      <SelectItem value="secondary">{t('displayTypeSecondary')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="space-y-2">
                   <Label className="text-xs">{t('aggregation')}</Label>
                   <Select

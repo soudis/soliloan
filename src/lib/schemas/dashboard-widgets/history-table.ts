@@ -23,19 +23,9 @@ export const historyTableColumnSchema = z
     }
   });
 
-export const historyTableWidgetConfigSchema = z
-  .object({
-    layoutVersion: z.literal(1).default(1),
-    periodMode: z.enum(['yearly', 'monthly']).default('yearly'),
-    periodCount: z.number().int().positive().nullable().optional(),
-    columns: z.array(historyTableColumnSchema).max(50).default([]),
-  })
-  .superRefine((config, ctx) => {
-    if (config.periodMode === 'monthly' && config.periodCount && config.periodCount > 24) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'dashboard.customizer.historyTable.validation.maxMonths',
-        path: ['periodCount'],
-      });
-    }
-  });
+export const historyTableWidgetConfigSchema = z.object({
+  layoutVersion: z.literal(1).default(1),
+  periodMode: z.enum(['yearly', 'monthly']).default('yearly'),
+  periodCount: z.number().int().positive().nullable().optional(),
+  columns: z.array(historyTableColumnSchema).max(50).default([]),
+});

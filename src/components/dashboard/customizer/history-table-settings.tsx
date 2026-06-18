@@ -85,6 +85,7 @@ export function HistoryTableSettings({
           })
         }
         onBlur={flushConfig}
+        defaultMonthlyPeriodCount={12}
       />
 
       <ChartSeriesEditor
@@ -92,6 +93,7 @@ export function HistoryTableSettings({
         onChange={(columns) => patchConfig({ columns })}
         fieldOptions={fieldOptions}
         showColorCodeSign
+        defaultAggregation="delta"
       />
     </div>
   );

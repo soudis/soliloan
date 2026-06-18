@@ -103,7 +103,7 @@ export function limitPeriods(
     return periods.filter((p) => p.year >= startYear && p.year <= endYear);
   }
 
-  const maxMonths = periodCount ? Math.min(periodCount, 24) : 24;
+  const maxMonths = periodCount ?? 24;
   const end = moment(toDate).startOf('month');
   const start = end.clone().subtract(maxMonths - 1, 'months');
   return periods.filter((p) => {

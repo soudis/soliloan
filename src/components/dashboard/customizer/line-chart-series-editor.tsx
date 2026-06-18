@@ -116,14 +116,6 @@ export function LineChartSeriesEditor({
             {isExpanded ? (
               <div className="space-y-3 border-t p-3">
                 <div className="space-y-2">
-                  <Label className="text-xs">{tBar('columnTitle')}</Label>
-                  <Input
-                    value={col.title}
-                    placeholder={tBar('titlePlaceholder')}
-                    onChange={(e) => updateSeries(col.id, { title: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
                   <Label className="text-xs">{tBar('metric')}</Label>
                   <Select
                     value={col.metric}
@@ -149,6 +141,15 @@ export function LineChartSeriesEditor({
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{tBar('columnTitle')}</Label>
+                  <Input
+                    value={col.title}
+                    placeholder={tBar('titlePlaceholder')}
+                    onChange={(e) => updateSeries(col.id, { title: e.target.value })}
+                  />
+                </div>
+
                 {!cumulativeOnly && !hideDelta ? (
                   <div className="space-y-2">
                     <Label className="text-xs">{tBar('aggregation')}</Label>

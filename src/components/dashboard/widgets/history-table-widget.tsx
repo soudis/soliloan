@@ -85,7 +85,7 @@ export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
               const title = resolveMetricTitle(col.title, metric ? tMetrics(`metrics.${metric}`) : col.title);
               return (
                 <TableHead key={col.id} className="h-10 px-3 py-2 text-right">
-                  <span className="inline-flex items-center gap-1">{`${title}${col.aggregation === 'delta' ? ' (Δ)' : ''}`}</span>
+                  <span className="inline-flex items-center gap-1">{title}</span>
                 </TableHead>
               );
             })}

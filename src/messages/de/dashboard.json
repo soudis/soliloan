@@ -117,12 +117,14 @@
       }
     },
     "historyTable": {
-      "periodMode": "Zeitraum",
+      "periodMode": "Zeiteinheit",
       "periodModeYearly": "Jährlich",
       "periodModeMonthly": "Monatlich",
-      "periodCount": "Anzahl Zeiträume",
-      "periodCountPlaceholder": "Leer = alle (jährlich) bzw. 24 Monate",
-      "periodCountHint": "Monatlich maximal 24 Zeiträume",
+      "periodCountYearly": "Anzahl Jahre",
+      "periodCountMonthly": "Anzahl Monate",
+      "periodCountPlaceholderYearly": "Leer = alle Jahre",
+      "periodCountPlaceholderMonthly": "Leer = alle Monate",
+      "periodCountHint": "maximal {max}",
       "columns": "Spalten",
       "addColumn": "Spalte hinzufügen",
       "columnTitle": "Spaltentitel",

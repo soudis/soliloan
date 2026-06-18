@@ -103,6 +103,7 @@ export function LineChartSettings({
           value={draftConfig.timeline}
           onChange={(timeline) => patchConfig({ timeline })}
           onBlur={flushConfig}
+          monthlyMaxPeriodCount={24}
         />
       ) : (
         <>

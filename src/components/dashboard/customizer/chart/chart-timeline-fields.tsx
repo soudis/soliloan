@@ -12,11 +12,15 @@ export function ChartTimelineFields({
   onChange,
   onBlur,
   translationNamespace = 'dashboard.customizer.historyTable',
+  monthlyMaxPeriodCount,
+  defaultMonthlyPeriodCount,
 }: {
   value: BarChartTimelineConfig;
   onChange: (next: BarChartTimelineConfig) => void;
   onBlur?: () => void;
   translationNamespace?: string;
+  monthlyMaxPeriodCount?: number;
+  defaultMonthlyPeriodCount?: number;
 }) {
   const t = useTranslations(translationNamespace);
 
@@ -26,7 +30,17 @@ export function ChartTimelineFields({
         <Label>{t('periodMode')}</Label>
         <Select
           value={value.periodMode}
-          onValueChange={(v) => onChange({ ...value, periodMode: v as BarChartTimelineConfig['periodMode'] })}
+          onValueChange={(v) => {
+            const periodMode = v as BarChartTimelineConfig['periodMode'];
+            if (periodMode === value.periodMode) {
+              return;
+            }
+            const next: BarChartTimelineConfig = { ...value, periodMode };
+            if (periodMode === 'monthly' && defaultMonthlyPeriodCount != null) {
+              next.periodCount = defaultMonthlyPeriodCount;
+            }
+            onChange(next);
+          }}
         >
           <SelectTrigger>
             <SelectValue />
@@ -39,12 +53,14 @@ export function ChartTimelineFields({
       </div>
 
       <div className="space-y-2">
-        <Label>{t('periodCount')}</Label>
+        <Label>{value.periodMode === 'monthly' ? t('periodCountMonthly') : t('periodCountYearly')}</Label>
         <Input
           type="number"
           min={1}
-          max={value.periodMode === 'monthly' ? 24 : undefined}
-          placeholder={t('periodCountPlaceholder')}
+          max={value.periodMode === 'monthly' ? monthlyMaxPeriodCount : undefined}
+          placeholder={
+            value.periodMode === 'monthly' ? t('periodCountPlaceholderMonthly') : t('periodCountPlaceholderYearly')
+          }
           value={value.periodCount ?? ''}
           onChange={(e) => {
             const raw = e.target.value;
@@ -55,8 +71,8 @@ export function ChartTimelineFields({
           }}
           onBlur={onBlur}
         />
-        {value.periodMode === 'monthly' ? (
-          <p className="text-xs text-muted-foreground">{t('periodCountHint')}</p>
+        {value.periodMode === 'monthly' && monthlyMaxPeriodCount != null ? (
+          <p className="text-xs text-muted-foreground">{t('periodCountHint', { max: monthlyMaxPeriodCount })}</p>
         ) : null}
       </div>
     </div>

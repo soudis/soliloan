@@ -14,8 +14,9 @@ import { resolveMetricTitle } from '@/lib/dashboard/resolve-metric-title';
 import {
   CHART_CUMULATIVE_ONLY_METRICS,
   CHART_SERIES_METRICS,
-  createDefaultChartSeries,
+  type ChartSeriesAggregation,
   type ChartSeriesConfig,
+  createDefaultChartSeries,
 } from '@/types/dashboard-widgets/chart-series';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
 
@@ -25,6 +26,7 @@ export function ChartSeriesEditor({
   fieldOptions,
   hideDelta = false,
   showColorCodeSign = false,
+  defaultAggregation,
   columnsLabelKey = 'columns',
   addLabelKey = 'addColumn',
   translationNamespace = 'dashboard.customizer.historyTable',
@@ -35,6 +37,7 @@ export function ChartSeriesEditor({
   fieldOptions: EntityFilterFieldOption[];
   hideDelta?: boolean;
   showColorCodeSign?: boolean;
+  defaultAggregation?: ChartSeriesAggregation;
   columnsLabelKey?: string;
   addLabelKey?: string;
   translationNamespace?: string;
@@ -58,7 +61,7 @@ export function ChartSeriesEditor({
   };
 
   const addSeries = () => {
-    const item = createDefaultChartSeries();
+    const item = createDefaultChartSeries(defaultAggregation ? { aggregation: defaultAggregation } : undefined);
     onChange([...series, item]);
     setExpandedIds((prev) => new Set(prev).add(item.id));
   };
@@ -119,14 +122,6 @@ export function ChartSeriesEditor({
             {isExpanded ? (
               <div className="space-y-3 border-t p-3">
                 <div className="space-y-2">
-                  <Label className="text-xs">{t('columnTitle')}</Label>
-                  <Input
-                    value={col.title}
-                    placeholder={t('titlePlaceholder')}
-                    onChange={(e) => updateSeries(col.id, { title: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
                   <Label className="text-xs">{t('metric')}</Label>
                   <Select
                     value={col.metric}
@@ -152,6 +147,15 @@ export function ChartSeriesEditor({
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('columnTitle')}</Label>
+                  <Input
+                    value={col.title}
+                    placeholder={t('titlePlaceholder')}
+                    onChange={(e) => updateSeries(col.id, { title: e.target.value })}
+                  />
+                </div>
+
                 {!cumulativeOnly && !hideDelta ? (
                   <div className="space-y-2">
                     <Label className="text-xs">{t('aggregation')}</Label>
