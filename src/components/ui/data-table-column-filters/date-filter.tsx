@@ -6,17 +6,19 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn, formatDateLong } from '@/lib/utils';
+import { cn, formatDateLong, formatDateShort } from '@/lib/utils';
 
 interface DateFilterProps {
   filterState?: ColumnFilter;
   onFilterChange: (value: unknown) => void;
+  dateFormat?: 'short' | 'long';
 }
 
-export function DateFilter({ filterState, onFilterChange }: DateFilterProps) {
+export function DateFilter({ filterState, onFilterChange, dateFormat = 'long' }: DateFilterProps) {
   const t = useTranslations('dataTable');
   const locale = useLocale();
   const dateLocale = locale === 'de' ? de : enUS;
+  const formatDateValue = dateFormat === 'short' ? formatDateShort : formatDateLong;
 
   return (
     <div className="flex w-full flex-col space-y-2">
@@ -33,7 +35,9 @@ export function DateFilter({ filterState, onFilterChange }: DateFilterProps) {
               >
                 {(filterState?.value as [string, string])?.[0] ? (
                   <div className="flex items-center justify-between w-full">
-                    <span>{formatDateLong((filterState?.value as [string, string])[0], locale)}</span>
+                    <span className="truncate">
+                      {formatDateValue((filterState?.value as [string, string])[0], locale)}
+                    </span>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -90,7 +94,9 @@ export function DateFilter({ filterState, onFilterChange }: DateFilterProps) {
               >
                 {(filterState?.value as [string, string])?.[1] ? (
                   <div className="flex items-center justify-between w-full">
-                    <span>{formatDateLong((filterState?.value as [string, string])[1], locale)}</span>
+                    <span className="truncate">
+                      {formatDateValue((filterState?.value as [string, string])[1], locale)}
+                    </span>
                     <Button
                       variant="ghost"
                       size="icon"

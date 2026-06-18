@@ -189,8 +189,8 @@
         "INTEREST": "Zinsen",
         "INTERESTPAYMENT": "Zinsauszahlung",
         "TERMINATION": "Rückzahlung",
-        "NOTRECLAIMEDPARTIAL": "Teilabschreibung",
-        "NOTRECLAIMED": "Abschreibung"
+        "NOTRECLAIMEDPARTIAL": "Teilerlassung",
+        "NOTRECLAIMED": "Erlassung"
       },
       "paymentType": {
         "BANK": "Banküberweisung",
@@ -228,5 +228,11 @@
     "lenderNumber": "Konto #{number}",
     "noLoans": "Keine Kredite vorhanden",
     "transaction": "Zahlung"
+  },
+  "duration": {
+    "zeroDays": "0 Tage",
+    "days": "{count, plural, one {# Tag} other {# Tage}}",
+    "months": "{count, plural, one {# Monat} other {# Monate}}",
+    "years": "{count, plural, one {# Jahr} other {# Jahre}}"
   }
 }
