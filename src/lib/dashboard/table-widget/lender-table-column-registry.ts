@@ -40,15 +40,15 @@ const LENDER_TABLE_STATIC_COLUMN_META: LenderTableColumnMeta[] = [
   { id: 'interestPaid', labelKey: 'table.interestPaid', useLoansTranslations: true },
 ];
 
-export function buildAllLenderTableColumns(
+export function buildAllLenderTableColumns<T extends LenderListItem = LenderListItem>(
   project: ProjectWithConfiguration,
   t: (key: string) => string,
   tLoans: (key: string) => string,
   commonT: (key: string) => string,
   locale: string,
-): ColumnDef<LenderListItem>[] {
+): ColumnDef<T>[] {
   return [
-    createColumn<LenderListItem>(
+    createColumn<T>(
       {
         accessorKey: 'lenderNumber',
         header: 'table.lenderNumber',
@@ -56,11 +56,11 @@ export function buildAllLenderTableColumns(
       t,
     ),
 
-    createLenderNameColumn<LenderListItem>(t),
+    createLenderNameColumn<T>(t),
 
-    createLenderEnumBadgeColumn<LenderListItem>('type', 'table.type', 'enums.lender.type', t, commonT, () => 'outline'),
+    createLenderEnumBadgeColumn<T>('type', 'table.type', 'enums.lender.type', t, commonT, () => 'outline'),
 
-    createColumn<LenderListItem>(
+    createColumn<T>(
       {
         accessorKey: 'email',
         header: 'table.email',
@@ -68,7 +68,7 @@ export function buildAllLenderTableColumns(
       t,
     ),
 
-    createColumn<LenderListItem>(
+    createColumn<T>(
       {
         accessorKey: 'telNo',
         header: 'table.telNo',
@@ -76,11 +76,11 @@ export function buildAllLenderTableColumns(
       t,
     ),
 
-    createLenderAddressColumn<LenderListItem>(t),
+    createLenderAddressColumn<T>(t),
 
-    createLenderBankingColumn<LenderListItem>(t),
+    createLenderBankingColumn<T>(t),
 
-    createLenderEnumBadgeColumn<LenderListItem>(
+    createLenderEnumBadgeColumn<T>(
       'salutation',
       'table.salutation',
       'enums.lender.salutation',
@@ -89,7 +89,7 @@ export function buildAllLenderTableColumns(
       () => 'outline',
     ),
 
-    createLenderEnumBadgeColumn<LenderListItem>(
+    createLenderEnumBadgeColumn<T>(
       'notificationType',
       'table.notificationType',
       'enums.lender.notificationType',
@@ -98,26 +98,21 @@ export function buildAllLenderTableColumns(
       () => 'outline',
     ),
 
-    ...createAdditionalFieldsColumns<LenderListItem>(
-      project.configuration.lenderAdditionalFields,
-      'additionalFields',
-      t,
-      locale,
-    ),
+    ...createAdditionalFieldsColumns<T>(project.configuration.lenderAdditionalFields, 'additionalFields', t, locale),
 
-    createCurrencyColumn<LenderListItem>('amount', 'table.amount', tLoans, locale),
+    createCurrencyColumn<T>('amount', 'table.amount', tLoans, locale),
 
-    createCurrencyColumn<LenderListItem>('balance', 'table.balance', tLoans, locale),
+    createCurrencyColumn<T>('balance', 'table.balance', tLoans, locale),
 
-    createCurrencyColumn<LenderListItem>('deposits', 'table.deposits', tLoans, locale),
+    createCurrencyColumn<T>('deposits', 'table.deposits', tLoans, locale),
 
-    createCurrencyColumn<LenderListItem>('withdrawals', 'table.withdrawals', tLoans, locale),
+    createCurrencyColumn<T>('withdrawals', 'table.withdrawals', tLoans, locale),
 
-    createCurrencyColumn<LenderListItem>('notReclaimed', 'table.notReclaimed', tLoans, locale),
+    createCurrencyColumn<T>('notReclaimed', 'table.notReclaimed', tLoans, locale),
 
-    createCurrencyColumn<LenderListItem>('interest', 'table.interest', tLoans, locale),
+    createCurrencyColumn<T>('interest', 'table.interest', tLoans, locale),
 
-    createCurrencyColumn<LenderListItem>('interestPaid', 'table.interestPaid', tLoans, locale),
+    createCurrencyColumn<T>('interestPaid', 'table.interestPaid', tLoans, locale),
   ];
 }
 

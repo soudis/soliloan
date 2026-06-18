@@ -6,14 +6,14 @@ import { useCallback, useMemo } from 'react';
 import type { DashboardLender } from '@/actions/dashboard/get-dashboard-stats';
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { useRouter } from '@/i18n/navigation';
-import { lenderMatchesFilters } from '@/lib/entity-filters/apply-lender-filters';
-import { buildLenderFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
+import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
 import {
   buildAllLenderTableColumns,
   getLenderSortValue,
 } from '@/lib/dashboard/table-widget/lender-table-column-registry';
-import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
 import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
+import { lenderMatchesFilters } from '@/lib/entity-filters/apply-lender-filters';
+import { buildLenderFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import { parseLenderTableConfig } from '@/types/dashboard-widgets/table-view';
 
@@ -36,7 +36,7 @@ export function LenderTableWidget({ widget }: { widget: DashboardWidget }) {
   );
 
   const columns = useMemo(
-    () => buildAllLenderTableColumns(project, tLenders, tLoans, commonT, locale),
+    () => buildAllLenderTableColumns<DashboardLender>(project, tLenders, tLoans, commonT, locale),
     [project, tLenders, tLoans, commonT, locale],
   );
 

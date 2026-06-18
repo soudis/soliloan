@@ -1,15 +1,15 @@
 'use client';
 
 import {
+  type ColumnDef,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
-  useReactTable,
-  type ColumnDef,
   type SortingState,
+  useReactTable,
 } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { type CSSProperties, useEffect, useMemo, useState } from 'react';
 
 import { DataTablePagination } from '@/components/ui/data-table-pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
