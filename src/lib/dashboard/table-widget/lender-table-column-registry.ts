@@ -58,14 +58,7 @@ export function buildAllLenderTableColumns(
 
     createLenderNameColumn<LenderListItem>(t),
 
-    createLenderEnumBadgeColumn<LenderListItem>(
-      'type',
-      'table.type',
-      'enums.lender.type',
-      t,
-      commonT,
-      () => 'outline',
-    ),
+    createLenderEnumBadgeColumn<LenderListItem>('type', 'table.type', 'enums.lender.type', t, commonT, () => 'outline'),
 
     createColumn<LenderListItem>(
       {

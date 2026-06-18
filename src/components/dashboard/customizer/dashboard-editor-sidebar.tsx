@@ -68,13 +68,7 @@ export function DashboardEditorSidebar({
             <Copy className="mr-2 h-4 w-4" />
             {scope === 'project' ? t('copyToUser') : t('copyToProject')}
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => setResetDialogOpen(true)}
-          >
+          <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => setResetDialogOpen(true)}>
             <RotateCcw className="mr-2 h-4 w-4" />
             {t('resetToGlobalDefault')}
           </Button>

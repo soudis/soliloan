@@ -2,10 +2,7 @@
 
 import { deleteScopedLayout, getGlobalDefaultLayout } from '@/lib/dashboard/layout-db';
 import { cloneLayoutData } from '@/lib/dashboard/layout-utils';
-import {
-  resetProjectDashboardLayoutSchema,
-  resetUserDashboardLayoutSchema,
-} from '@/lib/schemas/dashboard-layout';
+import { resetProjectDashboardLayoutSchema, resetUserDashboardLayoutSchema } from '@/lib/schemas/dashboard-layout';
 import { authAction, projectAction } from '@/lib/utils/safe-action';
 
 export const resetProjectDashboardLayoutAction = projectAction

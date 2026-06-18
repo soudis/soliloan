@@ -14,14 +14,7 @@ export type StatWidgetMetric = (typeof STAT_WIDGET_METRICS)[number];
 
 export type StatDisplayType = 'main' | 'secondary';
 
-export const STAT_AGGREGATIONS = [
-  'total',
-  'delta',
-  'average',
-  'median',
-  'averageByLender',
-  'medianByLender',
-] as const;
+export const STAT_AGGREGATIONS = ['total', 'delta', 'average', 'median', 'averageByLender', 'medianByLender'] as const;
 
 export type StatAggregation = (typeof STAT_AGGREGATIONS)[number];
 

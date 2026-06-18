@@ -35,7 +35,9 @@ export function DateFilter({ filterState, onFilterChange, dateFormat = 'long' }:
               >
                 {(filterState?.value as [string, string])?.[0] ? (
                   <div className="flex items-center justify-between w-full">
-                    <span className="truncate">{formatDateValue((filterState?.value as [string, string])[0], locale)}</span>
+                    <span className="truncate">
+                      {formatDateValue((filterState?.value as [string, string])[0], locale)}
+                    </span>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -92,7 +94,9 @@ export function DateFilter({ filterState, onFilterChange, dateFormat = 'long' }:
               >
                 {(filterState?.value as [string, string])?.[1] ? (
                   <div className="flex items-center justify-between w-full">
-                    <span className="truncate">{formatDateValue((filterState?.value as [string, string])[1], locale)}</span>
+                    <span className="truncate">
+                      {formatDateValue((filterState?.value as [string, string])[1], locale)}
+                    </span>
                     <Button
                       variant="ghost"
                       size="icon"

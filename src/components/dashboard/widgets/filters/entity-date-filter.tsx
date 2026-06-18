@@ -47,7 +47,10 @@ function FixedDateButton({
           type="button"
           variant="outline"
           size="sm"
-          className={cn('h-8 w-full justify-start px-2 text-left text-xs font-normal', !value && 'text-muted-foreground')}
+          className={cn(
+            'h-8 w-full justify-start px-2 text-left text-xs font-normal',
+            !value && 'text-muted-foreground',
+          )}
         >
           {value ? (
             <div className="flex min-w-0 items-center justify-between gap-1 w-full">

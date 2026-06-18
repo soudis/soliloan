@@ -53,16 +53,7 @@ function metricAtPeriod(
   }
 
   const period = buildStatPeriodAtDate(periodEnd);
-  return aggregateMetric(
-    loans,
-    column,
-    period,
-    STAT_HISTORY_CONFIG,
-    fieldOptions,
-    commonT,
-    cache,
-    loanMetricCaches,
-  );
+  return aggregateMetric(loans, column, period, STAT_HISTORY_CONFIG, fieldOptions, commonT, cache, loanMetricCaches);
 }
 
 function computeStatOnlyValue(
