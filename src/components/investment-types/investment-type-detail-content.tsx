@@ -147,11 +147,7 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
           <h2 className="text-lg font-semibold">{t('detail.loans')}</h2>
           {isNotMoreThanNUnits && (
             <div className="flex items-center gap-2">
-              <Switch
-                id="showCompletedLoans"
-                checked={showCompletedLoans}
-                onCheckedChange={setShowCompletedLoans}
-              />
+              <Switch id="showCompletedLoans" checked={showCompletedLoans} onCheckedChange={setShowCompletedLoans} />
               <label htmlFor="showCompletedLoans" className="text-sm font-medium">
                 {t('detail.showCompletedLoans')}
               </label>
@@ -398,22 +394,31 @@ function TotalAmountOverTimePeriodLoanTableSection({
                     <LoanStatusBadge status={loan.status} />
                   </TableCell>
                   <TableCell>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      title={t('detail.setEffectiveDateFromSignDate')}
-                      aria-label={t('detail.setEffectiveDateFromSignDate')}
-                      aria-current={isSelectedEffectiveDate ? 'date' : undefined}
-                      onClick={() => onSignDateSelect(signDateValue)}
-                      className={cn(
-                        'h-auto px-2 py-1 font-normal tabular-nums',
-                        isSelectedEffectiveDate && 'border-primary text-primary hover:text-primary',
-                      )}
-                    >
-                      <Calendar aria-hidden />
-                      {formatDateShort(loan.signDate, locale)}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="outline"
+                        title={t('detail.setEffectiveDateFromSignDate')}
+                        aria-label={t('detail.setEffectiveDateFromSignDate')}
+                        onClick={() => onSignDateSelect(signDateValue)}
+                        className={cn(
+                          'size-7',
+                          isSelectedEffectiveDate && 'border-primary text-primary hover:text-primary',
+                        )}
+                      >
+                        <Calendar aria-hidden />
+                      </Button>
+                      <span
+                        className={cn(
+                          'whitespace-nowrap tabular-nums select-text',
+                          isSelectedEffectiveDate && 'text-primary',
+                        )}
+                        aria-current={isSelectedEffectiveDate ? 'date' : undefined}
+                      >
+                        {formatDateShort(loan.signDate, locale)}
+                      </span>
+                    </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap tabular-nums">
                     {formatCurrency(usedCapacityAtSignDate, locale)} / {formatCurrency(MAX_TOTAL_AMOUNT_EUR, locale)}
