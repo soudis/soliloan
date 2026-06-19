@@ -19,6 +19,7 @@ import { LineChartWidget } from '../widgets/line-chart-widget';
 import { LoanTableWidget } from '../widgets/loan-table-widget';
 import { PieChartWidget } from '../widgets/pie-chart-widget';
 import { StatWidget } from '../widgets/stat-widget';
+import { TransactionTableWidget } from '../widgets/transaction-table-widget';
 import { useDashboardEditor } from './dashboard-layout-context';
 import { WIDGET_TYPE_ICONS } from './widget-icons';
 
@@ -62,6 +63,8 @@ function DashboardWidgetSlotComponent({ widget, rowId }: { widget: DashboardWidg
         return <LoanTableWidget widget={widget} />;
       case 'lender_table_view':
         return <LenderTableWidget widget={widget} />;
+      case 'transaction_table_view':
+        return <TransactionTableWidget widget={widget} />;
       default:
         return <p className="text-sm text-muted-foreground/80">{t('placeholder')}</p>;
     }

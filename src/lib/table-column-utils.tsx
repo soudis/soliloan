@@ -1,5 +1,6 @@
 import type { Lender, Loan } from '@prisma/client';
-import type { ColumnDef, Row, VisibilityState } from '@tanstack/react-table';
+import type { CellContext, ColumnDef, Row, VisibilityState } from '@tanstack/react-table';
+import type { ReactNode } from 'react';
 import moment from 'moment';
 import { Badge } from '@/components/ui/badge';
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
@@ -117,6 +118,117 @@ export function withColumnGroup<T>(columns: ColumnDef<T>[], columnGroup?: Column
       columnGroup,
     },
   }));
+}
+
+function readFieldPath(source: Record<string, unknown>, fieldPath: string): unknown {
+  if (fieldPath.startsWith('additionalFields.')) {
+    const key = fieldPath.replace('additionalFields.', '');
+    const additionalFields = source.additionalFields as Record<string, unknown> | null | undefined;
+    return additionalFields?.[key];
+  }
+  return source[fieldPath];
+}
+
+function getColumnFieldId<T>(column: ColumnDef<T>): string {
+  if (column.id) {
+    return column.id;
+  }
+  if ('accessorKey' in column && typeof column.accessorKey === 'string') {
+    return column.accessorKey;
+  }
+  return '';
+}
+
+function getColumnAccessorFn<T>(column: ColumnDef<T>): ((row: T, index: number) => unknown) | undefined {
+  const accessorFn = (column as { accessorFn?: (row: T, index: number) => unknown }).accessorFn;
+  return typeof accessorFn === 'function' ? accessorFn : undefined;
+}
+
+function getColumnCellRenderer<T>(column: ColumnDef<T>): ((ctx: CellContext<T, unknown>) => ReactNode) | undefined {
+  const cell = column.cell;
+  if (typeof cell !== 'function') {
+    return undefined;
+  }
+  return cell as (ctx: CellContext<T, unknown>) => ReactNode;
+}
+
+/** Re-map loan (or other nested) column defs onto a parent row via getSource + id prefix. */
+export function remapColumnsForNestedAccessor<TSource, TTarget>(
+  columns: ColumnDef<TSource>[],
+  options: {
+    idPrefix: string;
+    getSource: (row: TTarget) => TSource;
+  },
+): ColumnDef<TTarget>[] {
+  const { idPrefix, getSource } = options;
+
+  return columns.map((column) => {
+    const sourceId = getColumnFieldId(column);
+    const targetId = idPrefix ? `${idPrefix}${sourceId}` : sourceId;
+
+    const createSourceRow = (original: TSource): Row<TSource> => {
+      const getValue = (columnId: string) => {
+        const fieldId = idPrefix && columnId.startsWith(idPrefix) ? columnId.slice(idPrefix.length) : columnId;
+        const sourceColumn = columns.find((entry) => getColumnFieldId(entry) === fieldId);
+        const sourceAccessorFn = sourceColumn ? getColumnAccessorFn(sourceColumn) : undefined;
+        if (sourceAccessorFn) {
+          return sourceAccessorFn(original, 0);
+        }
+        return readFieldPath(original as Record<string, unknown>, fieldId);
+      };
+
+      return {
+        id: targetId,
+        index: 0,
+        original,
+        getValue,
+        getUniqueValues: () => new Map(),
+        columnFilters: {},
+        columnFiltersMeta: {},
+        _valuesCache: {},
+        depth: 0,
+        subRows: [],
+        getAllCells: () => [],
+        getVisibleCells: () => [],
+        getIsSelected: () => false,
+        getCanSelect: () => false,
+        getToggleSelectedHandler: () => () => undefined,
+        getIsExpanded: () => false,
+        getCanExpand: () => false,
+        getToggleExpandedHandler: () => () => undefined,
+        getIsGrouped: () => false,
+        getGroupingValue: () => undefined,
+      } as unknown as Row<TSource>;
+    };
+
+    return {
+      ...column,
+      id: targetId,
+      accessorKey: targetId,
+      accessorFn: (row: TTarget, index: number) => {
+        const source = getSource(row);
+        const accessorFn = getColumnAccessorFn(column);
+        if (accessorFn) {
+          return accessorFn(source, index);
+        }
+        return readFieldPath(source as Record<string, unknown>, sourceId);
+      },
+      cell: (() => {
+        const cellRenderer = getColumnCellRenderer<TSource>(column);
+        if (!cellRenderer) {
+          return undefined;
+        }
+        return (ctx: CellContext<TTarget, unknown>) =>
+          cellRenderer({
+            ...(ctx as unknown as CellContext<TSource, unknown>),
+            row: createSourceRow(getSource(ctx.row.original)),
+          });
+      })(),
+      sortingFn: column.sortingFn,
+      filterFn: column.filterFn,
+      meta: column.meta,
+    };
+  }) as ColumnDef<TTarget>[];
 }
 
 export function createNumberColumn<T>(

@@ -54,6 +54,9 @@ export function ChartDiscriminatorFields({
           translationNamespace={translationNamespace}
           placeholderKey="groupByPlaceholder"
           onChange={(entity, field) => {
+            if (entity === 'transaction') {
+              return;
+            }
             const def = getFilterDefinitionForField(fieldOptions, entity, field);
             const next: ChartDiscriminatorConfig = {
               ...value,

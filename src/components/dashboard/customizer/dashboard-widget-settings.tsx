@@ -27,7 +27,12 @@ import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table
 import { parseLineChartConfig } from '@/types/dashboard-widgets/line-chart';
 import { type PieChartChartSize, parsePieChartConfig } from '@/types/dashboard-widgets/pie-chart';
 import { parseStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
-import { parseLenderTableConfig, parseLoanTableConfig } from '@/types/dashboard-widgets/table-view';
+import {
+  parseLenderTableConfig,
+  parseLoanTableConfig,
+  parseTransactionTableConfig,
+} from '@/types/dashboard-widgets/table-view';
+import { TransactionTableSettings } from './transaction-table-settings';
 import { BarChartSettings } from './bar-chart-settings';
 import { useDashboardEditor, useDashboardLayoutData } from './dashboard-layout-context';
 import { HistoryTableSettings } from './history-table-settings';
@@ -54,6 +59,7 @@ function createSettingsSchema(widgetType: DashboardWidgetType) {
       widgetType === 'line_chart' ||
       widgetType === 'loan_table_view' ||
       widgetType === 'lender_table_view' ||
+      widgetType === 'transaction_table_view' ||
       widgetType === 'divider'
         ? z.string()
         : z.string().min(1),
@@ -253,6 +259,12 @@ export function DashboardWidgetSettings() {
         {widget.type === 'lender_table_view' ? (
           <LenderTableSettings config={parseLenderTableConfig(widget.config)} onConfigChange={handleConfigChange} />
         ) : null}
+        {widget.type === 'transaction_table_view' ? (
+          <TransactionTableSettings
+            config={parseTransactionTableConfig(widget.config)}
+            onConfigChange={handleConfigChange}
+          />
+        ) : null}
         {widget.type !== 'history_table' &&
         widget.type !== 'stat' &&
         widget.type !== 'pie_chart' &&
@@ -260,6 +272,7 @@ export function DashboardWidgetSettings() {
         widget.type !== 'line_chart' &&
         widget.type !== 'loan_table_view' &&
         widget.type !== 'lender_table_view' &&
+        widget.type !== 'transaction_table_view' &&
         widget.type !== 'divider' ? (
           <p className="mt-6 text-xs text-muted-foreground">{t('typeSettingsComingSoon')}</p>
         ) : null}

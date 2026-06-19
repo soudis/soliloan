@@ -7,6 +7,7 @@ export const DASHBOARD_WIDGET_TYPES = [
   'divider',
   'loan_table_view',
   'lender_table_view',
+  'transaction_table_view',
 ] as const;
 
 export type DashboardWidgetType = (typeof DASHBOARD_WIDGET_TYPES)[number];

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useQueryStates } from 'nuqs';
 
 import { Link } from '@/i18n/navigation';
+import { transactionTableUrlNuqsOptions, transactionTableUrlParsers } from '@/lib/hooks/transaction-table-url-parsers';
 import { useProjectId } from '@/lib/hooks/use-project-id';
 import { PROJECT_ID_KEY } from '@/lib/params';
 import { tableUrlNuqsOptions, tableUrlParsers } from '@/lib/table-url-parsers';
@@ -12,20 +13,24 @@ import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store';
 
 interface ProjectTableNavItemProps {
-  basePath: '/lenders' | '/loans';
+  basePath: '/lenders' | '/loans' | '/transactions';
   icon: LucideIcon;
   label: string;
 }
 
 /**
- * Lenders/loans list entry: keeps `projectId` in the URL and clears table nuqs (`view`, filters, …)
+ * Lenders/loans/transactions list entry: keeps `projectId` in the URL and clears table nuqs (`view`, filters, …)
  * when clicking the section link while already on that route (same issue as sidebar pinned views).
  */
 export function ProjectTableNavItem({ basePath, icon: Icon, label }: ProjectTableNavItemProps) {
   const pathname = usePathname();
   const projectId = useProjectId();
   const { toggleSidebar } = useAppStore();
-  const [, setTableUrl] = useQueryStates(tableUrlParsers, tableUrlNuqsOptions);
+  const isTransactions = basePath === '/transactions';
+  const [, setTableUrl] = useQueryStates(
+    isTransactions ? transactionTableUrlParsers : tableUrlParsers,
+    isTransactions ? transactionTableUrlNuqsOptions : tableUrlNuqsOptions,
+  );
 
   const href =
     projectId != null && projectId !== '' ? `${basePath}?${PROJECT_ID_KEY}=${encodeURIComponent(projectId)}` : basePath;
@@ -53,6 +58,14 @@ export function ProjectTableNavItem({ basePath, icon: Icon, label }: ProjectTabl
             cols: null,
             page: null,
             pageSize: null,
+            ...(isTransactions
+              ? {
+                  txRange: null,
+                  txRangeFrom: null,
+                  txRangeTo: null,
+                  includeInterest: null,
+                }
+              : {}),
           });
         }
         if (typeof window !== 'undefined' && window.innerWidth < 768) {

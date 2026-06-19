@@ -29,9 +29,13 @@ export default function DashboardNavigation({
   const t = useTranslations('navigation');
   const isDashboardPage = pathname === '/dashboard';
   const isFillHeightPage =
-    pathname === '/lenders' || pathname === '/loans' || pathname === '/logbook' || pathname === '/projects';
+    pathname === '/lenders' ||
+    pathname === '/loans' ||
+    pathname === '/transactions' ||
+    pathname === '/logbook' ||
+    pathname === '/projects';
 
-  const isFullWidthPage = pathname === '/lenders' || pathname === '/loans';
+  const isFullWidthPage = pathname === '/lenders' || pathname === '/loans' || pathname === '/transactions';
 
   if (!session) {
     return null;

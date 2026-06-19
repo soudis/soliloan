@@ -52,35 +52,24 @@ const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
 const LOAN_COLUMN_GROUP = { key: 'loan' as const, order: 0 };
 const LENDER_COLUMN_GROUP = { key: 'lender' as const, order: 1 };
 
-export function buildAllLoanTableColumns(
+export function buildLoanTableColumns(
   project: ProjectWithConfiguration,
   t: (key: string) => string,
-  tLenders: (key: string) => string,
   commonT: (key: string) => string,
   locale: string,
   durationT: (key: string, values?: Record<string, number>) => string,
 ): ColumnDef<LoanWithCalculations>[] {
-  const loanColumns: ColumnDef<LoanWithCalculations>[] = [
+  return [
     createNumberColumn<LoanWithCalculations>('loanNumber', 'table.loanNumber', t, locale),
-
     createDateColumn<LoanWithCalculations>('signDate', 'table.signDate', t, locale),
-
     createCurrencyColumn<LoanWithCalculations>('amount', 'table.amount', t, locale),
-
     createCurrencyColumn<LoanWithCalculations>('balance', 'table.balance', t, locale),
-
     createCurrencyColumn<LoanWithCalculations>('deposits', 'table.deposits', t, locale),
-
     createCurrencyColumn<LoanWithCalculations>('withdrawals', 'table.withdrawals', t, locale),
-
     createCurrencyColumn<LoanWithCalculations>('notReclaimed', 'table.notReclaimed', t, locale),
-
     createPercentageColumn<LoanWithCalculations>('interestRate', 'table.interestRate', t, locale),
-
     createCurrencyColumn<LoanWithCalculations>('interest', 'table.interest', t, locale),
-
     createCurrencyColumn<LoanWithCalculations>('interestPaid', 'table.interestPaid', t, locale),
-
     createEnumBadgeColumn<LoanWithCalculations>(
       'terminationType',
       'table.terminationType',
@@ -89,15 +78,10 @@ export function buildAllLoanTableColumns(
       commonT,
       () => 'outline',
     ),
-
     createTerminationModalitiesColumn<LoanWithCalculations>(t, commonT),
-
     createDateColumn<LoanWithCalculations>('repayDate', 'table.repayDate', t, locale),
-
     createDurationDaysColumn<LoanWithCalculations>('loanTermDays', 'table.loanTerm', t, durationT),
-
     createDurationDaysColumn<LoanWithCalculations>('repaymentPeriodDays', 'table.repaymentPeriod', t, durationT),
-
     createEnumBadgeColumn<LoanWithCalculations>('status', 'table.status', 'enums.loan.status', t, commonT, (value) => {
       switch (value) {
         case 'ACTIVE':
@@ -110,7 +94,6 @@ export function buildAllLoanTableColumns(
           return 'outline';
       }
     }),
-
     createEnumBadgeColumn<LoanWithCalculations>(
       'altInterestMethod',
       'table.altInterestMethod',
@@ -119,7 +102,6 @@ export function buildAllLoanTableColumns(
       commonT,
       () => 'outline',
     ),
-
     createEnumBadgeColumn<LoanWithCalculations>(
       'contractStatus',
       'table.contractStatus',
@@ -135,7 +117,6 @@ export function buildAllLoanTableColumns(
         }
       },
     ),
-
     ...createAdditionalFieldsColumns<LoanWithCalculations>(
       project.configuration.loanAdditionalFields,
       'additionalFields',
@@ -143,6 +124,17 @@ export function buildAllLoanTableColumns(
       locale,
     ),
   ];
+}
+
+export function buildAllLoanTableColumns(
+  project: ProjectWithConfiguration,
+  t: (key: string) => string,
+  tLenders: (key: string) => string,
+  commonT: (key: string) => string,
+  locale: string,
+  durationT: (key: string, values?: Record<string, number>) => string,
+): ColumnDef<LoanWithCalculations>[] {
+  const loanColumns = buildLoanTableColumns(project, t, commonT, locale, durationT);
 
   const lenderProfileColumns = buildLenderProfileColumns<LoanWithCalculations>({
     getLender: (row) => row.lender,
@@ -208,6 +200,8 @@ export function getLoanSortValue(
   columnId: string,
   commonT: (key: string, values?: Record<string, string>) => string,
 ): string | number | Date | null {
+  const normalizedId = columnId.startsWith('loan.') ? columnId.replace('loan.', '') : columnId;
+
   if (columnId.startsWith('lender.')) {
     const lenderField = columnId.replace('lender.', '');
     if (!row.lender) {
@@ -216,7 +210,7 @@ export function getLoanSortValue(
     return getLenderSortValue(row.lender, lenderField, commonT);
   }
 
-  switch (columnId) {
+  switch (normalizedId) {
     case 'terminationModalities':
       return formatTerminationModalities(row, commonT);
     case 'status':
@@ -228,7 +222,7 @@ export function getLoanSortValue(
     case 'contractStatus':
       return row.contractStatus ? commonT(`enums.loan.contractStatus.${row.contractStatus}`) : '';
     default: {
-      const value = readNestedValue(row, columnId);
+      const value = readNestedValue(row, normalizedId);
       if (value instanceof Date) {
         return value;
       }

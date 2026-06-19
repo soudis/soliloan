@@ -15,7 +15,7 @@ import {
 import { MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useTableUrlState } from '@/lib/hooks/use-table-url-state';
+import { useTableUrlState, type SetTableUrlState, type TableUrlState } from '@/lib/hooks/use-table-url-state';
 import { cn } from '@/lib/utils';
 
 import { Checkbox } from './checkbox';
@@ -39,7 +39,7 @@ export type ColumnExportMeta = {
   wrapText?: boolean;
 };
 
-export type ColumnGroupKey = 'loan' | 'lender';
+export type ColumnGroupKey = 'transaction' | 'loan' | 'lender';
 
 export type ColumnGroupMeta = {
   /** Translation key under dataTable.columnGroups */
@@ -171,12 +171,21 @@ interface DataTableProps<TData, TValue> {
   /** Lender/loan: offer "pin to sidebar" in save dialog. */
   allowSidebarViews?: boolean;
   getRowId?: (row: TData) => string;
+  /** Optional content rendered in the toolbar (left side, after search). */
+  toolbarExtra?: React.ReactNode;
+  /** Extra fields persisted in saved views (transaction table time range, etc.). */
+  extraViewData?: Record<string, unknown>;
+  /** Compare extra view fields for dirty state. */
+  isExtraViewDataDirty?: (savedData: Record<string, unknown> | undefined) => boolean;
   /** Fill parent height: toolbar and pagination stay fixed; table body scrolls vertically. */
   fillHeight?: boolean;
   /** Show Excel export button in the toolbar. */
   showExport?: boolean;
   /** Filename prefix for exports; defaults to `export-{date}.xlsx` when omitted. */
   exportPrefix?: string;
+  /** Controlled table URL state (e.g. transaction table with extra params). */
+  tableState?: TableUrlState;
+  setTableState?: SetTableUrlState;
 }
 
 export function DataTable<TData, TValue>({
@@ -199,14 +208,23 @@ export function DataTable<TData, TValue>({
   fillHeight = false,
   showExport = false,
   exportPrefix,
+  toolbarExtra,
+  extraViewData,
+  isExtraViewDataDirty,
+  tableState: controlledTableState,
+  setTableState: controlledSetTableState,
 }: DataTableProps<TData, TValue>) {
   const t = useTranslations('dataTable');
 
-  // Get table state from URL — views are passed so the hook can diff against the selected view's baseline
-  const { state: tableState, setState: setTableState } = useTableUrlState({
+  const internalUrlState = useTableUrlState({
     defaultColumnVisibility,
     views,
+    controlledState: controlledTableState,
+    controlledSetState: controlledSetTableState,
   });
+
+  const tableState = internalUrlState.state;
+  const setTableState = internalUrlState.setState;
 
   const sorting = tableState.sorting;
   const columnFilterState = tableState.columnFilters;
@@ -457,6 +475,9 @@ export function DataTable<TData, TValue>({
             showExport={showExport}
             exportPrefix={exportPrefix}
             exportDisabled={exportDisabled}
+            toolbarExtra={toolbarExtra}
+            extraViewData={extraViewData}
+            isExtraViewDataDirty={isExtraViewDataDirty}
           />
         </div>
       )}

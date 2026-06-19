@@ -11,7 +11,11 @@ import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/histo
 import { createDefaultLineChartConfig } from '@/types/dashboard-widgets/line-chart';
 import { createDefaultPieChartConfig } from '@/types/dashboard-widgets/pie-chart';
 import { createDefaultStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
-import { createDefaultLenderTableConfig, createDefaultLoanTableConfig } from '@/types/dashboard-widgets/table-view';
+import {
+  createDefaultLenderTableConfig,
+  createDefaultLoanTableConfig,
+  createDefaultTransactionTableConfig,
+} from '@/types/dashboard-widgets/table-view';
 
 export const DESKTOP_GRID_COLS = 12;
 export const MOBILE_GRID_COLS = 12;
@@ -60,6 +64,7 @@ export const DEFAULT_WIDTH_BY_TYPE: Record<DashboardWidgetType, DashboardWidgetW
   history_table: 'full',
   loan_table_view: 'full',
   lender_table_view: 'full',
+  transaction_table_view: 'full',
   pie_chart: 'half',
   line_chart: 'half',
   bar_chart: 'half',
@@ -156,7 +161,8 @@ export function widgetShowsCardHeader(widget: { type: DashboardWidgetType; title
     widget.type === 'bar_chart' ||
     widget.type === 'line_chart' ||
     widget.type === 'loan_table_view' ||
-    widget.type === 'lender_table_view'
+    widget.type === 'lender_table_view' ||
+    widget.type === 'transaction_table_view'
   ) {
     return widget.title.trim().length > 0;
   }
@@ -180,6 +186,8 @@ export function createDefaultWidgetConfig(type: DashboardWidgetType): Record<str
       return createDefaultLoanTableConfig();
     case 'lender_table_view':
       return createDefaultLenderTableConfig();
+    case 'transaction_table_view':
+      return createDefaultTransactionTableConfig();
     default:
       return {};
   }

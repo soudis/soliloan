@@ -51,6 +51,9 @@ interface DataTableHeaderProps<TData> {
   showExport?: boolean;
   exportPrefix?: string;
   exportDisabled?: boolean;
+  toolbarExtra?: React.ReactNode;
+  extraViewData?: Record<string, unknown>;
+  isExtraViewDataDirty?: (savedData: Record<string, unknown> | undefined) => boolean;
 }
 
 export function DataTableHeader<TData>({
@@ -68,6 +71,9 @@ export function DataTableHeader<TData>({
   showExport = false,
   exportPrefix,
   exportDisabled = false,
+  toolbarExtra,
+  extraViewData,
+  isExtraViewDataDirty,
 }: DataTableHeaderProps<TData>) {
   const projectId = useProjectId();
   const router = useRouter();
@@ -93,6 +99,7 @@ export function DataTableHeader<TData>({
       pageIndex: 0,
       pageSize: tableState.pageSize,
     },
+    ...extraViewData,
   });
 
   const handleOverwriteView = async () => {
@@ -190,9 +197,10 @@ export function DataTableHeader<TData>({
       tableState.pageSize !== (viewData.pagination?.pageSize ?? viewData.pageSize ?? 25) ||
       !isEqual(tableState.columnVisibility, viewData.columnVisibility ?? defaultColumnVisibility) ||
       !isEqual(tableState.sorting, viewData.sorting ?? []) ||
-      !isEqual(tableState.columnFilters, viewData.columnFilters ?? [])
+      !isEqual(tableState.columnFilters, viewData.columnFilters ?? []) ||
+      (isExtraViewDataDirty?.(viewData) ?? false)
     );
-  }, [views, tableState, defaultColumnVisibility]);
+  }, [views, tableState, defaultColumnVisibility, isExtraViewDataDirty]);
 
   const groupedHideableColumns = useMemo(() => {
     const hideableColumns = table.getAllColumns().filter((column) => column.getCanHide());
@@ -226,20 +234,23 @@ export function DataTableHeader<TData>({
 
   return (
     <>
-      <div className="flex items-center py-4">
-        {showFilter && (
-          <div className="flex items-center gap-4">
-            <Input
-              placeholder={t('globalFilter') || 'Search all columns...'}
-              value={tableState.globalFilter}
-              onChange={(event) => {
-                setTableState({ globalFilter: event.target.value });
-              }}
-              className="max-w-sm bg-background dark:bg-background"
-            />
+      <div className="flex items-center gap-4 py-4">
+        {(showFilter || toolbarExtra) && (
+          <div className="flex min-w-0 flex-1 items-center gap-4 overflow-x-auto">
+            {showFilter && (
+              <Input
+                placeholder={t('globalFilter') || 'Search all columns...'}
+                value={tableState.globalFilter}
+                onChange={(event) => {
+                  setTableState({ globalFilter: event.target.value });
+                }}
+                className="max-w-sm shrink-0 bg-background dark:bg-background"
+              />
+            )}
+            {toolbarExtra}
           </div>
         )}
-        <div className="ml-auto flex items-center space-x-2">
+        <div className="ml-auto flex shrink-0 items-center space-x-2">
           {viewType && (
             <>
               <ViewManager

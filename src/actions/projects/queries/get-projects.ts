@@ -72,7 +72,7 @@ export async function getProjects() {
     sidebarViews = await db.view.findMany({
       where: {
         showInSidebar: true,
-        type: { in: [ViewType.LENDER, ViewType.LOAN] },
+        type: { in: [ViewType.LENDER, ViewType.LOAN, ViewType.TRANSACTION] },
         OR: [{ userId: uid, projectId: null }, ...(projectIds.length > 0 ? [{ projectId: { in: projectIds } }] : [])],
       },
       select: { id: true, name: true, type: true, projectId: true },

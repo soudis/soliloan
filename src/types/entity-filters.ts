@@ -1,6 +1,6 @@
 import type { DataTableColumnFilterDefinition } from '@/lib/entity-filters/filter-definitions';
 
-export type EntityFilterEntity = 'loan' | 'lender';
+export type EntityFilterEntity = 'loan' | 'lender' | 'transaction';
 
 export type EntityFilter = {
   id: string;
@@ -12,5 +12,5 @@ export type EntityFilter = {
 export type EntityFilterFieldOption = DataTableColumnFilterDefinition & {
   field: string;
   entity: EntityFilterEntity;
-  group: 'loan' | 'lender';
+  group: 'loan' | 'lender' | 'transaction';
 };

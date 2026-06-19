@@ -1,8 +1,17 @@
-import { ContractStatus, Country, InterestMethod, NotificationType, Salutation, TerminationType } from '@prisma/client';
+import {
+  ContractStatus,
+  Country,
+  InterestMethod,
+  NotificationType,
+  PaymentType,
+  Salutation,
+  TerminationType,
+  TransactionType,
+} from '@prisma/client';
 
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { createAdditionalFieldFilters } from '@/lib/table-column-utils';
-import type { EntityFilterFieldOption } from '@/types/entity-filters';
+import type { EntityFilterFieldOption, EntityFilterEntity } from '@/types/entity-filters';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
 export type DataTableColumnFilterType = 'text' | 'select' | 'multi-select' | 'number' | 'date';
@@ -202,6 +211,49 @@ export function buildLoanTableColumnFilters(
   };
 }
 
+export function buildTransactionColumnFiltersMap(
+  t: (key: string) => string,
+  commonT: (key: string) => string,
+): Record<string, DataTableColumnFilterDefinition> {
+  return {
+    'transaction.type': {
+      type: 'multi-select',
+      label: t('table.type'),
+      options: Object.values(TransactionType).map((value) => ({
+        label: commonT(`enums.transaction.type.${value}`),
+        value,
+      })),
+    },
+    'transaction.date': { type: 'date', label: t('table.date') },
+    'transaction.amount': { type: 'number', label: t('table.amount') },
+    'transaction.paymentType': {
+      type: 'select',
+      label: t('table.paymentType'),
+      options: Object.values(PaymentType).map((value) => ({
+        label: commonT(`enums.transaction.paymentType.${value}`),
+        value,
+      })),
+    },
+  };
+}
+
+export function buildTransactionTableColumnFilters(
+  project: ProjectWithConfiguration,
+  tTransactions: (key: string) => string,
+  tLoans: (key: string) => string,
+  tLenders: (key: string) => string,
+  commonT: (key: string) => string,
+): DataTableColumnFilters {
+  return {
+    ...buildTransactionColumnFiltersMap(tTransactions, commonT),
+    ...prefixFilterKeys(buildLoanColumnFiltersMap(project, tLoans, commonT), 'loan.'),
+    ...buildLenderProfileColumnFiltersMap(project, tLenders, commonT, {
+      idPrefix: 'lender.',
+      includeAggregates: false,
+    }),
+  };
+}
+
 export function buildLoanFilterFieldOptions(
   project: ProjectWithConfiguration,
   t: (key: string) => string,
@@ -236,6 +288,42 @@ export function buildLenderFilterFieldOptions(
   }));
 }
 
+export function buildTransactionFilterFieldOptions(
+  project: ProjectWithConfiguration,
+  tTransactions: (key: string) => string,
+  tLoans: (key: string) => string,
+  tLenders: (key: string) => string,
+  commonT: (key: string) => string,
+): EntityFilterFieldOption[] {
+  const transactionFilters = buildTransactionColumnFiltersMap(tTransactions, commonT);
+  const loanFilters = prefixFilterKeys(buildLoanColumnFiltersMap(project, tLoans, commonT), 'loan.');
+  const lenderFilters = buildLenderProfileColumnFiltersMap(project, tLenders, commonT, {
+    idPrefix: 'lender.',
+    includeAggregates: false,
+  });
+
+  return [
+    ...Object.entries(transactionFilters).map(([field, def]) => ({
+      field,
+      entity: 'transaction' as const,
+      group: 'transaction' as const,
+      ...def,
+    })),
+    ...Object.entries(loanFilters).map(([field, def]) => ({
+      field,
+      entity: 'loan' as const,
+      group: 'loan' as const,
+      ...def,
+    })),
+    ...Object.entries(lenderFilters).map(([field, def]) => ({
+      field,
+      entity: 'lender' as const,
+      group: 'lender' as const,
+      ...def,
+    })),
+  ];
+}
+
 export function buildAllFilterFieldOptions(
   project: ProjectWithConfiguration,
   tLoans: (key: string) => string,
@@ -250,7 +338,7 @@ export function buildAllFilterFieldOptions(
 
 export function getFilterDefinitionForField(
   fieldOptions: EntityFilterFieldOption[],
-  entity: 'loan' | 'lender',
+  entity: EntityFilterEntity,
   field: string,
 ): DataTableColumnFilterDefinition | undefined {
   return fieldOptions.find((o) => o.entity === entity && o.field === field);
@@ -283,7 +371,7 @@ export function isLenderAggregateFilterField(field: string): boolean {
   return LENDER_AGGREGATE_FILTER_FIELDS.has(field);
 }
 
-export function filtersNeedPeriodSnapshot(filters: { entity: 'loan' | 'lender'; field: string }[]): boolean {
+export function filtersNeedPeriodSnapshot(filters: { entity: EntityFilterEntity; field: string }[]): boolean {
   for (const filter of filters) {
     if (filter.entity === 'loan' && isDynamicLoanFilterField(filter.field)) {
       return true;
