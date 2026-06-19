@@ -1,6 +1,6 @@
 'use server';
 
-import { type Country, Entity, Language, Operation, SoliLoansTheme } from '@prisma/client';
+import { type Country, Entity, Language, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 import { createAuditEntry, getLenderContext, removeNullFields } from '@/lib/audit-trail';
@@ -21,7 +21,7 @@ async function getNextLenderNumber(projectId: string): Promise<number> {
 export const createLenderAction = projectAction.inputSchema(lenderFormSchema).action(async ({ parsedInput: data }) => {
   const project = await db.project.findUnique({
     where: { id: data.projectId },
-    select: { configuration: { select: { userLanguage: true, userTheme: true } } },
+    select: { configuration: { select: { userLanguage: true } } },
   });
 
   if (!project) throw new Error('error.project.notFound');
@@ -29,7 +29,6 @@ export const createLenderAction = projectAction.inputSchema(lenderFormSchema).ac
   const configuration = project.configuration;
 
   const userLanguage = configuration.userLanguage ?? Language.de;
-  const userTheme = configuration.userTheme ?? SoliLoansTheme.default;
 
   const lenderNumber = data.lenderNumber ?? (await getNextLenderNumber(data.projectId));
 
@@ -71,7 +70,6 @@ export const createLenderAction = projectAction.inputSchema(lenderFormSchema).ac
               email: lenderEmail,
               name: getLenderName(data),
               language: userLanguage,
-              theme: userTheme,
             },
           },
         },

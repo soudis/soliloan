@@ -171,7 +171,7 @@ export const ButtonSettings = () => {
               setDropdownOpen(true);
             }
           }}
-          className="flex items-center justify-center gap-2 w-full px-3 py-1.5 text-xs font-medium bg-zinc-900 text-white rounded-md hover:bg-zinc-800 transition-colors"
+          className="flex items-center justify-center gap-2 w-full px-3 py-1.5 text-xs font-medium bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
         >
           <PlusCircle className="w-3 h-3" />
           {t('insertPlaceholder')}
@@ -192,9 +192,9 @@ export const ButtonSettings = () => {
                 }
               })
             }
-            className="rounded border-zinc-300"
+            className="rounded border-border"
           />
-          <Link2 className="w-3 h-3 text-zinc-500" />
+          <Link2 className="w-3 h-3 text-muted-foreground" />
           {t('useSystemUrl')}
         </label>
 

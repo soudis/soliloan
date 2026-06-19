@@ -273,8 +273,8 @@ export const TextSettings = () => {
               }
               className={`flex items-center justify-center p-2 rounded-md border transition-colors ${
                 textAlign === value
-                  ? 'bg-zinc-900 text-white border-zinc-900'
-                  : 'bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400 hover:text-zinc-700'
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-white text-muted-foreground border-border hover:border-border hover:text-foreground'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -299,7 +299,7 @@ export const TextSettings = () => {
               setDropdownOpen(true);
             }
           }}
-          className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-medium bg-zinc-900 text-white rounded-md hover:bg-zinc-800 transition-colors"
+          className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-medium bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
         >
           <PlusCircle className="w-3 h-3" />
           {t('insertPlaceholder')}

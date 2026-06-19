@@ -226,7 +226,6 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
                 email: adminEmail,
                 password: admin.passwordHashed,
                 language: 'de',
-                theme: 'default',
               },
             });
             await tx.project.update({
@@ -261,7 +260,6 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
                   password: user.passwordHashed,
                   lastLogin: user.lastLogin ? new Date(user.lastLogin) : undefined,
                   language: 'de',
-                  theme: 'default',
                 },
               });
             } else if (user.lastLogin) {

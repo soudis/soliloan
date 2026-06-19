@@ -79,12 +79,12 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
 
   const getFileTypeIcon = (file: Omit<File, 'data'>) => {
     if (file.mimeType.startsWith('image/')) {
-      return <ImageIcon className={`h-8 w-8 ${file.public ? 'text-amber-500' : 'text-blue-500'}`} />;
+      return <ImageIcon className={`h-8 w-8 ${file.public ? 'text-warning-foreground' : 'text-info-foreground'}`} />;
     }
     if (file.mimeType === 'application/pdf' || file.mimeType.includes('document') || file.mimeType.includes('text')) {
-      return <FileText className={`h-8 w-8 ${file.public ? 'text-amber-500' : 'text-blue-500'}`} />;
+      return <FileText className={`h-8 w-8 ${file.public ? 'text-warning-foreground' : 'text-info-foreground'}`} />;
     }
-    return <FileIcon className={`h-8 w-8 ${file.public ? 'text-amber-500' : 'text-blue-500'}`} />;
+    return <FileIcon className={`h-8 w-8 ${file.public ? 'text-warning-foreground' : 'text-info-foreground'}`} />;
   };
 
   const getFileTypeLabel = (mimeType: string) => {
@@ -111,9 +111,9 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
           {files.map((file) => (
             <div
               key={file.id}
-              className="min-h-[120px] relative group rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 h-full flex overflow-hidden"
+              className="min-h-[120px] relative group rounded-lg border border-border shadow-none transition-colors duration-200 h-full flex overflow-hidden"
               style={{
-                backgroundColor: file.public ? 'hsl(48, 100%, 96%)' : 'hsl(210, 100%, 96%)',
+                backgroundColor: file.public ? 'color-mix(in oklch, var(--warning) 15%, var(--background))' : 'color-mix(in oklch, var(--info) 15%, var(--background))',
                 border: '1px solid rgba(0,0,0,0.05)',
               }}
             >
@@ -129,7 +129,7 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
                 </div>
               ) : (
                 <div
-                  className={`w-32 flex-shrink-0 flex items-center justify-center relative ${file.public ? 'bg-amber-500/20' : 'bg-blue-500/20'}`}
+                  className={`w-32 flex-shrink-0 flex items-center justify-center relative ${file.public ? 'bg-warning/20' : 'bg-info/20'}`}
                 >
                   {getFileTypeIcon(file)}
                 </div>
@@ -139,7 +139,7 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 bg-background/50 hover:bg-background shadow-xs"
+                  className="h-8 w-8 bg-background/50 hover:bg-background"
                   onClick={() => handleDownloadFile(file)}
                 >
                   <Download className="h-4 w-4" />
@@ -148,7 +148,7 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 bg-background/50 hover:bg-background shadow-xs"
+                  className="h-8 w-8 bg-background/50 hover:bg-background"
                   onClick={() => setIsConfirmOpen(file.id)}
                 >
                   <Trash2 className="h-4 w-4 text-destructive" />

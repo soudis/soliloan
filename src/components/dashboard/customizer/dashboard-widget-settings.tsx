@@ -142,8 +142,8 @@ export function DashboardWidgetSettings() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="shrink-0 border-b bg-zinc-50 px-4 py-3">
-        <h3 className="text-sm font-semibold text-zinc-900">{t('settingsTitle')}</h3>
+      <div className="shrink-0 border-b bg-muted px-4 py-3">
+        <h3 className="text-sm font-semibold text-foreground">{t('settingsTitle')}</h3>
         <p className="text-xs text-muted-foreground">{t(`widgetTypes.${widget.type}`)}</p>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-4">

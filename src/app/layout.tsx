@@ -1,27 +1,18 @@
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import localFont from 'next/font/local';
 
 import './globals.css';
 
 import type { Metadata } from 'next';
 import { getSoliloanProjectName } from '@/lib/project-name';
-import { ColorSchemeScript } from './color-scheme-script';
 import { Providers } from './providers';
 
 const projectName = getSoliloanProjectName();
 
-const inter = localFont({
-  src: '../fonts/Inter-VariableFont.woff2',
-  variable: '--font-inter',
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-plus-jakarta',
   display: 'swap',
-  preload: true,
-  adjustFontFallback: 'Arial',
-});
-
-const comfortaa = localFont({
-  src: '../fonts/Comfortaa-VariableFont.woff2',
-  variable: '--font-comfortaa',
-  display: 'swap',
-  preload: true,
 });
 
 const roboto = localFont({
@@ -48,14 +39,9 @@ export default async function RootLayout({
   const resolved = await params;
   const locale = typeof resolved?.locale === 'string' ? resolved.locale : 'de';
   return (
-    <html
-      lang={locale}
-      suppressHydrationWarning
-      className={`${inter.className} ${inter.variable} ${comfortaa.variable} ${roboto.variable}`}
-    >
+    <html lang={locale} suppressHydrationWarning className={`${plusJakarta.variable} ${roboto.variable}`}>
       <head>
         <link rel="icon" href="/soliloan-logo.webp" sizes="any" />
-        <ColorSchemeScript />
       </head>
       <body>
         <Providers>{children}</Providers>

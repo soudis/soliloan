@@ -6,10 +6,10 @@ export function getSignedMetricValueClassName(
     return undefined;
   }
   if (value > 0) {
-    return 'text-green-600';
+    return 'text-success-foreground';
   }
   if (value < 0) {
-    return 'text-red-600';
+    return 'text-destructive';
   }
   return undefined;
 }

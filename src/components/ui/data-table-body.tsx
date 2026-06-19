@@ -10,7 +10,7 @@ const ROW_CLICK_SUPPRESS_MS_AFTER_ACTIONS_MENU = 400;
 
 interface DataTableBodyProps<TData> {
   table: TanstackTable<TData>;
-  /** When set, rows use transparent hover — cell backgrounds mirror selection only (no muted hover tint). */
+  /** When set, rows show hover feedback and navigate on click. */
   onRowClick?: (row: TData) => void;
   hasBulkSelect?: boolean;
   lastRowActionsMenuClosedAtRef?: RefObject<number>;
@@ -18,13 +18,11 @@ interface DataTableBodyProps<TData> {
   fillHeight?: boolean;
 }
 
-function nonActionsCellBg(onRowClick: boolean | undefined) {
-  const base = 'bg-background transition-colors';
-  const selected = 'group-data-[state=selected]/row:bg-muted';
-  if (onRowClick) {
-    return cn(base, selected);
-  }
-  return cn(base, 'group-hover/row:bg-muted/50', selected);
+function nonActionsCellBg(hasRowClick: boolean) {
+  return cn(
+    'bg-card transition-colors group-data-[state=selected]/row:bg-muted',
+    hasRowClick && 'group-hover/row:bg-muted/50',
+  );
 }
 
 export function DataTableBody<TData>({
@@ -37,7 +35,7 @@ export function DataTableBody<TData>({
   const t = useTranslations('dataTable');
 
   return (
-    <div className={cn('rounded-md border', fillHeight && 'flex min-h-0 flex-1 flex-col overflow-hidden max-h-full')}>
+    <div className={cn('rounded-md border border-border bg-card', fillHeight && 'flex min-h-0 flex-1 flex-col overflow-hidden max-h-full')}>
       <div className={cn(fillHeight && 'min-h-0 max-h-full flex-1 overflow-auto')}>
         <Table containerClassName={fillHeight ? 'overflow-visible' : undefined}>
           <TableHeader>
@@ -50,11 +48,11 @@ export function DataTableBody<TData>({
                       className={cn(
                         header.column.columnDef.meta?.style?.textAlign &&
                           `text-${header.column.columnDef.meta.style.textAlign}`,
-                        'bg-background',
-                        fillHeight && 'sticky top-0 z-20 shadow-[inset_0_-1px_0_0_var(--border)]',
+                        'bg-card',
+                        fillHeight && 'sticky top-0 z-20 shadow-[inset_0_-1px_0_0_var(--table-border)]',
                         header.column.columnDef.meta?.fixed &&
                           cn(
-                            'sticky right-0 before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
+                            'sticky right-0 before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-table-border before:content-[""]',
                             fillHeight ? 'z-30' : 'z-10',
                           ),
                         header.column.columnDef.meta?.bulkSelectColumn &&
@@ -81,9 +79,8 @@ export function DataTableBody<TData>({
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                   className={cn(
-                    'group/row transition-colors',
-                    onRowClick &&
-                      'data-table-clickable-row cursor-pointer hover:bg-transparent data-[state=selected]:hover:bg-muted',
+                    'group/row transition-colors hover:bg-transparent',
+                    onRowClick && 'cursor-pointer',
                   )}
                   onClick={(e) => {
                     const target = e.target as HTMLElement;
@@ -121,7 +118,7 @@ export function DataTableBody<TData>({
                       className={cn(
                         nonActionsCellBg(!!onRowClick),
                         cell.column.columnDef.meta?.fixed &&
-                          'sticky right-0 z-10 before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-border before:content-[""]',
+                          'sticky right-0 z-10 before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-table-border before:content-[""]',
                         cell.column.columnDef.meta?.bulkSelectColumn &&
                           'relative w-10 min-w-[2.5rem] max-w-[2.5rem] !p-0 align-top leading-none',
                         cell.column.columnDef.meta?.actionsColumn &&
@@ -137,7 +134,7 @@ export function DataTableBody<TData>({
               <TableRow>
                 <TableCell
                   colSpan={table.getAllColumns().length}
-                  className="h-24 bg-background text-center dark:bg-background"
+                  className="h-24 bg-card text-center"
                 >
                   {t('noResults')}
                 </TableCell>

@@ -81,7 +81,7 @@ export const PageFooter = ({
       className="w-full"
     >
       <div className="mx-4 relative">
-        <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-white text-[10px] text-zinc-400 px-2 pointer-events-none z-[2]">
+        <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-white text-[10px] text-muted-foreground px-2 pointer-events-none z-[2]">
           {t('label')}
         </span>
       </div>
@@ -95,7 +95,7 @@ export const PageFooter = ({
       >
         {children}
         {isEmpty && (
-          <div className="py-4 border-2 border-dashed border-zinc-200 rounded flex items-center justify-center text-zinc-400 text-xs pointer-events-none w-full">
+          <div className="py-4 border-2 border-dashed border-border rounded flex items-center justify-center text-muted-foreground text-xs pointer-events-none w-full">
             {t('dropHere')}
           </div>
         )}
@@ -183,7 +183,7 @@ export const PageFooterSettings = () => {
                     (props as Record<string, boolean>)[side] = e.target.checked;
                   })
                 }
-                className="rounded border-zinc-300"
+                className="rounded border-border"
               />
               {t(side)}
             </label>
@@ -191,7 +191,7 @@ export const PageFooterSettings = () => {
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
-            <label htmlFor="footerBorderColor" className="text-[11px] text-zinc-600">
+            <label htmlFor="footerBorderColor" className="text-[11px] text-muted-foreground">
               {t('borderColor')}
             </label>
             <input
@@ -207,7 +207,7 @@ export const PageFooterSettings = () => {
             />
           </div>
           <div className="space-y-1">
-            <label htmlFor="footerBorderWidth" className="text-[11px] text-zinc-600">
+            <label htmlFor="footerBorderWidth" className="text-[11px] text-muted-foreground">
               {t('borderWidth')}
             </label>
             <input
@@ -226,7 +226,7 @@ export const PageFooterSettings = () => {
           </div>
         </div>
         <div className="space-y-1">
-          <label htmlFor="footerBorderStyle" className="text-[11px] text-zinc-600">
+          <label htmlFor="footerBorderStyle" className="text-[11px] text-muted-foreground">
             {t('borderStyle')}
           </label>
           <select

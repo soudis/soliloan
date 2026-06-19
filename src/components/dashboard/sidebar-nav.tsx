@@ -18,7 +18,7 @@ import type { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 
-import { ThemeSelector } from '@/components/theme-selector';
+import { ThemeModeSwitch } from '@/components/theme-mode-switch';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store';
@@ -38,7 +38,6 @@ interface SidebarNavProps {
 
 export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews }: SidebarNavProps) {
   const t = useTranslations('navigation');
-  const commonT = useTranslations('common');
   const { toggleSidebar } = useAppStore();
   const isAdmin = session.user.isAdmin;
 
@@ -61,7 +60,7 @@ export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews }: S
       <div
         className={`${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } fixed inset-y-0 left-0 z-30 w-64 transform border-r bg-background transition duration-300 ease-in-out md:relative md:translate-x-0`}
+        } fixed inset-y-0 left-0 z-30 w-64 transform border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition duration-300 ease-in-out md:relative md:translate-x-0`}
       >
         <div className="h-full overflow-y-auto px-3 py-4 flex flex-col">
           {session.user.loanedToProjects.length > 0 && (
@@ -132,18 +131,14 @@ export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews }: S
               </Link>
               <Button
                 variant="outline"
-                className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
+                className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
                 onClick={() => signOut()}
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 {t('signOut')}
               </Button>
+              <ThemeModeSwitch />
             </div>
-
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">{commonT('ui.theme')}</span>
-            </div>
-            <ThemeSelector />
           </div>
         </div>
       </div>

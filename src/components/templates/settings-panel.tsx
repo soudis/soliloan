@@ -32,8 +32,8 @@ export const SettingsPanel = () => {
 
   return selected ? (
     <div className="flex min-h-0 flex-1 flex-col bg-white">
-      <div className="flex shrink-0 items-center justify-between border-b bg-zinc-50 px-4 py-3">
-        <h3 className="text-sm font-semibold text-zinc-900">
+      <div className="flex shrink-0 items-center justify-between border-b bg-muted px-4 py-3">
+        <h3 className="text-sm font-semibold text-foreground">
           {selected.titleLabel} {t('title')}
         </h3>
       </div>
@@ -61,7 +61,7 @@ export const SettingsPanel = () => {
       </NodeProvider>
     </div>
   ) : (
-    <div className="flex min-h-0 flex-1 flex-col items-center justify-center p-8 text-center text-sm italic text-zinc-500">
+    <div className="flex min-h-0 flex-1 flex-col items-center justify-center p-8 text-center text-sm italic text-muted-foreground">
       {t('noSelection')}
     </div>
   );

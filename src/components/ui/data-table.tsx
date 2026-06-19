@@ -277,8 +277,8 @@ export function DataTable<TData, TValue>({
           // biome-ignore lint/a11y/noLabelWithoutControl: Radix Checkbox is not a native input; wrapping label gives full-cell hit area.
           <label
             className={cn(
-              'absolute inset-0 z-10 flex min-h-0 cursor-pointer items-center justify-center bg-background leading-none rounded-none transition-colors hover:bg-muted',
-              fillHeight && 'shadow-[inset_0_-1px_0_0_var(--border)]',
+              'absolute inset-0 z-10 flex min-h-0 cursor-pointer items-center justify-center bg-card leading-none rounded-none transition-colors hover:bg-muted',
+              fillHeight && 'shadow-[inset_0_-1px_0_0_var(--table-border)]',
             )}
             data-bulk-select
           >

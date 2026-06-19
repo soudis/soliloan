@@ -82,12 +82,12 @@ function DashboardWidgetSlotComponent({ widget, rowId }: { widget: DashboardWidg
           isDivider
             ? 'min-h-0 border-0 bg-transparent pb-4 shadow-none'
             : cn(
-                'h-full min-h-[120px] border-2 pb-6 shadow-sm',
+                'h-full min-h-[120px] border border-border pb-6 shadow-none',
                 isSelected && isCustomizing ? 'border-primary' : 'border-border',
                 isCustomizing && 'ring-1 ring-primary/15',
               ),
           isCustomizing ? 'pt-0' : showHeader ? 'pt-4' : isDivider ? 'pt-4' : 'pt-5',
-          isDivider && isCustomizing && isSelected && 'border-2 border-primary ring-1 ring-primary/15',
+          isDivider && isCustomizing && isSelected && 'border border-primary ring-1 ring-primary/15',
         )}
         onClick={() => {
           if (isCustomizing) {
