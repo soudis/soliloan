@@ -55,7 +55,10 @@ export function ThemeModeDropdownItems() {
         {commonT('ui.appearance')}
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
-        <DropdownMenuRadioGroup value={mounted ? theme : 'system'} onValueChange={(value) => setTheme(value as ThemeMode)}>
+        <DropdownMenuRadioGroup
+          value={mounted ? theme : 'system'}
+          onValueChange={(value) => setTheme(value as ThemeMode)}
+        >
           {themeModes.map((mode) => {
             const Icon = themeIcons[mode];
             return (

@@ -157,19 +157,13 @@ export function TableViewWidget<T>({
           {table.getRowModel().rows.map((row) => (
             <TableRow
               key={row.id}
-              className={cn(
-                'group/row transition-colors hover:bg-transparent',
-                onRowClick && 'cursor-pointer',
-              )}
+              className={cn('group/row transition-colors hover:bg-transparent', onRowClick && 'cursor-pointer')}
               onClick={() => onRowClick?.(row.original)}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell
                   key={cell.id}
-                  className={cn(
-                    'bg-card transition-colors',
-                    onRowClick && 'group-hover/row:bg-muted/50',
-                  )}
+                  className={cn('bg-card transition-colors', onRowClick && 'group-hover/row:bg-muted/50')}
                   style={(cell.column.columnDef.meta as { style?: CSSProperties })?.style}
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}

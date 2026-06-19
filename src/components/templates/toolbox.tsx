@@ -116,7 +116,9 @@ export const Toolbox = () => {
         </TabsList>
 
         <TabsContent value="basic" className="mt-3 focus-visible:outline-none">
-          <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('toolbox.title')}</div>
+          <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+            {t('toolbox.title')}
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <div
               ref={(ref) => {

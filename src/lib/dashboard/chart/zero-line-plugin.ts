@@ -15,7 +15,8 @@ export const zeroLinePlugin: Plugin = {
 
     const { ctx, chartArea } = chart;
     ctx.save();
-    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted-foreground').trim() || 'currentColor';
+    ctx.strokeStyle =
+      getComputedStyle(document.documentElement).getPropertyValue('--muted-foreground').trim() || 'currentColor';
     ctx.lineWidth = 1;
     ctx.setLineDash([5, 5]);
     ctx.beginPath();

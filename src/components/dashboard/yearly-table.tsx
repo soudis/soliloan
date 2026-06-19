@@ -56,8 +56,12 @@ export function YearlyTable({ data }: YearlyTableProps) {
                   <tr key={yearData.year} className="border-b hover:bg-muted/50">
                     <td className="py-2 px-4 font-medium">{yearData.year}</td>
                     <td className="py-2 px-4 text-right">{formatCurrency(yearData.begin)}</td>
-                    <td className="py-2 px-4 text-right text-success-foreground">{formatCurrency(yearData.deposits)}</td>
-                    <td className="py-2 px-4 text-right text-success-foreground">{formatCurrency(yearData.interest)}</td>
+                    <td className="py-2 px-4 text-right text-success-foreground">
+                      {formatCurrency(yearData.deposits)}
+                    </td>
+                    <td className="py-2 px-4 text-right text-success-foreground">
+                      {formatCurrency(yearData.interest)}
+                    </td>
                     <td className="py-2 px-4 text-right text-destructive">{formatCurrency(yearData.withdrawals)}</td>
                     <td className="py-2 px-4 text-right text-destructive">{formatCurrency(yearData.notReclaimed)}</td>
                     <td className="py-2 px-4 text-right text-destructive">{formatCurrency(yearData.interestPaid)}</td>

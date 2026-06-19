@@ -113,7 +113,9 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
               key={file.id}
               className="min-h-[120px] relative group rounded-lg border border-border shadow-none transition-colors duration-200 h-full flex overflow-hidden"
               style={{
-                backgroundColor: file.public ? 'color-mix(in oklch, var(--warning) 15%, var(--background))' : 'color-mix(in oklch, var(--info) 15%, var(--background))',
+                backgroundColor: file.public
+                  ? 'color-mix(in oklch, var(--warning) 15%, var(--background))'
+                  : 'color-mix(in oklch, var(--info) 15%, var(--background))',
                 border: '1px solid rgba(0,0,0,0.05)',
               }}
             >

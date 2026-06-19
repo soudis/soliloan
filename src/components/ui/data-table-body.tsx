@@ -35,7 +35,12 @@ export function DataTableBody<TData>({
   const t = useTranslations('dataTable');
 
   return (
-    <div className={cn('rounded-md border border-border bg-card', fillHeight && 'flex min-h-0 flex-1 flex-col overflow-hidden max-h-full')}>
+    <div
+      className={cn(
+        'rounded-md border border-border bg-card',
+        fillHeight && 'flex min-h-0 flex-1 flex-col overflow-hidden max-h-full',
+      )}
+    >
       <div className={cn(fillHeight && 'min-h-0 max-h-full flex-1 overflow-auto')}>
         <Table containerClassName={fillHeight ? 'overflow-visible' : undefined}>
           <TableHeader>
@@ -78,10 +83,7 @@ export function DataTableBody<TData>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className={cn(
-                    'group/row transition-colors hover:bg-transparent',
-                    onRowClick && 'cursor-pointer',
-                  )}
+                  className={cn('group/row transition-colors hover:bg-transparent', onRowClick && 'cursor-pointer')}
                   onClick={(e) => {
                     const target = e.target as HTMLElement;
                     // Prevent row click when clicking the bulk select checkbox
@@ -132,10 +134,7 @@ export function DataTableBody<TData>({
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={table.getAllColumns().length}
-                  className="h-24 bg-card text-center"
-                >
+                <TableCell colSpan={table.getAllColumns().length} className="h-24 bg-card text-center">
                   {t('noResults')}
                 </TableCell>
               </TableRow>

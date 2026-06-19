@@ -164,13 +164,12 @@
 
 @layer components {
   /* tweakcn: bordered surfaces, no elevation shadows */
-  [data-slot='card'],
-  [data-slot='input'],
-  [data-slot='select-trigger'],
-  [data-slot='button'] {
+  [data-slot="card"],
+  [data-slot="input"],
+  [data-slot="select-trigger"],
+  [data-slot="button"] {
     box-shadow: none;
   }
-
 }
 
 @layer base {

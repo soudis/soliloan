@@ -77,7 +77,10 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
         {/** biome-ignore lint/a11y/useKeyWithClickEvents: accordion */}
         <div onClick={handleToggle} className="flex flex-1 flex-col gap-3 cursor-pointer min-w-0 text-left">
           <div className="flex flex-wrap items-center gap-3">
-            <ProjectLogo project={project} className="h-14 w-14 md:h-16 md:w-16 rounded-2xl border border-border shrink-0" />
+            <ProjectLogo
+              project={project}
+              className="h-14 w-14 md:h-16 md:w-16 rounded-2xl border border-border shrink-0"
+            />
             <div className="min-w-0 flex-1 space-y-1">
               <div className="font-semibold text-base md:text-lg leading-tight break-words">
                 {project.configuration.name}

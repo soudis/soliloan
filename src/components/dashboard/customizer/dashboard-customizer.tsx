@@ -200,7 +200,10 @@ export function DashboardCustomizer({
     <div className="flex flex-col">
       <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-4">
-          <ProjectLogo project={project} className="h-12 w-12 shrink-0 rounded-xl border border-border sm:h-14 sm:w-14" />
+          <ProjectLogo
+            project={project}
+            className="h-12 w-12 shrink-0 rounded-xl border border-border sm:h-14 sm:w-14"
+          />
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-semibold tracking-tight sm:text-3xl">{projectName}</h1>
             <p className="text-sm text-muted-foreground">{t('pageSubtitle')}</p>
