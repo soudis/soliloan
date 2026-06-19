@@ -390,6 +390,7 @@
   "widgets": {
     "historyTable": {
       "periodColumn": "Zeitraum",
+      "periodLinkTitle": "Transaktionen für {period} anzeigen",
       "untilNow": "bis heute",
       "deltaColumnIndicator": "Veränderung im Zeitraum",
       "emptyColumns": "Keine Spalten konfiguriert.",
