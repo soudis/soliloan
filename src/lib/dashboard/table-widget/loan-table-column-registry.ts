@@ -54,11 +54,7 @@ const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
 const LOAN_COLUMN_GROUP = { key: 'loan' as const, order: 0 };
 const LENDER_COLUMN_GROUP = { key: 'lender' as const, order: 1 };
 
-const DEFAULT_LOAN_TABLE_LEADING_COLUMN_IDS = [
-  'lender.lenderNumber',
-  'lender.name',
-  'loanNumber',
-] as const;
+const DEFAULT_LOAN_TABLE_LEADING_COLUMN_IDS = ['lender.lenderNumber', 'lender.name', 'loanNumber'] as const;
 
 function getColumnId(column: ColumnDef<LoanWithCalculations>): string {
   if (column.id) {
@@ -82,9 +78,7 @@ function orderLoanTableColumnsForDefaultDisplay(
   return [...prioritized, ...rest];
 }
 
-export function buildLoanTableDefaultColumnVisibility(
-  project: ProjectWithConfiguration,
-): Record<string, boolean> {
+export function buildLoanTableDefaultColumnVisibility(project: ProjectWithConfiguration): Record<string, boolean> {
   const loanVisibility = Object.fromEntries(
     LOAN_TABLE_STATIC_COLUMN_META.map(({ id }) => [
       id,

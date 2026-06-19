@@ -8,9 +8,7 @@ export type CalculatedLoanWithTransactions = LoanWithCalculations & {
   transactions: Transaction[];
 };
 
-export function buildTransactionListItemsFromLoans(
-  loans: CalculatedLoanWithTransactions[],
-): TransactionListItem[] {
+export function buildTransactionListItemsFromLoans(loans: CalculatedLoanWithTransactions[]): TransactionListItem[] {
   const rows: TransactionListItem[] = [];
 
   for (const loan of loans) {
