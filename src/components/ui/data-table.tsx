@@ -39,6 +39,15 @@ export type ColumnExportMeta = {
   wrapText?: boolean;
 };
 
+export type ColumnGroupKey = 'loan' | 'lender';
+
+export type ColumnGroupMeta = {
+  /** Translation key under dataTable.columnGroups */
+  key: ColumnGroupKey;
+  /** Lower = earlier in selector */
+  order: number;
+};
+
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
     style?: {
@@ -50,6 +59,7 @@ declare module '@tanstack/react-table' {
     /** Bulk checkbox column: full-cell hit area, not sticky. */
     bulkSelectColumn?: boolean;
     export?: ColumnExportMeta;
+    columnGroup?: ColumnGroupMeta;
   }
 }
 
@@ -323,6 +333,8 @@ export function DataTable<TData, TValue>({
             </DropdownMenu>
           </div>
         ),
+        enableSorting: false,
+        enableHiding: false,
         meta: {
           fixed: true,
           actionsColumn: true,

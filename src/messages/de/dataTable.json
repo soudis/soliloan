@@ -27,5 +27,9 @@
   "bulkBar": {
     "selected": "{count} ausgewählt",
     "deselect": "Auswahl aufheben"
+  },
+  "columnGroups": {
+    "loan": "Kredit",
+    "lender": "Kreditgeber*in"
   }
 }

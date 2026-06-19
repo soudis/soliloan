@@ -17,6 +17,8 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -192,6 +194,36 @@ export function DataTableHeader<TData>({
     );
   }, [views, tableState, defaultColumnVisibility]);
 
+  const groupedHideableColumns = useMemo(() => {
+    const hideableColumns = table.getAllColumns().filter((column) => column.getCanHide());
+    const flatColumns: typeof hideableColumns = [];
+    const groupedMap = new Map<string, typeof hideableColumns>();
+
+    for (const column of hideableColumns) {
+      const groupKey = column.columnDef.meta?.columnGroup?.key;
+      if (!groupKey) {
+        flatColumns.push(column);
+        continue;
+      }
+      const existing = groupedMap.get(groupKey) ?? [];
+      existing.push(column);
+      groupedMap.set(groupKey, existing);
+    }
+
+    const groupedColumns = [...groupedMap.entries()]
+      .sort(([, columnsA], [, columnsB]) => {
+        const orderA = columnsA[0]?.columnDef.meta?.columnGroup?.order ?? 0;
+        const orderB = columnsB[0]?.columnDef.meta?.columnGroup?.order ?? 0;
+        return orderA - orderB;
+      })
+      .map(([key, columns]) => ({ key, columns }));
+
+    return { flatColumns, groupedColumns };
+  }, [table]);
+
+  const resolveColumnLabel = (columnId: string, exportLabel?: string) =>
+    columnFilters[columnId]?.label ?? exportLabel ?? columnId;
+
   return (
     <>
       <div className="flex items-center py-4">
@@ -333,22 +365,34 @@ export function DataTableHeader<TData>({
                   {t('columns')}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {table
-                  .getAllColumns()
-                  .filter((column) => column.getCanHide())
-                  .map((column) => {
-                    return (
+              <DropdownMenuContent align="end" className="max-h-[min(24rem,70vh)] overflow-y-auto">
+                {groupedHideableColumns.flatColumns.map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                  >
+                    {resolveColumnLabel(column.id, column.columnDef.meta?.export?.label)}
+                  </DropdownMenuCheckboxItem>
+                ))}
+                {groupedHideableColumns.flatColumns.length > 0 && groupedHideableColumns.groupedColumns.length > 0 && (
+                  <DropdownMenuSeparator />
+                )}
+                {groupedHideableColumns.groupedColumns.map(({ key, columns }, groupIndex) => (
+                  <div key={key}>
+                    <DropdownMenuLabel>{t(`columnGroups.${key}`)}</DropdownMenuLabel>
+                    {columns.map((column) => (
                       <DropdownMenuCheckboxItem
                         key={column.id}
-                        className="capitalize"
                         checked={column.getIsVisible()}
                         onCheckedChange={(value) => column.toggleVisibility(!!value)}
                       >
-                        {columnFilters[column.id]?.label || column.id}
+                        {resolveColumnLabel(column.id, column.columnDef.meta?.export?.label)}
                       </DropdownMenuCheckboxItem>
-                    );
-                  })}
+                    ))}
+                    {groupIndex < groupedHideableColumns.groupedColumns.length - 1 && <DropdownMenuSeparator />}
+                  </div>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
           )}

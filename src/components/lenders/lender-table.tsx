@@ -1,11 +1,11 @@
 'use client';
 
-import { NotificationType, Salutation, type View } from '@prisma/client';
+import type { View } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { bulkDeleteLendersAction, deleteLenderAction } from '@/actions/lenders';
@@ -15,9 +15,11 @@ import type { BulkAction } from '@/components/ui/data-table';
 import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useRouter } from '@/i18n/navigation';
-import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
+import { LENDER_DETAIL_COLUMN_META } from '@/lib/dashboard/table-widget/lender-profile-columns';
 import { buildAllLenderTableColumns } from '@/lib/dashboard/table-widget/lender-table-column-registry';
-import { createAdditionalFieldDefaultColumnVisibility, createAdditionalFieldFilters } from '@/lib/table-column-utils';
+import { buildLenderTableColumnFilters } from '@/lib/entity-filters/filter-definitions';
+import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
+import { createAdditionalFieldDefaultColumnVisibility } from '@/lib/table-column-utils';
 import type { LenderListItem } from '@/types/lenders';
 import { useProject } from '../providers/project-provider';
 
@@ -70,110 +72,34 @@ export function LenderTable({ lenders, views }: LenderTableProps) {
 
   const columns: ColumnDef<LenderListItem>[] = buildAllLenderTableColumns(project, t, tLoans, commonT, locale);
 
-  // Define column filters based on data types
-  const columnFilters = {
-    lenderNumber: {
-      type: 'number' as const,
-      label: t('table.lenderNumber'),
-    },
-    type: {
-      type: 'select' as const,
-      label: t('table.type'),
-      options: [
-        { label: commonT('enums.lender.type.PERSON'), value: 'PERSON' },
-        {
-          label: commonT('enums.lender.type.ORGANISATION'),
-          value: 'ORGANISATION',
-        },
-      ],
-    },
-    name: {
-      type: 'text' as const,
-      label: t('table.name'),
-    },
-    email: {
-      type: 'text' as const,
-      label: t('table.email'),
-    },
-    telNo: {
-      type: 'text' as const,
-      label: t('table.telNo'),
-    },
-    address: {
-      type: 'text' as const,
-      label: t('table.address'),
-    },
-    banking: {
-      type: 'text' as const,
-      label: t('table.banking'),
-    },
-    salutation: {
-      type: 'select' as const,
-      label: t('table.salutation'),
-      options: Object.entries(Salutation).map(([key, value]) => ({
-        label: commonT(`enums.lender.salutation.${key}`),
-        value: value,
-      })),
-    },
-    notificationType: {
-      type: 'select' as const,
-      label: t('table.notificationType'),
-      options: Object.entries(NotificationType).map(([key, value]) => ({
-        label: commonT(`enums.lender.notificationType.${key}`),
-        value: value,
-      })),
-    },
-    ...createAdditionalFieldFilters('additionalFields', project.configuration.lenderAdditionalFields),
-    amount: {
-      type: 'number' as const,
-      label: tLoans('table.amount'),
-    },
-    balance: {
-      type: 'number' as const,
-      label: tLoans('table.balance'),
-    },
-    deposits: {
-      type: 'number' as const,
-      label: tLoans('table.deposits'),
-    },
-    withdrawals: {
-      type: 'number' as const,
-      label: tLoans('table.withdrawals'),
-    },
-    notReclaimed: {
-      type: 'number' as const,
-      label: tLoans('table.notReclaimed'),
-    },
-    interest: {
-      type: 'number' as const,
-      label: tLoans('table.interest'),
-    },
-    interestPaid: {
-      type: 'number' as const,
-      label: tLoans('table.interestPaid'),
-    },
-  };
+  const columnFilters = useMemo(
+    () => buildLenderTableColumnFilters(project, t, tLoans, commonT),
+    [project, t, tLoans, commonT],
+  );
 
-  // Define default column visibility
-  const defaultColumnVisibility = {
-    lenderNumber: true,
-    type: true,
-    name: true,
-    email: true,
-    telNo: false,
-    address: false,
-    banking: false,
-    salutation: false,
-    notificationType: false,
-    amount: false,
-    balance: true,
-    deposits: false,
-    withdrawals: false,
-    notReclaimed: false,
-    interest: false,
-    interestPaid: false,
-    ...createAdditionalFieldDefaultColumnVisibility('additionalFields', project.configuration.lenderAdditionalFields),
-  };
+  const defaultColumnVisibility = useMemo(
+    () => ({
+      lenderNumber: true,
+      type: true,
+      name: true,
+      email: true,
+      telNo: false,
+      address: false,
+      banking: false,
+      salutation: false,
+      notificationType: false,
+      amount: false,
+      balance: true,
+      deposits: false,
+      withdrawals: false,
+      notReclaimed: false,
+      interest: false,
+      interestPaid: false,
+      ...createAdditionalFieldDefaultColumnVisibility('additionalFields', project.configuration.lenderAdditionalFields),
+      ...Object.fromEntries(LENDER_DETAIL_COLUMN_META.map((column) => [column.id, false])),
+    }),
+    [project.configuration.lenderAdditionalFields],
+  );
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">

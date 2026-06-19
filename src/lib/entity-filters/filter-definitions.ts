@@ -1,5 +1,6 @@
 import { ContractStatus, Country, InterestMethod, NotificationType, Salutation, TerminationType } from '@prisma/client';
 
+import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { createAdditionalFieldFilters } from '@/lib/table-column-utils';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -26,15 +27,23 @@ function buildCountryFilterOptions(commonT: (key: string) => string) {
   }));
 }
 
-export function buildLoanFilterFieldOptions(
+function prefixFilterKeys(
+  filters: Record<string, DataTableColumnFilterDefinition>,
+  idPrefix: string,
+): Record<string, DataTableColumnFilterDefinition> {
+  if (!idPrefix) {
+    return filters;
+  }
+  return Object.fromEntries(Object.entries(filters).map(([key, value]) => [`${idPrefix}${key}`, value]));
+}
+
+export function buildLoanColumnFiltersMap(
   project: ProjectWithConfiguration,
   t: (key: string) => string,
   commonT: (key: string) => string,
-): EntityFilterFieldOption[] {
-  const loanFilters: Record<string, DataTableColumnFilterDefinition> = {
+): Record<string, DataTableColumnFilterDefinition> {
+  return {
     loanNumber: { type: 'number', label: t('table.loanNumber') },
-    lenderNumber: { type: 'number', label: t('table.lenderNumber') },
-    lenderName: { type: 'text', label: t('table.lenderName') },
     signDate: { type: 'date', label: t('table.signDate') },
     amount: { type: 'number', label: t('table.amount') },
     balance: { type: 'number', label: t('table.balance') },
@@ -52,7 +61,13 @@ export function buildLoanFilterFieldOptions(
         value,
       })),
     },
+    terminationModalities: {
+      type: 'text',
+      label: t('table.terminationModalities'),
+    },
     repayDate: { type: 'date', label: t('table.repayDate') },
+    loanTermDays: { type: 'number', label: t('table.loanTerm') },
+    repaymentPeriodDays: { type: 'number', label: t('table.repaymentPeriod') },
     status: {
       type: 'select',
       label: t('table.status'),
@@ -79,22 +94,22 @@ export function buildLoanFilterFieldOptions(
     },
     ...createAdditionalFieldFilters('additionalFields', project.configuration.loanAdditionalFields),
   };
-
-  return Object.entries(loanFilters).map(([field, def]) => ({
-    field,
-    entity: 'loan' as const,
-    group: 'loan' as const,
-    ...def,
-  }));
 }
 
-export function buildLenderFilterFieldOptions(
+export function buildLenderProfileColumnFiltersMap(
   project: ProjectWithConfiguration,
   t: (key: string) => string,
-  tLoans: (key: string) => string,
   commonT: (key: string) => string,
-): EntityFilterFieldOption[] {
-  const lenderFilters: Record<string, DataTableColumnFilterDefinition> = {
+  options?: {
+    idPrefix?: string;
+    includeAggregates?: boolean;
+    tLoans?: (key: string) => string;
+  },
+): Record<string, DataTableColumnFilterDefinition> {
+  const idPrefix = options?.idPrefix ?? '';
+  const additionalFieldsPrefix = idPrefix ? `${idPrefix}additionalFields` : 'additionalFields';
+
+  const filters: Record<string, DataTableColumnFilterDefinition> = {
     lenderNumber: { type: 'number', label: t('table.lenderNumber') },
     type: {
       type: 'select',
@@ -108,6 +123,8 @@ export function buildLenderFilterFieldOptions(
     firstName: { type: 'text', label: t('table.firstName') },
     lastName: { type: 'text', label: t('table.lastName') },
     organisationName: { type: 'text', label: t('table.organisationName') },
+    titlePrefix: { type: 'text', label: t('table.titlePrefix') },
+    titleSuffix: { type: 'text', label: t('table.titleSuffix') },
     email: { type: 'text', label: t('table.email') },
     telNo: { type: 'text', label: t('table.telNo') },
     address: { type: 'text', label: t('table.address') },
@@ -139,15 +156,77 @@ export function buildLenderFilterFieldOptions(
         value,
       })),
     },
-    ...createAdditionalFieldFilters('additionalFields', project.configuration.lenderAdditionalFields),
-    amount: { type: 'number', label: tLoans('table.amount') },
-    balance: { type: 'number', label: tLoans('table.balance') },
-    deposits: { type: 'number', label: tLoans('table.deposits') },
-    withdrawals: { type: 'number', label: tLoans('table.withdrawals') },
-    notReclaimed: { type: 'number', label: tLoans('table.notReclaimed') },
-    interest: { type: 'number', label: tLoans('table.interest') },
-    interestPaid: { type: 'number', label: tLoans('table.interestPaid') },
+    ...createAdditionalFieldFilters(additionalFieldsPrefix, project.configuration.lenderAdditionalFields),
   };
+
+  if (options?.includeAggregates && options.tLoans) {
+    const tLoans = options.tLoans;
+    Object.assign(filters, {
+      amount: { type: 'number', label: tLoans('table.amount') },
+      balance: { type: 'number', label: tLoans('table.balance') },
+      deposits: { type: 'number', label: tLoans('table.deposits') },
+      withdrawals: { type: 'number', label: tLoans('table.withdrawals') },
+      notReclaimed: { type: 'number', label: tLoans('table.notReclaimed') },
+      interest: { type: 'number', label: tLoans('table.interest') },
+      interestPaid: { type: 'number', label: tLoans('table.interestPaid') },
+    });
+  }
+
+  return prefixFilterKeys(filters, idPrefix);
+}
+
+export function buildLenderTableColumnFilters(
+  project: ProjectWithConfiguration,
+  t: (key: string) => string,
+  tLoans: (key: string) => string,
+  commonT: (key: string) => string,
+): DataTableColumnFilters {
+  return buildLenderProfileColumnFiltersMap(project, t, commonT, {
+    includeAggregates: true,
+    tLoans,
+  });
+}
+
+export function buildLoanTableColumnFilters(
+  project: ProjectWithConfiguration,
+  t: (key: string) => string,
+  tLenders: (key: string) => string,
+  commonT: (key: string) => string,
+): DataTableColumnFilters {
+  return {
+    ...buildLoanColumnFiltersMap(project, t, commonT),
+    ...buildLenderProfileColumnFiltersMap(project, tLenders, commonT, {
+      idPrefix: 'lender.',
+      includeAggregates: false,
+    }),
+  };
+}
+
+export function buildLoanFilterFieldOptions(
+  project: ProjectWithConfiguration,
+  t: (key: string) => string,
+  commonT: (key: string) => string,
+): EntityFilterFieldOption[] {
+  const loanFilters = buildLoanColumnFiltersMap(project, t, commonT);
+
+  return Object.entries(loanFilters).map(([field, def]) => ({
+    field,
+    entity: 'loan' as const,
+    group: 'loan' as const,
+    ...def,
+  }));
+}
+
+export function buildLenderFilterFieldOptions(
+  project: ProjectWithConfiguration,
+  t: (key: string) => string,
+  tLoans: (key: string) => string,
+  commonT: (key: string) => string,
+): EntityFilterFieldOption[] {
+  const lenderFilters = buildLenderProfileColumnFiltersMap(project, t, commonT, {
+    includeAggregates: true,
+    tLoans,
+  });
 
   return Object.entries(lenderFilters).map(([field, def]) => ({
     field,

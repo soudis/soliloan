@@ -3,6 +3,7 @@ import type { ColumnDef, Row, VisibilityState } from '@tanstack/react-table';
 import moment from 'moment';
 import { Badge } from '@/components/ui/badge';
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
+import type { ColumnGroupMeta } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { formatCurrency, getLenderName, NumberParser, resolveIntlLocaleForDates } from '@/lib/utils';
 import { formatDurationDays } from '@/lib/format-duration';
@@ -103,6 +104,19 @@ export function createColumn<T>(config: ColumnConfig<T>, t: (key: string) => str
   } satisfies ColumnDef<T>;
 
   return column;
+}
+
+export function withColumnGroup<T>(columns: ColumnDef<T>[], columnGroup?: ColumnGroupMeta): ColumnDef<T>[] {
+  if (!columnGroup) {
+    return columns;
+  }
+  return columns.map((column) => ({
+    ...column,
+    meta: {
+      ...column.meta,
+      columnGroup,
+    },
+  }));
 }
 
 export function createNumberColumn<T>(
