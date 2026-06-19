@@ -2,17 +2,21 @@ import { ContractStatus } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
 
 import {
+  buildLenderProfileColumnMeta,
+  buildLenderProfileColumns,
+} from '@/lib/dashboard/table-widget/lender-profile-columns';
+import { getLenderSortValue } from '@/lib/dashboard/table-widget/lender-table-column-registry';
+import {
   createAdditionalFieldsColumns,
-  createColumn,
   createCurrencyColumn,
   createDateColumn,
   createDurationDaysColumn,
   createEnumBadgeColumn,
-  createLenderColumn,
   createNumberColumn,
   createPercentageColumn,
   createTerminationModalitiesColumn,
   formatTerminationModalities,
+  withColumnGroup,
 } from '@/lib/table-column-utils';
 import type { LoanWithCalculations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -21,13 +25,12 @@ export type LoanTableColumnMeta = {
   id: string;
   labelKey: string | null;
   customLabel?: string;
+  useLendersTranslations?: boolean;
 };
 
 const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
   { id: 'loanNumber', labelKey: 'table.loanNumber' },
-  { id: 'lenderNumber', labelKey: 'table.lenderNumber' },
   { id: 'signDate', labelKey: 'table.signDate' },
-  { id: 'lenderName', labelKey: 'table.lenderName' },
   { id: 'amount', labelKey: 'table.amount' },
   { id: 'balance', labelKey: 'table.balance' },
   { id: 'deposits', labelKey: 'table.deposits' },
@@ -46,32 +49,21 @@ const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
   { id: 'contractStatus', labelKey: 'table.contractStatus' },
 ];
 
+const LOAN_COLUMN_GROUP = { key: 'loan' as const, order: 0 };
+const LENDER_COLUMN_GROUP = { key: 'lender' as const, order: 1 };
+
 export function buildAllLoanTableColumns(
   project: ProjectWithConfiguration,
   t: (key: string) => string,
+  tLenders: (key: string) => string,
   commonT: (key: string) => string,
   locale: string,
   durationT: (key: string, values?: Record<string, number>) => string,
 ): ColumnDef<LoanWithCalculations>[] {
-  return [
+  const loanColumns: ColumnDef<LoanWithCalculations>[] = [
     createNumberColumn<LoanWithCalculations>('loanNumber', 'table.loanNumber', t, locale),
 
-    createColumn<LoanWithCalculations>(
-      {
-        accessorKey: 'lenderNumber',
-        header: 'table.lenderNumber',
-        accessorFn: (row: LoanWithCalculations) => row.lender?.lenderNumber,
-        cell: ({ row }) => {
-          const value = row.original.lender?.lenderNumber || 0;
-          return value.toFixed(0);
-        },
-      },
-      t,
-    ),
-
     createDateColumn<LoanWithCalculations>('signDate', 'table.signDate', t, locale),
-
-    createLenderColumn<LoanWithCalculations>(t),
 
     createCurrencyColumn<LoanWithCalculations>('amount', 'table.amount', t, locale),
 
@@ -151,6 +143,19 @@ export function buildAllLoanTableColumns(
       locale,
     ),
   ];
+
+  const lenderProfileColumns = buildLenderProfileColumns<LoanWithCalculations>({
+    getLender: (row) => row.lender,
+    idPrefix: 'lender.',
+    columnGroup: LENDER_COLUMN_GROUP,
+    mode: 'full',
+    project,
+    t: tLenders,
+    commonT,
+    locale,
+  });
+
+  return [...withColumnGroup(loanColumns, LOAN_COLUMN_GROUP), ...lenderProfileColumns];
 }
 
 export function buildLoanTableColumnMeta(project: ProjectWithConfiguration): LoanTableColumnMeta[] {
@@ -161,13 +166,28 @@ export function buildLoanTableColumnMeta(project: ProjectWithConfiguration): Loa
       customLabel: field.name,
     })) ?? [];
 
-  return [...LOAN_TABLE_STATIC_COLUMN_META, ...additionalFieldMeta];
+  const lenderProfileMeta = buildLenderProfileColumnMeta(project, 'lender.').map((entry) => ({
+    id: entry.id,
+    labelKey: entry.labelKey.startsWith('table.') ? entry.labelKey : null,
+    customLabel: entry.labelKey.startsWith('table.') ? undefined : entry.labelKey,
+    useLendersTranslations: true,
+  }));
+
+  return [...LOAN_TABLE_STATIC_COLUMN_META, ...additionalFieldMeta, ...lenderProfileMeta];
 }
 
 function readNestedValue(row: LoanWithCalculations, field: string): unknown {
   if (field.startsWith('additionalFields.')) {
     const key = field.replace('additionalFields.', '');
     return row.additionalFields?.[key];
+  }
+  if (field.startsWith('lender.')) {
+    const lenderField = field.replace('lender.', '');
+    if (lenderField.startsWith('additionalFields.')) {
+      const key = lenderField.replace('additionalFields.', '');
+      return row.lender?.additionalFields?.[key];
+    }
+    return row.lender?.[lenderField as keyof typeof row.lender];
   }
   if (field.includes('.')) {
     const [root, ...rest] = field.split('.');
@@ -188,16 +208,15 @@ export function getLoanSortValue(
   columnId: string,
   commonT: (key: string, values?: Record<string, string>) => string,
 ): string | number | Date | null {
-  switch (columnId) {
-    case 'lenderNumber':
-      return row.lender?.lenderNumber ?? null;
-    case 'lenderName': {
-      const lender = row.lender;
-      if (lender.organisationName) {
-        return lender.organisationName;
-      }
-      return `${lender.firstName || ''} ${lender.lastName || ''}`.trim();
+  if (columnId.startsWith('lender.')) {
+    const lenderField = columnId.replace('lender.', '');
+    if (!row.lender) {
+      return null;
     }
+    return getLenderSortValue(row.lender, lenderField, commonT);
+  }
+
+  switch (columnId) {
     case 'terminationModalities':
       return formatTerminationModalities(row, commonT);
     case 'status':
@@ -229,9 +248,7 @@ export function getLoanSortValue(
 
 export const LOAN_TABLE_COLUMN_IDS = [
   'loanNumber',
-  'lenderNumber',
   'signDate',
-  'lenderName',
   'amount',
   'balance',
   'deposits',

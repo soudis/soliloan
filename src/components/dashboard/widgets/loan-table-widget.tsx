@@ -7,12 +7,12 @@ import { useCallback, useMemo } from 'react';
 import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { useRouter } from '@/i18n/navigation';
+import { buildPeriodSnapshot } from '@/lib/dashboard/history-table/rollup-period';
+import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
+import { buildAllLoanTableColumns, getLoanSortValue } from '@/lib/dashboard/table-widget/loan-table-column-registry';
+import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
 import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';
 import { buildLoanFilterFieldOptions, filtersNeedPeriodSnapshot } from '@/lib/entity-filters/filter-definitions';
-import { buildPeriodSnapshot } from '@/lib/dashboard/history-table/rollup-period';
-import { buildAllLoanTableColumns, getLoanSortValue } from '@/lib/dashboard/table-widget/loan-table-column-registry';
-import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
-import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import { parseLoanTableConfig } from '@/types/dashboard-widgets/table-view';
 
@@ -21,6 +21,7 @@ import { TableViewWidget } from './table-view-widget';
 export function LoanTableWidget({ widget }: { widget: DashboardWidget }) {
   const t = useTranslations('dashboard.widgets.loanTable');
   const tLoans = useTranslations('dashboard.loans');
+  const tLenders = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
   const tDuration = useTranslations('common.duration');
   const locale = useLocale();
@@ -32,8 +33,8 @@ export function LoanTableWidget({ widget }: { widget: DashboardWidget }) {
   const fieldOptions = useMemo(() => buildLoanFilterFieldOptions(project, tLoans, commonT), [project, tLoans, commonT]);
 
   const columns = useMemo(
-    () => buildAllLoanTableColumns(project, tLoans, commonT, locale, (key, values) => tDuration(key, values)),
-    [project, tLoans, commonT, locale, tDuration],
+    () => buildAllLoanTableColumns(project, tLoans, tLenders, commonT, locale, (key, values) => tDuration(key, values)),
+    [project, tLoans, tLenders, commonT, locale, tDuration],
   );
 
   const filteredLoans = useMemo(
