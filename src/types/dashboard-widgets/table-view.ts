@@ -31,7 +31,9 @@ export const TABLE_VIEW_ROW_LIMIT_MAX = 100;
 export const DEFAULT_TABLE_VIEW_ROW_LIMIT = 10;
 
 export const DEFAULT_LOAN_TABLE_VISIBLE_COLUMNS = [
-  'lenderName',
+  'lender.lenderNumber',
+  'lender.name',
+  'loanNumber',
   'signDate',
   'amount',
   'balance',
