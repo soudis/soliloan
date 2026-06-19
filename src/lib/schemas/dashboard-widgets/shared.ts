@@ -10,7 +10,7 @@ export const MAX_WIDGET_FILTERS = 50;
 export const entityFilterSchema = z.object({
   id: z.string().max(200),
   field: z.string().max(200),
-  entity: z.enum(['loan', 'lender']),
+  entity: z.enum(['loan', 'lender', 'transaction']),
   value: z.unknown(),
 });
 

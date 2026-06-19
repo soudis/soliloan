@@ -26,6 +26,9 @@ export function loanMatchesFilters(
   }
 
   for (const filter of filters) {
+    if (filter.entity === 'transaction') {
+      continue;
+    }
     const definition = getFilterDefinitionForField(fieldOptions, filter.entity, filter.field);
     if (!definition) {
       continue;

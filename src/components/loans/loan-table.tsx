@@ -15,11 +15,12 @@ import type { BulkAction } from '@/components/ui/data-table';
 import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useRouter } from '@/i18n/navigation';
-import { buildLenderProfileDefaultColumnVisibility } from '@/lib/dashboard/table-widget/lender-profile-columns';
-import { buildAllLoanTableColumns } from '@/lib/dashboard/table-widget/loan-table-column-registry';
+import {
+  buildAllLoanTableColumns,
+  buildLoanTableDefaultColumnVisibility,
+} from '@/lib/dashboard/table-widget/loan-table-column-registry';
 import { buildLoanTableColumnFilters } from '@/lib/entity-filters/filter-definitions';
 import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
-import { createAdditionalFieldDefaultColumnVisibility } from '@/lib/table-column-utils';
 import type { LoanWithCalculations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
@@ -86,31 +87,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
     [project, t, tLenders, commonT],
   );
 
-  const defaultColumnVisibility = useMemo(
-    () => ({
-      loanNumber: false,
-      signDate: true,
-      amount: true,
-      balance: true,
-      deposits: false,
-      withdrawals: false,
-      notReclaimed: false,
-      interestRate: true,
-      interest: false,
-      interestPaid: false,
-      terminationType: false,
-      terminationModalities: false,
-      repayDate: false,
-      loanTermDays: false,
-      repaymentPeriodDays: false,
-      status: true,
-      altInterestMethod: false,
-      contractStatus: false,
-      ...createAdditionalFieldDefaultColumnVisibility('additionalFields', project.configuration.loanAdditionalFields),
-      ...buildLenderProfileDefaultColumnVisibility(project, 'lender.', ['name']),
-    }),
-    [project],
-  );
+  const defaultColumnVisibility = useMemo(() => buildLoanTableDefaultColumnVisibility(project), [project]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">

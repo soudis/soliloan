@@ -368,6 +368,7 @@ enum Salutation {
 enum ViewType {
   LENDER
   LOAN
+  TRANSACTION
   LOGBOOK
   PROJECT
 }

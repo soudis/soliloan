@@ -1,7 +1,18 @@
 'use client';
 
 import { ViewType } from '@prisma/client';
-import { Box, FileText, HandCoins, History, LayoutDashboard, LogOut, Settings, Users, Wallet } from 'lucide-react';
+import {
+  Box,
+  FileText,
+  HandCoins,
+  History,
+  LayoutDashboard,
+  LogOut,
+  Receipt,
+  Settings,
+  Users,
+  Wallet,
+} from 'lucide-react';
 import Link from 'next/link';
 import type { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
@@ -81,6 +92,10 @@ export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews }: S
               <div className="space-y-1">
                 <ProjectTableNavItem basePath="/loans" icon={Wallet} label={t('loans')} />
                 <SidebarViewItems views={sidebarViews} viewType={ViewType.LOAN} basePath="/loans" />
+              </div>
+              <div className="space-y-1">
+                <ProjectTableNavItem basePath="/transactions" icon={Receipt} label={t('transactions')} />
+                <SidebarViewItems views={sidebarViews} viewType={ViewType.TRANSACTION} basePath="/transactions" />
               </div>
               <NavItem href="/logbook" icon={History} label={t('logbook')} />
               <NavItem href="/configuration" icon={Settings} label={t('configuration')} />

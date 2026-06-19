@@ -66,6 +66,7 @@ export const deleteTransactionAction = transactionAction
 
     // Revalidate the lender page (loans are viewed within lender detail)
     revalidatePath(`/lenders/${transaction.loan.lenderId}`);
+    revalidatePath('/transactions');
 
     return { success: true };
   });

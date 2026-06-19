@@ -14,6 +14,7 @@ const TYPES_WITH_DEFAULT_CONFIG: DashboardWidgetType[] = [
   'line_chart',
   'loan_table_view',
   'lender_table_view',
+  'transaction_table_view',
 ];
 
 function normalizeWidget(widget: DashboardWidget & { type?: string }): DashboardWidget {

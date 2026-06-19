@@ -46,6 +46,7 @@
     "chartDiscriminator": {
       "filterGroupLoan": "Kredit",
       "filterGroupLender": "Kreditgeber*in",
+      "filterGroupTransaction": "Transaktion",
       "groupByPlaceholder": "Feld wählen",
       "groupBy": "Gruppierung",
       "topNCategories": "Max. Segmente (Rest → Sonstige)",
@@ -145,6 +146,7 @@
       "filterField": "Feld",
       "filterGroupLoan": "Kredit",
       "filterGroupLender": "Kreditgeber*in",
+      "filterGroupTransaction": "Transaktion",
       "removeColumn": "Spalte entfernen",
       "removeFilter": "Filter entfernen",
       "expandColumn": "Spalte aufklappen",
@@ -230,6 +232,7 @@
     "pieChart": {
       "filterGroupLoan": "Kredit",
       "filterGroupLender": "Kreditgeber*in",
+      "filterGroupTransaction": "Transaktion",
       "groupByPlaceholder": "Feld wählen",
       "chartVariant": "Diagrammform",
       "chartVariantPie": "Kreis",
@@ -291,6 +294,10 @@
     "lenderTable": {
       "title": "Kreditgeber-Tabelle"
     },
+    "transactionTable": {
+      "title": "Transaktionstabelle",
+      "emptyData": "Keine Transaktionen für die aktuelle Auswahl."
+    },
     "placeholder": "Widget-Inhalt folgt in Kürze.",
     "dragWidget": "Widget verschieben",
     "a11y": {
@@ -336,7 +343,8 @@
       "stat": "Kennzahl",
       "divider": "Trennlinie",
       "loan_table_view": "Kredittabelle",
-      "lender_table_view": "Kreditgeber-Tabelle"
+      "lender_table_view": "Kreditgeber-Tabelle",
+      "transaction_table_view": "Transaktionstabelle"
     }
   },
   "welcome": "Willkommen, {name}!",
@@ -382,6 +390,7 @@
   "widgets": {
     "historyTable": {
       "periodColumn": "Zeitraum",
+      "periodLinkTitle": "Transaktionen für {period} anzeigen",
       "untilNow": "bis heute",
       "deltaColumnIndicator": "Veränderung im Zeitraum",
       "emptyColumns": "Keine Spalten konfiguriert.",
@@ -518,7 +527,7 @@
       }
     },
     "table": {
-      "lenderNumber": "Nummer",
+      "lenderNumber": "Kontonummer",
       "type": "Typ",
       "name": "Vollständiger Name",
       "firstName": "Vorname",
@@ -613,6 +622,43 @@
       }
     }
   },
+  "transactions": {
+    "title": "Transaktionen",
+    "table": {
+      "type": "Transaktionsart",
+      "date": "Datum",
+      "amount": "Betrag",
+      "paymentType": "Zahlungsart"
+    },
+    "timeRange": {
+      "label": "Zeitraum",
+      "last30Days": "Letzte 30 Tage",
+      "last6Months": "Letzte 6 Monate",
+      "last12Months": "Letzte 12 Monate",
+      "thisMonth": "Dieser Monat",
+      "lastMonth": "Letzter Monat",
+      "thisYear": "Dieses Jahr",
+      "lastYear": "Letztes Jahr",
+      "all": "Alle",
+      "custom": "Benutzerdefiniert",
+      "dateFrom": "Von",
+      "dateTo": "Bis"
+    },
+    "includeInterest": "Buchungen anzeigen",
+    "delete": {
+      "confirmTitle": "Transaktion löschen?",
+      "confirmDescription": "Sind Sie sicher, dass Sie diese Transaktion löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "success": "Transaktion erfolgreich gelöscht.",
+      "error": "Fehler beim Löschen der Transaktion."
+    },
+    "bulkDelete": {
+      "confirmTitle": "Transaktionen löschen?",
+      "confirmDescription": "Sind Sie sicher, dass Sie {count} Transaktionen löschen möchten? Nicht löschbare Transaktionen werden übersprungen.",
+      "success": "{count} Transaktionen erfolgreich gelöscht.",
+      "partialSuccess": "{deleted} Transaktionen gelöscht, {skipped} übersprungen.",
+      "error": "Fehler beim Löschen der Transaktionen."
+    }
+  },
   "loans": {
     "title": "Kredite",
     "description": "Verwalte deine Kredite und deren Details.",
@@ -655,7 +701,7 @@
       }
     },
     "table": {
-      "loanNumber": "Nummer",
+      "loanNumber": "Kreditnummer",
       "loanNumberShort": "Kredit",
       "lenderNumber": "Kreditgeber*in Nummer",
       "lenderName": "Kreditgeber*in",

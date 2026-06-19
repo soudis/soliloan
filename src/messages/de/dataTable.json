@@ -29,6 +29,7 @@
     "deselect": "Auswahl aufheben"
   },
   "columnGroups": {
+    "transaction": "Transaktion",
     "loan": "Kredit",
     "lender": "Kreditgeber*in"
   }

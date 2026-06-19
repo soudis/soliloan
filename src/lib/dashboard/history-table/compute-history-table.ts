@@ -22,7 +22,7 @@ import {
 } from './rollup-period';
 
 export type HistoryTableResult = {
-  periods: { key: string; label: string }[];
+  periods: { key: string; label: string; periodStart: Date; periodEnd: Date }[];
   columns: { id: string; title: string; aggregation: HistoryTableAggregation }[];
   cells: Record<string, Record<string, number | null>>;
 };
@@ -352,6 +352,8 @@ export function computeHistoryTable(
     periods: periods.map((p) => ({
       key: p.key,
       label: formatHistoryPeriodLabel(p, untilNowLabel),
+      periodStart: p.periodStart,
+      periodEnd: p.periodEnd,
     })),
     columns,
     cells,

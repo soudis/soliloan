@@ -10,14 +10,15 @@ import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
 import { PROJECT_ID_KEY } from '@/lib/params';
 import { tableUrlNuqsOptions, tableUrlParsers } from '@/lib/table-url-parsers';
+import { transactionTableUrlNuqsOptions, transactionTableUrlParsers } from '@/lib/hooks/transaction-table-url-parsers';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store';
 import type { SidebarNavView } from '@/types/sidebar-nav';
 
 interface SidebarViewItemsProps {
   views: SidebarNavView[];
-  viewType: typeof ViewType.LENDER | typeof ViewType.LOAN;
-  basePath: '/lenders' | '/loans';
+  viewType: typeof ViewType.LENDER | typeof ViewType.LOAN | typeof ViewType.TRANSACTION;
+  basePath: '/lenders' | '/loans' | '/transactions';
 }
 
 /** Same nuqs instance shape as `useTableUrlState` — updates URL without Next router (fixes same-route ?view= changes). */
@@ -28,7 +29,10 @@ export function SidebarViewItems({ views, viewType, basePath }: SidebarViewItems
   const currentViewId = searchParams.get('view');
   const { toggleSidebar } = useAppStore();
   const router = useRouter();
-  const [, setTableUrl] = useQueryStates(tableUrlParsers, tableUrlNuqsOptions);
+  const [, setTableUrl] = useQueryStates(
+    basePath === '/transactions' ? transactionTableUrlParsers : tableUrlParsers,
+    basePath === '/transactions' ? transactionTableUrlNuqsOptions : tableUrlNuqsOptions,
+  );
 
   const items = useMemo(() => {
     return views.filter((v) => {
@@ -69,6 +73,14 @@ export function SidebarViewItems({ views, viewType, basePath }: SidebarViewItems
                     cols: null,
                     page: null,
                     pageSize: null,
+                    ...(basePath === '/transactions'
+                      ? {
+                          txRange: null,
+                          txRangeFrom: null,
+                          txRangeTo: null,
+                          includeInterest: null,
+                        }
+                      : {}),
                   });
                 } else {
                   router.push(href);
