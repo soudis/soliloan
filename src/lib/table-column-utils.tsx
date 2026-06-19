@@ -50,9 +50,30 @@ type ColumnConfig<T> = ColumnDef<T> & {
   align?: 'left' | 'right' | 'center';
 };
 
+function mergeExportMeta<T>(
+  column: ColumnDef<T>,
+  exportMeta: {
+    type?: import('@/components/ui/data-table').ColumnExportType;
+    label?: string;
+    getValue?: (row: unknown) => string | number | Date | null | undefined;
+    wrapText?: boolean;
+  },
+): ColumnDef<T> {
+  return {
+    ...(column as ColumnDef<T>),
+    meta: {
+      ...column.meta,
+      export: {
+        ...column.meta?.export,
+        ...exportMeta,
+      },
+    },
+  };
+}
+
 // Create a basic column definition
 export function createColumn<T>(config: ColumnConfig<T>, t: (key: string) => string): ColumnDef<T> {
-  return {
+  const column = {
     ...config,
     header: ({ column }) =>
       config.header ? <DataTableColumnHeader column={column} title={t(config.header)} /> : undefined,
@@ -68,11 +89,20 @@ export function createColumn<T>(config: ColumnConfig<T>, t: (key: string) => str
         return a < b ? -1 : 1;
       }),
     meta: {
+      ...config.meta,
       style: {
         textAlign: config.align ?? 'left',
+        ...config.meta?.style,
+      },
+      export: {
+        type: 'text' as const,
+        label: config.header ? t(config.header) : config.meta?.export?.label,
+        ...config.meta?.export,
       },
     },
-  };
+  } satisfies ColumnDef<T>;
+
+  return column;
 }
 
 export function createNumberColumn<T>(
@@ -80,6 +110,7 @@ export function createNumberColumn<T>(
   headerKey: string | undefined,
   t: (key: string) => string,
   locale: string,
+  options?: { integer?: boolean },
 ): ColumnDef<T> {
   const parser = new NumberParser(locale);
   const column = createColumn<T>(
@@ -101,10 +132,8 @@ export function createNumberColumn<T>(
 
   // Add the filter function after creation
   column.filterFn = 'inNumberRange';
-  return column;
+  return mergeExportMeta(column, { type: options?.integer === false ? 'number' : 'integer' });
 }
-
-// Create a currency column
 export function createCurrencyColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,
@@ -127,38 +156,39 @@ export function createCurrencyColumn<T>(
 
   // Add the filter function after creation
   column.filterFn = 'inNumberRange';
-  return column;
+  return mergeExportMeta(column, { type: 'currency' });
 }
-
-// Create a date column
 export function createDateColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,
   t: (key: string) => string,
   locale?: string,
 ): ColumnDef<T> {
-  return createColumn<T>(
-    {
-      accessorKey,
-      header: headerKey,
-      cell: ({ row }) => {
-        const dateStr = row.getValue(accessorKey) as string;
-        if (!dateStr) return '';
-        try {
-          const date = new Date(dateStr);
-          return Number.isNaN(date.getTime())
-            ? ''
-            : date.toLocaleDateString(resolveIntlLocaleForDates(locale ?? 'de'), {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-              });
-        } catch (_) {
-          return '';
-        }
+  return mergeExportMeta(
+    createColumn<T>(
+      {
+        accessorKey,
+        header: headerKey,
+        cell: ({ row }) => {
+          const dateStr = row.getValue(accessorKey) as string;
+          if (!dateStr) return '';
+          try {
+            const date = new Date(dateStr);
+            return Number.isNaN(date.getTime())
+              ? ''
+              : date.toLocaleDateString(resolveIntlLocaleForDates(locale ?? 'de'), {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                });
+          } catch (_) {
+            return '';
+          }
+        },
       },
-    },
-    t,
+      t,
+    ),
+    { type: 'date' },
   );
 }
 
@@ -181,10 +211,8 @@ export function createDurationDaysColumn<T>(
   );
 
   column.filterFn = 'inNumberRange';
-  return column;
+  return mergeExportMeta(column, { type: 'integer' });
 }
-
-// Create a percentage column
 export function createPercentageColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,
@@ -206,10 +234,8 @@ export function createPercentageColumn<T>(
 
   // Add the filter function after creation
   column.filterFn = 'inNumberRange';
-  return column;
+  return mergeExportMeta(column, { type: 'percent' });
 }
-
-// Create an enum column with badge
 export function createEnumBadgeColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,
@@ -219,7 +245,7 @@ export function createEnumBadgeColumn<T>(
   getBadgeVariant?: (value: string) => 'default' | 'secondary' | 'destructive' | 'outline',
 ): ColumnDef<T> {
   const columnId = accessorKeyToColumnId(accessorKey);
-  return createColumn<T>(
+  const column = createColumn<T>(
     {
       accessorKey,
       id: columnId,
@@ -256,31 +282,48 @@ export function createEnumBadgeColumn<T>(
     },
     t,
   );
-}
 
-// Create a termination type column
+  return mergeExportMeta(column, {
+    type: 'text',
+    getValue: (row) => {
+      const value = (row as Record<string, unknown>)[accessorKey];
+      if (!value) return '';
+      return commonT(`${enumPrefix}.${String(value)}`);
+    },
+  });
+}
 export function createTerminationTypeColumn<T>(
   t: (key: string) => string,
   commonT: (key: string) => string,
 ): ColumnDef<T> {
-  return createColumn<T>(
-    {
-      accessorKey: 'terminationType',
-      header: 'table.terminationType',
-      cell: ({ row }) => {
-        const terminationType = row.getValue('terminationType') as string;
-        if (!terminationType) return '';
+  return mergeExportMeta(
+    createColumn<T>(
+      {
+        accessorKey: 'terminationType',
+        header: 'table.terminationType',
+        cell: ({ row }) => {
+          const terminationType = row.getValue('terminationType') as string;
+          if (!terminationType) return '';
 
-        return commonT(`enums.loan.terminationType.${terminationType}`);
+          return commonT(`enums.loan.terminationType.${terminationType}`);
+        },
+        filterFn: enumFilter,
+        sortingFn: (rowA, rowB, columnId) => {
+          const a = rowA.getValue(columnId) as number;
+          const b = rowB.getValue(columnId) as number;
+          return a - b;
+        },
       },
-      filterFn: enumFilter,
-      sortingFn: (rowA, rowB, columnId) => {
-        const a = rowA.getValue(columnId) as number;
-        const b = rowB.getValue(columnId) as number;
-        return a - b;
+      t,
+    ),
+    {
+      type: 'text',
+      getValue: (row) => {
+        const terminationType = (row as Record<string, unknown>).terminationType;
+        if (!terminationType) return '';
+        return commonT(`enums.loan.terminationType.${String(terminationType)}`);
       },
     },
-    t,
   );
 }
 
@@ -311,10 +354,31 @@ export function createLenderNameColumn<
 }
 
 // Create an address column for lenders
+export function formatLenderAddressForExport(
+  row: Pick<Lender, 'street' | 'addon' | 'zip' | 'place' | 'country'>,
+): string {
+  const street = row.street || '';
+  const addon = row.addon ? `, ${row.addon}` : '';
+  const zip = row.zip || '';
+  const place = row.place || '';
+  const country = row.country || '';
+
+  if (!street && !zip && !place && !country) return '';
+
+  const lines: string[] = [];
+  if (street) {
+    lines.push(`${street}${addon}`);
+  }
+  if (zip || place || country) {
+    lines.push(`${zip} ${place}${country ? `, ${country}` : ''}`.trim());
+  }
+  return lines.join('\n');
+}
+
 export function createLenderAddressColumn<T extends Pick<Lender, 'street' | 'addon' | 'zip' | 'place' | 'country'>>(
   t: (key: string) => string,
 ): ColumnDef<T> {
-  return createColumn<T>(
+  const column = createColumn<T>(
     {
       accessorKey: 'address',
       header: 'table.address',
@@ -354,6 +418,13 @@ export function createLenderAddressColumn<T extends Pick<Lender, 'street' | 'add
     },
     t,
   );
+
+  return mergeExportMeta(column, {
+    type: 'text',
+    getValue: (row) =>
+      formatLenderAddressForExport(row as Pick<Lender, 'street' | 'addon' | 'zip' | 'place' | 'country'>),
+    wrapText: true,
+  });
 }
 
 // Create a banking column for lenders
@@ -405,7 +476,7 @@ export function createLenderEnumBadgeColumn<T>(
   commonT: (key: string) => string,
   getBadgeVariant?: (value: string) => 'default' | 'secondary' | 'destructive' | 'outline',
 ): ColumnDef<T> {
-  return createColumn<T>(
+  const column = createColumn<T>(
     {
       accessorKey,
       header: headerKey,
@@ -433,6 +504,15 @@ export function createLenderEnumBadgeColumn<T>(
     },
     t,
   );
+
+  return mergeExportMeta(column, {
+    type: 'text',
+    getValue: (row) => {
+      const value = (row as Record<string, unknown>)[accessorKey];
+      if (!value) return '';
+      return commonT(`${enumPrefix}.${String(value)}`);
+    },
+  });
 }
 
 export function createAdditionalFieldsColumns<T>(
@@ -442,66 +522,86 @@ export function createAdditionalFieldsColumns<T>(
   locale: string,
 ): ColumnDef<T>[] {
   return (config?.map((field) => {
+    const fieldKey = `${accessorKey}.${field.id}`;
+
     if (field.type === AdditionalFieldType.DATE) {
-      return {
-        ...createDateColumn<T>(`${accessorKey}.${field.id}`, undefined, t, locale),
-        header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
-        id: `${accessorKey}.${field.id}`,
-      };
+      return mergeExportMeta(
+        {
+          ...createDateColumn<T>(fieldKey, undefined, t, locale),
+          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+          id: fieldKey,
+        } as ColumnDef<T>,
+        { label: field.name },
+      );
     }
 
     if (field.type === AdditionalFieldType.NUMBER) {
       if (field.numberFormat === AdditionalNumberFormat.MONEY) {
-        return {
-          ...createCurrencyColumn<T>(`${accessorKey}.${field.id}`, undefined, t, locale),
-          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
-          id: `${accessorKey}.${field.id}`,
-        };
+        return mergeExportMeta(
+          {
+            ...createCurrencyColumn<T>(fieldKey, undefined, t, locale),
+            header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+            id: fieldKey,
+          } as ColumnDef<T>,
+          { label: field.name },
+        );
       }
       if (field.numberFormat === AdditionalNumberFormat.PERCENT) {
-        return {
-          ...createPercentageColumn<T>(`${accessorKey}.${field.id}`, undefined, t, locale),
-          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
-          id: `${accessorKey}.${field.id}`,
-        };
+        return mergeExportMeta(
+          {
+            ...createPercentageColumn<T>(fieldKey, undefined, t, locale),
+            header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+            id: fieldKey,
+          } as ColumnDef<T>,
+          { label: field.name },
+        );
       }
-      return {
-        ...createNumberColumn<T>(`${accessorKey}.${field.id}`, undefined, t, locale),
-        header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
-        id: `${accessorKey}.${field.id}`,
-      };
+      return mergeExportMeta(
+        {
+          ...createNumberColumn<T>(fieldKey, undefined, t, locale, { integer: false }),
+          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+          id: fieldKey,
+        } as ColumnDef<T>,
+        { label: field.name },
+      );
     }
 
     if (field.type === AdditionalFieldType.SELECT) {
-      return {
+      return mergeExportMeta(
+        {
+          ...createColumn<T>(
+            {
+              accessorKey: fieldKey,
+              cell: ({ row }) => {
+                const value = row.getValue(fieldKey) as string;
+                if (!value) return '';
+                return <Badge variant="outline">{value}</Badge>;
+              },
+              filterFn: enumFilter,
+            },
+            t,
+          ),
+          id: fieldKey,
+          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+        } as ColumnDef<T>,
+        { label: field.name },
+      );
+    }
+
+    return mergeExportMeta(
+      {
         ...createColumn<T>(
           {
-            accessorKey: `${accessorKey}.${field.id}`,
-            cell: ({ row }) => {
-              const value = row.getValue(`${accessorKey}.${field.id}`) as string;
-              if (!value) return '';
-              return <Badge variant="outline">{value}</Badge>;
-            },
-            filterFn: enumFilter,
+            accessorKey: fieldKey,
+            header: undefined,
+            id: fieldKey,
           },
           t,
         ),
-        id: `${accessorKey}.${field.id}`,
         header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
-      };
-    }
-
-    return {
-      ...createColumn<T>(
-        {
-          accessorKey: `${accessorKey}.${field.id}`,
-          header: undefined,
-          id: `${accessorKey}.${field.id}`,
-        },
-        t,
-      ),
-      header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
-    };
+      } as ColumnDef<T>,
+      { label: field.name },
+    );
   }) ?? []) as ColumnDef<T>[];
 }
 

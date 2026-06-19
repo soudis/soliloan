@@ -52,6 +52,9 @@ export function buildAllLenderTableColumns<T extends LenderListItem = LenderList
       {
         accessorKey: 'lenderNumber',
         header: 'table.lenderNumber',
+        meta: {
+          export: { type: 'integer' },
+        },
       },
       t,
     ),

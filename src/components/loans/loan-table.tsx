@@ -228,6 +228,8 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
         views={views}
         allowSidebarViews
         showFilter={true}
+        showExport
+        exportPrefix="Darlehen"
         onRowClick={(row) => router.push(`/lenders/${row.lender.id}?loanId=${row.id}`)}
         bulkActions={bulkActions}
         actions={(row) => (

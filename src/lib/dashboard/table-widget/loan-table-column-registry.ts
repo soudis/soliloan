@@ -65,6 +65,9 @@ export function buildAllLoanTableColumns(
           const value = row.original.lender?.lenderNumber || 0;
           return value.toFixed(0);
         },
+        meta: {
+          export: { type: 'integer' },
+        },
       },
       t,
     ),

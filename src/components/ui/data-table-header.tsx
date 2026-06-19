@@ -4,7 +4,7 @@ import type { View, ViewType } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Table, VisibilityState } from '@tanstack/react-table';
 import { isEqual } from 'lodash';
-import { ChevronDown, Save, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, FileDown, Save, SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useMemo, useState } from 'react';
@@ -24,6 +24,7 @@ import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
 import { DataTableColumnFilters } from './data-table-column-filters';
+import { DataTableExportDialog } from './data-table-export-dialog';
 import { SaveViewDialog } from './save-view-dialog';
 import { ViewManager } from './view-manager';
 
@@ -45,6 +46,9 @@ interface DataTableHeaderProps<TData> {
   tableState: TableUrlState;
   setTableState: SetTableUrlState;
   allowSidebarViews?: boolean;
+  showExport?: boolean;
+  exportPrefix?: string;
+  exportDisabled?: boolean;
 }
 
 export function DataTableHeader<TData>({
@@ -59,6 +63,9 @@ export function DataTableHeader<TData>({
   tableState,
   setTableState,
   allowSidebarViews = false,
+  showExport = false,
+  exportPrefix,
+  exportDisabled = false,
 }: DataTableHeaderProps<TData>) {
   const projectId = useProjectId();
   const router = useRouter();
@@ -66,6 +73,7 @@ export function DataTableHeader<TData>({
   const [showColumnFilters, setShowColumnFilters] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveAsOpen, setSaveAsOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const tv = useTranslations('views');
   const queryClient = useQueryClient();
 
@@ -296,6 +304,27 @@ export function DataTableHeader<TData>({
               {t('filters')}
               {hasActiveFilters() && <span className="ml-2 flex h-2 w-2 rounded-full bg-primary" />}
             </Button>
+          )}
+          {showExport && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1"
+                disabled={exportDisabled}
+                onClick={() => setExportOpen(true)}
+              >
+                <FileDown className="h-4 w-4" />
+                {t('export')}
+              </Button>
+              <DataTableExportDialog
+                table={table}
+                open={exportOpen}
+                onOpenChange={setExportOpen}
+                columnFilters={columnFilters}
+                exportPrefix={exportPrefix}
+              />
+            </>
           )}
           {showColumnVisibility && (
             <DropdownMenu>

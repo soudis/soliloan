@@ -200,6 +200,8 @@ export function LenderTable({ lenders, views }: LenderTableProps) {
         views={views}
         allowSidebarViews
         showFilter={true}
+        showExport
+        exportPrefix="Darlehensgeber"
         onRowClick={(row) => router.push(`/lenders/${row.id}`)}
         bulkActions={bulkActions}
         actions={(row) => (

@@ -27,6 +27,18 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from './dropdo
 
 const EMPTY_COLUMN_VISIBILITY: VisibilityState = {};
 
+export type ColumnExportType = 'text' | 'integer' | 'number' | 'currency' | 'percent' | 'date' | 'duration';
+
+export type ColumnExportMeta = {
+  type?: ColumnExportType;
+  /** Resolved header for Excel; set in column builders */
+  label?: string;
+  /** Optional override when accessorFn/getValue is insufficient (enums) */
+  getValue?: (row: unknown) => string | number | Date | null | undefined;
+  /** Enable wrapped text in Excel (e.g. multi-line address). */
+  wrapText?: boolean;
+};
+
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
     style?: {
@@ -37,6 +49,7 @@ declare module '@tanstack/react-table' {
     actionsColumn?: boolean;
     /** Bulk checkbox column: full-cell hit area, not sticky. */
     bulkSelectColumn?: boolean;
+    export?: ColumnExportMeta;
   }
 }
 
@@ -150,6 +163,10 @@ interface DataTableProps<TData, TValue> {
   getRowId?: (row: TData) => string;
   /** Fill parent height: toolbar and pagination stay fixed; table body scrolls vertically. */
   fillHeight?: boolean;
+  /** Show Excel export button in the toolbar. */
+  showExport?: boolean;
+  /** Filename prefix for exports; defaults to `export-{date}.xlsx` when omitted. */
+  exportPrefix?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -170,6 +187,8 @@ export function DataTable<TData, TValue>({
   bulkActions,
   getRowId = (row) => (row as Record<string, unknown>).id as string,
   fillHeight = false,
+  showExport = false,
+  exportPrefix,
 }: DataTableProps<TData, TValue>) {
   const t = useTranslations('dataTable');
 
@@ -392,6 +411,8 @@ export function DataTable<TData, TValue>({
     enableGlobalFilter: true,
   });
 
+  const exportDisabled = table.getSelectedRowModel().rows.length === 0 && table.getFilteredRowModel().rows.length === 0;
+
   if (isLoading) {
     return (
       <div
@@ -421,6 +442,9 @@ export function DataTable<TData, TValue>({
             tableState={tableState}
             setTableState={setTableState}
             allowSidebarViews={allowSidebarViews}
+            showExport={showExport}
+            exportPrefix={exportPrefix}
+            exportDisabled={exportDisabled}
           />
         </div>
       )}
