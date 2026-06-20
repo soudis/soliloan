@@ -1,0 +1,43 @@
+{
+  "title": "Procrastinator",
+  "subtitle": "Eine kleine Pause vom Kreditgeschäft.",
+  "tagline": "Verteidige dich gegen Kredithaie, Hedgefonds-Manager und andere Finanzschurken!",
+  "start": "Spiel starten",
+  "resume": "Fortsetzen",
+  "restart": "Nochmal spielen",
+  "pause": "Pause",
+  "paused": "Pausiert",
+  "howToKeyboard": "Pfeiltasten oder A/D zum Bewegen, Leertaste zum Schießen, P für Pause.",
+  "howToTouch": "Nutze die Tasten unten zum Bewegen und Schießen.",
+  "muteOn": "Ton ausschalten",
+  "muteOff": "Ton einschalten",
+  "score": "Punkte",
+  "lives": "Leben",
+  "wave": "Welle",
+  "gameOver": "Game Over",
+  "finalScore": "Dein Ergebnis",
+  "reachedWave": "Erreichte Welle",
+  "submitScore": "Highscore eintragen",
+  "skip": "Überspringen",
+  "highscores": "Bestenliste",
+  "highscoresEmpty": "Noch keine Einträge – sei die oder der Erste!",
+  "rank": "Platz",
+  "player": "Spieler*in",
+  "personalBest": "Deine Bestleistung",
+  "dialog": {
+    "title": "Highscore eintragen",
+    "description": "Wähle ein Pseudonym für die Bestenliste. Optional kannst du deine Identität offenlegen.",
+    "pseudonym": "Pseudonym",
+    "pseudonymPlaceholder": "z. B. LoanSlayer",
+    "reveal": "Identität anzeigen",
+    "revealHint": "Zeigt deinen Namen und deine E-Mail-Adresse in der Bestenliste an.",
+    "submit": "Eintragen",
+    "saved": "Highscore gespeichert!",
+    "invalid": "Bitte überprüfe deine Eingaben."
+  },
+  "touch": {
+    "left": "Links",
+    "right": "Rechts",
+    "fire": "Schießen"
+  }
+}
