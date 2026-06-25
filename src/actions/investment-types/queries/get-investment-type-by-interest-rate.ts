@@ -1,10 +1,12 @@
 'use server';
 
 import { z } from 'zod';
+import { getLoanStatus } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
 import { normalizeLoanInterestRate } from '@/lib/schemas/investment-type';
 import { NumberParser } from '@/lib/utils';
 import { projectAction } from '@/lib/utils/safe-action';
+import type { LoanWithRelations } from '@/types/loans';
 
 export async function getInvestmentTypeByInterestRateUnsafe(projectId: string, interestRate: string) {
   const parser = new NumberParser('de-DE');
@@ -30,12 +32,31 @@ export async function getInvestmentTypeByInterestRateUnsafe(projectId: string, i
           id: true,
           amount: true,
           signDate: true,
+          terminationDate: true,
+          terminationType: true,
+          transactions: true,
         },
       },
     },
   });
 
-  return { investmentType };
+  if (!investmentType) {
+    return { investmentType };
+  }
+
+  const today = new Date();
+
+  return {
+    investmentType: {
+      ...investmentType,
+      loans: investmentType.loans.map((loan) => ({
+        id: loan.id,
+        amount: loan.amount,
+        signDate: loan.signDate,
+        status: getLoanStatus(loan as LoanWithRelations, today),
+      })),
+    },
+  };
 }
 
 export const getInvestmentTypeByInterestRateAction = projectAction

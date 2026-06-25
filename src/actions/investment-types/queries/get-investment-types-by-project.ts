@@ -1,8 +1,10 @@
 'use server';
 
 import { z } from 'zod';
+import { getLoanStatus } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
 import { projectAction } from '@/lib/utils/safe-action';
+import type { LoanWithRelations } from '@/types/loans';
 
 export async function getInvestmentTypesByProjectUnsafe(projectId: string) {
   const investmentTypes = await db.investmentType.findMany({
@@ -13,6 +15,9 @@ export async function getInvestmentTypesByProjectUnsafe(projectId: string) {
           id: true,
           amount: true,
           signDate: true,
+          terminationDate: true,
+          terminationType: true,
+          transactions: true,
         },
       },
       _count: { select: { loans: true } },
@@ -20,7 +25,19 @@ export async function getInvestmentTypesByProjectUnsafe(projectId: string) {
     orderBy: { interestRate: 'asc' },
   });
 
-  return { investmentTypes };
+  const today = new Date();
+
+  return {
+    investmentTypes: investmentTypes.map((investmentType) => ({
+      ...investmentType,
+      loans: investmentType.loans.map((loan) => ({
+        id: loan.id,
+        amount: loan.amount,
+        signDate: loan.signDate,
+        status: getLoanStatus(loan as LoanWithRelations, today),
+      })),
+    })),
+  };
 }
 
 export const getInvestmentTypesByProjectAction = projectAction

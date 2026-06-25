@@ -10,6 +10,7 @@ import { parseAsString, useQueryState } from 'nuqs';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { deleteInvestmentTypeAction } from '@/actions/investment-types';
+import { LoanStatusBadge } from '@/components/loans/loan-status-badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { DonutIndicator } from '@/components/ui/donut-indicator';
 import { GridIndicator } from '@/components/ui/grid-indicator';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useRouter } from '@/i18n/navigation';
 import {
@@ -34,10 +36,11 @@ import {
 import { getDefaultEffectiveDate } from '@/lib/investment-types/effective-date';
 import { MAX_TOTAL_AMOUNT_EUR, MAX_UNITS } from '@/lib/schemas/investment-type';
 import { cn, formatCurrency, formatDateShort, formatPercentage, getLenderName } from '@/lib/utils';
+import { LoanStatus } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { LimitationTypeBadge } from './limitation-type-badge';
 
-type LoanWithLender = Loan & { lender: Lender };
+type LoanWithLender = Loan & { lender: Lender; status: LoanStatus };
 
 type InvestmentTypeWithRelations = InvestmentType & {
   loans: LoanWithLender[];
@@ -57,15 +60,21 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
   const locale = useLocale();
   const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCompletedLoans, setShowCompletedLoans] = useState(false);
   const [effectiveDate, setEffectiveDate] = useQueryState(
     'effectiveDate',
     parseAsString.withDefault(getDefaultEffectiveDate()),
   );
   const effectiveDateValue = new Date(effectiveDate);
   const needsEffectiveDate = investmentType.limitationType !== LimitationType.NOT_MORE_THAN_N_UNITS;
+  const isNotMoreThanNUnits = investmentType.limitationType === LimitationType.NOT_MORE_THAN_N_UNITS;
 
   const { executeAsync: deleteAction, isExecuting: isDeleting } = useAction(deleteInvestmentTypeAction);
   const hasAssignedLoans = investmentType._count.loans > 0;
+  const visibleLoans =
+    isNotMoreThanNUnits && !showCompletedLoans
+      ? investmentType.loans.filter((loan) => loan.status !== LoanStatus.REPAID)
+      : investmentType.loans;
 
   const metrics =
     !needsEffectiveDate || effectiveDate === initialEffectiveDate
@@ -123,7 +132,7 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
           <h2 className="text-sm font-medium text-muted-foreground">{t('table.capacity')}</h2>
           <div className="mt-6 flex flex-1 items-center justify-center md:justify-start">
             <div className="w-full">
-              {investmentType.limitationType === 'NOT_MORE_THAN_N_UNITS' ? (
+              {isNotMoreThanNUnits ? (
                 <NotMoreThanNUnitsCapacityIndicator currentUnits={metrics.usedCapacity} />
               ) : (
                 <TotalAmountCapacityIndicator currentAmount={metrics.usedCapacity} effectiveDate={effectiveDateValue} />
@@ -136,6 +145,18 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
       <section className="space-y-4 rounded-lg border bg-background p-6">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <h2 className="text-lg font-semibold">{t('detail.loans')}</h2>
+          {isNotMoreThanNUnits && (
+            <div className="flex items-center gap-2">
+              <Switch
+                id="showCompletedLoans"
+                checked={showCompletedLoans}
+                onCheckedChange={setShowCompletedLoans}
+              />
+              <label htmlFor="showCompletedLoans" className="text-sm font-medium">
+                {t('detail.showCompletedLoans')}
+              </label>
+            </div>
+          )}
           {isTotalAmountOverTimePeriod && (
             <div className="flex items-center gap-3">
               <label htmlFor="effectiveDate" className="text-sm font-medium whitespace-nowrap">
@@ -168,8 +189,8 @@ export function InvestmentTypeDetailContent({ investmentType, project, initialEf
           />
         ) : (
           <NotMoreThanNUnitsLoanTableSection
-            emptyMessage={t('detail.noLoans')}
-            loans={investmentType.loans}
+            emptyMessage={showCompletedLoans ? t('detail.noLoans') : t('detail.noOpenLoans')}
+            loans={visibleLoans}
             projectId={project.id}
             locale={locale}
             t={t}
@@ -281,6 +302,7 @@ function NotMoreThanNUnitsLoanTableSection({ emptyMessage, loans, projectId, loc
           <TableRow>
             <TableHead>{t('detail.loanNumber')}</TableHead>
             <TableHead>{t('detail.lender')}</TableHead>
+            <TableHead>{t('detail.status')}</TableHead>
             <TableHead>{t('detail.signDate')}</TableHead>
             <TableHead className="text-right">{t('detail.amount')}</TableHead>
             <TableHead className="text-right">{t('detail.interestRate')}</TableHead>
@@ -289,7 +311,7 @@ function NotMoreThanNUnitsLoanTableSection({ emptyMessage, loans, projectId, loc
         <TableBody>
           {loans.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+              <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                 {emptyMessage}
               </TableCell>
             </TableRow>
@@ -297,11 +319,17 @@ function NotMoreThanNUnitsLoanTableSection({ emptyMessage, loans, projectId, loc
             loans.map((loan) => (
               <TableRow key={loan.id}>
                 <TableCell>
-                  <Link href={`/loans/${loan.id}/edit?projectId=${projectId}`} className="font-medium hover:underline">
+                  <Link
+                    href={`/lenders/${loan.lender.id}?projectId=${projectId}&loanId=${loan.id}`}
+                    className="font-medium hover:underline"
+                  >
                     #{loan.loanNumber}
                   </Link>
                 </TableCell>
                 <TableCell>{getLenderName(loan.lender)}</TableCell>
+                <TableCell>
+                  <LoanStatusBadge status={loan.status} />
+                </TableCell>
                 <TableCell>{formatDateShort(loan.signDate, locale)}</TableCell>
                 <TableCell className="text-right">{formatCurrency(loan.amount, locale)}</TableCell>
                 <TableCell className="text-right">{formatPercentage(loan.interestRate, locale)}</TableCell>
@@ -335,6 +363,7 @@ function TotalAmountOverTimePeriodLoanTableSection({
           <TableRow>
             <TableHead>{t('detail.loanNumber')}</TableHead>
             <TableHead>{t('detail.lender')}</TableHead>
+            <TableHead>{t('detail.status')}</TableHead>
             <TableHead className="w-0 whitespace-nowrap">{t('detail.signDate')}</TableHead>
             <TableHead className="w-0 whitespace-nowrap">{t('detail.usedCapacityAtSignDate')}</TableHead>
             <TableHead className="text-right">{t('detail.amount')}</TableHead>
@@ -344,7 +373,7 @@ function TotalAmountOverTimePeriodLoanTableSection({
         <TableBody>
           {loans.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+              <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                 {emptyMessage}
               </TableCell>
             </TableRow>
@@ -358,13 +387,16 @@ function TotalAmountOverTimePeriodLoanTableSection({
                 <TableRow key={loan.id}>
                   <TableCell>
                     <Link
-                      href={`/loans/${loan.id}/edit?projectId=${projectId}`}
+                      href={`/lenders/${loan.lender.id}?projectId=${projectId}&loanId=${loan.id}`}
                       className="font-medium hover:underline"
                     >
                       #{loan.loanNumber}
                     </Link>
                   </TableCell>
                   <TableCell>{getLenderName(loan.lender)}</TableCell>
+                  <TableCell>
+                    <LoanStatusBadge status={loan.status} />
+                  </TableCell>
                   <TableCell>
                     <Button
                       type="button"

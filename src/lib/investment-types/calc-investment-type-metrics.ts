@@ -1,11 +1,13 @@
 import { LimitationType } from '@prisma/client';
 import { addMonths, endOfDay, startOfDay } from 'date-fns';
 import { MAX_TOTAL_AMOUNT_EUR, MAX_UNITS, PERIOD_MONTHS } from '@/lib/schemas/investment-type';
+import { LoanStatus } from '@/types/loans';
 
 export type InvestmentTypeMetricsLoan = {
   id: string;
   amount: number;
   signDate: Date;
+  status: LoanStatus;
 };
 
 type InvestmentTypeMetricsInput = {
@@ -35,10 +37,12 @@ export function calcInvestmentTypeMetrics(
 }
 
 export function calcNotMoreThanNUnitsMetrics(loans: InvestmentTypeMetricsLoan[]): InvestmentTypeMetrics {
+  const effectiveLoans = loans.filter((loan) => loan.status !== LoanStatus.REPAID);
+
   return {
-    numberOfLoans: loans.length,
-    effectiveLoans: loans,
-    usedCapacity: loans.length,
+    numberOfLoans: effectiveLoans.length,
+    effectiveLoans,
+    usedCapacity: effectiveLoans.length,
     capacityLimit: MAX_UNITS,
     capacityUnit: 'units',
   };

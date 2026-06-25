@@ -5,11 +5,13 @@ import {
   type InvestmentTypeMetricsLoan,
 } from '@/lib/investment-types/calc-investment-type-metrics';
 import { NumberParser } from '@/lib/utils';
+import { LoanStatus } from '@/types/loans';
 
 type InvestmentTypeLoan = {
   id: string;
   amount: number;
   signDate: Date | string;
+  status: LoanStatus;
 };
 
 type BuildCapacityLoansInput = {
@@ -30,12 +32,13 @@ export function buildCapacityLoansForLoanForm({
   const effectiveDate = signDate instanceof Date ? signDate : new Date(signDate);
   const isTotalAmountLimitation = limitationType === 'TOTAL_AMOUNT_OVER_TIME_PERIOD';
 
-  const otherLoans = loans
+  const otherLoans: InvestmentTypeMetricsLoan[] = loans
     .filter((loan) => !currentLoanId || loan.id !== currentLoanId)
     .map((loan) => ({
       id: loan.id,
       amount: loan.amount,
       signDate: new Date(loan.signDate),
+      status: loan.status,
     }));
 
   if (!isValid(effectiveDate)) {
@@ -47,6 +50,7 @@ export function buildCapacityLoansForLoanForm({
       id: currentLoanId ?? '__current__',
       amount: 0,
       signDate: effectiveDate,
+      status: LoanStatus.NOTDEPOSITED,
     });
     return otherLoans;
   }
@@ -58,6 +62,7 @@ export function buildCapacityLoansForLoanForm({
       id: currentLoanId ?? '__current__',
       amount: parsedAmount,
       signDate: effectiveDate,
+      status: LoanStatus.NOTDEPOSITED,
     });
   }
 

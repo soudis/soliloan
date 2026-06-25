@@ -27,11 +27,12 @@ import {
   enumFilter,
 } from '@/lib/table-column-utils';
 import { formatCurrency } from '@/lib/utils';
+import type { LoanStatus } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { LimitationTypeBadge } from './limitation-type-badge';
 
 type InvestmentTypeWithLoans = InvestmentType & {
-  loans: Pick<Loan, 'id' | 'amount' | 'signDate'>[];
+  loans: (Pick<Loan, 'id' | 'amount' | 'signDate'> & { status: LoanStatus })[];
   _count: { loans: number };
 };
 
