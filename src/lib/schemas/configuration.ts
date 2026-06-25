@@ -1,5 +1,6 @@
-import { InterestMethod, Language, LenderRequiredField, SoliLoansTheme } from '@prisma/client';
+import { InterestMethod, Language, LenderRequiredField } from '@prisma/client';
 import { z } from 'zod';
+import { SOLI_LOANS_THEME } from '@/lib/theme';
 import {
   additionalFieldConfigSchema,
   addressSchema,
@@ -47,7 +48,7 @@ export const configurationFormGeneralSchema = configurationFormGeneralShape.supe
 
 export const configurationFormLenderSchema = z.object({
   userLanguage: selectEnumRequired(Language).nullable().optional(),
-  userTheme: selectEnumRequired(SoliLoansTheme).nullable().optional(),
+  userTheme: selectEnumRequired(SOLI_LOANS_THEME).nullable().optional(),
   lenderRequiredFields: z.array(z.enum(LenderRequiredField)).default([]).optional(),
   lenderSalutation: salutationEnumOptional.nullable().optional(),
   lenderCountry: countryEnum.nullable().optional(),

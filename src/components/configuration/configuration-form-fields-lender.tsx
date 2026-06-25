@@ -1,9 +1,10 @@
 'use client';
 
-import { Language, LenderRequiredField, Salutation, SoliLoansTheme } from '@prisma/client';
+import { Language, LenderRequiredField, Salutation } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { FormCountrySelect } from '@/components/form/form-country-select';
 import { FormSection } from '@/components/ui/form-section';
+import { SOLI_LOANS_THEME } from '@/lib/theme';
 import { FormFieldConfigurator } from '../form/form-field-configurator';
 import { FormMultiSelect } from '../form/form-multi-select';
 import { FormSelect } from '../form/form-select';
@@ -57,7 +58,7 @@ export function ConfigurationFormFieldsLender() {
             name="userTheme"
             label={t('form.userTheme')}
             placeholder={commonT('ui.form.noDefault')}
-            options={Object.entries(SoliLoansTheme).map(([key, value]) => ({
+            options={Object.entries(SOLI_LOANS_THEME).map(([key, value]) => ({
               value,
               label: commonT(`enums.theme.${key}`),
             }))}

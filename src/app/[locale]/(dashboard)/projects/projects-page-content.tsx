@@ -1,7 +1,7 @@
 'use client';
 
 import type { View } from '@prisma/client';
-import { Country, InterestMethod, Language, Salutation, SoliLoansTheme, ViewType } from '@prisma/client';
+import { Country, InterestMethod, Language, Salutation, ViewType } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Import, Pencil, Plus } from 'lucide-react';
 import { useSession } from 'next-auth/react';
@@ -14,6 +14,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useRouter } from '@/i18n/navigation';
 import { createColumn, createEnumBadgeColumn } from '@/lib/table-column-utils';
+import { SOLI_LOANS_THEME } from '@/lib/theme';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
 interface ProjectsPageContentProps {
@@ -290,7 +291,7 @@ export function ProjectsPageContent({ views, projects }: ProjectsPageContentProp
     configuration_userTheme: {
       type: 'select' as const,
       label: configT('userTheme'),
-      options: Object.entries(SoliLoansTheme).map(([key, value]) => ({
+      options: Object.entries(SOLI_LOANS_THEME).map(([key, value]) => ({
         label: commonT(`enums.theme.${key}`),
         value: value,
       })),

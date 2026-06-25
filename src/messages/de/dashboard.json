@@ -938,7 +938,7 @@
           "activating": "Wird aktiviert…",
           "successTitle": "Anlagearten-Modul aktiviert",
           "successCreated": "Das Modul ist jetzt aktiv. {count, plural, =0 {Die vorhandenen Anlagearten wurden zugewiesen.} one {Es wurde eine neue Anlageart angelegt.} other {Es wurden # neue Anlagearten angelegt.}}",
-          "successLimitationWarning": "Für die neu angelegten Anlagearten wurde noch keine Begrenzungsart festgelegt. Wir empfehlen dies zu prüfen.",
+          "successLimitationWarning": "Für die neu angelegten Anlagearten wurde die Standard-Bagatellgrenze verwendet (Anlagesumme). Wir empfehlen dies zu prüfen.",
           "viewInvestmentTypes": "Zu den Anlagearten",
           "close": "Schließen"
         }
