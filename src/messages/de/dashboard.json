@@ -973,6 +973,32 @@
         "deleteSuccess": "Kreditvorlage erfolgreich gelöscht"
       }
     },
+    "gocardless": {
+      "sectionTitle": "Bankkonto-Verbindung",
+      "description": "Verbinden Sie ein Bankkonto, um später Transaktionen automatisch importieren zu können.",
+      "linkButton": "Bankkonto verbinden",
+      "dialogTitle": "Bankkonto verbinden",
+      "dialogDescription": "Wählen Sie das Land und die Bank aus, mit der Sie sich verbinden möchten.",
+      "country": "Land",
+      "countryPlaceholder": "Land auswählen",
+      "institution": "Bank",
+      "institutionPlaceholder": "Bank auswählen",
+      "institutionLoading": "Banken werden geladen...",
+      "institutionNone": "Keine Banken gefunden",
+      "institutionSelectCountryFirst": "Zuerst Land auswählen",
+      "connect": "Verbinden",
+      "cancel": "Abbrechen",
+      "unlink": "Trennen",
+      "unlinkSuccess": "Bankkonto-Verbindung getrennt",
+      "accountsCount": "{count, plural, =0 {Keine Konten} one {# Konto} other {# Konten}}",
+      "accessExpiresOn": "Zugriff gültig bis {date}",
+      "accessExpiredOn": "Zugriff abgelaufen am {date}",
+      "statusLinked": "Verbunden",
+      "statusPending": "Ausstehend",
+      "statusExpired": "Abgelaufen",
+      "statusRejected": "Abgelehnt",
+      "errorGeneric": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+    },
     "managers": {
       "managersTitle": "Verwalter*innen",
       "email": "E-Mail",

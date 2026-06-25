@@ -49,6 +49,15 @@
     "updateFailed": "Fehler beim Aktualisieren des Profils.",
     "updateSuccess": "Profil erfolgreich aktualisiert."
   },
+  "gocardless": {
+    "notConfigured": "Die Bankanbindung ist nicht konfiguriert.",
+    "tokenFailed": "Verbindung zum Bankdaten-Anbieter fehlgeschlagen.",
+    "institutionsFailed": "Die Liste der Banken konnte nicht geladen werden.",
+    "requisitionFailed": "Die Bankverbindung konnte nicht erstellt werden.",
+    "deleteFailed": "Die Bankverbindung konnte nicht getrennt werden.",
+    "alreadyLinked": "Es ist bereits ein Bankkonto mit diesem Projekt verbunden.",
+    "connectionNotFound": "Bankverbindung nicht gefunden."
+  },
   "migration": {
     "fetchFailed": "Datenpaket konnte nicht von der DKP-v1 API heruntergeladen werden. Bitte URL und Token prüfen.",
     "noDatabaseJson": "Das ZIP-Archiv enthält keine database.json Datei.",

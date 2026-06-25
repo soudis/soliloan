@@ -1,5 +1,6 @@
 'use client';
 
+import type { BankConnection } from '@prisma/client';
 import { Files as FilesIcon, FileText, Settings2, User, UserCog, Wallet } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
@@ -8,8 +9,8 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { updateConfigurationAction } from '@/actions/projects/mutations/update-project-configuration';
 import type { ConfigurationFormData } from '@/lib/schemas/configuration';
-import { convertEmptyToNull } from '@/lib/utils/form';
 import type { ProjectSystemTemplateOverviewRow } from '@/lib/templates/project-system-templates-overview';
+import { convertEmptyToNull } from '@/lib/utils/form';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ConfigurationFormGeneral } from './configuration-form-general';
@@ -25,9 +26,15 @@ type Props = {
   project: ProjectWithConfiguration;
   inviteValidDays: number;
   systemTemplatesOverviewRows: ProjectSystemTemplateOverviewRow[];
+  bankConnections: BankConnection[];
 };
 
-export const ConfigurationPage = ({ project, inviteValidDays, systemTemplatesOverviewRows }: Props) => {
+export const ConfigurationPage = ({
+  project,
+  inviteValidDays,
+  systemTemplatesOverviewRows,
+  bankConnections,
+}: Props) => {
   const t = useTranslations('dashboard.configuration');
   const [activeTab, setActiveTab] = useQueryState(
     'tab',
@@ -91,6 +98,8 @@ export const ConfigurationPage = ({ project, inviteValidDays, systemTemplatesOve
           initialData={project.configuration}
           isLoading={isExecuting}
           error={error}
+          projectId={project.id}
+          bankConnections={bankConnections}
         />
       </TabsContent>
       <TabsContent value="managers">

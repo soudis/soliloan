@@ -1,6 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { BankConnection as BankConnectionModel, Country } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { Form } from '@/components/ui/form';
@@ -16,9 +17,18 @@ type Props = {
   initialData?: Partial<ConfigurationFormGeneralData>;
   isLoading?: boolean;
   error?: string | null;
+  projectId: string;
+  bankConnections: BankConnectionModel[];
 };
 
-export function ConfigurationFormGeneral({ onSubmit, initialData, isLoading, error }: Props) {
+export function ConfigurationFormGeneral({
+  onSubmit,
+  initialData,
+  isLoading,
+  error,
+  projectId,
+  bankConnections,
+}: Props) {
   const t = useTranslations('dashboard.configuration');
 
   const defaultValues = {
@@ -53,7 +63,11 @@ export function ConfigurationFormGeneral({ onSubmit, initialData, isLoading, err
     <FormLayout error={error}>
       <Form {...form}>
         <form onSubmit={handleSubmit}>
-          <ConfigurationFormFieldsGeneral />
+          <ConfigurationFormFieldsGeneral
+            projectId={projectId}
+            bankConnections={bankConnections}
+            defaultCountry={(initialData?.country as Country | null | undefined) ?? null}
+          />
 
           <FormActions
             submitButtonText={t('form.submit')}

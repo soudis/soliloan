@@ -15,7 +15,7 @@ import {
 import { MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useTableUrlState, type SetTableUrlState, type TableUrlState } from '@/lib/hooks/use-table-url-state';
+import { type SetTableUrlState, type TableUrlState, useTableUrlState } from '@/lib/hooks/use-table-url-state';
 import { cn } from '@/lib/utils';
 
 import { Checkbox } from './checkbox';

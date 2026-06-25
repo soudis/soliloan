@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "./generated/prisma"
+  provider   = "prisma-client-js"
+  output     = "./generated/prisma"
   engineType = "library"
 }
 
@@ -37,38 +37,38 @@ model Session {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  name          String
-  email         String?        @unique
-  emailVerified DateTime?
-  language      Language       @default(de)
-  password      String?
-  inviteToken   String?
-  image         String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  isAdmin       Boolean?
-  lastLogin     DateTime?
-  lastInvited   DateTime?
-  passwordResetToken String?
+  id                          String                  @id @default(cuid())
+  name                        String
+  email                       String?                 @unique
+  emailVerified               DateTime?
+  language                    Language                @default(de)
+  password                    String?
+  inviteToken                 String?
+  image                       String?
+  createdAt                   DateTime                @default(now())
+  updatedAt                   DateTime                @updatedAt
+  isAdmin                     Boolean?
+  lastLogin                   DateTime?
+  lastInvited                 DateTime?
+  passwordResetToken          String?
   passwordResetTokenExpiresAt DateTime?
-  accounts      Account[]
-  lenders       Lender[]
-  notes         Note[]
-  files         File[]
-  sessions      Session[]
-  views         View[]
-  managerOf     Project[]      @relation("ProjectManager")
-  templates     CommunicationTemplate[]
-  predefinedBlocks PredefinedCraftBlock[]
-  dashboardLayouts DashboardLayout[]
+  accounts                    Account[]
+  lenders                     Lender[]
+  notes                       Note[]
+  files                       File[]
+  sessions                    Session[]
+  views                       View[]
+  managerOf                   Project[]               @relation("ProjectManager")
+  templates                   CommunicationTemplate[]
+  predefinedBlocks            PredefinedCraftBlock[]
+  dashboardLayouts            DashboardLayout[]
 }
 
 model LoanTemplate {
-  id                    String              @id @default(cuid())
+  id                    String          @id @default(cuid())
   configurationId       String
   name                  String
-  isDefault             Boolean             @default(false)
+  isDefault             Boolean         @default(false)
   terminationType       TerminationType
   terminationPeriod     Int?
   terminationPeriodType DurationType?
@@ -79,11 +79,11 @@ model LoanTemplate {
   maxInterestRate       Float?
   minAmount             Float?
   maxAmount             Float?
-  configuration         Configuration       @relation(fields: [configurationId], references: [id])
+  configuration         Configuration   @relation(fields: [configurationId], references: [id])
 }
 
 model Configuration {
-  id                     String            @id @default(cuid())
+  id                     String                @id @default(cuid())
   name                   String
   logo                   String?
   email                  String?
@@ -105,22 +105,42 @@ model Configuration {
   defaultLoanTemplateId  String?
   loanTemplates          LoanTemplate[]
   project                Project?
-  lenderAdditionalFields Json           @default("[]")
-  loanAdditionalFields   Json           @default("[]")
+  lenderAdditionalFields Json                  @default("[]")
+  loanAdditionalFields   Json                  @default("[]")
 }
 
 model Project {
-  id              String         @id @default(cuid())
-  slug            String         @unique
-  configurationId String         @unique
-  changes         Change[]
-  lenders         Lender[]
-  configuration   Configuration  @relation(fields: [configurationId], references: [id], onDelete: Cascade)
-  managers        User[]         @relation("ProjectManager")
-  templates       CommunicationTemplate[]
+  id               String                  @id @default(cuid())
+  slug             String                  @unique
+  configurationId  String                  @unique
+  changes          Change[]
+  lenders          Lender[]
+  configuration    Configuration           @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+  managers         User[]                  @relation("ProjectManager")
+  templates        CommunicationTemplate[]
   predefinedBlocks PredefinedCraftBlock[]
-  views           View[]
-  dashboardLayout DashboardLayout?
+  views            View[]
+  dashboardLayout  DashboardLayout?
+  bankConnections  BankConnection[]
+}
+
+model BankConnection {
+  id              String   @id @default(cuid())
+  projectId       String
+  requisitionId   String   @unique
+  reference       String   @unique
+  institutionId   String
+  institutionName String?
+  institutionLogo String?
+  status          String
+  agreementId     String?
+  accountIds      String[]
+  accessExpiresAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
 }
 
 model DashboardLayout {
@@ -142,7 +162,7 @@ model DashboardLayout {
 }
 
 model Lender {
-  id               String            @id @default(cuid())
+  id               String           @id @default(cuid())
   lenderNumber     Int
   projectId        String
   type             LenderType
@@ -163,15 +183,15 @@ model Lender {
   bic              String?
   notificationType NotificationType @default(ONLINE)
   files            File[]
-  user             User?             @relation(fields: [email], references: [email])
-  project          Project           @relation(fields: [projectId], references: [id])
+  user             User?            @relation(fields: [email], references: [email])
+  project          Project          @relation(fields: [projectId], references: [id])
   loans            Loan[]
   notes            Note[]
   additionalFields Json?
 }
 
 model Loan {
-  id                    String              @id @default(cuid())
+  id                    String          @id @default(cuid())
   loanNumber            Int
   lenderId              String
   signDate              DateTime
@@ -187,9 +207,9 @@ model Loan {
   altInterestMethod     InterestMethod?
   contractStatus        ContractStatus
   files                 File[]
-  lender                Lender              @relation(fields: [lenderId], references: [id], onDelete: Cascade)
+  lender                Lender          @relation(fields: [lenderId], references: [id], onDelete: Cascade)
   notes                 Note[]
-  transactions          Transaction[]       
+  transactions          Transaction[]
   additionalFields      Json?
 }
 
@@ -204,7 +224,7 @@ model Transaction {
 }
 
 model File {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   mimeType    String
   name        String
   data        Bytes
@@ -213,11 +233,11 @@ model File {
   thumbnail   Bytes?
   lenderId    String
   loanId      String?
-  lender      Lender  @relation(fields: [lenderId], references: [id])
-  loan        Loan?   @relation(fields: [loanId], references: [id])
+  lender      Lender   @relation(fields: [lenderId], references: [id])
+  loan        Loan?    @relation(fields: [loanId], references: [id])
   createdAt   DateTime @default(now())
   createdById String
-  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdBy   User     @relation(fields: [createdById], references: [id])
 }
 
 model Note {
@@ -254,43 +274,49 @@ enum PredefinedBlockVisibility {
 }
 
 model PredefinedCraftBlock {
-  id          String                    @id @default(cuid())
-  name        String
-  description String?
-  designJson  Json
-  datasets    TemplateDataset[]
-  /** Block appears in template editors for these template types (e.g. EMAIL vs DOCUMENT). */
+  id            String                    @id @default(cuid())
+  name          String
+  description   String?
+  designJson    Json
+  datasets      TemplateDataset[]
+  /**
+   * Block appears in template editors for these template types (e.g. EMAIL vs DOCUMENT).
+   */
   templateTypes TemplateType[]
-  visibility  PredefinedBlockVisibility  @default(PROJECT_MANAGERS)
-  projectId   String?
-  project     Project?                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdAt   DateTime                  @default(now())
-  updatedAt   DateTime                  @updatedAt
-  createdById String
-  createdBy   User                      @relation(fields: [createdById], references: [id])
+  visibility    PredefinedBlockVisibility @default(PROJECT_MANAGERS)
+  projectId     String?
+  project       Project?                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+  createdById   String
+  createdBy     User                      @relation(fields: [createdById], references: [id])
 }
 
 model CommunicationTemplate {
-  id          String          @id @default(cuid())
-  name        String
-  description String?
-  /** EMAIL: subject template; DOCUMENT: filename template — merge tags allowed (`{{lender.email}}`, …). */
+  id                String          @id @default(cuid())
+  name              String
+  description       String?
+  /**
+   * EMAIL: subject template; DOCUMENT: filename template — merge tags allowed (`{{lender.email}}`, …).
+   */
   subjectOrFilename String?
-  type        TemplateType
-  dataset     TemplateDataset
-  designJson  Json
-  htmlContent String?
-  /** DOCUMENT only: lenders with portal access can download from their loan dashboard when true. */
-  isPublic    Boolean         @default(false)
-  isGlobal    Boolean         @default(false)
-  isSystem    Boolean         @default(false)
-  systemKey   String?
-  projectId   String?
-  project     Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  createdById String
-  createdBy   User            @relation(fields: [createdById], references: [id])
+  type              TemplateType
+  dataset           TemplateDataset
+  designJson        Json
+  htmlContent       String?
+  /**
+   * DOCUMENT only: lenders with portal access can download from their loan dashboard when true.
+   */
+  isPublic          Boolean         @default(false)
+  isGlobal          Boolean         @default(false)
+  isSystem          Boolean         @default(false)
+  systemKey         String?
+  projectId         String?
+  project           Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  createdById       String
+  createdBy         User            @relation(fields: [createdById], references: [id])
 
   // One row per (systemKey, project): project overrides share the same key as the global row (projectId null).
   // PostgreSQL treats NULL as distinct in multi-column UNIQUE, so a partial index in migrations enforces
@@ -313,7 +339,6 @@ enum Entity {
   note
 }
 
-
 model Change {
   id          String    @id @default(cuid())
   primaryKey  String
@@ -327,20 +352,19 @@ model Change {
   committedAt DateTime
 }
 
-
 model View {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   userId        String
   type          ViewType
   name          String
   data          Json
-  isDefault     Boolean   @default(false)
+  isDefault     Boolean  @default(false)
   projectId     String?
-  showInSidebar Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  user          User      @relation(fields: [userId], references: [id])
-  project       Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  showInSidebar Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id])
+  project       Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId, type])
 }
@@ -382,7 +406,6 @@ enum TerminationType {
   ENDDATE
   DURATION
 }
-
 
 enum InterestMethod {
   ACT_365_NOCOMPOUND
@@ -470,4 +493,4 @@ enum LenderRequiredField {
   address
   email
   telNo
-  }
+}
