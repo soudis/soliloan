@@ -127,7 +127,7 @@ export function TransactionTable({
     [project, t, tLoans, tLenders, commonT],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: tableState is used in the dependency array
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally re-run when table state changes
   const filteredTransactions = useMemo(
     () => applyTransactionTableFilters(transactions, getTransactionTimeRangeFromState(tableState)),
     [transactions, tableState.txRange, tableState.txRangeFrom, tableState.txRangeTo, tableState.includeInterest],
