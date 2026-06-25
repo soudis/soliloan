@@ -57,7 +57,7 @@ export function matchLender(counterparty: BankImportCounterparty, lenders: Lende
 
   const byName = lenders.filter((l) => {
     const lenderName = getLenderName(l);
-    return lenderName && namesMatch(counterparty.counterpartyName!, lenderName);
+    return lenderName && namesMatch(counterparty.counterpartyName ?? '', lenderName);
   });
 
   if (byName.length === 1) {

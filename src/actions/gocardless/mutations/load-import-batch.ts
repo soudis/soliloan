@@ -112,7 +112,7 @@ export const loadImportBatchAction = projectAction
         }
 
         return {
-          batchId: batch!.id,
+          batchId: batch.id,
           bankTransactionId: tx.bankTransactionId,
           bookingDate: tx.bookingDate,
           valueDate: tx.valueDate,
