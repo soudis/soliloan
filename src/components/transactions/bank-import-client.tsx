@@ -12,9 +12,9 @@ import { discardImportBatchAction } from '@/actions/gocardless/mutations/discard
 import { finalizeImportBatchAction } from '@/actions/gocardless/mutations/finalize-import-batch';
 import { loadImportBatchAction } from '@/actions/gocardless/mutations/load-import-batch';
 import { updateImportRowAction } from '@/actions/gocardless/mutations/update-import-row';
+import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { BankImportLoanCell, EMPTY_LOANS } from '@/components/transactions/bank-import-loan-cell';
 import { BankImportProtocolDialog } from '@/components/transactions/bank-import-protocol-dialog';
-import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Combobox } from '@/components/ui/combobox';
 import type { BulkAction } from '@/components/ui/data-table';
@@ -320,7 +320,7 @@ export function BankImportClient({ projectId, accounts, initialRows, initialAcco
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="mb-6 flex shrink-0 items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button type="button" variant="ghost" size="icon" onClick={() => router.push('/transactions')}>
+          <Button type="button" variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-3xl font-bold">{t('title')}</h1>
