@@ -430,7 +430,7 @@ export class GameEngine {
       attackTimer: 2.8,
       name: kind === 'bossCeo' ? 'CONDESCENDING BILLIONAIRE' : 'REAL ESTATE TYCOON',
     };
-    this.showBanner(`BOSS: ${this.boss.name}`);
+    this.showBanner(`BOSS:\n${this.boss.name}`);
     this.playSfx('bossAppear');
   }
 
@@ -1242,12 +1242,23 @@ export class GameEngine {
       ctx.globalAlpha = 1;
     }
 
-    // Wave / boss banner
+    // Wave / boss banner (supports multiple lines, auto-shrunk to fit width)
     if (this.waveBannerTimer > 0 && (this.status === 'playing' || this.status === 'interlude')) {
-      ctx.fillStyle = '#facc15';
-      ctx.font = 'bold 28px "Courier New", monospace';
+      const lines = this.bannerText.split('\n');
+      const maxWidth = WIDTH - 32;
+      let fontSize = 28;
       ctx.textAlign = 'center';
-      ctx.fillText(this.bannerText, WIDTH / 2, HEIGHT / 2);
+      // Shrink the font until the widest line fits the canvas.
+      for (; fontSize > 12; fontSize -= 2) {
+        ctx.font = `bold ${fontSize}px "Courier New", monospace`;
+        if (lines.every((line) => ctx.measureText(line).width <= maxWidth)) break;
+      }
+      const lineHeight = fontSize + 6;
+      const startY = HEIGHT / 2 - ((lines.length - 1) * lineHeight) / 2;
+      ctx.fillStyle = '#facc15';
+      lines.forEach((line, i) => {
+        ctx.fillText(line, WIDTH / 2, startY + i * lineHeight);
+      });
       ctx.textAlign = 'left';
     }
   }
