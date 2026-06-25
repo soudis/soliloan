@@ -9,7 +9,17 @@
  * browser autoplay policies.
  */
 
-export type SfxName = 'shoot' | 'hit' | 'explosion' | 'playerHit' | 'waveUp' | 'bossAppear' | 'bonus' | 'gameOver';
+export type SfxName =
+  | 'shoot'
+  | 'hit'
+  | 'explosion'
+  | 'playerHit'
+  | 'waveUp'
+  | 'bossAppear'
+  | 'bonus'
+  | 'gameOver'
+  | 'auditAppear'
+  | 'stamp';
 
 const SOUNDTRACK_URL = '/arcade/soundtrack.mp3';
 
@@ -131,6 +141,15 @@ export class ArcadeAudio {
         break;
       case 'gameOver':
         this.arp(ctx, [392, 330, 262, 196, 131], 0.18, 'square', 0.22);
+        break;
+      case 'auditAppear':
+        // Ominous descending low arp for THE BUREAU.
+        this.arp(ctx, [220, 174, 146, 110, 82], 0.16, 'sawtooth', 0.24);
+        break;
+      case 'stamp':
+        // Short bureaucratic "thud" when a § is stamped out.
+        this.blip(ctx, { type: 'square', from: 180, to: 70, duration: 0.08, gain: 0.16 });
+        this.noise(ctx, { duration: 0.06, gain: 0.12 });
         break;
     }
   }

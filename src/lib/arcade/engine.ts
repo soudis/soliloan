@@ -10,6 +10,7 @@
 import {
   BOSS_SPRITES,
   type BossKind,
+  BUREAU_SPRITE,
   drawSprite,
   ENEMY_SPRITES,
   type EnemyKind,
@@ -18,7 +19,7 @@ import {
   UFO_SPRITE,
 } from './sprites';
 
-export type GameStatus = 'idle' | 'playing' | 'paused' | 'gameover';
+export type GameStatus = 'idle' | 'playing' | 'paused' | 'gameover' | 'interlude';
 
 export interface GameHud {
   score: number;
@@ -37,6 +38,12 @@ const WIDTH = 480;
 const HEIGHT = 640;
 const PIXEL = 3;
 const BOSS_PIXEL = 4;
+const BUREAU_PIXEL = 4;
+
+// THE BUREAU interlude tuning.
+const INTERLUDE_DURATION = 30; // seconds the player must survive
+const RESUME_DURATION = 3; // countdown before the run continues
+const INTERLUDE_MIN_WAVE = 5; // earliest wave it can appear
 
 const COLS = 8;
 const ROWS = 5;
@@ -81,6 +88,23 @@ interface Bullet {
   /** Remaining extra enemies this (player) bullet can pass through. */
   pierce?: number;
   dead?: boolean;
+  /** For spinning "§" interlude glyphs: current rotation and spin speed. */
+  angle?: number;
+  spin?: number;
+  /** Font size (px) for glyph projectiles. */
+  size?: number;
+}
+
+interface Bureau {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  dir: number;
+  speed: number;
+  /** Shield flash timer; > 0 means the shield is lighting up. */
+  shield: number;
+  fireTimer: number;
 }
 
 interface CannonUpgrades {
@@ -215,6 +239,19 @@ export class GameEngine {
   private attackTextTimer = 0;
   private waveSpeedJitter = 1;
 
+  // THE BUREAU interlude state.
+  private bureau: Bureau | null = null;
+  private interludeGlyphs: Bullet[] = [];
+  private interludeTimer = 0;
+  private resumeTimer = 0;
+  private interludePhase: 'active' | 'resuming' = 'active';
+  private interludeHit = false;
+  private wavesSinceInterlude = 0;
+  private interludeArmed = false;
+  private interludeTriggerAt = 0;
+  private waveElapsed = 0;
+  private pausedFrom: 'playing' | 'interlude' = 'playing';
+
   private upgrades: CannonUpgrades = { rapid: 0, spread: 1, maxBullets: MAX_PLAYER_BULLETS, pierce: 0 };
 
   constructor(options: EngineOptions) {
@@ -251,6 +288,10 @@ export class GameEngine {
     this.divers = [];
     this.ufo = null;
     this.ufoTimer = 8;
+    this.bureau = null;
+    this.interludeGlyphs = [];
+    this.interludeArmed = false;
+    this.wavesSinceInterlude = 0;
     this.upgrades = { rapid: 0, spread: 1, maxBullets: MAX_PLAYER_BULLETS, pierce: 0 };
     this.buildWave();
     this.status = 'playing';
@@ -262,7 +303,8 @@ export class GameEngine {
   }
 
   pause(): void {
-    if (this.status === 'playing') {
+    if (this.status === 'playing' || this.status === 'interlude') {
+      this.pausedFrom = this.status;
       this.status = 'paused';
       this.emitHud();
     }
@@ -270,14 +312,14 @@ export class GameEngine {
 
   resume(): void {
     if (this.status === 'paused') {
-      this.status = 'playing';
+      this.status = this.pausedFrom;
       this.lastTime = performance.now();
       this.emitHud();
     }
   }
 
   togglePause(): void {
-    if (this.status === 'playing') this.pause();
+    if (this.status === 'playing' || this.status === 'interlude') this.pause();
     else if (this.status === 'paused') this.resume();
   }
 
@@ -303,6 +345,8 @@ export class GameEngine {
     this.enemyBullets = [];
     this.divers = [];
     this.formationDir = 1;
+    this.waveElapsed = 0;
+    this.interludeArmed = false;
     this.enemyFireTimer = Math.max(0.5, 1.35 - this.wave * 0.05);
     // Light per-wave RNG so each run feels a little different.
     this.waveSpeedJitter = 0.9 + Math.random() * 0.3;
@@ -310,6 +354,21 @@ export class GameEngine {
     if (this.wave % 5 === 0) {
       this.spawnBoss();
       return;
+    }
+
+    // Schedule THE BUREAU interlude on eligible, non-boss-adjacent waves.
+    // Eligible slots are waves with `wave % 5` in {2, 3} (never on/next to a
+    // boss). The chance rises with how long it has been since the last one and
+    // is guaranteed once it is long overdue, so it appears roughly every ~10
+    // rounds but at a random moment.
+    this.wavesSinceInterlude += 1;
+    if (this.wave >= INTERLUDE_MIN_WAVE && (this.wave % 5 === 2 || this.wave % 5 === 3)) {
+      const gap = this.wavesSinceInterlude;
+      const chance = gap >= 12 ? 1 : Math.max(0, (gap - 6) * 0.18);
+      if (Math.random() < chance) {
+        this.interludeArmed = true;
+        this.interludeTriggerAt = 2.5 + Math.random() * 3.5;
+      }
     }
 
     this.enemies = [];
@@ -392,6 +451,8 @@ export class GameEngine {
 
     if (this.status === 'playing') {
       this.update(dt);
+    } else if (this.status === 'interlude') {
+      this.updateInterlude(dt);
     }
     this.render();
   };
@@ -399,6 +460,15 @@ export class GameEngine {
   private update(dt: number): void {
     if (this.waveBannerTimer > 0) this.waveBannerTimer -= dt;
     if (this.attackTextTimer > 0) this.attackTextTimer -= dt;
+
+    // Mid-wave THE BUREAU ambush trigger.
+    this.waveElapsed += dt;
+    if (this.interludeArmed && !this.boss && this.waveElapsed >= this.interludeTriggerAt) {
+      this.interludeArmed = false;
+      this.startInterlude();
+      return;
+    }
+
     this.updateStars(dt);
     this.updatePlayer(dt);
     this.updateBullets(dt);
@@ -691,6 +761,196 @@ export class GameEngine {
     this.divers = this.divers.filter((d) => d.alive && d.y < HEIGHT + 20);
   }
 
+  // --- THE BUREAU interlude --------------------------------------------------
+
+  private startInterlude(): void {
+    const size = spriteSize(BUREAU_SPRITE[0]);
+    const w = size.cols * BUREAU_PIXEL;
+    const h = size.rows * BUREAU_PIXEL;
+    this.bureau = {
+      x: WIDTH / 2 - w / 2,
+      y: 56,
+      w,
+      h,
+      dir: Math.random() < 0.5 ? -1 : 1,
+      speed: 70,
+      shield: 0,
+      fireTimer: 1.2,
+    };
+    this.interludeGlyphs = [];
+    this.interludeTimer = INTERLUDE_DURATION;
+    this.resumeTimer = 0;
+    this.interludePhase = 'active';
+    this.interludeHit = false;
+    this.status = 'interlude';
+    this.showBanner('THE BUREAU');
+    this.playSfx('auditAppear');
+    this.emitHud(true);
+  }
+
+  private updateInterlude(dt: number): void {
+    if (this.waveBannerTimer > 0) this.waveBannerTimer -= dt;
+    if (this.attackTextTimer > 0) this.attackTextTimer -= dt;
+    this.updateStars(dt);
+
+    // Animate the bureau (pulsing emblem) even though the scene is frozen.
+    this.formationAnim += dt;
+    if (this.formationAnim >= 0.35) {
+      this.formationAnim = 0;
+      this.frame ^= 1;
+    }
+
+    // Player can still move and shoot.
+    this.updatePlayer(dt);
+
+    // Move only the player's bullets; the rest of the scene stays frozen.
+    this.playerBullets = this.playerBullets.filter((b) => {
+      b.y += b.vy * dt;
+      if (b.vx) b.x += b.vx * dt;
+      return b.y + b.h > 0 && b.x > -10 && b.x < WIDTH + 10;
+    });
+
+    this.updateParticles(dt);
+
+    const bureau = this.bureau;
+    if (bureau) {
+      bureau.x += bureau.dir * bureau.speed * dt;
+      if (bureau.x < MARGIN) {
+        bureau.x = MARGIN;
+        bureau.dir = 1;
+      } else if (bureau.x + bureau.w > WIDTH - MARGIN) {
+        bureau.x = WIDTH - MARGIN - bureau.w;
+        bureau.dir = -1;
+      }
+      if (bureau.shield > 0) bureau.shield -= dt;
+
+      // THE BUREAU is indestructible: player shots flash the shield and fizzle.
+      for (const b of this.playerBullets) {
+        if (b.dead) continue;
+        if (aabb(b, bureau)) {
+          b.dead = true;
+          bureau.shield = 0.3;
+          this.spawnExplosion(b.x, bureau.y + bureau.h, 3);
+          this.playSfx('hit');
+        }
+      }
+      this.playerBullets = this.playerBullets.filter((b) => !b.dead);
+
+      // Spawn ramping "§" fire only while the survival phase is running.
+      if (this.interludePhase === 'active') {
+        const elapsed = INTERLUDE_DURATION - this.interludeTimer;
+        const intensity = Math.min(1, elapsed / INTERLUDE_DURATION);
+        bureau.fireTimer -= dt;
+        if (bureau.fireTimer <= 0) {
+          this.spawnGlyphs(bureau, intensity);
+          bureau.fireTimer = 0.6 - intensity * 0.4;
+        }
+      }
+    }
+
+    // Move spinning glyphs.
+    for (const g of this.interludeGlyphs) {
+      g.y += g.vy * dt;
+      if (g.vx) g.x += g.vx * dt;
+      g.angle = (g.angle ?? 0) + (g.spin ?? 0) * dt;
+    }
+    this.interludeGlyphs = this.interludeGlyphs.filter((g) => g.y < HEIGHT + 24 && g.x > -24 && g.x < WIDTH + 24);
+
+    // Glyph vs player (glyph x/y are centre coordinates).
+    if (this.player.invuln <= 0) {
+      for (const g of this.interludeGlyphs) {
+        const box = { x: g.x - g.w / 2, y: g.y - g.h / 2, w: g.w, h: g.h };
+        if (aabb(box, this.player)) {
+          g.x = -1000;
+          this.interludeHit = true;
+          this.hitPlayer();
+          break;
+        }
+      }
+      this.interludeGlyphs = this.interludeGlyphs.filter((g) => g.x > -500);
+    }
+
+    // Phase progression (hitPlayer may have ended the run via gameOver()).
+    if (this.status === 'interlude') {
+      if (this.interludePhase === 'active') {
+        this.interludeTimer -= dt;
+        if (this.interludeTimer <= 0) {
+          this.interludePhase = 'resuming';
+          this.resumeTimer = RESUME_DURATION;
+          this.interludeGlyphs = [];
+        }
+      } else {
+        this.resumeTimer -= dt;
+        if (this.resumeTimer <= 0) this.endInterlude();
+      }
+    }
+
+    this.emitHud();
+  }
+
+  private spawnGlyphs(bureau: Bureau, intensity: number): void {
+    const cx = bureau.x + bureau.w / 2;
+    const cy = bureau.y + bureau.h;
+
+    // 1-2 scattered "§" shots that spin as they fall.
+    const count = 1 + (Math.random() < intensity ? 1 : 0);
+    for (let i = 0; i < count; i++) {
+      const ang = Math.PI / 2 + (Math.random() - 0.5) * 1.8;
+      const speed = 120 + intensity * 150 + Math.random() * 40;
+      const size = 16 + Math.floor(Math.random() * 7);
+      this.interludeGlyphs.push({
+        x: cx,
+        y: cy,
+        w: Math.round(size * 0.55),
+        h: Math.round(size * 0.55),
+        vx: Math.cos(ang) * speed,
+        vy: Math.sin(ang) * speed,
+        angle: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 8,
+        size,
+        color: '#fbbf24',
+      });
+    }
+
+    // Occasional aimed "Vollstreckungsbescheid" volley straight at the player.
+    if (Math.random() < 0.18) {
+      const px = this.player.x + this.player.w / 2;
+      const py = this.player.y;
+      const speed = 200 + intensity * 120;
+      for (const fan of [-0.15, 0, 0.15]) {
+        const ang = Math.atan2(py - cy, px - cx) + fan;
+        this.interludeGlyphs.push({
+          x: cx,
+          y: cy,
+          w: 13,
+          h: 13,
+          vx: Math.cos(ang) * speed,
+          vy: Math.sin(ang) * speed,
+          angle: Math.random() * Math.PI * 2,
+          spin: (Math.random() - 0.5) * 6,
+          size: 24,
+          color: '#f43f5e',
+        });
+      }
+    }
+
+    this.playSfx('stamp');
+  }
+
+  private endInterlude(): void {
+    this.score += 300;
+    if (!this.interludeHit) {
+      this.announceAttack('TAX-FREE!');
+      this.grantRandomUpgrade();
+    }
+    this.bureau = null;
+    this.interludeGlyphs = [];
+    this.status = 'playing';
+    this.wavesSinceInterlude = 0;
+    this.lastTime = performance.now();
+    this.emitHud(true);
+  }
+
   private updateUfo(dt: number): void {
     if (this.ufo) {
       this.ufo.x += this.ufo.dir * 120 * dt;
@@ -874,6 +1134,8 @@ export class GameEngine {
 
   private render(): void {
     const ctx = this.ctx;
+    const interlude = this.status === 'interlude';
+
     ctx.fillStyle = '#070b18';
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
@@ -882,6 +1144,9 @@ export class GameEngine {
       ctx.fillStyle = star.size > 1 ? '#93c5fd' : '#334155';
       ctx.fillRect(star.x, star.y, star.size, star.size);
     }
+
+    // Frozen scene layer - blurred behind THE BUREAU during the interlude.
+    if (interlude) ctx.filter = 'blur(3px)';
 
     // Ground line
     ctx.fillStyle = '#1e293b';
@@ -915,14 +1180,28 @@ export class GameEngine {
       drawSprite(ctx, UFO_SPRITE[this.frame], this.ufo.x, this.ufo.y, PIXEL);
     }
 
-    // Bullets
+    // Enemy bullets (part of the frozen scene)
+    for (const b of this.enemyBullets) {
+      ctx.fillStyle = b.color;
+      ctx.fillRect(b.x, b.y, b.w, b.h);
+    }
+
+    if (interlude) {
+      ctx.filter = 'none';
+      // Dim the frozen scene so the interlude reads as a separate layer.
+      ctx.fillStyle = 'rgba(2, 6, 23, 0.55)';
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    }
+
+    // Player bullets (always crisp / live)
     for (const b of this.playerBullets) {
       ctx.fillStyle = b.color;
       ctx.fillRect(b.x, b.y, b.w, b.h);
     }
-    for (const b of this.enemyBullets) {
-      ctx.fillStyle = b.color;
-      ctx.fillRect(b.x, b.y, b.w, b.h);
+
+    // THE BUREAU interlude layer (crisp, on top of the dimmed scene)
+    if (interlude) {
+      this.renderBureau(ctx);
     }
 
     // Player (blink while invulnerable)
@@ -952,8 +1231,8 @@ export class GameEngine {
       ctx.fillText(badges.join('  '), 8, HEIGHT - 8);
     }
 
-    // Boss special-attack announcement (small, near top)
-    if (this.attackTextTimer > 0 && this.status === 'playing') {
+    // Boss / interlude announcement (small, near top)
+    if (this.attackTextTimer > 0 && (this.status === 'playing' || this.status === 'interlude')) {
       ctx.globalAlpha = Math.min(1, this.attackTextTimer * 2);
       ctx.fillStyle = '#f87171';
       ctx.font = 'bold 16px "Courier New", monospace';
@@ -964,13 +1243,64 @@ export class GameEngine {
     }
 
     // Wave / boss banner
-    if (this.waveBannerTimer > 0 && this.status === 'playing') {
+    if (this.waveBannerTimer > 0 && (this.status === 'playing' || this.status === 'interlude')) {
       ctx.fillStyle = '#facc15';
       ctx.font = 'bold 28px "Courier New", monospace';
       ctx.textAlign = 'center';
       ctx.fillText(this.bannerText, WIDTH / 2, HEIGHT / 2);
       ctx.textAlign = 'left';
     }
+  }
+
+  private renderBureau(ctx: CanvasRenderingContext2D): void {
+    const bureau = this.bureau;
+    if (!bureau) return;
+
+    // Shield ring flashes when a player shot is being deflected.
+    if (bureau.shield > 0) {
+      ctx.save();
+      ctx.strokeStyle = `rgba(34, 211, 238, ${Math.min(1, bureau.shield * 4)})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.ellipse(bureau.x + bureau.w / 2, bureau.y + bureau.h / 2, bureau.w * 0.8, bureau.h * 0.75, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    drawSprite(ctx, BUREAU_SPRITE[this.frame], bureau.x, bureau.y, BUREAU_PIXEL);
+
+    // Bureaucratic taunt.
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '9px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('§ 370 AO  -  AUDIT IN PROGRESS', WIDTH / 2, bureau.y + bureau.h + 14);
+
+    // Spinning "§" glyph projectiles.
+    ctx.textBaseline = 'middle';
+    for (const g of this.interludeGlyphs) {
+      ctx.save();
+      ctx.translate(g.x, g.y);
+      ctx.rotate(g.angle ?? 0);
+      ctx.fillStyle = g.color;
+      ctx.font = `bold ${g.size ?? 18}px "Courier New", monospace`;
+      ctx.fillText('§', 0, 0);
+      ctx.restore();
+    }
+    ctx.textBaseline = 'alphabetic';
+
+    // Survival timer / resume countdown.
+    if (this.interludePhase === 'active') {
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 14px "Courier New", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`SURVIVE: ${Math.ceil(this.interludeTimer)}s`, WIDTH / 2, 24);
+    } else {
+      ctx.fillStyle = '#facc15';
+      ctx.font = 'bold 64px "Courier New", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(String(Math.max(1, Math.ceil(this.resumeTimer))), WIDTH / 2, HEIGHT / 2 + 20);
+    }
+    ctx.textAlign = 'left';
   }
 
   private emitHud(force = false): void {

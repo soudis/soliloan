@@ -257,6 +257,35 @@ const BOSS_BANK: AnimatedSprite = [
   ],
 ];
 
+// --- THE BUREAU (indestructible interlude boss, 13 wide) ---------------------
+
+const BUREAU: AnimatedSprite = [
+  [
+    '....kkkkk....',
+    '..ksssssssk..',
+    '..sskssskss..',
+    '..sssssssss..',
+    '..ssskkksss..',
+    '.nnnnwwwnnnn.',
+    '.nnnwwywwnnn.',
+    '.nnnnwywnnnn.',
+    '.nnnnnynnnnn.',
+    '.nnn.nnn.nnn.',
+  ],
+  [
+    '....kkkkk....',
+    '..ksssssssk..',
+    '..sskssskss..',
+    '..sssssssss..',
+    '..ssskkksss..',
+    '.nnnnwwwnnnn.',
+    '.nnnwwywwnnn.',
+    '.nnnwyyywnnn.',
+    '.nnnnyyynnnn.',
+    '.nnn.nnn.nnn.',
+  ],
+];
+
 export type EnemyKind = 'loanShark' | 'hedgeFund' | 'debtCollector' | 'paydayLender' | 'cryptoBro' | 'vultureFund';
 
 export type BossKind = 'bossCeo' | 'bossBank';
@@ -277,6 +306,7 @@ export const BOSS_SPRITES: Record<BossKind, AnimatedSprite> = {
 
 export const PLAYER_SPRITE = PLAYER;
 export const UFO_SPRITE = UFO;
+export const BUREAU_SPRITE = BUREAU;
 
 export function spriteSize(frame: SpriteFrame): { cols: number; rows: number } {
   const rows = frame.length;

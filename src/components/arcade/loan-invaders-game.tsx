@@ -90,7 +90,7 @@ export function LoanInvadersGame({ playerName, playerEmail }: LoanInvadersGamePr
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (hud.status === 'playing') audio.resumeMusic();
+    if (hud.status === 'playing' || hud.status === 'interlude') audio.resumeMusic();
     else audio.pauseMusic();
 
     if (hud.status === 'gameover') {
@@ -231,9 +231,11 @@ export function LoanInvadersGame({ playerName, playerEmail }: LoanInvadersGamePr
   };
 
   const isPlaying = hud.status === 'playing';
+  const isInterlude = hud.status === 'interlude';
   const isPaused = hud.status === 'paused';
   const isGameOver = hud.status === 'gameover';
   const isIdle = hud.status === 'idle';
+  const isActive = isPlaying || isInterlude;
 
   return (
     <div className="mx-auto flex w-full flex-col gap-3 max-w-[calc((100svh-17rem)*0.75)] md:max-w-[calc((100svh-17rem)*0.75)]">
@@ -318,7 +320,7 @@ export function LoanInvadersGame({ playerName, playerEmail }: LoanInvadersGamePr
         )}
 
         {/* In-game pause button */}
-        {isPlaying && (
+        {isActive && (
           <Button
             type="button"
             variant="ghost"
@@ -333,7 +335,7 @@ export function LoanInvadersGame({ playerName, playerEmail }: LoanInvadersGamePr
       </Card>
 
       {/* Touch controls */}
-      {showTouch && (isPlaying || isPaused) && (
+      {showTouch && (isActive || isPaused) && (
         <TouchControls
           onLeftChange={(active) => {
             const input = engineRef.current?.input;
