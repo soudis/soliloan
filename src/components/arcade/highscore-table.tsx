@@ -102,6 +102,7 @@ function PlayerCell({ row }: { row: HighscoreRow }) {
   return (
     <span className="flex flex-col">
       <span className="font-medium">{row.pseudonym}</span>
+      {row.comment && <span className="text-xs italic text-muted-foreground">“{row.comment}”</span>}
       {(row.name || row.email) && (
         <span className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
           {row.name && (

@@ -29,6 +29,8 @@
     "description": "Wähle ein Pseudonym für die Bestenliste. Optional kannst du deine Identität offenlegen.",
     "pseudonym": "Pseudonym",
     "pseudonymPlaceholder": "z. B. LoanSlayer",
+    "comment": "Kommentar (optional)",
+    "commentPlaceholder": "Sag etwas zu deinem Lauf …",
     "reveal": "Identität anzeigen",
     "revealHint": "Zeigt deinen Namen und deine E-Mail-Adresse in der Bestenliste an.",
     "submit": "Eintragen",

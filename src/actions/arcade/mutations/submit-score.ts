@@ -16,6 +16,7 @@ export const submitHighscoreAction = managerAction
       data: {
         userId,
         pseudonym: data.pseudonym,
+        comment: data.comment?.trim() || null,
         score: data.score,
         wave: data.wave,
         revealIdentity: data.revealIdentity,

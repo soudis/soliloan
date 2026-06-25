@@ -9,6 +9,7 @@ export interface HighscoreRow {
   id: string;
   rank: number;
   pseudonym: string;
+  comment: string | null;
   score: number;
   wave: number;
   createdAt: Date;
@@ -58,6 +59,7 @@ export async function getHighscores(): Promise<HighscoresResult> {
     id: entry.id,
     rank: index + 1,
     pseudonym: entry.pseudonym,
+    comment: entry.comment,
     score: entry.score,
     wave: entry.wave,
     createdAt: entry.createdAt,
@@ -81,6 +83,7 @@ export async function getHighscores(): Promise<HighscoresResult> {
       id: best.id,
       rank: betterCount,
       pseudonym: best.pseudonym,
+      comment: best.comment,
       score: best.score,
       wave: best.wave,
       createdAt: best.createdAt,

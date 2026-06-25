@@ -23,10 +23,11 @@ import {
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from '@/i18n/navigation';
 import { ArcadeAudio } from '@/lib/arcade/audio';
 import { GameEngine, type GameHud } from '@/lib/arcade/engine';
-import { MAX_PSEUDONYM_LENGTH } from '@/lib/schemas/arcade';
+import { MAX_COMMENT_LENGTH, MAX_PSEUDONYM_LENGTH } from '@/lib/schemas/arcade';
 import { cn } from '@/lib/utils';
 import { TouchControls } from './touch-controls';
 
@@ -36,6 +37,7 @@ const submitFormSchema = z.object({
     .trim()
     .min(1, { message: 'validation.common.required' })
     .max(MAX_PSEUDONYM_LENGTH, { message: 'validation.common.tooLong' }),
+  comment: z.string().trim().max(MAX_COMMENT_LENGTH, { message: 'validation.common.tooLong' }),
   revealIdentity: z.boolean(),
 });
 
@@ -102,9 +104,18 @@ export function LoanInvadersGame({ playerName, playerEmail }: LoanInvadersGamePr
   useEffect(() => {
     const engineInput = () => engineRef.current?.input;
 
+    // Don't hijack keys while the user is typing in a form field (e.g. the
+    // score-submission dialog) - otherwise Space/arrows get swallowed.
+    const isTypingTarget = (target: EventTarget | null) => {
+      const el = target as HTMLElement | null;
+      if (!el) return false;
+      const tag = el.tagName;
+      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
       const input = engineInput();
-      if (!input) return;
+      if (!input || isTypingTarget(e.target)) return;
       switch (e.key) {
         case 'ArrowLeft':
         case 'a':
@@ -135,7 +146,7 @@ export function LoanInvadersGame({ playerName, playerEmail }: LoanInvadersGamePr
 
     const handleKeyUp = (e: KeyboardEvent) => {
       const input = engineInput();
-      if (!input) return;
+      if (!input || isTypingTarget(e.target)) return;
       switch (e.key) {
         case 'ArrowLeft':
         case 'a':
@@ -184,18 +195,23 @@ export function LoanInvadersGame({ playerName, playerEmail }: LoanInvadersGamePr
 
   const form = useForm<SubmitFormValues>({
     resolver: zodResolver(submitFormSchema),
-    defaultValues: { pseudonym: '', revealIdentity: false },
+    defaultValues: { pseudonym: '', comment: '', revealIdentity: false },
   });
 
   useEffect(() => {
     if (dialogOpen) {
-      form.reset({ pseudonym: playerName ? playerName.slice(0, MAX_PSEUDONYM_LENGTH) : '', revealIdentity: false });
+      form.reset({
+        pseudonym: playerName ? playerName.slice(0, MAX_PSEUDONYM_LENGTH) : '',
+        comment: '',
+        revealIdentity: false,
+      });
     }
   }, [dialogOpen, playerName, form]);
 
   const onSubmit = async (values: SubmitFormValues) => {
     const result = await executeAsync({
       pseudonym: values.pseudonym,
+      comment: values.comment.trim() || null,
       revealIdentity: values.revealIdentity,
       score: hud.score,
       wave: hud.wave,
@@ -360,6 +376,25 @@ export function LoanInvadersGame({ playerName, playerEmail }: LoanInvadersGamePr
                         placeholder={t('dialog.pseudonymPlaceholder')}
                         maxLength={MAX_PSEUDONYM_LENGTH}
                         autoFocus
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="comment"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('dialog.comment')}</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder={t('dialog.commentPlaceholder')}
+                        maxLength={MAX_COMMENT_LENGTH}
+                        rows={2}
+                        className="resize-none"
                         {...field}
                       />
                     </FormControl>

@@ -8,6 +8,7 @@ import { z } from 'zod';
 export const MAX_SCORE = 10_000_000;
 export const MAX_WAVE = 1_000;
 export const MAX_PSEUDONYM_LENGTH = 20;
+export const MAX_COMMENT_LENGTH = 120;
 
 export const submitHighscoreSchema = z.object({
   pseudonym: z
@@ -15,6 +16,7 @@ export const submitHighscoreSchema = z.object({
     .trim()
     .min(1, { message: 'validation.common.required' })
     .max(MAX_PSEUDONYM_LENGTH, { message: 'validation.common.tooLong' }),
+  comment: z.string().trim().max(MAX_COMMENT_LENGTH, { message: 'validation.common.tooLong' }).nullable().optional(),
   score: z.coerce.number().int().min(0).max(MAX_SCORE),
   wave: z.coerce.number().int().min(1).max(MAX_WAVE),
   revealIdentity: z.coerce.boolean().default(false),
