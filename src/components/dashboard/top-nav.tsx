@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, LogOut, Menu, Settings, UserCircle, X } from 'lucide-react';
+import { ChevronDown, Clock, LogOut, Menu, Settings, UserCircle, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Session } from 'next-auth';
@@ -18,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Link as LocaleLink } from '@/i18n/navigation';
 
 interface TopNavProps {
   session: Session;
@@ -56,6 +57,20 @@ export function TopNav({ session, isSidebarOpen, setIsSidebarOpen, showSidebarTo
             )}
           </div>
           <div className="flex items-center gap-1">
+            {session.user.isManager && (
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 text-muted-foreground hover:text-foreground"
+                aria-label={t('procrastinator')}
+                title={t('procrastinator')}
+              >
+                <LocaleLink href="/procrastinator">
+                  <Clock className="h-4 w-4 shrink-0 opacity-80" />
+                </LocaleLink>
+              </Button>
+            )}
             <AboutMenu />
             <div className="relative ml-2 flex">
               <DropdownMenu>

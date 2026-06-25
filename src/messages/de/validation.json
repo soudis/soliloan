@@ -9,7 +9,8 @@
     "date": "Bitte ein gültiges Datum eingeben",
     "addressComplete": "Bitte eingeben",
     "boolean": "Falschwer Wert",
-    "url": "Bitte eine gültige URL eingeben"
+    "url": "Bitte eine gültige URL eingeben",
+    "tooLong": "Eingabe ist zu lang"
   },
   "migration": {
     "httpsRequired": "Nur HTTPS-URLs sind erlaubt"

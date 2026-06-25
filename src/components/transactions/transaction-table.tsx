@@ -15,11 +15,13 @@ import { TransactionTimeRangeControl } from '@/components/transactions/transacti
 import type { BulkAction } from '@/components/ui/data-table';
 import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { useRouter } from '@/i18n/navigation';
 import {
   buildAllTransactionTableColumns,
   buildTransactionTableDefaultColumnVisibility,
 } from '@/lib/dashboard/table-widget/transaction-table-column-registry';
 import { buildTransactionTableColumnFilters } from '@/lib/entity-filters/filter-definitions';
+import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
 import {
   getTransactionTimeRangeFromState,
   useTransactionTableUrlState,
@@ -29,10 +31,8 @@ import {
   getTransactionListItemRowId,
 } from '@/lib/transactions/build-transaction-list-items';
 import { applyTransactionTableFilters, isTransactionDeletable } from '@/lib/transactions/transaction-table-filters';
-import { useRouter } from '@/i18n/navigation';
-import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
-import type { TransactionListItem } from '@/types/transactions';
 import type { ProjectWithConfiguration } from '@/types/projects';
+import type { TransactionListItem } from '@/types/transactions';
 
 interface TransactionTableProps {
   transactions: TransactionListItem[];
@@ -119,6 +119,7 @@ export function TransactionTable({ transactions, project, projectId, views }: Tr
     [project, t, tLoans, tLenders, commonT],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally re-run when table state changes
   const filteredTransactions = useMemo(
     () => applyTransactionTableFilters(transactions, getTransactionTimeRangeFromState(tableState)),
     [transactions, tableState.txRange, tableState.txRangeFrom, tableState.txRangeTo, tableState.includeInterest],

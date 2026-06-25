@@ -62,6 +62,22 @@ model User {
   templates     CommunicationTemplate[]
   predefinedBlocks PredefinedCraftBlock[]
   dashboardLayouts DashboardLayout[]
+  highscores    HighscoreEntry[]
+}
+
+model HighscoreEntry {
+  id             String   @id @default(cuid())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  pseudonym      String
+  comment        String?
+  score          Int
+  wave           Int
+  revealIdentity Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  @@index([score])
+  @@index([userId])
 }
 
 model LoanTemplate {
