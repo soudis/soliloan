@@ -17,6 +17,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { Chart } from 'react-chartjs-2';
 
+import { chartColorAtIndex, chartColorWithAlpha } from '@/lib/dashboard/chart/chart-dataset-colors';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
 
@@ -77,6 +78,10 @@ export function YearlyDataChart({ data }: YearlyDataChartProps) {
   });
 
   // Prepare data for the chart
+  const balanceColor = chartColorAtIndex(0);
+  const depositsColor = chartColorAtIndex(1);
+  const interestColor = chartColorAtIndex(2);
+
   const chartData: ChartData<'bar', number[], string> = {
     labels: processedData.map((item) => item.year.toString()),
     datasets: [
@@ -84,8 +89,8 @@ export function YearlyDataChart({ data }: YearlyDataChartProps) {
         type: 'bar' as const,
         label: t('charts.balance'),
         data: processedData.map((item) => item.balance),
-        borderColor: '#8884d8',
-        backgroundColor: 'rgba(136, 132, 216, 0.1)',
+        borderColor: balanceColor,
+        backgroundColor: chartColorWithAlpha(balanceColor, 0.1),
         borderWidth: 2,
         yAxisID: 'y',
         order: 1,
@@ -94,8 +99,8 @@ export function YearlyDataChart({ data }: YearlyDataChartProps) {
         type: 'bar' as const,
         label: t('charts.netDeposits'),
         data: processedData.map((item) => item.netDeposits),
-        backgroundColor: '#82ca9d',
-        borderColor: '#82ca9d',
+        backgroundColor: depositsColor,
+        borderColor: depositsColor,
         borderWidth: 1,
         yAxisID: 'y1',
         order: 2,
@@ -104,8 +109,8 @@ export function YearlyDataChart({ data }: YearlyDataChartProps) {
         type: 'bar' as const,
         label: t('charts.interest'),
         data: processedData.map((item) => item.interest),
-        backgroundColor: '#ffc658',
-        borderColor: '#ffc658',
+        backgroundColor: interestColor,
+        borderColor: interestColor,
         borderWidth: 1,
         yAxisID: 'y1',
         order: 3,

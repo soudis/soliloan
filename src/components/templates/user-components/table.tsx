@@ -484,7 +484,7 @@ export const Table = ({
       </colgroup>
       {/* Header */}
       <thead>
-        <tr className="bg-zinc-50">
+        <tr className="bg-muted">
           {columnDescriptors.map((column) => {
             const cellStyle = resolveCellStyle(headerStyles[column.colIdx], true, textAlign);
             const thStyle: CSSProperties = {
@@ -566,13 +566,13 @@ export const Table = ({
       style={isDynamic ? undefined : shellPaddingStyle}
     >
       {isDynamic && (
-        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-zinc-200/70 bg-zinc-50/60 px-2 py-[3px]">
-          <span className="font-mono text-[9px] leading-tight tracking-tight text-zinc-400">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border/70 bg-muted/60 px-2 py-[3px]">
+          <span className="font-mono text-[9px] leading-tight tracking-tight text-muted-foreground">
             {'{{#'}
             {loopKey}
             {'}}'}
           </span>
-          <span className="truncate font-sans text-[10px] font-normal text-zinc-500/75">
+          <span className="truncate font-sans text-[10px] font-normal text-muted-foreground/75">
             {dynamicTableTitle || loopKey}
           </span>
         </div>
@@ -587,8 +587,8 @@ export const Table = ({
       )}
 
       {isDynamic && (
-        <div className="shrink-0 border-t border-zinc-200/70 bg-zinc-50/60 px-2 py-[3px] text-right">
-          <span className="font-mono text-[9px] leading-tight tracking-tight text-zinc-400">
+        <div className="shrink-0 border-t border-border/70 bg-muted/60 px-2 py-[3px] text-right">
+          <span className="font-mono text-[9px] leading-tight tracking-tight text-muted-foreground">
             {'{{/'}
             {loopKey}
             {'}}'}
@@ -878,7 +878,7 @@ export const TableSettings = () => {
             <div className="grid grid-cols-2 gap-2">
               {columnWidthControls.map((column) => (
                 <div key={column.id} className="space-y-1">
-                  <label className="text-[11px] text-zinc-600" htmlFor={column.inputId}>
+                  <label className="text-[11px] text-muted-foreground" htmlFor={column.inputId}>
                     {t('columnWidthLabel', { column: column.colIdx + 1 })}
                   </label>
                   <input
@@ -933,7 +933,7 @@ export const TableSettings = () => {
                         setBorderSideValue(props, side, e.target.checked);
                       })
                     }
-                    className="rounded border-zinc-300"
+                    className="rounded border-border"
                   />
                   {t(side)}
                 </label>
@@ -941,7 +941,7 @@ export const TableSettings = () => {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <label className="text-[11px] text-zinc-600" htmlFor="tableBorderColor">
+                <label className="text-[11px] text-muted-foreground" htmlFor="tableBorderColor">
                   {t('borderColor')}
                 </label>
                 <input
@@ -957,7 +957,7 @@ export const TableSettings = () => {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] text-zinc-600" htmlFor="tableBorderWidth">
+                <label className="text-[11px] text-muted-foreground" htmlFor="tableBorderWidth">
                   {t('borderWidth')}
                 </label>
                 <input
@@ -976,7 +976,7 @@ export const TableSettings = () => {
               </div>
             </div>
             <div className="space-y-1">
-              <label className="text-[11px] text-zinc-600" htmlFor="tableBorderStyle">
+              <label className="text-[11px] text-muted-foreground" htmlFor="tableBorderStyle">
                 {t('borderStyle')}
               </label>
               <select
@@ -1059,8 +1059,8 @@ export const TableSettings = () => {
                     onClick={() => updateActiveCellStyle({ textAlign: value })}
                     className={`flex items-center justify-center p-2 rounded-md border transition-colors disabled:opacity-50 ${
                       activeCellStyle?.textAlign === value
-                        ? 'bg-zinc-900 text-white border-zinc-900'
-                        : 'bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400 hover:text-zinc-700'
+                        ? 'bg-primary text-white border-primary'
+                        : 'bg-white text-muted-foreground border-border hover:border-border hover:text-foreground'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -1088,7 +1088,7 @@ export const TableSettings = () => {
                   setDropdownOpen(true);
                 }
               }}
-              className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-medium bg-zinc-900 text-white rounded-md hover:bg-zinc-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-medium bg-primary text-white rounded-md hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <PlusCircle className="w-3 h-3" />
               {tText('insertPlaceholder')}

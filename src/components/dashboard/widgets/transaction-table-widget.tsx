@@ -6,21 +6,21 @@ import { useCallback, useMemo } from 'react';
 
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { useRouter } from '@/i18n/navigation';
+import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
 import {
   buildAllTransactionTableColumns,
   getTransactionSortValue,
 } from '@/lib/dashboard/table-widget/transaction-table-column-registry';
+import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
 import {
   filterWidgetTransactions,
   flattenDashboardLoansToTransactions,
   transactionMatchesFilters,
 } from '@/lib/entity-filters/apply-transaction-filters';
 import { buildTransactionFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
-import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
-import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache';
 import type { DashboardWidget } from '@/types/dashboard-layout';
-import type { TransactionListItem } from '@/types/transactions';
 import { parseTransactionTableConfig } from '@/types/dashboard-widgets/table-view';
+import type { TransactionListItem } from '@/types/transactions';
 
 import { TableViewWidget } from './table-view-widget';
 

@@ -202,7 +202,7 @@ export const ImageSettings = () => {
 
         <TabsContent value="logo" className="mt-3">
           <div className="space-y-3">
-            <div className="border rounded overflow-hidden bg-zinc-50 p-4 flex items-center justify-center">
+            <div className="border rounded overflow-hidden bg-muted p-4 flex items-center justify-center">
               {/* biome-ignore lint/a11y/useAltText: preview */}
               {/** biome-ignore lint/performance/noImgElement: needed */}
               <img src={resolvedLogo} className="max-h-24 max-w-full object-contain" />

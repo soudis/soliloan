@@ -87,9 +87,9 @@ function HierarchyRows({
           <button
             type="button"
             className={cn(
-              'flex min-h-8 flex-1 min-w-0 items-center truncate rounded-md py-1.5 pl-0.5 pr-1 text-left text-xs transition-colors hover:bg-zinc-100',
-              isSelected && 'bg-zinc-200 text-zinc-900 hover:bg-zinc-200',
-              !isSelected && 'text-zinc-700',
+              'flex min-h-8 flex-1 min-w-0 items-center truncate rounded-md py-1.5 pl-0.5 pr-1 text-left text-xs transition-colors hover:bg-muted',
+              isSelected && 'bg-accent text-foreground hover:bg-accent',
+              !isSelected && 'text-foreground',
             )}
             onClick={() => onSelect(id)}
             onDoubleClick={(e) => {
@@ -104,7 +104,7 @@ function HierarchyRows({
             type="button"
             variant="ghost"
             size="icon"
-            className="size-8 shrink-0 text-zinc-500 opacity-65 hover:bg-zinc-100 hover:opacity-100"
+            className="size-8 shrink-0 text-muted-foreground opacity-65 hover:bg-muted hover:opacity-100"
             aria-label={renameAriaLabel}
             onMouseDown={(e) => {
               e.preventDefault();
@@ -224,12 +224,12 @@ export function EditorHierarchyPanel({ onBeforeSelectNode }: EditorHierarchyPane
   const renameAriaLabel = t('hierarchy.renameAria');
 
   if (!nodes[ROOT_ID]) {
-    return <div className="p-4 text-xs text-center text-zinc-500">{t('hierarchy.empty')}</div>;
+    return <div className="p-4 text-xs text-center text-muted-foreground">{t('hierarchy.empty')}</div>;
   }
 
   return (
     <div className="overflow-x-auto p-2 pb-4">
-      <p className="pb-2 px-1 text-[10px] text-zinc-400">{t('hierarchy.doubleClickHint')}</p>
+      <p className="pb-2 px-1 text-[10px] text-muted-foreground">{t('hierarchy.doubleClickHint')}</p>
       <HierarchyRows
         id={ROOT_ID}
         depth={0}

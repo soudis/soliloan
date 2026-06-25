@@ -5,12 +5,9 @@ import { useTranslations } from 'next-intl';
 import { Pie } from 'react-chartjs-2';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { chartColorAtIndex } from '@/lib/dashboard/chart/chart-dataset-colors';
 
-// Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
-
-// Define colors for charts
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 interface LoanStatusBreakdown {
   active: number;
@@ -32,8 +29,8 @@ export function LoanStatusChart({ data }: LoanStatusChartProps) {
     datasets: [
       {
         data: [data.active, data.repaid, data.terminated, data.notDeposited],
-        backgroundColor: COLORS,
-        borderColor: COLORS.map((color) => color.replace('0.8', '1')),
+        backgroundColor: [0, 1, 2, 3].map((index) => chartColorAtIndex(index)),
+        borderColor: [0, 1, 2, 3].map((index) => chartColorAtIndex(index)),
         borderWidth: 1,
       },
     ],

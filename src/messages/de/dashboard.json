@@ -437,6 +437,9 @@
     },
     "lenderTable": {
       "emptyData": "Keine Kreditgeber*innen für die gewählten Einstellungen."
+    },
+    "transactionTable": {
+      "emptyData": "Keine Transaktionen für die gewählten Einstellungen."
     }
   },
   "yearlyTable": {
@@ -883,7 +886,6 @@
       "bic": "BIC",
       "country": "Land",
       "userLanguage": "Benutzer*in Sprache",
-      "userTheme": "Design",
       "lenderSalutation": "Kreditgeber*in Anrede",
       "lenderCountry": "Kreditgeber*in Land",
       "interestMethod": "Zinsmethode"
@@ -923,11 +925,6 @@
       "userLanguagePlaceholder": "Sprache auswählen",
       "userLanguageDe": "Deutsch",
       "userLanguageEn": "Englisch",
-      "userTheme": "Design",
-      "userThemePlaceholder": "Design auswählen",
-      "userThemeDefault": "System",
-      "userThemeDark": "Dunkel",
-      "userThemeLight": "Hell",
       "lenderDefaults": "Einstellungen für Kreditgeber*innen",
       "lenderSalutation": "Anrede",
       "lenderCountry": "Land",

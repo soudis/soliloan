@@ -207,7 +207,7 @@ export const Container = ({
   );
 
   const emptyPlaceholder = (!children || (Array.isArray(children) && children.length === 0)) && (
-    <div className="py-12 border-2 border-dashed border-zinc-200 rounded-lg flex items-center justify-center text-zinc-400 text-sm pointer-events-none w-full">
+    <div className="py-12 border-2 border-dashed border-border rounded-lg flex items-center justify-center text-muted-foreground text-sm pointer-events-none w-full">
       {t('dropHere')}
     </div>
   );
@@ -237,13 +237,13 @@ export const Container = ({
       style={hasLoop ? undefined : contentStyle}
     >
       {hasLoop && (
-        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-zinc-200/70 bg-zinc-50/60 px-2 py-[3px]">
-          <span className="font-mono text-[9px] leading-tight tracking-tight text-zinc-400">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border/70 bg-muted/60 px-2 py-[3px]">
+          <span className="font-mono text-[9px] leading-tight tracking-tight text-muted-foreground">
             {'{{#'}
             {loopKey}
             {'}}'}
           </span>
-          <span className="truncate font-sans text-[10px] font-normal text-zinc-500/75">{ribbonLabel}</span>
+          <span className="truncate font-sans text-[10px] font-normal text-muted-foreground/75">{ribbonLabel}</span>
         </div>
       )}
       {hasLoop ? (
@@ -254,8 +254,8 @@ export const Container = ({
         contentBody
       )}
       {hasLoop && (
-        <div className="shrink-0 border-t border-zinc-200/70 bg-zinc-50/60 px-2 py-[3px] text-right">
-          <span className="font-mono text-[9px] leading-tight tracking-tight text-zinc-400">
+        <div className="shrink-0 border-t border-border/70 bg-muted/60 px-2 py-[3px] text-right">
+          <span className="font-mono text-[9px] leading-tight tracking-tight text-muted-foreground">
             {'{{/'}
             {loopKey}
             {'}}'}
@@ -291,8 +291,8 @@ const LayoutButton = ({
     title={label}
     className={`flex items-center justify-center p-2 rounded-md border transition-colors ${
       isActive
-        ? 'bg-zinc-900 text-white border-zinc-900'
-        : 'bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400 hover:text-zinc-700'
+        ? 'bg-primary text-white border-primary'
+        : 'bg-white text-muted-foreground border-border hover:border-border hover:text-foreground'
     }`}
   >
     <Icon className="w-4 h-4" />
@@ -316,8 +316,8 @@ const ToggleButton = ({
     title={label}
     className={`flex items-center justify-center p-1.5 rounded-md border transition-colors ${
       isActive
-        ? 'bg-zinc-900 text-white border-zinc-900'
-        : 'bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400 hover:text-zinc-700'
+        ? 'bg-primary text-white border-primary'
+        : 'bg-white text-muted-foreground border-border hover:border-border hover:text-foreground'
     }`}
   >
     <Icon className="w-3.5 h-3.5" />
@@ -681,7 +681,7 @@ export const ContainerSettings = () => {
               className="w-full h-8 p-0 border rounded"
             />
             <div className="space-y-1">
-              <label htmlFor="opacity" className="text-xs text-zinc-600">
+              <label htmlFor="opacity" className="text-xs text-muted-foreground">
                 {t('opacity')} ({Math.round(localColor.a * 100)}%)
               </label>
               <input
@@ -713,7 +713,7 @@ export const ContainerSettings = () => {
                         (props as Record<string, boolean>)[side] = e.target.checked;
                       })
                     }
-                    className="rounded border-zinc-300"
+                    className="rounded border-border"
                   />
                   {t(side)}
                 </label>
@@ -721,7 +721,7 @@ export const ContainerSettings = () => {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <label htmlFor="containerBorderColor" className="text-[11px] text-zinc-600">
+                <label htmlFor="containerBorderColor" className="text-[11px] text-muted-foreground">
                   {t('borderColor')}
                 </label>
                 <input
@@ -737,7 +737,7 @@ export const ContainerSettings = () => {
                 />
               </div>
               <div className="space-y-1">
-                <label htmlFor="containerBorderWidth" className="text-[11px] text-zinc-600">
+                <label htmlFor="containerBorderWidth" className="text-[11px] text-muted-foreground">
                   {t('borderWidth')}
                 </label>
                 <input
@@ -756,7 +756,7 @@ export const ContainerSettings = () => {
               </div>
             </div>
             <div className="space-y-1">
-              <label htmlFor="containerBorderStyle" className="text-[11px] text-zinc-600">
+              <label htmlFor="containerBorderStyle" className="text-[11px] text-muted-foreground">
                 {t('borderStyle')}
               </label>
               <select
@@ -852,7 +852,7 @@ function SaveAsBlockDialog({
       <DialogTrigger asChild>
         <button
           type="button"
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium border border-zinc-200 rounded-md hover:bg-zinc-50 transition-colors text-zinc-600"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium border border-border rounded-md hover:bg-muted transition-colors text-muted-foreground"
         >
           <Save className="w-3.5 h-3.5" />
           {t('saveAsBlock')}
@@ -905,7 +905,7 @@ function SaveAsBlockDialog({
                         e.target.checked ? [...prev, tt] : prev.filter((x) => x !== tt),
                       );
                     }}
-                    className="rounded border-zinc-300"
+                    className="rounded border-border"
                   />
                   {t(`blockTemplateType_${tt}`)}
                 </label>
@@ -924,7 +924,7 @@ function SaveAsBlockDialog({
                     onChange={(e) => {
                       setBlockDatasets((prev) => (e.target.checked ? [...prev, ds] : prev.filter((d) => d !== ds)));
                     }}
-                    className="rounded border-zinc-300"
+                    className="rounded border-border"
                   />
                   {DATASET_LABELS[ds] ?? ds}
                 </label>
@@ -957,7 +957,7 @@ function SaveAsBlockDialog({
               !blockName.trim() || blockDatasets.length === 0 || blockTemplateTypes.length === 0 || isSavingBlock
             }
             onClick={handleSave}
-            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-zinc-900 text-white rounded-md hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isSavingBlock ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {isSavingBlock ? t('blockSaving') : t('blockSave')}

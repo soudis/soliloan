@@ -63,7 +63,7 @@ export function BlockPaddingFields<T extends PaddingFieldProps>({
             rawVal !== undefined && rawVal !== null && !Number.isNaN(Number(rawVal)) ? String(rawVal) : '';
           return (
             <div key={key} className="space-y-1">
-              <label htmlFor={`${idPrefix}Padding${key}`} className="text-[11px] text-zinc-600">
+              <label htmlFor={`${idPrefix}Padding${key}`} className="text-[11px] text-muted-foreground">
                 {t(key as 'top' | 'right' | 'bottom' | 'left')}
               </label>
               <input

@@ -139,11 +139,11 @@ export function DashboardContent({ statsData, loansDistribution, loans, userName
             <CardContent>
               <div className="flex items-center space-x-2">
                 <div className="flex items-center">
-                  <Clock className="h-4 w-4 text-amber-500 mr-1" />
+                  <Clock className="h-4 w-4 text-warning-foreground mr-1" />
                   <span className="text-sm">{statsData.pendingLoans}</span>
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                  <CheckCircle className="h-4 w-4 text-success-foreground mr-1" />
                   <span className="text-sm">{statsData.completedLoans}</span>
                 </div>
               </div>
@@ -220,7 +220,7 @@ export function DashboardContent({ statsData, loansDistribution, loans, userName
       )}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="rounded-lg border bg-card p-6 shadow-sm transition-all hover:shadow-md">
+        <div className="rounded-lg border border-border bg-card p-6 shadow-none transition-colors hover:bg-muted/30">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <Users className="h-6 w-6 text-primary" />
           </div>
@@ -231,7 +231,7 @@ export function DashboardContent({ statsData, loansDistribution, loans, userName
           </Button>
         </div>
 
-        <div className="rounded-lg border bg-card p-6 shadow-sm transition-all hover:shadow-md">
+        <div className="rounded-lg border border-border bg-card p-6 shadow-none transition-colors hover:bg-muted/30">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <Wallet className="h-6 w-6 text-primary" />
           </div>

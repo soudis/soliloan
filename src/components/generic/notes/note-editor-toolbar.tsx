@@ -43,7 +43,7 @@ export function NoteEditorToolbar({ editor }: NoteEditorToolbarProps) {
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex items-center gap-0.5 border-b border-input bg-muted/40 px-1 py-1">
+      <div className="flex items-center gap-0.5 border-b border-border bg-muted/40 px-1 py-1">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

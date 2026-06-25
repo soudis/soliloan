@@ -55,7 +55,7 @@ export function NoteRichTextEditor({ value, onChange, placeholder, className }: 
     return (
       <div
         className={cn(
-          'min-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground',
+          'min-h-[120px] rounded-md border border-border bg-background px-3 py-2 text-sm text-muted-foreground',
           className,
         )}
       />
@@ -65,7 +65,7 @@ export function NoteRichTextEditor({ value, onChange, placeholder, className }: 
   return (
     <div
       className={cn(
-        'flex min-h-[120px] flex-col overflow-hidden rounded-md border border-input bg-background',
+        'flex min-h-[120px] flex-col overflow-hidden rounded-md border border-border bg-background',
         className,
       )}
     >

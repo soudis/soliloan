@@ -55,7 +55,7 @@ export function DataTableColumnFilters({
   };
 
   return (
-    <div className="mb-4 grid grid-cols-1 gap-4 rounded-md border p-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="mb-4 grid grid-cols-1 gap-4 rounded-md border border-border bg-card p-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {Object.entries(columnFilters).map(([columnId, filterConfig]) => {
         const filterState = activeFilters.find((filter) => filter.id === columnId);
 

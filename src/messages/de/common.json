@@ -42,7 +42,7 @@
     "show": "Zahlungs-QR-Code anzeigen"
   },
   "ui": {
-    "theme": "Design",
+    "appearance": "Darstellung",
     "actions": {
       "cancel": "Abbrechen",
       "confirm": "Bestätigen",
@@ -208,12 +208,10 @@
       "ACT_360_COMPOUND": "ACT/360 (Mit Zinseszins)",
       "ACT_ACT_COMPOUND": "ACT/ACT (Mit Zinseszins)"
     },
-    "theme": {
-      "default": "Standard",
-      "ocean": "Ozean",
-      "forest": "Wald",
-      "sunset": "Sonnenuntergang",
-      "lavender": "Lavendel"
+    "appearance": {
+      "system": "System",
+      "light": "Hell",
+      "dark": "Dunkel"
     }
   },
   "clear": "Keine Standardeinstellung",

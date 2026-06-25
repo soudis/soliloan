@@ -42,7 +42,6 @@ model User {
   email         String?        @unique
   emailVerified DateTime?
   language      Language       @default(de)
-  theme         SoliLoansTheme @default(default)
   password      String?
   inviteToken   String?
   image         String?
@@ -98,7 +97,6 @@ model Configuration {
   iban                   String?
   bic                    String?
   userLanguage           Language?
-  userTheme              SoliLoansTheme?
   lenderRequiredFields   LenderRequiredField[]
   lenderSalutation       Salutation?
   lenderCountry          Country?
@@ -426,14 +424,6 @@ enum PaymentType {
 enum Language {
   de
   en
-}
-
-enum SoliLoansTheme {
-  default
-  ocean
-  forest
-  sunset
-  lavender
 }
 
 enum Country {

@@ -22,7 +22,7 @@ const toggleGroupVariants = cva('flex items-center justify-center gap-1 rounded-
 });
 
 const toggleGroupItemVariants = cva(
-  'inline-flex flex-1 items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium transition-colors outline-none disabled:pointer-events-none disabled:opacity-50 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=off]:text-muted-foreground data-[state=off]:hover:text-foreground',
+  'inline-flex flex-1 items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium transition-colors outline-none disabled:pointer-events-none disabled:opacity-50 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] data-[state=on]:bg-background data-[state=on]:shadow-none data-[state=off]:text-muted-foreground data-[state=off]:hover:text-foreground',
   {
     variants: {
       variant: {

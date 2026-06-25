@@ -92,7 +92,7 @@ export default function ProjectSelector({ projects }: { projects: ProjectWithCon
           aria-busy={isProjectSwitching}
         >
           <div className="flex items-center gap-3 min-w-0 text-left">
-            <ProjectLogo project={selectedProject} className="h-16 w-16 rounded-2xl shadow-sm shrink-0" />
+            <ProjectLogo project={selectedProject} className="h-16 w-16 rounded-2xl border border-border shrink-0" />
             <span className="font-bold text-lg leading-tight whitespace-normal break-words pb-2">
               {selectedProject?.configuration.name || t('selectProject')}
             </span>

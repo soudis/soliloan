@@ -116,15 +116,17 @@ export const Toolbox = () => {
         </TabsList>
 
         <TabsContent value="basic" className="mt-3 focus-visible:outline-none">
-          <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">{t('toolbox.title')}</div>
+          <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+            {t('toolbox.title')}
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <div
               ref={(ref) => {
                 if (ref) connectors.create(ref, <Element is={Container} canvas />);
               }}
-              className="flex flex-col items-center justify-center p-3 border rounded-lg bg-zinc-50 hover:bg-zinc-100 cursor-move transition-colors group"
+              className="flex flex-col items-center justify-center p-3 border rounded-lg bg-muted hover:bg-muted cursor-move transition-colors group"
             >
-              <Layout className="w-5 h-5 mb-2 text-zinc-500 group-hover:text-zinc-900" />
+              <Layout className="w-5 h-5 mb-2 text-muted-foreground group-hover:text-foreground" />
               <span className="text-xs font-medium">{t('toolbox.layout')}</span>
             </div>
 
@@ -132,9 +134,9 @@ export const Toolbox = () => {
               ref={(ref) => {
                 if (ref) connectors.create(ref, <Text text={t('components.text.defaultText')} />);
               }}
-              className="flex flex-col items-center justify-center p-3 border rounded-lg bg-zinc-50 hover:bg-zinc-100 cursor-move transition-colors group"
+              className="flex flex-col items-center justify-center p-3 border rounded-lg bg-muted hover:bg-muted cursor-move transition-colors group"
             >
-              <Type className="w-5 h-5 mb-2 text-zinc-500 group-hover:text-zinc-900" />
+              <Type className="w-5 h-5 mb-2 text-muted-foreground group-hover:text-foreground" />
               <span className="text-xs font-medium">{t('toolbox.text')}</span>
             </div>
 
@@ -142,9 +144,9 @@ export const Toolbox = () => {
               ref={(ref) => {
                 if (ref) connectors.create(ref, <USER_COMPONENTS_Button text="Button" url="#" />);
               }}
-              className="flex flex-col items-center justify-center p-3 border rounded-lg bg-zinc-50 hover:bg-zinc-100 cursor-move transition-colors group"
+              className="flex flex-col items-center justify-center p-3 border rounded-lg bg-muted hover:bg-muted cursor-move transition-colors group"
             >
-              <MousePointer2 className="w-5 h-5 mb-2 text-zinc-500 group-hover:text-zinc-900" />
+              <MousePointer2 className="w-5 h-5 mb-2 text-muted-foreground group-hover:text-foreground" />
               <span className="text-xs font-medium">{t('toolbox.button')}</span>
             </div>
 
@@ -152,9 +154,9 @@ export const Toolbox = () => {
               ref={(ref) => {
                 if (ref) connectors.create(ref, <Image src="https://via.placeholder.com/150" />);
               }}
-              className="flex flex-col items-center justify-center p-3 border rounded-lg bg-zinc-50 hover:bg-zinc-100 cursor-move transition-colors group"
+              className="flex flex-col items-center justify-center p-3 border rounded-lg bg-muted hover:bg-muted cursor-move transition-colors group"
             >
-              <ImageIcon className="w-5 h-5 mb-2 text-zinc-500 group-hover:text-zinc-900" />
+              <ImageIcon className="w-5 h-5 mb-2 text-muted-foreground group-hover:text-foreground" />
               <span className="text-xs font-medium">{t('toolbox.image')}</span>
             </div>
 
@@ -162,9 +164,9 @@ export const Toolbox = () => {
               ref={(ref) => {
                 if (ref) connectors.create(ref, <Table />);
               }}
-              className="flex flex-col items-center justify-center p-3 border rounded-lg bg-zinc-50 hover:bg-zinc-100 cursor-move transition-colors group"
+              className="flex flex-col items-center justify-center p-3 border rounded-lg bg-muted hover:bg-muted cursor-move transition-colors group"
             >
-              <TableIcon className="w-5 h-5 mb-2 text-zinc-500 group-hover:text-zinc-900" />
+              <TableIcon className="w-5 h-5 mb-2 text-muted-foreground group-hover:text-foreground" />
               <span className="text-xs font-medium">{t('toolbox.table')}</span>
             </div>
           </div>
@@ -172,12 +174,12 @@ export const Toolbox = () => {
 
         <TabsContent value="predefined" className="mt-3 focus-visible:outline-none">
           {isLoading ? (
-            <div className="flex items-center justify-center py-8 text-zinc-400">
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
               <span className="text-xs">{t('toolbox.predefinedLoading')}</span>
             </div>
           ) : blocks.length === 0 ? (
-            <div className="text-xs text-zinc-400 text-center py-8">{t('toolbox.predefinedEmpty')}</div>
+            <div className="text-xs text-muted-foreground text-center py-8">{t('toolbox.predefinedEmpty')}</div>
           ) : (
             <div className="grid grid-cols-1 gap-2">
               {blocks.map((block) => (
@@ -228,19 +230,19 @@ function PredefinedBlockItem({
             connectors.create(ref, element);
           }
         }}
-        className="flex-1 flex items-center gap-2 p-3 border rounded-lg bg-zinc-50 hover:bg-zinc-100 cursor-move transition-colors group"
+        className="flex-1 flex items-center gap-2 p-3 border rounded-lg bg-muted hover:bg-muted cursor-move transition-colors group"
       >
-        <Package className="w-4 h-4 text-zinc-500 group-hover:text-zinc-900 shrink-0" />
+        <Package className="w-4 h-4 text-muted-foreground group-hover:text-foreground shrink-0" />
         <div className="min-w-0">
           <div className="text-xs font-medium truncate">{block.name}</div>
-          {block.description && <div className="text-[10px] text-zinc-400 truncate">{block.description}</div>}
+          {block.description && <div className="text-[10px] text-muted-foreground truncate">{block.description}</div>}
         </div>
       </div>
       {isAdmin && (
         <button
           type="button"
           onClick={() => onDelete(block.id)}
-          className="p-1.5 text-zinc-400 hover:text-red-500 transition-colors shrink-0"
+          className="p-1.5 text-muted-foreground hover:text-destructive transition-colors shrink-0"
           title="Löschen"
         >
           <Trash2 className="w-3.5 h-3.5" />

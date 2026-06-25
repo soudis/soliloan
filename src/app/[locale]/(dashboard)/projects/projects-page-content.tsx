@@ -1,7 +1,7 @@
 'use client';
 
 import type { View } from '@prisma/client';
-import { Country, InterestMethod, Language, Salutation, SoliLoansTheme, ViewType } from '@prisma/client';
+import { Country, InterestMethod, Language, Salutation, ViewType } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Import, Pencil, Plus } from 'lucide-react';
 import { useSession } from 'next-auth/react';
@@ -184,14 +184,6 @@ export function ProjectsPageContent({ views, projects }: ProjectsPageContentProp
     ),
 
     createEnumBadgeColumn<ProjectWithConfiguration>(
-      'configuration.userTheme',
-      'userTheme',
-      'enums.theme',
-      configT,
-      commonT,
-    ),
-
-    createEnumBadgeColumn<ProjectWithConfiguration>(
       'configuration.lenderSalutation',
       'lenderSalutation',
       'enums.lender.salutation',
@@ -287,14 +279,6 @@ export function ProjectsPageContent({ views, projects }: ProjectsPageContentProp
         value: value,
       })),
     },
-    configuration_userTheme: {
-      type: 'select' as const,
-      label: configT('userTheme'),
-      options: Object.entries(SoliLoansTheme).map(([key, value]) => ({
-        label: commonT(`enums.theme.${key}`),
-        value: value,
-      })),
-    },
     configuration_lenderSalutation: {
       type: 'select' as const,
       label: configT('lenderSalutation'),
@@ -337,7 +321,6 @@ export function ProjectsPageContent({ views, projects }: ProjectsPageContentProp
     configuration_bic: false,
     configuration_country: true,
     configuration_userLanguage: false,
-    configuration_userTheme: false,
     configuration_lenderSalutation: false,
     configuration_lenderCountry: false,
     configuration_interestMethod: false,
