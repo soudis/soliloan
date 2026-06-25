@@ -122,13 +122,14 @@ model Project {
   views            View[]
   dashboardLayout  DashboardLayout?
   bankConnections  BankConnection[]
+  bankImportBatch  BankImportBatch?
 }
 
 model BankConnection {
-  id              String   @id @default(cuid())
+  id              String                    @id @default(cuid())
   projectId       String
-  requisitionId   String   @unique
-  reference       String   @unique
+  requisitionId   String                    @unique
+  reference       String                    @unique
   institutionId   String
   institutionName String?
   institutionLogo String?
@@ -136,11 +137,60 @@ model BankConnection {
   agreementId     String?
   accountIds      String[]
   accessExpiresAt DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  lastImportedAt  DateTime?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  project         Project                   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  importedTransactions ImportedBankTransaction[]
 
   @@index([projectId])
+}
+
+model BankImportBatch {
+  id            String          @id @default(cuid())
+  projectId     String          @unique
+  connectionId  String
+  accountId     String
+  lastFetchedAt DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  project       Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  rows          BankImportRow[]
+}
+
+model BankImportRow {
+  id                String           @id @default(cuid())
+  batchId           String
+  bankTransactionId String
+  bookingDate       DateTime
+  valueDate         DateTime?
+  amount            Float
+  currency          String
+  counterpartyName  String?
+  counterpartyIban  String?
+  remittanceInfo    String?
+  raw               Json
+  suggestedLenderId String?
+  suggestedLoanId   String?
+  selectedLenderId  String?
+  selectedLoanId    String?
+  selectedType      TransactionType?
+  batch             BankImportBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@unique([batchId, bankTransactionId])
+  @@index([batchId])
+}
+
+model ImportedBankTransaction {
+  id                String         @id @default(cuid())
+  connectionId      String
+  bankTransactionId String
+  transactionId     String?
+  importedAt        DateTime       @default(now())
+  connection        BankConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@unique([connectionId, bankTransactionId])
+  @@index([connectionId])
 }
 
 model DashboardLayout {

@@ -84,7 +84,6 @@ export function resolveTimeRangeBounds(
     }
     case 'all':
       return { start: new Date(0), end: endOfDay(now) };
-    case 'last_30_days':
     default:
       return { start: startOfDay(subDays(now, 30)), end: endOfDay(now) };
   }

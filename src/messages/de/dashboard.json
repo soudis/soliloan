@@ -660,6 +660,62 @@
       "success": "{count} Transaktionen erfolgreich gelöscht.",
       "partialSuccess": "{deleted} Transaktionen gelöscht, {skipped} übersprungen.",
       "error": "Fehler beim Löschen der Transaktionen."
+    },
+    "import": {
+      "button": "Banktransaktionen",
+      "title": "Banktransaktionen importieren",
+      "account": "Bankkonto",
+      "accountPlaceholder": "Konto auswählen",
+      "selectAccountFirst": "Bitte zuerst ein Bankkonto auswählen.",
+      "loadFromBank": "Transaktionen laden",
+      "refreshFromBank": "Vom Bankkonto aktualisieren",
+      "loadSuccess": "{count, plural, =0 {Keine neuen Transaktionen} one {# neue Transaktion geladen} other {# neue Transaktionen geladen}}",
+      "loadError": "Transaktionen konnten nicht geladen werden.",
+      "updateError": "Zuordnung konnte nicht gespeichert werden.",
+      "finalizeSuccess": "{count, plural, one {# Transaktion erstellt} other {# Transaktionen erstellt}}",
+      "finalizePartial": "{skipped, plural, one {# Zeile übersprungen} other {# Zeilen übersprungen}}",
+      "finalizeError": "Transaktionen konnten nicht erstellt werden.",
+      "confirmBulk": "Ausgewählte importieren",
+      "discardBatch": "Restliche Zeilen verwerfen",
+      "discardBatchConfirmTitle": "Restliche Zeilen verwerfen?",
+      "discardBatchConfirmDescription": "Alle verbleibenden Banktransaktionen in diesem Import werden verworfen und beim nächsten Laden nicht erneut angezeigt. Bereits importierte Zahlungen bleiben erhalten.",
+      "discardBatchSuccess": "Restliche Zeilen verworfen.",
+      "discardBatchError": "Import konnte nicht verworfen werden.",
+      "empty": "Noch keine Transaktionen geladen. Wählen Sie ein Konto und laden Sie Transaktionen vom Bankkonto.",
+      "emptyAfterImport": "Keine offenen Importzeilen. Laden Sie bei Bedarf neue Transaktionen vom Bankkonto.",
+      "selectLender": "Kreditgeber*in wählen",
+      "columns": {
+        "date": "Datum",
+        "counterparty": "Gegenpartei",
+        "remittance": "Verwendungszweck",
+        "amount": "Betrag",
+        "lender": "Kreditgeber*in",
+        "loan": "Kredit",
+        "type": "Art"
+      },
+      "protocol": {
+        "title": "Import-Protokoll",
+        "summary": "{imported} importiert, {skipped} übersprungen",
+        "importedSection": "Importiert ({count})",
+        "skippedSection": "Übersprungen ({count})",
+        "importedEmpty": "Keine Zeilen importiert.",
+        "skippedEmpty": "Keine Zeilen übersprungen.",
+        "importedDetail": "Kredit #{loanNumber} · {lenderName} · {type}",
+        "close": "Schließen",
+        "columns": {
+          "date": "Datum",
+          "counterparty": "Gegenpartei",
+          "amount": "Betrag",
+          "result": "Ergebnis",
+          "reason": "Grund"
+        },
+        "skipReasons": {
+          "rowNotFound": "Zeile nicht gefunden",
+          "incompleteAssignment": "Kreditgeber*in, Kredit oder Art fehlt",
+          "loanMismatch": "Kredit passt nicht zum Kreditgeber*in",
+          "notEligible": "Betrag oder Art für den Kredit nicht zulässig"
+        }
+      }
     }
   },
   "loans": {

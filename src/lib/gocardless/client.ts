@@ -1,4 +1,7 @@
+import { formatDateForGoCardless } from './parse-transactions';
 import type {
+  GoCardlessAccountDetails,
+  GoCardlessAccountTransactionsResponse,
   GoCardlessAgreement,
   GoCardlessInstitution,
   GoCardlessRequisition,
@@ -139,6 +142,48 @@ export async function getRequisition(requisitionId: string): Promise<GoCardlessR
   }
 
   return (await response.json()) as GoCardlessRequisition;
+}
+
+/** Retrieves account details (iban, owner name) for the account picker. */
+export async function getAccountDetails(accountId: string): Promise<GoCardlessAccountDetails> {
+  const token = await getAccessToken();
+
+  const response = await authedFetch(`/accounts/${encodeURIComponent(accountId)}/details/`, {
+    method: 'GET',
+    token,
+  });
+
+  if (!response.ok) {
+    console.error('GoCardless account details error', response.status, await safeText(response));
+    throw new Error('error.gocardless.accountFailed');
+  }
+
+  return (await response.json()) as GoCardlessAccountDetails;
+}
+
+/** Fetches booked transactions for an account, optionally from a start date (YYYY-MM-DD). */
+export async function getAccountTransactions(
+  accountId: string,
+  dateFrom?: Date,
+): Promise<GoCardlessAccountTransactionsResponse> {
+  const token = await getAccessToken();
+
+  const query = dateFrom ? `?date_from=${encodeURIComponent(formatDateForGoCardless(dateFrom))}` : '';
+  const response = await authedFetch(`/accounts/${encodeURIComponent(accountId)}/transactions/${query}`, {
+    method: 'GET',
+    token,
+  });
+
+  if (response.status === 429) {
+    throw new Error('error.gocardless.rateLimited');
+  }
+
+  if (!response.ok) {
+    console.error('GoCardless transactions error', response.status, await safeText(response));
+    throw new Error('error.gocardless.transactionsFailed');
+  }
+
+  return (await response.json()) as GoCardlessAccountTransactionsResponse;
 }
 
 /** Retrieves an end user agreement (access window, acceptance timestamp). */

@@ -56,7 +56,14 @@
     "requisitionFailed": "Die Bankverbindung konnte nicht erstellt werden.",
     "deleteFailed": "Die Bankverbindung konnte nicht getrennt werden.",
     "alreadyLinked": "Es ist bereits ein Bankkonto mit diesem Projekt verbunden.",
-    "connectionNotFound": "Bankverbindung nicht gefunden."
+    "connectionNotFound": "Bankverbindung nicht gefunden.",
+    "notLinked": "Es ist kein Bankkonto mit diesem Projekt verbunden.",
+    "accountNotFound": "Das ausgewählte Bankkonto gehört nicht zu dieser Verbindung.",
+    "accountFailed": "Bankkontodetails konnten nicht geladen werden.",
+    "transactionsFailed": "Banktransaktionen konnten nicht geladen werden.",
+    "rateLimited": "Das Abruflimit des Bankdaten-Anbieters wurde erreicht. Bitte später erneut versuchen.",
+    "importRowNotFound": "Importzeile nicht gefunden.",
+    "rowNotEligible": "Diese Transaktion kann dem gewählten Kredit nicht zugeordnet werden."
   },
   "migration": {
     "fetchFailed": "Datenpaket konnte nicht von der DKP-v1 API heruntergeladen werden. Bitte URL und Token prüfen.",

@@ -26,8 +26,7 @@ export const createRequisitionAction = projectAction
 
     // In dev always use the GoCardless sandbox institution, regardless of the
     // bank selected in the dialog, so the flow can be tested without a real bank.
-    const resolvedInstitutionId =
-      process.env.ENVIRONMENT === 'dev' ? 'SANDBOXFINANCE_SFIN0000' : institutionId;
+    const resolvedInstitutionId = process.env.ENVIRONMENT === 'dev' ? 'SANDBOXFINANCE_SFIN0000' : institutionId;
 
     const institution = await getInstitution(resolvedInstitutionId);
 

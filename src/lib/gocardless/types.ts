@@ -54,3 +54,52 @@ export type GoCardlessRequisition = {
   user_language?: string;
   link: string;
 };
+
+export type GoCardlessAccountDetails = {
+  account: {
+    iban?: string;
+    bban?: string;
+    currency?: string;
+    ownerName?: string;
+    name?: string;
+    displayName?: string;
+    product?: string;
+  };
+};
+
+export type GoCardlessBankTransaction = {
+  transactionId?: string;
+  internalTransactionId?: string;
+  bookingDate?: string;
+  valueDate?: string;
+  transactionAmount?: {
+    amount: string;
+    currency: string;
+  };
+  debtorName?: string;
+  debtorAccount?: { iban?: string };
+  creditorName?: string;
+  creditorAccount?: { iban?: string };
+  remittanceInformationUnstructured?: string;
+  remittanceInformationStructured?: string;
+};
+
+export type GoCardlessAccountTransactionsResponse = {
+  transactions: {
+    booked: GoCardlessBankTransaction[];
+    pending?: GoCardlessBankTransaction[];
+  };
+};
+
+/** Normalized bank transaction row used for import matching and persistence. */
+export type ParsedBankTransaction = {
+  bankTransactionId: string;
+  bookingDate: Date;
+  valueDate: Date | null;
+  amount: number;
+  currency: string;
+  counterpartyName: string | null;
+  counterpartyIban: string | null;
+  remittanceInfo: string | null;
+  raw: GoCardlessBankTransaction;
+};

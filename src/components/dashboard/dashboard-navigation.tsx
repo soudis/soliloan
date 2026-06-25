@@ -28,14 +28,15 @@ export default function DashboardNavigation({
   const pathname = usePathname();
   const t = useTranslations('navigation');
   const isDashboardPage = pathname === '/dashboard';
+  const isTransactionsPage = pathname === '/transactions' || pathname.startsWith('/transactions/');
   const isFillHeightPage =
     pathname === '/lenders' ||
     pathname === '/loans' ||
-    pathname === '/transactions' ||
+    isTransactionsPage ||
     pathname === '/logbook' ||
     pathname === '/projects';
 
-  const isFullWidthPage = pathname === '/lenders' || pathname === '/loans' || pathname === '/transactions';
+  const isFullWidthPage = pathname === '/lenders' || pathname === '/loans' || isTransactionsPage;
 
   if (!session) {
     return null;

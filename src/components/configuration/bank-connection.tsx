@@ -1,7 +1,7 @@
 'use client';
 
 import type { BankConnection as BankConnectionModel, Country } from '@prisma/client';
-import { Landmark, Link2, Loader2, Unlink } from 'lucide-react';
+import { ArrowDownToLine, Landmark, Link2, Loader2, Unlink } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useState } from 'react';
@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { deleteBankConnectionAction } from '@/actions/gocardless/mutations/delete-bank-connection';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useRouter } from '@/i18n/navigation';
 import { LinkBankAccountDialog } from './link-bank-account-dialog';
 
 type Props = {
@@ -20,7 +21,9 @@ type Props = {
 
 export function BankConnection({ projectId, connections, defaultCountry }: Props) {
   const t = useTranslations('dashboard.configuration.gocardless');
+  const tImport = useTranslations('dashboard.transactions.import');
   const format = useFormatter();
+  const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const { execute: unlink, isExecuting: isUnlinking } = useAction(deleteBankConnectionAction, {
@@ -97,16 +100,31 @@ export function BankConnection({ projectId, connections, defaultCountry }: Props
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Badge variant={statusVariant(connection.status)}>{statusLabel(connection.status)}</Badge>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => unlink({ projectId, connectionId: connection.id })}
-              disabled={isUnlinking}
-            >
-              {isUnlinking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Unlink className="h-4 w-4" />}
-              {t('unlink')}
-            </Button>
+            <div className="flex flex-col items-center gap-2 border-l border-border pl-2">
+              {connection.status === 'LN' ? (
+                <Button
+                  type="button"
+                  className="w-full"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push('/transactions/import')}
+                >
+                  <ArrowDownToLine className="h-4 w-4" />
+                  {tImport('button')}
+                </Button>
+              ) : null}
+              <Button
+                className="w-full"
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => unlink({ projectId, connectionId: connection.id })}
+                disabled={isUnlinking}
+              >
+                {isUnlinking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Unlink className="h-4 w-4" />}
+                {t('unlink')}
+              </Button>
+            </div>
           </div>
         </div>
       ) : (
