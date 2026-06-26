@@ -28,19 +28,17 @@ export default function DashboardNavigation({
   const pathname = usePathname();
   const t = useTranslations('navigation');
   const isDashboardPage = pathname === '/dashboard';
+  const isTransactionsPage = pathname === '/transactions' || pathname.startsWith('/transactions/');
   const isFillHeightPage =
     pathname === '/lenders' ||
     pathname === '/loans' ||
-    pathname === '/transactions' ||
+    isTransactionsPage ||
     pathname === '/investment-types' ||
     pathname === '/logbook' ||
     pathname === '/projects';
 
   const isFullWidthPage =
-    pathname === '/lenders' ||
-    pathname === '/loans' ||
-    pathname === '/transactions' ||
-    pathname === '/investment-types';
+    pathname === '/lenders' || pathname === '/loans' || isTransactionsPage || pathname === '/investment-types';
 
   if (!session) {
     return null;

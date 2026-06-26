@@ -2,16 +2,16 @@
 
 import { type View, ViewType } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Pencil, Trash2 } from 'lucide-react';
+import { ArrowDownToLine, Pencil, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-
 import { deleteTransactionAction } from '@/actions/loans';
 import { bulkDeleteTransactionsAction } from '@/actions/transactions/mutations/bulk-delete-transactions';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { TransactionTimeRangeControl } from '@/components/transactions/transaction-time-range-control';
+import { Button } from '@/components/ui/button';
 import type { BulkAction } from '@/components/ui/data-table';
 import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -39,10 +39,18 @@ interface TransactionTableProps {
   project: ProjectWithConfiguration;
   projectId: string;
   views: View[];
+  hasBankConnection?: boolean;
 }
 
-export function TransactionTable({ transactions, project, projectId, views }: TransactionTableProps) {
+export function TransactionTable({
+  transactions,
+  project,
+  projectId,
+  views,
+  hasBankConnection = false,
+}: TransactionTableProps) {
   const t = useTranslations('dashboard.transactions');
+  const tImport = useTranslations('dashboard.transactions.import');
   const tLoans = useTranslations('dashboard.loans');
   const tLenders = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
@@ -134,6 +142,12 @@ export function TransactionTable({ transactions, project, projectId, views }: Tr
             <p className="mt-0.5 text-base font-normal text-muted-foreground">{selectedViewName}</p>
           ) : null}
         </div>
+        {hasBankConnection ? (
+          <Button type="button" variant="outline" onClick={() => router.push('/transactions/import')}>
+            <ArrowDownToLine className="mr-2 h-4 w-4" />
+            {tImport('button')}
+          </Button>
+        ) : null}
       </div>
 
       <DataTable

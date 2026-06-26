@@ -19,21 +19,32 @@ interface LoanDropdownProps {
   loans: LoanWithCalculations[];
   lender?: LenderWithCalculations;
   selectedLoanId?: string;
+  /** Resolves the selected loan when it is not in `loans` (e.g. during optimistic updates). */
+  loanLookup?: Map<string, LoanWithCalculations>;
   onSelectLoan: (loanId: string | null) => void;
   simple?: boolean;
+  disabled?: boolean;
 }
 
-export function LoanDropdown({ loans, selectedLoanId, onSelectLoan, simple = false }: LoanDropdownProps) {
-  const selectedLoan = loans.find((loan) => loan.id === selectedLoanId);
+export function LoanDropdown({
+  disabled = false,
+  loans,
+  selectedLoanId,
+  loanLookup,
+  onSelectLoan,
+  simple = false,
+}: LoanDropdownProps) {
+  const selectedLoan =
+    loans.find((loan) => loan.id === selectedLoanId) ?? (selectedLoanId ? loanLookup?.get(selectedLoanId) : undefined);
   const tLoan = useTranslations('dashboard.loans');
   const tCommon = useTranslations('common');
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild disabled={disabled}>
         <Button
           variant="outline"
           className={cn(
-            'flex items-center justify-between w-full h-auto rounded-md p-3 border border-border bg-card hover:bg-muted data-[state=open]:bg-muted data-[state=open]:border-primary cursor-pointer lg:min-w-[320px] text-left',
+            'flex items-center justify-between w-full h-auto rounded-md p-3 border border-border bg-card hover:bg-muted data-[state=open]:bg-muted data-[state=open]:border-primary cursor-pointer lg:min-w-[160px] text-left',
             simple && 'rounded-md p-2',
           )}
         >

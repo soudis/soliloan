@@ -14,7 +14,7 @@ import {
 } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type SetTableUrlState, type TableUrlState, useTableUrlState } from '@/lib/hooks/use-table-url-state';
 import { cn } from '@/lib/utils';
 
@@ -175,7 +175,7 @@ interface DataTableProps<TData, TValue> {
   extraViewData?: Record<string, unknown>;
   /** Compare extra view fields for dirty state. */
   isExtraViewDataDirty?: (savedData: Record<string, unknown> | undefined) => boolean;
-  toolbarContent?: ReactNode;
+  toolbarContent?: React.ReactNode;
   /** Fill parent height: toolbar and pagination stay fixed; table body scrolls vertically. */
   fillHeight?: boolean;
   /** Show Excel export button in the toolbar. */
@@ -185,6 +185,9 @@ interface DataTableProps<TData, TValue> {
   /** Controlled table URL state (e.g. transaction table with extra params). */
   tableState?: TableUrlState;
   setTableState?: SetTableUrlState;
+  /** Controlled row selection; when omitted, selection is managed internally. */
+  rowSelection?: Record<string, boolean>;
+  onRowSelectionChange?: (selection: Record<string, boolean>) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -212,6 +215,8 @@ export function DataTable<TData, TValue>({
   isExtraViewDataDirty,
   tableState: controlledTableState,
   setTableState: controlledSetTableState,
+  rowSelection: controlledRowSelection,
+  onRowSelectionChange: controlledOnRowSelectionChange,
 }: DataTableProps<TData, TValue>) {
   const t = useTranslations('dataTable');
 
@@ -236,15 +241,31 @@ export function DataTable<TData, TValue>({
   const columnVisibility = tableState.columnVisibility;
   const globalFilter = tableState.globalFilter;
 
-  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+  const [internalRowSelection, setInternalRowSelection] = useState<Record<string, boolean>>({});
+  const isRowSelectionControlled = controlledRowSelection !== undefined;
+  const rowSelection = isRowSelectionControlled ? controlledRowSelection : internalRowSelection;
+
+  const handleRowSelectionChange = useCallback(
+    (updater: Record<string, boolean> | ((old: Record<string, boolean>) => Record<string, boolean>)) => {
+      const next = typeof updater === 'function' ? updater(rowSelection) : updater;
+      if (isRowSelectionControlled) {
+        controlledOnRowSelectionChange?.(next);
+      } else {
+        setInternalRowSelection(next);
+      }
+    },
+    [controlledOnRowSelectionChange, isRowSelectionControlled, rowSelection],
+  );
   /** After the row-actions menu closes, ignore row navigations briefly (avoids ghost click-through). */
   const lastRowActionsMenuClosedAtRef = useRef(0);
 
   // Clear selection when data changes (e.g., after bulk delete + revalidation)
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally reset selection when data reference changes
   useEffect(() => {
-    setRowSelection({});
-  }, [data]);
+    if (!isRowSelectionControlled) {
+      setInternalRowSelection({});
+    }
+  }, [data, isRowSelectionControlled]);
 
   // Function to check if any filters are active
   const hasActiveFilters = () => {
@@ -368,7 +389,7 @@ export function DataTable<TData, TValue>({
   }, [rowSelection]);
 
   const handleBulkComplete = () => {
-    setRowSelection({});
+    handleRowSelectionChange({});
   };
 
   const table = useReactTable({
@@ -405,7 +426,7 @@ export function DataTable<TData, TValue>({
         pageSize: resolved.pageSize,
       });
     },
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: handleRowSelectionChange,
 
     state: {
       sorting,
