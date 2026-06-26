@@ -1,6 +1,12 @@
 import type { TransactionType } from '@prisma/client';
 
-export const BANK_IMPORT_SKIP_REASONS = ['rowNotFound', 'incompleteAssignment', 'loanMismatch', 'notEligible'] as const;
+export const BANK_IMPORT_SKIP_REASONS = [
+  'rowNotFound',
+  'incompleteAssignment',
+  'loanMismatch',
+  'notEligible',
+  'terminationBalanceMismatch',
+] as const;
 
 export type BankImportSkipReason = (typeof BANK_IMPORT_SKIP_REASONS)[number];
 

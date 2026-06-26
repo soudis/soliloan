@@ -22,8 +22,8 @@ import type {
 } from '@/lib/gocardless/import-protocol';
 import { BANK_IMPORT_PAYMENT_TYPE, getSignedTransactionAmount } from '@/lib/gocardless/import-transaction-utils';
 import { finalizeImportBatchSchema } from '@/lib/schemas/gocardless';
-import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { getLenderName } from '@/lib/utils';
+import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { projectAction } from '@/lib/utils/safe-action';
 
 function toProtocolRow(row: {
@@ -125,7 +125,13 @@ export const finalizeImportBatchAction = projectAction
 
       const amountMagnitude = Math.abs(row.amount);
       if (!isLoanEligibleForTransaction(calculated, type, amountMagnitude)) {
-        skip(skipped, row, 'notEligible');
+        skip(
+          skipped,
+          row,
+          type === TransactionType.TERMINATION && calculated.balance > 0
+            ? 'terminationBalanceMismatch'
+            : 'notEligible',
+        );
         continue;
       }
 

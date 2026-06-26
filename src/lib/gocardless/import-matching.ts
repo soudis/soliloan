@@ -86,6 +86,17 @@ export function matchLoanForDeposit(lenderLoans: LoanWithCalculations[], deposit
   return eligible.length === 1 ? eligible[0].id : null;
 }
 
+const AMOUNT_TOLERANCE = 0.001;
+
+/** TERMINATION must match the loan balance on the transaction date (see transaction form). */
+export function isTerminationAmountMatchingBalance(amountMagnitude: number, balance: number): boolean {
+  const absAmount = Math.abs(amountMagnitude);
+  if (balance <= 0 || absAmount <= 0) {
+    return false;
+  }
+  return Math.abs(absAmount - balance) <= AMOUNT_TOLERANCE;
+}
+
 /** Server-side eligibility check mirroring transaction-form-fields rules. */
 export function isLoanEligibleForTransaction(
   loan: LoanWithCalculations,
@@ -107,7 +118,7 @@ export function isLoanEligibleForTransaction(
       return loan.balance > 0 && maxInterest > 0 && absAmount <= Math.min(maxInterest, loan.balance - 0.01) + 0.001;
     }
     case TransactionType.TERMINATION:
-      return loan.balance > 0;
+      return isTerminationAmountMatchingBalance(absAmount, loan.balance);
     default:
       return false;
   }

@@ -713,7 +713,8 @@
           "rowNotFound": "Zeile nicht gefunden",
           "incompleteAssignment": "Kreditgeber*in, Kredit oder Art fehlt",
           "loanMismatch": "Kredit passt nicht zum Kreditgeber*in",
-          "notEligible": "Betrag oder Art für den Kredit nicht zulässig"
+          "notEligible": "Betrag oder Art für den Kredit nicht zulässig",
+          "terminationBalanceMismatch": "Rückzahlungsbetrag entspricht nicht dem Kreditsaldo am Buchungstag"
         }
       }
     }
