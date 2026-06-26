@@ -31,7 +31,9 @@ export const TABLE_VIEW_ROW_LIMIT_MAX = 100;
 export const DEFAULT_TABLE_VIEW_ROW_LIMIT = 10;
 
 export const DEFAULT_LOAN_TABLE_VISIBLE_COLUMNS = [
-  'lenderName',
+  'lender.lenderNumber',
+  'lender.name',
+  'loanNumber',
   'signDate',
   'amount',
   'balance',
@@ -40,6 +42,17 @@ export const DEFAULT_LOAN_TABLE_VISIBLE_COLUMNS = [
 ] as const;
 
 export const DEFAULT_LENDER_TABLE_VISIBLE_COLUMNS = ['lenderNumber', 'name', 'type', 'balance', 'amount'] as const;
+
+export const DEFAULT_TRANSACTION_TABLE_VISIBLE_COLUMNS = [
+  'lender.lenderNumber',
+  'lender.name',
+  'loan.loanNumber',
+  'transaction.type',
+  'transaction.date',
+  'transaction.amount',
+] as const;
+
+export type TransactionTableWidgetConfig = TableViewWidgetConfigBase;
 
 function clampRowLimit(value: unknown): number {
   const n = typeof value === 'number' ? value : Number(value);
@@ -84,7 +97,9 @@ function parseEntityFilters(value: unknown): EntityFilter[] {
         typeof item === 'object' &&
         typeof (item as EntityFilter).id === 'string' &&
         typeof (item as EntityFilter).field === 'string' &&
-        ((item as EntityFilter).entity === 'loan' || (item as EntityFilter).entity === 'lender'),
+        ((item as EntityFilter).entity === 'loan' ||
+          (item as EntityFilter).entity === 'lender' ||
+          (item as EntityFilter).entity === 'transaction'),
     ),
   );
 }
@@ -129,6 +144,21 @@ export function createDefaultLenderTableConfig(): LenderTableWidgetConfig {
 
 export function parseLoanTableConfig(config: Record<string, unknown> | undefined): LoanTableWidgetConfig {
   return parseTableViewConfigBase(config, DEFAULT_LOAN_TABLE_VISIBLE_COLUMNS);
+}
+
+export function createDefaultTransactionTableConfig(): TransactionTableWidgetConfig {
+  return {
+    layoutVersion: 1,
+    columns: DEFAULT_TRANSACTION_TABLE_VISIBLE_COLUMNS.map((id) => ({ id, visible: true })),
+    filters: [],
+    defaultSort: { columnId: 'transaction.date', desc: true },
+    displayMode: 'paged',
+    rowLimit: DEFAULT_TABLE_VIEW_ROW_LIMIT,
+  };
+}
+
+export function parseTransactionTableConfig(config: Record<string, unknown> | undefined): TransactionTableWidgetConfig {
+  return parseTableViewConfigBase(config, DEFAULT_TRANSACTION_TABLE_VISIBLE_COLUMNS);
 }
 
 export function parseLenderTableConfig(config: Record<string, unknown> | undefined): LenderTableWidgetConfig {

@@ -52,6 +52,8 @@ function viewToBaseline(
 interface UseTableUrlStateOptions {
   defaultColumnVisibility?: VisibilityState;
   views?: View[];
+  controlledState?: TableUrlState;
+  controlledSetState?: SetTableUrlState;
 }
 
 /** Stable fallbacks — inline `{}` / `[]` defaults in callers change identity every render and invalidates memoized URL state. */
@@ -161,5 +163,8 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
     [baseline, views, defaultColumnVisibility, setRawState],
   );
 
-  return { state, setState };
+  return {
+    state: options.controlledState ?? state,
+    setState: options.controlledSetState ?? setState,
+  };
 }

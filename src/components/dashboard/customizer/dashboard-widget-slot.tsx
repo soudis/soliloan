@@ -19,6 +19,7 @@ import { LineChartWidget } from '../widgets/line-chart-widget';
 import { LoanTableWidget } from '../widgets/loan-table-widget';
 import { PieChartWidget } from '../widgets/pie-chart-widget';
 import { StatWidget } from '../widgets/stat-widget';
+import { TransactionTableWidget } from '../widgets/transaction-table-widget';
 import { useDashboardEditor } from './dashboard-layout-context';
 import { WIDGET_TYPE_ICONS } from './widget-icons';
 
@@ -62,6 +63,8 @@ function DashboardWidgetSlotComponent({ widget, rowId }: { widget: DashboardWidg
         return <LoanTableWidget widget={widget} />;
       case 'lender_table_view':
         return <LenderTableWidget widget={widget} />;
+      case 'transaction_table_view':
+        return <TransactionTableWidget widget={widget} />;
       default:
         return <p className="text-sm text-muted-foreground/80">{t('placeholder')}</p>;
     }
@@ -79,12 +82,12 @@ function DashboardWidgetSlotComponent({ widget, rowId }: { widget: DashboardWidg
           isDivider
             ? 'min-h-0 border-0 bg-transparent pb-4 shadow-none'
             : cn(
-                'h-full min-h-[120px] border-2 pb-6 shadow-sm',
+                'h-full min-h-[120px] border border-border pb-6 shadow-none',
                 isSelected && isCustomizing ? 'border-primary' : 'border-border',
                 isCustomizing && 'ring-1 ring-primary/15',
               ),
           isCustomizing ? 'pt-0' : showHeader ? 'pt-4' : isDivider ? 'pt-4' : 'pt-5',
-          isDivider && isCustomizing && isSelected && 'border-2 border-primary ring-1 ring-primary/15',
+          isDivider && isCustomizing && isSelected && 'border border-primary ring-1 ring-primary/15',
         )}
         onClick={() => {
           if (isCustomizing) {

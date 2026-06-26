@@ -61,7 +61,6 @@ export const addProjectManagerAction = projectAction
           passwordResetTokenExpiresAt: expirationDate,
           lastInvited: new Date(),
           language: configuration.userLanguage ?? undefined,
-          theme: configuration.userTheme ?? undefined,
         },
       });
     } else {

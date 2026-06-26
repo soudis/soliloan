@@ -58,7 +58,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
       {/* Mobile: grouped with main content and vertically centered via outer flex */}
       <div className="flex shrink-0 flex-col items-center gap-3 md:hidden">
         <Image src="/soliloan-logo.webp" alt="" width={256} height={256} className="h-32 w-32" />
-        <span className="text-3xl font-bold text-primary font-comfortaa">{projectName}</span>
+        <span className="text-3xl font-bold text-primary">{projectName}</span>
       </div>
 
       {/* Split screen layout */}
@@ -68,7 +68,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           <div className="flex w-full max-w-2xl flex-col items-center gap-6 text-center">
             <div className="flex flex-wrap items-center justify-center gap-6">
               <Image src="/soliloan-logo.webp" alt="" width={96} height={96} className="h-24 w-24" />
-              <span className="text-5xl font-bold text-primary font-comfortaa">{projectName}</span>
+              <span className="text-5xl font-bold text-primary">{projectName}</span>
             </div>
 
             <p className="w-full text-2xl text-primary">{t('branding.description')}</p>

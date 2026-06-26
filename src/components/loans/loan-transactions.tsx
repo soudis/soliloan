@@ -122,10 +122,7 @@ export function LoanTransactions({
         {paginated.map((transaction) => (
           <div
             key={transaction.id}
-            className={cn(
-              'flex items-center justify-between rounded-md border-t px-2 py-1.5 first:border-t-0',
-              transaction.type === 'INTEREST' && 'opacity-60',
-            )}
+            className={cn('flex items-center justify-between border-t px-2 py-1.5 first:border-t-0')}
           >
             <div className="flex min-w-0 flex-1 items-center space-x-3">
               <div className={cn('rounded-full p-1', transactionIconBackground(transaction.type))}>

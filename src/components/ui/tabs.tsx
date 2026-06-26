@@ -36,7 +36,7 @@ const tabsTriggerVariants = cva(
         default:
           'rounded-none border-b-2 border-transparent px-6 pt-1 pb-2 font-medium data-[state=active]:text-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent',
         modern:
-          'flex-1 md:flex-none flex flex-col md:flex-row gap-1 md:gap-2 py-2 md:px-4 rounded-lg text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm border-1 border-transparent data-[state=active]:border-primary/20 hover:text-foreground',
+          'flex-1 md:flex-none flex flex-col md:flex-row gap-1 md:gap-2 py-2 md:px-4 rounded-lg text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-none border-1 border-transparent data-[state=active]:border-border hover:text-foreground',
       },
       size: {
         default: 'text-lg',

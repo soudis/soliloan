@@ -8,21 +8,22 @@ import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import type { EntityFilterFieldOption } from '@/types/entity-filters';
+import type { EntityFilterEntity, EntityFilterFieldOption } from '@/types/entity-filters';
 
-const FILTER_GROUPS = [
-  { id: 'loan' as const, labelKey: 'filterGroupLoan' },
-  { id: 'lender' as const, labelKey: 'filterGroupLender' },
-];
+const FILTER_GROUP_LABELS: Record<EntityFilterEntity, string> = {
+  transaction: 'filterGroupTransaction',
+  loan: 'filterGroupLoan',
+  lender: 'filterGroupLender',
+};
 
 function toFieldValue(entity: string, field: string): string {
   return `${entity}:${field}`;
 }
 
-function parseFieldValue(value: string): { entity: 'loan' | 'lender'; field: string } {
+function parseFieldValue(value: string): { entity: EntityFilterEntity; field: string } {
   const separator = value.indexOf(':');
   return {
-    entity: value.slice(0, separator) as 'loan' | 'lender',
+    entity: value.slice(0, separator) as EntityFilterEntity,
     field: value.slice(separator + 1),
   };
 }
@@ -37,7 +38,7 @@ export function EntityFilterFieldPicker({
 }: {
   value: string;
   fieldOptions: EntityFilterFieldOption[];
-  onChange: (entity: 'loan' | 'lender', field: string) => void;
+  onChange: (entity: EntityFilterEntity, field: string) => void;
   className?: string;
   translationNamespace?: string;
   placeholderKey?: string;
@@ -51,14 +52,16 @@ export function EntityFilterFieldPicker({
     [fieldOptions, value],
   );
 
-  const groupedOptions = useMemo(
-    () =>
-      FILTER_GROUPS.map((group) => ({
-        ...group,
-        options: fieldOptions.filter((opt) => opt.group === group.id),
-      })).filter((group) => group.options.length > 0),
-    [fieldOptions],
-  );
+  const groupedOptions = useMemo(() => {
+    const groupOrder: EntityFilterEntity[] = ['transaction', 'loan', 'lender'];
+    return groupOrder
+      .map((groupId) => ({
+        id: groupId,
+        labelKey: FILTER_GROUP_LABELS[groupId],
+        options: fieldOptions.filter((opt) => opt.group === groupId),
+      }))
+      .filter((group) => group.options.length > 0);
+  }, [fieldOptions]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

@@ -4,7 +4,7 @@ import type { View, ViewType } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Table, VisibilityState } from '@tanstack/react-table';
 import { isEqual } from 'lodash';
-import { ChevronDown, Save, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, FileDown, Save, SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { type ReactNode, useMemo, useState } from 'react';
@@ -17,6 +17,8 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -24,6 +26,7 @@ import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
 import { DataTableColumnFilters } from './data-table-column-filters';
+import { DataTableExportDialog } from './data-table-export-dialog';
 import { SaveViewDialog } from './save-view-dialog';
 import { ViewManager } from './view-manager';
 
@@ -45,6 +48,12 @@ interface DataTableHeaderProps<TData> {
   tableState: TableUrlState;
   setTableState: SetTableUrlState;
   allowSidebarViews?: boolean;
+  showExport?: boolean;
+  exportPrefix?: string;
+  exportDisabled?: boolean;
+  toolbarExtra?: React.ReactNode;
+  extraViewData?: Record<string, unknown>;
+  isExtraViewDataDirty?: (savedData: Record<string, unknown> | undefined) => boolean;
   toolbarContent?: ReactNode;
 }
 
@@ -60,7 +69,12 @@ export function DataTableHeader<TData>({
   tableState,
   setTableState,
   allowSidebarViews = false,
-  toolbarContent,
+  showExport = false,
+  exportPrefix,
+  exportDisabled = false,
+  toolbarExtra,
+  extraViewData,
+  isExtraViewDataDirty,
 }: DataTableHeaderProps<TData>) {
   const projectId = useProjectId();
   const router = useRouter();
@@ -68,6 +82,7 @@ export function DataTableHeader<TData>({
   const [showColumnFilters, setShowColumnFilters] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveAsOpen, setSaveAsOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const tv = useTranslations('views');
   const queryClient = useQueryClient();
 
@@ -85,6 +100,7 @@ export function DataTableHeader<TData>({
       pageIndex: 0,
       pageSize: tableState.pageSize,
     },
+    ...extraViewData,
   });
 
   const handleOverwriteView = async () => {
@@ -182,27 +198,60 @@ export function DataTableHeader<TData>({
       tableState.pageSize !== (viewData.pagination?.pageSize ?? viewData.pageSize ?? 25) ||
       !isEqual(tableState.columnVisibility, viewData.columnVisibility ?? defaultColumnVisibility) ||
       !isEqual(tableState.sorting, viewData.sorting ?? []) ||
-      !isEqual(tableState.columnFilters, viewData.columnFilters ?? [])
+      !isEqual(tableState.columnFilters, viewData.columnFilters ?? []) ||
+      (isExtraViewDataDirty?.(viewData) ?? false)
     );
-  }, [views, tableState, defaultColumnVisibility]);
+  }, [views, tableState, defaultColumnVisibility, isExtraViewDataDirty]);
+
+  const groupedHideableColumns = useMemo(() => {
+    const hideableColumns = table.getAllColumns().filter((column) => column.getCanHide());
+    const flatColumns: typeof hideableColumns = [];
+    const groupedMap = new Map<string, typeof hideableColumns>();
+
+    for (const column of hideableColumns) {
+      const groupKey = column.columnDef.meta?.columnGroup?.key;
+      if (!groupKey) {
+        flatColumns.push(column);
+        continue;
+      }
+      const existing = groupedMap.get(groupKey) ?? [];
+      existing.push(column);
+      groupedMap.set(groupKey, existing);
+    }
+
+    const groupedColumns = [...groupedMap.entries()]
+      .sort(([, columnsA], [, columnsB]) => {
+        const orderA = columnsA[0]?.columnDef.meta?.columnGroup?.order ?? 0;
+        const orderB = columnsB[0]?.columnDef.meta?.columnGroup?.order ?? 0;
+        return orderA - orderB;
+      })
+      .map(([key, columns]) => ({ key, columns }));
+
+    return { flatColumns, groupedColumns };
+  }, [table]);
+
+  const resolveColumnLabel = (columnId: string, exportLabel?: string) =>
+    columnFilters[columnId]?.label ?? exportLabel ?? columnId;
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-3 py-4">
-        {showFilter && (
-          <div className="flex min-w-0 items-center gap-3">
-            <Input
-              placeholder={t('globalFilter') || 'Search all columns...'}
-              value={tableState.globalFilter}
-              onChange={(event) => {
-                setTableState({ globalFilter: event.target.value });
-              }}
-              className="max-w-sm bg-background dark:bg-background"
-            />
-            {toolbarContent}
+      <div className="flex items-center gap-4 py-4">
+        {(showFilter || toolbarExtra) && (
+          <div className="flex min-w-0 flex-1 items-center gap-4 overflow-x-auto">
+            {showFilter && (
+              <Input
+                placeholder={t('globalFilter') || 'Search all columns...'}
+                value={tableState.globalFilter}
+                onChange={(event) => {
+                  setTableState({ globalFilter: event.target.value });
+                }}
+                className="max-w-sm shrink-0 bg-background dark:bg-background"
+              />
+            )}
+            {toolbarExtra}
           </div>
         )}
-        <div className="ml-auto flex items-center space-x-2">
+        <div className="ml-auto flex shrink-0 items-center space-x-2">
           {viewType && (
             <>
               <ViewManager
@@ -300,6 +349,27 @@ export function DataTableHeader<TData>({
               {hasActiveFilters() && <span className="ml-2 flex h-2 w-2 rounded-full bg-primary" />}
             </Button>
           )}
+          {showExport && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1"
+                disabled={exportDisabled}
+                onClick={() => setExportOpen(true)}
+              >
+                <FileDown className="h-4 w-4" />
+                {t('export')}
+              </Button>
+              <DataTableExportDialog
+                table={table}
+                open={exportOpen}
+                onOpenChange={setExportOpen}
+                columnFilters={columnFilters}
+                exportPrefix={exportPrefix}
+              />
+            </>
+          )}
           {showColumnVisibility && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -307,22 +377,34 @@ export function DataTableHeader<TData>({
                   {t('columns')}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {table
-                  .getAllColumns()
-                  .filter((column) => column.getCanHide())
-                  .map((column) => {
-                    return (
+              <DropdownMenuContent align="end" className="max-h-[min(24rem,70vh)] overflow-y-auto">
+                {groupedHideableColumns.flatColumns.map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                  >
+                    {resolveColumnLabel(column.id, column.columnDef.meta?.export?.label)}
+                  </DropdownMenuCheckboxItem>
+                ))}
+                {groupedHideableColumns.flatColumns.length > 0 && groupedHideableColumns.groupedColumns.length > 0 && (
+                  <DropdownMenuSeparator />
+                )}
+                {groupedHideableColumns.groupedColumns.map(({ key, columns }, groupIndex) => (
+                  <div key={key}>
+                    <DropdownMenuLabel>{t(`columnGroups.${key}`)}</DropdownMenuLabel>
+                    {columns.map((column) => (
                       <DropdownMenuCheckboxItem
                         key={column.id}
-                        className="capitalize"
                         checked={column.getIsVisible()}
                         onCheckedChange={(value) => column.toggleVisibility(!!value)}
                       >
-                        {columnFilters[column.id]?.label || column.id}
+                        {resolveColumnLabel(column.id, column.columnDef.meta?.export?.label)}
                       </DropdownMenuCheckboxItem>
-                    );
-                  })}
+                    ))}
+                    {groupIndex < groupedHideableColumns.groupedColumns.length - 1 && <DropdownMenuSeparator />}
+                  </div>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
           )}

@@ -289,13 +289,13 @@ export function LogbookTable({ changes, views }: LogbookTableProps) {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <h3 className="font-semibold mb-2">{t('before')}</h3>
-                <pre className="bg-gray-100 p-4 rounded-md overflow-auto max-h-[60vh]">
+                <pre className="bg-muted p-4 rounded-md overflow-auto max-h-[60vh]">
                   {JSON.stringify(selectedChange.before, null, 2)}
                 </pre>
               </div>
               <div>
                 <h3 className="font-semibold mb-2">{t('after')}</h3>
-                <pre className="bg-gray-100 p-4 rounded-md overflow-auto max-h-[60vh]">
+                <pre className="bg-muted p-4 rounded-md overflow-auto max-h-[60vh]">
                   {JSON.stringify(selectedChange.after, null, 2)}
                 </pre>
               </div>

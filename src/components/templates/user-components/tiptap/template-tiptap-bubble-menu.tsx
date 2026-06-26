@@ -72,7 +72,7 @@ export function TemplateTiptapBubbleMenu({ editor, pluginKey, dense }: TemplateT
       <TooltipProvider delayDuration={300}>
         <div
           className={cn(
-            'flex items-center gap-0.5 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md z-[1000]',
+            'flex items-center gap-0.5 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-none z-[1000]',
           )}
         >
           {mergeChip ? (

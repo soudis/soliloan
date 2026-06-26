@@ -23,7 +23,6 @@ export function ConfigurationFormLender({ onSubmit, initialData, isLoading, erro
 
   const defaultValues = {
     userLanguage: initialData?.userLanguage || '',
-    userTheme: initialData?.userTheme || '',
     lenderRequiredFields: initialData?.lenderRequiredFields || [],
     lenderSalutation: initialData?.lenderSalutation || '',
     lenderCountry: initialData?.lenderCountry || '',

@@ -85,14 +85,14 @@ const RenderNode = ({ render }: { render: React.ReactNode }) => {
     >
       {isSelected && !isStructural && (
         <>
-          <div className="absolute top-0 right-0 -translate-y-full bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-t-sm font-bold pointer-events-none z-20">
+          <div className="absolute top-0 right-0 -translate-y-full bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded-t-sm font-bold pointer-events-none z-20">
             {name}
           </div>
           <div
             ref={(ref) => {
               if (ref) drag(ref);
             }}
-            className="absolute -left-6 top-0 p-1 bg-blue-500 text-white rounded-l-md cursor-move z-30 flex items-center justify-center hover:bg-blue-600 shadow-sm"
+            className="absolute -left-6 top-0 p-1 bg-primary text-primary-foreground rounded-l-md cursor-move z-30 flex items-center justify-center hover:bg-primary/90 shadow-sm"
             title="Ziehen zum Verschieben"
           >
             <GripVertical className="w-4 h-4" />
@@ -133,7 +133,9 @@ const EditorTopbar = ({
           onClick={togglePreview}
           disabled={previewButtonDisabled}
           className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-            isPreviewing ? 'bg-zinc-900 text-white hover:bg-zinc-800' : 'bg-white border text-zinc-700 hover:bg-zinc-50'
+            isPreviewing
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+              : 'bg-background border text-foreground hover:bg-muted'
           }`}
         >
           {isGeneratingPdf ? (
@@ -154,7 +156,7 @@ const EditorTopbar = ({
 
 const EditorViewport = ({ isPreviewing, isDocument }: { isPreviewing: boolean; isDocument: boolean }) => {
   return (
-    <div className="flex-1 bg-zinc-100 overflow-y-auto w-full h-full">
+    <div className="flex-1 bg-muted overflow-y-auto w-full h-full">
       <div
         className={`bg-white shadow-sm flex flex-col relative mx-auto my-12 ${
           isPreviewing ? 'invisible h-0 overflow-hidden' : ''
@@ -168,7 +170,7 @@ const EditorViewport = ({ isPreviewing, isDocument }: { isPreviewing: boolean; i
         {/* A4 page border for document mode */}
         {isDocument && (
           <div
-            className="pointer-events-none absolute inset-0 border border-zinc-300 z-[1]"
+            className="pointer-events-none absolute inset-0 border border-border z-[1]"
             style={{ minHeight: A4_MIN_HEIGHT_PX }}
           />
         )}
@@ -205,7 +207,7 @@ const InternalEditor = ({
 
       {/* Sidebar on the right */}
       {!isPreviewing && (
-        <div className="z-20 flex h-full min-h-0 w-80 shrink-0 flex-col border-l bg-white">
+        <div className="z-20 flex h-full min-h-0 w-80 shrink-0 flex-col border-l bg-background">
           <EditorSidebar />
         </div>
       )}
@@ -539,7 +541,7 @@ export function TemplateEditorView({
   if (!isMounted) return null;
 
   return (
-    <div className="min-h-[700px] border rounded-lg overflow-hidden flex flex-col bg-white">
+    <div className="min-h-[700px] border rounded-lg overflow-hidden flex flex-col bg-card">
       <EditorTopbar
         isPreviewing={isPreviewing}
         isGeneratingPdf={isGeneratingPdf}

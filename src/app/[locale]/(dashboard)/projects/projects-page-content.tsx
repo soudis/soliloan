@@ -14,7 +14,6 @@ import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useRouter } from '@/i18n/navigation';
 import { createColumn, createEnumBadgeColumn } from '@/lib/table-column-utils';
-import { SOLI_LOANS_THEME } from '@/lib/theme';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
 interface ProjectsPageContentProps {
@@ -185,14 +184,6 @@ export function ProjectsPageContent({ views, projects }: ProjectsPageContentProp
     ),
 
     createEnumBadgeColumn<ProjectWithConfiguration>(
-      'configuration.userTheme',
-      'userTheme',
-      'enums.theme',
-      configT,
-      commonT,
-    ),
-
-    createEnumBadgeColumn<ProjectWithConfiguration>(
       'configuration.lenderSalutation',
       'lenderSalutation',
       'enums.lender.salutation',
@@ -288,14 +279,6 @@ export function ProjectsPageContent({ views, projects }: ProjectsPageContentProp
         value: value,
       })),
     },
-    configuration_userTheme: {
-      type: 'select' as const,
-      label: configT('userTheme'),
-      options: Object.entries(SOLI_LOANS_THEME).map(([key, value]) => ({
-        label: commonT(`enums.theme.${key}`),
-        value: value,
-      })),
-    },
     configuration_lenderSalutation: {
       type: 'select' as const,
       label: configT('lenderSalutation'),
@@ -338,7 +321,6 @@ export function ProjectsPageContent({ views, projects }: ProjectsPageContentProp
     configuration_bic: false,
     configuration_country: true,
     configuration_userLanguage: false,
-    configuration_userTheme: false,
     configuration_lenderSalutation: false,
     configuration_lenderCountry: false,
     configuration_interestMethod: false,

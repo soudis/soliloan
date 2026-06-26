@@ -90,7 +90,10 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
   };
 
   return (
-    <div ref={cardRef} className="scroll-mt-24 rounded-lg border bg-card text-card-foreground shadow-sm">
+    <div
+      ref={cardRef}
+      className="scroll-mt-24 rounded-lg border border-border bg-card text-card-foreground shadow-none"
+    >
       {/* Collapsible header */}
       <div className="flex w-full items-center p-4 gap-2">
         {/** biome-ignore lint/a11y/useKeyWithClickEvents: needed */}

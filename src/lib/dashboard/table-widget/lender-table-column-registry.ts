@@ -1,6 +1,11 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
 import {
+  buildLenderProfileColumns,
+  LENDER_DETAIL_COLUMN_META,
+  type LenderProfileRow,
+} from '@/lib/dashboard/table-widget/lender-profile-columns';
+import {
   createAdditionalFieldsColumns,
   createColumn,
   createCurrencyColumn,
@@ -52,6 +57,9 @@ export function buildAllLenderTableColumns<T extends LenderListItem = LenderList
       {
         accessorKey: 'lenderNumber',
         header: 'table.lenderNumber',
+        meta: {
+          export: { type: 'integer' },
+        },
       },
       t,
     ),
@@ -113,6 +121,13 @@ export function buildAllLenderTableColumns<T extends LenderListItem = LenderList
     createCurrencyColumn<T>('interest', 'table.interest', tLoans, locale),
 
     createCurrencyColumn<T>('interestPaid', 'table.interestPaid', tLoans, locale),
+
+    ...buildLenderProfileColumns<T>({
+      getLender: (row) => row,
+      mode: 'detailOnly',
+      t,
+      commonT,
+    }),
   ];
 }
 
@@ -127,19 +142,25 @@ export function buildLenderTableColumnMeta(project: ProjectWithConfiguration): L
       customLabel: field.name,
     })) ?? [];
 
-  return [...staticBeforeAdditional, ...additionalFieldMeta, ...staticAfterAdditional];
+  const detailMeta = LENDER_DETAIL_COLUMN_META.map((entry) => ({
+    id: entry.id,
+    labelKey: entry.labelKey,
+    customLabel: undefined,
+  }));
+
+  return [...staticBeforeAdditional, ...additionalFieldMeta, ...staticAfterAdditional, ...detailMeta];
 }
 
-function readNestedValue(row: LenderListItem, field: string): unknown {
+function readNestedValue(row: LenderProfileRow & Record<string, unknown>, field: string): unknown {
   if (field.startsWith('additionalFields.')) {
     const key = field.replace('additionalFields.', '');
     return row.additionalFields?.[key];
   }
-  return row[field as keyof LenderListItem];
+  return row[field as keyof LenderProfileRow];
 }
 
 export function getLenderSortValue(
-  row: LenderListItem,
+  row: LenderProfileRow & Record<string, unknown>,
   columnId: string,
   commonT: (key: string) => string,
 ): string | number | null {
@@ -171,6 +192,8 @@ export function getLenderSortValue(
       return row.salutation ? commonT(`enums.lender.salutation.${row.salutation}`) : '';
     case 'notificationType':
       return row.notificationType ? commonT(`enums.lender.notificationType.${row.notificationType}`) : '';
+    case 'country':
+      return row.country ? commonT(`countries.${row.country.toLowerCase()}`) : '';
     default: {
       const value = readNestedValue(row, columnId);
       if (typeof value === 'number') {
@@ -204,4 +227,5 @@ export const LENDER_TABLE_COLUMN_IDS = [
   'notReclaimed',
   'interest',
   'interestPaid',
+  ...LENDER_DETAIL_COLUMN_META.map((entry) => entry.id),
 ] as const;

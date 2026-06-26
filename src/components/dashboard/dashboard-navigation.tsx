@@ -31,11 +31,16 @@ export default function DashboardNavigation({
   const isFillHeightPage =
     pathname === '/lenders' ||
     pathname === '/loans' ||
+    pathname === '/transactions' ||
     pathname === '/investment-types' ||
     pathname === '/logbook' ||
     pathname === '/projects';
 
-  const isFullWidthPage = pathname === '/lenders' || pathname === '/loans' || pathname === '/investment-types';
+  const isFullWidthPage =
+    pathname === '/lenders' ||
+    pathname === '/loans' ||
+    pathname === '/transactions' ||
+    pathname === '/investment-types';
 
   if (!session) {
     return null;

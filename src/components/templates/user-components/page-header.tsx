@@ -90,13 +90,13 @@ export const PageHeader = ({
       >
         {children}
         {isEmpty && (
-          <div className="py-4 border-2 border-dashed border-zinc-200 rounded flex items-center justify-center text-zinc-400 text-xs pointer-events-none w-full">
+          <div className="py-4 border-2 border-dashed border-border rounded flex items-center justify-center text-muted-foreground text-xs pointer-events-none w-full">
             {t('dropHere')}
           </div>
         )}
       </div>
       <div className="mx-4 relative">
-        <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-white text-[10px] text-zinc-400 px-2 pointer-events-none z-[2]">
+        <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-white text-[10px] text-muted-foreground px-2 pointer-events-none z-[2]">
           {t('label')}
         </span>
       </div>
@@ -183,7 +183,7 @@ export const PageHeaderSettings = () => {
                     (props as Record<string, boolean>)[side] = e.target.checked;
                   })
                 }
-                className="rounded border-zinc-300"
+                className="rounded border-border"
               />
               {t(side)}
             </label>
@@ -191,7 +191,7 @@ export const PageHeaderSettings = () => {
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
-            <label htmlFor="headerBorderColor" className="text-[11px] text-zinc-600">
+            <label htmlFor="headerBorderColor" className="text-[11px] text-muted-foreground">
               {t('borderColor')}
             </label>
             <input
@@ -207,7 +207,7 @@ export const PageHeaderSettings = () => {
             />
           </div>
           <div className="space-y-1">
-            <label htmlFor="headerBorderWidth" className="text-[11px] text-zinc-600">
+            <label htmlFor="headerBorderWidth" className="text-[11px] text-muted-foreground">
               {t('borderWidth')}
             </label>
             <input
@@ -226,7 +226,7 @@ export const PageHeaderSettings = () => {
           </div>
         </div>
         <div className="space-y-1">
-          <label htmlFor="headerBorderStyle" className="text-[11px] text-zinc-600">
+          <label htmlFor="headerBorderStyle" className="text-[11px] text-muted-foreground">
             {t('borderStyle')}
           </label>
           <select

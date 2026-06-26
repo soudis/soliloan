@@ -3,11 +3,7 @@ import { persist } from 'zustand/middleware';
 
 export { useNavigationUiStore } from './navigation-ui';
 
-export type ColorScheme = 'default' | 'ocean' | 'forest' | 'sunset' | 'lavender';
-
 interface AppState {
-  colorScheme: ColorScheme;
-  setColorScheme: (scheme: ColorScheme) => void;
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
 }
@@ -15,8 +11,6 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-      colorScheme: 'default',
-      setColorScheme: (colorScheme) => set({ colorScheme }),
       isSidebarOpen: true,
       toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
     }),

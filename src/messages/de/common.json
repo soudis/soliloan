@@ -46,7 +46,7 @@
     "show": "Zahlungs-QR-Code anzeigen"
   },
   "ui": {
-    "theme": "Design",
+    "appearance": "Darstellung",
     "actions": {
       "cancel": "Abbrechen",
       "confirm": "Bestätigen",
@@ -221,12 +221,10 @@
       "dative": "{months} Monaten",
       "parenthesized": "({months} Monate)"
     },
-    "theme": {
-      "default": "Standard",
-      "ocean": "Ozean",
-      "forest": "Wald",
-      "sunset": "Sonnenuntergang",
-      "lavender": "Lavendel"
+    "appearance": {
+      "system": "System",
+      "light": "Hell",
+      "dark": "Dunkel"
     }
   },
   "clear": "Keine Standardeinstellung",

@@ -48,10 +48,7 @@ export function DataTablePagination<TData>({ table, onPageSizeChange }: DataTabl
               if (next !== pageSize) onPageSizeChange(next);
             }}
           >
-            <SelectTrigger
-              id="data-table-page-size"
-              className="h-8 w-[5.25rem] shrink-0 bg-background text-sm dark:bg-background md:text-sm"
-            >
+            <SelectTrigger id="data-table-page-size" className="h-8 w-[5.25rem] shrink-0 bg-card text-sm md:text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent align="start">

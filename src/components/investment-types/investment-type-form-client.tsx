@@ -86,6 +86,8 @@ export function InvestmentTypeFormClient({
       toast.success(t('success'));
       if (onSuccess) {
         await onSuccess();
+      } else if (isEditMode && initialData?.id) {
+        router.push(`/investment-types/${initialData.id}?projectId=${project.id}`);
       } else {
         router.push(`/investment-types?projectId=${project.id}`);
       }

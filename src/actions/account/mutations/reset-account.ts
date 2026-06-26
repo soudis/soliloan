@@ -1,6 +1,6 @@
 'use server';
 
-import { Language, SoliLoansTheme } from '@prisma/client';
+import { Language } from '@prisma/client';
 
 import { db } from '@/lib/db';
 import { authAction } from '@/lib/utils/safe-action';
@@ -22,7 +22,6 @@ export const resetAccountAction = authAction.action(async ({ ctx: { session } })
         passwordResetToken: null,
         passwordResetTokenExpiresAt: null,
         language: Language.de,
-        theme: SoliLoansTheme.default,
         managerOf: { set: [] },
       },
     }),

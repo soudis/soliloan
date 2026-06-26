@@ -9,6 +9,7 @@
   "templates": "Vorlagen",
   "lenders": "Kreditgeber*innen",
   "loans": "Kredite",
+  "transactions": "Transaktionen",
   "signOut": "Abmelden",
   "selectProject": "Projekt auswählen",
   "configuration": "Einstellungen",
@@ -18,5 +19,6 @@
   "about": "Über",
   "aboutMenuAria": "Über: Lizenz, Impressum und Quellcode",
   "investmentTypes": "Anlagearten",
-  "sandbox": "Sandbox"
+  "sandbox": "Sandbox",
+  "procrastinator": "Procrastinator"
 }

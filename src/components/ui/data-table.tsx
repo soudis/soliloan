@@ -15,7 +15,7 @@ import {
 import { MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
-import { useTableUrlState } from '@/lib/hooks/use-table-url-state';
+import { type SetTableUrlState, type TableUrlState, useTableUrlState } from '@/lib/hooks/use-table-url-state';
 import { cn } from '@/lib/utils';
 
 import { Checkbox } from './checkbox';
@@ -27,6 +27,27 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from './dropdo
 
 const EMPTY_COLUMN_VISIBILITY: VisibilityState = {};
 
+export type ColumnExportType = 'text' | 'integer' | 'number' | 'currency' | 'percent' | 'date' | 'duration';
+
+export type ColumnExportMeta = {
+  type?: ColumnExportType;
+  /** Resolved header for Excel; set in column builders */
+  label?: string;
+  /** Optional override when accessorFn/getValue is insufficient (enums) */
+  getValue?: (row: unknown) => string | number | Date | null | undefined;
+  /** Enable wrapped text in Excel (e.g. multi-line address). */
+  wrapText?: boolean;
+};
+
+export type ColumnGroupKey = 'transaction' | 'loan' | 'lender';
+
+export type ColumnGroupMeta = {
+  /** Translation key under dataTable.columnGroups */
+  key: ColumnGroupKey;
+  /** Lower = earlier in selector */
+  order: number;
+};
+
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
     style?: {
@@ -37,6 +58,8 @@ declare module '@tanstack/react-table' {
     actionsColumn?: boolean;
     /** Bulk checkbox column: full-cell hit area, not sticky. */
     bulkSelectColumn?: boolean;
+    export?: ColumnExportMeta;
+    columnGroup?: ColumnGroupMeta;
   }
 }
 
@@ -148,9 +171,20 @@ interface DataTableProps<TData, TValue> {
   /** Lender/loan: offer "pin to sidebar" in save dialog. */
   allowSidebarViews?: boolean;
   getRowId?: (row: TData) => string;
+  /** Extra fields persisted in saved views (transaction table time range, etc.). */
+  extraViewData?: Record<string, unknown>;
+  /** Compare extra view fields for dirty state. */
+  isExtraViewDataDirty?: (savedData: Record<string, unknown> | undefined) => boolean;
   toolbarContent?: ReactNode;
   /** Fill parent height: toolbar and pagination stay fixed; table body scrolls vertically. */
   fillHeight?: boolean;
+  /** Show Excel export button in the toolbar. */
+  showExport?: boolean;
+  /** Filename prefix for exports; defaults to `export-{date}.xlsx` when omitted. */
+  exportPrefix?: string;
+  /** Controlled table URL state (e.g. transaction table with extra params). */
+  tableState?: TableUrlState;
+  setTableState?: SetTableUrlState;
 }
 
 export function DataTable<TData, TValue>({
@@ -170,16 +204,26 @@ export function DataTable<TData, TValue>({
   actions,
   bulkActions,
   getRowId = (row) => (row as Record<string, unknown>).id as string,
-  toolbarContent,
   fillHeight = false,
+  showExport = false,
+  exportPrefix,
+  toolbarContent,
+  extraViewData,
+  isExtraViewDataDirty,
+  tableState: controlledTableState,
+  setTableState: controlledSetTableState,
 }: DataTableProps<TData, TValue>) {
   const t = useTranslations('dataTable');
 
-  // Get table state from URL — views are passed so the hook can diff against the selected view's baseline
-  const { state: tableState, setState: setTableState } = useTableUrlState({
+  const internalUrlState = useTableUrlState({
     defaultColumnVisibility,
     views,
+    controlledState: controlledTableState,
+    controlledSetState: controlledSetTableState,
   });
+
+  const tableState = internalUrlState.state;
+  const setTableState = internalUrlState.setState;
 
   const sorting = tableState.sorting;
   const columnFilterState = tableState.columnFilters;
@@ -232,8 +276,8 @@ export function DataTable<TData, TValue>({
           // biome-ignore lint/a11y/noLabelWithoutControl: Radix Checkbox is not a native input; wrapping label gives full-cell hit area.
           <label
             className={cn(
-              'absolute inset-0 z-10 flex min-h-0 cursor-pointer items-center justify-center bg-background leading-none rounded-none transition-colors hover:bg-muted',
-              fillHeight && 'shadow-[inset_0_-1px_0_0_var(--border)]',
+              'absolute inset-0 z-10 flex min-h-0 cursor-pointer items-center justify-center bg-card leading-none rounded-none transition-colors hover:bg-muted',
+              fillHeight && 'shadow-[inset_0_-1px_0_0_var(--table-border)]',
             )}
             data-bulk-select
           >
@@ -306,6 +350,8 @@ export function DataTable<TData, TValue>({
             </DropdownMenu>
           </div>
         ),
+        enableSorting: false,
+        enableHiding: false,
         meta: {
           fixed: true,
           actionsColumn: true,
@@ -394,6 +440,8 @@ export function DataTable<TData, TValue>({
     enableGlobalFilter: true,
   });
 
+  const exportDisabled = table.getSelectedRowModel().rows.length === 0 && table.getFilteredRowModel().rows.length === 0;
+
   if (isLoading) {
     return (
       <div
@@ -423,6 +471,12 @@ export function DataTable<TData, TValue>({
             tableState={tableState}
             setTableState={setTableState}
             allowSidebarViews={allowSidebarViews}
+            showExport={showExport}
+            exportPrefix={exportPrefix}
+            exportDisabled={exportDisabled}
+            toolbarExtra={toolbarContent}
+            extraViewData={extraViewData}
+            isExtraViewDataDirty={isExtraViewDataDirty}
             toolbarContent={toolbarContent}
           />
         </div>

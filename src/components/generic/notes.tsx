@@ -60,11 +60,11 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
             <div
               key={note.id}
               className={cn(
-                'relative group min-h-[120px] break-inside-avoid mb-4 flex flex-col rounded-sm border p-4',
-                'shadow-[1px_2px_6px_rgba(0,0,0,0.14)] hover:shadow-[2px_4px_10px_rgba(0,0,0,0.18)] transition-shadow duration-200',
+                'relative group min-h-[120px] break-inside-avoid mb-4 flex flex-col rounded-sm border border-border p-4',
+                'transition-colors duration-200',
                 note.public
-                  ? 'bg-[#fff9b0] border-amber-900/15 text-amber-950'
-                  : 'bg-[#e3f2fd] border-sky-900/15 text-sky-950',
+                  ? 'bg-warning/30 border-warning/20 text-warning-foreground'
+                  : 'bg-info/20 border-info/20 text-info-foreground',
               )}
             >
               <div className="flex-1 min-w-0 pr-6 leading-snug">
@@ -76,8 +76,8 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    'h-8 w-8 shadow-xs',
-                    note.public ? 'bg-amber-900/5 hover:bg-amber-900/10' : 'bg-sky-900/5 hover:bg-sky-900/10',
+                    'h-8 w-8',
+                    note.public ? 'bg-warning/10 hover:bg-warning/20' : 'bg-info/10 hover:bg-info/20',
                   )}
                   onClick={() => {
                     setEditingNote(note);
@@ -91,8 +91,8 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    'h-8 w-8 shadow-xs',
-                    note.public ? 'bg-amber-900/5 hover:bg-amber-900/10' : 'bg-sky-900/5 hover:bg-sky-900/10',
+                    'h-8 w-8',
+                    note.public ? 'bg-warning/10 hover:bg-warning/20' : 'bg-info/10 hover:bg-info/20',
                   )}
                   onClick={() => setIsConfirmOpen(note.id)}
                 >

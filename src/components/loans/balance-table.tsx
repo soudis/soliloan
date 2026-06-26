@@ -19,7 +19,7 @@ type BalanceTableProps = {
   className?: string;
 };
 
-const rowClass = 'flex items-center justify-between rounded-md border-t px-0 py-1.5 first:border-t-0';
+const rowClass = 'flex items-center justify-between border-t px-0 py-1.5 first:border-t-0';
 
 export function BalanceTable({
   totals: {
@@ -118,7 +118,7 @@ export function BalanceTable({
             </div>
             <span className="text-sm font-medium">{t('table.deposits')}</span>
           </div>
-          <div className={cn(TRANSACTION_AMOUNT_CLASS, 'text-green-600')}>+{formatCurrency(deposits)}</div>
+          <div className={cn(TRANSACTION_AMOUNT_CLASS, 'text-success-foreground')}>+{formatCurrency(deposits)}</div>
         </div>
       )}
       {showSums && interest !== 0 && (
@@ -129,7 +129,7 @@ export function BalanceTable({
             </div>
             <span className="text-sm font-medium">{t('table.interest')}</span>
           </div>
-          <div className={cn(TRANSACTION_AMOUNT_CLASS, 'text-green-600')}>+{formatCurrency(interest)}</div>
+          <div className={cn(TRANSACTION_AMOUNT_CLASS, 'text-success-foreground')}>+{formatCurrency(interest)}</div>
         </div>
       )}
       {showSums && interestPaid !== 0 && (
@@ -140,18 +140,18 @@ export function BalanceTable({
             </div>
             <span className="text-sm font-medium">{t('table.interestPaid')}</span>
           </div>
-          <div className={cn(TRANSACTION_AMOUNT_CLASS, 'text-blue-600')}>{formatCurrency(interestPaid)}</div>
+          <div className={cn(TRANSACTION_AMOUNT_CLASS, 'text-info-foreground')}>{formatCurrency(interestPaid)}</div>
         </div>
       )}
       {showSums && interestError !== 0 && (
         <div className={rowClass}>
           <div className="flex min-w-0 flex-1 items-center gap-3">
-            <div className="rounded-full bg-amber-500/20 p-1">
-              <Receipt className="h-4 w-4 text-amber-600" />
+            <div className="rounded-full bg-warning/20 p-1">
+              <Receipt className="h-4 w-4 text-warning-foreground" />
             </div>
             <span className="text-sm font-medium">{t('table.interestError')}</span>
           </div>
-          <div className={cn(TRANSACTION_AMOUNT_CLASS, 'text-amber-600')}>
+          <div className={cn(TRANSACTION_AMOUNT_CLASS, 'text-warning-foreground')}>
             {interestError < 0 ? '-' : ''}
             {formatCurrency(interestError)}
           </div>
@@ -165,7 +165,7 @@ export function BalanceTable({
             </div>
             <span className="text-sm font-medium">{t('table.withdrawals')}</span>
           </div>
-          <div className={cn(TRANSACTION_AMOUNT_CLASS, 'text-blue-600')}>{formatCurrency(withdrawals)}</div>
+          <div className={cn(TRANSACTION_AMOUNT_CLASS, 'text-info-foreground')}>{formatCurrency(withdrawals)}</div>
         </div>
       )}
       {showSums && notReclaimed !== 0 && (
@@ -182,7 +182,7 @@ export function BalanceTable({
       {showSums && (
         <div
           className={cn(
-            'flex items-center justify-between rounded-md px-0 py-1.5',
+            'flex items-center justify-between px-0 py-1.5',
             showTotalBorder ? 'mt-2 border-t pt-2' : 'border-t first:border-t-0',
           )}
         >

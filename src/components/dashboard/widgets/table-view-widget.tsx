@@ -136,13 +136,17 @@ export function TableViewWidget<T>({
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col rounded-md bg-card">
       <Table containerClassName="overflow-visible">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <TableHead key={header.id} style={(header.column.columnDef.meta as { style?: CSSProperties })?.style}>
+                <TableHead
+                  key={header.id}
+                  className="bg-card"
+                  style={(header.column.columnDef.meta as { style?: CSSProperties })?.style}
+                >
                   {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                 </TableHead>
               ))}
@@ -153,11 +157,15 @@ export function TableViewWidget<T>({
           {table.getRowModel().rows.map((row) => (
             <TableRow
               key={row.id}
-              className={cn(onRowClick && 'cursor-pointer')}
+              className={cn('group/row transition-colors hover:bg-transparent', onRowClick && 'cursor-pointer')}
               onClick={() => onRowClick?.(row.original)}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id} style={(cell.column.columnDef.meta as { style?: CSSProperties })?.style}>
+                <TableCell
+                  key={cell.id}
+                  className={cn('bg-card transition-colors', onRowClick && 'group-hover/row:bg-muted/50')}
+                  style={(cell.column.columnDef.meta as { style?: CSSProperties })?.style}
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}

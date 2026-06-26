@@ -2,6 +2,15 @@
   "rowActions": "Aktionen",
   "columns": "Spalten",
   "filters": "Filter",
+  "export": "Exportieren",
+  "exportDialog": {
+    "title": "Tabelle exportieren",
+    "visibleColumns": "Nur sichtbare Spalten",
+    "allColumns": "Alle Spalten",
+    "confirm": "Exportieren",
+    "cancel": "Abbrechen",
+    "exporting": "Exportiere..."
+  },
   "previous": "Zurück",
   "next": "Weiter",
   "firstPage": "Erste Seite",
@@ -18,5 +27,10 @@
   "bulkBar": {
     "selected": "{count} ausgewählt",
     "deselect": "Auswahl aufheben"
+  },
+  "columnGroups": {
+    "transaction": "Transaktion",
+    "loan": "Kredit",
+    "lender": "Kreditgeber*in"
   }
 }

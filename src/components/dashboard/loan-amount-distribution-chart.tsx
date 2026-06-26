@@ -7,6 +7,7 @@ import { Pie } from 'react-chartjs-2';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { chartColorAtIndex } from '@/lib/dashboard/chart/chart-dataset-colors';
 import { formatCurrency } from '@/lib/utils';
 import { LoanStatus, type LoanWithCalculations } from '@/types/loans';
 
@@ -23,17 +24,6 @@ interface LoanAmountDistributionChartProps {
   data: LoanAmountDistributionItem[];
   loans: LoanWithCalculations[]; // Add loans prop to access loan status
 }
-
-// Define consistent colors for each range
-const RANGE_COLORS = {
-  '0 - 1,000': '#8884d8',
-  '1,001 - 5,000': '#82ca9d',
-  '5,001 - 10,000': '#ffc658',
-  '10,001 - 25,000': '#ff8042',
-  '25,001 - 50,000': '#0088fe',
-  '50,001 - 100,000': '#00c49f',
-  '100,001+': '#ffbb28',
-};
 
 export function LoanAmountDistributionChart({ loans }: LoanAmountDistributionChartProps) {
   const t = useTranslations('dashboard');
@@ -92,8 +82,8 @@ export function LoanAmountDistributionChart({ loans }: LoanAmountDistributionCha
     datasets: [
       {
         data: filteredData.map((item) => item.totalAmount),
-        backgroundColor: filteredData.map((item) => RANGE_COLORS[item.range as keyof typeof RANGE_COLORS]),
-        borderColor: filteredData.map((item) => RANGE_COLORS[item.range as keyof typeof RANGE_COLORS]),
+        backgroundColor: filteredData.map((_, index) => chartColorAtIndex(index)),
+        borderColor: filteredData.map((_, index) => chartColorAtIndex(index)),
         borderWidth: 1,
       },
     ],

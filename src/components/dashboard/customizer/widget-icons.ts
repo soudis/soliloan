@@ -1,4 +1,4 @@
-import { BarChart3, Hash, LineChart, Minus, PieChart, Table2, Users } from 'lucide-react';
+import { BarChart3, Hash, LineChart, Minus, PieChart, Receipt, Table2, Users } from 'lucide-react';
 import type { ComponentType } from 'react';
 
 import type { DashboardWidgetType } from '@/types/dashboard-layout';
@@ -13,4 +13,5 @@ export const WIDGET_TYPE_ICONS: Record<DashboardWidgetType, ComponentType<{ clas
   divider: Minus,
   loan_table_view: Table2,
   lender_table_view: Users,
+  transaction_table_view: Receipt,
 };
