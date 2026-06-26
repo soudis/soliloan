@@ -986,6 +986,13 @@
           "successLimitationWarning": "Für die neu angelegten Anlagearten wurde die Standard-Bagatellgrenze verwendet (Anlagesumme). Wir empfehlen dies zu prüfen.",
           "viewInvestmentTypes": "Zu den Anlagearten",
           "close": "Schließen"
+        },
+        "disableDialog": {
+          "title": "Anlagearten-Modul deaktivieren",
+          "description": "Das Anlagearten-Modul wird deaktiviert. Anlagearten und Zuordnungen bleiben erhalten, sind aber nicht mehr über die Navigation erreichbar.",
+          "cancel": "Abbrechen",
+          "deactivate": "Modul deaktivieren",
+          "deactivating": "Wird deaktiviert…"
         }
       },
       "loanTemplates": {

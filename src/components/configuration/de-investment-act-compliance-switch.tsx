@@ -23,6 +23,7 @@ import { InfoText } from '@/components/ui/info-text';
 import { Link, useRouter } from '@/i18n/navigation';
 import { Switch } from '../ui/switch';
 
+type DialogMode = 'enable' | 'disable';
 type DialogStep = 'confirm' | 'success';
 
 interface DeInvestmentActComplianceSwitchProps {
@@ -41,6 +42,7 @@ export function DeInvestmentActComplianceSwitch({
   const router = useRouter();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<DialogMode>('enable');
   const [dialogStep, setDialogStep] = useState<DialogStep>('confirm');
   const [createdCount, setCreatedCount] = useState(0);
 
@@ -101,7 +103,9 @@ export function DeInvestmentActComplianceSwitch({
       if (!currentValue) {
         return;
       }
-      await runDeactivation();
+      setDialogMode('disable');
+      setDialogStep('confirm');
+      setDialogOpen(true);
       return;
     }
 
@@ -114,16 +118,18 @@ export function DeInvestmentActComplianceSwitch({
       return;
     }
 
+    setDialogMode('enable');
     setDialogStep('confirm');
     setDialogOpen(true);
   };
 
   const handleDialogOpenChange = (open: boolean) => {
-    if (!open && dialogStep === 'confirm') {
+    if (!open && dialogStep === 'confirm' && dialogMode === 'enable') {
       form.setValue('deInvestmentActCompliance', false, { shouldDirty: false });
     }
     setDialogOpen(open);
     if (!open) {
+      setDialogMode('enable');
       setDialogStep('confirm');
       setCreatedCount(0);
     }
@@ -132,6 +138,14 @@ export function DeInvestmentActComplianceSwitch({
   const handleConfirmActivate = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     await runActivation();
+  };
+
+  const handleConfirmDeactivate = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    const success = await runDeactivation();
+    if (success) {
+      setDialogOpen(false);
+    }
   };
 
   return (
@@ -160,7 +174,22 @@ export function DeInvestmentActComplianceSwitch({
 
       <AlertDialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
         <AlertDialogContent>
-          {dialogStep === 'confirm' ? (
+          {dialogStep === 'confirm' && dialogMode === 'disable' ? (
+            <>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('disableDialog.title')}</AlertDialogTitle>
+                <AlertDialogDescription className="text-left whitespace-pre-line">
+                  {t('disableDialog.description')}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isExecuting}>{t('disableDialog.cancel')}</AlertDialogCancel>
+                <AlertDialogAction variant="destructive" onClick={handleConfirmDeactivate} disabled={isExecuting}>
+                  {isExecuting ? t('disableDialog.deactivating') : t('disableDialog.deactivate')}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </>
+          ) : dialogStep === 'confirm' ? (
             <>
               <AlertDialogHeader>
                 <AlertDialogTitle>{t('enableDialog.title')}</AlertDialogTitle>
