@@ -1195,6 +1195,9 @@
     },
     "detail": {
       "title": "Anlageart",
+      "pageTitle": "Anlageart {interestRate}",
+      "pageTitleWithName": "Anlageart {name} {interestRate}",
+      "backToList": "Zurück zu Anlagearten",
       "information": "Informationen",
       "edit": "Bearbeiten",
       "delete": "Löschen",

@@ -2,7 +2,7 @@
 
 import { type InvestmentType, type Lender, LimitationType, type Loan } from '@prisma/client';
 import { addMonths, format, startOfDay } from 'date-fns';
-import { Calendar, Pencil, Telescope, Trash2, TriangleAlert, X } from 'lucide-react';
+import { Calendar, ChevronLeft, Pencil, Telescope, Trash2, TriangleAlert, X } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
@@ -30,9 +30,9 @@ import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useRouter } from '@/i18n/navigation';
 import {
-  calcTotalAmount,
   calcInvestmentTypeMetrics,
   calcNotMoreThanNUnitsMetrics,
+  calcTotalAmount,
   getPastLoans,
 } from '@/lib/investment-types/calc-investment-type-metrics';
 import { getDefaultEffectiveDate } from '@/lib/investment-types/effective-date';
@@ -73,6 +73,11 @@ export function InvestmentTypeDetailContent({ investmentType, project }: Props) 
 
   const isTotalAmountOverTimePeriod = investmentType.limitationType === LimitationType.TOTAL_AMOUNT_OVER_TIME_PERIOD;
   const unitsMetrics = useMemo(() => calcNotMoreThanNUnitsMetrics(investmentType.loans), [investmentType.loans]);
+  const optionalName = investmentType.name?.trim();
+  const formattedInterestRate = formatPercentage(investmentType.interestRate, locale);
+  const pageTitle = optionalName
+    ? t('detail.pageTitleWithName', { name: optionalName, interestRate: formattedInterestRate })
+    : t('detail.pageTitle', { interestRate: formattedInterestRate });
 
   const handleDelete = async () => {
     const result = await deleteAction({ projectId: project.id, investmentTypeId: investmentType.id });
@@ -88,14 +93,7 @@ export function InvestmentTypeDetailContent({ investmentType, project }: Props) 
   const informationSection = (
     <section className="flex flex-col rounded-lg border bg-background p-6">
       <h2 className="text-sm font-medium text-muted-foreground">{t('detail.information')}</h2>
-      <h1 className="mt-3 text-2xl font-bold tracking-tight">{investmentType.name?.trim() || t('detail.title')}</h1>
       <dl className="mt-6 space-y-4 text-sm">
-        <div>
-          <dt className="text-muted-foreground">{t('form.interestRate')}</dt>
-          <dd className="mt-1 text-base font-semibold tabular-nums">
-            {formatPercentage(investmentType.interestRate, locale)}
-          </dd>
-        </div>
         <div>
           <dt className="text-muted-foreground">{t('table.limitationType')}</dt>
           <dd className="mt-2">
@@ -177,17 +175,26 @@ export function InvestmentTypeDetailContent({ investmentType, project }: Props) 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end gap-2">
-        <Button variant="outline" asChild>
-          <Link href={`/investment-types/${investmentType.id}/edit?projectId=${project.id}`}>
-            <Pencil className="w-4 h-4 mr-2" />
-            {t('detail.edit')}
-          </Link>
-        </Button>
-        <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
-          <Trash2 className="w-4 h-4 mr-2" />
-          {t('detail.delete')}
-        </Button>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-2">
+          <Button variant="ghost" size="icon" className="shrink-0" onClick={() => router.back()}>
+            {' '}
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="truncate text-3xl font-bold">{pageTitle}</h1>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link href={`/investment-types/${investmentType.id}/edit?projectId=${project.id}`}>
+              <Pencil className="w-4 h-4 mr-2" />
+              {t('detail.edit')}
+            </Link>
+          </Button>
+          <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
+            <Trash2 className="w-4 h-4 mr-2" />
+            {t('detail.delete')}
+          </Button>
+        </div>
       </div>
 
       {isTotalAmountOverTimePeriod ? (
