@@ -8,8 +8,8 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { updateConfigurationAction } from '@/actions/projects/mutations/update-project-configuration';
 import type { ConfigurationFormData } from '@/lib/schemas/configuration';
-import { convertEmptyToNull } from '@/lib/utils/form';
 import type { ProjectSystemTemplateOverviewRow } from '@/lib/templates/project-system-templates-overview';
+import { convertEmptyToNull } from '@/lib/utils/form';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ConfigurationFormGeneral } from './configuration-form-general';
@@ -23,11 +23,12 @@ export type ConfigurationTabValue = 'general' | 'lender' | 'loans' | 'templates'
 
 type Props = {
   project: ProjectWithConfiguration;
+  germanLoansCount: number;
   inviteValidDays: number;
   systemTemplatesOverviewRows: ProjectSystemTemplateOverviewRow[];
 };
 
-export const ConfigurationPage = ({ project, inviteValidDays, systemTemplatesOverviewRows }: Props) => {
+export const ConfigurationPage = ({ project, germanLoansCount, inviteValidDays, systemTemplatesOverviewRows }: Props) => {
   const t = useTranslations('dashboard.configuration');
   const [activeTab, setActiveTab] = useQueryState(
     'tab',
@@ -108,6 +109,7 @@ export const ConfigurationPage = ({ project, inviteValidDays, systemTemplatesOve
         <ConfigurationFormLoans
           onSubmit={handleSubmit}
           project={project}
+          germanLoansCount={germanLoansCount}
           hasHistoricTransactions={project.hasHistoricTransactions}
           initialData={project.configuration}
           isLoading={isExecuting}

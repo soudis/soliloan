@@ -7,7 +7,7 @@ import { isEqual } from 'lodash';
 import { ChevronDown, FileDown, Save, SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
-import { useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { createViewAction } from '@/actions/views/mutations/create-view';
 import { deleteViewAction } from '@/actions/views/mutations/delete-view';
 import { updateViewAction } from '@/actions/views/mutations/update-view';
@@ -54,6 +54,7 @@ interface DataTableHeaderProps<TData> {
   toolbarExtra?: React.ReactNode;
   extraViewData?: Record<string, unknown>;
   isExtraViewDataDirty?: (savedData: Record<string, unknown> | undefined) => boolean;
+  toolbarContent?: ReactNode;
 }
 
 export function DataTableHeader<TData>({
@@ -409,7 +410,7 @@ export function DataTableHeader<TData>({
           )}
         </div>
       </div>
-      {showColumnFilters && viewType && Object.keys(columnFilters).length > 0 && (
+      {showColumnFilters && Object.keys(columnFilters).length > 0 && (
         <DataTableColumnFilters tableState={tableState} setTableState={setTableState} columnFilters={columnFilters} />
       )}
     </>

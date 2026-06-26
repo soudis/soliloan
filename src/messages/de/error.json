@@ -23,7 +23,8 @@
   },
   "loan": {
     "notFound": "Kredit nicht gefunden.",
-    "numberAlreadyExists": "Diese Kreditnummer ist in diesem Projekt bereits vergeben."
+    "numberAlreadyExists": "Diese Kreditnummer ist in diesem Projekt bereits vergeben.",
+    "investmentTypeRequired": "Für deutsche Kreditgeber*innen muss bei aktivem Anlagearten-Modul zuerst eine passende Anlageart für diesen Zinssatz erstellt werden."
   },
   "note": {
     "notFound": "Notiz nicht gefunden."
@@ -48,6 +49,12 @@
   "profile": {
     "updateFailed": "Fehler beim Aktualisieren des Profils.",
     "updateSuccess": "Profil erfolgreich aktualisiert."
+  },
+  "investmentType": {
+    "notFound": "Anlageart nicht gefunden.",
+    "interestRateAlreadyExists": "Für diesen Zinssatz existiert bereits eine Anlageart.",
+    "cannotChangeInterestRateWithLoans": "Der Zinssatz kann nicht geändert werden, da bereits Kredite zugeordnet sind.",
+    "cannotDeleteWithLoans": "Die Anlageart kann nicht gelöscht werden, da ihr Kredite zugeordnet sind."
   },
   "migration": {
     "fetchFailed": "Datenpaket konnte nicht von der DKP-v1 API heruntergeladen werden. Bitte URL und Token prüfen.",

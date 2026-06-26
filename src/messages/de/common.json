@@ -36,6 +36,10 @@
     "copy": "In die Zwischenablage kopieren",
     "copied": "Kopiert!"
   },
+  "infoText": {
+    "more": "Mehr dazu…",
+    "less": "…Weniger"
+  },
   "qrCode": {
     "title": "Zahlungs-QR-Code",
     "description": "Scanne diesen QR-Code mit deiner Banking-App, um die Zahlungsinformationen zu erhalten",
@@ -207,6 +211,15 @@
       "E30_360_COMPOUND": "E30/360 (Mit Zinseszins)",
       "ACT_360_COMPOUND": "ACT/360 (Mit Zinseszins)",
       "ACT_ACT_COMPOUND": "ACT/ACT (Mit Zinseszins)"
+    },
+    "limitationType": {
+      "NOT_MORE_THAN_N_UNITS": "Anzahl Anlagen",
+      "TOTAL_AMOUNT_OVER_TIME_PERIOD": "Anlagesumme"
+    },
+    "limitationTypeTimePeriod": {
+      "default": "{months} Monate",
+      "dative": "{months} Monaten",
+      "parenthesized": "({months} Monate)"
     },
     "appearance": {
       "system": "System",

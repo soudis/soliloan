@@ -14,7 +14,7 @@ export function LoanSelectorItem({ loan }: LoanSelectorItemProps) {
   const tCommon = useTranslations('common');
   const tLoan = useTranslations('dashboard.loans');
   const amountStr = formatCurrency(loan.amount);
-  const interestRateStr = `${formatPercentage(loan.interestRate)}%`;
+  const interestRateStr = formatPercentage(loan.interestRate);
   const balanceStr = formatCurrency(loan.balance);
   const contractDateStr = formatDateLong(loan.signDate, locale);
 

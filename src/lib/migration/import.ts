@@ -194,6 +194,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
                 interestMethod,
                 altInterestMethods,
                 lenderAdditionalFields,
+                deInvestmentActCompliance: false,
               },
             },
             managers: {

@@ -17,6 +17,7 @@ interface FormNumberInputProps {
   prefix?: string;
   minimumFractionDigits?: number;
   maximumFractionDigits?: number;
+  autoFocus?: boolean;
 }
 
 export function FormNumberInput({
@@ -30,6 +31,7 @@ export function FormNumberInput({
   prefix,
   minimumFractionDigits = 2,
   maximumFractionDigits = 2,
+  autoFocus,
 }: FormNumberInputProps) {
   const form = useFormContext();
 
@@ -64,6 +66,7 @@ export function FormNumberInput({
                 disabled={disabled}
                 step={step}
                 {...field}
+                autoFocus={autoFocus}
                 value={field.value}
                 onBlur={(event) => {
                   const value = event.target.value;

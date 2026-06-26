@@ -32,10 +32,15 @@ export default function DashboardNavigation({
     pathname === '/lenders' ||
     pathname === '/loans' ||
     pathname === '/transactions' ||
+    pathname === '/investment-types' ||
     pathname === '/logbook' ||
     pathname === '/projects';
 
-  const isFullWidthPage = pathname === '/lenders' || pathname === '/loans' || pathname === '/transactions';
+  const isFullWidthPage =
+    pathname === '/lenders' ||
+    pathname === '/loans' ||
+    pathname === '/transactions' ||
+    pathname === '/investment-types';
 
   if (!session) {
     return null;

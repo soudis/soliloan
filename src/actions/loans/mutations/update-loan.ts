@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createAuditEntry, getChangedFields, getLenderContext, getLoanContext } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
+import { normalizeLoanInterestRate } from '@/lib/schemas/investment-type';
 import { loanFormSchema } from '@/lib/schemas/loan';
 import { loanAction } from '@/lib/utils/safe-action';
 
@@ -39,7 +40,27 @@ export const updateLoanAction = loanAction
       throw new Error('Loan not found');
     }
 
-    // Update the loan
+    // DEInvestmentActCompliance: German lenders must use an existing matching InvestmentType.
+    let investmentTypeId: string | null = null;
+    if (loan.lender.project.configuration.deInvestmentActCompliance && loan.lender.country === 'DE') {
+      const normalizedRate = normalizeLoanInterestRate(data.interestRate);
+      const matchingType = await db.investmentType.findUnique({
+        where: {
+          projectId_interestRate: {
+            projectId: loan.lender.projectId,
+            interestRate: normalizedRate,
+          },
+        },
+        select: { id: true },
+      });
+
+      if (!matchingType) {
+        return { formErrors: { investmentType: 'error.loan.investmentTypeRequired' } };
+      }
+
+      investmentTypeId = matchingType.id;
+    }
+
     const updatedLoan = await db.loan.update({
       where: {
         id: loanId,
@@ -57,6 +78,7 @@ export const updateLoanAction = loanAction
         altInterestMethod: data.altInterestMethod,
         contractStatus: data.contractStatus,
         additionalFields: data.additionalFields ?? {},
+        investmentTypeId,
       },
       include: {
         lender: true,

@@ -1,6 +1,7 @@
 'use client';
 
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -27,15 +28,18 @@ export function Combobox({
   options,
   value,
   onSelect,
-  placeholder = 'Select option...',
-  emptyText = 'No results found.',
+  placeholder,
+  emptyText,
   className,
   disabled = false,
 }: ComboboxProps) {
+  const t = useTranslations('common');
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
 
   const currentValue = options.find((option) => option.value === value);
+  const resolvedPlaceholder = placeholder ?? t('ui.form.selectPlaceholder');
+  const resolvedEmptyText = emptyText ?? t('ui.actions.noResults');
 
   // Filter options based on search query
   const filteredOptions = React.useMemo(() => {
@@ -55,7 +59,7 @@ export function Combobox({
           className={cn('w-full justify-between', className)}
           disabled={disabled}
         >
-          {currentValue ? currentValue.label : placeholder}
+          {currentValue ? currentValue.label : resolvedPlaceholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -65,7 +69,7 @@ export function Combobox({
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <input
               className="flex h-9 w-full rounded-md bg-transparent py-1 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder={placeholder}
+              placeholder={resolvedPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               disabled={disabled}
@@ -73,7 +77,7 @@ export function Combobox({
           </div>
           <div className="max-h-[300px] overflow-y-auto">
             {filteredOptions.length === 0 ? (
-              <div className="py-6 text-center text-sm">{emptyText}</div>
+              <div className="py-6 text-center text-sm">{resolvedEmptyText}</div>
             ) : (
               <div className="py-1">
                 {filteredOptions.map((option) => (

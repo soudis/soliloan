@@ -12,6 +12,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { AuditContext } from '@/lib/audit-trail';
 import { createColumn } from '@/lib/table-column-utils';
+import { formatPercentage } from '@/lib/utils';
 
 interface LogbookTableProps {
   changes: Change[];
@@ -103,6 +104,26 @@ export function LogbookTable({ changes, views }: LogbookTableProps) {
           return t('lender.deleted', {
             lenderName: context.lender?.name ?? '',
             lenderId: context.lender?.id ?? '',
+          });
+        }
+        break;
+      case 'investment_type':
+        if (change.operation === 'CREATE') {
+          return t('investmentType.created', {
+            name: context.investmentType?.name || '',
+            interestRate: formatPercentage(context.investmentType?.interestRate),
+          });
+        }
+        if (change.operation === 'UPDATE') {
+          return t('investmentType.updated', {
+            name: context.investmentType?.name || '',
+            interestRate: formatPercentage(context.investmentType?.interestRate),
+          });
+        }
+        if (change.operation === 'DELETE') {
+          return t('investmentType.deleted', {
+            name: context.investmentType?.name || '',
+            interestRate: formatPercentage(context.investmentType?.interestRate),
           });
         }
         break;

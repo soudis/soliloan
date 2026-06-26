@@ -614,6 +614,9 @@
         "success": "Kreditgeber*in erfolgreich erstellt"
       }
     },
+    "sanityChecks": {
+      "countryChangeToGermany": "Wenn sich das Land der Kreditgeber*in ändert, dann gilt dies auch für bestehende Kredite. Wir empfehlen nicht das Land zu ändern, sondern eine neue Kreditgeber*in anzulegen."
+    },
     "edit": {
       "title": "Kreditgeber*in bearbeiten",
       "form": {
@@ -780,6 +783,10 @@
         "amountPlaceholder": "Betrag eingeben",
         "interestRate": "Zinssatz",
         "interestRatePlaceholder": "Zinssatz eingeben",
+        "selectInvestmentType": "Anlageart auswählen",
+        "investmentTypeSearchPlaceholder": "Anlageart suchen…",
+        "noInvestmentTypes": "Keine Anlagearten gefunden",
+        "loadingInvestmentTypes": "Anlagearten werden geladen…",
         "terminationInfo": "Kündigungsinformationen",
         "contractEnd": "Vertragsende",
         "contractEndByCancellation": "Durch Kündigung",
@@ -808,6 +815,23 @@
         "submit": "Kredit erstellen",
         "submitting": "Wird erstellt..."
       }
+    },
+    "sanityChecks": {
+      "investmentTypeCapacityExceededTotalAmount": "Die Kapazität der Anlageart ist überschritten ({used} von maximal {limit}).",
+      "investmentTypeCapacityExceededUnits": "Die maximale Anzahl an Anlagen würde durch diesen Kredit überschritten ({used} von maximal {limit})."
+    },
+    "investmentType": {
+      "title": "Anlageart",
+      "loading": "Anlageart wird geprüft…",
+      "missingRequirements": "Bitte zuerst angeben: {fields}",
+      "onlyForGermanLenders": "Bei Kreditgeber*innen die nicht aus Deutschland stammen muss keine Anlageart zugeordnet werden.",
+      "unnamed": "",
+      "interestRate": "Zinssatz",
+      "capacity": "Kapazität",
+      "usedCapacity": "Benutzte Kapazität",
+      "capacityIncludingCurrent": "Inklusive aktuellem Kredit",
+      "noInvestmentType": "Für diesen Zinssatz existiert noch <strong>keine</strong> Anlageart. Für deutsche Kreditgeber*innen muss sie vor dem Speichern des Kredits erstellt werden.",
+      "createNow": "Anlageart anlegen"
     },
     "edit": {
       "title": "Kredit von {lenderName} bearbeiten",
@@ -945,6 +969,32 @@
       "hasHistoricTransactions": "Es gibt bereits Zahlungen aus vergangenen Jahren, die Zinsberechnungsmethode kann nicht mehr geändert werden.",
       "altInterestMethodsHint": "Alternative Zinsmethoden können pro Kredit angegeben werden. Es wird empfohlen keine alternative Methoden zuzulassen.",
       "noAltInterestMethods": "Keine alternativen Zinsmethoden zugelassen",
+      "deInvestmentActCompliance": {
+        "title": "Rechtliches",
+        "label": "Anlagearten-Modul (Schutz vor dem deutschen Anlegerschutz)",
+        "hint": "Funktionen zur Einhaltung der Bagatellgrenzen nach <link-1>§ 2 Nr. 3 VermAnlG</link-1>. <more>Nach dem Vermögensanlagengesetz (VermAnlG) unterliegen Vermögensanlagen die in Deutschland öffentlich angeboten werden grundsätzlich der Prospektpflicht nach § 6 VermAnlG sowie der Pflicht ein Vermögensanlagen-Informationsblatt zu veröffentlichen.\n\n<strong>Ausnahmen von der Pflicht</strong> ergeben sich aus § 2 VermAnlG. So besteht keine Prospektpflicht, wenn: \n(1) von derselben Vermögensanlage nicht mehr als 20 Anteile angeboten werden.\n(2) der Verkaufspreis der im Zeitraum von zwölf Monaten angebotenen Anteile insgesamt 100.000 € nicht übersteigt.\n\n Dieses Modul unterstützt bei der Einhaltung dieser Bagatellgrenzen.\n</more>",
+        "enabledWithoutLoans": "Das Anlagearten-Modul wurde aktiviert.",
+        "disabled": "Das Anlagearten-Modul wurde deaktiviert.",
+        "enableDialog": {
+          "title": "Anlagearten-Modul aktivieren",
+          "description": "Das Projekt enthält bereits Kredite aus Deutschland. Bei Aktivierung des Moduls werden für diese Kredite automatisch Anlagearten erstellt.",
+          "cancel": "Abbrechen",
+          "activate": "Anlagearten erstellen und Modul aktivieren",
+          "activating": "Wird aktiviert…",
+          "successTitle": "Anlagearten-Modul aktiviert",
+          "successCreated": "Das Modul ist jetzt aktiv. {count, plural, =0 {Die vorhandenen Anlagearten wurden zugewiesen.} one {Es wurde eine neue Anlageart angelegt.} other {Es wurden # neue Anlagearten angelegt.}}",
+          "successLimitationWarning": "Für die neu angelegten Anlagearten wurde die Standard-Bagatellgrenze verwendet (Anlagesumme). Wir empfehlen dies zu prüfen.",
+          "viewInvestmentTypes": "Zu den Anlagearten",
+          "close": "Schließen"
+        },
+        "disableDialog": {
+          "title": "Anlagearten-Modul deaktivieren",
+          "description": "Das Anlagearten-Modul wird deaktiviert. Anlagearten und Zuordnungen bleiben erhalten, sind aber nicht mehr über die Navigation erreichbar.",
+          "cancel": "Abbrechen",
+          "deactivate": "Modul deaktivieren",
+          "deactivating": "Wird deaktiviert…"
+        }
+      },
       "loanTemplates": {
         "loanTemplates": "Kreditvorlagen",
         "name": "Name",
@@ -1095,6 +1145,7 @@
       "downloadReport": "Report herunterladen"
     }
   },
+
   "myLoans": {
     "title": "Meine Kredite",
     "welcome": "Willkommen, {name}!",
@@ -1132,5 +1183,94 @@
       "prev": "Zurück",
       "next": "Weiter"
     }
+  },
+
+  "investmentTypes": {
+    "title": "Anlagearten",
+    "description": "Verwalten Sie Anlagearten zur Einhaltung der Bagatellgrenzen des deutschen Anlegerschutzes-Gesetzes.",
+    "effectiveDate": "Stichtag",
+    "create": "Anlageart erstellen",
+    "table": {
+      "name": "Name",
+      "limitationType": "Bagatellgrenze",
+      "interestRate": "Zinssatz",
+      "numberOfLoans": "Kredite",
+      "totalAmount": "Summe",
+      "capacity": "Kapazität",
+      "usedCapacity": "Benutzte Kapazität",
+      "freeCapacity": "Freie Kapazität"
+    },
+    "detail": {
+      "title": "Anlageart",
+      "pageTitle": "Anlageart {interestRate}",
+      "pageTitleWithName": "Anlageart {name} {interestRate}",
+      "backToList": "Zurück zu Anlagearten",
+      "information": "Informationen",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "loans": "Kredite in dieser Anlageart",
+      "noLoans": "Keine Kredite zugeordnet.",
+      "noOpenLoans": "Keine laufenden Kredite zugeordnet.",
+      "showCompletedLoans": "Abgeschlossene Kredite anzeigen",
+      "relevantLoans": "Relevante Kredite",
+      "relevantLoansDescription": "Für die Kapazität der Anlageart zum Stichtag sind nur Kredite relevant, die bis zu 12 Monate vor oder nach dem Stichtag liegen.",
+      "noRelevantLoans": "Keine relevanten Kredite im Zeitraum.",
+      "loansOutsideTimeframe": "Kredite außerhalb des Zeitraums",
+      "loansOutsideTimeframeDescription": "Folgende Kredite sind Teil der Anlageart, haben aber zum Stichtag keinen Einfluss auf die Kapazität.",
+      "noLoansOutsideTimeframe": "Keine Kredite außerhalb des Zeitraums.",
+      "allLoansDescription": "Alle zugeordneten Kredite. Auch solche, die zum Stichtag keinen Einfluss auf die Kapazität haben.",
+      "loanFilter": {
+        "active": "Relevant",
+        "all": "Alle",
+        "inactive": "Nicht relevant"
+      },
+      "loanNumber": "Nummer",
+      "lender": "Kreditgeber*in",
+      "status": "Status",
+      "signDate": "Vertragsdatum",
+      "setEffectiveDateFromSignDate": "Als Stichtag setzen",
+      "clearEffectiveDate": "Stichtag entfernen",
+      "effectiveDatePeriodDescription": "Im Zeitraum von {startDate} bis {endDate}.",
+      "amount": "Vertragswert",
+      "usedCapacityAtSignDate": "Benutzte Kapazität zum Vertragsdatum",
+      "investmentAmountAtSignDate": "Anlagesumme zum Vertragsdatum",
+      "investmentAmountAboveLimit": "Anlagesumme liegt über der Grenze",
+      "interestRate": "Zinssatz",
+      "confirmDelete": "Anlageart löschen?",
+      "confirmDeleteDescription": "Die Anlageart wird endgültig entfernt. Dieser Vorgang kann nicht rückgängig gemacht werden.",
+      "cannotDeleteTitle": "Anlageart kann nicht gelöscht werden",
+      "cannotDeleteDescription": "Diese Anlageart ist {count, plural, one {einem Kredit} other {# Krediten}} zugeordnet und kann deshalb nicht gelöscht werden.",
+      "deleteSuccess": "Anlageart erfolgreich gelöscht.",
+      "deleteError": "Fehler beim Löschen der Anlageart."
+    },
+    "form": {
+      "createTitle": "Anlageart erstellen",
+      "editTitle": "Anlageart bearbeiten",
+      "generalInfo": "Allgemeine Informationen",
+      "interestRate": "Zinssatz",
+      "interestRatePlaceholder": "Zinssatz eingeben",
+      "interestRateHintDisabled": "Der Zinssatz kann nicht geändert werden, da bereits Kredite zugeordnet sind.",
+      "name": "Name",
+      "namePlaceholder": "Optionaler Name",
+      "limitationType": "Bagatellgrenze",
+      "limitationTypeSectionDescription": "Welche Ausnahmeregelung soll für diese Anlegeart genutzt werden?",
+      "limitationTypeNotMoreThanNUnits": "Begrenzte Anzahl der Anlagen",
+      "limitationTypeNotMoreThanNUnitsDescription": "Es dürfen nicht mehr als {limit} Anlagen dieser Anlageart existieren.",
+      "limitationTypeTotalAmount": "Begrenzte Anlagesumme (über {timePeriod})",
+      "limitationTypeTotalAmountDescription": "Die Gesamtanlagesumme der Kredite mit dieser Anlageart darf {limit} innerhalb von {timePeriod} nicht überschreiten.",
+      "submit": "Speichern",
+      "submitting": "Wird gespeichert…",
+      "cancel": "Abbrechen",
+      "success": "Anlageart erfolgreich gespeichert.",
+      "error": "Fehler beim Speichern der Anlageart."
+    },
+    "capacity": {
+      "calculator": "Kapazitätsrechner",
+      "units": "Anlagen",
+      "freeCapacity": "{freeCapacity} freie Kapazität",
+      "totalAmountInPeriod": "Anlagesumme in 12 Monaten",
+      "futureLoansLimitCapacity": "Kredite in der Zukunft senken die Kapazität. <more>Würde zum Stichtag ein Kredit angelegt, so hätte dieser Einfluss auf Kredite in der Zukunft (bis zu 12 Monate). Deshalb wurden diese Kredite bei der Berechnung mit einbezogen.</more>"
+    },
+    "notEnabled": "Das Modul zum Schutz vor dem deutschen Anlegerschutz ist für dieses Projekt nicht aktiviert."
   }
 }

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 
 import { createAuditEntry, getLenderContext, getLoanContext, removeNullFields } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
+import { normalizeLoanInterestRate } from '@/lib/schemas/investment-type';
 import { loanFormSchema } from '@/lib/schemas/loan';
 import { lenderAction } from '@/lib/utils/safe-action';
 
@@ -19,7 +20,17 @@ async function getNextLoanNumber(projectId: string): Promise<number> {
 export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(async ({ parsedInput: data }) => {
   const lender = await db.lender.findUniqueOrThrow({
     where: { id: data.lenderId },
-    select: { projectId: true },
+    select: {
+      country: true,
+      projectId: true,
+      project: {
+        select: {
+          configuration: {
+            select: { deInvestmentActCompliance: true },
+          },
+        },
+      },
+    },
   });
 
   const loanNumber = data.loanNumber ?? (await getNextLoanNumber(lender.projectId));
@@ -30,6 +41,28 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
       select: { id: true },
     });
     if (existing) return { fieldErrors: { loanNumber: 'error.loan.numberAlreadyExists' } };
+  }
+
+  // DEInvestmentActCompliance: German lenders must use an existing matching InvestmentType.
+  let investmentTypeId: string | undefined;
+
+  if (lender.project.configuration.deInvestmentActCompliance && lender.country === 'DE') {
+    const normalizedRate = normalizeLoanInterestRate(data.interestRate);
+    const matchingType = await db.investmentType.findUnique({
+      where: {
+        projectId_interestRate: {
+          projectId: lender.projectId,
+          interestRate: normalizedRate,
+        },
+      },
+      select: { id: true },
+    });
+
+    if (!matchingType) {
+      return { formErrors: { investmentType: 'error.loan.investmentTypeRequired' } };
+    }
+
+    investmentTypeId = matchingType.id;
   }
 
   const loan = await db.loan.create({
@@ -52,6 +85,7 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
       altInterestMethod: data.altInterestMethod,
       contractStatus: data.contractStatus,
       additionalFields: data.additionalFields ?? {},
+      ...(investmentTypeId && { investmentType: { connect: { id: investmentTypeId } } }),
     },
     include: {
       lender: true,

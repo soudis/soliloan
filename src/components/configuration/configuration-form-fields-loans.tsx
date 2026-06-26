@@ -1,25 +1,43 @@
 'use client';
 
 import { InterestMethod } from '@prisma/client';
+import { Scale } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { FormSection } from '@/components/ui/form-section';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { FormFieldConfigurator } from '../form/form-field-configurator';
 import { FormMultiSelect } from '../form/form-multi-select';
 import { FormSelect } from '../form/form-select';
+import { DeInvestmentActComplianceSwitch } from './de-investment-act-compliance-switch';
 import { LoanTemplateTable } from './loan-template-table';
 
 interface ConfigurationFormFieldsLoansProps {
   hasHistoricTransactions?: boolean;
   project: ProjectWithConfiguration;
+  germanLoansCount: number;
 }
 
-export function ConfigurationFormFieldsLoans({ hasHistoricTransactions, project }: ConfigurationFormFieldsLoansProps) {
+export function ConfigurationFormFieldsLoans({
+  hasHistoricTransactions,
+  project,
+  germanLoansCount,
+}: ConfigurationFormFieldsLoansProps) {
   const t = useTranslations('dashboard.configuration');
   const commonT = useTranslations('common');
 
   return (
     <>
+      <div className="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <FormSection
+          title={t('form.deInvestmentActCompliance.title')}
+          icon={<Scale className="h-4 w-4 text-muted-foreground" />}
+        >
+          <DeInvestmentActComplianceSwitch projectId={project.id} germanLoansCount={germanLoansCount} />
+        </FormSection>
+        <FormSection title="Was kommt hier denn hin?" icon={<Scale className="h-4 w-4 text-muted-foreground" />}>
+          <div>Es bleibt spannend ...</div>
+        </FormSection>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <FormSection title={t('form.loanDefaults')}>
           <FormSelect
