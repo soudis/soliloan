@@ -33,10 +33,12 @@ export default function DashboardNavigation({
     pathname === '/lenders' ||
     pathname === '/loans' ||
     isTransactionsPage ||
+    pathname === '/investment-types' ||
     pathname === '/logbook' ||
     pathname === '/projects';
 
-  const isFullWidthPage = pathname === '/lenders' || pathname === '/loans' || isTransactionsPage;
+  const isFullWidthPage =
+    pathname === '/lenders' || pathname === '/loans' || isTransactionsPage || pathname === '/investment-types';
 
   if (!session) {
     return null;

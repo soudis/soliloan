@@ -5,25 +5,32 @@ import { DurationType } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { getLendersByProjectAction } from '@/actions/lenders';
+import { FormSanityChecksProvider } from '@/components/form/form-sanity-checks-provider';
 import { Form } from '@/components/ui/form';
-import { FormActions } from '@/components/ui/form-actions';
+import { FormActionsWithSanityWarnings } from '@/components/ui/form-actions';
 import { FormLayout } from '@/components/ui/form-layout';
 import type { AdditionalFieldValues } from '@/lib/schemas/common';
 import type { LoanFormData } from '@/lib/schemas/loan';
 import { loanFormSchema } from '@/lib/schemas/loan';
 import { emptyStringToNull, formatNumber } from '@/lib/utils';
 import { additionalFieldDefaults, validateAdditionalFields } from '@/lib/utils/additional-fields';
-import type { FormSubmitHandler } from '@/types/forms';
 import type { LoanWithRelations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { LoanFormFields } from './loan-form-fields';
+
+export interface LoanFormSubmitResult {
+  fieldErrors?: Partial<Record<keyof LoanFormData, string>>;
+  rootErrors?: {
+    investmentType?: string;
+  };
+}
 
 interface LoanFormProps {
   title: string;
   submitButtonText: string;
   submittingButtonText: string;
   cancelButtonText: string;
-  onSubmit: FormSubmitHandler<LoanFormData>;
+  onSubmit: (data: LoanFormData) => Promise<LoanFormSubmitResult | undefined>;
   initialData?: Partial<LoanWithRelations>;
   isLoading?: boolean;
   error?: string | null;
@@ -90,28 +97,45 @@ export function LoanForm({
       Object.entries(formData).map(([key, value]) => [key, emptyStringToNull(value)]),
     ) as LoanFormData;
 
-    const fieldErrors = await onSubmit(processedData);
-    if (fieldErrors) {
-      for (const [field, message] of Object.entries(fieldErrors)) {
+    form.clearErrors('root.investmentType');
+
+    const submitResult = await onSubmit(processedData);
+    if (submitResult) {
+      if (submitResult.rootErrors?.investmentType) {
+        form.setError('root.investmentType', {
+          type: 'server',
+          message: submitResult.rootErrors.investmentType,
+        });
+      }
+
+      for (const [field, message] of Object.entries(submitResult.fieldErrors ?? {})) {
         form.setError(field as keyof LoanFormData, { type: 'server', message });
       }
+
+      return;
     }
   });
 
   return (
     <FormLayout title={title} error={error}>
-      <Form {...form}>
-        <form onSubmit={handleSubmit}>
-          <LoanFormFields lenders={lenders} isEditMode={isEditMode} />
+      <FormSanityChecksProvider>
+        <Form {...form}>
+          <form onSubmit={handleSubmit}>
+            <LoanFormFields
+              lenders={lenders}
+              isEditMode={isEditMode}
+              currentLoanId={initialData?.id}
+            />
 
-          <FormActions
-            submitButtonText={submitButtonText}
-            submittingButtonText={submittingButtonText}
-            cancelButtonText={cancelButtonText}
-            isLoading={isLoading}
-          />
-        </form>
-      </Form>
+            <FormActionsWithSanityWarnings
+              submitButtonText={submitButtonText}
+              submittingButtonText={submittingButtonText}
+              cancelButtonText={cancelButtonText}
+              isLoading={isLoading}
+            />
+          </form>
+        </Form>
+      </FormSanityChecksProvider>
     </FormLayout>
   );
 }

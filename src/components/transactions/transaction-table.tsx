@@ -166,7 +166,7 @@ export function TransactionTable({
         setTableState={setTableState}
         extraViewData={extraViewData}
         isExtraViewDataDirty={isExtraViewDataDirty}
-        toolbarExtra={<TransactionTimeRangeControl state={tableState} setTableState={setTableState} />}
+        toolbarContent={<TransactionTimeRangeControl state={tableState} setTableState={setTableState} />}
         getRowId={getTransactionListItemRowId}
         onRowClick={(row) => router.push(`/lenders/${row.loan.lender.id}?loanId=${row.loan.id}`)}
         bulkActions={bulkActions}

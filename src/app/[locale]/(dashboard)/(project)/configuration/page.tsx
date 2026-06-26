@@ -3,6 +3,7 @@ import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
 import { ConfigurationPage } from '@/components/configuration/configuration-page';
 import { db } from '@/lib/db';
 import { getInviteValidDays } from '@/lib/env';
+import { countGermanLoans } from '@/lib/investment-types/count-german-loans';
 import { searchParamsCache } from '@/lib/params';
 import { getProjectSystemTemplatesOverviewRows } from '@/lib/templates/project-system-templates-overview';
 
@@ -13,15 +14,17 @@ interface PageProps {
 export default async function ConfigPage({ searchParams }: PageProps) {
   const { projectId } = searchParamsCache.parse(await searchParams);
 
-  const [result, projectWithManagers, systemTemplatesOverviewRows, bankConnections] = await Promise.all([
-    getProjectUnsafe(projectId),
-    db.project.findUnique({
-      where: { id: projectId },
-      select: { managers: true },
-    }),
-    getProjectSystemTemplatesOverviewRows(projectId),
-    getBankConnections(projectId),
-  ]);
+  const [result, projectWithManagers, systemTemplatesOverviewRows, germanLoansCount, bankConnections] =
+    await Promise.all([
+      getProjectUnsafe(projectId),
+      db.project.findUnique({
+        where: { id: projectId },
+        select: { managers: true },
+      }),
+      getProjectSystemTemplatesOverviewRows(projectId),
+      countGermanLoans(db, projectId),
+      getBankConnections(projectId),
+    ]);
 
   const project = {
     ...result,
@@ -31,6 +34,7 @@ export default async function ConfigPage({ searchParams }: PageProps) {
   return (
     <ConfigurationPage
       project={project}
+      germanLoansCount={germanLoansCount}
       inviteValidDays={getInviteValidDays()}
       systemTemplatesOverviewRows={systemTemplatesOverviewRows}
       bankConnections={bankConnections}

@@ -171,12 +171,11 @@ interface DataTableProps<TData, TValue> {
   /** Lender/loan: offer "pin to sidebar" in save dialog. */
   allowSidebarViews?: boolean;
   getRowId?: (row: TData) => string;
-  /** Optional content rendered in the toolbar (left side, after search). */
-  toolbarExtra?: React.ReactNode;
   /** Extra fields persisted in saved views (transaction table time range, etc.). */
   extraViewData?: Record<string, unknown>;
   /** Compare extra view fields for dirty state. */
   isExtraViewDataDirty?: (savedData: Record<string, unknown> | undefined) => boolean;
+  toolbarContent?: React.ReactNode;
   /** Fill parent height: toolbar and pagination stay fixed; table body scrolls vertically. */
   fillHeight?: boolean;
   /** Show Excel export button in the toolbar. */
@@ -211,7 +210,7 @@ export function DataTable<TData, TValue>({
   fillHeight = false,
   showExport = false,
   exportPrefix,
-  toolbarExtra,
+  toolbarContent,
   extraViewData,
   isExtraViewDataDirty,
   tableState: controlledTableState,
@@ -496,9 +495,10 @@ export function DataTable<TData, TValue>({
             showExport={showExport}
             exportPrefix={exportPrefix}
             exportDisabled={exportDisabled}
-            toolbarExtra={toolbarExtra}
+            toolbarExtra={toolbarContent}
             extraViewData={extraViewData}
             isExtraViewDataDirty={isExtraViewDataDirty}
+            toolbarContent={toolbarContent}
           />
         </div>
       )}

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createAuditEntry, getChangedFields, getLenderContext } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
+import { maintainLoanInvestmentTypes } from '@/lib/investment-types/maintain-loan-investment-types';
 import { lenderFormSchema } from '@/lib/schemas/lender';
 import { getLenderName } from '@/lib/utils';
 import { normalizeStoredEmail } from '@/lib/utils/email';
@@ -88,6 +89,15 @@ export const updateLenderAction = lenderAction
         context: getLenderContext(updatedLender),
         projectId: lender.projectId,
       });
+    }
+
+    if (
+      lender.project.configuration.deInvestmentActCompliance &&
+      lender.country !== updatedLender.country
+    ) {
+      await maintainLoanInvestmentTypes(db, lender.projectId);
+      revalidatePath('/loans');
+      revalidatePath('/investment-types');
     }
 
     // Revalidate the lenders page

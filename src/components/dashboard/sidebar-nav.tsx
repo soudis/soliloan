@@ -4,11 +4,13 @@ import { ViewType } from '@prisma/client';
 import {
   Box,
   FileText,
+  FlaskConical,
   HandCoins,
   History,
   LayoutDashboard,
   LogOut,
   Receipt,
+  Scale,
   Settings,
   Users,
   Wallet,
@@ -17,9 +19,11 @@ import Link from 'next/link';
 import type { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
+import { useQueryState } from 'nuqs';
 
 import { ThemeModeSwitch } from '@/components/theme-mode-switch';
 import { Button } from '@/components/ui/button';
+import { PROJECT_ID_KEY, projectIdParser } from '@/lib/params';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -40,6 +44,9 @@ export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews }: S
   const t = useTranslations('navigation');
   const { toggleSidebar } = useAppStore();
   const isAdmin = session.user.isAdmin;
+  const [projectId] = useQueryState(PROJECT_ID_KEY, projectIdParser);
+  const currentProject = projects.find((p) => p.id === projectId);
+  const showInvestmentTypes = currentProject?.configuration.deInvestmentActCompliance === true;
 
   return (
     <>
@@ -97,7 +104,11 @@ export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews }: S
                 <SidebarViewItems views={sidebarViews} viewType={ViewType.TRANSACTION} basePath="/transactions" />
               </div>
               <NavItem href="/logbook" icon={History} label={t('logbook')} />
+              {showInvestmentTypes && <NavItem href="/investment-types" icon={Scale} label={t('investmentTypes')} />}
               <NavItem href="/configuration" icon={Settings} label={t('configuration')} />
+              {process.env.NODE_ENV === 'development' && (
+                <NavItem href="/sandbox" icon={FlaskConical} label={t('sandbox')} />
+              )}
             </div>
           </nav>
 

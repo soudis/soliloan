@@ -5,11 +5,10 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { updateLoanAction } from '@/actions/loans';
-import { LoanForm } from '@/components/loans/loan-form';
+import { LoanForm, type LoanFormSubmitResult } from '@/components/loans/loan-form';
 import { useRouter } from '@/i18n/navigation';
 import type { LoanFormData } from '@/lib/schemas/loan';
 import { getLenderName } from '@/lib/utils';
-import type { FormSubmitResult } from '@/types/forms';
 import type { LoanWithRelations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
@@ -24,12 +23,20 @@ export function EditLoanClient({ loan, project }: EditLoanClientProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (data: LoanFormData): Promise<FormSubmitResult> => {
+  const handleSubmit = async (data: LoanFormData): Promise<LoanFormSubmitResult | undefined> => {
     try {
       setIsSubmitting(true);
       setError(null);
 
       const result = await updateLoanAction({ loanId: loan.id, data });
+
+      if (result?.data?.formErrors) {
+        const investmentTypeError = result.data.formErrors?.investmentType;
+
+        return {
+          ...(investmentTypeError && { rootErrors: { investmentType: investmentTypeError } }),
+        };
+      }
 
       if (result?.serverError || result?.validationErrors) {
         throw new Error(result.serverError || 'Validation failed');

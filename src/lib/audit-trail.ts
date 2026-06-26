@@ -2,6 +2,7 @@ import type {
   Configuration,
   Entity,
   File,
+  InvestmentType,
   Lender,
   Loan,
   Note,
@@ -11,7 +12,7 @@ import type {
 } from '@prisma/client';
 import { auth } from '@/lib/auth';
 
-type EntityData = Configuration | Lender | Loan | Transaction | Note | Partial<File>;
+type EntityData = Configuration | Lender | Loan | Transaction | Note | InvestmentType | Partial<File>;
 
 export interface AuditContext {
   user?: {
@@ -34,6 +35,11 @@ export interface AuditContext {
   };
   file?: {
     name: string;
+  };
+  investmentType?: {
+    id: string;
+    name: string | null;
+    interestRate: number;
   };
   manager?: {
     id: string;
@@ -125,6 +131,16 @@ export function getFileContext(file: File): Partial<AuditContext> {
   return {
     file: {
       name: file.name,
+    },
+  };
+}
+
+export function getInvestmentTypeContext(investmentType: InvestmentType): Partial<AuditContext> {
+  return {
+    investmentType: {
+      id: investmentType.id,
+      name: investmentType.name,
+      interestRate: investmentType.interestRate,
     },
   };
 }

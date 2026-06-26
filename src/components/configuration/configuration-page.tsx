@@ -24,6 +24,7 @@ export type ConfigurationTabValue = 'general' | 'lender' | 'loans' | 'templates'
 
 type Props = {
   project: ProjectWithConfiguration;
+  germanLoansCount: number;
   inviteValidDays: number;
   systemTemplatesOverviewRows: ProjectSystemTemplateOverviewRow[];
   bankConnections: BankConnection[];
@@ -31,6 +32,7 @@ type Props = {
 
 export const ConfigurationPage = ({
   project,
+  germanLoansCount,
   inviteValidDays,
   systemTemplatesOverviewRows,
   bankConnections,
@@ -117,6 +119,7 @@ export const ConfigurationPage = ({
         <ConfigurationFormLoans
           onSubmit={handleSubmit}
           project={project}
+          germanLoansCount={germanLoansCount}
           hasHistoricTransactions={project.hasHistoricTransactions}
           initialData={project.configuration}
           isLoading={isExecuting}

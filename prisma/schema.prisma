@@ -121,8 +121,9 @@ model Configuration {
   defaultLoanTemplateId  String?
   loanTemplates          LoanTemplate[]
   project                Project?
-  lenderAdditionalFields Json                  @default("[]")
-  loanAdditionalFields   Json                  @default("[]")
+  lenderAdditionalFields     Json                  @default("[]")
+  loanAdditionalFields       Json                  @default("[]")
+  deInvestmentActCompliance  Boolean        @default(false)
 }
 
 model Project {
@@ -136,6 +137,7 @@ model Project {
   templates        CommunicationTemplate[]
   predefinedBlocks PredefinedCraftBlock[]
   views            View[]
+  investmentTypes InvestmentType[]
   dashboardLayout  DashboardLayout?
   bankConnections  BankConnection[]
   bankImportBatch  BankImportBatch?
@@ -272,8 +274,10 @@ model Loan {
   interestRate          Float
   altInterestMethod     InterestMethod?
   contractStatus        ContractStatus
+  investmentTypeId      String?
   files                 File[]
   lender                Lender          @relation(fields: [lenderId], references: [id], onDelete: Cascade)
+  investmentType        InvestmentType?     @relation(fields: [investmentTypeId], references: [id], onDelete: SetNull)
   notes                 Note[]
   transactions          Transaction[]
   additionalFields      Json?
@@ -403,6 +407,24 @@ enum Entity {
   transaction
   file
   note
+  investment_type
+}
+
+enum LimitationType {
+  NOT_MORE_THAN_N_UNITS
+  TOTAL_AMOUNT_OVER_TIME_PERIOD
+}
+
+model InvestmentType {
+  id             String         @id @default(cuid())
+  projectId      String
+  interestRate   Float
+  limitationType LimitationType
+  name           String?
+  project        Project        @relation(fields: [projectId], references: [id])
+  loans          Loan[]
+
+  @@unique([projectId, interestRate])
 }
 
 model Change {
@@ -458,6 +480,7 @@ enum ViewType {
   LOAN
   TRANSACTION
   LOGBOOK
+  INVESTMENT_TYPE
   PROJECT
 }
 

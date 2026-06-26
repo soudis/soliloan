@@ -1,13 +1,12 @@
 import type { Lender, Loan } from '@prisma/client';
 import type { CellContext, ColumnDef, Row, VisibilityState } from '@tanstack/react-table';
-import type { ReactNode } from 'react';
 import moment from 'moment';
+import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
-import type { DataTableColumnFilters } from '@/components/ui/data-table';
-import type { ColumnGroupMeta } from '@/components/ui/data-table';
+import type { ColumnGroupMeta, DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { formatCurrency, getLenderName, NumberParser, resolveIntlLocaleForDates } from '@/lib/utils';
 import { formatDurationDays } from '@/lib/format-duration';
+import { formatCurrency, formatPercentage, getLenderName, NumberParser, resolveIntlLocaleForDates } from '@/lib/utils';
 import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat } from './schemas/common';
 
 // Define the custom filter function for compound text fields
@@ -244,12 +243,7 @@ export function createNumberColumn<T>(
       accessorKey,
       header: headerKey,
       cell: ({ row }) => {
-        const value =
-          row.getValue(accessorKey) !== null &&
-          row.getValue(accessorKey) !== undefined &&
-          row.getValue(accessorKey) !== ''
-            ? parser.parse(row.getValue(accessorKey) as string)
-            : '';
+        const value = formatTableNumberValue(row.getValue(accessorKey), parser);
         return <div className="tabular-nums">{value}</div>;
       },
     },
@@ -260,6 +254,20 @@ export function createNumberColumn<T>(
   column.filterFn = 'inNumberRange';
   return mergeExportMeta(column, { type: options?.integer === false ? 'number' : 'integer' });
 }
+
+function formatTableNumberValue(rawValue: unknown, parser: NumberParser): number | string | null {
+  if (rawValue === null || rawValue === undefined || rawValue === '') {
+    return '';
+  }
+
+  if (typeof rawValue === 'number') {
+    return rawValue;
+  }
+
+  return parser.parse(String(rawValue));
+}
+
+// Create a currency column
 export function createCurrencyColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,
@@ -318,6 +326,9 @@ export function createDateColumn<T>(
   );
 }
 
+type PercentageColumnFormattingOptions = {
+  align?: 'left' | 'right' | 'center';
+};
 export function createDurationDaysColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,
@@ -344,15 +355,18 @@ export function createPercentageColumn<T>(
   headerKey: string | undefined,
   t: (key: string) => string,
   locale: string,
+  formatting: PercentageColumnFormattingOptions = {},
 ): ColumnDef<T> {
   const parser = new NumberParser(locale);
+  const align = formatting.align ?? 'right';
   const column = createColumn<T>(
     {
       accessorKey,
       header: headerKey,
+      align,
       cell: ({ row }) => {
         const value = parser.parse(row.getValue(accessorKey) as string) || 0;
-        return <div className="text-right tabular-nums">{`${value.toFixed(2)}%`}</div>;
+        return <div className={`${getTextAlignClass(align)} tabular-nums`}>{formatPercentage(value, locale)}</div>;
       },
     },
     t,
@@ -362,6 +376,19 @@ export function createPercentageColumn<T>(
   column.filterFn = 'inNumberRange';
   return mergeExportMeta(column, { type: 'percent' });
 }
+
+function getTextAlignClass(align: 'left' | 'right' | 'center') {
+  switch (align) {
+    case 'center':
+      return 'text-center';
+    case 'right':
+      return 'text-right';
+    default:
+      return 'text-left';
+  }
+}
+
+// Create an enum column with badge
 export function createEnumBadgeColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,

@@ -35,16 +35,17 @@ export function formatCurrency(amount: number | undefined | null, locale?: strin
 /**
  * Formats a number as a percentage string using German locale
  * @param amount The amount to format
- * @returns A formatted percentage string (e.g. "12.34%")
+ * @returns A formatted percentage string (e.g. "12,34 %")
  */
 export function formatPercentage(amount: number | undefined | null, locale?: string): string {
   if (amount === undefined || amount === null) {
     return '';
   }
-  return new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'de-DE', {
-    minimumFractionDigits: 0,
+  const formattedValue = new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'de-DE', {
+    minimumFractionDigits: 2,
     maximumFractionDigits: 3,
   }).format(amount);
+  return `${formattedValue} %`;
 }
 
 export function formatNumber(

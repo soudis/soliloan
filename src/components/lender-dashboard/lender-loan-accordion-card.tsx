@@ -92,7 +92,7 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
                 <span>·</span>
                 <span>{formatCurrency(loan.amount)}</span>
                 <span>·</span>
-                <span>{formatPercentage(loan.interestRate)} %</span>
+                <span>{formatPercentage(loan.interestRate)}</span>
                 <span>·</span>
                 <span>{format(new Date(loan.signDate), 'PP', { locale: dateLocale })}</span>
               </div>
@@ -157,7 +157,7 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
                     <span>
                       <span className="whitespace-nowrap">{formatCurrency(loan.amount)}</span>{' '}
                       <span className="text-muted-foreground text-sm">{t('table.for')}</span>{' '}
-                      <span className="whitespace-nowrap">{formatPercentage(loan.interestRate)} %</span>
+                      <span className="whitespace-nowrap">{formatPercentage(loan.interestRate)}</span>
                     </span>
                   }
                 />
