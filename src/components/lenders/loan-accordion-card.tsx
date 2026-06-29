@@ -11,6 +11,7 @@ import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { InfoItem } from '@/components/ui/info-item';
 import { useRouter } from '@/i18n/navigation';
+import { resolveSavingsLastDepositDate } from '@/lib/loans/savings-contract';
 import { formatTerminationModalities } from '@/lib/table-column-utils';
 import { cn, formatCurrency, formatDateLong, formatDateShort, formatPercentage } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
@@ -58,6 +59,15 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
     loan.terminationType === 'TERMINATION' && loan.status === LoanStatus.ACTIVE && !loan.isTerminated;
 
   const getTerminationModalities = () => formatTerminationModalities(loan, commonT, (d) => formatDateLong(d, locale));
+
+  const savingsLastDepositDate =
+    loan.isSavingsContract
+      ? resolveSavingsLastDepositDate(
+          loan.savingsFirstDepositDate,
+          loan.savingsLastDepositDate,
+          loan.savingsDepositCount,
+        )
+      : null;
 
   const handleDeleteLoan = async () => {
     const toastId = toast.loading(t('delete.loading'));
@@ -181,6 +191,58 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                     </span>
                   }
                 />
+                {loan.isSavingsContract && (
+                  <>
+                    <InfoItem
+                      label={t('table.savingsRateType')}
+                      value={
+                        loan.savingsRateType === 'FIXED'
+                          ? t('new.form.savingsRateTypeFixed')
+                          : t('new.form.savingsRateTypeVarying')
+                      }
+                    />
+                    {loan.savingsRateType === 'FIXED' && loan.savingsMonthlyAmount != null && (
+                      <InfoItem
+                        label={t('table.savingsMonthlyAmount')}
+                        value={formatCurrency(loan.savingsMonthlyAmount)}
+                      />
+                    )}
+                    {loan.savingsDepositCount != null && (
+                      <InfoItem
+                        label={
+                          loan.savingsRateType === 'FIXED'
+                            ? t('table.savingsDepositCountFixed')
+                            : t('table.savingsDepositCountVarying')
+                        }
+                        value={loan.savingsDepositCount}
+                      />
+                    )}
+                    {loan.savingsFirstDepositDate && (
+                      <InfoItem
+                        label={t('table.savingsFirstDepositDate')}
+                        value={formatDateLong(loan.savingsFirstDepositDate, locale)}
+                      />
+                    )}
+                    {loan.savingsLastDepositDate && (
+                      <InfoItem
+                        label={t('table.savingsLastDepositDate')}
+                        value={formatDateLong(loan.savingsLastDepositDate, locale)}
+                      />
+                    )}
+                    {savingsLastDepositDate && !loan.savingsLastDepositDate && (
+                      <InfoItem
+                        label={t('table.savingsLastDeposit')}
+                        value={formatDateLong(savingsLastDepositDate, locale)}
+                      />
+                    )}
+                    {loan.savingsDepositCount != null && (
+                      <InfoItem
+                        label={t('table.savingsRuntime')}
+                        value={t('new.form.savingsRuntime', { months: loan.savingsDepositCount })}
+                      />
+                    )}
+                  </>
+                )}
               </div>
               <div className="space-y-3">
                 <InfoItem label={t('table.terminationModalities')} value={getTerminationModalities()} />

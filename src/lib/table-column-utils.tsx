@@ -292,6 +292,33 @@ export function createCurrencyColumn<T>(
   column.filterFn = 'inNumberRange';
   return mergeExportMeta(column, { type: 'currency' });
 }
+
+export function createNullableCurrencyColumn<T>(
+  accessorKey: string,
+  headerKey: string | undefined,
+  t: (key: string) => string,
+): ColumnDef<T> {
+  const parser = new NumberParser('de-DE');
+  const column = createColumn<T>(
+    {
+      accessorKey,
+      header: headerKey,
+      align: 'right',
+      cell: ({ row }) => {
+        const rawValue = row.getValue(accessorKey);
+        if (rawValue === null || rawValue === undefined) {
+          return '';
+        }
+        const value = parser.parse(String(rawValue)) || 0;
+        return <div className="text-right tabular-nums">{formatCurrency(value)}</div>;
+      },
+    },
+    t,
+  );
+
+  column.filterFn = 'inNumberRange';
+  return mergeExportMeta(column, { type: 'currency' });
+}
 export function createDateColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,

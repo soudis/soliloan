@@ -4,11 +4,11 @@ import { cn } from '@/lib/utils';
 import { SectionCard } from '../generic/section-card';
 
 interface FormSectionProps {
-  title: string;
+  title: string | ReactNode;
   /** Kurzer erklärender Text unter dem Abschnittstitel */
   description?: string | ReactNode;
   children: ReactNode;
-  icon?: ReactNode;
+  icon?: ReactNode | null;
   className?: string;
   contentClassName?: string;
   /** Erweitert den Standard-Container (`space-y-4`), z. B. für volle Kartenhöhe im Grid */
@@ -28,7 +28,7 @@ export function FormSection({
     <SectionCard
       title={title}
       description={description}
-      icon={icon ?? <Info className="h-4 w-4 text-muted-foreground" />}
+      icon={icon === undefined ? <Info className="h-4 w-4 text-muted-foreground" /> : icon}
       className={className}
       contentClassName={contentClassName}
     >

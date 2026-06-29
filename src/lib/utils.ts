@@ -75,6 +75,12 @@ export function getDateFnsLocale(locale: string) {
   return enUS;
 }
 
+/** Normalize a calendar date to UTC midnight (date-only, no local timezone shift). */
+export function toUTCDate(date: Date | undefined | null): Date | null {
+  if (!date) return null;
+  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
+}
+
 /** Template-friendly short date (e.g. 09.04.2026 in de-DE). */
 export function formatDateShort(date: Date | string | null | undefined, locale: string): string {
   if (!date) return '';

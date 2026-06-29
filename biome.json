@@ -14,6 +14,7 @@
       "!.next",
       "!styled-system",
       "!drizzle",
+      "!orga",
       "!prisma/generated",
       "!.pnpm-store"
     ]
