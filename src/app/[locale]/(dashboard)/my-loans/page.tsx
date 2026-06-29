@@ -2,10 +2,10 @@ import { notFound } from 'next/navigation';
 
 import { getLendersByUser } from '@/actions/lenders/queries/get-lenders-by-user';
 import { LenderDashboard } from '@/components/lender-dashboard/lender-dashboard';
-import { auth } from '@/lib/auth';
+import { requireSession } from '@/lib/require-session';
 
 export default async function MyLoansPage() {
-  const session = await auth();
+  const session = await requireSession();
   const result = await getLendersByUser();
   if ('error' in result) {
     notFound();

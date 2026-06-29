@@ -1,20 +1,16 @@
 import { redirect } from 'next/navigation';
 
 import { getProjects } from '@/actions/projects/queries/get-projects';
-import { auth } from '@/lib/auth';
+import { requireSession } from '@/lib/require-session';
 
 interface DashboardRootPageProps {
   params: Promise<{ locale: string }>;
 }
 
 export default async function DashboardRootPage({ params }: DashboardRootPageProps) {
-  const session = await auth();
+  const session = await requireSession();
 
-  if (!session) {
-    redirect('/auth/login');
-  }
-
-  const result = await getProjects();
+  const result = await getProjects(session);
   const projects = result?.projects ?? [];
   const { locale } = await params;
 
