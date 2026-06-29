@@ -3,6 +3,7 @@ import { Prisma, type TemplateDataset, type Transaction, TransactionType } from 
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFields, calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
+import { getSoliloanProjectName } from '@/lib/project-name';
 import {
   lenderFilesRelation,
   lenderNotesRelation,
@@ -133,7 +134,7 @@ const loanTemplateInclude = {
 
 function getPlatformData() {
   return {
-    name: process.env.NEXT_PUBLIC_SOLILOAN_PROJECT_NAME ?? 'SoliLoan',
+    name: getSoliloanProjectName(),
   };
 }
 
