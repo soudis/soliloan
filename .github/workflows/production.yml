@@ -17,7 +17,6 @@
 #   NEXTAUTH_URL, NEXTAUTH_URL_INTERNAL
 #   POSTGRES_DB, POSTGRES_USER
 #   SMTP_HOST, SMTP_PORT, SMTP_FROM
-#   NEXT_PUBLIC_SOLILOAN_PROJECT_NAME — baked into the client at build time
 #   NEXT_PUBLIC_SOLILOAN_URL         — optional; public site URL for client-side merge links
 #
 # Optional variables:

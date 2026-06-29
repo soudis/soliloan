@@ -5,7 +5,7 @@ import { extname, join } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import type { Prisma, PrismaClient } from '@prisma/client';
-import { InterestMethod } from '@prisma/client';
+import { Country, InterestMethod } from '@prisma/client';
 import AdmZip from 'adm-zip';
 import { isAfter } from 'date-fns';
 import { normalizeStoredEmail } from '@/lib/utils/email';
@@ -95,6 +95,20 @@ function getUserName(user: { id: number; first_name?: string | null; last_name?:
   return [firstName, lastName].filter((part) => part.length > 0).join(' ') || `user-${user.id}`;
 }
 
+function mapLenderCountry(
+  value: string | null | undefined,
+  projectDefaultCountry: Country | null,
+  warnings: MigrationWarning[],
+  legacyId: number,
+): Country {
+  const country = mapCountry(value, warnings, legacyId);
+  if (country) return country;
+  if (projectDefaultCountry) return projectDefaultCountry;
+
+  warnings.push({ entity: 'user', legacyId, message: 'Kein Land gesetzt -> Default DE' });
+  return Country.DE;
+}
+
 export async function fetchAndExtractDataPackage(
   baseUrl: string,
   accessToken: string,
@@ -179,6 +193,8 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
           },
         ];
 
+        const projectDefaultCountry = mapCountry(defaults?.country ?? null, warnings, 0);
+
         const project = await tx.project.create({
           data: {
             slug,
@@ -190,7 +206,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
                 email: emptyToNull(projectInfo.email),
                 iban: emptyToNull(projectInfo.project_iban),
                 bic: emptyToNull(projectInfo.project_bic),
-                country: mapCountry(defaults?.country ?? null, warnings, 0),
+                country: projectDefaultCountry,
                 interestMethod,
                 altInterestMethods,
                 lenderAdditionalFields,
@@ -296,7 +312,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
               street: emptyToNull(user.street),
               zip: emptyToNull(user.zip),
               place: emptyToNull(user.place),
-              country: mapCountry(user.country, warnings, user.id),
+              country: mapLenderCountry(user.country, projectDefaultCountry, warnings, user.id),
               telNo: user.telno ?? null,
               email: emailLinked ? userEmail : null,
               iban: emptyToNull(user.IBAN),

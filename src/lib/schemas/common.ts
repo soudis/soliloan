@@ -97,6 +97,7 @@ export const optionalDateSchema = createDateSchema(false);
 
 // Country enum used across multiple schemas
 export const countryEnum = selectEnumOptional(Country);
+export const countryEnumRequired = selectEnumRequired(Country);
 
 export const validateAddressOptional = (
   data: {

@@ -1,8 +1,7 @@
-import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getTemplateAction } from '@/actions/templates/queries/get-template';
 import { TemplateEditor } from '@/components/templates/template-editor';
-import { auth } from '@/lib/auth';
+import { requireAdmin } from '@/lib/require-session';
 import { loadTemplateEditorPageData } from '@/lib/templates/template-editor-page-data';
 
 interface PageProps {
@@ -11,13 +10,8 @@ interface PageProps {
 
 export default async function AdminTemplateEditorPage({ params }: PageProps) {
   const { id } = await params;
-  const session = await auth();
+  await requireAdmin();
   const t = await getTranslations('templates');
-
-  // Redirect non-admins
-  if (!session?.user?.isAdmin) {
-    redirect('/');
-  }
 
   const { data } = await getTemplateAction({ id });
 

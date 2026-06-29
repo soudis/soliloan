@@ -1,22 +1,13 @@
 import { Clock } from 'lucide-react';
-import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
 import { getHighscores } from '@/actions/arcade/queries/get-highscores';
 import { HighscoreTable } from '@/components/arcade/highscore-table';
 import { LoanInvadersGame } from '@/components/arcade/loan-invaders-game';
-import { auth } from '@/lib/auth';
+import { requireManager } from '@/lib/require-session';
 
 export default async function ProcrastinatorPage() {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect('/auth/login');
-  }
-
-  if (!session.user.isManager) {
-    redirect('/dashboard');
-  }
+  const session = await requireManager();
 
   const t = await getTranslations('arcade');
   const highscores = await getHighscores();
