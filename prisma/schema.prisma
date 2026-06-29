@@ -174,7 +174,7 @@ model Lender {
   addon            String?
   zip              String?
   place            String?
-  country          Country?
+  country          Country
   telNo            String?
   email            String?
   iban             String?

@@ -1,6 +1,6 @@
 'use server';
 
-import { type Country, Entity, Language, Operation } from '@prisma/client';
+import { Entity, Language, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 import { createAuditEntry, getLenderContext, removeNullFields } from '@/lib/audit-trail';
@@ -56,7 +56,7 @@ export const createLenderAction = projectAction.inputSchema(lenderFormSchema).ac
       addon: data.addon,
       zip: data.zip,
       place: data.place,
-      country: data.country as Country,
+      country: data.country,
       telNo: data.telNo,
       iban: data.iban,
       bic: data.bic,

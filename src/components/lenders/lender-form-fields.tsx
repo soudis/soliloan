@@ -154,9 +154,9 @@ export function LenderFormFields({ isEditMode = false }: LenderFormFieldsProps) 
           <div className="md:col-span-6">
             <FormCountrySelect
               name="country"
-              label={isAddressRequired ? `${t('new.form.country')} *` : t('new.form.country')}
+              label={`${t('new.form.country')} *`}
               placeholder={commonT('ui.form.selectPlaceholder')}
-              clearable
+              required
             />
           </div>
         </div>
