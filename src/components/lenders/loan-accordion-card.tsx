@@ -58,7 +58,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
   const canTerminateLoan =
     loan.terminationType === 'TERMINATION' && loan.status === LoanStatus.ACTIVE && !loan.isTerminated;
 
-  const getTerminationModalities = () => formatTerminationModalities(loan, commonT, (d) => formatDateLong(d, locale));
+  const getTerminationModalities = () => formatTerminationModalities(loan, commonT, (d) => formatDateShort(d, locale));
 
   const savingsLastDepositDate = loan.isSavingsContract
     ? resolveSavingsLastDepositDate(loan.savingsFirstDepositDate, loan.savingsLastDepositDate, loan.savingsDepositCount)

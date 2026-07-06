@@ -10,6 +10,7 @@ import { getLenderSortValue } from '@/lib/dashboard/table-widget/lender-table-co
 import {
   createAdditionalFieldsColumns,
   createAdditionalFieldDefaultColumnVisibility,
+  createBooleanColumn,
   createCurrencyColumn,
   createDateColumn,
   createDurationDaysColumn,
@@ -56,6 +57,7 @@ const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
   { id: 'status', labelKey: 'table.status' },
   { id: 'altInterestMethod', labelKey: 'table.altInterestMethod' },
   { id: 'contractStatus', labelKey: 'table.contractStatus' },
+  { id: 'isSavingsContract', labelKey: 'table.isSavingsContract' },
 ];
 
 const LOAN_COLUMN_GROUP = { key: 'loan' as const, order: 0 };
@@ -188,6 +190,7 @@ export function buildLoanTableColumns(
         }
       },
     ),
+    createBooleanColumn<LoanWithCalculations>('isSavingsContract', 'table.isSavingsContract', t, commonT),
     ...createAdditionalFieldsColumns<LoanWithCalculations>(
       project.configuration.loanAdditionalFields,
       'additionalFields',
@@ -295,6 +298,8 @@ export function getLoanSortValue(
       return row.altInterestMethod ? commonT(`enums.interestMethod.${row.altInterestMethod}`) : '';
     case 'contractStatus':
       return row.contractStatus ? commonT(`enums.loan.contractStatus.${row.contractStatus}`) : '';
+    case 'isSavingsContract':
+      return row.isSavingsContract ? commonT('ui.boolean.yes') : commonT('ui.boolean.no');
     default: {
       const value = readNestedValue(row, normalizedId);
       if (value instanceof Date) {
@@ -339,4 +344,5 @@ export const LOAN_TABLE_COLUMN_IDS = [
   'status',
   'altInterestMethod',
   'contractStatus',
+  'isSavingsContract',
 ] as const;

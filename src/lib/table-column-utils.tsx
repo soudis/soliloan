@@ -1,6 +1,5 @@
 import type { Lender, Loan } from '@prisma/client';
 import type { CellContext, ColumnDef, Row, VisibilityState } from '@tanstack/react-table';
-import moment from 'moment';
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import type { ColumnGroupMeta, DataTableColumnFilters } from '@/components/ui/data-table';
@@ -19,6 +18,15 @@ export function compoundTextFilter<T>(row: Row<T>, columnId: string, filterValue
   const searchFilter = String(filterValue).toLowerCase();
 
   return searchValue.includes(searchFilter);
+}
+
+// Define the custom filter function for boolean fields
+export function booleanFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
+  if (filterValue === '' || filterValue == null) {
+    return true;
+  }
+  const value = row.getValue(columnId) === true;
+  return filterValue === 'true' ? value : !value;
 }
 
 // Define the custom filter function for enum fields
@@ -472,6 +480,36 @@ export function createEnumBadgeColumn<T>(
     },
   });
 }
+
+export function createBooleanColumn<T>(
+  accessorKey: string,
+  headerKey: string,
+  t: (key: string) => string,
+  commonT: (key: string) => string,
+): ColumnDef<T> {
+  const formatBoolean = (value: unknown) => (value === true ? commonT('ui.boolean.yes') : commonT('ui.boolean.no'));
+
+  const column = createColumn<T>(
+    {
+      accessorKey,
+      header: headerKey,
+      cell: ({ row }) => formatBoolean(row.getValue(accessorKey)),
+      filterFn: booleanFilter,
+      sortingFn: (rowA, rowB, columnId) => {
+        const a = rowA.getValue(columnId) === true ? 1 : 0;
+        const b = rowB.getValue(columnId) === true ? 1 : 0;
+        return a - b;
+      },
+    },
+    t,
+  );
+
+  return mergeExportMeta(column, {
+    type: 'text',
+    getValue: (row) => formatBoolean((row as Record<string, unknown>)[accessorKey]),
+  });
+}
+
 export function createTerminationTypeColumn<T>(
   t: (key: string) => string,
   commonT: (key: string) => string,
@@ -902,11 +940,7 @@ export function formatTerminationModalities(
     case 'DURATION': {
       if (!data.duration || !data.durationType) return '-';
       const duration = `${data.duration} ${durationUnitLabel(data.durationType)}`;
-      const calculatedEndDate = moment(data.signDate)
-        .add(data.duration, data.durationType === 'MONTHS' ? 'months' : 'years')
-        .toDate();
-      const formatted = (formatDate ?? defaultFormatDate)(calculatedEndDate);
-      return commonT('enums.loan.terminationModalities.DURATION', { duration, date: formatted || '-' });
+      return commonT('enums.loan.terminationModalities.DURATION', { duration });
     }
     case 'TERMINATION': {
       if (!data.terminationPeriod || !data.terminationPeriodType) return '-';

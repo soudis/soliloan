@@ -107,6 +107,14 @@ export function buildLoanColumnFiltersMap(
         value,
       })),
     },
+    isSavingsContract: {
+      type: 'select',
+      label: t('table.isSavingsContract'),
+      options: [
+        { label: commonT('ui.boolean.yes'), value: 'true' },
+        { label: commonT('ui.boolean.no'), value: 'false' },
+      ],
+    },
     ...createAdditionalFieldFilters('additionalFields', project.configuration.loanAdditionalFields),
   };
 }

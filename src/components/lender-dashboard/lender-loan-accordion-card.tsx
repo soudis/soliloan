@@ -9,7 +9,8 @@ import { ProjectLogo } from '@/components/dashboard/project-logo';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { Button } from '@/components/ui/button';
 import { InfoItem } from '@/components/ui/info-item';
-import { cn, formatCurrency, formatPercentage, getLenderName } from '@/lib/utils';
+import { formatTerminationModalities } from '@/lib/table-column-utils';
+import { cn, formatCurrency, formatDateShort, formatPercentage, getLenderName } from '@/lib/utils';
 import { formatAddressPlace } from '@/lib/utils/format';
 import { splitIbanIntoGroups } from '@/lib/utils/iban';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
@@ -35,29 +36,8 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
     onOpenChange(!isOpen);
   };
 
-  const getTerminationModalities = () => {
-    switch (loan.terminationType) {
-      case 'ENDDATE':
-        return `${commonT('enums.loan.terminationType.ENDDATE')} - ${loan.endDate ? format(new Date(loan.endDate), 'PPP', { locale: dateLocale }) : '-'}`;
-      case 'TERMINATION':
-        if (!loan.terminationPeriod || !loan.terminationPeriodType)
-          return `${commonT('enums.loan.terminationType.TERMINATION')} - -`;
-        return `${commonT('enums.loan.terminationType.TERMINATION')} - ${loan.terminationPeriod} ${
-          loan.terminationPeriodType === 'MONTHS'
-            ? commonT('enums.loan.durationUnit.MONTHS')
-            : commonT('enums.loan.durationUnit.YEARS')
-        }`;
-      case 'DURATION':
-        if (!loan.duration || !loan.durationType) return `${commonT('enums.loan.terminationType.DURATION')} - -`;
-        return `${commonT('enums.loan.terminationType.DURATION')} - ${loan.duration} ${
-          loan.durationType === 'MONTHS'
-            ? commonT('enums.loan.durationUnit.MONTHS')
-            : commonT('enums.loan.durationUnit.YEARS')
-        }`;
-      default:
-        return '-';
-    }
-  };
+  const getTerminationModalities = () =>
+    formatTerminationModalities(loan, commonT, (d) => formatDateShort(d, locale));
 
   const lender = loan.lender;
   const lenderName = getLenderName(lender);
@@ -95,6 +75,12 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
                 <span>{formatPercentage(loan.interestRate)}</span>
                 <span>·</span>
                 <span>{format(new Date(loan.signDate), 'PP', { locale: dateLocale })}</span>
+                {loan.isSavingsContract && (
+                  <>
+                    <span>·</span>
+                    <span>{t('new.form.savingsContract')}</span>
+                  </>
+                )}
               </div>
             </div>
             {/* biome-ignore lint/a11y/useKeyWithClickEvents: toolbar stops accordion toggle only */}
@@ -161,6 +147,30 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
                     </span>
                   }
                 />
+                {loan.isSavingsContract && loan.savingsDepositCount != null && (
+                  <>
+                    <InfoItem
+                      label={t('table.savingsContractSummaryLabel')}
+                      value={
+                        loan.savingsRateType === 'FIXED' && loan.savingsMonthlyAmount != null
+                          ? t('table.savingsContractFixedSummary', {
+                              months: loan.savingsDepositCount,
+                              amount: formatCurrency(loan.savingsMonthlyAmount, locale),
+                            })
+                          : t('table.savingsContractSummary', { months: loan.savingsDepositCount })
+                      }
+                    />
+                    {loan.requiredDepositsCount > 0 && (
+                      <InfoItem
+                        label={t('table.savingsDepositReceipts')}
+                        value={t('table.savingsInstallmentsPaid', {
+                          paid: loan.depositsCount,
+                          required: loan.requiredDepositsCount,
+                        })}
+                      />
+                    )}
+                  </>
+                )}
                 <InfoItem label={t('table.terminationModalities')} value={getTerminationModalities()} />
                 {loan.terminationDate && loan.terminationType === 'TERMINATION' && (
                   <InfoItem

@@ -254,9 +254,17 @@ type TemplateLoanRecord = Record<string, unknown> & {
   signDate: Date | string | null;
   endDate: Date | string | null;
   terminationDate: Date | string | null;
+  isSavingsContract?: boolean;
+  savingsRateType?: string | null;
+  savingsMonthlyAmount?: number | null;
+  savingsDepositCount?: number | null;
+  savingsFirstDepositDate?: Date | string | null;
+  savingsLastDepositDate?: Date | string | null;
   balance: number;
   interest: number;
   deposits: number;
+  depositsCount?: number;
+  requiredDepositsCount?: number;
   withdrawals: number;
   interestPaid: number;
   interestError: number;
@@ -368,6 +376,32 @@ function buildTransactionsYearlyList(
   return [opening, ...middle, closing];
 }
 
+function savingsRateTypeLabel(rateType: string | null | undefined) {
+  if (rateType === 'FIXED') return 'Feste Rate';
+  if (rateType === 'VARYING') return 'Ungleiche Raten';
+  return '';
+}
+
+function formatSavingsSummary(loan: TemplateLoanRecord, locale: string) {
+  if (!loan.isSavingsContract || loan.savingsDepositCount == null) return '';
+
+  const months = loan.savingsDepositCount === 1 ? '1 Monat' : `${loan.savingsDepositCount} Monate`;
+  if (loan.savingsRateType === 'FIXED' && loan.savingsMonthlyAmount != null) {
+    return `${months} zu je ${formatCurrency(loan.savingsMonthlyAmount, locale)}`;
+  }
+
+  return months;
+}
+
+function formatSavingsPaymentStatus(loan: TemplateLoanRecord) {
+  if (!loan.isSavingsContract) return '';
+
+  const required = loan.requiredDepositsCount ?? loan.savingsDepositCount;
+  if (required == null) return '';
+
+  return `${loan.depositsCount ?? 0} von ${required} Raten eingezahlt`;
+}
+
 function formatLoanFields(loan: TemplateLoanRecord, locale: string) {
   return {
     ...loan,
@@ -380,9 +414,22 @@ function formatLoanFields(loan: TemplateLoanRecord, locale: string) {
     terminationDate: formatDateShort(loan.terminationDate, locale),
     terminationDateLong: formatDateLong(loan.terminationDate, locale),
     contractStatus: loan.contractStatus === 'COMPLETED' ? 'Abgeschlossen' : 'Laufend',
+    isSavingsContract: loan.isSavingsContract ? 'Ja' : 'Nein',
+    savingsRateType: loan.isSavingsContract ? savingsRateTypeLabel(loan.savingsRateType) : '',
+    savingsMonthlyAmount:
+      loan.isSavingsContract && loan.savingsRateType === 'FIXED' ? formatCurrency(loan.savingsMonthlyAmount, locale) : '',
+    savingsDepositCount:
+      loan.isSavingsContract && loan.savingsDepositCount != null ? String(loan.savingsDepositCount) : '',
+    savingsFirstDepositDate: loan.isSavingsContract ? formatDateShort(loan.savingsFirstDepositDate, locale) : '',
+    savingsFirstDepositDateLong: loan.isSavingsContract ? formatDateLong(loan.savingsFirstDepositDate, locale) : '',
+    savingsLastDepositDate: loan.isSavingsContract ? formatDateShort(loan.savingsLastDepositDate, locale) : '',
+    savingsLastDepositDateLong: loan.isSavingsContract ? formatDateLong(loan.savingsLastDepositDate, locale) : '',
+    savingsSummary: formatSavingsSummary(loan, locale),
     balance: formatCurrency(loan.balance, locale),
     interest: formatCurrency(loan.interest, locale),
     deposits: formatCurrency(loan.deposits, locale),
+    depositsCount: String(loan.depositsCount ?? 0),
+    savingsPaymentStatus: formatSavingsPaymentStatus(loan),
     withdrawals: formatCurrency(loan.withdrawals, locale),
     interestPaid: formatCurrency(loan.interestPaid, locale),
     interestError: formatCurrency(loan.interestError, locale),
