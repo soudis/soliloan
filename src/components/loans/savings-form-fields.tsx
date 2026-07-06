@@ -27,6 +27,7 @@ type SavingsFieldKey =
   | 'savingsMonthlyAmount'
   | 'savingsDepositCount';
 type SavingsDateFieldKey = 'savingsFirstDepositDate' | 'savingsLastDepositDate';
+type SavingsDependencyTrigger = SavingsFieldKey | 'amount';
 type FieldMode = 'defined' | 'derived';
 
 const hasDateValue = (value: Date | '' | null | undefined): value is Date =>
@@ -105,6 +106,7 @@ export function SavingsFormFields() {
 
   const parser = new NumberParser('de-DE');
   const loanAmount = parser.parse(amount as string) ?? 0;
+  const previousLoanAmountRef = useRef(loanAmount);
 
   const [fieldModes, setFieldModes] = useState<Record<SavingsFieldKey, FieldMode | null>>(() =>
     getInitialFieldModes(getValues(), isFixedRate),
@@ -143,7 +145,7 @@ export function SavingsFormFields() {
   );
 
   const applyDependencyRules = useCallback(
-    (changed: SavingsFieldKey) => {
+    (changed: SavingsDependencyTrigger) => {
       const values = getValues();
       const firstDepositDate = values.savingsFirstDepositDate;
       const lastDepositDate = values.savingsLastDepositDate;
@@ -214,10 +216,41 @@ export function SavingsFormFields() {
           if (monthly != null) setDerivedValue('savingsMonthlyAmount', formatNumber(monthly));
         }
         deriveMissingDepositDateFromCount(depositCount);
+        return;
+      }
+
+      if (changed === 'amount') {
+        if (!isFixedRate || loanAmount <= 0) return;
+
+        if (fieldModes.savingsMonthlyAmount === 'defined' && hasMonthlyAmount) {
+          const count = calculateSavingsDepositCountFromMonthlyAmount(loanAmount, monthlyAmount);
+          if (count) {
+            setDerivedValue('savingsDepositCount', count);
+            deriveMissingDepositDateFromCount(count);
+          }
+          return;
+        }
+
+        if (fieldModes.savingsDepositCount === 'defined' && hasDepositCount && typeof depositCount === 'number') {
+          const monthly = calculateSavingsMonthlyAmount(loanAmount, depositCount);
+          if (monthly != null) setDerivedValue('savingsMonthlyAmount', formatNumber(monthly));
+        }
       }
     },
-    [getValues, isFixedRate, loanAmount, parser, setDerivedValue],
+    [fieldModes, getValues, isFixedRate, loanAmount, parser, setDerivedValue],
   );
+
+  useEffect(() => {
+    if (!isSavingsContract) {
+      previousLoanAmountRef.current = loanAmount;
+      return;
+    }
+
+    if (previousLoanAmountRef.current === loanAmount) return;
+    previousLoanAmountRef.current = loanAmount;
+
+    applyDependencyRules('amount');
+  }, [applyDependencyRules, isSavingsContract, loanAmount]);
 
   const handleUserFieldChange = useCallback(
     (field: SavingsFieldKey, value: Date | number | string | '' | null) => {
