@@ -60,14 +60,9 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
 
   const getTerminationModalities = () => formatTerminationModalities(loan, commonT, (d) => formatDateLong(d, locale));
 
-  const savingsLastDepositDate =
-    loan.isSavingsContract
-      ? resolveSavingsLastDepositDate(
-          loan.savingsFirstDepositDate,
-          loan.savingsLastDepositDate,
-          loan.savingsDepositCount,
-        )
-      : null;
+  const savingsLastDepositDate = loan.isSavingsContract
+    ? resolveSavingsLastDepositDate(loan.savingsFirstDepositDate, loan.savingsLastDepositDate, loan.savingsDepositCount)
+    : null;
 
   const handleDeleteLoan = async () => {
     const toastId = toast.loading(t('delete.loading'));
@@ -191,60 +186,68 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                     </span>
                   }
                 />
-                {loan.isSavingsContract && (
+                <InfoItem
+                  label={t('table.paymentStatus')}
+                  value={
+                    <div className="space-y-1">
+                      {loan.outstandingDepositsCount > 0 && loan.outstandingDepositSinceDays != null ? (
+                        <div>
+                          {loan.outstandingDepositSinceDays > 0
+                            ? t('table.paymentOutstandingSince', { days: loan.outstandingDepositSinceDays })
+                            : t('table.paymentOutstanding')}
+                        </div>
+                      ) : (
+                        <div>{t('table.paymentNotOutstanding')}</div>
+                      )}
+                    </div>
+                  }
+                />
+              </div>
+              <div className="space-y-3">
+                {loan.isSavingsContract && loan.savingsDepositCount != null && (
                   <>
                     <InfoItem
-                      label={t('table.savingsRateType')}
+                      label={t('table.savingsContractSummaryLabel')}
                       value={
-                        loan.savingsRateType === 'FIXED'
-                          ? t('new.form.savingsRateTypeFixed')
-                          : t('new.form.savingsRateTypeVarying')
+                        loan.savingsRateType === 'FIXED' && loan.savingsMonthlyAmount != null
+                          ? t('table.savingsContractFixedSummary', {
+                              months: loan.savingsDepositCount,
+                              amount: formatCurrency(loan.savingsMonthlyAmount, locale),
+                            })
+                          : t('table.savingsContractSummary', { months: loan.savingsDepositCount })
                       }
                     />
-                    {loan.savingsRateType === 'FIXED' && loan.savingsMonthlyAmount != null && (
+                    {(loan.savingsFirstDepositDate || savingsLastDepositDate) && (
                       <InfoItem
-                        label={t('table.savingsMonthlyAmount')}
-                        value={formatCurrency(loan.savingsMonthlyAmount)}
-                      />
-                    )}
-                    {loan.savingsDepositCount != null && (
-                      <InfoItem
-                        label={
-                          loan.savingsRateType === 'FIXED'
-                            ? t('table.savingsDepositCountFixed')
-                            : t('table.savingsDepositCountVarying')
+                        label={t('table.savingsDepositPeriod')}
+                        value={
+                          loan.savingsFirstDepositDate && savingsLastDepositDate ? (
+                            <span>
+                              <span className="whitespace-nowrap">
+                                {formatDateLong(loan.savingsFirstDepositDate, locale)}
+                              </span>{' '}
+                              <span className="text-muted-foreground text-sm">{t('table.until')}</span>{' '}
+                              <span className="whitespace-nowrap">{formatDateLong(savingsLastDepositDate, locale)}</span>
+                            </span>
+                          ) : loan.savingsFirstDepositDate ? (
+                            formatDateLong(loan.savingsFirstDepositDate, locale)
+                          ) : (
+                            formatDateLong(savingsLastDepositDate, locale)
+                          )
                         }
-                        value={loan.savingsDepositCount}
                       />
                     )}
-                    {loan.savingsFirstDepositDate && (
+                    {loan.requiredDepositsCount > 0 && (
                       <InfoItem
-                        label={t('table.savingsFirstDepositDate')}
-                        value={formatDateLong(loan.savingsFirstDepositDate, locale)}
-                      />
-                    )}
-                    {loan.savingsLastDepositDate && (
-                      <InfoItem
-                        label={t('table.savingsLastDepositDate')}
-                        value={formatDateLong(loan.savingsLastDepositDate, locale)}
-                      />
-                    )}
-                    {savingsLastDepositDate && !loan.savingsLastDepositDate && (
-                      <InfoItem
-                        label={t('table.savingsLastDeposit')}
-                        value={formatDateLong(savingsLastDepositDate, locale)}
-                      />
-                    )}
-                    {loan.savingsDepositCount != null && (
-                      <InfoItem
-                        label={t('table.savingsRuntime')}
-                        value={t('new.form.savingsRuntime', { months: loan.savingsDepositCount })}
+                        label={t('table.savingsDepositReceipts')}
+                        value={t('table.savingsInstallmentsPaid', {
+                          paid: loan.depositsCount,
+                          required: loan.requiredDepositsCount,
+                        })}
                       />
                     )}
                   </>
                 )}
-              </div>
-              <div className="space-y-3">
                 <InfoItem label={t('table.terminationModalities')} value={getTerminationModalities()} />
                 {canTerminateLoan && (
                   <Button
