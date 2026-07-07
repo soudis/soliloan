@@ -16,6 +16,11 @@ import { MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type SetTableUrlState, type TableUrlState, useTableUrlState } from '@/lib/hooks/use-table-url-state';
+import {
+  matchesDateFilter,
+  matchesNumberRangeFilter,
+  matchesTextFilter,
+} from '@/lib/entity-filters/filter-matchers';
 import { cn } from '@/lib/utils';
 
 import { Checkbox } from './checkbox';
@@ -65,75 +70,18 @@ declare module '@tanstack/react-table' {
 
 // Define the custom filter function for compound text fields
 export const compoundTextFilter: FilterFn<unknown> = (row, columnId, filterValue) => {
-  const value = row.getValue(columnId);
-  if (!value) return false;
-
-  // Convert both the value and filter to lowercase for case-insensitive search
-  const searchValue = String(value).toLowerCase();
-  const searchFilter = String(filterValue).toLowerCase();
-
-  return searchValue.includes(searchFilter);
+  return matchesTextFilter(row.getValue(columnId), filterValue);
 };
 
 // Define the custom number range filter function for number filtering
 export const inNumberRangeFilter: FilterFn<unknown> = (row, columnId, filterValue) => {
-  const value = row.getValue(columnId);
-  if (value === null || value === undefined) return false;
-
-  // If no filter is applied, show all rows
-  if (!filterValue || (!filterValue[0] && !filterValue[1])) return true;
-
-  // Convert the row value to a number
-  const rowValue = Number(value);
-
-  let result = true;
-  // Check if the number is within the range
-  if (filterValue[0] !== null && filterValue[1] !== null) {
-    result = rowValue >= filterValue[0] && rowValue <= filterValue[1];
-  } else if (filterValue[0] !== null) {
-    // Only min value is set
-    result = rowValue >= filterValue[0];
-  } else if (filterValue[1] !== null) {
-    // Only max value is set
-    result = rowValue <= filterValue[1];
-  }
-
-  return result;
+  return matchesNumberRangeFilter(row.getValue(columnId), filterValue);
 };
 
 // Define the custom date filter function for date range filtering
 export const dateRangeFilter: FilterFn<unknown> = (row, columnId, filterValue) => {
   const value = row.getValue(columnId);
-  if (!value || typeof value !== 'string') return false;
-
-  // If no filter is applied, show all rows
-  if (!filterValue || (!filterValue[0] && !filterValue[1])) return true;
-
-  // Convert the row value to a Date object
-  const rowDate = new Date(value);
-
-  let result = true;
-
-  // Check if the date is within the range
-  if (filterValue[0] && filterValue[1]) {
-    const startDate = new Date(filterValue[0]);
-    const endDate = new Date(filterValue[1]);
-    // Set end date to end of day to include the entire day
-    endDate.setUTCHours(23, 59, 59, 999);
-    result = rowDate >= startDate && rowDate <= endDate;
-  } else if (filterValue[0]) {
-    // Only start date is set
-    const startDate = new Date(filterValue[0]);
-    result = rowDate >= startDate;
-  } else if (filterValue[1]) {
-    // Only end date is set
-    const endDate = new Date(filterValue[1]);
-    // Set end date to end of day to include the entire day
-    endDate.setUTCHours(23, 59, 59, 999);
-    result = rowDate <= endDate;
-  }
-
-  return result;
+  return matchesDateFilter(value, filterValue, new Date());
 };
 
 export type DataTableColumnFilters = {
@@ -141,6 +89,7 @@ export type DataTableColumnFilters = {
     type: 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
     options?: { label: string; value: string }[];
     label?: string;
+    allowEmpty?: boolean;
   };
 };
 
