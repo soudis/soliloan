@@ -17,6 +17,7 @@ import type { LoanFormClientData } from '@/lib/schemas/loan';
 import { FormAdditionalFields } from '../form/form-additional-fields';
 import { FormSwitch } from '../form/form-switch';
 import { useProject } from '../providers/project-provider';
+import { LoanEndDateSanityCheck } from './loan-end-date-sanity-check';
 import { LoanInvestmentTypeSection } from './loan-investment-type-section';
 import { SavingsFormFields } from './savings-form-fields';
 import { TerminationFormFields } from './termination-form-fields';
@@ -46,7 +47,9 @@ export function LoanFormFields({ lenders, isEditMode = false, currentLoanId }: L
     deInvestmentActComplianceEnabled && !!selectedLender && !!signDate && interestRate !== '';
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <>
+      <LoanEndDateSanityCheck />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {/* General Information Section */}
       <FormSection title={t('new.form.generalInfo')}>
         <FormField
@@ -154,6 +157,7 @@ export function LoanFormFields({ lenders, isEditMode = false, currentLoanId }: L
           </div>
         </FormSection>
       )}
-    </div>
+      </div>
+    </>
   );
 }

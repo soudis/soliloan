@@ -918,7 +918,8 @@
     },
     "sanityChecks": {
       "investmentTypeCapacityExceededTotalAmount": "Die Kapazität der Anlageart ist überschritten ({used} von maximal {limit}).",
-      "investmentTypeCapacityExceededUnits": "Die maximale Anzahl an Anlagen würde durch diesen Kredit überschritten ({used} von maximal {limit})."
+      "investmentTypeCapacityExceededUnits": "Die maximale Anzahl an Anlagen würde durch diesen Kredit überschritten ({used} von maximal {limit}).",
+      "endDateBeforeSavingsLastDepositDate": "Das Vertragsende <nowrap>({endDate})</nowrap> liegt vor der <nowrap>letzten Einzahlung ({lastDepositDate})</nowrap>."
     },
     "investmentType": {
       "title": "Anlageart",
