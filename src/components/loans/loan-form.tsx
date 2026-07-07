@@ -9,6 +9,7 @@ import { FormSanityChecksProvider } from '@/components/form/form-sanity-checks-p
 import { Form } from '@/components/ui/form';
 import { FormActionsWithSanityWarnings } from '@/components/ui/form-actions';
 import { FormLayout } from '@/components/ui/form-layout';
+import { getDefaultFirstDepositDate } from '@/lib/loans/savings-contract';
 import type { AdditionalFieldValues } from '@/lib/schemas/common';
 import type { LoanFormData } from '@/lib/schemas/loan';
 import { loanFormSchema } from '@/lib/schemas/loan';
@@ -81,7 +82,9 @@ export function LoanForm({
     savingsRateType: initialData?.savingsRateType ?? SavingsRateType.FIXED,
     savingsMonthlyAmount: formatNumber(initialData?.savingsMonthlyAmount) || ('' as const),
     savingsDepositCount: initialData?.savingsDepositCount ?? '',
-    savingsFirstDepositDate: initialData?.savingsFirstDepositDate || '',
+    savingsFirstDepositDate:
+      initialData?.savingsFirstDepositDate ||
+      (initialData?.isSavingsContract && initialData?.signDate ? getDefaultFirstDepositDate(initialData.signDate) : ''),
     savingsLastDepositDate: initialData?.savingsLastDepositDate || '',
     additionalFields: additionalFieldDefaults(
       project.configuration.loanAdditionalFields || [],

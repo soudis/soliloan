@@ -222,12 +222,9 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                         label={t('table.savingsDepositPeriod')}
                         value={
                           loan.savingsFirstDepositDate && savingsLastDepositDate ? (
-                            <span>
-                              <span className="whitespace-nowrap">
-                                {formatDateLong(loan.savingsFirstDepositDate, locale)}
-                              </span>{' '}
-                              <span className="text-muted-foreground text-sm">{t('table.until')}</span>{' '}
-                              <span className="whitespace-nowrap">{formatDateLong(savingsLastDepositDate, locale)}</span>
+                            <span className="whitespace-nowrap">
+                              {formatDateLong(loan.savingsFirstDepositDate, locale)} –{' '}
+                              {formatDateLong(savingsLastDepositDate, locale)}
                             </span>
                           ) : loan.savingsFirstDepositDate ? (
                             formatDateLong(loan.savingsFirstDepositDate, locale)

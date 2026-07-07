@@ -17,6 +17,7 @@ import {
   calculateSavingsFirstDepositDate,
   calculateSavingsLastDepositDate,
   calculateSavingsMonthlyAmount,
+  getDefaultFirstDepositDate,
 } from '@/lib/loans/savings-contract';
 import type { LoanFormClientData } from '@/lib/schemas/loan';
 import { formatNumber, NumberParser } from '@/lib/utils';
@@ -100,6 +101,7 @@ export function SavingsFormFields() {
 
   const isSavingsContract = watch('isSavingsContract');
   const savingsRateType = watch('savingsRateType');
+  const signDate = watch('signDate');
   const amount = watch('amount');
   const isFixedRate = savingsRateType === SavingsRateType.FIXED;
   const toggleValue = isFixedRate ? 'fixed' : 'varying';
@@ -127,6 +129,15 @@ export function SavingsFormFields() {
     hasInitializedModesRef.current = true;
     setFieldModes(getInitialFieldModes(getValues(), isFixedRate));
   }, [getValues, isFixedRate, isSavingsContract]);
+
+  useEffect(() => {
+    if (!isSavingsContract || !signDate || hasDateValue(getValues('savingsFirstDepositDate'))) return;
+
+    setValue('savingsFirstDepositDate', getDefaultFirstDepositDate(signDate), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  }, [isSavingsContract, signDate, getValues, setValue]);
 
   const setFieldMode = useCallback((field: SavingsFieldKey, mode: FieldMode | null) => {
     setFieldModes((current) => ({ ...current, [field]: mode }));
@@ -341,7 +352,7 @@ export function SavingsFormFields() {
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <SavingsFieldLabel
-                    label={t('new.form.savingsFirstDepositDate')}
+                    label={`${t('new.form.savingsFirstDepositDate')} *`}
                     isLocked={isFieldLocked('savingsFirstDepositDate', hasDateValue(field.value))}
                   />
                   <LockedFieldOverlay
