@@ -318,26 +318,11 @@ export function BankImportClient({ projectId, accounts, initialRows, initialAcco
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="mb-6 flex shrink-0 items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Button type="button" variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h1 className="text-3xl font-bold">{t('title')}</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          {rows.length > 0 ? (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setDiscardOpen(true)}
-              disabled={isDiscarding || isFinalizing}
-            >
-              {isDiscarding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-              {t('discardBatch')}
-            </Button>
-          ) : null}
-        </div>
+      <div className="mb-6 flex shrink-0 items-center gap-3">
+        <Button type="button" variant="ghost" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <h1 className="text-3xl font-bold">{t('title')}</h1>
       </div>
 
       <div className="mb-6 flex flex-wrap items-end gap-4 rounded-md border border-border p-4">
@@ -379,6 +364,19 @@ export function BankImportClient({ projectId, accounts, initialRows, initialAcco
           showPagination={true}
           showColumnVisibility={false}
           showExport={false}
+          toolbarContent={
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="ml-auto h-8 shrink-0 gap-1"
+              onClick={() => setDiscardOpen(true)}
+              disabled={isDiscarding || isFinalizing}
+            >
+              {isDiscarding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+              {t('discardBatch')}
+            </Button>
+          }
         />
       )}
 
