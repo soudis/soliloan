@@ -92,10 +92,7 @@ function NotMoreThanNUnitsCapacityIndicator({ currentUnits }: { currentUnits?: n
   );
 }
 
-export function LoanInvestmentTypeSection({
-  isActive,
-  currentLoanId,
-}: LoanInvestmentTypeSectionProps) {
+export function LoanInvestmentTypeSection({ isActive, currentLoanId }: LoanInvestmentTypeSectionProps) {
   const t = useTranslations('dashboard.loans.investmentType');
   const sanityT = useTranslations('dashboard.loans.sanityChecks');
   const investmentTypeFormT = useTranslations('dashboard.investmentTypes.form');
@@ -143,10 +140,7 @@ export function LoanInvestmentTypeSection({
     const effectiveDate = signDate instanceof Date ? signDate : new Date(signDate);
     if (!isValid(effectiveDate)) return null;
 
-    return calcInvestmentTypeMetrics(
-      { limitationType: data.limitationType, loans: capacityLoans },
-      effectiveDate,
-    );
+    return calcInvestmentTypeMetrics({ limitationType: data.limitationType, loans: capacityLoans }, effectiveDate);
   }, [data, signDate, capacityLoans]);
 
   useEffect(() => {

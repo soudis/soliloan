@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { migrateProjectAction } from '@/actions/projects/mutations/migrate-project';
+import { FormCheckbox } from '@/components/form/form-checkbox';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -17,7 +18,11 @@ import { type MigrationFormData, migrationFormSchema } from '@/lib/schemas/migra
 
 import { MigrationReportView } from './migration-report';
 
-export function MigrationAssistant() {
+interface MigrationAssistantProps {
+  defaultAnonymize: boolean;
+}
+
+export function MigrationAssistant({ defaultAnonymize }: MigrationAssistantProps) {
   const t = useTranslations('dashboard.migration');
   const [report, setReport] = useState<MigrationReport | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +32,7 @@ export function MigrationAssistant() {
     defaultValues: {
       baseUrl: '',
       accessToken: '',
+      anonymize: defaultAnonymize,
     },
   });
 
@@ -61,7 +67,11 @@ export function MigrationAssistant() {
           className="mt-6"
           onClick={() => {
             setReport(null);
-            form.reset();
+            form.reset({
+              baseUrl: '',
+              accessToken: '',
+              anonymize: defaultAnonymize,
+            });
           }}
         >
           {t('newMigration')}
@@ -112,6 +122,13 @@ export function MigrationAssistant() {
               <FormMessage />
             </FormItem>
           )}
+        />
+
+        <FormCheckbox
+          name="anonymize"
+          label={t('form.anonymize')}
+          hint={t('form.anonymizeHint')}
+          disabled={isPending}
         />
 
         <Button type="submit" disabled={isPending} className="w-full">

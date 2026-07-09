@@ -10,6 +10,9 @@ export function formatMigrationReportAsPlainText(report: MigrationReport, t: Tra
   lines.push('='.repeat(title.length));
   lines.push('');
   lines.push(t('report.projectCreated', { slug: report.projectSlug ?? '' }));
+  if (report.anonymized) {
+    lines.push(t('report.anonymized'));
+  }
   lines.push('');
 
   const summaryTitle = t('report.summary');

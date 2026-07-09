@@ -190,9 +190,7 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
       <div className="mb-6 flex shrink-0 items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{t('title')}</h1>
-          <p className="mt-0.5 text-base font-normal text-muted-foreground">
-            {selectedViewName ?? t('description')}
-          </p>
+          <p className="mt-0.5 text-base font-normal text-muted-foreground">{selectedViewName ?? t('description')}</p>
         </div>
         <Button asChild>
           <Link href={`/investment-types/new?projectId=${project.id}`}>

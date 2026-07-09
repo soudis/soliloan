@@ -91,10 +91,7 @@ export const updateLenderAction = lenderAction
       });
     }
 
-    if (
-      lender.project.configuration.deInvestmentActCompliance &&
-      lender.country !== updatedLender.country
-    ) {
+    if (lender.project.configuration.deInvestmentActCompliance && lender.country !== updatedLender.country) {
       await maintainLoanInvestmentTypes(db, lender.projectId);
       revalidatePath('/loans');
       revalidatePath('/investment-types');

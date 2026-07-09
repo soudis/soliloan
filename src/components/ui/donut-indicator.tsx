@@ -40,9 +40,7 @@ export function DonutIndicator({ value, limit, children, className }: DonutIndic
           strokeLinecap="round"
         />
       </svg>
-      {children && (
-        <div className="absolute inset-0 flex items-center justify-center">{children}</div>
-      )}
+      {children && <div className="absolute inset-0 flex items-center justify-center">{children}</div>}
     </div>
   );
 }

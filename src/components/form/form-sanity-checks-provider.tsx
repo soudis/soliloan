@@ -34,10 +34,7 @@ export function FormSanityChecksProvider({ children }: { children: ReactNode }) 
 
   const warnings = useMemo(() => Object.values(warningsById), [warningsById]);
 
-  const value = useMemo(
-    () => ({ warnings, setWarning, clearWarning }),
-    [warnings, setWarning, clearWarning],
-  );
+  const value = useMemo(() => ({ warnings, setWarning, clearWarning }), [warnings, setWarning, clearWarning]);
 
   return <FormSanityChecksContext.Provider value={value}>{children}</FormSanityChecksContext.Provider>;
 }

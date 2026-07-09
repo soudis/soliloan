@@ -26,6 +26,7 @@ import {
   mapTerminationType,
   mapTransactionType,
 } from './mapping';
+import { anonymizeDataPackage } from './anonymize';
 import type {
   Dkpv1DataPackage,
   Dkpv1ProjectInfo,
@@ -42,6 +43,9 @@ interface MigrationInput {
   baseUrl: string;
   accessToken: string;
   currentUserId: string;
+  currentUserEmail: string | null;
+  anonymize: boolean;
+  environment: string;
 }
 
 async function downloadToFile(baseUrl: string, accessToken: string, destPath: string): Promise<void> {
@@ -157,7 +161,14 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
   const idMappings: MigrationIdMapping[] = [];
   let skippedFiles = 0;
 
-  const { tempDir, data, projectInfo } = await fetchAndExtractDataPackage(input.baseUrl, input.accessToken);
+  const { tempDir, data: rawData, projectInfo } = await fetchAndExtractDataPackage(input.baseUrl, input.accessToken);
+
+  const { data, preservedUserLegacyIds } = input.anonymize
+    ? anonymizeDataPackage(rawData, {
+        currentUserEmail: input.currentUserEmail,
+        environment: input.environment,
+      })
+    : { data: rawData, preservedUserLegacyIds: new Set<number>() };
 
   try {
     const logo = await loadLogoFromPackage(tempDir, projectInfo.logo_select ?? projectInfo.logo);
@@ -241,7 +252,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
               data: {
                 name: admin.logon_id,
                 email: adminEmail,
-                password: admin.passwordHashed,
+                ...(admin.passwordHashed ? { password: admin.passwordHashed } : {}),
                 language: 'de',
               },
             });
@@ -274,7 +285,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
                 data: {
                   name: getUserName(user),
                   email: userEmail,
-                  password: user.passwordHashed,
+                  ...(user.passwordHashed ? { password: user.passwordHashed } : {}),
                   lastLogin: user.lastLogin ? new Date(user.lastLogin) : undefined,
                   language: 'de',
                 },
@@ -510,21 +521,30 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
           }
 
           const filePath = file.path.startsWith('/') ? file.path.substring(1) : file.path;
-          const fullPath = join(tempDir, filePath);
+          const shouldEmptyFile =
+            input.anonymize &&
+            file.ref_id !== null &&
+            file.ref_id !== undefined &&
+            !preservedUserLegacyIds.has(file.ref_id);
+
           let fileData: Buffer;
-          try {
-            fileData = await readFile(fullPath);
-          } catch {
-            warnings.push({
-              entity: 'file',
-              legacyId: file.id,
-              message: `Datei "${filePath}" nicht im Datenpaket gefunden -> übersprungen`,
-            });
-            skippedFiles++;
-            continue;
+          if (shouldEmptyFile) {
+            fileData = Buffer.alloc(0);
+          } else {
+            try {
+              fileData = await readFile(join(tempDir, filePath));
+            } catch {
+              warnings.push({
+                entity: 'file',
+                legacyId: file.id,
+                message: `Datei "${filePath}" nicht im Datenpaket gefunden -> übersprungen`,
+              });
+              skippedFiles++;
+              continue;
+            }
           }
 
-          const thumbnailData = await createThumbnail(fileData, file.mime);
+          const thumbnailData = shouldEmptyFile ? null : await createThumbnail(fileData, file.mime);
 
           await tx.file.create({
             data: {
@@ -566,6 +586,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
       idMappings,
       skippedFiles,
       unmappedFields: ['user.lastLogin / user.loginCount'],
+      anonymized: input.anonymize,
     };
   } catch (error) {
     console.error(error);

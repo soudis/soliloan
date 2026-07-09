@@ -9,6 +9,7 @@ export const migrationFormSchema = z.object({
       message: 'validation.migration.httpsRequired',
     }),
   accessToken: z.string().min(1, { message: 'validation.common.required' }),
+  anonymize: z.boolean(),
 });
 
 export type MigrationFormData = z.infer<typeof migrationFormSchema>;
