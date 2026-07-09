@@ -14,8 +14,3 @@ services:
 
 volumes:
   soliloan-db:
-
-networks:
-  backend_network:
-    external: true
-    name: soliloan_backend_network

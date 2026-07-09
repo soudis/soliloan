@@ -1,42 +1,27 @@
-# Production deploy on GitHub Release (published).
+# Staging deploy on push to the `staging` branch.
 #
-# Required GitHub Actions secrets:
-#   PROD_SSH_KEY          — private key for SSH to the server
-#   DOCKERHUB_TOKEN       — Docker Hub access token (or password)
-#   DATABASE_URL          — Postgres URL for the app (and migrations if you run them separately)
-#   NEXTAUTH_SECRET
-#   POSTGRES_PASSWORD     — if this compose stack runs Postgres on the same host
-#   SMTP_PASSWORD         — optional; use empty only if your SMTP relay needs no auth
+# Reuses most GitHub Actions secrets and variables from production (see production.yml).
+# Deploys to the same server; Traefik serves staging at https://staging.<SOLILOAN_DOMAIN>.
+# Docker Hub image tag is always `:staging`.
 #
-# Required repository variables (Settings → Secrets and variables → Actions → Variables):
-#   PROD_SSH_HOST, PROD_SSH_USER
-#   DOCKERHUB_USERNAME      — Docker Hub login user (namespace for `docker login`)
-#   DOCKERHUB_REPOSITORY    — image repo path without registry, e.g. "myuser/soliloan"
-#   TRAEFIK_HOST            — public hostname Traefik routes to this app, e.g. "app.example.com"
-#   SOLILOAN_PROJECT_NAME, SOLILOAN_DOMAIN, SOLILOAN_URL
-#   NEXTAUTH_URL, NEXTAUTH_URL_INTERNAL
-#   POSTGRES_DB, POSTGRES_USER
-#   SMTP_HOST, SMTP_PORT, SMTP_FROM
-#   NEXT_PUBLIC_SOLILOAN_URL         — optional; public site URL for client-side merge links
-#
-# Optional variables:
-#   PROD_SSH_PORT (default 22)
-#   COMPOSE_PROJECT_NAME (default: github.repository name)
-#   SMTP_USER, SMTP_SECURE (true/false), SOLILOAN_INVITE_VALID_DAYS, SOLILOAN_DEFAULT_LANGUAGE
+# Additional secret (staging-only):
+#   STAGING_POSTGRES_PASSWORD — Postgres password for the staging database container
 
-name: 'Production: Deployment'
+name: 'Staging: Deployment'
 
 on:
-  release:
-    types: [released]
+  push:
+    branches:
+      - staging
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  TAG: ${{ github.event.release.tag_name }}
-  COMPOSE_PROJECT_NAME: soliloan
+  TAG: staging
+  COMPOSE_PROJECT_NAME: soliloan-staging
+  STAGING_DOMAIN: staging.${{ vars.SOLILOAN_DOMAIN }}
 
 jobs:
   build:
@@ -68,7 +53,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             NEXT_PUBLIC_SOLILOAN_PROJECT_NAME=${{ vars.SOLILOAN_PROJECT_NAME }}
-            NEXT_PUBLIC_SOLILOAN_URL=https://${{ vars.SOLILOAN_DOMAIN }}
+            NEXT_PUBLIC_SOLILOAN_URL=https://${{ env.STAGING_DOMAIN }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -85,11 +70,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.PROD_SSH_KEY }}
 
-      - name: Write production .env and deploy
+      - name: Write staging .env and deploy
         env:
-          DATABASE_URL: postgresql://soliloan:${{ secrets.POSTGRES_PASSWORD }}@postgres:5432/soliloan
+          DATABASE_URL: postgresql://soliloan:${{ secrets.STAGING_POSTGRES_PASSWORD }}@postgres:5432/soliloan
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_PASSWORD: ${{ secrets.STAGING_POSTGRES_PASSWORD }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           SOLILOAN_ADMIN_PASSWORD: ${{ secrets.SOLILOAN_ADMIN_PASSWORD }}
@@ -100,21 +85,22 @@ jobs:
 
           umask 077
           {
-            echo "COMPOSE_PROJECT_NAME=soliloan"
+            echo "COMPOSE_PROJECT_NAME=${{ env.COMPOSE_PROJECT_NAME }}"
             echo "DOCKER_IMAGE_TAG=${{ env.TAG }}"
             echo "DOCKERHUB_REPOSITORY=${{ vars.DOCKERHUB_REPOSITORY }}"
-            echo "TRAEFIK_HOST=${{ vars.SOLILOAN_DOMAIN }}"
-            echo "ENVIRONMENT=production"
+            echo "TRAEFIK_HOST=${{ env.STAGING_DOMAIN }}"
+            echo "TRAEFIK_ROUTER_NAME=soliloan-staging"
+            echo "ENVIRONMENT=staging"
             echo "POSTGRES_DB=soliloan"
             echo "POSTGRES_USER=soliloan"
             echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
             echo "DATABASE_URL=${DATABASE_URL}"
             echo "NEXTAUTH_SECRET=${NEXTAUTH_SECRET}"
-            echo "NEXTAUTH_URL=https://${{ vars.SOLILOAN_DOMAIN }}"
+            echo "NEXTAUTH_URL=https://${{ env.STAGING_DOMAIN }}"
             echo "NEXTAUTH_URL_INTERNAL=http://localhost:3000"
             echo "AUTH_TRUST_HOST=true"
-            echo "SOLILOAN_DOMAIN=${{ vars.SOLILOAN_DOMAIN }}"
-            echo "SOLILOAN_URL=https://${{ vars.SOLILOAN_DOMAIN }}"
+            echo "SOLILOAN_DOMAIN=${{ env.STAGING_DOMAIN }}"
+            echo "SOLILOAN_URL=https://${{ env.STAGING_DOMAIN }}"
             echo "SOLILOAN_PROJECT_NAME=${{ vars.SOLILOAN_PROJECT_NAME }}"
             echo "SOLILOAN_DEFAULT_LANGUAGE=de"
             echo "SOLILOAN_INVITE_VALID_DAYS=14"
@@ -128,7 +114,7 @@ jobs:
             echo "SMTP_FROM=${{ vars.SMTP_FROM }}"
           } > .env
 
-          docker compose -f docker/compose.production.yml --env-file .env --project-directory . config > compose.deploy.yml
+          docker compose -f docker/compose.staging.yml --env-file .env --project-directory . config > compose.deploy.yml
 
           REMOTE_DIR="/docker/soliloan/${{ env.TAG }}"
           SSH_TARGET="${{ vars.PROD_SSH_USER }}@${{ vars.PROD_SSH_HOST }}"

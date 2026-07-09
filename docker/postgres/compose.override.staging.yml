@@ -1,0 +1,9 @@
+# Staging Postgres: isolated container and volume (no host port binding).
+
+services:
+  postgres:
+    container_name: soliloan-staging-postgres
+
+volumes:
+  soliloan-db:
+    name: soliloan-staging-db

@@ -1,5 +1,5 @@
 #
-# Production: pull prebuilt image from Docker Hub; runtime env from .env on the server.
+# Staging: pull prebuilt image from Docker Hub; runtime env from .env on the server.
 #
 
 services:
@@ -7,8 +7,8 @@ services:
     image: ${DOCKERHUB_REPOSITORY:?}:${DOCKER_IMAGE_TAG:?}
     pull_policy: always
     labels:
-      - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}.tls=true
-      - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}.tls.certresolver=letsencrypt
+      - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan-staging}.tls=true
+      - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan-staging}.tls.certresolver=letsencrypt
     environment:
       - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL:?}
@@ -28,4 +28,4 @@ services:
       - SMTP_USER=${SMTP_USER:-}
       - SMTP_PASSWORD=${SMTP_PASSWORD:-}
       - SMTP_FROM=${SMTP_FROM:?}
-      - ENVIRONMENT=production
+      - ENVIRONMENT=staging
