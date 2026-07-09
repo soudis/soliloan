@@ -157,5 +157,6 @@ export interface MigrationReport {
   idMappings: MigrationIdMapping[];
   skippedFiles: number;
   unmappedFields: string[];
+  anonymized?: boolean;
   error?: string;
 }

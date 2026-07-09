@@ -1,0 +1,24 @@
+# Staging stack (Traefik + Postgres + app). Prerequisite on the host:
+#   docker network create soliloan_traefik_network
+#   docker network create soliloan_staging_backend_network
+#
+# Migrations run automatically during deploy (see GitHub Actions workflows).
+# The app container also runs `prisma migrate deploy` on startup as a safety net after restarts.
+
+include:
+  - path:
+      - "./docker/postgres/compose.base.yml"
+      - "./docker/postgres/compose.override.staging.yml"
+
+  - path:
+      - "./docker/app/compose.base.yml"
+      - "./docker/app/compose.override.staging.yml"
+    project_directory: "."
+
+networks:
+  traefik_network:
+    external: true
+    name: soliloan_traefik_network
+  backend_network:
+    external: true
+    name: soliloan_staging_backend_network

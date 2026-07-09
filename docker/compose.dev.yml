@@ -34,3 +34,6 @@ include:
       - "./docker/app/compose.base.yml"
       - "./docker/app/compose.override.dev.yml"
     project_directory: "."
+
+networks:
+  backend_network:

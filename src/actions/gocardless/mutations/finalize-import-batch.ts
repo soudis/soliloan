@@ -128,9 +128,7 @@ export const finalizeImportBatchAction = projectAction
         skip(
           skipped,
           row,
-          type === TransactionType.TERMINATION && calculated.balance > 0
-            ? 'terminationBalanceMismatch'
-            : 'notEligible',
+          type === TransactionType.TERMINATION && calculated.balance > 0 ? 'terminationBalanceMismatch' : 'notEligible',
         );
         continue;
       }

@@ -6,6 +6,7 @@ import { db } from '@/lib/db';
 import { runMigration } from '@/lib/migration/import';
 import type { MigrationReport } from '@/lib/migration/types';
 import { migrationFormSchema } from '@/lib/schemas/migration';
+import { normalizeStoredEmail } from '@/lib/utils/email';
 import { adminAction } from '@/lib/utils/safe-action';
 
 export const migrateProjectAction = adminAction
@@ -16,10 +17,16 @@ export const migrateProjectAction = adminAction
       if (!userId) {
         throw new Error('error.unauthorized');
       }
+
+      const currentUserEmail = ctx.session.user.email ? normalizeStoredEmail(ctx.session.user.email) : null;
+
       const report = await runMigration(db, {
         baseUrl: parsedInput.baseUrl,
         accessToken: parsedInput.accessToken,
         currentUserId: userId,
+        currentUserEmail,
+        anonymize: parsedInput.anonymize,
+        environment: process.env.ENVIRONMENT ?? 'dev',
       });
 
       revalidatePath('/projects');
@@ -36,6 +43,7 @@ export const migrateProjectAction = adminAction
         idMappings: [],
         skippedFiles: 0,
         unmappedFields: [],
+        anonymized: parsedInput.anonymize,
         error: message,
       };
     }

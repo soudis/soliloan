@@ -33,6 +33,7 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@faker-js/faker": "^9.9.0",
     "@hookform/resolvers": "^5.2.2",
     "@next-safe-action/adapter-react-hook-form": "^2.0.6",
     "@prisma/adapter-pg": "^7.8.0",

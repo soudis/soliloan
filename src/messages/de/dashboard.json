@@ -1195,6 +1195,8 @@
     "form": {
       "baseUrl": "Basis-URL",
       "accessToken": "Zugangstoken",
+      "anonymize": "Daten anonymisieren?",
+      "anonymizeHint": "Ersetzt personenbezogene Kreditgeber-Daten durch fiktive Werte. Dein eigenes Konto (gleiche E-Mail) bleibt unverändert und wird verknüpft.",
       "submit": "Migration starten",
       "migrating": "Migration läuft..."
     },
@@ -1206,6 +1208,7 @@
       "failed": "Migration fehlgeschlagen",
       "rolledBack": "Alle Änderungen wurden zurückgerollt. Es wurden keine Daten importiert.",
       "projectCreated": "Projekt \"{slug}\" wurde erstellt.",
+      "anonymized": "Daten wurden anonymisiert importiert.",
       "summary": "Zusammenfassung",
       "warnings": "Warnungen",
       "idMappings": "ID-Zuordnungen",

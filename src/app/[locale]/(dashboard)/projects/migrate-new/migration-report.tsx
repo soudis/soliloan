@@ -89,6 +89,7 @@ export function MigrationReportView({ report }: MigrationReportViewProps) {
             <p className="mt-1 text-sm text-muted-foreground">
               {t('report.projectCreated', { slug: report.projectSlug ?? '' })}
             </p>
+            {report.anonymized ? <p className="mt-1 text-sm text-muted-foreground">{t('report.anonymized')}</p> : null}
           </div>
         </div>
       </div>

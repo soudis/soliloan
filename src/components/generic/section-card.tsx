@@ -17,13 +17,12 @@ export const SectionCard = ({ title, description, icon, children, className, con
       <CardHeader className="flex flex-row items-start justify-between space-y-0 gap-2 pb-1">
         <div className="min-w-0 flex-1 space-y-1.5 pr-1">
           {typeof title === 'string' ? <CardTitle className="text-sm font-medium">{title}</CardTitle> : title}
-          {description != null && (
-            typeof description === 'string' ? (
+          {description != null &&
+            (typeof description === 'string' ? (
               <CardDescription>{description}</CardDescription>
             ) : (
               <div className="text-sm text-muted-foreground">{description}</div>
-            )
-          )}
+            ))}
         </div>
         {icon}
       </CardHeader>

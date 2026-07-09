@@ -24,11 +24,7 @@ interface LoanFormFieldsProps {
   currentLoanId?: string;
 }
 
-export function LoanFormFields({
-  lenders,
-  isEditMode = false,
-  currentLoanId,
-}: LoanFormFieldsProps) {
+export function LoanFormFields({ lenders, isEditMode = false, currentLoanId }: LoanFormFieldsProps) {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const searchParams = useSearchParams();
@@ -96,10 +92,7 @@ export function LoanFormFields({
 
         {showInvestmentTypeSection && (
           <div className="animate-in fade-in-0 duration-200 motion-reduce:animate-none">
-            <LoanInvestmentTypeSection
-              isActive={isInvestmentTypeSectionActive}
-              currentLoanId={currentLoanId}
-            />
+            <LoanInvestmentTypeSection isActive={isInvestmentTypeSectionActive} currentLoanId={currentLoanId} />
           </div>
         )}
 

@@ -2,10 +2,8 @@
 #   docker network create soliloan_traefik_network
 #   docker network create soliloan_backend_network
 #
-# First-time DB: from the release directory on the server, run migrations if needed:
-#   docker compose -f compose.yml --env-file .env run --rm app pnpm exec prisma migrate deploy
-#
-# Configure via .env (see repository .env.example and GitHub Actions workflow comments).
+# First-time DB: migrations run automatically during deploy (see GitHub Actions workflows).
+# The app container also runs `prisma migrate deploy` on startup as a safety net after restarts.
 
 include:
 #  - path:
@@ -24,3 +22,6 @@ networks:
   traefik_network:
     external: true
     name: soliloan_traefik_network
+  backend_network:
+    external: true
+    name: soliloan_backend_network

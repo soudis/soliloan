@@ -121,11 +121,7 @@ export function LoanForm({
       <FormSanityChecksProvider>
         <Form {...form}>
           <form onSubmit={handleSubmit}>
-            <LoanFormFields
-              lenders={lenders}
-              isEditMode={isEditMode}
-              currentLoanId={initialData?.id}
-            />
+            <LoanFormFields lenders={lenders} isEditMode={isEditMode} currentLoanId={initialData?.id} />
 
             <FormActionsWithSanityWarnings
               submitButtonText={submitButtonText}

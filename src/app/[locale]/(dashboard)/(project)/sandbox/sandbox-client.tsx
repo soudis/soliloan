@@ -232,9 +232,7 @@ export function SandboxClient() {
               <span className="text-lg font-semibold">€</span>
             </DonutIndicator>
             <div className="space-y-2">
-              <p className="text-sm font-medium tabular-nums">
-                {donutValue.toLocaleString('de-DE')} / 100.000
-              </p>
+              <p className="text-sm font-medium tabular-nums">{donutValue.toLocaleString('de-DE')} / 100.000</p>
               <input
                 type="range"
                 min={0}
