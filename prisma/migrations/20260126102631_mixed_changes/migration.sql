@@ -1,7 +1,6 @@
 /*
   Warnings:
 
-  - The values [dark,light] on the enum `SoliLoansTheme` will be removed. If these variants are still used in the database, this will fail.
   - You are about to drop the column `createdAt` on the `Change` table. All the data in the column will be lost.
   - You are about to drop the column `data` on the `Change` table. All the data in the column will be lost.
   - You are about to drop the column `type` on the `Change` table. All the data in the column will be lost.
@@ -40,18 +39,6 @@ CREATE TYPE "Entity" AS ENUM ('configuration', 'lender', 'loan', 'transaction', 
 
 -- CreateEnum
 CREATE TYPE "LenderRequiredField" AS ENUM ('address', 'email', 'telNo');
-
--- AlterEnum
-BEGIN;
-CREATE TYPE "SoliLoansTheme_new" AS ENUM ('default', 'ocean', 'forest', 'sunset', 'lavender');
-ALTER TABLE "User" ALTER COLUMN "theme" DROP DEFAULT;
-ALTER TABLE "User" ALTER COLUMN "theme" TYPE "SoliLoansTheme_new" USING ("theme"::text::"SoliLoansTheme_new");
-ALTER TABLE "Configuration" ALTER COLUMN "userTheme" TYPE "SoliLoansTheme_new" USING ("userTheme"::text::"SoliLoansTheme_new");
-ALTER TYPE "SoliLoansTheme" RENAME TO "SoliLoansTheme_old";
-ALTER TYPE "SoliLoansTheme_new" RENAME TO "SoliLoansTheme";
-DROP TYPE "SoliLoansTheme_old";
-ALTER TABLE "User" ALTER COLUMN "theme" SET DEFAULT 'default';
-COMMIT;
 
 -- AlterEnum
 ALTER TYPE "ViewType" ADD VALUE 'LOGBOOK';
