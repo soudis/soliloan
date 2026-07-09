@@ -1,5 +1,6 @@
 'use client';
 
+import type { BankConnection as BankConnectionModel, Country } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { useFormContext } from 'react-hook-form';
 
@@ -8,9 +9,16 @@ import { FormField } from '@/components/form/form-field';
 import { FormIbanInput } from '@/components/form/form-iban-input';
 import { FormSection } from '@/components/ui/form-section';
 import type { ConfigurationFormGeneralData } from '@/lib/schemas/configuration';
+import { BankConnection } from './bank-connection';
 import { LogoInput } from './logo-input';
 
-export function ConfigurationFormFieldsGeneral() {
+type Props = {
+  projectId: string;
+  bankConnections: BankConnectionModel[];
+  defaultCountry?: Country | null;
+};
+
+export function ConfigurationFormFieldsGeneral({ projectId, bankConnections, defaultCountry }: Props) {
   const t = useTranslations('dashboard.configuration');
 
   const form = useFormContext<ConfigurationFormGeneralData>();
@@ -45,6 +53,7 @@ export function ConfigurationFormFieldsGeneral() {
       <FormSection title={t('form.bankingInfo')}>
         <FormIbanInput name="iban" label={t('form.iban')} placeholder={t('form.ibanPlaceholder')} />
         <FormField name="bic" label={t('form.bic')} placeholder={t('form.bicPlaceholder')} />
+        <BankConnection projectId={projectId} connections={bankConnections} defaultCountry={defaultCountry} />
       </FormSection>
     </div>
   );

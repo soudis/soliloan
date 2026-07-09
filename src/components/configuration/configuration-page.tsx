@@ -1,5 +1,6 @@
 'use client';
 
+import type { BankConnection } from '@prisma/client';
 import { Files as FilesIcon, FileText, Settings2, User, UserCog, Wallet } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
@@ -26,9 +27,16 @@ type Props = {
   germanLoansCount: number;
   inviteValidDays: number;
   systemTemplatesOverviewRows: ProjectSystemTemplateOverviewRow[];
+  bankConnections: BankConnection[];
 };
 
-export const ConfigurationPage = ({ project, germanLoansCount, inviteValidDays, systemTemplatesOverviewRows }: Props) => {
+export const ConfigurationPage = ({
+  project,
+  germanLoansCount,
+  inviteValidDays,
+  systemTemplatesOverviewRows,
+  bankConnections,
+}: Props) => {
   const t = useTranslations('dashboard.configuration');
   const [activeTab, setActiveTab] = useQueryState(
     'tab',
@@ -92,6 +100,8 @@ export const ConfigurationPage = ({ project, germanLoansCount, inviteValidDays, 
           initialData={project.configuration}
           isLoading={isExecuting}
           error={error}
+          projectId={project.id}
+          bankConnections={bankConnections}
         />
       </TabsContent>
       <TabsContent value="managers">
