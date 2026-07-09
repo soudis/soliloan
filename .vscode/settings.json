@@ -13,5 +13,8 @@
   "files.associations": {
     ".env.*": "dotenv",
     "*.css": "tailwindcss"
+  },
+  "files.exclude": {
+    "**/.git": false
   }
 }

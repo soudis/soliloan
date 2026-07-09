@@ -259,7 +259,7 @@ function createProfileCountryColumn<T>(
       header: 'table.country',
       accessorFn: (row: T) => readLenderField(getLender(row), 'country'),
       cell: ({ row }) => {
-        const value = getLender(row.original)?.country as Country | null | undefined;
+        const value = getLender(row.original)?.country as Country | undefined;
         if (!value) return '';
         return commonT(`countries.${value.toLowerCase()}`);
       },

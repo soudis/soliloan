@@ -19,7 +19,7 @@ export default function DashboardNavigation({
   sidebarViews = [],
 }: {
   children: React.ReactNode;
-  session: Session | null;
+  session: Session;
   projects: ProjectWithConfiguration[];
   sidebarViews?: SidebarNavView[];
 }) {
@@ -41,10 +41,6 @@ export default function DashboardNavigation({
     pathname === '/loans' ||
     pathname === '/transactions' ||
     pathname === '/investment-types';
-
-  if (!session) {
-    return null;
-  }
 
   const showSidebar = session.user.isManager;
 

@@ -7,7 +7,7 @@ export type LoanForMaintenance = {
   id: string;
   interestRate: number;
   investmentTypeId: string | null;
-  lender: { id: string; country: Country | null };
+  lender: { id: string; country: Country };
   investmentType: { id: string; interestRate: number } | null;
 };
 

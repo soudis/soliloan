@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Link as LocaleLink } from '@/i18n/navigation';
+import { getSoliloanProjectName } from '@/lib/project-name';
 
 interface TopNavProps {
   session: Session;
@@ -30,6 +31,7 @@ interface TopNavProps {
 
 export function TopNav({ session, isSidebarOpen, setIsSidebarOpen, showSidebarToggle = true }: TopNavProps) {
   const t = useTranslations('navigation');
+  const projectName = getSoliloanProjectName();
   const displayName = session.user?.name?.trim() || session.user?.email || '';
   const email = session.user?.email;
 
@@ -43,9 +45,7 @@ export function TopNav({ session, isSidebarOpen, setIsSidebarOpen, showSidebarTo
             <div className="flex flex-shrink-0 items-center">
               <Link href={homeHref} className="flex items-center">
                 <Image src="/soliloan-logo.webp" alt="Soliloan AI Logo" width={32} height={32} className="mr-2" />
-                <span className="text-lg md:text-xl font-bold text-primary">
-                  {process.env.NEXT_PUBLIC_SOLILOAN_PROJECT_NAME}
-                </span>
+                <span className="text-lg md:text-xl font-bold text-primary">{projectName}</span>
               </Link>
             </div>
             {showSidebarToggle && (

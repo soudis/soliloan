@@ -6,6 +6,7 @@ import {
   addressSchema,
   bankingSchema,
   contactSchema,
+  countryEnumRequired,
   optionalIntSchema,
   salutationEnumRequired,
   selectEnumRequired,
@@ -27,6 +28,7 @@ export const lenderFormSchema = z
     // Contact Information
     ...contactSchema.shape,
     ...addressSchema.shape,
+    country: countryEnumRequired,
 
     // Banking Information
     ...bankingSchema.shape,

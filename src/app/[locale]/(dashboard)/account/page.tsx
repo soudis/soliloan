@@ -1,15 +1,11 @@
 import { redirect } from 'next/navigation';
 
 import { AccountPageContent } from '@/components/account/account-page-content';
-import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { requireSession } from '@/lib/require-session';
 
 export default async function AccountPage() {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect('/auth/login');
-  }
+  const session = await requireSession();
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },

@@ -1,18 +1,11 @@
-import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getGlobalTemplatesUnsafe } from '@/actions/templates/queries/get-templates';
 import { TemplateDialog } from '@/components/templates/template-dialog';
 import { TemplateList } from '@/components/templates/template-list';
-import { auth } from '@/lib/auth';
+import { requireAdmin } from '@/lib/require-session';
 
 export default async function AdminTemplatesPage() {
-  const session = await auth();
-  if (!session) {
-    redirect('/auth/login');
-  }
-  if (!session.user.isAdmin) {
-    redirect('/');
-  }
+  await requireAdmin();
 
   const [templates, t] = await Promise.all([getGlobalTemplatesUnsafe(), getTranslations('templates')]);
 
