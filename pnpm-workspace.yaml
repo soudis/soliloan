@@ -19,6 +19,7 @@ onlyBuiltDependencies:
   - '@biomejs/biome'
   - '@prisma/client'
   - '@prisma/engines'
+  - '@swc/core'
   - esbuild
   - prisma
   - sharp
