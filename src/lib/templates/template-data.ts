@@ -3,6 +3,7 @@ import { Prisma, type TemplateDataset, type Transaction, TransactionType } from 
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFields, calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
+import { resolveSavingsFirstDepositDate, resolveSavingsLastDepositDate } from '@/lib/loans/savings-contract';
 import { getSoliloanProjectName } from '@/lib/project-name';
 import {
   lenderFilesRelation,
@@ -403,6 +404,18 @@ function formatSavingsPaymentStatus(loan: TemplateLoanRecord) {
 }
 
 function formatLoanFields(loan: TemplateLoanRecord, locale: string) {
+  const resolvedFirstDepositDate = loan.isSavingsContract
+    ? resolveSavingsFirstDepositDate(loan.savingsFirstDepositDate, loan.signDate)
+    : null;
+  const resolvedLastDepositDate = loan.isSavingsContract
+    ? resolveSavingsLastDepositDate(
+        loan.savingsFirstDepositDate,
+        loan.savingsLastDepositDate,
+        loan.savingsDepositCount,
+        loan.signDate,
+      )
+    : null;
+
   return {
     ...loan,
     amount: formatCurrency(loan.amount, locale),
@@ -420,10 +433,10 @@ function formatLoanFields(loan: TemplateLoanRecord, locale: string) {
       loan.isSavingsContract && loan.savingsRateType === 'FIXED' ? formatCurrency(loan.savingsMonthlyAmount, locale) : '',
     savingsDepositCount:
       loan.isSavingsContract && loan.savingsDepositCount != null ? String(loan.savingsDepositCount) : '',
-    savingsFirstDepositDate: loan.isSavingsContract ? formatDateShort(loan.savingsFirstDepositDate, locale) : '',
-    savingsFirstDepositDateLong: loan.isSavingsContract ? formatDateLong(loan.savingsFirstDepositDate, locale) : '',
-    savingsLastDepositDate: loan.isSavingsContract ? formatDateShort(loan.savingsLastDepositDate, locale) : '',
-    savingsLastDepositDateLong: loan.isSavingsContract ? formatDateLong(loan.savingsLastDepositDate, locale) : '',
+    savingsFirstDepositDate: loan.isSavingsContract ? formatDateShort(resolvedFirstDepositDate, locale) : '',
+    savingsFirstDepositDateLong: loan.isSavingsContract ? formatDateLong(resolvedFirstDepositDate, locale) : '',
+    savingsLastDepositDate: loan.isSavingsContract ? formatDateShort(resolvedLastDepositDate, locale) : '',
+    savingsLastDepositDateLong: loan.isSavingsContract ? formatDateLong(resolvedLastDepositDate, locale) : '',
     savingsSummary: formatSavingsSummary(loan, locale),
     balance: formatCurrency(loan.balance, locale),
     interest: formatCurrency(loan.interest, locale),

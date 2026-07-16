@@ -2,7 +2,7 @@
 
 import { SavingsRateType } from '@prisma/client';
 import { ChartColumn, Equal, Lock } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -12,23 +12,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
-  calculateSavingsDepositCountFromDates,
   calculateSavingsDepositCountFromMonthlyAmount,
-  calculateSavingsFirstDepositDate,
   calculateSavingsLastDepositDate,
   calculateSavingsMonthlyAmount,
-  getDefaultFirstDepositDate,
+  resolveSavingsFirstDepositDate,
 } from '@/lib/loans/savings-contract';
 import type { LoanFormClientData } from '@/lib/schemas/loan';
-import { formatNumber, NumberParser } from '@/lib/utils';
+import { formatDateLong, formatNumber, NumberParser } from '@/lib/utils';
 
-type SavingsFieldKey =
-  | 'savingsFirstDepositDate'
-  | 'savingsLastDepositDate'
-  | 'savingsMonthlyAmount'
-  | 'savingsDepositCount';
-type SavingsDateFieldKey = 'savingsFirstDepositDate' | 'savingsLastDepositDate';
-type SavingsDependencyTrigger = SavingsFieldKey | 'amount';
+type SavingsFieldKey = 'savingsMonthlyAmount' | 'savingsDepositCount';
 type FieldMode = 'defined' | 'derived';
 
 const hasDateValue = (value: Date | '' | null | undefined): value is Date =>
@@ -45,8 +37,6 @@ const getInitialFieldModes = (
   values: LoanFormClientData,
   isFixedRate: boolean,
 ): Record<SavingsFieldKey, FieldMode | null> => ({
-  savingsFirstDepositDate: hasDateValue(values.savingsFirstDepositDate) ? 'defined' : null,
-  savingsLastDepositDate: hasDateValue(values.savingsLastDepositDate) ? 'defined' : null,
   savingsMonthlyAmount: isFixedRate && hasAmountValue(values.savingsMonthlyAmount) ? 'defined' : null,
   savingsDepositCount: hasCountValue(values.savingsDepositCount) ? 'defined' : null,
 });
@@ -96,6 +86,7 @@ function SavingsFieldLabel({ label, isLocked }: { label: string; isLocked: boole
 export function SavingsFormFields() {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
+  const locale = useLocale();
   const { watch, setValue, control, getValues } = useFormContext<LoanFormClientData>();
   const hasInitializedModesRef = useRef(false);
 
@@ -103,6 +94,8 @@ export function SavingsFormFields() {
   const savingsRateType = watch('savingsRateType');
   const signDate = watch('signDate');
   const amount = watch('amount');
+  const savingsFirstDepositDate = watch('savingsFirstDepositDate');
+  const savingsDepositCount = watch('savingsDepositCount');
   const isFixedRate = savingsRateType === SavingsRateType.FIXED;
   const toggleValue = isFixedRate ? 'fixed' : 'varying';
 
@@ -113,10 +106,7 @@ export function SavingsFormFields() {
   const [fieldModes, setFieldModes] = useState<Record<SavingsFieldKey, FieldMode | null>>(() =>
     getInitialFieldModes(getValues(), isFixedRate),
   );
-  const [datePickerOpen, setDatePickerOpen] = useState<Record<SavingsDateFieldKey, boolean>>({
-    savingsFirstDepositDate: false,
-    savingsLastDepositDate: false,
-  });
+  const [firstDepositDatePickerOpen, setFirstDepositDatePickerOpen] = useState(false);
 
   useEffect(() => {
     if (!isSavingsContract) {
@@ -130,21 +120,12 @@ export function SavingsFormFields() {
     setFieldModes(getInitialFieldModes(getValues(), isFixedRate));
   }, [getValues, isFixedRate, isSavingsContract]);
 
-  useEffect(() => {
-    if (!isSavingsContract || !signDate || hasDateValue(getValues('savingsFirstDepositDate'))) return;
-
-    setValue('savingsFirstDepositDate', getDefaultFirstDepositDate(signDate), {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-  }, [isSavingsContract, signDate, getValues, setValue]);
-
   const setFieldMode = useCallback((field: SavingsFieldKey, mode: FieldMode | null) => {
     setFieldModes((current) => ({ ...current, [field]: mode }));
   }, []);
 
   const setDerivedValue = useCallback(
-    (field: SavingsFieldKey, value: Date | number | string | '' | null) => {
+    (field: SavingsFieldKey, value: number | string | '' | null) => {
       setValue(field, value as never, { shouldDirty: true, shouldValidate: true });
       if (value === '' || value === null) {
         setFieldMode(field, null);
@@ -156,68 +137,17 @@ export function SavingsFormFields() {
   );
 
   const applyDependencyRules = useCallback(
-    (changed: SavingsDependencyTrigger) => {
+    (changed: SavingsFieldKey | 'amount') => {
       const values = getValues();
-      const firstDepositDate = values.savingsFirstDepositDate;
-      const lastDepositDate = values.savingsLastDepositDate;
       const depositCount = values.savingsDepositCount;
       const monthlyAmount = parser.parse(values.savingsMonthlyAmount as string);
 
-      const hasFirstDepositDate = hasDateValue(firstDepositDate);
-      const hasLastDepositDate = hasDateValue(lastDepositDate);
       const hasDepositCount = hasCountValue(depositCount);
       const hasMonthlyAmount = monthlyAmount != null && monthlyAmount > 0;
 
-      const deriveMissingDepositDateFromCount = (count: number) => {
-        if (hasFirstDepositDate) {
-          const last = calculateSavingsLastDepositDate(firstDepositDate, count);
-          if (last) setDerivedValue('savingsLastDepositDate', last);
-        } else if (hasLastDepositDate) {
-          const first = calculateSavingsFirstDepositDate(lastDepositDate, count);
-          if (first) setDerivedValue('savingsFirstDepositDate', first);
-        }
-      };
-
-      if (changed === 'savingsFirstDepositDate') {
-        if (hasFirstDepositDate && hasDepositCount) {
-          const last = calculateSavingsLastDepositDate(firstDepositDate, depositCount);
-          if (last) setDerivedValue('savingsLastDepositDate', last);
-        } else if (hasFirstDepositDate && hasLastDepositDate) {
-          const count = calculateSavingsDepositCountFromDates(firstDepositDate, lastDepositDate);
-          if (count) {
-            setDerivedValue('savingsDepositCount', count);
-            if (isFixedRate && loanAmount > 0) {
-              const monthly = calculateSavingsMonthlyAmount(loanAmount, count);
-              if (monthly != null) setDerivedValue('savingsMonthlyAmount', formatNumber(monthly));
-            }
-          }
-        }
-        return;
-      }
-
-      if (changed === 'savingsLastDepositDate') {
-        if (hasFirstDepositDate && hasLastDepositDate) {
-          const count = calculateSavingsDepositCountFromDates(firstDepositDate, lastDepositDate);
-          if (count) {
-            setDerivedValue('savingsDepositCount', count);
-            if (isFixedRate && loanAmount > 0) {
-              const monthly = calculateSavingsMonthlyAmount(loanAmount, count);
-              if (monthly != null) setDerivedValue('savingsMonthlyAmount', formatNumber(monthly));
-            }
-          }
-        } else if (hasLastDepositDate && hasDepositCount) {
-          const first = calculateSavingsFirstDepositDate(lastDepositDate, depositCount);
-          if (first) setDerivedValue('savingsFirstDepositDate', first);
-        }
-        return;
-      }
-
       if (changed === 'savingsMonthlyAmount' && isFixedRate && loanAmount > 0 && hasMonthlyAmount) {
         const count = calculateSavingsDepositCountFromMonthlyAmount(loanAmount, monthlyAmount);
-        if (count) {
-          setDerivedValue('savingsDepositCount', count);
-          deriveMissingDepositDateFromCount(count);
-        }
+        if (count) setDerivedValue('savingsDepositCount', count);
         return;
       }
 
@@ -226,7 +156,6 @@ export function SavingsFormFields() {
           const monthly = calculateSavingsMonthlyAmount(loanAmount, depositCount);
           if (monthly != null) setDerivedValue('savingsMonthlyAmount', formatNumber(monthly));
         }
-        deriveMissingDepositDateFromCount(depositCount);
         return;
       }
 
@@ -235,10 +164,7 @@ export function SavingsFormFields() {
 
         if (fieldModes.savingsMonthlyAmount === 'defined' && hasMonthlyAmount) {
           const count = calculateSavingsDepositCountFromMonthlyAmount(loanAmount, monthlyAmount);
-          if (count) {
-            setDerivedValue('savingsDepositCount', count);
-            deriveMissingDepositDateFromCount(count);
-          }
+          if (count) setDerivedValue('savingsDepositCount', count);
           return;
         }
 
@@ -263,8 +189,25 @@ export function SavingsFormFields() {
     applyDependencyRules('amount');
   }, [applyDependencyRules, isSavingsContract, loanAmount]);
 
+  useEffect(() => {
+    if (!isSavingsContract) return;
+
+    const effectiveFirst = resolveSavingsFirstDepositDate(
+      hasDateValue(savingsFirstDepositDate) ? savingsFirstDepositDate : null,
+      hasDateValue(signDate) ? signDate : null,
+    );
+
+    if (effectiveFirst && hasCountValue(savingsDepositCount)) {
+      const last = calculateSavingsLastDepositDate(effectiveFirst, savingsDepositCount);
+      setValue('savingsLastDepositDate', last ?? '', { shouldDirty: true, shouldValidate: true });
+      return;
+    }
+
+    setValue('savingsLastDepositDate', '', { shouldDirty: true, shouldValidate: true });
+  }, [isSavingsContract, savingsFirstDepositDate, savingsDepositCount, signDate, setValue]);
+
   const handleUserFieldChange = useCallback(
-    (field: SavingsFieldKey, value: Date | number | string | '' | null) => {
+    (field: SavingsFieldKey, value: number | string | '' | null) => {
       setValue(field, value as never, { shouldDirty: true, shouldValidate: true });
 
       if (value === '' || value === null) {
@@ -278,21 +221,18 @@ export function SavingsFormFields() {
     [applyDependencyRules, setFieldMode, setValue],
   );
 
+  const handleFirstDepositDateChange = useCallback(
+    (date: Date | '' | null) => {
+      setValue('savingsFirstDepositDate', date ?? '', { shouldDirty: true, shouldValidate: true });
+    },
+    [setValue],
+  );
+
   const handleUnlockField = useCallback(
     (field: SavingsFieldKey) => {
       if (fieldModes[field] !== 'derived') return;
       setFieldMode(field, 'defined');
       applyDependencyRules(field);
-    },
-    [applyDependencyRules, fieldModes, setFieldMode],
-  );
-
-  const handleUnlockDateField = useCallback(
-    (field: SavingsDateFieldKey) => {
-      if (fieldModes[field] !== 'derived') return;
-      setFieldMode(field, 'defined');
-      applyDependencyRules(field);
-      setDatePickerOpen((current) => ({ ...current, [field]: true }));
     },
     [applyDependencyRules, fieldModes, setFieldMode],
   );
@@ -323,6 +263,15 @@ export function SavingsFormFields() {
 
   const fieldUnlockLabel = t('new.form.savingsFieldUnlock');
 
+  const calculatedLastDepositDate = (() => {
+    const effectiveFirst = resolveSavingsFirstDepositDate(
+      hasDateValue(savingsFirstDepositDate) ? savingsFirstDepositDate : null,
+      hasDateValue(signDate) ? signDate : null,
+    );
+    if (!effectiveFirst || !hasCountValue(savingsDepositCount)) return null;
+    return calculateSavingsLastDepositDate(effectiveFirst, savingsDepositCount);
+  })();
+
   return (
     <>
       {isSavingsContract && (
@@ -343,40 +292,6 @@ export function SavingsFormFields() {
                 </span>
               </ToggleGroupItem>
             </ToggleGroup>
-          </div>
-
-          <div className="max-w-80">
-            <FormField
-              control={control}
-              name="savingsFirstDepositDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <SavingsFieldLabel
-                    label={`${t('new.form.savingsFirstDepositDate')} *`}
-                    isLocked={isFieldLocked('savingsFirstDepositDate', hasDateValue(field.value))}
-                  />
-                  <LockedFieldOverlay
-                    isLocked={isFieldLocked('savingsFirstDepositDate', hasDateValue(field.value))}
-                    unlockLabel={fieldUnlockLabel}
-                    onUnlock={() => handleUnlockDateField('savingsFirstDepositDate')}
-                  >
-                    <DatePickerInput
-                      withFormControl
-                      value={field.value}
-                      onChange={(date) => handleUserFieldChange('savingsFirstDepositDate', date ?? '')}
-                      placeholder={commonT('ui.form.enterPlaceholder')}
-                      disabled={isFieldLocked('savingsFirstDepositDate', hasDateValue(field.value))}
-                      open={datePickerOpen.savingsFirstDepositDate}
-                      onOpenChange={(open) => {
-                        if (isFieldLocked('savingsFirstDepositDate', hasDateValue(field.value))) return;
-                        setDatePickerOpen((current) => ({ ...current, savingsFirstDepositDate: open }));
-                      }}
-                    />
-                  </LockedFieldOverlay>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
 
           {isFixedRate ? (
@@ -507,38 +422,31 @@ export function SavingsFormFields() {
             </div>
           )}
 
-          <div className="max-w-80">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={control}
-              name="savingsLastDepositDate"
+              name="savingsFirstDepositDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <SavingsFieldLabel
-                    label={t('new.form.savingsLastDepositDate')}
-                    isLocked={isFieldLocked('savingsLastDepositDate', hasDateValue(field.value))}
+                  <FormLabel>{t('new.form.savingsFirstDepositDate')}</FormLabel>
+                  <DatePickerInput
+                    withFormControl
+                    value={field.value}
+                    onChange={(date) => handleFirstDepositDateChange(date ?? '')}
+                    placeholder={commonT('ui.form.enterPlaceholder')}
+                    open={firstDepositDatePickerOpen}
+                    onOpenChange={setFirstDepositDatePickerOpen}
                   />
-                  <LockedFieldOverlay
-                    isLocked={isFieldLocked('savingsLastDepositDate', hasDateValue(field.value))}
-                    unlockLabel={fieldUnlockLabel}
-                    onUnlock={() => handleUnlockDateField('savingsLastDepositDate')}
-                  >
-                    <DatePickerInput
-                      withFormControl
-                      value={field.value}
-                      onChange={(date) => handleUserFieldChange('savingsLastDepositDate', date ?? '')}
-                      placeholder={commonT('ui.form.enterPlaceholder')}
-                      disabled={isFieldLocked('savingsLastDepositDate', hasDateValue(field.value))}
-                      open={datePickerOpen.savingsLastDepositDate}
-                      onOpenChange={(open) => {
-                        if (isFieldLocked('savingsLastDepositDate', hasDateValue(field.value))) return;
-                        setDatePickerOpen((current) => ({ ...current, savingsLastDepositDate: open }));
-                      }}
-                    />
-                  </LockedFieldOverlay>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            {calculatedLastDepositDate && (
+              <div className="flex flex-col gap-2">
+                <Label>{t('new.form.savingsLastDepositDate')}</Label>
+                <p className="flex h-9 items-center text-sm">{formatDateLong(calculatedLastDepositDate, locale)}</p>
+              </div>
+            )}
           </div>
         </div>
       )}

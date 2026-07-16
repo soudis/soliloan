@@ -67,6 +67,7 @@ export function LoanEndDateSanityCheck() {
           ? new Date(savingsLastDepositDate)
           : null,
       typeof savingsDepositCount === 'number' ? savingsDepositCount : null,
+      signDate instanceof Date ? signDate : signDate ? new Date(signDate) : null,
     );
 
     if (failedChecks.includes('beforeSavingsLastDepositDate') && contractEndDate && resolvedLastDepositDate) {
@@ -92,6 +93,7 @@ export function LoanEndDateSanityCheck() {
     savingsFirstDepositDate,
     savingsLastDepositDate,
     setWarning,
+    signDate,
   ]);
 
   return null;

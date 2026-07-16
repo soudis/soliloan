@@ -116,10 +116,16 @@ export const buildCountBasedCoverageTimeline = (
   }));
 };
 
-export const getDefaultFirstDepositDate = (signDate: unknown) => {
-  const base = signDate instanceof Date ? signDate : signDate ? moment(signDate).toDate() : new Date();
-  return moment(base).add(1, 'month').startOf('month').toDate();
+const toValidDate = (value: Date | string | null | undefined) => {
+  if (!value) return null;
+  const dateMoment = moment(value);
+  return dateMoment.isValid() ? dateMoment.toDate() : null;
 };
+
+export const resolveSavingsFirstDepositDate = (
+  firstDepositDate: Date | string | null | undefined,
+  signDate: Date | string | null | undefined,
+) => toValidDate(firstDepositDate) ?? toValidDate(signDate);
 
 export const calculateSavingsLastDepositDate = (firstDepositDate: Date, depositCount: number) => {
   const firstMoment = moment(firstDepositDate);
@@ -164,34 +170,27 @@ export const calculateSavingsDepositCountFromMonthlyAmount = (loanAmount: number
 };
 
 export const resolveSavingsLastDepositDate = (
-  firstDepositDate: Date | null | undefined,
-  lastDepositDate: Date | null | undefined,
+  firstDepositDate: Date | string | null | undefined,
+  lastDepositDate: Date | string | null | undefined,
   depositCount: number | null | undefined,
+  signDate?: Date | string | null | undefined,
 ) => {
-  if (lastDepositDate) {
-    const lastMoment = moment(lastDepositDate);
-    if (lastMoment.isValid()) return lastMoment.toDate();
-  }
+  const resolvedLast = toValidDate(lastDepositDate);
+  if (resolvedLast) return resolvedLast;
 
-  if (firstDepositDate && depositCount != null && depositCount >= 1) {
-    return calculateSavingsLastDepositDate(firstDepositDate, depositCount);
+  const resolvedFirst = resolveSavingsFirstDepositDate(firstDepositDate, signDate);
+  if (resolvedFirst && depositCount != null && depositCount >= 1) {
+    return calculateSavingsLastDepositDate(resolvedFirst, depositCount);
   }
 
   return null;
 };
 
 export const getExpectedDepositSchedule = (loan: LoanForSchedule): ExpectedTransaction[] => {
-  if (
-    loan.isSavingsContract &&
-    loan.savingsFirstDepositDate &&
-    loan.savingsDepositCount != null &&
-    loan.savingsDepositCount >= 1
-  ) {
-    const firstMoment = moment(loan.savingsFirstDepositDate);
-    if (!firstMoment.isValid()) {
-      return [];
-    }
+  const firstDepositDate = resolveSavingsFirstDepositDate(loan.savingsFirstDepositDate, loan.signDate);
 
+  if (loan.isSavingsContract && firstDepositDate && loan.savingsDepositCount != null && loan.savingsDepositCount >= 1) {
+    const firstMoment = moment(firstDepositDate);
     const amount =
       loan.savingsRateType === SavingsRateType.FIXED && loan.savingsMonthlyAmount != null
         ? loan.savingsMonthlyAmount

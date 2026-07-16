@@ -66,6 +66,7 @@ export function evaluateLoanEndDateSanityChecks(
     toDate(input.savingsFirstDepositDate),
     toDate(input.savingsLastDepositDate),
     depositCount,
+    toDate(input.signDate),
   );
 
   if (savingsLastDepositDate && !isOnOrAfter(contractEndDate, savingsLastDepositDate)) {

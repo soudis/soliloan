@@ -91,14 +91,6 @@ export const validateSavings = (data: LoanSavingsData, ctx: z.RefinementCtx) => 
     });
   }
 
-  if (!data.savingsFirstDepositDate) {
-    ctx.addIssue({
-      code: 'custom',
-      message: 'validation.common.required',
-      path: ['savingsFirstDepositDate'],
-    });
-  }
-
   if (data.savingsRateType === 'FIXED') {
     if (!data.savingsMonthlyAmount) {
       ctx.addIssue({

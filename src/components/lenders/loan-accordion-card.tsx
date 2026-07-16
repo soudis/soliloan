@@ -11,7 +11,7 @@ import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { InfoItem } from '@/components/ui/info-item';
 import { useRouter } from '@/i18n/navigation';
-import { resolveSavingsLastDepositDate } from '@/lib/loans/savings-contract';
+import { resolveSavingsFirstDepositDate, resolveSavingsLastDepositDate } from '@/lib/loans/savings-contract';
 import { formatTerminationModalities } from '@/lib/table-column-utils';
 import { cn, formatCurrency, formatDateLong, formatDateShort, formatPercentage } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
@@ -60,8 +60,16 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
 
   const getTerminationModalities = () => formatTerminationModalities(loan, commonT, (d) => formatDateShort(d, locale));
 
+  const savingsFirstDepositDate = loan.isSavingsContract
+    ? resolveSavingsFirstDepositDate(loan.savingsFirstDepositDate, loan.signDate)
+    : null;
   const savingsLastDepositDate = loan.isSavingsContract
-    ? resolveSavingsLastDepositDate(loan.savingsFirstDepositDate, loan.savingsLastDepositDate, loan.savingsDepositCount)
+    ? resolveSavingsLastDepositDate(
+        loan.savingsFirstDepositDate,
+        loan.savingsLastDepositDate,
+        loan.savingsDepositCount,
+        loan.signDate,
+      )
     : null;
 
   const handleDeleteLoan = async () => {
@@ -217,17 +225,17 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                           : t('table.savingsContractSummary', { months: loan.savingsDepositCount })
                       }
                     />
-                    {(loan.savingsFirstDepositDate || savingsLastDepositDate) && (
+                    {(savingsFirstDepositDate || savingsLastDepositDate) && (
                       <InfoItem
                         label={t('table.savingsDepositPeriod')}
                         value={
-                          loan.savingsFirstDepositDate && savingsLastDepositDate ? (
+                          savingsFirstDepositDate && savingsLastDepositDate ? (
                             <span className="whitespace-nowrap">
-                              {formatDateLong(loan.savingsFirstDepositDate, locale)} –{' '}
+                              {formatDateLong(savingsFirstDepositDate, locale)} –{' '}
                               {formatDateLong(savingsLastDepositDate, locale)}
                             </span>
-                          ) : loan.savingsFirstDepositDate ? (
-                            formatDateLong(loan.savingsFirstDepositDate, locale)
+                          ) : savingsFirstDepositDate ? (
+                            formatDateLong(savingsFirstDepositDate, locale)
                           ) : (
                             formatDateLong(savingsLastDepositDate, locale)
                           )
