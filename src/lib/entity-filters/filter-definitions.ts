@@ -14,7 +14,7 @@ import { createAdditionalFieldFilters } from '@/lib/table-column-utils';
 import type { EntityFilterFieldOption, EntityFilterEntity } from '@/types/entity-filters';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
-export type DataTableColumnFilterType = 'text' | 'select' | 'multi-select' | 'number' | 'date';
+export type DataTableColumnFilterType = 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
 
 export type DataTableColumnFilterDefinition = {
   type: DataTableColumnFilterType;
@@ -108,12 +108,8 @@ export function buildLoanColumnFiltersMap(
       })),
     },
     isSavingsContract: {
-      type: 'select',
+      type: 'boolean',
       label: t('table.isSavingsContract'),
-      options: [
-        { label: commonT('ui.boolean.yes'), value: 'true' },
-        { label: commonT('ui.boolean.no'), value: 'false' },
-      ],
     },
     ...createAdditionalFieldFilters('additionalFields', project.configuration.loanAdditionalFields),
   };

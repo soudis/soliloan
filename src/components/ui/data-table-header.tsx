@@ -36,9 +36,10 @@ interface DataTableHeaderProps<TData> {
   showFilter?: boolean;
   columnFilters?: {
     [key: string]: {
-      type: 'text' | 'select' | 'multi-select' | 'number' | 'date';
+      type: 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
       options?: { label: string; value: string }[];
       label?: string;
+      allowEmpty?: boolean;
     };
   };
   viewType?: ViewType;

@@ -874,7 +874,7 @@
         "savingsContract": "Ansparvertrag",
         "savingsRateType": "Einzahlungsart",
         "savingsRateTypeFixed": "Feste Rate",
-        "savingsRateTypeVarying": "Ungleiche Raten",
+        "savingsRateTypeVarying": "Variable Raten",
         "savingsMonthlyAmount": "Monatlicher Betrag",
         "savingsDepositCountFixed": "Anzahl der Einzahlungen",
         "savingsDepositCountVarying": "Anzahl erwarteter Einzahlungen",

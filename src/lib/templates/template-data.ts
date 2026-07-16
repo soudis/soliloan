@@ -4,13 +4,13 @@ import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFields, calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
 import { resolveSavingsFirstDepositDate, resolveSavingsLastDepositDate } from '@/lib/loans/savings-contract';
-import { getSoliloanProjectName } from '@/lib/project-name';
 import {
   lenderFilesRelation,
   lenderNotesRelation,
   loanFilesRelation,
   loanNotesRelation,
 } from '@/lib/prisma/notes-files-relations';
+import { getSoliloanProjectName } from '@/lib/project-name';
 import { withSystemMergeData } from '@/lib/templates/system-merge-links';
 import { formatCurrency, formatDateLong, formatDateShort, formatPercentage, getLenderName } from '@/lib/utils';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
@@ -379,7 +379,7 @@ function buildTransactionsYearlyList(
 
 function savingsRateTypeLabel(rateType: string | null | undefined) {
   if (rateType === 'FIXED') return 'Feste Rate';
-  if (rateType === 'VARYING') return 'Ungleiche Raten';
+  if (rateType === 'VARYING') return 'Variable Raten';
   return '';
 }
 
@@ -430,7 +430,9 @@ function formatLoanFields(loan: TemplateLoanRecord, locale: string) {
     isSavingsContract: loan.isSavingsContract ? 'Ja' : 'Nein',
     savingsRateType: loan.isSavingsContract ? savingsRateTypeLabel(loan.savingsRateType) : '',
     savingsMonthlyAmount:
-      loan.isSavingsContract && loan.savingsRateType === 'FIXED' ? formatCurrency(loan.savingsMonthlyAmount, locale) : '',
+      loan.isSavingsContract && loan.savingsRateType === 'FIXED'
+        ? formatCurrency(loan.savingsMonthlyAmount, locale)
+        : '',
     savingsDepositCount:
       loan.isSavingsContract && loan.savingsDepositCount != null ? String(loan.savingsDepositCount) : '',
     savingsFirstDepositDate: loan.isSavingsContract ? formatDateShort(resolvedFirstDepositDate, locale) : '',

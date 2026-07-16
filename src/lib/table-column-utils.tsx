@@ -4,7 +4,9 @@ import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import type { ColumnGroupMeta, DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+import { matchesBooleanFilter } from '@/lib/entity-filters/filter-matchers';
 import { formatDurationDays } from '@/lib/format-duration';
+
 import { formatCurrency, formatPercentage, getLenderName, NumberParser, resolveIntlLocaleForDates } from '@/lib/utils';
 import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat } from './schemas/common';
 
@@ -22,11 +24,8 @@ export function compoundTextFilter<T>(row: Row<T>, columnId: string, filterValue
 
 // Define the custom filter function for boolean fields
 export function booleanFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
-  if (filterValue === '' || filterValue == null) {
-    return true;
-  }
-  const value = row.getValue(columnId) === true;
-  return filterValue === 'true' ? value : !value;
+  const raw = row.getValue(columnId) === true ? 'true' : 'false';
+  return matchesBooleanFilter(raw, filterValue);
 }
 
 // Define the custom filter function for enum fields
@@ -864,6 +863,12 @@ export function createAdditionalFieldFilters<T>(
     if (field.type === AdditionalFieldType.NUMBER) {
       filters[`${accessorKey}.${field.id}`] = {
         type: 'number' as const,
+        label: field.name,
+      };
+    }
+    if (field.type === AdditionalFieldType.BOOLEAN) {
+      filters[`${accessorKey}.${field.id}`] = {
+        type: 'boolean' as const,
         label: field.name,
       };
     }

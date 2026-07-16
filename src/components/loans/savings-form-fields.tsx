@@ -381,7 +381,7 @@ export function SavingsFormFields() {
               />
             </div>
           ) : (
-            <div className="max-w-80">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={control}
                 name="savingsDepositCount"

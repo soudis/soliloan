@@ -4,6 +4,7 @@ import type { ColumnFilter } from '@tanstack/react-table';
 
 import { EntityDateFilter } from '@/components/dashboard/widgets/filters/entity-date-filter';
 import {
+  BooleanFilter,
   MultiSelectFilter,
   NumberFilter,
   SelectFilter,
@@ -23,6 +24,14 @@ export function EntityFilterControl({
   const filterState: ColumnFilter | undefined = value === '' || value == null ? undefined : { id: 'filter', value };
 
   switch (definition.type) {
+    case 'boolean':
+      return (
+        <BooleanFilter
+          filterState={filterState}
+          onFilterChange={(v) => onChange(v)}
+          size="sm"
+        />
+      );
     case 'select':
       return (
         <SelectFilter

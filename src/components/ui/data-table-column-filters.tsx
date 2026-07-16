@@ -1,8 +1,10 @@
 import type { ColumnFiltersState } from '@tanstack/react-table';
 
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
+import { isInactiveBooleanFilterValue } from '@/types/boolean-filter-value';
 
 import {
+  BooleanFilter,
   DateFilter,
   MultiSelectFilter,
   NumberFilter,
@@ -11,7 +13,7 @@ import {
 } from './data-table-column-filters/index';
 
 type ColumnFilterConfig = {
-  type: 'text' | 'select' | 'multi-select' | 'number' | 'date';
+  type: 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
   options?: { label: string; value: string }[];
   label?: string;
 };
@@ -28,7 +30,10 @@ interface DataTableColumnFiltersProps {
   };
 }
 
-function isEmptyFilterValue(value: unknown): boolean {
+function isEmptyFilterValue(value: unknown, type?: ColumnFilterConfig['type']): boolean {
+  if (type === 'boolean') {
+    return isInactiveBooleanFilterValue(value);
+  }
   return value === '' || value == null || (Array.isArray(value) && value.every((v) => v === '' || v == null));
 }
 
@@ -40,10 +45,10 @@ export function DataTableColumnFilters({
 }: DataTableColumnFiltersProps) {
   const activeFilters = controlled?.columnFilters ?? tableState?.columnFilters ?? [];
 
-  const handleFilterChange = (columnId: string, value: unknown) => {
+  const handleFilterChange = (columnId: string, value: unknown, type?: ColumnFilterConfig['type']) => {
     const filters = activeFilters.filter((filter) => filter.id !== columnId);
 
-    if (!isEmptyFilterValue(value)) {
+    if (!isEmptyFilterValue(value, type)) {
       filters.push({ id: columnId, value });
     }
 
@@ -68,6 +73,15 @@ export function DataTableColumnFilters({
             <div className="flex items-center space-x-2">
               {(() => {
                 switch (filterConfig.type) {
+                  case 'boolean':
+                    return (
+                      <BooleanFilter
+                        filterState={filterState}
+                        onFilterChange={(value) => {
+                          handleFilterChange(columnId, value, 'boolean');
+                        }}
+                      />
+                    );
                   case 'select':
                     return (
                       <SelectFilter

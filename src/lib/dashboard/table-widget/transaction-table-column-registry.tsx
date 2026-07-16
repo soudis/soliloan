@@ -55,6 +55,7 @@ const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
   { id: 'status', labelKey: 'table.status' },
   { id: 'altInterestMethod', labelKey: 'table.altInterestMethod' },
   { id: 'contractStatus', labelKey: 'table.contractStatus' },
+  { id: 'isSavingsContract', labelKey: 'table.isSavingsContract' },
 ];
 
 const DEFAULT_VISIBLE_COLUMN_IDS = [

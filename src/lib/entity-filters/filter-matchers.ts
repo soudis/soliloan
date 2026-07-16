@@ -1,5 +1,6 @@
 import type { DataTableColumnFilterType } from '@/lib/entity-filters/filter-definitions';
 import { resolveEntityDateFilterBounds } from '@/lib/entity-filters/resolve-date-filter-range';
+import { parseBooleanFilterValue } from '@/types/boolean-filter-value';
 
 export function matchesTextFilter(value: unknown, filterValue: unknown): boolean {
   if (value === null || value === undefined) {
@@ -82,6 +83,15 @@ export function matchesMultiSelectFilter(value: unknown, filterValue: unknown): 
   return filterValue.includes(String(value));
 }
 
+export function matchesBooleanFilter(value: unknown, filterValue: unknown): boolean {
+  const parsed = parseBooleanFilterValue(filterValue);
+  if (parsed === '') {
+    return true;
+  }
+  const normalized = value === true || value === 'true' ? 'true' : 'false';
+  return normalized === parsed;
+}
+
 export type FilterMatchOptions = {
   referenceDate?: Date;
 };
@@ -101,6 +111,8 @@ export function matchesFilterByType(
       return matchesSelectFilter(value, filterValue);
     case 'multi-select':
       return matchesMultiSelectFilter(value, filterValue);
+    case 'boolean':
+      return matchesBooleanFilter(value, filterValue);
     default:
       return matchesTextFilter(value, filterValue);
   }
