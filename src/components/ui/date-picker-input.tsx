@@ -1,7 +1,7 @@
 'use client';
 
 import { Calendar as CalendarIcon, X } from 'lucide-react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -40,6 +40,7 @@ export function DatePickerInput({
   className,
 }: DatePickerInputProps) {
   const locale = useLocale();
+  const t = useTranslations('common');
   const dateLocale = getDateFnsLocale(locale);
   const [internalOpen, setInternalOpen] = useState(false);
   const open = openProp ?? internalOpen;
@@ -61,16 +62,27 @@ export function DatePickerInput({
       {hasDateValue(value) ? formatDateLong(value, locale) : <span>{placeholder}</span>}
       <div className="ml-auto flex items-center gap-1">
         {hasDateValue(value) && !disabled && (
-          <button
-            type="button"
+          // biome-ignore lint/a11y/useSemanticElements: cannot nest a <button> inside PopoverTrigger Button
+          <span
+            role="button"
+            tabIndex={0}
+            aria-label={t('ui.actions.clear')}
             className="flex h-4 w-4 items-center justify-center rounded-sm opacity-50 hover:bg-accent hover:opacity-100"
             onClick={(event) => {
+              event.preventDefault();
               event.stopPropagation();
               onChange(null);
             }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                event.stopPropagation();
+                onChange(null);
+              }
+            }}
           >
             <X className="h-3 w-3" />
-          </button>
+          </span>
         )}
         <CalendarIcon className="h-4 w-4 opacity-50" />
       </div>
