@@ -5,10 +5,10 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+import { CalendarPickerContent } from '@/components/ui/calendar-picker-content';
 import { FormControl } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn, formatDateLong, getDateFnsLocale, toUTCDate } from '@/lib/utils';
+import { cn, formatDateLong, toUTCDate } from '@/lib/utils';
 
 interface DatePickerInputProps {
   value: Date | string | '' | null | undefined;
@@ -20,6 +20,7 @@ interface DatePickerInputProps {
   calendarDisabled?: (date: Date) => boolean;
   withFormControl?: boolean;
   className?: string;
+  'aria-label'?: string;
 }
 
 const hasDateValue = (value: Date | string | '' | null | undefined): value is Date | string => {
@@ -38,10 +39,10 @@ export function DatePickerInput({
   calendarDisabled,
   withFormControl = false,
   className,
+  'aria-label': ariaLabel,
 }: DatePickerInputProps) {
   const locale = useLocale();
   const t = useTranslations('common');
-  const dateLocale = getDateFnsLocale(locale);
   const [internalOpen, setInternalOpen] = useState(false);
   const open = openProp ?? internalOpen;
 
@@ -57,6 +58,7 @@ export function DatePickerInput({
       type="button"
       variant="outline"
       disabled={disabled}
+      aria-label={ariaLabel}
       className={cn('w-full pl-3 text-left font-normal', !hasDateValue(value) && 'text-muted-foreground', className)}
     >
       {hasDateValue(value) ? formatDateLong(value, locale) : <span>{placeholder}</span>}
@@ -93,16 +95,12 @@ export function DatePickerInput({
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>{withFormControl ? <FormControl>{trigger}</FormControl> : trigger}</PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          mode="single"
-          selected={selectedDate}
-          onSelect={(date) => {
-            onChange(toUTCDate(date));
-            handleOpenChange(false);
-          }}
-          autoFocus
-          disabled={calendarDisabled}
-          locale={dateLocale}
+        <CalendarPickerContent
+          open={open}
+          value={selectedDate}
+          onChange={(date) => onChange(date ? toUTCDate(date) : null)}
+          onClose={() => handleOpenChange(false)}
+          calendarDisabled={calendarDisabled}
         />
       </PopoverContent>
     </Popover>

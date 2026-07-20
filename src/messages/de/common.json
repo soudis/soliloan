@@ -97,6 +97,17 @@
       "globalFilter": "Alle Spalten durchsuchen...",
       "all": "Alle"
     },
+    "calendar": {
+      "today": "Heute",
+      "monthStart": "Monats-Anfang",
+      "monthEnd": "Monats-Ende",
+      "nextMonth": "Nächster Monat",
+      "yearStart": "Jahres-Anfang",
+      "yearEnd": "Jahres-Ende",
+      "nextYearStart": "Nächstes Jahr",
+      "moreOptions": "Weitere Datumsoptionen",
+      "dateInputPlaceholder": "TT.MM.JJJJ"
+    },
     "additionalFields": {
       "addField": "Feld hinzufügen",
       "noFieldsDefined": "Keine zusätzlichen Felder definiert. Klicke auf \"Feld hinzufügen\" um zu beginnen.",
