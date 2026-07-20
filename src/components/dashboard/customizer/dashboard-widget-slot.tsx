@@ -2,14 +2,21 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import { ExternalLink, GripVertical } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { memo, useMemo } from 'react';
 
+import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Link } from '@/i18n/navigation';
 import { getEffectiveWidgetColSpanClassName, widgetShowsCardHeader } from '@/lib/dashboard/layout-utils';
+import { buildLoanTableDefaultColumnVisibility } from '@/lib/dashboard/table-widget/loan-table-column-registry';
+import { useProjectId } from '@/lib/hooks/use-project-id';
+import { buildLoanTableHrefFromWidget } from '@/lib/loans/build-loan-table-link';
 import { cn } from '@/lib/utils';
 import type { DashboardWidget } from '@/types/dashboard-layout';
+import { parseLoanTableConfig } from '@/types/dashboard-widgets/table-view';
 
 import { BarChartWidget } from '../widgets/bar-chart-widget';
 import { DividerWidget } from '../widgets/divider-widget';
@@ -25,7 +32,10 @@ import { WIDGET_TYPE_ICONS } from './widget-icons';
 
 function DashboardWidgetSlotComponent({ widget, rowId }: { widget: DashboardWidget; rowId: string }) {
   const t = useTranslations('dashboard.customizer');
+  const tLoanTable = useTranslations('dashboard.widgets.loanTable');
   const { isCustomizing, selectedWidgetId, setSelectedWidgetId } = useDashboardEditor();
+  const { project } = useDashboardData();
+  const projectId = useProjectId();
   const isSelected = selectedWidgetId === widget.id;
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -42,6 +52,21 @@ function DashboardWidgetSlotComponent({ widget, rowId }: { widget: DashboardWidg
   const Icon = WIDGET_TYPE_ICONS[widget.type];
   const showHeader = widgetShowsCardHeader(widget);
   const isDivider = widget.type === 'divider';
+  const loanTableOpenHref = useMemo(() => {
+    if (widget.type !== 'loan_table_view') {
+      return null;
+    }
+
+    const config = parseLoanTableConfig(widget.config);
+    const defaultColumnVisibility = buildLoanTableDefaultColumnVisibility(project);
+
+    return buildLoanTableHrefFromWidget({
+      config,
+      projectId,
+      viewName: widget.title,
+      defaultColumnVisibility,
+    });
+  }, [widget.type, widget.config, widget.title, project, projectId]);
 
   // Keyed only on the widget so selection/customize-mode re-renders of this slot
   // don't force the (expensive) widget body to re-render.
@@ -128,6 +153,19 @@ function DashboardWidgetSlotComponent({ widget, rowId }: { widget: DashboardWidg
           >
             <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
             <CardTitle className="min-w-0 flex-1 truncate text-sm font-medium">{widget.title}</CardTitle>
+            {widget.type === 'loan_table_view' && !isCustomizing && loanTableOpenHref ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 shrink-0 text-muted-foreground"
+                asChild
+                title={tLoanTable('openInTable')}
+              >
+                <Link href={loanTableOpenHref} aria-label={tLoanTable('openInTable')}>
+                  <ExternalLink className="h-4 w-4" />
+                </Link>
+              </Button>
+            ) : null}
           </CardHeader>
         ) : null}
 

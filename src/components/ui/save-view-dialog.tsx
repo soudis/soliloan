@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -34,6 +34,7 @@ interface SaveViewDialogProps {
   isLoading?: boolean;
   allowSidebar?: boolean;
   hasProject?: boolean;
+  defaultName?: string;
   /** No icon trigger — opened from parent (e.g. save menu). */
   hideTrigger?: boolean;
   open?: boolean;
@@ -46,12 +47,14 @@ export function SaveViewDialog({
   disabled = false,
   allowSidebar = false,
   hasProject = false,
+  defaultName = '',
   hideTrigger = false,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
 }: SaveViewDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const t = useTranslations('views');
+  const isOpen = hideTrigger ? (controlledOpen ?? false) : internalOpen;
 
   const form = useForm<SaveViewFormData>({
     resolver: zodResolver(saveViewSchema),
@@ -62,6 +65,19 @@ export function SaveViewDialog({
       showInSidebar: false,
     },
   });
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    form.reset({
+      name: defaultName,
+      isDefault: false,
+      saveForProject: false,
+      showInSidebar: false,
+    });
+  }, [isOpen, defaultName, form]);
 
   const handleSubmit = async (values: SaveViewFormData) => {
     const showInSidebar = allowSidebar ? values.showInSidebar : false;

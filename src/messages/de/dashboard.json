@@ -329,7 +329,8 @@
       "rowLimit": "Maximale Zeilenanzahl"
     },
     "loanTable": {
-      "title": "Kredittabelle"
+      "title": "Kredittabelle",
+      "openInTable": "In Kredittabelle öffnen"
     },
     "lenderTable": {
       "title": "Kreditgeber-Tabelle"
@@ -473,7 +474,8 @@
       "fixedLimitHint": "Es werden maximal {count} Zeilen angezeigt."
     },
     "loanTable": {
-      "emptyData": "Keine Kredite für die gewählten Einstellungen."
+      "emptyData": "Keine Kredite für die gewählten Einstellungen.",
+      "openInTable": "In Kredittabelle öffnen"
     },
     "lenderTable": {
       "emptyData": "Keine Kreditgeber*innen für die gewählten Einstellungen."

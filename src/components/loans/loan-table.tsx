@@ -5,6 +5,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
+import { parseAsString, useQueryState } from 'nuqs';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -39,6 +40,8 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
   const router = useRouter();
   const locale = useLocale();
   const selectedViewName = useSelectedViewName(views);
+  const [suggestedViewName] = useQueryState('viewName', parseAsString);
+  const pageSubtitle = selectedViewName || suggestedViewName || null;
 
   type DeleteState = { mode: 'bulk'; ids: string[] } | { mode: 'single'; loanId: string } | null;
 
@@ -94,8 +97,8 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
       <div className="mb-6 flex shrink-0 items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{t('title')}</h1>
-          {selectedViewName ? (
-            <p className="mt-0.5 text-base font-normal text-muted-foreground">{selectedViewName}</p>
+          {pageSubtitle ? (
+            <p className="mt-0.5 text-base font-normal text-muted-foreground">{pageSubtitle}</p>
           ) : null}
         </div>
         <Button onClick={() => router.push('/loans/new')}>
