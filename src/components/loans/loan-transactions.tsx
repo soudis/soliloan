@@ -58,10 +58,11 @@ export function LoanTransactions({
   const [page, setPage] = useState(0);
   const queryClient = useQueryClient();
 
-  const filtered = useMemo(
-    () => (showBookings ? transactions : transactions.filter((tx) => tx.type !== 'INTEREST')),
-    [transactions, showBookings],
-  );
+  const filtered = useMemo(() => {
+    const list = showBookings ? transactions : transactions.filter((tx) => tx.type !== 'INTEREST');
+    // Calculations keep oldest-first; reverse for display so latest appear first
+    return list.toReversed();
+  }, [transactions, showBookings]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages - 1);
