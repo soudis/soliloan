@@ -28,6 +28,7 @@ import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-
 import type { NumberFilterOperator } from '@/types/number-filter-value';
 import { DataTableColumnFilters } from './data-table-column-filters';
 import { DataTableExportDialog } from './data-table-export-dialog';
+import { DataTableGlobalSearch } from './data-table-global-search';
 import { SaveViewDialog } from './save-view-dialog';
 import { ViewManager } from './view-manager';
 
@@ -60,6 +61,7 @@ interface DataTableHeaderProps<TData> {
   extraViewData?: Record<string, unknown>;
   isExtraViewDataDirty?: (savedData: Record<string, unknown> | undefined) => boolean;
   toolbarContent?: ReactNode;
+  onRowClick?: (row: TData) => void;
 }
 
 export function DataTableHeader<TData>({
@@ -80,6 +82,7 @@ export function DataTableHeader<TData>({
   toolbarExtra,
   extraViewData,
   isExtraViewDataDirty,
+  onRowClick,
 }: DataTableHeaderProps<TData>) {
   const projectId = useProjectId();
   const router = useRouter();
@@ -212,17 +215,46 @@ export function DataTableHeader<TData>({
   return (
     <>
       <div className="flex items-center gap-4 py-4">
-        {(showFilter || toolbarExtra) && (
+        {(showFilter || toolbarExtra || Object.keys(columnFilters).length > 0) && (
           <div className="flex min-w-0 flex-1 items-center gap-4 overflow-x-auto">
-            {showFilter && (
-              <Input
-                placeholder={t('globalFilter') || 'Search all columns...'}
-                value={tableState.globalFilter}
-                onChange={(event) => {
-                  setTableState({ globalFilter: event.target.value });
-                }}
-                className="max-w-60 shrink-0 bg-background dark:bg-background"
-              />
+            {showFilter &&
+              (Object.keys(columnFilters).length > 0 ? (
+                <DataTableGlobalSearch
+                  table={table}
+                  columnFilters={columnFilters}
+                  tableState={tableState}
+                  setTableState={setTableState}
+                  viewType={viewType}
+                  onRowClick={onRowClick}
+                />
+              ) : (
+                <Input
+                  placeholder={t('globalFilter') || 'Search all columns...'}
+                  value={tableState.globalFilter}
+                  onChange={(event) => {
+                    setTableState({ globalFilter: event.target.value });
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key !== 'Enter' || !onRowClick) return;
+                    const filteredRows = table.getFilteredRowModel().rows;
+                    if (filteredRows.length !== 1) return;
+                    event.preventDefault();
+                    onRowClick(filteredRows[0].original);
+                  }}
+                  className="max-w-60 shrink-0 bg-background dark:bg-background"
+                />
+              ))}
+            {Object.keys(columnFilters).length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 shrink-0"
+                onClick={() => setShowColumnFilters(!showColumnFilters)}
+              >
+                <SlidersHorizontal className="mr-2 h-4 w-4" />
+                {t('filters')}
+                {hasActiveFilters() && <span className="ml-2 flex h-2 w-2 rounded-full bg-primary" />}
+              </Button>
             )}
             {toolbarExtra}
           </div>
@@ -244,6 +276,7 @@ export function DataTableHeader<TData>({
                       sorting: [],
                       columnFilters: [],
                       globalFilter: '',
+                      quickSearchField: '',
                       pageIndex: 0,
                       pageSize: 25,
                       viewName: '',
@@ -270,6 +303,7 @@ export function DataTableHeader<TData>({
                     sorting: sorting ?? [],
                     columnFilters: columnFilters ?? [],
                     globalFilter: globalFilter ?? '',
+                    quickSearchField: '',
                     pageIndex: 0,
                     pageSize: pagination?.pageSize ?? pageSize ?? 25,
                   });
@@ -314,18 +348,6 @@ export function DataTableHeader<TData>({
                 defaultName={tableState.viewName}
               />
             </>
-          )}
-          {Object.keys(columnFilters).length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8"
-              onClick={() => setShowColumnFilters(!showColumnFilters)}
-            >
-              <SlidersHorizontal className="mr-2 h-4 w-4" />
-              {t('filters')}
-              {hasActiveFilters() && <span className="ml-2 flex h-2 w-2 rounded-full bg-primary" />}
-            </Button>
           )}
           {showExport && (
             <>

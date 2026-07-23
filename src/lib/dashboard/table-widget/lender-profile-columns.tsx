@@ -293,7 +293,7 @@ function createProfileLenderNumberColumn<T>(
       accessorFn: (row: T) => getLender(row)?.lenderNumber ?? null,
       cell: ({ row }) => {
         const value = getLender(row.original)?.lenderNumber;
-        return value == null ? '' : String(value);
+        return value == null ? '' : `#${value}`;
       },
       meta: {
         export: { type: 'integer' },

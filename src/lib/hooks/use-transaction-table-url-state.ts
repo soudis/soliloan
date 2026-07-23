@@ -24,6 +24,7 @@ export type TransactionTableUrlState = TableUrlState & TransactionTableExtraView
 
 const DEFAULT_BASELINE: Omit<TransactionTableUrlState, 'selectedView'> = {
   globalFilter: '',
+  quickSearchField: '',
   sorting: [{ id: 'transaction.date', desc: true }],
   columnFilters: [],
   columnVisibility: {},
@@ -44,6 +45,7 @@ function viewToBaseline(
   const extra = parseTransactionExtraViewData(data);
   return {
     globalFilter: data?.globalFilter ?? '',
+    quickSearchField: '',
     sorting: data?.sorting ?? DEFAULT_BASELINE.sorting,
     columnFilters: data?.columnFilters ?? [],
     columnVisibility: data?.columnVisibility ?? defaultColumnVisibility,
@@ -91,6 +93,7 @@ export function useTransactionTableUrlState(options: UseTransactionTableUrlState
   const state = useMemo<TransactionTableUrlState>(() => {
     return {
       globalFilter: rawState.q ?? baseline.globalFilter,
+      quickSearchField: rawState.sf ?? baseline.quickSearchField,
       sorting: rawState.sort ?? baseline.sorting,
       columnFilters: rawState.filters ?? baseline.columnFilters,
       columnVisibility: rawState.cols ? { ...defaultColumnVisibility, ...rawState.cols } : baseline.columnVisibility,
@@ -135,6 +138,10 @@ export function useTransactionTableUrlState(options: UseTransactionTableUrlState
       }
       if (update.globalFilter !== undefined) {
         raw.q = update.globalFilter !== effectiveBaseline.globalFilter ? update.globalFilter : null;
+      }
+      if (update.quickSearchField !== undefined) {
+        raw.sf =
+          update.quickSearchField !== effectiveBaseline.quickSearchField ? update.quickSearchField || null : null;
       }
       if (update.sorting !== undefined) {
         raw.sort = !isEqual(update.sorting, effectiveBaseline.sorting) ? update.sorting : null;

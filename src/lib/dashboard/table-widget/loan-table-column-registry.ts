@@ -110,7 +110,7 @@ export function buildLoanTableColumns(
   durationT: (key: string, values?: Record<string, number>) => string,
 ): ColumnDef<LoanWithCalculations>[] {
   return [
-    createNumberColumn<LoanWithCalculations>('loanNumber', 'table.loanNumber', t, locale),
+    createNumberColumn<LoanWithCalculations>('loanNumber', 'table.loanNumber', t, locale, { hashPrefix: true }),
     createDateColumn<LoanWithCalculations>('signDate', 'table.signDate', t, locale),
     createCurrencyColumn<LoanWithCalculations>('amount', 'table.amount', t, locale),
     createCurrencyColumn<LoanWithCalculations>('balance', 'table.balance', t, locale),

@@ -18,6 +18,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type SetTableUrlState, type TableUrlState, useTableUrlState } from '@/lib/hooks/use-table-url-state';
 import {
   matchesDateFilter,
+  matchesGlobalFilter,
   matchesNumberRangeFilter,
   matchesTextFilter,
 } from '@/lib/entity-filters/filter-matchers';
@@ -403,16 +404,30 @@ export function DataTable<TData, TValue>({
       dateRange: dateRangeFilter,
       inNumberRange: inNumberRangeFilter,
     },
-    // Add global filter function to search across all columns
+    // Add global filter function to search across all columns.
+    // A leading `#` scopes the search to loan/lender number only (display uses `#`,
+    // but accessors stay numeric so column filters are unaffected).
     globalFilterFn: (row, columnId, filterValue) => {
-      const value = row.getValue(columnId);
-      if (!value) return false;
+      const rawFilter = String(filterValue).trim();
+      const isHashSearch = rawFilter.startsWith('#');
 
-      // Convert both the value and filter to lowercase for case-insensitive search
-      const searchValue = String(value).toLowerCase();
-      const searchFilter = String(filterValue).toLowerCase();
+      if (isHashSearch) {
+        const hashTargetColumnId =
+          viewType === 'LOAN' ? 'loanNumber' : viewType === 'LENDER' ? 'lenderNumber' : null;
+        if (!hashTargetColumnId || columnId !== hashTargetColumnId) {
+          return false;
+        }
 
-      return searchValue.includes(searchFilter);
+        const value = row.getValue(columnId);
+        const searchFilter = rawFilter.slice(1).trim();
+        if (!searchFilter) {
+          return value != null && value !== '';
+        }
+
+        return matchesGlobalFilter(value, searchFilter);
+      }
+
+      return matchesGlobalFilter(row.getValue(columnId), rawFilter);
     },
     // Enable global filtering for all columns
     enableGlobalFilter: true,
@@ -456,6 +471,7 @@ export function DataTable<TData, TValue>({
             extraViewData={extraViewData}
             isExtraViewDataDirty={isExtraViewDataDirty}
             toolbarContent={toolbarContent}
+            onRowClick={onRowClick}
           />
         </div>
       )}

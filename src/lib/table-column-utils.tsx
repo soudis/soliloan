@@ -262,7 +262,7 @@ export function createNumberColumn<T>(
   headerKey: string | undefined,
   t: (key: string) => string,
   locale: string,
-  options?: { integer?: boolean },
+  options?: { integer?: boolean; hashPrefix?: boolean },
 ): ColumnDef<T> {
   const parser = new NumberParser(locale);
   const column = createColumn<T>(
@@ -271,7 +271,11 @@ export function createNumberColumn<T>(
       header: headerKey,
       cell: ({ row }) => {
         const value = formatTableNumberValue(row.getValue(accessorKey), parser);
-        return <div className="tabular-nums">{value}</div>;
+        if (value === '' || value == null) {
+          return <div className="tabular-nums" />;
+        }
+        const display = options?.hashPrefix ? `#${value}` : value;
+        return <div className="tabular-nums">{display}</div>;
       },
     },
     t,

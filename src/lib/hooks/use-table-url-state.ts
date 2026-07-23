@@ -10,6 +10,8 @@ import { tableUrlNuqsOptions, tableUrlParsers } from '@/lib/table-url-parsers';
 
 export type TableUrlState = {
   globalFilter: string;
+  /** Selected quick-search column id; empty string means “Alle”. Not saved in views. */
+  quickSearchField: string;
   sorting: SortingState;
   columnFilters: ColumnFiltersState;
   columnVisibility: VisibilityState;
@@ -24,6 +26,7 @@ export type SetTableUrlState = (update: Partial<TableUrlState>) => void;
 /** The baseline state when no view is selected */
 const DEFAULT_BASELINE: TableUrlState = {
   globalFilter: '',
+  quickSearchField: '',
   sorting: [],
   columnFilters: [],
   columnVisibility: {},
@@ -43,6 +46,7 @@ function viewToBaseline(
 ): Omit<TableUrlState, 'selectedView'> {
   return {
     globalFilter: data?.globalFilter ?? '',
+    quickSearchField: '',
     sorting: data?.sorting ?? [],
     columnFilters: data?.columnFilters ?? [],
     columnVisibility: data?.columnVisibility ?? defaultColumnVisibility,
@@ -95,6 +99,7 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
   const state = useMemo<TableUrlState>(() => {
     return {
       globalFilter: rawState.q ?? baseline.globalFilter,
+      quickSearchField: rawState.sf ?? baseline.quickSearchField,
       sorting: rawState.sort ?? baseline.sorting,
       columnFilters: rawState.filters ?? baseline.columnFilters,
       columnVisibility: rawState.cols ? { ...defaultColumnVisibility, ...rawState.cols } : baseline.columnVisibility,
@@ -140,6 +145,10 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
       // For each field, write to URL only if different from baseline, otherwise clear
       if (update.globalFilter !== undefined) {
         raw.q = update.globalFilter !== effectiveBaseline.globalFilter ? update.globalFilter : null;
+      }
+      if (update.quickSearchField !== undefined) {
+        raw.sf =
+          update.quickSearchField !== effectiveBaseline.quickSearchField ? update.quickSearchField || null : null;
       }
       if (update.sorting !== undefined) {
         raw.sort = !isEqual(update.sorting, effectiveBaseline.sorting) ? update.sorting : null;

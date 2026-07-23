@@ -1,10 +1,16 @@
 import type { DataTableColumnFilterType } from '@/lib/entity-filters/filter-definitions';
 import { resolveDateFilterBounds } from '@/lib/entity-filters/resolve-date-filter-range';
+import { formatCurrency, formatNumber, NumberParser } from '@/lib/utils';
 import { parseBooleanFilterValue } from '@/types/boolean-filter-value';
 import { parseDateFilterValue } from '@/types/date-filter-value';
 import { parseEnumFilterValue } from '@/types/enum-filter-value';
 import { parseNumberFilterValue } from '@/types/number-filter-value';
 import { parseTextFilterValue } from '@/types/text-filter-value';
+
+const deNumberParser = new NumberParser('de-DE');
+
+/** Half-cent tolerance for currency-style equality in global search. */
+const GLOBAL_FILTER_NUMBER_EPSILON = 0.005;
 
 function isNullishOrBlank(value: unknown): boolean {
   if (value === null || value === undefined) {
@@ -14,6 +20,83 @@ function isNullishOrBlank(value: unknown): boolean {
     return value.trim() === '';
   }
   return false;
+}
+
+function toFiniteNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string' && value.trim() !== '') {
+    const asNumber = Number(value);
+    if (Number.isFinite(asNumber)) {
+      return asNumber;
+    }
+  }
+  if (
+    value &&
+    typeof value === 'object' &&
+    'toNumber' in value &&
+    typeof (value as { toNumber: unknown }).toNumber === 'function'
+  ) {
+    const asNumber = (value as { toNumber: () => number }).toNumber();
+    if (Number.isFinite(asNumber)) {
+      return asNumber;
+    }
+  }
+  return null;
+}
+
+function parseLocalizedSearchNumber(filter: string): number | null {
+  const stripped = deNumberParser.strip(filter);
+  if (!stripped) {
+    return null;
+  }
+  const parsed = deNumberParser.parse(stripped);
+  if (parsed == null || !Number.isFinite(parsed)) {
+    return null;
+  }
+  return parsed;
+}
+
+function normalizeSearchText(value: string): string {
+  return value.toLowerCase().replace(/\u00a0/g, ' ');
+}
+
+/**
+ * Global “search all” matcher: substring match, plus German/currency number parsing
+ * so queries like `3000,00`, `3.000,00`, or `3000€` hit numeric cell values.
+ */
+export function matchesGlobalFilter(value: unknown, filterValue: unknown): boolean {
+  const rawFilter = String(filterValue).trim();
+  if (!rawFilter) {
+    return true;
+  }
+  if (value == null || value === '') {
+    return false;
+  }
+
+  const searchFilter = normalizeSearchText(rawFilter);
+  if (normalizeSearchText(String(value)).includes(searchFilter)) {
+    return true;
+  }
+
+  // Number-aware matching only when the query contains a digit (avoids bare `€` matching all amounts).
+  if (!/\d/.test(rawFilter)) {
+    return false;
+  }
+
+  const numericValue = toFiniteNumber(value);
+  if (numericValue == null) {
+    return false;
+  }
+
+  const parsedFilter = parseLocalizedSearchNumber(rawFilter);
+  if (parsedFilter != null && Math.abs(numericValue - parsedFilter) < GLOBAL_FILTER_NUMBER_EPSILON) {
+    return true;
+  }
+
+  const displays = [formatCurrency(numericValue), formatNumber(numericValue), formatNumber(numericValue, 0, 0)];
+  return displays.some((display) => normalizeSearchText(display).includes(searchFilter));
 }
 
 export function matchesTextFilter(value: unknown, filterValue: unknown): boolean {

@@ -56,6 +56,10 @@ export function buildAllLenderTableColumns<T extends LenderListItem = LenderList
     {
       accessorKey: 'lenderNumber',
       header: 'table.lenderNumber',
+      cell: ({ row }) => {
+        const value = row.getValue('lenderNumber') as number | null | undefined;
+        return value == null ? '' : `#${value}`;
+      },
       meta: {
         export: { type: 'integer' },
       },

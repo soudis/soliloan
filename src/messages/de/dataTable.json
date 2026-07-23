@@ -68,7 +68,9 @@
   "dateFilterRelative": "Letzte",
   "dateFilterStart": "Startdatum",
   "dateFilterEnd": "Enddatum",
-  "globalFilter": "In allen Spalten suchen...",
+  "globalFilter": "Spalten durchsuchen...",
+  "globalFilterAll": "Alle",
+  "globalFilterField": "Suchfeld",
   "bulkBar": {
     "selected": "{count} ausgewählt",
     "deselect": "Auswahl aufheben"

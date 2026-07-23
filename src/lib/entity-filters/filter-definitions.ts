@@ -57,7 +57,7 @@ export function buildLoanColumnFiltersMap(
   return {
     loanNumber: { type: 'number', label: t('table.loanNumber'), defaultOperator: 'eq' },
     signDate: { type: 'date', label: t('table.signDate'), allowEmpty: false },
-    amount: { type: 'number', label: t('table.amount') },
+    amount: { type: 'number', label: t('table.amount'), defaultOperator: 'eq' },
     balance: { type: 'number', label: t('table.balance') },
     deposits: { type: 'number', label: t('table.deposits') },
     outstandingDepositSum: { type: 'number', label: t('table.outstandingDepositSum') },
@@ -190,7 +190,7 @@ export function buildLenderProfileColumnFiltersMap(
   if (options?.includeAggregates && options.tLoans) {
     const tLoans = options.tLoans;
     Object.assign(filters, {
-      amount: { type: 'number', label: tLoans('table.amount') },
+      amount: { type: 'number', label: tLoans('table.amount'), defaultOperator: 'eq' },
       balance: { type: 'number', label: tLoans('table.balance') },
       deposits: { type: 'number', label: tLoans('table.deposits') },
       withdrawals: { type: 'number', label: tLoans('table.withdrawals') },
