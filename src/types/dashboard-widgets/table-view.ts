@@ -31,13 +31,14 @@ export const TABLE_VIEW_ROW_LIMIT_MAX = 100;
 export const DEFAULT_TABLE_VIEW_ROW_LIMIT = 10;
 
 export const DEFAULT_LOAN_TABLE_VISIBLE_COLUMNS = [
-  'lender.lenderNumber',
-  'lender.name',
   'loanNumber',
   'signDate',
+  'lender.name',
+  'lender.lenderNumber',
   'amount',
+  'deposits',
+  'withdrawals',
   'balance',
-  'interestRate',
   'status',
 ] as const;
 

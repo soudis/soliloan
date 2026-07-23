@@ -575,7 +575,7 @@
     },
     "table": {
       "lenderNumber": "Kontonummer",
-      "lenderNumberShort": "Konto-Nr.",
+      "lenderNumberShort": "Konto",
       "type": "Typ",
       "name": "Vollständiger Name",
       "nameShort": "Name",
@@ -863,6 +863,7 @@
       "altInterestMethodShort": "Alt. Zinsmeth.",
       "contractStatus": "Vertragsstatus",
       "isSavingsContract": "Ansparvertrag",
+      "isSavingsContractShort": "Ansparv.",
       "signDate": "Vertragsdatum",
       "repayDate": "Rückzahlungsfrist",
       "repayDateShort": "Rückzahlung",

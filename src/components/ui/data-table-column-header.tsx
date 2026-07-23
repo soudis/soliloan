@@ -51,6 +51,9 @@ export function DataTableColumnHeader<TData, TValue>({
   const filterPresence = useFilterPresence();
   const canFilter = !!filterPresence?.config[column.id];
   const filterPresent = canFilter ? filterPresence.isPresent(column.id) : false;
+  const textAlign = column.columnDef.meta?.style?.textAlign ?? 'left';
+  const justifyClass =
+    textAlign === 'right' ? 'justify-end' : textAlign === 'center' ? 'justify-center' : 'justify-start';
 
   useLayoutEffect(() => {
     if (!showMoveButtons) {
@@ -83,7 +86,7 @@ export function DataTableColumnHeader<TData, TValue>({
   }, []);
 
   return (
-    <div className={cn('relative flex w-full items-center justify-start', className)}>
+    <div className={cn('relative flex w-full items-center', justifyClass, className)}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -92,17 +95,17 @@ export function DataTableColumnHeader<TData, TValue>({
             variant="ghost"
             aria-expanded={open}
             className={cn(
-              'my-1.5 h-8 w-full justify-start gap-0.5 pl-1 pr-3 has-[>svg]:px-0 has-[>svg]:pl-1 has-[>svg]:pr-3 text-sm font-medium data-[state=open]:bg-accent',
+              'my-1.5 h-8 w-auto max-w-full shrink gap-1 px-2.5 text-sm font-medium data-[state=open]:bg-accent',
               open && 'bg-accent text-accent-foreground',
             )}
           >
-            <ChevronDown className="size-3 shrink-0 opacity-40" />
             <span className="min-w-0 truncate">{title}</span>
             {sorted === 'asc' ? (
               <ArrowUp className="size-3 shrink-0 opacity-70" />
             ) : sorted === 'desc' ? (
               <ArrowDown className="size-3 shrink-0 opacity-70" />
             ) : null}
+            <ChevronDown className="size-3 shrink-0 opacity-40" />
           </Button>
         </PopoverTrigger>
         <PopoverContent align="center" sideOffset={8} className="w-80 px-3 pb-5 pt-3">

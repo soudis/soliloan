@@ -4,7 +4,12 @@ import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import type { ColumnGroupMeta, DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { matchesBooleanFilter, matchesEnumFilter, matchesTextFilter } from '@/lib/entity-filters/filter-matchers';
+import {
+  matchesBooleanFilter,
+  matchesDateFilter,
+  matchesEnumFilter,
+  matchesTextFilter,
+} from '@/lib/entity-filters/filter-matchers';
 import { formatDurationDays } from '@/lib/format-duration';
 
 import { formatCurrency, formatPercentage, getLenderName, NumberParser, resolveIntlLocaleForDates } from '@/lib/utils';
@@ -24,6 +29,11 @@ export function booleanFilter<T>(row: Row<T>, columnId: string, filterValue: unk
 // Define the custom filter function for enum fields
 export function enumFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
   return matchesEnumFilter(row.getValue(columnId), filterValue, 'eq');
+}
+
+// Define the custom filter function for date fields
+export function dateRangeFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
+  return matchesDateFilter(row.getValue(columnId), filterValue, new Date());
 }
 
 // Define the custom filter function type
@@ -453,13 +463,16 @@ export function createEnumBadgeColumn<T>(
   t: (key: string) => string,
   commonT: (key: string) => string,
   getBadgeVariant?: (value: string) => 'default' | 'secondary' | 'destructive' | 'outline',
+  options?: { align?: 'left' | 'right' | 'center' },
 ): ColumnDef<T> {
   const columnId = accessorKeyToColumnId(accessorKey);
+  const align = options?.align ?? 'left';
   const column = createColumn<T>(
     {
       accessorKey,
       id: columnId,
       header: headerKey,
+      align,
       cell: ({ row }) => {
         const value = row.getValue(columnId) as string;
         if (!value) return '';
@@ -473,7 +486,13 @@ export function createEnumBadgeColumn<T>(
           variant = getBadgeVariant(value);
         }
 
-        return <Badge variant={variant}>{enumText}</Badge>;
+        return (
+          <div className={`${getTextAlignClass(align)} whitespace-nowrap`}>
+            <Badge variant={variant} className="whitespace-nowrap">
+              {enumText}
+            </Badge>
+          </div>
+        );
       },
       filterFn: enumFilter,
       sortingFn: (rowA, rowB, columnId) => {
@@ -508,14 +527,19 @@ export function createBooleanColumn<T>(
   headerKey: string,
   t: (key: string) => string,
   commonT: (key: string) => string,
+  options?: { align?: 'left' | 'right' | 'center' },
 ): ColumnDef<T> {
   const formatBoolean = (value: unknown) => (value === true ? commonT('ui.boolean.yes') : commonT('ui.boolean.no'));
+  const align = options?.align ?? 'left';
 
   const column = createColumn<T>(
     {
       accessorKey,
       header: headerKey,
-      cell: ({ row }) => formatBoolean(row.getValue(accessorKey)),
+      align,
+      cell: ({ row }) => (
+        <div className={getTextAlignClass(align)}>{formatBoolean(row.getValue(accessorKey))}</div>
+      ),
       filterFn: booleanFilter,
       sortingFn: (rowA, rowB, columnId) => {
         const a = rowA.getValue(columnId) === true ? 1 : 0;
