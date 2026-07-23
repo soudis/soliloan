@@ -9,7 +9,12 @@ import type { MergeTagConfig, MergeTagField, MergeTagLoop } from '@/actions/temp
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { canInsertLoopAtContext, shouldShowLoopChildFieldsGroup } from '@/lib/templates/merge-tag-insertion-filter';
+import {
+  canInsertLoopAtContext,
+  loopChildFieldsGroupKey,
+  resolveMergeTagGroupKey,
+  shouldShowLoopChildFieldsGroup,
+} from '@/lib/templates/merge-tag-insertion-filter';
 import { cn } from '@/lib/utils';
 
 type MergeTagItem = MergeTagField | MergeTagLoop;
@@ -111,7 +116,7 @@ export function MergeTagDropdown({
     for (const loop of loopsWithChildUi) {
       if (loop.childFields.length > 0) {
         nextGroups.push({
-          key: `loop-fields:${loop.key}`,
+          key: loopChildFieldsGroupKey(loop.key),
           label: `${loop.label} ${tMergeTags('childFieldsSuffix')}`,
           description: tMergeTags(`groupDescriptions.loopChild.${loop.key}` as Parameters<typeof tMergeTags>[0]),
           items: loop.childFields,
@@ -124,15 +129,36 @@ export function MergeTagDropdown({
 
   const [selectedGroupKey, setSelectedGroupKey] = useState('');
   const [selectedItemKey, setSelectedItemKey] = useState('');
+  /** After a manual group change while open, do not re-apply loop-context preference. */
+  const userPickedGroupRef = useRef(false);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      wasOpenRef.current = false;
+      userPickedGroupRef.current = false;
+      return;
+    }
 
-    setSelectedGroupKey((currentGroupKey) => {
-      if (groups.length === 0) return '';
-      return groups.some((group) => group.key === currentGroupKey) ? currentGroupKey : groups[0].key;
-    });
-  }, [groups, isOpen]);
+    const justOpened = !wasOpenRef.current;
+    wasOpenRef.current = true;
+
+    if (justOpened) {
+      userPickedGroupRef.current = false;
+    }
+
+    const availableGroupKeys = groups.map((group) => group.key);
+    const preferInnermostLoopFields = justOpened || !userPickedGroupRef.current;
+
+    setSelectedGroupKey((currentGroupKey) =>
+      resolveMergeTagGroupKey({
+        availableGroupKeys,
+        ancestorLoopsInnermostFirst: insertionContext?.ancestorLoopsInnermostFirst,
+        currentGroupKey,
+        preferInnermostLoopFields,
+      }),
+    );
+  }, [groups, isOpen, insertionContext?.ancestorLoopsInnermostFirst]);
 
   const selectedGroup = groups.find((group) => group.key === selectedGroupKey);
 
@@ -193,7 +219,13 @@ export function MergeTagDropdown({
         <div className="space-y-3">
           <div className="space-y-1.5">
             <p className="text-xs font-medium text-foreground">{tMergeTags('groupLabel')}</p>
-            <Select value={selectedGroupKey || undefined} onValueChange={setSelectedGroupKey}>
+            <Select
+              value={selectedGroupKey || undefined}
+              onValueChange={(nextGroupKey) => {
+                userPickedGroupRef.current = true;
+                setSelectedGroupKey(nextGroupKey);
+              }}
+            >
               <SelectTrigger className="h-auto min-h-10 w-full whitespace-normal px-3 py-2 text-left [&>svg]:shrink-0">
                 <SelectValue placeholder={tMergeTags('groupPlaceholder')} />
               </SelectTrigger>
