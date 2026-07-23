@@ -71,6 +71,11 @@
   "globalFilter": "Spalten durchsuchen...",
   "globalFilterAll": "Alle",
   "globalFilterField": "Suchfeld",
+  "filterTarget": "Filterfeld",
+  "addFilter": "Filter hinzufügen",
+  "removeFilter": "Filter entfernen",
+  "expandFilters": "Filter einblenden",
+  "collapseFilters": "Filter ausblenden",
   "bulkBar": {
     "selected": "{count} ausgewählt",
     "deselect": "Auswahl aufheben"
@@ -84,6 +89,7 @@
     "sort": "Spalte sortieren",
     "sortAsc": "Aufsteigend sortieren",
     "sortDesc": "Absteigend sortieren",
+    "filter": "Filter für Spalte anzeigen",
     "moreOptions": "Weitere Optionen",
     "moveLeft": "Spalte nach links verschieben",
     "moveRight": "Spalte nach rechts verschieben"

@@ -8,6 +8,8 @@ import { createPortal } from 'react-dom';
 
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Switch } from '@/components/ui/switch';
+import { useFilterPresence } from '@/components/ui/data-table-filter-presence-context';
 import { cn } from '@/lib/utils';
 
 /** Set to true when column reordering via header arrows is implemented. */
@@ -46,6 +48,9 @@ export function DataTableColumnHeader<TData, TValue>({
   const sorted = column.getIsSorted();
   const resolvedLongTitle = longTitle ?? title;
   const showMoveButtons = SHOW_MOVE_COLUMN_BUTTONS && open;
+  const filterPresence = useFilterPresence();
+  const canFilter = !!filterPresence?.config[column.id];
+  const filterPresent = canFilter ? filterPresence.isPresent(column.id) : false;
 
   useLayoutEffect(() => {
     if (!showMoveButtons) {
@@ -87,7 +92,7 @@ export function DataTableColumnHeader<TData, TValue>({
             variant="ghost"
             aria-expanded={open}
             className={cn(
-              'my-1 h-7 w-full justify-start gap-0.5 pl-1 pr-3 has-[>svg]:px-0 has-[>svg]:pl-1 has-[>svg]:pr-3 text-sm font-medium data-[state=open]:bg-accent',
+              'my-1.5 h-8 w-full justify-start gap-0.5 pl-1 pr-3 has-[>svg]:px-0 has-[>svg]:pl-1 has-[>svg]:pr-3 text-sm font-medium data-[state=open]:bg-accent',
               open && 'bg-accent text-accent-foreground',
             )}
           >
@@ -100,11 +105,11 @@ export function DataTableColumnHeader<TData, TValue>({
             ) : null}
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="center" sideOffset={8} className="w-80 p-3">
+        <PopoverContent align="center" sideOffset={8} className="w-80 px-3 pb-5 pt-3">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 space-y-1">
               <div className="text-sm font-semibold leading-snug">{resolvedLongTitle}</div>
-              {description ? <p className="text-xs text-muted-foreground leading-relaxed">{description}</p> : null}
+              {description ? <p className="text-sm text-muted-foreground leading-relaxed">{description}</p> : null}
             </div>
             {SHOW_MORE_OPTIONS_BUTTON ? (
               <Button
@@ -145,6 +150,19 @@ export function DataTableColumnHeader<TData, TValue>({
                   <ArrowUp className="size-4" />
                 </Button>
               </div>
+            </div>
+          ) : null}
+
+          {canFilter ? (
+            <div className={cn('flex items-center justify-between gap-3', canSort ? 'mt-4' : 'mt-5')}>
+              <span className="text-sm text-muted-foreground">{t('filter')}</span>
+              <Switch
+                checked={filterPresent}
+                onCheckedChange={(checked) => {
+                  filterPresence?.setPresent(column.id, checked);
+                }}
+                aria-label={t('filter')}
+              />
             </div>
           ) : null}
         </PopoverContent>

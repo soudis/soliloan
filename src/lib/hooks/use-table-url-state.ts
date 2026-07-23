@@ -19,6 +19,8 @@ export type TableUrlState = {
   pageSize: number;
   selectedView: string;
   viewName: string;
+  /** Whether additional filter chips are shown. Saved in views. */
+  filtersExpanded: boolean;
 };
 
 export type SetTableUrlState = (update: Partial<TableUrlState>) => void;
@@ -34,6 +36,7 @@ const DEFAULT_BASELINE: TableUrlState = {
   pageSize: 25,
   selectedView: '',
   viewName: '',
+  filtersExpanded: false,
 };
 
 /**
@@ -53,6 +56,7 @@ function viewToBaseline(
     pageIndex: 0, // always reset page on view load
     pageSize: data?.pagination?.pageSize ?? data?.pageSize ?? 25,
     viewName: '',
+    filtersExpanded: data?.filtersExpanded ?? false,
   };
 }
 
@@ -107,6 +111,7 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
       pageSize: rawState.pageSize ?? baseline.pageSize,
       selectedView: rawState.view ?? baseline.selectedView,
       viewName: rawState.viewName ?? '',
+      filtersExpanded: rawState.fe ?? baseline.filtersExpanded,
     };
   }, [rawState, baseline, defaultColumnVisibility]);
 
@@ -169,6 +174,9 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
       }
       if (update.viewName !== undefined) {
         raw.viewName = update.viewName || null;
+      }
+      if (update.filtersExpanded !== undefined) {
+        raw.fe = update.filtersExpanded !== effectiveBaseline.filtersExpanded ? update.filtersExpanded : null;
       }
 
       setRawState(raw, {

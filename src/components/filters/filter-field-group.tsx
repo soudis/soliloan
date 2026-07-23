@@ -94,6 +94,14 @@ export function filterValueSegmentClass(size: FilterFieldSize = 'default') {
   );
 }
 
+/** Compact fixed-width number inputs (narrower than flex text fields). */
+export function filterNumberValueSegmentClass(size: FilterFieldSize = 'default') {
+  return cn(
+    'w-24 shrink-0 shadow-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+    filterSizeClass(size),
+  );
+}
+
 /** Comparison symbols (=, >, <, …) read small at default select size. */
 export const FILTER_SYMBOL_OPERATORS = new Set(['eq', 'gt', 'lt', 'gte', 'lte']);
 

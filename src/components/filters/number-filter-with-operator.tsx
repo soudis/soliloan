@@ -6,10 +6,10 @@ import { useMemo, type KeyboardEvent, type ReactNode } from 'react';
 import {
   FilterFieldGroup,
   FilterStackedFields,
+  filterNumberValueSegmentClass,
   filterOperatorSegmentClass,
   filterSymbolOperatorLabelClass,
   filterSymbolOperatorTriggerClass,
-  filterValueSegmentClass,
   type FilterFieldSize,
   type FilterFieldVariant,
 } from '@/components/filters/filter-field-group';
@@ -131,7 +131,7 @@ export function NumberFilterWithOperator({
               max: parsed.max,
             });
           }}
-          className={filterValueSegmentClass(size)}
+          className={filterNumberValueSegmentClass(size)}
         />
         <Input
           type="number"
@@ -146,7 +146,7 @@ export function NumberFilterWithOperator({
               max: next,
             });
           }}
-          className={filterValueSegmentClass(size)}
+          className={filterNumberValueSegmentClass(size)}
         />
       </>
     );
@@ -170,7 +170,7 @@ export function NumberFilterWithOperator({
             value: next,
           });
         }}
-        className={filterValueSegmentClass(size)}
+        className={filterNumberValueSegmentClass(size)}
       />
     );
   }

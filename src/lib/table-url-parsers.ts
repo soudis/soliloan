@@ -1,5 +1,5 @@
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/react-table';
-import { createParser, parseAsInteger, parseAsString } from 'nuqs';
+import { createParser, parseAsBoolean, parseAsInteger, parseAsString } from 'nuqs';
 
 /**
  * Custom nuqs parser that encodes JSON as base64 to produce URL-safe values.
@@ -43,6 +43,8 @@ export const tableUrlParsers = {
   pageSize: parseAsInteger,
   view: parseAsString,
   viewName: parseAsString,
+  /** Whether the filter chip bar is expanded. */
+  fe: parseAsBoolean,
 } as const;
 
 export const tableUrlNuqsOptions = {

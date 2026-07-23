@@ -51,9 +51,7 @@ export function DataTableBody<TData>({
                     <TableHead
                       key={header.id}
                       className={cn(
-                        header.column.columnDef.meta?.style?.textAlign &&
-                          `text-${header.column.columnDef.meta.style.textAlign}`,
-                        'bg-card',
+                        'bg-card text-left',
                         fillHeight && 'sticky top-0 z-20 shadow-[inset_0_-1px_0_0_var(--table-border)]',
                         header.column.columnDef.meta?.fixed &&
                           cn(
