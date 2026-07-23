@@ -22,6 +22,7 @@ import {
   matchesTextFilter,
 } from '@/lib/entity-filters/filter-matchers';
 import { cn } from '@/lib/utils';
+import type { NumberFilterOperator } from '@/types/number-filter-value';
 
 import { Checkbox } from './checkbox';
 import { DataTableBody } from './data-table-body';
@@ -65,6 +66,12 @@ declare module '@tanstack/react-table' {
     bulkSelectColumn?: boolean;
     export?: ColumnExportMeta;
     columnGroup?: ColumnGroupMeta;
+    /** Short label shown in the table header. */
+    labelShort?: string;
+    /** Long label shown in the column menu, filters, and export. */
+    labelLong?: string;
+    /** Optional explanation shown in the column menu. */
+    description?: string;
   }
 }
 
@@ -90,6 +97,7 @@ export type DataTableColumnFilters = {
     options?: { label: string; value: string }[];
     label?: string;
     allowEmpty?: boolean;
+    defaultOperator?: NumberFilterOperator;
   };
 };
 

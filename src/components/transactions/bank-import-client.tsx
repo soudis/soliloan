@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Combobox } from '@/components/ui/combobox';
 import type { BulkAction } from '@/components/ui/data-table';
 import { DataTable } from '@/components/ui/data-table';
+import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRouter } from '@/i18n/navigation';
@@ -201,12 +202,14 @@ export function BankImportClient({ projectId, accounts, initialRows, initialAcco
     () => [
       {
         accessorKey: 'bookingDate',
-        header: t('columns.date'),
+        enableSorting: false,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t('columns.date')} />,
         cell: ({ row }) => format.dateTime(row.original.bookingDate, { dateStyle: 'medium' }),
       },
       {
         id: 'counterparty',
-        header: t('columns.counterparty'),
+        enableSorting: false,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t('columns.counterparty')} />,
         cell: ({ row }) => (
           <div className="min-w-[140px]">
             <div className="font-medium truncate">{row.original.counterpartyName ?? '—'}</div>
@@ -218,14 +221,22 @@ export function BankImportClient({ projectId, accounts, initialRows, initialAcco
       },
       {
         accessorKey: 'remittanceInfo',
-        header: t('columns.remittance'),
+        enableSorting: false,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t('columns.remittanceShort')}
+            longTitle={t('columns.remittance')}
+          />
+        ),
         cell: ({ row }) => (
           <span className="line-clamp-2 max-w-[220px] text-sm">{row.original.remittanceInfo ?? '—'}</span>
         ),
       },
       {
         accessorKey: 'amount',
-        header: t('columns.amount'),
+        enableSorting: false,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t('columns.amount')} />,
         cell: ({ row }) => (
           <span className={row.original.amount >= 0 ? 'text-success-foreground' : 'text-destructive'}>
             {formatCurrency(row.original.amount)} {row.original.currency}
@@ -234,7 +245,10 @@ export function BankImportClient({ projectId, accounts, initialRows, initialAcco
       },
       {
         id: 'lender',
-        header: t('columns.lender'),
+        enableSorting: false,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title={t('columns.lenderShort')} longTitle={t('columns.lender')} />
+        ),
         cell: ({ row }) => (
           <div className="min-w-[200px]">
             <Combobox
@@ -249,7 +263,8 @@ export function BankImportClient({ projectId, accounts, initialRows, initialAcco
       },
       {
         id: 'loan',
-        header: t('columns.loan'),
+        enableSorting: false,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t('columns.loan')} />,
         cell: ({ row }) => {
           const lenderId = row.original.selectedLenderId;
           const lenderLoans = lenderId ? (loansByLenderId.get(lenderId) ?? EMPTY_LOANS) : EMPTY_LOANS;
@@ -266,7 +281,8 @@ export function BankImportClient({ projectId, accounts, initialRows, initialAcco
       },
       {
         id: 'type',
-        header: t('columns.type'),
+        enableSorting: false,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t('columns.type')} />,
         cell: ({ row }) => {
           if (row.original.amount > 0) {
             return <span className="text-sm">{commonT('enums.transaction.type.DEPOSIT')}</span>;

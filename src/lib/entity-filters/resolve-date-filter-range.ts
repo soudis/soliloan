@@ -32,6 +32,9 @@ export function resolveDateFilterBounds(
       };
     }
     case 'last': {
+      if (parsed.amount == null) {
+        return null;
+      }
       const pointA = moment(referenceDate).subtract(parsed.amount, parsed.unit);
       const pointB = moment(referenceDate);
       const start = moment.min(pointA, pointB).startOf('day');
@@ -39,6 +42,9 @@ export function resolveDateFilterBounds(
       return { start: start.toDate(), end: end.toDate() };
     }
     case 'next': {
+      if (parsed.amount == null) {
+        return null;
+      }
       const pointA = moment(referenceDate);
       const pointB = moment(referenceDate).add(parsed.amount, parsed.unit);
       const start = moment.min(pointA, pointB).startOf('day');
@@ -46,10 +52,16 @@ export function resolveDateFilterBounds(
       return { start: start.toDate(), end: end.toDate() };
     }
     case 'olderThan': {
+      if (parsed.amount == null) {
+        return null;
+      }
       const end = moment(referenceDate).subtract(parsed.amount, parsed.unit).endOf('day');
       return { start: null, end: end.toDate() };
     }
     case 'newerThan': {
+      if (parsed.amount == null) {
+        return null;
+      }
       const start = moment(referenceDate).subtract(parsed.amount, parsed.unit).startOf('day');
       return { start: start.toDate(), end: null };
     }

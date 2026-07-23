@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, type KeyboardEvent, type ReactNode } from 'react';
 
 import {
   FilterFieldGroup,
@@ -20,10 +20,17 @@ import {
   createDefaultNumberFilterValueForOperator,
   NUMBER_FILTER_EMPTY_OPERATORS,
   NUMBER_FILTER_OPERATORS,
+  type NumberFilterOperator,
   type NumberFilterOperatorWithEmpty,
   type NumberFilterValue,
   parseNumberFilterValue,
 } from '@/types/number-filter-value';
+
+const NUMBER_OPERATOR_SHORTCUTS: Record<string, 'eq' | 'gt' | 'lt'> = {
+  '=': 'eq',
+  '>': 'gt',
+  '<': 'lt',
+};
 
 function hasPayload(operator: NumberFilterOperatorWithEmpty): boolean {
   return operator !== 'empty' && operator !== 'notEmpty';
@@ -33,6 +40,7 @@ export function NumberFilterWithOperator({
   value,
   onChange,
   allowEmpty = false,
+  defaultOperator = 'between',
   translationNamespace = 'dataTable',
   variant = 'row',
   size = 'default',
@@ -40,12 +48,16 @@ export function NumberFilterWithOperator({
   value: unknown;
   onChange: (value: NumberFilterValue) => void;
   allowEmpty?: boolean;
+  defaultOperator?: NumberFilterOperator;
   translationNamespace?: string;
   variant?: FilterFieldVariant;
   size?: FilterFieldSize;
 }) {
   const t = useTranslations(translationNamespace);
-  const parsed = useMemo(() => parseNumberFilterValue(value), [value]);
+  const parsed = useMemo(
+    () => parseNumberFilterValue(value, defaultOperator),
+    [value, defaultOperator],
+  );
 
   const availableOperators = useMemo(() => {
     const emptyOps = allowEmpty ? [...NUMBER_FILTER_EMPTY_OPERATORS] : [];
@@ -57,6 +69,21 @@ export function NumberFilterWithOperator({
       return;
     }
     onChange(createDefaultNumberFilterValueForOperator(operator));
+  };
+
+  const handleOperatorShortcut = (
+    event: KeyboardEvent<HTMLInputElement>,
+    fieldValue: number | null,
+  ) => {
+    const operator = NUMBER_OPERATOR_SHORTCUTS[event.key];
+    if (!operator) {
+      return;
+    }
+    event.preventDefault();
+    if (parsed.operator === operator) {
+      return;
+    }
+    onChange({ operator, value: fieldValue });
   };
 
   const showPayload = hasPayload(parsed.operator);
@@ -95,6 +122,7 @@ export function NumberFilterWithOperator({
           type="number"
           placeholder={t('numberFilterMin')}
           value={parsed.min ?? ''}
+          onKeyDown={(e) => handleOperatorShortcut(e, parsed.min)}
           onChange={(e) => {
             const next = e.target.value === '' ? null : Number(e.target.value);
             onChange({
@@ -109,6 +137,7 @@ export function NumberFilterWithOperator({
           type="number"
           placeholder={t('numberFilterMax')}
           value={parsed.max ?? ''}
+          onKeyDown={(e) => handleOperatorShortcut(e, parsed.max)}
           onChange={(e) => {
             const next = e.target.value === '' ? null : Number(e.target.value);
             onChange({
@@ -133,6 +162,7 @@ export function NumberFilterWithOperator({
         type="number"
         placeholder={t('numberFilterValue')}
         value={parsed.value ?? ''}
+        onKeyDown={(e) => handleOperatorShortcut(e, parsed.value)}
         onChange={(e) => {
           const next = e.target.value === '' ? null : Number(e.target.value);
           onChange({

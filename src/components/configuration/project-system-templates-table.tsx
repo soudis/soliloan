@@ -10,13 +10,14 @@ import { toast } from 'sonner';
 import { deleteTemplateAction } from '@/actions/templates/mutations/delete-template';
 import { duplicateTemplateAction } from '@/actions/templates/mutations/duplicate-template';
 import { getProjectSystemTemplatesOverviewAction } from '@/actions/templates/queries/get-project-system-templates-overview';
-import type { ProjectSystemTemplateOverviewRow } from '@/lib/templates/project-system-templates-overview';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/ui/data-table';
+import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
+import type { ProjectSystemTemplateOverviewRow } from '@/lib/templates/project-system-templates-overview';
 
 interface ProjectSystemTemplatesTableProps {
   projectId: string;
@@ -92,7 +93,8 @@ export function ProjectSystemTemplatesTable({ projectId, initialRows }: ProjectS
     () => [
       {
         accessorKey: 'name',
-        header: t('list.columns.name'),
+        enableSorting: false,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t('list.columns.name')} />,
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
             <span className="font-medium">{row.original.name}</span>
@@ -115,17 +117,32 @@ export function ProjectSystemTemplatesTable({ projectId, initialRows }: ProjectS
       },
       {
         accessorKey: 'type',
-        header: t('list.columns.type'),
+        enableSorting: false,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t('list.columns.type')} />,
         cell: ({ row }) => <span>{row.original.type === 'EMAIL' ? t('types.email') : t('types.document')}</span>,
       },
       {
         accessorKey: 'dataset',
-        header: t('list.columns.dataset'),
+        enableSorting: false,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t('list.columns.dataset')}
+            description={t('list.columns.datasetDescription')}
+          />
+        ),
         cell: ({ row }) => <span>{getDatasetDisplayName(row.original.dataset)}</span>,
       },
       {
         accessorKey: 'createdAt',
-        header: t('list.columns.createdAt'),
+        enableSorting: false,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t('list.columns.createdAtShort')}
+            longTitle={t('list.columns.createdAt')}
+          />
+        ),
         cell: ({ row }) => <span>{new Intl.DateTimeFormat('de-DE').format(new Date(row.original.createdAt))}</span>,
       },
     ],

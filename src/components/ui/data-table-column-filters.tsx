@@ -2,7 +2,10 @@ import type { ColumnFiltersState } from '@tanstack/react-table';
 
 import { isInactiveDateFilterValue } from '@/types/date-filter-value';
 import { isInactiveEnumFilterValue } from '@/types/enum-filter-value';
-import { isInactiveNumberFilterValue } from '@/types/number-filter-value';
+import {
+  isInactiveNumberFilterValue,
+  type NumberFilterOperator,
+} from '@/types/number-filter-value';
 import { isInactiveTextFilterValue } from '@/types/text-filter-value';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
 import { isInactiveBooleanFilterValue } from '@/types/boolean-filter-value';
@@ -21,6 +24,7 @@ type ColumnFilterConfig = {
   options?: { label: string; value: string }[];
   label?: string;
   allowEmpty?: boolean;
+  defaultOperator?: NumberFilterOperator;
 };
 
 interface DataTableColumnFiltersProps {
@@ -35,7 +39,11 @@ interface DataTableColumnFiltersProps {
   };
 }
 
-function isEmptyFilterValue(value: unknown, type: ColumnFilterConfig['type']): boolean {
+function isEmptyFilterValue(
+  value: unknown,
+  type: ColumnFilterConfig['type'],
+  defaultOperator?: NumberFilterOperator,
+): boolean {
   if (type === 'boolean') {
     return isInactiveBooleanFilterValue(value);
   }
@@ -49,7 +57,7 @@ function isEmptyFilterValue(value: unknown, type: ColumnFilterConfig['type']): b
       case 'date':
         return isInactiveDateFilterValue(value);
       case 'number':
-        return isInactiveNumberFilterValue(value);
+        return isInactiveNumberFilterValue(value, defaultOperator);
       case 'select':
         return isInactiveEnumFilterValue(value, 'eq');
       case 'multi-select':
@@ -62,7 +70,7 @@ function isEmptyFilterValue(value: unknown, type: ColumnFilterConfig['type']): b
   // Legacy shapes before operator migration
   switch (type) {
     case 'number':
-      return isInactiveNumberFilterValue(value);
+      return isInactiveNumberFilterValue(value, defaultOperator);
     case 'select':
       return isInactiveEnumFilterValue(value, 'eq');
     case 'multi-select':
@@ -82,10 +90,15 @@ export function DataTableColumnFilters({
 }: DataTableColumnFiltersProps) {
   const activeFilters = controlled?.columnFilters ?? tableState?.columnFilters ?? [];
 
-  const handleFilterChange = (columnId: string, value: unknown, type: ColumnFilterConfig['type']) => {
+  const handleFilterChange = (
+    columnId: string,
+    value: unknown,
+    type: ColumnFilterConfig['type'],
+    defaultOperator?: NumberFilterOperator,
+  ) => {
     const filters = activeFilters.filter((filter) => filter.id !== columnId);
 
-    if (!isEmptyFilterValue(value, type)) {
+    if (!isEmptyFilterValue(value, type, defaultOperator)) {
       filters.push({ id: columnId, value });
     }
 
@@ -146,8 +159,9 @@ export function DataTableColumnFilters({
                       <NumberFilter
                         filterState={filterState}
                         allowEmpty={filterConfig.allowEmpty}
+                        defaultOperator={filterConfig.defaultOperator}
                         onFilterChange={(value) => {
-                          handleFilterChange(columnId, value, 'number');
+                          handleFilterChange(columnId, value, 'number', filterConfig.defaultOperator);
                         }}
                       />
                     );

@@ -76,11 +76,16 @@ function RelativeDateAmountFields({
       <Input
         type="number"
         step={1}
-        value={value.amount}
+        value={value.amount ?? ''}
         onChange={(e) => {
           const raw = e.target.value;
+          if (raw === '') {
+            onChange({ amount: null, unit: value.unit });
+            return;
+          }
+          const parsed = Number.parseInt(raw, 10);
           onChange({
-            amount: raw === '' ? 0 : Number.parseInt(raw, 10) || 0,
+            amount: Number.isFinite(parsed) ? parsed : null,
             unit: value.unit,
           });
         }}

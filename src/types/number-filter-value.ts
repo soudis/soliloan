@@ -18,12 +18,10 @@ export type NumberFilterValue =
   | FilterOperatorValue<'empty'>
   | FilterOperatorValue<'notEmpty'>;
 
-export function createDefaultNumberFilterValue(): NumberFilterValue {
-  return {
-    operator: 'between',
-    min: null,
-    max: null,
-  };
+export function createDefaultNumberFilterValue(
+  defaultOperator: NumberFilterOperator = 'between',
+): NumberFilterValue {
+  return createDefaultNumberFilterValueForOperator(defaultOperator);
 }
 
 export function createDefaultNumberFilterValueForOperator(
@@ -31,7 +29,7 @@ export function createDefaultNumberFilterValueForOperator(
 ): NumberFilterValue {
   switch (operator) {
     case 'between':
-      return createDefaultNumberFilterValue();
+      return { operator: 'between', min: null, max: null };
     case 'eq':
     case 'gt':
     case 'lt':
@@ -71,19 +69,22 @@ function parseLegacyNumberRange(raw: unknown): NumberFilterValue | null {
   };
 }
 
-export function parseNumberFilterValue(raw: unknown): NumberFilterValue {
+export function parseNumberFilterValue(
+  raw: unknown,
+  defaultOperator: NumberFilterOperator = 'between',
+): NumberFilterValue {
   const legacy = parseLegacyNumberRange(raw);
   if (legacy) {
     return legacy;
   }
 
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-    return createDefaultNumberFilterValue();
+    return createDefaultNumberFilterValue(defaultOperator);
   }
 
   const value = raw as { operator?: NumberFilterOperatorWithEmpty };
   if (!isNumberFilterOperator(value.operator)) {
-    return createDefaultNumberFilterValue();
+    return createDefaultNumberFilterValue(defaultOperator);
   }
 
   switch (value.operator) {
@@ -113,9 +114,31 @@ export function parseNumberFilterValue(raw: unknown): NumberFilterValue {
   }
 }
 
-export function isInactiveNumberFilterValue(raw: unknown): boolean {
-  const parsed = parseNumberFilterValue(raw);
-  // Mirror dates: only the default operator with an empty payload is inactive.
+function hasEmptyPayload(parsed: NumberFilterValue): boolean {
+  switch (parsed.operator) {
+    case 'between':
+      return parsed.min == null && parsed.max == null;
+    case 'eq':
+    case 'gt':
+    case 'lt':
+    case 'gte':
+    case 'lte':
+      return parsed.value == null;
+    case 'empty':
+    case 'notEmpty':
+      return false;
+  }
+}
+
+export function isInactiveNumberFilterValue(
+  raw: unknown,
+  defaultOperator: NumberFilterOperator = 'between',
+): boolean {
+  const parsed = parseNumberFilterValue(raw, defaultOperator);
+  // Mirror enums/dates: only the default operator with an empty payload is inactive.
   // Other operators keep the filter in state so the operator select can stick.
-  return parsed.operator === 'between' && parsed.min == null && parsed.max == null;
+  if (parsed.operator !== defaultOperator) {
+    return false;
+  }
+  return hasEmptyPayload(parsed);
 }

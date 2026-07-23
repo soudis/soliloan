@@ -12,6 +12,7 @@ import {
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { createAdditionalFieldFilters } from '@/lib/table-column-utils';
 import type { EntityFilterEntity, EntityFilterFieldOption } from '@/types/entity-filters';
+import type { NumberFilterOperator } from '@/types/number-filter-value';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
 export type DataTableColumnFilterType = 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
@@ -21,6 +22,7 @@ export type DataTableColumnFilterDefinition = {
   label: string;
   options?: { label: string; value: string }[];
   allowEmpty?: boolean;
+  defaultOperator?: NumberFilterOperator;
 };
 
 const LOAN_STATUS_OPTIONS = [
@@ -53,7 +55,7 @@ export function buildLoanColumnFiltersMap(
   commonT: (key: string) => string,
 ): Record<string, DataTableColumnFilterDefinition> {
   return {
-    loanNumber: { type: 'number', label: t('table.loanNumber') },
+    loanNumber: { type: 'number', label: t('table.loanNumber'), defaultOperator: 'eq' },
     signDate: { type: 'date', label: t('table.signDate'), allowEmpty: false },
     amount: { type: 'number', label: t('table.amount') },
     balance: { type: 'number', label: t('table.balance') },
@@ -70,7 +72,7 @@ export function buildLoanColumnFiltersMap(
     outstandingDepositsCount: { type: 'number', label: t('table.outstandingDepositsCount') },
     withdrawals: { type: 'number', label: t('table.withdrawals') },
     notReclaimed: { type: 'number', label: t('table.notReclaimed') },
-    interestRate: { type: 'number', label: t('table.interestRate') },
+    interestRate: { type: 'number', label: t('table.interestRate'), defaultOperator: 'eq' },
     interest: { type: 'number', label: t('table.interest') },
     interestPaid: { type: 'number', label: t('table.interestPaid') },
     terminationType: {
@@ -136,7 +138,7 @@ export function buildLenderProfileColumnFiltersMap(
   const additionalFieldsPrefix = idPrefix ? `${idPrefix}additionalFields` : 'additionalFields';
 
   const filters: Record<string, DataTableColumnFilterDefinition> = {
-    lenderNumber: { type: 'number', label: t('table.lenderNumber') },
+    lenderNumber: { type: 'number', label: t('table.lenderNumber'), defaultOperator: 'eq' },
     type: {
       type: 'select',
       label: t('table.type'),

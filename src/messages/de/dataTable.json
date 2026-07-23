@@ -77,5 +77,13 @@
     "transaction": "Transaktion",
     "loan": "Kredit",
     "lender": "Kreditgeber*in"
+  },
+  "columnMenu": {
+    "sort": "Spalte sortieren",
+    "sortAsc": "Aufsteigend sortieren",
+    "sortDesc": "Absteigend sortieren",
+    "moreOptions": "Weitere Optionen",
+    "moveLeft": "Spalte nach links verschieben",
+    "moveRight": "Spalte nach rechts verschieben"
   }
 }

@@ -52,17 +52,20 @@ export function buildAllLenderTableColumns<T extends LenderListItem = LenderList
   commonT: (key: string) => string,
   locale: string,
 ): ColumnDef<T>[] {
-  return [
-    createColumn<T>(
-      {
-        accessorKey: 'lenderNumber',
-        header: 'table.lenderNumber',
-        meta: {
-          export: { type: 'integer' },
-        },
+  const lenderNumberColumn = createColumn<T>(
+    {
+      accessorKey: 'lenderNumber',
+      header: 'table.lenderNumber',
+      meta: {
+        export: { type: 'integer' },
       },
-      t,
-    ),
+    },
+    t,
+  );
+  lenderNumberColumn.filterFn = 'inNumberRange';
+
+  return [
+    lenderNumberColumn,
 
     createLenderNameColumn<T>(t),
 
