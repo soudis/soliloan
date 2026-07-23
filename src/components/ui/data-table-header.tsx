@@ -4,7 +4,7 @@ import type { View, ViewType } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Table, VisibilityState } from '@tanstack/react-table';
 import { isEqual } from 'lodash';
-import { ChevronDown, FileDown, Save, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, FileDown, Save, Search, SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { type ReactNode, useMemo, useState } from 'react';
@@ -30,18 +30,20 @@ import { DataTableExportDialog } from './data-table-export-dialog';
 import { SaveViewDialog } from './save-view-dialog';
 import { ViewManager } from './view-manager';
 
+type ColumnFiltersConfig = {
+  [key: string]: {
+    type: 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
+    options?: { label: string; value: string }[];
+    label?: string;
+    allowEmpty?: boolean;
+  };
+};
+
 interface DataTableHeaderProps<TData> {
   table: Table<TData>;
   showColumnVisibility?: boolean;
   showFilter?: boolean;
-  columnFilters?: {
-    [key: string]: {
-      type: 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
-      options?: { label: string; value: string }[];
-      label?: string;
-      allowEmpty?: boolean;
-    };
-  };
+  columnFilters?: ColumnFiltersConfig;
   viewType?: ViewType;
   views: View[];
   hasActiveFilters: () => boolean;
@@ -204,36 +206,6 @@ export function DataTableHeader<TData>({
     );
   }, [views, tableState, defaultColumnVisibility, isExtraViewDataDirty]);
 
-  const groupedHideableColumns = useMemo(() => {
-    const hideableColumns = table.getAllColumns().filter((column) => column.getCanHide());
-    const flatColumns: typeof hideableColumns = [];
-    const groupedMap = new Map<string, typeof hideableColumns>();
-
-    for (const column of hideableColumns) {
-      const groupKey = column.columnDef.meta?.columnGroup?.key;
-      if (!groupKey) {
-        flatColumns.push(column);
-        continue;
-      }
-      const existing = groupedMap.get(groupKey) ?? [];
-      existing.push(column);
-      groupedMap.set(groupKey, existing);
-    }
-
-    const groupedColumns = [...groupedMap.entries()]
-      .sort(([, columnsA], [, columnsB]) => {
-        const orderA = columnsA[0]?.columnDef.meta?.columnGroup?.order ?? 0;
-        const orderB = columnsB[0]?.columnDef.meta?.columnGroup?.order ?? 0;
-        return orderA - orderB;
-      })
-      .map(([key, columns]) => ({ key, columns }));
-
-    return { flatColumns, groupedColumns };
-  }, [table]);
-
-  const resolveColumnLabel = (columnId: string, exportLabel?: string) =>
-    columnFilters[columnId]?.label ?? exportLabel ?? columnId;
-
   return (
     <>
       <div className="flex items-center gap-4 py-4">
@@ -371,49 +343,139 @@ export function DataTableHeader<TData>({
               />
             </>
           )}
-          {showColumnVisibility && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-8">
-                  {t('columns')}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="max-h-[min(24rem,70vh)] overflow-y-auto">
-                {groupedHideableColumns.flatColumns.map((column) => (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                  >
-                    {resolveColumnLabel(column.id, column.columnDef.meta?.export?.label)}
-                  </DropdownMenuCheckboxItem>
-                ))}
-                {groupedHideableColumns.flatColumns.length > 0 && groupedHideableColumns.groupedColumns.length > 0 && (
-                  <DropdownMenuSeparator />
-                )}
-                {groupedHideableColumns.groupedColumns.map(({ key, columns }, groupIndex) => (
-                  <div key={key}>
-                    <DropdownMenuLabel>{t(`columnGroups.${key}`)}</DropdownMenuLabel>
-                    {columns.map((column) => (
-                      <DropdownMenuCheckboxItem
-                        key={column.id}
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                      >
-                        {resolveColumnLabel(column.id, column.columnDef.meta?.export?.label)}
-                      </DropdownMenuCheckboxItem>
-                    ))}
-                    {groupIndex < groupedHideableColumns.groupedColumns.length - 1 && <DropdownMenuSeparator />}
-                  </div>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+          {showColumnVisibility && <ColumnVisibilityMenu table={table} columnFilters={columnFilters} />}
         </div>
       </div>
       {showColumnFilters && Object.keys(columnFilters).length > 0 && (
         <DataTableColumnFilters tableState={tableState} setTableState={setTableState} columnFilters={columnFilters} />
       )}
     </>
+  );
+}
+
+interface ColumnVisibilityMenuProps<TData> {
+  table: Table<TData>;
+  columnFilters: ColumnFiltersConfig;
+}
+
+function ColumnVisibilityMenu<TData>({ table, columnFilters }: ColumnVisibilityMenuProps<TData>) {
+  const t = useTranslations('dataTable');
+  const tCommon = useTranslations('common');
+  const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const resolveColumnLabel = (columnId: string, exportLabel?: string) =>
+    columnFilters[columnId]?.label ?? exportLabel ?? columnId;
+
+  const groupedHideableColumns = useMemo(() => {
+    const hideableColumns = table.getAllColumns().filter((column) => column.getCanHide());
+    const flatColumns: typeof hideableColumns = [];
+    const groupedMap = new Map<string, typeof hideableColumns>();
+
+    for (const column of hideableColumns) {
+      const groupKey = column.columnDef.meta?.columnGroup?.key;
+      if (!groupKey) {
+        flatColumns.push(column);
+        continue;
+      }
+      const existing = groupedMap.get(groupKey) ?? [];
+      existing.push(column);
+      groupedMap.set(groupKey, existing);
+    }
+
+    const groupedColumns = [...groupedMap.entries()]
+      .sort(([, columnsA], [, columnsB]) => {
+        const orderA = columnsA[0]?.columnDef.meta?.columnGroup?.order ?? 0;
+        const orderB = columnsB[0]?.columnDef.meta?.columnGroup?.order ?? 0;
+        return orderA - orderB;
+      })
+      .map(([key, columns]) => ({ key, columns }));
+
+    return { flatColumns, groupedColumns };
+  }, [table]);
+
+  const filteredColumns = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return groupedHideableColumns;
+
+    const matches = (column: (typeof groupedHideableColumns.flatColumns)[number]) => {
+      const label =
+        columnFilters[column.id]?.label ?? column.columnDef.meta?.export?.label ?? column.id;
+      return label.toLowerCase().includes(query);
+    };
+
+    return {
+      flatColumns: groupedHideableColumns.flatColumns.filter(matches),
+      groupedColumns: groupedHideableColumns.groupedColumns
+        .map(({ key, columns }) => ({ key, columns: columns.filter(matches) }))
+        .filter(({ columns }) => columns.length > 0),
+    };
+  }, [groupedHideableColumns, searchQuery, columnFilters]);
+
+  const hasResults = filteredColumns.flatColumns.length > 0 || filteredColumns.groupedColumns.length > 0;
+
+  return (
+    <DropdownMenu
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) setSearchQuery('');
+      }}
+    >
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="h-8">
+          {t('columns')}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56 p-0">
+        <div className="flex items-center border-b px-3 py-2">
+          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+          <input
+            className="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder={tCommon('ui.actions.search')}
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            onKeyDown={(event) => event.stopPropagation()}
+          />
+        </div>
+        <div className="max-h-[min(24rem,70vh)] overflow-y-auto p-1">
+          {!hasResults ? (
+            <div className="py-6 text-center text-sm text-muted-foreground">{tCommon('ui.actions.noResults')}</div>
+          ) : (
+            <>
+              {filteredColumns.flatColumns.map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                  onSelect={(event) => event.preventDefault()}
+                >
+                  {resolveColumnLabel(column.id, column.columnDef.meta?.export?.label)}
+                </DropdownMenuCheckboxItem>
+              ))}
+              {filteredColumns.flatColumns.length > 0 && filteredColumns.groupedColumns.length > 0 && (
+                <DropdownMenuSeparator />
+              )}
+              {filteredColumns.groupedColumns.map(({ key, columns }, groupIndex) => (
+                <div key={key}>
+                  <DropdownMenuLabel>{t(`columnGroups.${key}`)}</DropdownMenuLabel>
+                  {columns.map((column) => (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                      onSelect={(event) => event.preventDefault()}
+                    >
+                      {resolveColumnLabel(column.id, column.columnDef.meta?.export?.label)}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                  {groupIndex < filteredColumns.groupedColumns.length - 1 && <DropdownMenuSeparator />}
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
