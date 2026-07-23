@@ -1,4 +1,5 @@
 import { Prisma, type TemplateDataset, type Transaction, TransactionType } from '@prisma/client';
+import { createTranslator } from 'next-intl';
 
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFields, calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
@@ -15,6 +16,7 @@ import { withSystemMergeData } from '@/lib/templates/system-merge-links';
 import { formatCurrency, formatDateLong, formatDateShort, formatPercentage, getLenderName } from '@/lib/utils';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { transactionSorter } from '@/lib/utils/sorters';
+import deDashboardMessages from '@/messages/de/dashboard.json';
 import type { LenderWithRelations } from '@/types/lenders';
 import type { LoanWithRelations } from '@/types/loans';
 
@@ -386,12 +388,20 @@ function savingsRateTypeLabel(rateType: string | null | undefined) {
 function formatSavingsSummary(loan: TemplateLoanRecord, locale: string) {
   if (!loan.isSavingsContract || loan.savingsDepositCount == null) return '';
 
-  const months = loan.savingsDepositCount === 1 ? '1 Monat' : `${loan.savingsDepositCount} Monate`;
+  const t = createTranslator({
+    locale: 'de',
+    messages: deDashboardMessages,
+    namespace: 'loans.table',
+  });
+
   if (loan.savingsRateType === 'FIXED' && loan.savingsMonthlyAmount != null) {
-    return `${months} zu je ${formatCurrency(loan.savingsMonthlyAmount, locale)}`;
+    return t('savingsContractFixedSummary', {
+      months: loan.savingsDepositCount,
+      amount: formatCurrency(loan.savingsMonthlyAmount, locale),
+    });
   }
 
-  return months;
+  return t('savingsContractSummary', { months: loan.savingsDepositCount });
 }
 
 function formatSavingsPaymentStatus(loan: TemplateLoanRecord) {
