@@ -1,3 +1,20 @@
+allowBuilds:
+  '@parcel/watcher': true
+  '@prisma/engines': true
+  '@swc/core': true
+  esbuild: true
+  prisma: true
+  sharp: true
+minimumReleaseAgeExclude:
+  - next@16.1.7 || 16.2.3 || 16.2.5 || 16.2.6 || 16.2.11
+  - nodemailer@8.0.4 || 8.0.5 || 8.0.8 || 8.0.9 || 9.0.1
+  - postcss@8.5.10 || 8.5.12
+  - uuid@11.1.1
+  - adm-zip@0.6.0
+  - sharp@0.35.0
+  - next-auth@5.0.0
+  - '@auth/core@0.41.3'
+  - find-my-way@9.6.1
 onlyBuiltDependencies:
   - '@biomejs/biome'
   - '@prisma/client'
