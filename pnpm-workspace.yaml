@@ -29,3 +29,5 @@ onlyBuiltDependencies:
 auditConfig:
   ignoreGhsas:
     - GHSA-c96f-x56v-gq3h
+    # sharp via Next image optimizer; we don't process untrusted images through sharp
+    - GHSA-f88m-g3jw-g9cj
