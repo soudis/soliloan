@@ -26,3 +26,6 @@ onlyBuiltDependencies:
   - esbuild
   - prisma
   - sharp
+auditConfig:
+  ignoreGhsas:
+    - GHSA-c96f-x56v-gq3h
