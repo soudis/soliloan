@@ -10,9 +10,16 @@ interface FormDatePickerProps {
   label?: string;
   placeholder?: string;
   disabled?: (date: Date) => boolean;
+  className?: string;
 }
 
-export function FormDatePicker({ name, label, placeholder = 'Pick a date', disabled }: FormDatePickerProps) {
+export function FormDatePicker({
+  name,
+  label,
+  placeholder = 'Pick a date',
+  disabled,
+  className,
+}: FormDatePickerProps) {
   const form = useFormContext();
 
   return (
@@ -28,6 +35,7 @@ export function FormDatePicker({ name, label, placeholder = 'Pick a date', disab
             onChange={(date) => field.onChange(date ?? '')}
             placeholder={placeholder}
             calendarDisabled={disabled}
+            className={className}
           />
           <FormMessage />
         </FormItem>

@@ -4,7 +4,7 @@ import { useFormContext } from 'react-hook-form';
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { NumberParser } from '@/lib/utils';
+import { cn, NumberParser } from '@/lib/utils';
 
 interface FormNumberInputProps {
   name: string;
@@ -18,6 +18,7 @@ interface FormNumberInputProps {
   minimumFractionDigits?: number;
   maximumFractionDigits?: number;
   autoFocus?: boolean;
+  className?: string;
 }
 
 export function FormNumberInput({
@@ -32,6 +33,7 @@ export function FormNumberInput({
   minimumFractionDigits = 2,
   maximumFractionDigits = 2,
   autoFocus,
+  className,
 }: FormNumberInputProps) {
   const form = useFormContext();
 
@@ -77,9 +79,11 @@ export function FormNumberInput({
                   const value = parser.strip(event.target.value);
                   field.onChange(value);
                 }}
-                className={`[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                  prefix ? 'pl-12 ' : ''
-                }`}
+                className={cn(
+                  '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
+                  prefix && 'pl-12',
+                  className,
+                )}
               />
             </div>
           </FormControl>
