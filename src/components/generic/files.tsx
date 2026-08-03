@@ -106,8 +106,13 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
 
   return (
     <>
-      <div className="mt-6">
-        <div className="mt-2 grid grid-cols-1 gap-4 auto-rows-fr">
+      <div className="mt-6 flex flex-col gap-4">
+        <Button variant="outline" className="w-full border-dashed py-6" onClick={() => setIsFileDialogOpen(true)}>
+          <Plus className="h-8 w-8 mb-2" />
+          <span className="text-sm">{t('add')}</span>
+        </Button>
+
+        <div className="grid grid-cols-1 gap-4 auto-rows-fr">
           {files.map((file) => (
             <div
               key={file.id}
@@ -205,11 +210,6 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
               />
             </div>
           ))}
-
-          <Button variant="outline" className="w-full border-dashed py-6" onClick={() => setIsFileDialogOpen(true)}>
-            <Plus className="h-8 w-8 mb-2" />
-            <span className="text-sm">{t('add')}</span>
-          </Button>
         </div>
       </div>
 

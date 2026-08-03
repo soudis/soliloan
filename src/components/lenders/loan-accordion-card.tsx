@@ -17,7 +17,6 @@ import { cn, formatCurrency, formatDateLong, formatDateShort, formatPercentage }
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { LoanStatus } from '@/types/loans';
 import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-items';
-import { LoanAddTransactionControl } from '../loans/loan-add-transaction-control';
 import { LoanBalanceSummary } from '../loans/loan-balance-summary';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 import { LoanTransactions } from '../loans/loan-transactions';
@@ -297,9 +296,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                   transactions={loan.transactions}
                   loan={loan}
                   showBalanceSummary={false}
-                  showAddTransaction={false}
                 />
-                <LoanAddTransactionControl loanId={loan.id} loan={loan} />
               </div>
               <div className="flex min-h-0 flex-col border-t border-border lg:border-t-0 lg:border-l lg:border-border">
                 <div className="flex flex-1 flex-col space-y-3 px-4 pb-4 pt-4 lg:py-4 lg:pl-6 lg:pr-4">

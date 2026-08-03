@@ -36,8 +36,7 @@ interface LoanTransactionsProps {
   /** Show deposit/interest/withdrawal totals and balance below the list (same data as BalanceTable sums) */
   showBalanceSummary?: boolean;
   /**
-   * When false, the add control is omitted so the parent can render {@link LoanAddTransactionControl} elsewhere
-   * (e.g. above {@link LoanBalanceSummary}).
+   * When false, the add control is omitted so the parent can render {@link LoanAddTransactionControl} elsewhere.
    */
   showAddTransaction?: boolean;
 }
@@ -96,6 +95,10 @@ export function LoanTransactions({
   return (
     <>
       <div className="space-y-1">
+        {addTransactionEnabled && (
+          <LoanAddTransactionControl loanId={loanId} loan={loan} className="mb-4 w-full border-dashed py-6" />
+        )}
+
         <div className="flex items-center justify-between">
           <h4 className="mb-2 text-sm font-medium text-muted-foreground">{t('table.transactions')}</h4>
 
@@ -189,10 +192,6 @@ export function LoanTransactions({
         )}
 
         {showBalanceSummary && <LoanBalanceSummary loan={loan} readOnly={readOnly} />}
-
-        {addTransactionEnabled && (
-          <LoanAddTransactionControl loanId={loanId} loan={loan} className="w-full border-dashed py-6" />
-        )}
       </div>
 
       {!readOnly && (
