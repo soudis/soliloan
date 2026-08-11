@@ -142,6 +142,7 @@ jobs:
           printf '%s\n' \
             'set -euo pipefail' \
             'cd "$(dirname "$0")"' \
+            'read -r DOCKERHUB_TOKEN' \
             'echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin' \
             'docker compose -f compose.yml --env-file .env pull app' \
             'docker compose -f compose.yml --env-file .env up -d postgres' \
@@ -159,6 +160,5 @@ jobs:
           rm -f "${REMOTE_SH}"
 
           USER_Q=$(printf '%q' '${{ vars.DOCKERHUB_USERNAME }}')
-          TOKEN_Q=$(printf '%q' "${DOCKERHUB_TOKEN}")
-          ssh -p "${PROD_SSH_PORT}" "${SSH_TARGET}" \
-            "DOCKERHUB_USERNAME=${USER_Q} DOCKERHUB_TOKEN=${TOKEN_Q} bash -c $(printf '%q' "cd ${REMOTE_DIR} && bash ./remote-deploy.sh")"
+          printf '%s\n' "${DOCKERHUB_TOKEN}" | ssh -p "${PROD_SSH_PORT}" "${SSH_TARGET}" \
+            "DOCKERHUB_USERNAME=${USER_Q} bash -c $(printf '%q' "cd ${REMOTE_DIR} && bash ./remote-deploy.sh")"
