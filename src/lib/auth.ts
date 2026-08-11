@@ -7,6 +7,9 @@ import { db } from './db';
 const MAX_FAILED_LOGIN_ATTEMPTS = 10;
 const LOCKOUT_MINUTES = 15;
 
+/** Hash of a throwaway string, compared against when no account matches so both paths cost the same. */
+const DUMMY_PASSWORD_HASH = '$2b$12$MtWXywgtzRaeJ59mRPNQLOodJ560kDUbnTog5QZKcA9NmhMSf5wOy';
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: '/auth/login',
@@ -31,19 +34,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         });
 
-        if (!user) {
-          throw new Error('User not found');
-        }
+        const { verifyPassword } = await import('./utils/password');
 
-        if (!user.password) {
-          throw new Error('error.account.noPassword');
+        if (!user?.password) {
+          await verifyPassword(credentials.password as string, DUMMY_PASSWORD_HASH);
+          throw new Error('error.auth.invalidCredentials');
         }
 
         if (user.lockedUntil && user.lockedUntil > new Date()) {
           throw new Error('error.auth.accountLocked');
         }
 
-        const { verifyPassword } = await import('./utils/password');
         const isValid = await verifyPassword(credentials.password as string, user.password);
 
         if (!isValid) {
@@ -58,7 +59,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                   : null,
             },
           });
-          throw new Error('Invalid password');
+          throw new Error('error.auth.invalidCredentials');
         }
         await db.user.update({
           where: { id: user.id },

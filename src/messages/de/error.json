@@ -80,6 +80,7 @@
     "noProjectId": "Die project.json enthält keine gültige Projekt-ID (projectid)."
   },
   "auth": {
+    "invalidCredentials": "E-Mail-Adresse oder Passwort ist falsch.",
     "accountLocked": "Zu viele fehlgeschlagene Anmeldeversuche. Bitte versuche es später erneut."
   }
 }
