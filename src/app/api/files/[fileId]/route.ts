@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { contentDispositionAttachment } from '@/lib/utils/file';
 
 export async function GET(_: Request, { params }: { params: Promise<{ fileId: string }> }) {
   try {
@@ -61,7 +62,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ fileId: st
     return new NextResponse(file.data, {
       headers: {
         'Content-Type': file.mimeType,
-        'Content-Disposition': `attachment; filename="${file.name}"`,
+        'Content-Disposition': contentDispositionAttachment(file.name),
       },
     });
   } catch (error) {

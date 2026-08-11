@@ -82,3 +82,14 @@ export async function createThumbnail(
     await Promise.all([unlink(tempInputPath), unlink(tempOutputPath)]).catch(() => {});
   }
 }
+
+const FILENAME_BAD_CHARS = /[/\\?%*:|"<>]/g;
+
+export function contentDispositionAttachment(name: string): string {
+  const safeName =
+    name
+      .replace(FILENAME_BAD_CHARS, '_')
+      .replace(/[\r\n]/g, '')
+      .trim() || 'download';
+  return `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(safeName)}`;
+}
