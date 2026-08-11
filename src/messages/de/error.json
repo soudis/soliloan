@@ -78,5 +78,8 @@
     "invalidDataPackage": "Das Datenpaket ist ungültig (fehlende Tabellen).",
     "noProjectJson": "Das Datenpaket enthält keine project.json. Bitte DKP-v1 auf die neueste Version aktualisieren.",
     "noProjectId": "Die project.json enthält keine gültige Projekt-ID (projectid)."
+  },
+  "auth": {
+    "accountLocked": "Zu viele fehlgeschlagene Anmeldeversuche. Bitte versuche es später erneut."
   }
 }
