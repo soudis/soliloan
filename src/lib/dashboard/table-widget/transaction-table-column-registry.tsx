@@ -1,5 +1,10 @@
 import type { ColumnDef, FilterFn, VisibilityState } from '@tanstack/react-table';
 
+import {
+  isIncomingTransaction,
+  transactionAmountClassName,
+  transactionTypeBadgeClassName,
+} from '@/components/loans/loan-balance-summary';
 import { Badge } from '@/components/ui/badge';
 import { dateRangeFilter } from '@/components/ui/data-table';
 import {
@@ -7,7 +12,11 @@ import {
   buildLenderProfileColumns,
   buildLenderProfileDefaultColumnVisibility,
 } from '@/lib/dashboard/table-widget/lender-profile-columns';
-import { buildLoanTableColumns, getLoanSortValue } from '@/lib/dashboard/table-widget/loan-table-column-registry';
+import {
+  buildLoanTableColumns,
+  getLoanSortValue,
+  LOAN_TABLE_STATIC_COLUMN_META,
+} from '@/lib/dashboard/table-widget/loan-table-column-registry';
 import { getLenderSortValue } from '@/lib/dashboard/table-widget/lender-table-column-registry';
 import {
   createColumn,
@@ -16,7 +25,7 @@ import {
   remapColumnsForNestedAccessor,
   withColumnGroup,
 } from '@/lib/table-column-utils';
-import { formatCurrency, resolveIntlLocaleForDates } from '@/lib/utils';
+import { cn, formatCurrency, resolveIntlLocaleForDates } from '@/lib/utils';
 import type { LoanWithCalculations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import type { TransactionListItem } from '@/types/transactions';
@@ -139,7 +148,11 @@ function buildTransactionColumns<T extends TransactionListItem>(
       cell: ({ row }) => {
         const value = row.original.type;
         if (!value) return '';
-        return <Badge variant="outline">{commonT(`enums.transaction.type.${value}`)}</Badge>;
+        return (
+          <Badge variant="outline" className={transactionTypeBadgeClassName(value)}>
+            {commonT(`enums.transaction.type.${value}`)}
+          </Badge>
+        );
       },
       filterFn: enumFilter,
       meta: {
@@ -185,7 +198,15 @@ function buildTransactionColumns<T extends TransactionListItem>(
       header: 'table.amount',
       align: 'right',
       accessorFn: (row: TransactionListItem) => row.amount,
-      cell: ({ row }) => <div className="text-right tabular-nums">{formatCurrency(row.original.amount)}</div>,
+      cell: ({ row }) => {
+        const { type, amount } = row.original;
+        return (
+          <div className={cn('text-right tabular-nums', transactionAmountClassName(type))}>
+            {isIncomingTransaction(type) ? '+' : ''}
+            {formatCurrency(amount)}
+          </div>
+        );
+      },
       filterFn: 'inNumberRange',
       meta: {
         export: { type: 'currency' },
