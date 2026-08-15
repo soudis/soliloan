@@ -1,13 +1,16 @@
 'use client';
 
 import type { TemplateDataset } from '@prisma/client';
+import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { MergeTagConfig, MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { canInsertLoopAtContext, shouldShowLoopChildFieldsGroup } from '@/lib/templates/merge-tag-insertion-filter';
+import { cn } from '@/lib/utils';
 
 type MergeTagItem = MergeTagField | MergeTagLoop;
 type MergeTagGroup = {
@@ -214,23 +217,14 @@ export function MergeTagDropdown({
 
           <div className="space-y-1.5">
             <p className="text-xs font-medium text-foreground">{tMergeTags('fieldLabel')}</p>
-            <Select
-              value={selectedItemKey || undefined}
+            <MergeTagFieldSelect
+              items={selectedGroup?.items ?? []}
+              value={selectedItemKey}
               onValueChange={setSelectedItemKey}
               disabled={!selectedGroup || selectedGroup.items.length === 0}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={tMergeTags('fieldPlaceholder')} />
-              </SelectTrigger>
-              <SelectContent className="z-[100002]" position="popper" data-merge-tag-dropdown-sub="">
-                {selectedGroup?.items.map((item) => (
-                  <SelectItem key={item.key} value={item.key}>
-                    {item.label}
-                    {isLoop(item) ? ` (${tMergeTags('loopSuffix')})` : ''}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder={tMergeTags('fieldPlaceholder')}
+              loopSuffix={tMergeTags('loopSuffix')}
+            />
           </div>
 
           <Button
@@ -252,5 +246,111 @@ export function MergeTagDropdown({
       </div>
     </div>,
     document.body,
+  );
+}
+
+function MergeTagFieldSelect({
+  items,
+  value,
+  onValueChange,
+  disabled,
+  placeholder,
+  loopSuffix,
+}: {
+  items: MergeTagItem[];
+  value: string;
+  onValueChange: (value: string) => void;
+  disabled?: boolean;
+  placeholder: string;
+  loopSuffix: string;
+}) {
+  const tCommon = useTranslations('common');
+  const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const options = useMemo(
+    () =>
+      items.map((item) => ({
+        value: item.key,
+        label: isLoop(item) ? `${item.label} (${loopSuffix})` : item.label,
+      })),
+    [items, loopSuffix],
+  );
+
+  const filteredOptions = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return options;
+    return options.filter((option) => option.label.toLowerCase().includes(query));
+  }, [options, searchQuery]);
+
+  const currentOption = options.find((option) => option.value === value);
+
+  useEffect(() => {
+    if (!open) setSearchQuery('');
+  }, [open]);
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) setSearchQuery('');
+      }}
+    >
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between font-normal"
+          disabled={disabled}
+        >
+          <span className="truncate">{currentOption ? currentOption.label : placeholder}</span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="z-[100002] w-[--radix-popover-trigger-width] p-0"
+        align="start"
+        data-merge-tag-dropdown-sub=""
+      >
+        <div className="flex items-center border-b px-3 py-2">
+          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+          <input
+            className="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder={tCommon('ui.actions.search')}
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            onKeyDown={(event) => event.stopPropagation()}
+            disabled={disabled}
+          />
+        </div>
+        <div className="max-h-[min(24rem,70vh)] overflow-y-auto p-1">
+          {filteredOptions.length === 0 ? (
+            <div className="py-6 text-center text-sm text-muted-foreground">{tCommon('ui.actions.noResults')}</div>
+          ) : (
+            filteredOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={cn(
+                  'relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground',
+                  value === option.value && 'bg-accent text-accent-foreground',
+                )}
+                onClick={() => {
+                  onValueChange(option.value);
+                  setOpen(false);
+                  setSearchQuery('');
+                }}
+              >
+                <Check className={cn('mr-2 h-4 w-4 shrink-0', value === option.value ? 'opacity-100' : 'opacity-0')} />
+                <span className="truncate">{option.label}</span>
+              </button>
+            ))
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
