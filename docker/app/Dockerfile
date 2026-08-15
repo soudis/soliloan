@@ -2,7 +2,7 @@
 #
 # Node.js base image
 #
-FROM node:22-slim AS base
+FROM node:24-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
@@ -25,7 +25,7 @@ FROM base AS installer
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml .
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .
 
 RUN pnpm install --frozen-lockfile
 

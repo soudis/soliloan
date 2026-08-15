@@ -11,7 +11,6 @@ import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { InfoItem } from '@/components/ui/info-item';
 import { useRouter } from '@/i18n/navigation';
-import { resolveSavingsFirstDepositDate, resolveSavingsLastDepositDate } from '@/lib/loans/savings-contract';
 import { formatTerminationModalities } from '@/lib/table-column-utils';
 import { cn, formatCurrency, formatDateLong, formatDateShort, formatPercentage } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
@@ -21,6 +20,7 @@ import { LoanAddTransactionControl } from '../loans/loan-add-transaction-control
 import { LoanBalanceSummary } from '../loans/loan-balance-summary';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 import { LoanTransactions } from '../loans/loan-transactions';
+import { SavingsContractInfoItem } from '../loans/savings-contract-info-item';
 import { TerminationDialog } from '../loans/termination-dialog';
 import { useProject } from '../providers/project-provider';
 import { Button } from '../ui/button';
@@ -59,18 +59,6 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
     loan.terminationType === 'TERMINATION' && loan.status === LoanStatus.ACTIVE && !loan.isTerminated;
 
   const getTerminationModalities = () => formatTerminationModalities(loan, commonT, (d) => formatDateShort(d, locale));
-
-  const savingsFirstDepositDate = loan.isSavingsContract
-    ? resolveSavingsFirstDepositDate(loan.savingsFirstDepositDate, loan.signDate)
-    : null;
-  const savingsLastDepositDate = loan.isSavingsContract
-    ? resolveSavingsLastDepositDate(
-        loan.savingsFirstDepositDate,
-        loan.savingsLastDepositDate,
-        loan.savingsDepositCount,
-        loan.signDate,
-      )
-    : null;
 
   const handleDeleteLoan = async () => {
     const toastId = toast.loading(t('delete.loading'));
@@ -194,65 +182,9 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                     </span>
                   }
                 />
-                <InfoItem
-                  label={t('table.paymentStatus')}
-                  value={
-                    <div className="space-y-1">
-                      {loan.outstandingDepositsCount > 0 && loan.outstandingDepositSinceDays != null ? (
-                        <div>
-                          {loan.outstandingDepositSinceDays > 0
-                            ? t('table.paymentOutstandingSince', { days: loan.outstandingDepositSinceDays })
-                            : t('table.paymentOutstanding')}
-                        </div>
-                      ) : (
-                        <div>{t('table.paymentNotOutstanding')}</div>
-                      )}
-                    </div>
-                  }
-                />
+                {loan.isSavingsContract && <SavingsContractInfoItem loan={loan} />}
               </div>
               <div className="space-y-3">
-                {loan.isSavingsContract && loan.savingsDepositCount != null && (
-                  <>
-                    <InfoItem
-                      label={t('table.savingsContractSummaryLabel')}
-                      value={
-                        loan.savingsRateType === 'FIXED' && loan.savingsMonthlyAmount != null
-                          ? t('table.savingsContractFixedSummary', {
-                              months: loan.savingsDepositCount,
-                              amount: formatCurrency(loan.savingsMonthlyAmount, locale),
-                            })
-                          : t('table.savingsContractSummary', { months: loan.savingsDepositCount })
-                      }
-                    />
-                    {(savingsFirstDepositDate || savingsLastDepositDate) && (
-                      <InfoItem
-                        label={t('table.savingsDepositPeriod')}
-                        value={
-                          savingsFirstDepositDate && savingsLastDepositDate ? (
-                            <span className="whitespace-nowrap">
-                              {formatDateLong(savingsFirstDepositDate, locale)} –{' '}
-                              {formatDateLong(savingsLastDepositDate, locale)}
-                            </span>
-                          ) : savingsFirstDepositDate ? (
-                            formatDateLong(savingsFirstDepositDate, locale)
-                          ) : (
-                            formatDateLong(savingsLastDepositDate, locale)
-                          )
-                        }
-                      />
-                    )}
-                    {loan.requiredDepositsCount > 0 && (
-                      <InfoItem
-                        label={t('table.savingsDepositReceipts')}
-                        value={t('table.savingsInstallmentsPaid', {
-                          paid: loan.depositsCount,
-                          required: loan.requiredDepositsCount,
-                        })}
-                      />
-                    )}
-                  </>
-                )}
                 <InfoItem label={t('table.terminationModalities')} value={getTerminationModalities()} />
                 {canTerminateLoan && (
                   <Button

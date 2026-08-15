@@ -32,7 +32,7 @@ export type LoanTableColumnMeta = {
   useLendersTranslations?: boolean;
 };
 
-const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
+export const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
   { id: 'loanNumber', labelKey: 'table.loanNumber' },
   { id: 'signDate', labelKey: 'table.signDate' },
   { id: 'amount', labelKey: 'table.amount' },
