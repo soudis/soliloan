@@ -1,7 +1,7 @@
 'use client';
 
 import type { View } from '@prisma/client';
-import type { VisibilityState } from '@tanstack/react-table';
+import type { SortingState, VisibilityState } from '@tanstack/react-table';
 import { isEqual } from 'lodash';
 import { useQueryStates } from 'nuqs';
 import { useCallback, useMemo } from 'react';
@@ -22,9 +22,11 @@ import {
 
 export type TransactionTableUrlState = TableUrlState & TransactionTableExtraViewData;
 
+export const DEFAULT_TRANSACTION_TABLE_SORTING: SortingState = [{ id: 'transaction.date', desc: true }];
+
 const DEFAULT_BASELINE: Omit<TransactionTableUrlState, 'selectedView'> = {
   globalFilter: '',
-  sorting: [{ id: 'transaction.date', desc: true }],
+  sorting: DEFAULT_TRANSACTION_TABLE_SORTING,
   columnFilters: [],
   columnVisibility: {},
   pageIndex: 0,

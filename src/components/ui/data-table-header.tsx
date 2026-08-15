@@ -2,7 +2,7 @@
 
 import type { View, ViewType } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
-import type { Table, VisibilityState } from '@tanstack/react-table';
+import type { SortingState, Table, VisibilityState } from '@tanstack/react-table';
 import { isEqual } from 'lodash';
 import { ChevronDown, FileDown, Save, Search, SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -30,6 +30,8 @@ import { DataTableExportDialog } from './data-table-export-dialog';
 import { SaveViewDialog } from './save-view-dialog';
 import { ViewManager } from './view-manager';
 
+const EMPTY_SORTING: SortingState = [];
+
 type ColumnFiltersConfig = {
   [key: string]: {
     type: 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
@@ -48,6 +50,7 @@ interface DataTableHeaderProps<TData> {
   views: View[];
   hasActiveFilters: () => boolean;
   defaultColumnVisibility: VisibilityState;
+  defaultSorting?: SortingState;
   tableState: TableUrlState;
   setTableState: SetTableUrlState;
   allowSidebarViews?: boolean;
@@ -66,6 +69,7 @@ export function DataTableHeader<TData>({
   showFilter = true,
   columnFilters = {},
   defaultColumnVisibility,
+  defaultSorting = EMPTY_SORTING,
   viewType,
   views,
   hasActiveFilters,
@@ -191,7 +195,7 @@ export function DataTableHeader<TData>({
     const viewData = (views.find((v) => v.id === tableState.selectedView)?.data as any) ?? {
       selectedView: '',
       columnVisibility: defaultColumnVisibility,
-      sorting: [],
+      sorting: defaultSorting,
       columnFilters: [],
       globalFilter: '',
       pagination: { pageIndex: 0, pageSize: 25 },
@@ -201,11 +205,11 @@ export function DataTableHeader<TData>({
       tableState.globalFilter !== (viewData.globalFilter ?? '') ||
       tableState.pageSize !== (viewData.pagination?.pageSize ?? viewData.pageSize ?? 25) ||
       !isEqual(tableState.columnVisibility, viewData.columnVisibility ?? defaultColumnVisibility) ||
-      !isEqual(tableState.sorting, viewData.sorting ?? []) ||
+      !isEqual(tableState.sorting, viewData.sorting ?? defaultSorting) ||
       !isEqual(tableState.columnFilters, viewData.columnFilters ?? []) ||
       (isExtraViewDataDirty?.(viewData) ?? false)
     );
-  }, [views, tableState, defaultColumnVisibility, isExtraViewDataDirty]);
+  }, [views, tableState, defaultColumnVisibility, defaultSorting, isExtraViewDataDirty]);
 
   return (
     <>
@@ -239,7 +243,7 @@ export function DataTableHeader<TData>({
                     setTableState({
                       selectedView: '',
                       columnVisibility: defaultColumnVisibility,
-                      sorting: [],
+                      sorting: defaultSorting,
                       columnFilters: [],
                       globalFilter: '',
                       pageIndex: 0,

@@ -23,6 +23,7 @@ import {
 import { buildTransactionTableColumnFilters } from '@/lib/entity-filters/filter-definitions';
 import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
 import {
+  DEFAULT_TRANSACTION_TABLE_SORTING,
   getTransactionTimeRangeFromState,
   useTransactionTableUrlState,
 } from '@/lib/hooks/use-transaction-table-url-state';
@@ -156,6 +157,7 @@ export function TransactionTable({
         data={filteredTransactions}
         columnFilters={columnFilters}
         defaultColumnVisibility={defaultColumnVisibility}
+        defaultSorting={DEFAULT_TRANSACTION_TABLE_SORTING}
         viewType={ViewType.TRANSACTION}
         views={views}
         allowSidebarViews
