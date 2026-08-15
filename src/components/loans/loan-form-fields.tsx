@@ -49,9 +49,10 @@ export function LoanFormFields({ lenders, isEditMode = false, currentLoanId }: L
   return (
     <>
       <LoanEndDateSanityCheck />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
       {/* General Information Section */}
-      <FormSection title={t('new.form.generalInfo')}>
+      <FormSection className="min-w-0 lg:w-1/2" title={t('new.form.generalInfo')}>
         <FormField
           name="loanNumber"
           label={t('new.form.loanNumber')}
@@ -114,7 +115,7 @@ export function LoanFormFields({ lenders, isEditMode = false, currentLoanId }: L
         />
       </FormSection>
 
-      <div className="flex flex-col gap-8">
+      <div className="flex min-w-0 flex-col gap-8 lg:w-1/2">
         {/* Savings Contract Section */}
         <FormSection
           contentClassName={!isSavingsContract ? 'hidden' : undefined}
@@ -133,6 +134,7 @@ export function LoanFormFields({ lenders, isEditMode = false, currentLoanId }: L
         <FormSection icon={<FileX className="w-4 h-4 text-muted-foreground" />} title={t('new.form.terminationInfo')}>
           <TerminationFormFields hideTerminationDate />
         </FormSection>
+      </div>
       </div>
 
       {/* Additional Information Section */}
