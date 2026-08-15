@@ -50,9 +50,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const isManager = user.managerOf.length > 0 || isAdmin;
 
         return {
-          ...user,
-          isAdmin: isAdmin,
-          isManager: isManager,
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+          isAdmin,
+          isManager,
           managerOf: user.managerOf.map((u) => u.id),
           loanedToProjects: [...new Set(user.lenders.map((l) => l.projectId))],
           language: user.language ?? process.env.DIRECTLOAN_DEFAULT_LANGUAGE ?? 'de',
@@ -85,9 +88,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         updateSession.user &&
         typeof updateSession.user === 'object'
       ) {
+        const updates = updateSession.user as Record<string, unknown>;
+        const currentUser = typeof token.user === 'object' && token.user !== null ? token.user : {};
         token.user = {
-          ...(typeof token.user === 'object' && token.user !== null ? token.user : {}),
-          ...updateSession.user,
+          ...currentUser,
+          ...('name' in updates && typeof updates.name === 'string' ? { name: updates.name } : {}),
+          ...('language' in updates && typeof updates.language === 'string'
+            ? { language: updates.language }
+            : {}),
         };
       }
 
