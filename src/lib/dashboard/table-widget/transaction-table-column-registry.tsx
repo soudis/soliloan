@@ -45,33 +45,6 @@ const TRANSACTION_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] =
   { id: 'transaction.paymentType', labelKey: 'table.paymentType' },
 ];
 
-const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
-  { id: 'loanNumber', labelKey: 'table.loanNumber' },
-  { id: 'signDate', labelKey: 'table.signDate' },
-  { id: 'amount', labelKey: 'table.amount' },
-  { id: 'deposits', labelKey: 'table.deposits' },
-  { id: 'withdrawals', labelKey: 'table.withdrawals' },
-  { id: 'balance', labelKey: 'table.balance' },
-  { id: 'outstandingDepositSum', labelKey: 'table.outstandingDepositSum' },
-  { id: 'outstandingDepositSinceDate', labelKey: 'table.outstandingDepositSinceDate' },
-  { id: 'depositsCount', labelKey: 'table.depositsCount' },
-  { id: 'requiredDepositsCount', labelKey: 'table.requiredDepositsCount' },
-  { id: 'outstandingDepositsCount', labelKey: 'table.outstandingDepositsCount' },
-  { id: 'notReclaimed', labelKey: 'table.notReclaimed' },
-  { id: 'interestRate', labelKey: 'table.interestRate' },
-  { id: 'interest', labelKey: 'table.interest' },
-  { id: 'interestPaid', labelKey: 'table.interestPaid' },
-  { id: 'terminationType', labelKey: 'table.terminationType' },
-  { id: 'terminationModalities', labelKey: 'table.terminationModalities' },
-  { id: 'repayDate', labelKey: 'table.repayDate' },
-  { id: 'loanTermDays', labelKey: 'table.loanTerm' },
-  { id: 'repaymentPeriodDays', labelKey: 'table.repaymentPeriod' },
-  { id: 'isSavingsContract', labelKey: 'table.isSavingsContract' },
-  { id: 'status', labelKey: 'table.status' },
-  { id: 'altInterestMethod', labelKey: 'table.altInterestMethod' },
-  { id: 'contractStatus', labelKey: 'table.contractStatus' },
-];
-
 const DEFAULT_VISIBLE_COLUMN_IDS = [
   'lender.lenderNumber',
   'lender.name',
