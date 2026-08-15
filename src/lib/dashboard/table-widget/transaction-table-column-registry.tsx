@@ -7,7 +7,11 @@ import {
   buildLenderProfileColumns,
   buildLenderProfileDefaultColumnVisibility,
 } from '@/lib/dashboard/table-widget/lender-profile-columns';
-import { buildLoanTableColumns, getLoanSortValue } from '@/lib/dashboard/table-widget/loan-table-column-registry';
+import {
+  buildLoanTableColumns,
+  getLoanSortValue,
+  LOAN_TABLE_STATIC_COLUMN_META,
+} from '@/lib/dashboard/table-widget/loan-table-column-registry';
 import { getLenderSortValue } from '@/lib/dashboard/table-widget/lender-table-column-registry';
 import {
   createColumn,
@@ -34,28 +38,6 @@ const TRANSACTION_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] =
   { id: 'transaction.date', labelKey: 'table.date' },
   { id: 'transaction.amount', labelKey: 'table.amount' },
   { id: 'transaction.paymentType', labelKey: 'table.paymentType' },
-];
-
-const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
-  { id: 'loanNumber', labelKey: 'table.loanNumber' },
-  { id: 'signDate', labelKey: 'table.signDate' },
-  { id: 'amount', labelKey: 'table.amount' },
-  { id: 'balance', labelKey: 'table.balance' },
-  { id: 'deposits', labelKey: 'table.deposits' },
-  { id: 'withdrawals', labelKey: 'table.withdrawals' },
-  { id: 'notReclaimed', labelKey: 'table.notReclaimed' },
-  { id: 'interestRate', labelKey: 'table.interestRate' },
-  { id: 'interest', labelKey: 'table.interest' },
-  { id: 'interestPaid', labelKey: 'table.interestPaid' },
-  { id: 'terminationType', labelKey: 'table.terminationType' },
-  { id: 'terminationModalities', labelKey: 'table.terminationModalities' },
-  { id: 'repayDate', labelKey: 'table.repayDate' },
-  { id: 'loanTermDays', labelKey: 'table.loanTerm' },
-  { id: 'repaymentPeriodDays', labelKey: 'table.repaymentPeriod' },
-  { id: 'status', labelKey: 'table.status' },
-  { id: 'altInterestMethod', labelKey: 'table.altInterestMethod' },
-  { id: 'contractStatus', labelKey: 'table.contractStatus' },
-  { id: 'isSavingsContract', labelKey: 'table.isSavingsContract' },
 ];
 
 const DEFAULT_VISIBLE_COLUMN_IDS = [
