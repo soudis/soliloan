@@ -23,9 +23,7 @@ export function createDefaultTextFilterValue(): TextFilterValue {
   };
 }
 
-export function createDefaultTextFilterValueForOperator(
-  operator: TextFilterOperatorWithEmpty,
-): TextFilterValue {
+export function createDefaultTextFilterValueForOperator(operator: TextFilterOperatorWithEmpty): TextFilterValue {
   switch (operator) {
     case 'contains':
     case 'startsWith':

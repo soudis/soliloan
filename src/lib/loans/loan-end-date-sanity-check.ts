@@ -49,9 +49,7 @@ export function hasFixedTermEndDate(terminationType: TerminationType): boolean {
   return terminationType === TerminationType.ENDDATE || terminationType === TerminationType.DURATION;
 }
 
-export function evaluateLoanEndDateSanityChecks(
-  input: LoanEndDateSanityCheckInput,
-): LoanEndDateSanityCheckResult[] {
+export function evaluateLoanEndDateSanityChecks(input: LoanEndDateSanityCheckInput): LoanEndDateSanityCheckResult[] {
   if (!input.isSavingsContract || !hasFixedTermEndDate(input.terminationType)) {
     return [];
   }

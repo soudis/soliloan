@@ -25,13 +25,7 @@ export function EntityFilterControl({
 
   switch (definition.type) {
     case 'boolean':
-      return (
-        <BooleanFilter
-          filterState={filterState}
-          onFilterChange={(v) => onChange(v)}
-          size="sm"
-        />
-      );
+      return <BooleanFilter filterState={filterState} onFilterChange={(v) => onChange(v)} size="sm" />;
     case 'select':
       return (
         <SelectFilter
@@ -66,13 +60,7 @@ export function EntityFilterControl({
         />
       );
     case 'date':
-      return (
-        <EntityDateFilter
-          value={value}
-          onChange={onChange}
-          allowEmpty={definition.allowEmpty}
-        />
-      );
+      return <EntityDateFilter value={value} onChange={onChange} allowEmpty={definition.allowEmpty} />;
     default:
       return (
         <TextFilter

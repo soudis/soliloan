@@ -2,10 +2,7 @@ import type { ColumnFiltersState } from '@tanstack/react-table';
 
 import { isInactiveDateFilterValue } from '@/types/date-filter-value';
 import { isInactiveEnumFilterValue } from '@/types/enum-filter-value';
-import {
-  isInactiveNumberFilterValue,
-  type NumberFilterOperator,
-} from '@/types/number-filter-value';
+import { isInactiveNumberFilterValue, type NumberFilterOperator } from '@/types/number-filter-value';
 import { isInactiveTextFilterValue } from '@/types/text-filter-value';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
 import { isInactiveBooleanFilterValue } from '@/types/boolean-filter-value';

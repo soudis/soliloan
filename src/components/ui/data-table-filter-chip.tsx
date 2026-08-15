@@ -16,14 +16,7 @@ import {
   TextFilter,
 } from '@/components/ui/data-table-column-filters/index';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
 import {
@@ -164,8 +157,7 @@ export function DataTableFilterChip<TData>({
     euroShortcutColumnId,
   ]);
 
-  const selectedConfig =
-    selectedField === GLOBAL_SEARCH_ALL ? null : columnFilters[selectedField] ?? null;
+  const selectedConfig = selectedField === GLOBAL_SEARCH_ALL ? null : (columnFilters[selectedField] ?? null);
   const selectedFilterState = tableState.columnFilters.find((filter) => filter.id === selectedField);
 
   // If QS target column was hidden / removed from config, reset to Alle.
@@ -188,14 +180,7 @@ export function DataTableFilterChip<TData>({
       ),
       ...(isQuickSearch ? { globalFilter: '' } : {}),
     });
-  }, [
-    selectedConfig,
-    selectedField,
-    selectedFilterState,
-    isQuickSearch,
-    setTableState,
-    tableState.columnFilters,
-  ]);
+  }, [selectedConfig, selectedField, selectedFilterState, isQuickSearch, setTableState, tableState.columnFilters]);
 
   useEffect(() => {
     if (!shouldFocusFilterInputRef.current) return;
@@ -363,8 +348,7 @@ export function DataTableFilterChip<TData>({
     'shadow-none',
     isQuickSearch ? 'bg-card dark:bg-card' : 'bg-transparent dark:bg-input/30',
   );
-  const quickSearchSurfaceClass =
-    '[&_input]:bg-card dark:[&_input]:bg-card [&_button]:bg-card dark:[&_button]:bg-card';
+  const quickSearchSurfaceClass = '[&_input]:bg-card dark:[&_input]:bg-card [&_button]:bg-card dark:[&_button]:bg-card';
 
   const selectValue = selectedField || GLOBAL_SEARCH_ALL;
 
@@ -401,7 +385,10 @@ export function DataTableFilterChip<TData>({
 
   if (!selectedConfig || selectedField === GLOBAL_SEARCH_ALL) {
     return (
-      <div className={cn('w-auto max-w-md shrink-0', isQuickSearch && quickSearchSurfaceClass)} onKeyDown={handleEnterOpen}>
+      <div
+        className={cn('w-auto max-w-md shrink-0', isQuickSearch && quickSearchSurfaceClass)}
+        onKeyDown={handleEnterOpen}
+      >
         <FilterFieldGroup className="w-auto">
           {fieldSelect}
           {isQuickSearch ? (

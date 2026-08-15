@@ -18,15 +18,11 @@ export type NumberFilterValue =
   | FilterOperatorValue<'empty'>
   | FilterOperatorValue<'notEmpty'>;
 
-export function createDefaultNumberFilterValue(
-  defaultOperator: NumberFilterOperator = 'between',
-): NumberFilterValue {
+export function createDefaultNumberFilterValue(defaultOperator: NumberFilterOperator = 'between'): NumberFilterValue {
   return createDefaultNumberFilterValueForOperator(defaultOperator);
 }
 
-export function createDefaultNumberFilterValueForOperator(
-  operator: NumberFilterOperatorWithEmpty,
-): NumberFilterValue {
+export function createDefaultNumberFilterValueForOperator(operator: NumberFilterOperatorWithEmpty): NumberFilterValue {
   switch (operator) {
     case 'between':
       return { operator: 'between', min: null, max: null };
@@ -130,10 +126,7 @@ function hasEmptyPayload(parsed: NumberFilterValue): boolean {
   }
 }
 
-export function isInactiveNumberFilterValue(
-  raw: unknown,
-  defaultOperator: NumberFilterOperator = 'between',
-): boolean {
+export function isInactiveNumberFilterValue(raw: unknown, defaultOperator: NumberFilterOperator = 'between'): boolean {
   const parsed = parseNumberFilterValue(raw, defaultOperator);
   // Mirror enums/dates: only the default operator with an empty payload is inactive.
   // Other operators keep the filter in state so the operator select can stick.

@@ -91,7 +91,9 @@ export function getVisibleFilterColumnIds<TData>(
 }
 
 /** Targets already owned by QS (when not Alle) or by a present column filter. */
-export function getTakenFilterTargets(tableState: Pick<TableUrlState, 'columnFilters' | 'quickSearchField'>): Set<string> {
+export function getTakenFilterTargets(
+  tableState: Pick<TableUrlState, 'columnFilters' | 'quickSearchField'>,
+): Set<string> {
   const taken = new Set(tableState.columnFilters.map((filter) => filter.id));
   if (tableState.quickSearchField) {
     taken.add(tableState.quickSearchField);

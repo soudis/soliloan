@@ -54,10 +54,7 @@ export function NumberFilterWithOperator({
   size?: FilterFieldSize;
 }) {
   const t = useTranslations(translationNamespace);
-  const parsed = useMemo(
-    () => parseNumberFilterValue(value, defaultOperator),
-    [value, defaultOperator],
-  );
+  const parsed = useMemo(() => parseNumberFilterValue(value, defaultOperator), [value, defaultOperator]);
 
   const availableOperators = useMemo(() => {
     const emptyOps = allowEmpty ? [...NUMBER_FILTER_EMPTY_OPERATORS] : [];
@@ -71,10 +68,7 @@ export function NumberFilterWithOperator({
     onChange(createDefaultNumberFilterValueForOperator(operator));
   };
 
-  const handleOperatorShortcut = (
-    event: KeyboardEvent<HTMLInputElement>,
-    fieldValue: number | null,
-  ) => {
+  const handleOperatorShortcut = (event: KeyboardEvent<HTMLInputElement>, fieldValue: number | null) => {
     const operator = NUMBER_OPERATOR_SHORTCUTS[event.key];
     if (!operator) {
       return;
@@ -90,10 +84,7 @@ export function NumberFilterWithOperator({
   const useStackedLayout = variant === 'stacked' && showPayload;
 
   const operatorSelect = (
-    <Select
-      value={parsed.operator}
-      onValueChange={(op) => setOperator(op as NumberFilterOperatorWithEmpty)}
-    >
+    <Select value={parsed.operator} onValueChange={(op) => setOperator(op as NumberFilterOperatorWithEmpty)}>
       <SelectTrigger
         className={cn(
           filterOperatorSegmentClass(size, useStackedLayout),

@@ -137,7 +137,12 @@ export function buildLoanTableColumns(
     createCurrencyColumn<LoanWithCalculations>('withdrawals', 'table.withdrawals', t, locale),
     createCurrencyColumn<LoanWithCalculations>('balance', 'table.balance', t, locale),
     createNullableCurrencyColumn<LoanWithCalculations>('outstandingDepositSum', 'table.outstandingDepositSum', t),
-    createDateColumn<LoanWithCalculations>('outstandingDepositSinceDate', 'table.outstandingDepositSinceDate', t, locale),
+    createDateColumn<LoanWithCalculations>(
+      'outstandingDepositSinceDate',
+      'table.outstandingDepositSinceDate',
+      t,
+      locale,
+    ),
     createDurationDaysColumn<LoanWithCalculations>(
       'outstandingDepositSinceDays',
       'table.outstandingDepositSinceDays',
@@ -145,20 +150,12 @@ export function buildLoanTableColumns(
       durationT,
     ),
     createNumberColumn<LoanWithCalculations>('depositsCount', 'table.depositsCount', t, locale, { integer: true }),
-    createNumberColumn<LoanWithCalculations>(
-      'requiredDepositsCount',
-      'table.requiredDepositsCount',
-      t,
-      locale,
-      { integer: true },
-    ),
-    createNumberColumn<LoanWithCalculations>(
-      'outstandingDepositsCount',
-      'table.outstandingDepositsCount',
-      t,
-      locale,
-      { integer: true },
-    ),
+    createNumberColumn<LoanWithCalculations>('requiredDepositsCount', 'table.requiredDepositsCount', t, locale, {
+      integer: true,
+    }),
+    createNumberColumn<LoanWithCalculations>('outstandingDepositsCount', 'table.outstandingDepositsCount', t, locale, {
+      integer: true,
+    }),
     createCurrencyColumn<LoanWithCalculations>('notReclaimed', 'table.notReclaimed', t, locale),
     createPercentageColumn<LoanWithCalculations>('interestRate', 'table.interestRate', t, locale),
     createCurrencyColumn<LoanWithCalculations>('interest', 'table.interest', t, locale),

@@ -37,8 +37,7 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
     onOpenChange(!isOpen);
   };
 
-  const getTerminationModalities = () =>
-    formatTerminationModalities(loan, commonT, (d) => formatDateShort(d, locale));
+  const getTerminationModalities = () => formatTerminationModalities(loan, commonT, (d) => formatDateShort(d, locale));
 
   const lender = loan.lender;
   const lenderName = getLenderName(lender);

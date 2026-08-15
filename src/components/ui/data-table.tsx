@@ -445,8 +445,7 @@ export function DataTable<TData, TValue>({
       const isHashSearch = rawFilter.startsWith('#');
 
       if (isHashSearch) {
-        const hashTargetColumnId =
-          viewType === 'LOAN' ? 'loanNumber' : viewType === 'LENDER' ? 'lenderNumber' : null;
+        const hashTargetColumnId = viewType === 'LOAN' ? 'loanNumber' : viewType === 'LENDER' ? 'lenderNumber' : null;
         if (!hashTargetColumnId || columnId !== hashTargetColumnId) {
           return false;
         }
@@ -493,7 +492,7 @@ export function DataTable<TData, TValue>({
               columnFilters={columnFilters}
               defaultColumnVisibility={defaultColumnVisibility ?? EMPTY_COLUMN_VISIBILITY}
               defaultSorting={defaultSorting}
-            views={views || []}
+              views={views || []}
               viewType={viewType}
               tableState={tableState}
               setTableState={setTableState}

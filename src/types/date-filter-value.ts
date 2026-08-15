@@ -18,10 +18,7 @@ export const DATE_FILTER_EMPTY_OPERATORS = ['empty', 'notEmpty'] as const;
 export type DateFilterOperator = (typeof DATE_FILTER_OPERATORS)[number];
 export type DateFilterLegacyOperator = (typeof DATE_FILTER_LEGACY_OPERATORS)[number];
 export type DateFilterEmptyOperator = (typeof DATE_FILTER_EMPTY_OPERATORS)[number];
-export type DateFilterOperatorWithLegacy =
-  | DateFilterOperator
-  | DateFilterLegacyOperator
-  | DateFilterEmptyOperator;
+export type DateFilterOperatorWithLegacy = DateFilterOperator | DateFilterLegacyOperator | DateFilterEmptyOperator;
 
 export const DATE_FILTER_LAST_UNITS = ['days', 'months'] as const;
 
@@ -117,11 +114,9 @@ function parseRelativeAmountFilter(
 function isDateFilterOperator(value: unknown): value is DateFilterOperatorWithLegacy {
   return (
     typeof value === 'string' &&
-    ([
-      ...DATE_FILTER_OPERATORS,
-      ...DATE_FILTER_LEGACY_OPERATORS,
-      ...DATE_FILTER_EMPTY_OPERATORS,
-    ] as readonly string[]).includes(value)
+    (
+      [...DATE_FILTER_OPERATORS, ...DATE_FILTER_LEGACY_OPERATORS, ...DATE_FILTER_EMPTY_OPERATORS] as readonly string[]
+    ).includes(value)
   );
 }
 

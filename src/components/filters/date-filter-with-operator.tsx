@@ -254,8 +254,7 @@ export function DateFilterWithOperator({
   const availableOperators = useMemo(() => {
     const emptyOps = allowEmpty ? [...DATE_FILTER_EMPTY_OPERATORS] : [];
     // Keep year parseable but only offer it when already selected (legacy values).
-    const legacy =
-      parsed.operator === 'year' ? DATE_FILTER_LEGACY_OPERATORS.filter((op) => op === 'year') : [];
+    const legacy = parsed.operator === 'year' ? DATE_FILTER_LEGACY_OPERATORS.filter((op) => op === 'year') : [];
     return [...DATE_FILTER_OPERATORS, ...legacy, ...emptyOps];
   }, [allowEmpty, parsed.operator]);
 

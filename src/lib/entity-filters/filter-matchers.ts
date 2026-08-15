@@ -191,11 +191,7 @@ export function matchesNumberRangeFilter(value: unknown, filterValue: unknown): 
   }
 }
 
-export function matchesDateFilter(
-  value: unknown,
-  filterValue: unknown,
-  referenceDate: Date = new Date(),
-): boolean {
+export function matchesDateFilter(value: unknown, filterValue: unknown, referenceDate: Date = new Date()): boolean {
   const parsed = parseDateFilterValue(filterValue);
 
   if (parsed.operator === 'empty') {
@@ -232,11 +228,7 @@ export function matchesDateFilter(
   return true;
 }
 
-export function matchesEnumFilter(
-  value: unknown,
-  filterValue: unknown,
-  defaultOperator: 'eq' | 'in' = 'eq',
-): boolean {
+export function matchesEnumFilter(value: unknown, filterValue: unknown, defaultOperator: 'eq' | 'in' = 'eq'): boolean {
   const parsed = parseEnumFilterValue(filterValue, defaultOperator);
 
   if (parsed.operator === 'empty') {

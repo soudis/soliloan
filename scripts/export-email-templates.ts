@@ -93,8 +93,7 @@ async function main() {
   }
 }
 
-main()
-  .catch(async (error) => {
-    console.error('Failed to export email templates:', error);
-    process.exitCode = 1;
-  });
+main().catch(async (error) => {
+  console.error('Failed to export email templates:', error);
+  process.exitCode = 1;
+});

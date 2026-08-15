@@ -93,9 +93,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.user = {
           ...currentUser,
           ...('name' in updates && typeof updates.name === 'string' ? { name: updates.name } : {}),
-          ...('language' in updates && typeof updates.language === 'string'
-            ? { language: updates.language }
-            : {}),
+          ...('language' in updates && typeof updates.language === 'string' ? { language: updates.language } : {}),
         };
       }
 

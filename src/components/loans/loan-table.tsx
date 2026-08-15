@@ -97,9 +97,7 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
       <div className="mb-6 flex shrink-0 items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{t('title')}</h1>
-          {pageSubtitle ? (
-            <p className="mt-0.5 text-base font-normal text-muted-foreground">{pageSubtitle}</p>
-          ) : null}
+          {pageSubtitle ? <p className="mt-0.5 text-base font-normal text-muted-foreground">{pageSubtitle}</p> : null}
         </div>
         <Button onClick={() => router.push('/loans/new')}>
           <Plus className="mr-2 h-4 w-4" />

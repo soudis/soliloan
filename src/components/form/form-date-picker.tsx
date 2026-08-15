@@ -13,13 +13,7 @@ interface FormDatePickerProps {
   className?: string;
 }
 
-export function FormDatePicker({
-  name,
-  label,
-  placeholder = 'Pick a date',
-  disabled,
-  className,
-}: FormDatePickerProps) {
+export function FormDatePicker({ name, label, placeholder = 'Pick a date', disabled, className }: FormDatePickerProps) {
   const form = useFormContext();
 
   return (

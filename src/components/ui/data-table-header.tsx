@@ -111,10 +111,7 @@ export function DataTableHeader<TData>({
     [tableState, columnFilters],
   );
 
-  const activeFilterCount = useMemo(
-    () => countActiveFilters(tableState, columnFilters),
-    [tableState, columnFilters],
-  );
+  const activeFilterCount = useMemo(() => countActiveFilters(tableState, columnFilters), [tableState, columnFilters]);
 
   const nextAvailableTarget = useMemo(
     () => (hasColumnFilterConfig ? getNextAvailableFilterTarget(table, columnFilters, tableState) : null),

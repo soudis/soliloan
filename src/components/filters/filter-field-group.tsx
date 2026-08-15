@@ -35,13 +35,7 @@ export function FilterFieldGroup({
 }
 
 /** Operator on its own rounded row; value inputs fused on a second row below. */
-export function FilterStackedFields({
-  operator,
-  payload,
-}: {
-  operator: ReactNode;
-  payload: ReactNode;
-}) {
+export function FilterStackedFields({ operator, payload }: { operator: ReactNode; payload: ReactNode }) {
   return (
     <div className="flex w-full min-w-0 flex-col gap-2">
       {operator}
@@ -65,10 +59,7 @@ export function filterOperatorSegmentClass(size: FilterFieldSize = 'default', fu
   );
 }
 
-export function filterInputSegmentClass(
-  size: FilterFieldSize = 'default',
-  width: 'amount' | 'year' = 'amount',
-) {
+export function filterInputSegmentClass(size: FilterFieldSize = 'default', width: 'amount' | 'year' = 'amount') {
   return cn(
     'shadow-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
     filterSizeClass(size),

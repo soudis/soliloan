@@ -74,10 +74,7 @@ export function EnumFilterWithOperator({
   const useStackedLayout = variant === 'stacked' && showPayload;
 
   const operatorSelect = (
-    <Select
-      value={parsed.operator}
-      onValueChange={(op) => setOperator(op as EnumFilterOperatorWithEmpty)}
-    >
+    <Select value={parsed.operator} onValueChange={(op) => setOperator(op as EnumFilterOperatorWithEmpty)}>
       <SelectTrigger className={filterOperatorSegmentClass(size, useStackedLayout)}>
         <SelectValue />
       </SelectTrigger>
@@ -95,10 +92,7 @@ export function EnumFilterWithOperator({
   if (parsed.operator === 'eq') {
     payload = (
       <select
-        className={cn(
-          filterValueSegmentClass(size),
-          'rounded-md border border-border bg-background px-3 py-1',
-        )}
+        className={cn(filterValueSegmentClass(size), 'rounded-md border border-border bg-background px-3 py-1')}
         value={parsed.value}
         onChange={(e) =>
           onChange({
@@ -147,9 +141,7 @@ export function EnumFilterWithOperator({
                 checked={checked}
                 onCheckedChange={(nextChecked) => {
                   const next =
-                    nextChecked === true
-                      ? [...selected, option.value]
-                      : selected.filter((v) => v !== option.value);
+                    nextChecked === true ? [...selected, option.value] : selected.filter((v) => v !== option.value);
                   onChange({ operator: 'in', values: next });
                 }}
                 onSelect={(e) => e.preventDefault()}

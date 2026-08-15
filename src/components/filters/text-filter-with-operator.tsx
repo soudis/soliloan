@@ -65,10 +65,7 @@ export function TextFilterWithOperator({
   const useStackedLayout = variant === 'stacked' && showPayload;
 
   const operatorSelect = (
-    <Select
-      value={parsed.operator}
-      onValueChange={(op) => setOperator(op as TextFilterOperatorWithEmpty)}
-    >
+    <Select value={parsed.operator} onValueChange={(op) => setOperator(op as TextFilterOperatorWithEmpty)}>
       <SelectTrigger
         className={cn(
           filterOperatorSegmentClass(size, useStackedLayout),

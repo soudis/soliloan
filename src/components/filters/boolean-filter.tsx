@@ -21,10 +21,7 @@ export function BooleanFilter({
 
   return (
     <select
-      className={cn(
-        filterValueSegmentClass(size),
-        'w-full rounded-md border border-border bg-background px-3 py-1',
-      )}
+      className={cn(filterValueSegmentClass(size), 'w-full rounded-md border border-border bg-background px-3 py-1')}
       value={parsed}
       onChange={(e) => onChange(e.target.value as BooleanFilterValue)}
     >

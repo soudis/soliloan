@@ -537,9 +537,7 @@ export function createBooleanColumn<T>(
       accessorKey,
       header: headerKey,
       align,
-      cell: ({ row }) => (
-        <div className={getTextAlignClass(align)}>{formatBoolean(row.getValue(accessorKey))}</div>
-      ),
+      cell: ({ row }) => <div className={getTextAlignClass(align)}>{formatBoolean(row.getValue(accessorKey))}</div>,
       filterFn: booleanFilter,
       sortingFn: (rowA, rowB, columnId) => {
         const a = rowA.getValue(columnId) === true ? 1 : 0;

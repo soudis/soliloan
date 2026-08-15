@@ -14,15 +14,11 @@ export type EnumFilterValue =
   | FilterOperatorValue<'empty'>
   | FilterOperatorValue<'notEmpty'>;
 
-export function createDefaultEnumFilterValue(
-  defaultOperator: EnumFilterOperator = 'eq',
-): EnumFilterValue {
+export function createDefaultEnumFilterValue(defaultOperator: EnumFilterOperator = 'eq'): EnumFilterValue {
   return createDefaultEnumFilterValueForOperator(defaultOperator);
 }
 
-export function createDefaultEnumFilterValueForOperator(
-  operator: EnumFilterOperatorWithEmpty,
-): EnumFilterValue {
+export function createDefaultEnumFilterValueForOperator(operator: EnumFilterOperatorWithEmpty): EnumFilterValue {
   switch (operator) {
     case 'eq':
       return { operator: 'eq', value: '' };
@@ -42,10 +38,7 @@ function isEnumFilterOperator(value: unknown): value is EnumFilterOperatorWithEm
   );
 }
 
-export function parseEnumFilterValue(
-  raw: unknown,
-  defaultOperator: EnumFilterOperator = 'eq',
-): EnumFilterValue {
+export function parseEnumFilterValue(raw: unknown, defaultOperator: EnumFilterOperator = 'eq'): EnumFilterValue {
   if (typeof raw === 'string') {
     return {
       operator: 'eq',
@@ -81,9 +74,7 @@ export function parseEnumFilterValue(
       const { values } = value as { values?: unknown };
       return {
         operator: 'in',
-        values: Array.isArray(values)
-          ? values.filter((item): item is string => typeof item === 'string')
-          : [],
+        values: Array.isArray(values) ? values.filter((item): item is string => typeof item === 'string') : [],
       };
     }
     case 'empty':
@@ -93,10 +84,7 @@ export function parseEnumFilterValue(
   }
 }
 
-export function isInactiveEnumFilterValue(
-  raw: unknown,
-  defaultOperator: EnumFilterOperator = 'eq',
-): boolean {
+export function isInactiveEnumFilterValue(raw: unknown, defaultOperator: EnumFilterOperator = 'eq'): boolean {
   const parsed = parseEnumFilterValue(raw, defaultOperator);
   // Only the field's default operator with an empty payload is inactive.
   // Switching to the other operator keeps the filter so the select can stick.
