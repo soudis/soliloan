@@ -285,15 +285,15 @@ function createProfileLenderNumberColumn<T>(
   t: (key: string) => string,
 ): ColumnDef<T> {
   const id = columnId(idPrefix, 'lenderNumber');
-  return createColumn<T>(
+  const column = createColumn<T>(
     {
       accessorKey: id,
       id,
       header: 'table.lenderNumber',
-      accessorFn: (row: T) => getLender(row)?.lenderNumber ?? '',
+      accessorFn: (row: T) => getLender(row)?.lenderNumber ?? null,
       cell: ({ row }) => {
         const value = getLender(row.original)?.lenderNumber;
-        return value == null ? '' : String(value);
+        return value == null ? '' : `#${value}`;
       },
       meta: {
         export: { type: 'integer' },
@@ -301,6 +301,8 @@ function createProfileLenderNumberColumn<T>(
     },
     t,
   );
+  column.filterFn = 'inNumberRange';
+  return column;
 }
 
 function createProfileEnumColumn<T>(

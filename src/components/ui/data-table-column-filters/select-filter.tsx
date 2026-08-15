@@ -1,26 +1,35 @@
 import type { ColumnFilter } from '@tanstack/react-table';
-import { useTranslations } from 'next-intl';
+
+import type { FilterFieldSize, FilterFieldVariant } from '@/components/filters/filter-field-group';
+import { EnumFilterWithOperator } from '@/components/filters/enum-filter-with-operator';
 
 interface SelectFilterProps {
   filterState?: ColumnFilter;
-  onFilterChange: (value: string) => void;
+  onFilterChange: (value: unknown) => void;
   options: { label: string; value: string }[];
+  allowEmpty?: boolean;
+  variant?: FilterFieldVariant;
+  size?: FilterFieldSize;
 }
 
-export function SelectFilter({ filterState, options, onFilterChange }: SelectFilterProps) {
-  const t = useTranslations('common.ui');
+export function SelectFilter({
+  filterState,
+  options,
+  onFilterChange,
+  allowEmpty = false,
+  variant = 'row',
+  size = 'default',
+}: SelectFilterProps) {
   return (
-    <select
-      className="h-8 w-full rounded-md border border-border bg-background px-3 py-1 text-sm"
-      value={(filterState?.value as string) ?? ''}
-      onChange={(e) => onFilterChange(e.target.value)}
-    >
-      <option value="">{t('table.all')}</option>
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
+    <EnumFilterWithOperator
+      value={filterState?.value}
+      onChange={onFilterChange}
+      options={options}
+      allowEmpty={allowEmpty}
+      defaultOperator="eq"
+      translationNamespace="dataTable"
+      variant={variant}
+      size={size}
+    />
   );
 }

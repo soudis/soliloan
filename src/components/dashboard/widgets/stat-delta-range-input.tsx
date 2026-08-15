@@ -12,16 +12,18 @@ export function StatDeltaRangeInput({
   numberLabel,
   unitOptions,
   className,
+  hideLabel = false,
 }: {
   value: StatDeltaRange;
   onChange: (value: StatDeltaRange) => void;
   numberLabel: string;
   unitOptions: { value: StatDeltaUnit; label: string }[];
   className?: string;
+  hideLabel?: boolean;
 }) {
   return (
-    <div className={cn('space-y-2', className)}>
-      <Label className="text-xs">{numberLabel}</Label>
+    <div className={cn(hideLabel ? undefined : 'space-y-2', className)}>
+      {hideLabel ? null : <Label className="text-xs">{numberLabel}</Label>}
       <div className="flex">
         <Input
           type="number"
@@ -35,7 +37,10 @@ export function StatDeltaRangeInput({
               amount: raw === '' ? 1 : Math.max(1, Number.parseInt(raw, 10) || 1),
             });
           }}
-          className="h-8 flex-1 rounded-r-none border-r-0 text-xs [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          className={cn(
+            'h-8 rounded-r-none border-r-0 text-xs [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+            hideLabel ? 'w-14 shrink-0' : 'flex-1',
+          )}
         />
         <Select value={value.unit} onValueChange={(unit) => onChange({ ...value, unit: unit as StatDeltaUnit })}>
           <CustomSelectTrigger className="h-8 w-[100px] rounded-l-none text-xs">

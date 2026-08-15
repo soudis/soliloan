@@ -21,9 +21,61 @@
   "rowsPerPage": "Zeilen pro Seite",
   "noResults": "Keine Ergebnisse.",
   "to": "bis",
-  "globalFilter": "In allen Spalten suchen...",
-  "startDate": "Startdatum",
-  "endDate": "Enddatum",
+  "dateFilterOperator": "Zeitraum",
+  "dateFilterOperators": {
+    "between": "zwischen",
+    "olderThan": "älter als",
+    "newerThan": "neuer als",
+    "thisMonth": "diesen Monat",
+    "lastMonth": "letzten Monat",
+    "thisYear": "dieses Jahr",
+    "lastYear": "letztes Jahr",
+    "last": "letzte…",
+    "next": "nächste…",
+    "year": "Jahr",
+    "empty": "ist leer",
+    "notEmpty": "ist nicht leer"
+  },
+  "numberFilterOperators": {
+    "between": "zwischen",
+    "eq": "=",
+    "gt": ">",
+    "lt": "<",
+    "gte": "≥",
+    "lte": "≤",
+    "empty": "ist leer",
+    "notEmpty": "ist nicht leer"
+  },
+  "numberFilterMin": "Min",
+  "numberFilterMax": "Max",
+  "numberFilterValue": "Wert",
+  "textFilterOperators": {
+    "contains": "enthält",
+    "startsWith": "beginnt mit",
+    "endsWith": "endet mit",
+    "eq": "=",
+    "empty": "ist leer",
+    "notEmpty": "ist nicht leer"
+  },
+  "textFilterValue": "Text",
+  "enumFilterOperators": {
+    "eq": "ist",
+    "in": "eines von",
+    "empty": "ist leer",
+    "notEmpty": "ist nicht leer"
+  },
+  "enumFilterSelectedCount": "{count} ausgewählt",
+  "dateFilterRelative": "Letzte",
+  "dateFilterStart": "Startdatum",
+  "dateFilterEnd": "Enddatum",
+  "globalFilter": "Spalten durchsuchen...",
+  "globalFilterAll": "Alle",
+  "globalFilterField": "Suchfeld",
+  "filterTarget": "Filterfeld",
+  "addFilter": "Filter hinzufügen",
+  "removeFilter": "Filter entfernen",
+  "expandFilters": "Filter einblenden",
+  "collapseFilters": "Filter ausblenden",
   "bulkBar": {
     "selected": "{count} ausgewählt",
     "deselect": "Auswahl aufheben"
@@ -32,5 +84,14 @@
     "transaction": "Transaktion",
     "loan": "Kredit",
     "lender": "Kreditgeber*in"
+  },
+  "columnMenu": {
+    "sort": "Spalte sortieren",
+    "sortAsc": "Aufsteigend sortieren",
+    "sortDesc": "Absteigend sortieren",
+    "filter": "Filter für Spalte anzeigen",
+    "moreOptions": "Weitere Optionen",
+    "moveLeft": "Spalte nach links verschieben",
+    "moveRight": "Spalte nach rechts verschieben"
   }
 }

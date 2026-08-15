@@ -47,13 +47,15 @@ export function DataTableBody<TData>({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
+                  const textAlign = header.column.columnDef.meta?.style?.textAlign ?? 'left';
                   return (
                     <TableHead
                       key={header.id}
                       className={cn(
-                        header.column.columnDef.meta?.style?.textAlign &&
-                          `text-${header.column.columnDef.meta.style.textAlign}`,
                         'bg-card',
+                        textAlign === 'right' && 'text-right',
+                        textAlign === 'center' && 'text-center',
+                        textAlign === 'left' && 'text-left',
                         fillHeight && 'sticky top-0 z-20 shadow-[inset_0_-1px_0_0_var(--table-border)]',
                         header.column.columnDef.meta?.fixed &&
                           cn(

@@ -353,7 +353,9 @@
       "name": "Name",
       "type": "Typ",
       "dataset": "Datensatz",
-      "createdAt": "Erstellt am"
+      "datasetDescription": "Datenquelle, aus der die Vorlage Inhalte bezieht.",
+      "createdAt": "Erstellt am",
+      "createdAtShort": "Erstellt"
     },
     "actions": {
       "edit": "Bearbeiten",

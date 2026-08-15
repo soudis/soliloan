@@ -2,7 +2,7 @@
 
 import { type InvestmentType, type Lender, LimitationType, type Loan } from '@prisma/client';
 import { addMonths, format, startOfDay } from 'date-fns';
-import { Calendar, ChevronLeft, Pencil, Telescope, Trash2, TriangleAlert, X } from 'lucide-react';
+import { Calendar, ChevronLeft, Pencil, Telescope, Trash2, TriangleAlert } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
@@ -22,10 +22,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { DatePickerInput } from '@/components/ui/date-picker-input';
 import { DonutIndicator } from '@/components/ui/donut-indicator';
 import { GridIndicator } from '@/components/ui/grid-indicator';
 import { InfoText } from '@/components/ui/info-text';
-import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useRouter } from '@/i18n/navigation';
@@ -37,7 +37,7 @@ import {
 } from '@/lib/investment-types/calc-investment-type-metrics';
 import { getDefaultEffectiveDate } from '@/lib/investment-types/effective-date';
 import { MAX_TOTAL_AMOUNT_EUR, MAX_UNITS, PERIOD_MONTHS } from '@/lib/schemas/investment-type';
-import { cn, formatCurrency, formatDateShort, formatPercentage, getLenderName } from '@/lib/utils';
+import { cn, formatCurrency, formatDateShort, formatIsoDate, formatPercentage, getLenderName } from '@/lib/utils';
 import { LoanStatus } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { LimitationTypeBadge } from './limitation-type-badge';
@@ -288,16 +288,15 @@ function CapacityCalculator({ investmentType }: { investmentType: InvestmentType
     <div className="flex w-full min-w-0 flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-sm font-medium text-muted-foreground">{t('calculator')}</h2>
-        <Input
-          id="effectiveDate"
-          type="date"
+        <DatePickerInput
           value={effectiveDate}
-          onChange={(e) => {
-            if (e.target.value) {
-              setEffectiveDate(e.target.value);
+          onChange={(date) => {
+            if (date) {
+              setEffectiveDate(formatIsoDate(date));
             }
           }}
-          className="w-auto shrink-0"
+          placeholder={investmentTypesT('effectiveDate')}
+          className="w-auto min-w-[12rem] shrink-0"
           aria-label={investmentTypesT('effectiveDate')}
         />
       </div>
@@ -545,30 +544,13 @@ function TotalAmountOverTimePeriodLoanTableControls({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor="loanTableEffectiveDate" className="text-sm font-medium whitespace-nowrap">
-        {t('effectiveDate')}
-      </label>
-      <Input
-        id="loanTableEffectiveDate"
-        type="date"
-        value={effectiveDate}
-        onChange={(e) => setEffectiveDate(e.target.value)}
-        className="w-auto shrink-0"
-        aria-label={t('effectiveDate')}
+      <span className="text-sm font-medium whitespace-nowrap">{t('effectiveDate')}</span>
+      <DatePickerInput
+        value={effectiveDate || null}
+        onChange={(date) => setEffectiveDate(date ? formatIsoDate(date) : '')}
+        placeholder={t('effectiveDate')}
+        className="w-auto min-w-[12rem] shrink-0"
       />
-      {effectiveDate && (
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          title={t('detail.clearEffectiveDate')}
-          aria-label={t('detail.clearEffectiveDate')}
-          onClick={() => setEffectiveDate('')}
-          className="size-9 shrink-0"
-        >
-          <X aria-hidden />
-        </Button>
-      )}
     </div>
   );
 }

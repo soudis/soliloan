@@ -100,6 +100,7 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
         name="type"
         label={t('transactions.type')}
         placeholder={commonT('ui.form.selectPlaceholder')}
+        className="bg-white"
         options={[
           createTypeOption(TransactionType.DEPOSIT, !!loanToDate && loanToDate?.deposits >= loanToDate.amount),
           'divider',
@@ -120,6 +121,7 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
         name="date"
         label={t('transactions.date')}
         placeholder={commonT('ui.form.enterPlaceholder')}
+        className="bg-white"
         disabled={(date) => {
           if (date > new Date()) {
             return true;
@@ -141,6 +143,7 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
         min={minAmount}
         max={maxAmount}
         prefix="€"
+        className="bg-white"
         disabled={
           !type ||
           type === TransactionType.TERMINATION ||
@@ -154,6 +157,7 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
         name="paymentType"
         label={t('transactions.paymentType')}
         placeholder={commonT('ui.form.selectPlaceholder')}
+        className="bg-white"
         options={[
           {
             value: 'BANK',

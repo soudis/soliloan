@@ -1,38 +1,39 @@
 import type { Lender, Loan } from '@prisma/client';
 import type { CellContext, ColumnDef, Row, VisibilityState } from '@tanstack/react-table';
-import moment from 'moment';
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import type { ColumnGroupMeta, DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+import {
+  matchesBooleanFilter,
+  matchesDateFilter,
+  matchesEnumFilter,
+  matchesTextFilter,
+} from '@/lib/entity-filters/filter-matchers';
 import { formatDurationDays } from '@/lib/format-duration';
+
 import { formatCurrency, formatPercentage, getLenderName, NumberParser, resolveIntlLocaleForDates } from '@/lib/utils';
 import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat } from './schemas/common';
 
 // Define the custom filter function for compound text fields
 export function compoundTextFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
-  const value = row.getValue(columnId);
-  if (!value) return false;
+  return matchesTextFilter(row.getValue(columnId), filterValue);
+}
 
-  // Convert both the value and filter to lowercase for case-insensitive search
-  const searchValue = String(value).toLowerCase();
-  const searchFilter = String(filterValue).toLowerCase();
-
-  return searchValue.includes(searchFilter);
+// Define the custom filter function for boolean fields
+export function booleanFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
+  const raw = row.getValue(columnId) === true ? 'true' : 'false';
+  return matchesBooleanFilter(raw, filterValue);
 }
 
 // Define the custom filter function for enum fields
 export function enumFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
-  const value = row.getValue(columnId);
+  return matchesEnumFilter(row.getValue(columnId), filterValue, 'eq');
+}
 
-  // Support single- and multi-select enum filters.
-  if (Array.isArray(filterValue)) {
-    if (filterValue.length === 0) return true;
-    return filterValue.includes(String(value));
-  }
-
-  // For enum fields, we do an exact match
-  return value === filterValue || filterValue === '';
+// Define the custom filter function for date fields
+export function dateRangeFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
+  return matchesDateFilter(row.getValue(columnId), filterValue, new Date());
 }
 
 // Define the custom filter function type
@@ -44,12 +45,37 @@ export function accessorKeyToColumnId(accessorKey: string): string {
   return accessorKey.replaceAll('.', '_');
 }
 
+type TranslateFn = ((key: string) => string) & { has?: (key: string) => boolean };
+
 type ColumnConfig<T> = ColumnDef<T> & {
   accessorKey: string;
+  /** Translation key for the long column name (filters, export, column menu). */
   header?: string | undefined;
+  /** Optional translation key for the short header label. Defaults to `${header}Short` when present. */
+  headerShort?: string | undefined;
+  /** Optional translation key for the column description. Defaults to `${header}Description` when present. */
+  headerDescription?: string | undefined;
   id?: string | undefined;
   align?: 'left' | 'right' | 'center';
 };
+
+function resolveOptionalTranslation(t: TranslateFn, key: string | undefined): string | undefined {
+  if (!key) return undefined;
+  if (t.has && !t.has(key)) return undefined;
+  return t(key);
+}
+
+function resolveColumnLabels(
+  t: TranslateFn,
+  headerKey: string | undefined,
+  options?: { headerShort?: string; headerDescription?: string },
+): { shortName?: string; longName?: string; description?: string } {
+  if (!headerKey) return {};
+  const longName = t(headerKey);
+  const shortName = resolveOptionalTranslation(t, options?.headerShort ?? `${headerKey}Short`) ?? longName;
+  const description = resolveOptionalTranslation(t, options?.headerDescription ?? `${headerKey}Description`);
+  return { shortName, longName, description };
+}
 
 function mergeExportMeta<T>(
   column: ColumnDef<T>,
@@ -73,12 +99,20 @@ function mergeExportMeta<T>(
 }
 
 // Create a basic column definition
-export function createColumn<T>(config: ColumnConfig<T>, t: (key: string) => string): ColumnDef<T> {
+export function createColumn<T>(config: ColumnConfig<T>, t: TranslateFn): ColumnDef<T> {
+  const { headerShort, headerDescription, header, ...restConfig } = config;
+  const { shortName, longName, description } = resolveColumnLabels(t, header, {
+    headerShort,
+    headerDescription,
+  });
+
   const column = {
-    ...config,
+    ...restConfig,
     header: ({ column }) =>
-      config.header ? <DataTableColumnHeader column={column} title={t(config.header)} /> : undefined,
-    filterFn: config.filterFn || 'includesString',
+      shortName ? (
+        <DataTableColumnHeader column={column} title={shortName} longTitle={longName} description={description} />
+      ) : undefined,
+    filterFn: config.filterFn || compoundTextFilter,
     sortingFn:
       config.sortingFn ||
       ((rowA, rowB, columnId) => {
@@ -91,13 +125,16 @@ export function createColumn<T>(config: ColumnConfig<T>, t: (key: string) => str
       }),
     meta: {
       ...config.meta,
+      labelShort: shortName,
+      labelLong: longName,
+      description,
       style: {
         textAlign: config.align ?? 'left',
         ...config.meta?.style,
       },
       export: {
         type: 'text' as const,
-        label: config.header ? t(config.header) : config.meta?.export?.label,
+        label: longName ?? config.meta?.export?.label,
         ...config.meta?.export,
       },
     },
@@ -235,7 +272,7 @@ export function createNumberColumn<T>(
   headerKey: string | undefined,
   t: (key: string) => string,
   locale: string,
-  options?: { integer?: boolean },
+  options?: { integer?: boolean; hashPrefix?: boolean },
 ): ColumnDef<T> {
   const parser = new NumberParser(locale);
   const column = createColumn<T>(
@@ -244,7 +281,11 @@ export function createNumberColumn<T>(
       header: headerKey,
       cell: ({ row }) => {
         const value = formatTableNumberValue(row.getValue(accessorKey), parser);
-        return <div className="tabular-nums">{value}</div>;
+        if (value === '' || value == null) {
+          return <div className="tabular-nums" />;
+        }
+        const display = options?.hashPrefix ? `#${value}` : value;
+        return <div className="tabular-nums">{display}</div>;
       },
     },
     t,
@@ -292,38 +333,64 @@ export function createCurrencyColumn<T>(
   column.filterFn = 'inNumberRange';
   return mergeExportMeta(column, { type: 'currency' });
 }
+
+export function createNullableCurrencyColumn<T>(
+  accessorKey: string,
+  headerKey: string | undefined,
+  t: (key: string) => string,
+): ColumnDef<T> {
+  const parser = new NumberParser('de-DE');
+  const column = createColumn<T>(
+    {
+      accessorKey,
+      header: headerKey,
+      align: 'right',
+      cell: ({ row }) => {
+        const rawValue = row.getValue(accessorKey);
+        if (rawValue === null || rawValue === undefined) {
+          return '';
+        }
+        const value = parser.parse(String(rawValue)) || 0;
+        return <div className="text-right tabular-nums">{formatCurrency(value)}</div>;
+      },
+    },
+    t,
+  );
+
+  column.filterFn = 'inNumberRange';
+  return mergeExportMeta(column, { type: 'currency' });
+}
 export function createDateColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,
   t: (key: string) => string,
   locale?: string,
 ): ColumnDef<T> {
-  return mergeExportMeta(
-    createColumn<T>(
-      {
-        accessorKey,
-        header: headerKey,
-        cell: ({ row }) => {
-          const dateStr = row.getValue(accessorKey) as string;
-          if (!dateStr) return '';
-          try {
-            const date = new Date(dateStr);
-            return Number.isNaN(date.getTime())
-              ? ''
-              : date.toLocaleDateString(resolveIntlLocaleForDates(locale ?? 'de'), {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                });
-          } catch (_) {
-            return '';
-          }
-        },
+  const column = createColumn<T>(
+    {
+      accessorKey,
+      header: headerKey,
+      cell: ({ row }) => {
+        const dateStr = row.getValue(accessorKey) as string;
+        if (!dateStr) return '';
+        try {
+          const date = new Date(dateStr);
+          return Number.isNaN(date.getTime())
+            ? ''
+            : date.toLocaleDateString(resolveIntlLocaleForDates(locale ?? 'de'), {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+              });
+        } catch (_) {
+          return '';
+        }
       },
-      t,
-    ),
-    { type: 'date' },
+    },
+    t,
   );
+  column.filterFn = dateRangeFilter as ColumnDef<T>['filterFn'];
+  return mergeExportMeta(column, { type: 'date' });
 }
 
 type PercentageColumnFormattingOptions = {
@@ -396,13 +463,16 @@ export function createEnumBadgeColumn<T>(
   t: (key: string) => string,
   commonT: (key: string) => string,
   getBadgeVariant?: (value: string) => 'default' | 'secondary' | 'destructive' | 'outline',
+  options?: { align?: 'left' | 'right' | 'center' },
 ): ColumnDef<T> {
   const columnId = accessorKeyToColumnId(accessorKey);
+  const align = options?.align ?? 'left';
   const column = createColumn<T>(
     {
       accessorKey,
       id: columnId,
       header: headerKey,
+      align,
       cell: ({ row }) => {
         const value = row.getValue(columnId) as string;
         if (!value) return '';
@@ -416,7 +486,13 @@ export function createEnumBadgeColumn<T>(
           variant = getBadgeVariant(value);
         }
 
-        return <Badge variant={variant}>{enumText}</Badge>;
+        return (
+          <div className={`${getTextAlignClass(align)} whitespace-nowrap`}>
+            <Badge variant={variant} className="whitespace-nowrap">
+              {enumText}
+            </Badge>
+          </div>
+        );
       },
       filterFn: enumFilter,
       sortingFn: (rowA, rowB, columnId) => {
@@ -445,6 +521,39 @@ export function createEnumBadgeColumn<T>(
     },
   });
 }
+
+export function createBooleanColumn<T>(
+  accessorKey: string,
+  headerKey: string,
+  t: (key: string) => string,
+  commonT: (key: string) => string,
+  options?: { align?: 'left' | 'right' | 'center' },
+): ColumnDef<T> {
+  const formatBoolean = (value: unknown) => (value === true ? commonT('ui.boolean.yes') : commonT('ui.boolean.no'));
+  const align = options?.align ?? 'left';
+
+  const column = createColumn<T>(
+    {
+      accessorKey,
+      header: headerKey,
+      align,
+      cell: ({ row }) => <div className={getTextAlignClass(align)}>{formatBoolean(row.getValue(accessorKey))}</div>,
+      filterFn: booleanFilter,
+      sortingFn: (rowA, rowB, columnId) => {
+        const a = rowA.getValue(columnId) === true ? 1 : 0;
+        const b = rowB.getValue(columnId) === true ? 1 : 0;
+        return a - b;
+      },
+    },
+    t,
+  );
+
+  return mergeExportMeta(column, {
+    type: 'text',
+    getValue: (row) => formatBoolean((row as Record<string, unknown>)[accessorKey]),
+  });
+}
+
 export function createTerminationTypeColumn<T>(
   t: (key: string) => string,
   commonT: (key: string) => string,
@@ -681,7 +790,7 @@ export function createAdditionalFieldsColumns<T>(
       return mergeExportMeta(
         {
           ...createDateColumn<T>(fieldKey, undefined, t, locale),
-          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} longTitle={field.name} />,
           id: fieldKey,
         } as ColumnDef<T>,
         { label: field.name },
@@ -693,7 +802,7 @@ export function createAdditionalFieldsColumns<T>(
         return mergeExportMeta(
           {
             ...createCurrencyColumn<T>(fieldKey, undefined, t, locale),
-            header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+            header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} longTitle={field.name} />,
             id: fieldKey,
           } as ColumnDef<T>,
           { label: field.name },
@@ -703,7 +812,7 @@ export function createAdditionalFieldsColumns<T>(
         return mergeExportMeta(
           {
             ...createPercentageColumn<T>(fieldKey, undefined, t, locale),
-            header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+            header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} longTitle={field.name} />,
             id: fieldKey,
           } as ColumnDef<T>,
           { label: field.name },
@@ -712,7 +821,7 @@ export function createAdditionalFieldsColumns<T>(
       return mergeExportMeta(
         {
           ...createNumberColumn<T>(fieldKey, undefined, t, locale, { integer: false }),
-          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} longTitle={field.name} />,
           id: fieldKey,
         } as ColumnDef<T>,
         { label: field.name },
@@ -735,7 +844,7 @@ export function createAdditionalFieldsColumns<T>(
             t,
           ),
           id: fieldKey,
-          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} longTitle={field.name} />,
         } as ColumnDef<T>,
         { label: field.name },
       );
@@ -751,7 +860,7 @@ export function createAdditionalFieldsColumns<T>(
           },
           t,
         ),
-        header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} />,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} longTitle={field.name} />,
       } as ColumnDef<T>,
       { label: field.name },
     );
@@ -781,12 +890,14 @@ export function createAdditionalFieldFilters<T>(
       filters[`${accessorKey}.${field.id}`] = {
         type: 'text' as const,
         label: field.name,
+        allowEmpty: true,
       };
     }
     if (field.type === AdditionalFieldType.SELECT) {
       filters[`${accessorKey}.${field.id}`] = {
         type: 'select' as const,
         label: field.name,
+        allowEmpty: true,
         options: field.selectOptions.map((option) => ({ label: option, value: option })),
       };
     }
@@ -794,11 +905,19 @@ export function createAdditionalFieldFilters<T>(
       filters[`${accessorKey}.${field.id}`] = {
         type: 'date' as const,
         label: field.name,
+        allowEmpty: true,
       };
     }
     if (field.type === AdditionalFieldType.NUMBER) {
       filters[`${accessorKey}.${field.id}`] = {
         type: 'number' as const,
+        label: field.name,
+        allowEmpty: true,
+      };
+    }
+    if (field.type === AdditionalFieldType.BOOLEAN) {
+      filters[`${accessorKey}.${field.id}`] = {
+        type: 'boolean' as const,
         label: field.name,
       };
     }
@@ -875,11 +994,7 @@ export function formatTerminationModalities(
     case 'DURATION': {
       if (!data.duration || !data.durationType) return '-';
       const duration = `${data.duration} ${durationUnitLabel(data.durationType)}`;
-      const calculatedEndDate = moment(data.signDate)
-        .add(data.duration, data.durationType === 'MONTHS' ? 'months' : 'years')
-        .toDate();
-      const formatted = (formatDate ?? defaultFormatDate)(calculatedEndDate);
-      return commonT('enums.loan.terminationModalities.DURATION', { duration, date: formatted || '-' });
+      return commonT('enums.loan.terminationModalities.DURATION', { duration });
     }
     case 'TERMINATION': {
       if (!data.terminationPeriod || !data.terminationPeriodType) return '-';

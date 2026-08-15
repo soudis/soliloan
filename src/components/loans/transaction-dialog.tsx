@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -10,21 +10,26 @@ import { toast } from 'sonner';
 import { addTransactionAction } from '@/actions/loans';
 import { FormCheckbox } from '@/components/form/form-checkbox';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
 import { transactionFormSchema } from '@/lib/schemas/transaction';
+import { formatCurrency, formatDateShort, formatPercentage } from '@/lib/utils';
+import type { LoanDetailsWithCalculations } from '@/types/loans';
 
+import { LoanStatusBadge } from './loan-status-badge';
 import { TransactionFormFields } from './transaction-form-fields';
 
 interface TransactionDialogProps {
   loanId: string;
+  loan: LoanDetailsWithCalculations;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function TransactionDialog({ loanId, open, onOpenChange }: TransactionDialogProps) {
+export function TransactionDialog({ loanId, loan, open, onOpenChange }: TransactionDialogProps) {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
+  const locale = useLocale();
   const queryClient = useQueryClient();
 
   const defaultValues = {
@@ -64,8 +69,25 @@ export function TransactionDialog({ loanId, open, onOpenChange }: TransactionDia
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader className="space-y-3">
           <DialogTitle>{t('transactions.createTitle')}</DialogTitle>
+          <DialogDescription asChild className="text-foreground">
+            <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-white p-3 text-left">
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <span className="font-semibold text-foreground">
+                  {t('table.loanNumberShort')} #{loan.loanNumber}
+                </span>
+                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                  <span>{formatCurrency(loan.amount)}</span>
+                  <span>·</span>
+                  <span>{formatPercentage(loan.interestRate)}</span>
+                  <span>·</span>
+                  <span>{formatDateShort(loan.signDate, locale)}</span>
+                </div>
+              </div>
+              <LoanStatusBadge status={loan.status} />
+            </div>
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>

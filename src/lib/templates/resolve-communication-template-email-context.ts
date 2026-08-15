@@ -57,7 +57,7 @@ export async function resolveCommunicationTemplateEmailContext(
     where: { id: data.templateId },
   });
 
-  if (!template || template.type !== 'EMAIL') {
+  if (template?.type !== 'EMAIL') {
     throw new Error('error.template.notFound');
   }
 

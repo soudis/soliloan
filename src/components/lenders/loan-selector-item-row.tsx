@@ -41,7 +41,7 @@ export function LoanSelectorItemRow({ loan, highlightActive = true }: LoanSelect
             <span className="font-medium text-foreground">{interestRateStr}</span>
           </div>
           <div>
-            {tLoan('table.balanceShort')} <span className="font-medium text-foreground">{balanceStr}</span>
+            {tLoan('table.balanceLabel')}: <span className="font-medium text-foreground">{balanceStr}</span>
           </div>
         </div>
       </div>

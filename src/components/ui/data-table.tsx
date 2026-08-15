@@ -4,6 +4,7 @@ import type { View, ViewType } from '@prisma/client';
 import {
   type ColumnDef,
   type FilterFn,
+  type SortingState,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -16,11 +17,26 @@ import { MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type SetTableUrlState, type TableUrlState, useTableUrlState } from '@/lib/hooks/use-table-url-state';
+import {
+  matchesDateFilter,
+  matchesGlobalFilter,
+  matchesNumberRangeFilter,
+  matchesTextFilter,
+} from '@/lib/entity-filters/filter-matchers';
+import {
+  addPresentFilter,
+  cleanupFiltersForHiddenColumns,
+  type FilterPresenceApi,
+  isFilterPresent,
+  removePresentFilter,
+} from '@/lib/table-filter-presence';
 import { cn } from '@/lib/utils';
+import type { NumberFilterOperator } from '@/types/number-filter-value';
 
 import { Checkbox } from './checkbox';
 import { DataTableBody } from './data-table-body';
 import { DataTableBulkBar } from './data-table-bulk-bar';
+import { FilterPresenceProvider } from './data-table-filter-presence-context';
 import { DataTableHeader } from './data-table-header';
 import { DataTablePagination } from './data-table-pagination';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from './dropdown-menu';
@@ -60,87 +76,38 @@ declare module '@tanstack/react-table' {
     bulkSelectColumn?: boolean;
     export?: ColumnExportMeta;
     columnGroup?: ColumnGroupMeta;
+    /** Short label shown in the table header. */
+    labelShort?: string;
+    /** Long label shown in the column menu, filters, and export. */
+    labelLong?: string;
+    /** Optional explanation shown in the column menu. */
+    description?: string;
   }
 }
 
 // Define the custom filter function for compound text fields
 export const compoundTextFilter: FilterFn<unknown> = (row, columnId, filterValue) => {
-  const value = row.getValue(columnId);
-  if (!value) return false;
-
-  // Convert both the value and filter to lowercase for case-insensitive search
-  const searchValue = String(value).toLowerCase();
-  const searchFilter = String(filterValue).toLowerCase();
-
-  return searchValue.includes(searchFilter);
+  return matchesTextFilter(row.getValue(columnId), filterValue);
 };
 
 // Define the custom number range filter function for number filtering
 export const inNumberRangeFilter: FilterFn<unknown> = (row, columnId, filterValue) => {
-  const value = row.getValue(columnId);
-  if (value === null || value === undefined) return false;
-
-  // If no filter is applied, show all rows
-  if (!filterValue || (!filterValue[0] && !filterValue[1])) return true;
-
-  // Convert the row value to a number
-  const rowValue = Number(value);
-
-  let result = true;
-  // Check if the number is within the range
-  if (filterValue[0] !== null && filterValue[1] !== null) {
-    result = rowValue >= filterValue[0] && rowValue <= filterValue[1];
-  } else if (filterValue[0] !== null) {
-    // Only min value is set
-    result = rowValue >= filterValue[0];
-  } else if (filterValue[1] !== null) {
-    // Only max value is set
-    result = rowValue <= filterValue[1];
-  }
-
-  return result;
+  return matchesNumberRangeFilter(row.getValue(columnId), filterValue);
 };
 
 // Define the custom date filter function for date range filtering
 export const dateRangeFilter: FilterFn<unknown> = (row, columnId, filterValue) => {
   const value = row.getValue(columnId);
-  if (!value || typeof value !== 'string') return false;
-
-  // If no filter is applied, show all rows
-  if (!filterValue || (!filterValue[0] && !filterValue[1])) return true;
-
-  // Convert the row value to a Date object
-  const rowDate = new Date(value);
-
-  let result = true;
-
-  // Check if the date is within the range
-  if (filterValue[0] && filterValue[1]) {
-    const startDate = new Date(filterValue[0]);
-    const endDate = new Date(filterValue[1]);
-    // Set end date to end of day to include the entire day
-    endDate.setUTCHours(23, 59, 59, 999);
-    result = rowDate >= startDate && rowDate <= endDate;
-  } else if (filterValue[0]) {
-    // Only start date is set
-    const startDate = new Date(filterValue[0]);
-    result = rowDate >= startDate;
-  } else if (filterValue[1]) {
-    // Only end date is set
-    const endDate = new Date(filterValue[1]);
-    // Set end date to end of day to include the entire day
-    endDate.setUTCHours(23, 59, 59, 999);
-    result = rowDate <= endDate;
-  }
-
-  return result;
+  return matchesDateFilter(value, filterValue, new Date());
 };
 
 export type DataTableColumnFilters = {
   [key: string]: {
-    type: 'text' | 'select' | 'multi-select' | 'number' | 'date';
+    type: 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
     options?: { label: string; value: string }[];
     label?: string;
+    allowEmpty?: boolean;
+    defaultOperator?: NumberFilterOperator;
   };
 };
 
@@ -162,6 +129,7 @@ interface DataTableProps<TData, TValue> {
   showFilter?: boolean;
   columnFilters?: DataTableColumnFilters;
   defaultColumnVisibility?: VisibilityState;
+  defaultSorting?: SortingState;
   viewType?: ViewType;
   isLoading?: boolean;
   /** Render `DropdownMenuItem` (and optional `DropdownMenuSeparator`) children; shown inside the row … menu. */
@@ -200,6 +168,7 @@ export function DataTable<TData, TValue>({
   showFilter = true,
   columnFilters = {},
   defaultColumnVisibility,
+  defaultSorting,
   viewType,
   views,
   allowSidebarViews = false,
@@ -267,22 +236,35 @@ export function DataTable<TData, TValue>({
     }
   }, [data, isRowSelectionControlled]);
 
-  // Function to check if any filters are active
-  const hasActiveFilters = () => {
-    // Check if any column filters are active
-    const hasColumnFilters = columnFilterState.some((filter) => {
-      const value = filter.value;
-      if (Array.isArray(value)) {
-        // For range filters (number, date)
-        return value.some((v) => v !== undefined && v !== '');
-      }
-      // For text and select filters
-      return value !== undefined && value !== '';
-    });
+  const filterPresence = useMemo<FilterPresenceApi>(
+    () => ({
+      config: columnFilters,
+      isPresent: (columnId) => isFilterPresent(columnId, tableState),
+      setPresent: (columnId, present) => {
+        const config = columnFilters[columnId];
+        if (!config) return;
 
-    // Only return true if column filters are active, ignoring global filter
-    return hasColumnFilters;
-  };
+        if (present) {
+          if (isFilterPresent(columnId, tableState)) return;
+          setTableState({
+            columnFilters: addPresentFilter(tableState.columnFilters, columnId, config),
+            filtersExpanded: true,
+          });
+          return;
+        }
+
+        const next: Partial<TableUrlState> = {
+          columnFilters: removePresentFilter(tableState.columnFilters, columnId),
+        };
+        if (tableState.quickSearchField === columnId) {
+          next.quickSearchField = '';
+          next.globalFilter = '';
+        }
+        setTableState(next);
+      },
+    }),
+    [columnFilters, tableState, setTableState],
+  );
 
   const hasBulkActions = !!bulkActions?.length;
 
@@ -413,7 +395,16 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: (updater) => {
       const next = updater instanceof Function ? updater(columnVisibility) : updater;
-      setTableState({ columnVisibility: next });
+      const cleanup = cleanupFiltersForHiddenColumns({
+        nextVisibility: next,
+        columnFilters: columnFilterState,
+        quickSearchField: tableState.quickSearchField,
+        filterConfig: columnFilters,
+      });
+      setTableState({
+        columnVisibility: next,
+        ...(cleanup ?? {}),
+      });
     },
     onGlobalFilterChange: (updater) => {
       const next = updater instanceof Function ? updater(globalFilter) : updater;
@@ -446,16 +437,29 @@ export function DataTable<TData, TValue>({
       dateRange: dateRangeFilter,
       inNumberRange: inNumberRangeFilter,
     },
-    // Add global filter function to search across all columns
+    // Add global filter function to search across all columns.
+    // A leading `#` scopes the search to loan/lender number only (display uses `#`,
+    // but accessors stay numeric so column filters are unaffected).
     globalFilterFn: (row, columnId, filterValue) => {
-      const value = row.getValue(columnId);
-      if (!value) return false;
+      const rawFilter = String(filterValue).trim();
+      const isHashSearch = rawFilter.startsWith('#');
 
-      // Convert both the value and filter to lowercase for case-insensitive search
-      const searchValue = String(value).toLowerCase();
-      const searchFilter = String(filterValue).toLowerCase();
+      if (isHashSearch) {
+        const hashTargetColumnId = viewType === 'LOAN' ? 'loanNumber' : viewType === 'LENDER' ? 'lenderNumber' : null;
+        if (!hashTargetColumnId || columnId !== hashTargetColumnId) {
+          return false;
+        }
 
-      return searchValue.includes(searchFilter);
+        const value = row.getValue(columnId);
+        const searchFilter = rawFilter.slice(1).trim();
+        if (!searchFilter) {
+          return value != null && value !== '';
+        }
+
+        return matchesGlobalFilter(value, searchFilter);
+      }
+
+      return matchesGlobalFilter(row.getValue(columnId), rawFilter);
     },
     // Enable global filtering for all columns
     enableGlobalFilter: true,
@@ -477,59 +481,62 @@ export function DataTable<TData, TValue>({
   }
 
   return (
-    <div className={cn(fillHeight && 'flex min-h-0 max-h-full flex-col overflow-hidden')}>
-      {!hideHeader && (
-        <div className={cn(fillHeight && 'shrink-0')}>
-          <DataTableHeader<TData>
-            table={table}
-            showColumnVisibility={showColumnVisibility}
-            showFilter={showFilter}
-            columnFilters={columnFilters}
-            defaultColumnVisibility={defaultColumnVisibility ?? EMPTY_COLUMN_VISIBILITY}
-            views={views || []}
-            viewType={viewType}
-            hasActiveFilters={hasActiveFilters}
-            tableState={tableState}
-            setTableState={setTableState}
-            allowSidebarViews={allowSidebarViews}
-            showExport={showExport}
-            exportPrefix={exportPrefix}
-            exportDisabled={exportDisabled}
-            toolbarExtra={toolbarContent}
-            extraViewData={extraViewData}
-            isExtraViewDataDirty={isExtraViewDataDirty}
-            toolbarContent={toolbarContent}
-          />
-        </div>
-      )}
+    <FilterPresenceProvider value={Object.keys(columnFilters).length > 0 ? filterPresence : null}>
+      <div className={cn(fillHeight && 'flex min-h-0 max-h-full flex-col overflow-hidden')}>
+        {!hideHeader && (
+          <div className={cn(fillHeight && 'shrink-0')}>
+            <DataTableHeader<TData>
+              table={table}
+              showColumnVisibility={showColumnVisibility}
+              showFilter={showFilter}
+              columnFilters={columnFilters}
+              defaultColumnVisibility={defaultColumnVisibility ?? EMPTY_COLUMN_VISIBILITY}
+              defaultSorting={defaultSorting}
+              views={views || []}
+              viewType={viewType}
+              tableState={tableState}
+              setTableState={setTableState}
+              allowSidebarViews={allowSidebarViews}
+              showExport={showExport}
+              exportPrefix={exportPrefix}
+              exportDisabled={exportDisabled}
+              toolbarExtra={toolbarContent}
+              extraViewData={extraViewData}
+              isExtraViewDataDirty={isExtraViewDataDirty}
+              toolbarContent={toolbarContent}
+              onRowClick={onRowClick}
+            />
+          </div>
+        )}
 
-      {bulkActions && selectedIds.length > 0 && (
-        <div className={cn(fillHeight && 'shrink-0')}>
-          <DataTableBulkBar
-            selectedCount={selectedIds.length}
-            selectedIds={selectedIds}
-            bulkActions={bulkActions}
-            onComplete={handleBulkComplete}
-          />
-        </div>
-      )}
+        {bulkActions && selectedIds.length > 0 && (
+          <div className={cn(fillHeight && 'shrink-0')}>
+            <DataTableBulkBar
+              selectedCount={selectedIds.length}
+              selectedIds={selectedIds}
+              bulkActions={bulkActions}
+              onComplete={handleBulkComplete}
+            />
+          </div>
+        )}
 
-      <DataTableBody
-        table={table}
-        onRowClick={onRowClick}
-        hasBulkSelect={hasBulkActions}
-        lastRowActionsMenuClosedAtRef={actions && onRowClick ? lastRowActionsMenuClosedAtRef : undefined}
-        fillHeight={fillHeight}
-      />
+        <DataTableBody
+          table={table}
+          onRowClick={onRowClick}
+          hasBulkSelect={hasBulkActions}
+          lastRowActionsMenuClosedAtRef={actions && onRowClick ? lastRowActionsMenuClosedAtRef : undefined}
+          fillHeight={fillHeight}
+        />
 
-      {showPagination && (
-        <div className={cn(fillHeight && 'shrink-0')}>
-          <DataTablePagination
-            table={table}
-            onPageSizeChange={(pageSize) => setTableState({ pageSize, pageIndex: 0 })}
-          />
-        </div>
-      )}
-    </div>
+        {showPagination && (
+          <div className={cn(fillHeight && 'shrink-0')}>
+            <DataTablePagination
+              table={table}
+              onPageSizeChange={(pageSize) => setTableState({ pageSize, pageIndex: 0 })}
+            />
+          </div>
+        )}
+      </div>
+    </FilterPresenceProvider>
   );
 }

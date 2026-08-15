@@ -12,6 +12,8 @@ import moment, { type Moment } from 'moment';
 import type { CalculationOptions } from '@/types/calculation';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
 
+import { calculateOutstandingDeposits } from '@/lib/loans/savings-contract';
+
 import { getLoanTermDays, getRepaymentPeriodDays } from './loan-duration-metrics';
 import { createdAtDescSorter, transactionSorter } from '../utils/sorters';
 
@@ -585,6 +587,7 @@ export function calculateLoanFields<T>(loan: LoanWithRelations & T, options: Cal
     interestError: numbers.toDate.interestError.toNumber(),
     loanTermDays: getLoanTermDays(loan, toDate),
     repaymentPeriodDays: getRepaymentPeriodDays(loan, toDate),
+    ...calculateOutstandingDeposits(loan, toDate),
     // add interests per year as virtual transactions
     transactions: loan.transactions
       .map((transaction) => ({

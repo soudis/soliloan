@@ -54,8 +54,20 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
 
   return (
     <>
-      <div className="mt-6">
-        <div className="mt-2 columns-1 gap-6">
+      <div className="mt-6 flex flex-col gap-4">
+        <Button
+          variant="outline"
+          className="w-full border-dashed py-6"
+          onClick={() => {
+            setEditingNote(undefined);
+            setIsNoteDialogOpen(true);
+          }}
+        >
+          <Plus className="h-8 w-8 mb-2" />
+          <span className="text-sm">{t('add')}</span>
+        </Button>
+
+        <div className="columns-1 gap-6">
           {notes.map((note) => (
             <div
               key={note.id}
@@ -141,18 +153,6 @@ export function Notes({ notes, loans, loanId, lenderId }: NotesProps) {
               />
             </div>
           ))}
-
-          <Button
-            variant="outline"
-            className="w-full border-dashed py-6"
-            onClick={() => {
-              setEditingNote(undefined);
-              setIsNoteDialogOpen(true);
-            }}
-          >
-            <Plus className="h-8 w-8 mb-2" />
-            <span className="text-sm">{t('add')}</span>
-          </Button>
         </div>
       </div>
 

@@ -29,7 +29,7 @@ export function LoanAddTransactionControl({ loanId, loan, className }: LoanAddTr
         <Plus className="mr-2 h-4 w-4" />
         {commonT('terms.transaction')}
       </Button>
-      <TransactionDialog loanId={loanId} open={open} onOpenChange={setOpen} />
+      <TransactionDialog loanId={loanId} loan={loan} open={open} onOpenChange={setOpen} />
     </>
   );
 }

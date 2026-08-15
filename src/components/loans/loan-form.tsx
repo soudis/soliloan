@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { DurationType } from '@prisma/client';
+import { DurationType, SavingsRateType } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { getLendersByProjectAction } from '@/actions/lenders';
@@ -77,6 +77,12 @@ export function LoanForm({
     terminationPeriodType: initialData?.terminationPeriodType || DurationType.MONTHS,
     duration: initialData?.duration || '',
     durationType: initialData?.durationType || DurationType.YEARS,
+    isSavingsContract: initialData?.isSavingsContract ?? false,
+    savingsRateType: initialData?.savingsRateType ?? SavingsRateType.FIXED,
+    savingsMonthlyAmount: formatNumber(initialData?.savingsMonthlyAmount) || ('' as const),
+    savingsDepositCount: initialData?.savingsDepositCount ?? '',
+    savingsFirstDepositDate: initialData?.savingsFirstDepositDate || '',
+    savingsLastDepositDate: initialData?.savingsLastDepositDate || '',
     additionalFields: additionalFieldDefaults(
       project.configuration.loanAdditionalFields || [],
       (initialData?.additionalFields as AdditionalFieldValues | undefined) || {},

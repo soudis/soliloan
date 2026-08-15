@@ -28,10 +28,6 @@ export function LenderLoansSection({ lender }: LenderLoansSectionProps) {
             {lender.loans.length > 0 && <span className="ml-1.5 text-xs">({lender.loans.length})</span>}
           </h3>
         </div>
-        {lender.loans.map((loan) => (
-          <LoanAccordionCard key={loan.id} loan={loan} defaultOpen={autoExpand} />
-        ))}
-
         <Button
           variant="outline"
           className="w-full border-dashed py-6"
@@ -40,6 +36,10 @@ export function LenderLoansSection({ lender }: LenderLoansSectionProps) {
           <Plus className="h-5 w-5 mr-2" />
           {commonT('terms.loan')}
         </Button>
+
+        {lender.loans.map((loan) => (
+          <LoanAccordionCard key={loan.id} loan={loan} defaultOpen={autoExpand} />
+        ))}
       </div>
     </div>
   );

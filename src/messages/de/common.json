@@ -76,6 +76,10 @@
       "loading": "Wird geladen...",
       "noResults": "Keine Ergebnisse gefunden"
     },
+    "boolean": {
+      "yes": "Ja",
+      "no": "Nein"
+    },
     "form": {
       "required": "Erforderlich",
       "optional": "Optional",
@@ -92,6 +96,17 @@
       "noResults": "Keine Ergebnisse gefunden",
       "globalFilter": "Alle Spalten durchsuchen...",
       "all": "Alle"
+    },
+    "calendar": {
+      "today": "Heute",
+      "monthStart": "Monats-Anfang",
+      "monthEnd": "Monats-Ende",
+      "nextMonth": "Nächster Monat",
+      "yearStart": "Jahres-Anfang",
+      "yearEnd": "Jahres-Ende",
+      "nextYearStart": "Nächstes Jahr",
+      "moreOptions": "Weitere Datumsoptionen",
+      "dateInputPlaceholder": "TT.MM.JJJJ"
     },
     "additionalFields": {
       "addField": "Feld hinzufügen",
@@ -175,7 +190,7 @@
       "terminationModalities": {
         "ENDDATE": "Laufzeit bis {date}",
         "TERMINATION": "Kündigungsfrist {duration}",
-        "DURATION": "Laufzeit {duration} (bis {date})"
+        "DURATION": "Laufzeit {duration}"
       },
       "durationUnit": {
         "MONTHS": "Monate",

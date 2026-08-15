@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 type SelectOption =
   | {
@@ -35,6 +36,7 @@ interface FormSelectProps {
   align?: 'start' | 'center' | 'end';
   customContent?: () => ReactNode;
   clearable?: boolean;
+  className?: string;
 }
 
 export function FormSelect({
@@ -49,6 +51,7 @@ export function FormSelect({
   align = 'start',
   customContent,
   clearable = false,
+  className,
 }: FormSelectProps) {
   const t = useTranslations('common');
   const form = useFormContext();
@@ -63,7 +66,7 @@ export function FormSelect({
             <div className="relative">
               <Select disabled={disabled} onValueChange={field.onChange} value={field.value || undefined}>
                 <FormControl>
-                  <SelectTrigger className={field.value ? '' : 'text-muted-foreground/60'}>
+                  <SelectTrigger className={cn(!field.value && 'text-muted-foreground/60', className)}>
                     <SelectValue placeholder={placeholder} />
                   </SelectTrigger>
                 </FormControl>
