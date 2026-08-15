@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import { Wallet } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -13,10 +12,11 @@ import { FormCheckbox } from '@/components/form/form-checkbox';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
-import { getTransactionDialogLoanContext } from '@/lib/loans/transaction-dialog-loan-context';
 import { transactionFormSchema } from '@/lib/schemas/transaction';
+import { formatCurrency, formatDateShort, formatPercentage } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 
+import { LoanStatusBadge } from './loan-status-badge';
 import { TransactionFormFields } from './transaction-form-fields';
 
 interface TransactionDialogProps {
@@ -66,28 +66,26 @@ export function TransactionDialog({ loanId, loan, open, onOpenChange }: Transact
     queryClient.invalidateQueries({ queryKey: ['loans'] });
   });
 
-  const { loanLabel, generalInfo, detailInfo } = getTransactionDialogLoanContext(
-    loan,
-    (key, values) => t(`transactions.${key}`, values),
-    locale,
-  );
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader className="space-y-3">
           <DialogTitle>{t('transactions.createTitle')}</DialogTitle>
           <DialogDescription asChild className="text-foreground">
-            <div className="flex gap-3 rounded-md border border-border bg-white p-3 text-left text-sm text-foreground">
-              <Wallet className="mt-0.5 h-4 w-4 shrink-0 text-foreground" aria-hidden />
-              <div className="min-w-0 space-y-1 text-foreground">
-                <p>
-                  <span>{loanLabel}</span>
-                  {generalInfo ? ` ${generalInfo}` : null}
-                  {!generalInfo ? ` ${detailInfo}` : null}
-                </p>
-                {generalInfo ? <p>{detailInfo}</p> : null}
+            <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-white p-3 text-left">
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <span className="font-semibold text-foreground">
+                  {t('table.loanNumberShort')} #{loan.loanNumber}
+                </span>
+                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                  <span>{formatCurrency(loan.amount)}</span>
+                  <span>·</span>
+                  <span>{formatPercentage(loan.interestRate)}</span>
+                  <span>·</span>
+                  <span>{formatDateShort(loan.signDate, locale)}</span>
+                </div>
               </div>
+              <LoanStatusBadge status={loan.status} />
             </div>
           </DialogDescription>
         </DialogHeader>

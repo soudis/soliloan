@@ -48,8 +48,8 @@ export function InfoItem({
     <div className={cn('flex flex-col gap-1', className)}>
       <div className="text-xs text-muted-foreground">{label}</div>
       {value ? (
-        <div className="flex items-center justify-between items-start">
-          <div className="text-lg font-medium">{value}</div>
+        <div className="flex items-start justify-between">
+          <div className="min-w-0 flex-1 text-lg font-medium">{value}</div>
           <div className="flex items-center space-x-2">
             {showCopyButton && (typeof value === 'string' || copyValue) && (
               <button

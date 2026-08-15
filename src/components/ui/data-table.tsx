@@ -4,6 +4,7 @@ import type { View, ViewType } from '@prisma/client';
 import {
   type ColumnDef,
   type FilterFn,
+  type SortingState,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -128,6 +129,7 @@ interface DataTableProps<TData, TValue> {
   showFilter?: boolean;
   columnFilters?: DataTableColumnFilters;
   defaultColumnVisibility?: VisibilityState;
+  defaultSorting?: SortingState;
   viewType?: ViewType;
   isLoading?: boolean;
   /** Render `DropdownMenuItem` (and optional `DropdownMenuSeparator`) children; shown inside the row … menu. */
@@ -166,6 +168,7 @@ export function DataTable<TData, TValue>({
   showFilter = true,
   columnFilters = {},
   defaultColumnVisibility,
+  defaultSorting,
   viewType,
   views,
   allowSidebarViews = false,
@@ -489,7 +492,8 @@ export function DataTable<TData, TValue>({
               showFilter={showFilter}
               columnFilters={columnFilters}
               defaultColumnVisibility={defaultColumnVisibility ?? EMPTY_COLUMN_VISIBILITY}
-              views={views || []}
+              defaultSorting={defaultSorting}
+            views={views || []}
               viewType={viewType}
               tableState={tableState}
               setTableState={setTableState}

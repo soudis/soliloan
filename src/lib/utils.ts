@@ -132,13 +132,24 @@ export function formatDateInput(date: Date | string | null | undefined): string 
   return format(d, DATE_INPUT_FORMAT);
 }
 
-/** Parse keyboard input; returns null unless the full dd.MM.yyyy string is valid. */
+const DATE_INPUT_PARSE_PATTERN = /^(\d{1,2})\.(\d{1,2})\.(\d{2}|\d{4})$/;
+
+/** Parse keyboard input; accepts D.M.YYYY / D.M.YY with optional leading zeros. */
 export function parseDateInput(value: string): Date | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
-  const parsed = parse(trimmed, DATE_INPUT_FORMAT, new Date());
+
+  const match = DATE_INPUT_PARSE_PATTERN.exec(trimmed);
+  if (!match) return null;
+
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const yearToken = match[3];
+  const dateFormat = yearToken.length === 2 ? 'd.M.yy' : 'd.M.yyyy';
+  const parsed = parse(trimmed, dateFormat, new Date());
   if (!isValid(parsed)) return null;
-  if (format(parsed, DATE_INPUT_FORMAT) !== trimmed) return null;
+  if (parsed.getDate() !== day || parsed.getMonth() + 1 !== month) return null;
+  if (yearToken.length === 4 && parsed.getFullYear() !== Number(yearToken)) return null;
   return parsed;
 }
 
