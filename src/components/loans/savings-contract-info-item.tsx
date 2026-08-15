@@ -68,7 +68,7 @@ export function SavingsContractInfoItem({ loan, className }: SavingsContractInfo
             </Badge>
           </div>
           {requiredDeposits > 0 && (
-            <div className="space-y-1 text-xs font-normal text-muted-foreground">
+            <div className="space-y-1 text-sm font-normal">
               <div>{installments}</div>
               <div
                 role="progressbar"

@@ -18,6 +18,7 @@ import type { ProjectWithConfiguration } from '@/types/projects';
 import { LoanBalanceSummary } from '../loans/loan-balance-summary';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 import { LoanTransactions } from '../loans/loan-transactions';
+import { SavingsContractInfoItem } from '../loans/savings-contract-info-item';
 
 interface LenderLoanAccordionCardProps {
   loan: LoanDetailsWithCalculations;
@@ -147,30 +148,7 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
                     </span>
                   }
                 />
-                {loan.isSavingsContract && loan.savingsDepositCount != null && (
-                  <>
-                    <InfoItem
-                      label={t('table.savingsContractSummaryLabel')}
-                      value={
-                        loan.savingsRateType === 'FIXED' && loan.savingsMonthlyAmount != null
-                          ? t('table.savingsContractFixedSummary', {
-                              months: loan.savingsDepositCount,
-                              amount: formatCurrency(loan.savingsMonthlyAmount, locale),
-                            })
-                          : t('table.savingsContractSummary', { months: loan.savingsDepositCount })
-                      }
-                    />
-                    {loan.requiredDepositsCount > 0 && (
-                      <InfoItem
-                        label={t('table.savingsDepositReceipts')}
-                        value={t('table.savingsInstallmentsPaid', {
-                          paid: loan.depositsCount,
-                          required: loan.requiredDepositsCount,
-                        })}
-                      />
-                    )}
-                  </>
-                )}
+                {loan.isSavingsContract && <SavingsContractInfoItem loan={loan} />}
                 <InfoItem label={t('table.terminationModalities')} value={getTerminationModalities()} />
                 {loan.terminationDate && loan.terminationType === 'TERMINATION' && (
                   <InfoItem
