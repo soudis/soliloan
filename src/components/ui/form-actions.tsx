@@ -3,6 +3,7 @@
 import { AlertTriangle } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { FormWarningMessage } from '@/components/form/form-warning-message';
 import { useFormSanityChecksOptional } from '@/components/form/form-sanity-checks-provider';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -36,11 +37,13 @@ export function FormActions({
           {warnings.map((warning) => (
             <Alert
               key={warning.id}
-              className="!ml-auto !inline-grid !w-auto max-w-lg border-amber-500/50 text-amber-950 dark:text-amber-50"
+              className="ml-auto w-fit max-w-3xl border-amber-500/50 text-amber-950 dark:text-amber-50"
             >
               <AlertTriangle className="shrink-0 text-amber-600 dark:text-amber-400" />
-              <AlertDescription className="min-w-0 text-amber-950 dark:text-amber-50">
-                {warning.message}
+              <AlertDescription className="text-amber-950 dark:text-amber-50">
+                <span>
+                  <FormWarningMessage warning={warning} />
+                </span>
               </AlertDescription>
             </Alert>
           ))}

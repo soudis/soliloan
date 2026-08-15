@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import type { FormWarning } from '@/types/form-warnings';
+import { areFormWarningsEqual, type FormWarning } from '@/types/form-warnings';
 
 type FormSanityChecksContextValue = {
   warnings: FormWarning[];
@@ -23,7 +23,7 @@ export function FormSanityChecksProvider({ children }: { children: ReactNode }) 
         return next;
       }
       const existing = prev[id];
-      if (existing?.id === warning.id && existing.message === warning.message) {
+      if (existing && areFormWarningsEqual(existing, warning)) {
         return prev;
       }
       return { ...prev, [id]: warning };

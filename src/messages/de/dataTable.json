@@ -21,9 +21,54 @@
   "rowsPerPage": "Zeilen pro Seite",
   "noResults": "Keine Ergebnisse.",
   "to": "bis",
+  "dateFilterOperator": "Zeitraum",
+  "dateFilterOperators": {
+    "between": "Von Bis",
+    "olderThan": "Älter als",
+    "newerThan": "Neuer als",
+    "thisMonth": "Diesen Monat",
+    "lastMonth": "Letzten Monat",
+    "thisYear": "Dieses Jahr",
+    "lastYear": "Letztes Jahr",
+    "last": "Letzte…",
+    "next": "Nächste…",
+    "year": "Jahr",
+    "empty": "Ist leer",
+    "notEmpty": "Ist nicht leer"
+  },
+  "numberFilterOperators": {
+    "between": "Von Bis",
+    "eq": "=",
+    "gt": ">",
+    "lt": "<",
+    "gte": "≥",
+    "lte": "≤",
+    "empty": "Ist leer",
+    "notEmpty": "Ist nicht leer"
+  },
+  "numberFilterMin": "Min",
+  "numberFilterMax": "Max",
+  "numberFilterValue": "Wert",
+  "textFilterOperators": {
+    "contains": "Enthält",
+    "startsWith": "Beginnt mit",
+    "endsWith": "Endet mit",
+    "eq": "=",
+    "empty": "Ist leer",
+    "notEmpty": "Ist nicht leer"
+  },
+  "textFilterValue": "Text",
+  "enumFilterOperators": {
+    "eq": "Auswahl",
+    "in": "Mehrfachauswahl",
+    "empty": "Ist leer",
+    "notEmpty": "Ist nicht leer"
+  },
+  "enumFilterSelectedCount": "{count} ausgewählt",
+  "dateFilterRelative": "Letzte",
+  "dateFilterStart": "Startdatum",
+  "dateFilterEnd": "Enddatum",
   "globalFilter": "In allen Spalten suchen...",
-  "startDate": "Startdatum",
-  "endDate": "Enddatum",
   "bulkBar": {
     "selected": "{count} ausgewählt",
     "deselect": "Auswahl aufheben"

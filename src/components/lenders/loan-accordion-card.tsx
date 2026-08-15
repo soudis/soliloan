@@ -20,6 +20,7 @@ import { LoanAddTransactionControl } from '../loans/loan-add-transaction-control
 import { LoanBalanceSummary } from '../loans/loan-balance-summary';
 import { LoanStatusBadge } from '../loans/loan-status-badge';
 import { LoanTransactions } from '../loans/loan-transactions';
+import { SavingsContractInfoItem } from '../loans/savings-contract-info-item';
 import { TerminationDialog } from '../loans/termination-dialog';
 import { useProject } from '../providers/project-provider';
 import { Button } from '../ui/button';
@@ -57,7 +58,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
   const canTerminateLoan =
     loan.terminationType === 'TERMINATION' && loan.status === LoanStatus.ACTIVE && !loan.isTerminated;
 
-  const getTerminationModalities = () => formatTerminationModalities(loan, commonT, (d) => formatDateLong(d, locale));
+  const getTerminationModalities = () => formatTerminationModalities(loan, commonT, (d) => formatDateShort(d, locale));
 
   const handleDeleteLoan = async () => {
     const toastId = toast.loading(t('delete.loading'));
@@ -181,6 +182,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                     </span>
                   }
                 />
+                {loan.isSavingsContract && <SavingsContractInfoItem loan={loan} />}
               </div>
               <div className="space-y-3">
                 <InfoItem label={t('table.terminationModalities')} value={getTerminationModalities()} />

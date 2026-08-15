@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useRouter } from '@/i18n/navigation';
+import { matchesTextFilter } from '@/lib/entity-filters/filter-matchers';
 import { createColumn, createEnumBadgeColumn } from '@/lib/table-column-utils';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
@@ -78,10 +79,11 @@ export function ProjectsPageContent({ views, projects }: ProjectsPageContentProp
         },
         filterFn: (row, _, filterValue) => {
           const managers = row.original.managers;
-          if (!managers || managers.length === 0) return false;
-          const managerNames = managers.map((m) => m.name.toLowerCase()).join(' ');
-          const searchValue = String(filterValue).toLowerCase();
-          return managerNames.includes(searchValue);
+          if (!managers || managers.length === 0) {
+            return matchesTextFilter(null, filterValue);
+          }
+          const managerNames = managers.map((m) => m.name).join(' ');
+          return matchesTextFilter(managerNames, filterValue);
         },
         sortingFn: (rowA, rowB) => {
           const managersA = rowA.original.managers.map((m) => m.name).join(', ');

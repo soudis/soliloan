@@ -153,6 +153,8 @@ export function getLoanFilterValue(
       return loan.altInterestMethod;
     case 'contractStatus':
       return loan.contractStatus;
+    case 'isSavingsContract':
+      return loan.isSavingsContract ? 'true' : 'false';
     case 'balance':
     case 'deposits':
     case 'withdrawals':

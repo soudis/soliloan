@@ -2,7 +2,21 @@ import 'dotenv/config';
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { DashboardLayoutScope, InterestMethod, Language, Prisma, PrismaClient, TemplateDataset } from '@prisma/client';
+import {
+  ContractStatus,
+  Country,
+  DashboardLayoutScope,
+  DurationType,
+  InterestMethod,
+  Language,
+  LenderType,
+  Prisma,
+  PrismaClient,
+  Salutation,
+  SavingsRateType,
+  TemplateDataset,
+  TerminationType,
+} from '@prisma/client';
 
 import { hashPassword } from '@/lib/utils/password';
 
@@ -217,6 +231,180 @@ async function seedGlobalDashboardLayout() {
   );
 }
 
+const DEV_LENDER_AT_EMAIL = 'lender-at@dev.local';
+const DEV_LENDER_DE_EMAIL = 'lender-de@dev.local';
+
+async function getNextLenderNumber(projectId: string) {
+  const result = await prisma.lender.aggregate({
+    where: { projectId },
+    _max: { lenderNumber: true },
+  });
+  return (result._max.lenderNumber ?? 0) + 1;
+}
+
+async function getNextLoanNumber(projectId: string) {
+  const result = await prisma.loan.aggregate({
+    where: { lender: { projectId } },
+    _max: { loanNumber: true },
+  });
+  return (result._max.loanNumber ?? 0) + 1;
+}
+
+type DevLenderSeedData = {
+  email: string;
+  name: string;
+  type: LenderType;
+  salutation: Salutation;
+  firstName: string;
+  lastName: string;
+  street: string;
+  zip: string;
+  place: string;
+  country: Country;
+  iban: string;
+  bic: string;
+};
+
+async function createDevLender(projectId: string, data: DevLenderSeedData) {
+  await prisma.user.upsert({
+    where: { email: data.email },
+    update: {},
+    create: {
+      email: data.email,
+      name: data.name,
+      language: Language.de,
+    },
+  });
+
+  return prisma.lender.create({
+    data: {
+      lenderNumber: await getNextLenderNumber(projectId),
+      projectId,
+      type: data.type,
+      salutation: data.salutation,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      street: data.street,
+      zip: data.zip,
+      place: data.place,
+      country: data.country,
+      email: data.email,
+      iban: data.iban,
+      bic: data.bic,
+    },
+  });
+}
+
+async function seedDevProjectData(adminUserId: string) {
+  let project = await prisma.project.findFirst({
+    where: { slug: 'dev-gmbh' },
+  });
+
+  if (!project) {
+    project = await prisma.project.create({
+      data: {
+        slug: 'dev-gmbh',
+        configuration: {
+          create: {
+            name: 'Development GmbH',
+            interestMethod: InterestMethod.ACT_360_COMPOUND,
+          },
+        },
+        managers: { connect: { id: adminUserId } },
+      },
+    });
+    console.info('Dev project created');
+  }
+
+  const lenderAt =
+    (await prisma.lender.findFirst({
+      where: { projectId: project.id, email: DEV_LENDER_AT_EMAIL },
+    })) ??
+    (await createDevLender(project.id, {
+      email: DEV_LENDER_AT_EMAIL,
+      name: 'Anna Huber',
+      type: LenderType.PERSON,
+      salutation: Salutation.PERSONAL,
+      firstName: 'Anna',
+      lastName: 'Huber',
+      street: 'Mariahilfer Straße 12',
+      zip: '1060',
+      place: 'Wien',
+      country: Country.AT,
+      iban: 'AT611904300234573201',
+      bic: 'BKAUATWW',
+    }));
+
+  const lenderDe =
+    (await prisma.lender.findFirst({
+      where: { projectId: project.id, email: DEV_LENDER_DE_EMAIL },
+    })) ??
+    (await createDevLender(project.id, {
+      email: DEV_LENDER_DE_EMAIL,
+      name: 'Thomas Müller',
+      type: LenderType.PERSON,
+      salutation: Salutation.FORMAL,
+      firstName: 'Thomas',
+      lastName: 'Müller',
+      street: 'Hauptstraße 5',
+      zip: '80331',
+      place: 'München',
+      country: Country.DE,
+      iban: 'DE89370400440532013000',
+      bic: 'COBADEFFXXX',
+    }));
+
+  const existingNormalLoan = await prisma.loan.findFirst({
+    where: { lenderId: lenderDe.id, isSavingsContract: false },
+  });
+
+  if (!existingNormalLoan) {
+    await prisma.loan.create({
+      data: {
+        loanNumber: await getNextLoanNumber(project.id),
+        lenderId: lenderDe.id,
+        signDate: new Date('2024-01-15'),
+        terminationType: TerminationType.DURATION,
+        duration: 5,
+        durationType: DurationType.YEARS,
+        amount: 50_000,
+        interestRate: 3.5,
+        contractStatus: ContractStatus.COMPLETED,
+        isSavingsContract: false,
+      },
+    });
+    console.info('Dev normal contract created');
+  }
+
+  const existingSavingsLoan = await prisma.loan.findFirst({
+    where: { lenderId: lenderAt.id, isSavingsContract: true },
+  });
+
+  if (!existingSavingsLoan) {
+    await prisma.loan.create({
+      data: {
+        loanNumber: await getNextLoanNumber(project.id),
+        lenderId: lenderAt.id,
+        signDate: new Date('2024-03-01'),
+        terminationType: TerminationType.DURATION,
+        duration: 10,
+        durationType: DurationType.YEARS,
+        amount: 60_000,
+        interestRate: 2.0,
+        contractStatus: ContractStatus.PENDING,
+        isSavingsContract: true,
+        savingsRateType: SavingsRateType.FIXED,
+        savingsMonthlyAmount: 500,
+        savingsDepositCount: 120,
+        savingsFirstDepositDate: new Date('2024-04-01'),
+      },
+    });
+    console.info('Dev savings contract created');
+  }
+
+  console.info('Dev lenders and contracts seeded');
+}
+
 async function main() {
   await seedGlobalDashboardLayout();
 
@@ -241,24 +429,7 @@ async function main() {
     await seedSystemTemplates(user.id);
 
     if (process.env.ENVIRONMENT === 'dev') {
-      const project = await prisma.project.findFirst({
-        where: { slug: 'dev-gmbh' },
-      });
-      if (!project) {
-        await prisma.project.create({
-          data: {
-            slug: 'dev-gmbh',
-            configuration: {
-              create: {
-                name: 'Development GmbH',
-                interestMethod: InterestMethod.ACT_360_COMPOUND,
-              },
-            },
-            managers: { connect: { id: user.id } },
-          },
-        });
-        console.info('Dev instance and project created');
-      }
+      await seedDevProjectData(user.id);
     }
   }
 }

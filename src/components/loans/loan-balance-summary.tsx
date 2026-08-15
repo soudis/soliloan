@@ -20,6 +20,8 @@ export function transactionIcon(type: Transaction['type']) {
     case 'WITHDRAWAL':
     case 'INTERESTPAYMENT':
     case 'TERMINATION':
+    case 'NOTRECLAIMED':
+    case 'NOTRECLAIMEDPARTIAL':
       return <ArrowUpIcon className="h-4 w-4 text-info-foreground" />;
     default:
       return <Receipt className="h-4 w-4 text-muted-foreground" />;
@@ -34,10 +36,38 @@ export function transactionIconBackground(type: Transaction['type']) {
     case 'WITHDRAWAL':
     case 'INTERESTPAYMENT':
     case 'TERMINATION':
+    case 'NOTRECLAIMED':
+    case 'NOTRECLAIMEDPARTIAL':
       return 'bg-info/20';
     default:
       return 'bg-muted';
   }
+}
+
+export function isIncomingTransaction(type: Transaction['type']) {
+  return type === 'DEPOSIT' || type === 'INTEREST';
+}
+
+export function isOutgoingTransaction(type: Transaction['type']) {
+  return (
+    type === 'WITHDRAWAL' ||
+    type === 'INTERESTPAYMENT' ||
+    type === 'TERMINATION' ||
+    type === 'NOTRECLAIMED' ||
+    type === 'NOTRECLAIMEDPARTIAL'
+  );
+}
+
+export function transactionAmountClassName(type: Transaction['type']) {
+  if (isIncomingTransaction(type)) return 'text-success-foreground';
+  if (isOutgoingTransaction(type)) return 'text-info-foreground';
+  return undefined;
+}
+
+export function transactionTypeBadgeClassName(type: Transaction['type']) {
+  if (isIncomingTransaction(type)) return 'border-success/30 bg-success/20 text-success-foreground';
+  if (isOutgoingTransaction(type)) return 'border-info/30 bg-info/20 text-info-foreground';
+  return undefined;
 }
 
 export type LoanBalanceSummaryProps = {

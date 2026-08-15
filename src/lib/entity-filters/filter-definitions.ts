@@ -11,15 +11,16 @@ import {
 
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { createAdditionalFieldFilters } from '@/lib/table-column-utils';
-import type { EntityFilterFieldOption, EntityFilterEntity } from '@/types/entity-filters';
+import type { EntityFilterEntity, EntityFilterFieldOption } from '@/types/entity-filters';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
-export type DataTableColumnFilterType = 'text' | 'select' | 'multi-select' | 'number' | 'date';
+export type DataTableColumnFilterType = 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
 
 export type DataTableColumnFilterDefinition = {
   type: DataTableColumnFilterType;
   label: string;
   options?: { label: string; value: string }[];
+  allowEmpty?: boolean;
 };
 
 const LOAN_STATUS_OPTIONS = [
@@ -53,10 +54,20 @@ export function buildLoanColumnFiltersMap(
 ): Record<string, DataTableColumnFilterDefinition> {
   return {
     loanNumber: { type: 'number', label: t('table.loanNumber') },
-    signDate: { type: 'date', label: t('table.signDate') },
+    signDate: { type: 'date', label: t('table.signDate'), allowEmpty: false },
     amount: { type: 'number', label: t('table.amount') },
     balance: { type: 'number', label: t('table.balance') },
     deposits: { type: 'number', label: t('table.deposits') },
+    outstandingDepositSum: { type: 'number', label: t('table.outstandingDepositSum') },
+    outstandingDepositSinceDate: {
+      type: 'date',
+      label: t('table.outstandingDepositSinceDate'),
+      allowEmpty: true,
+    },
+    outstandingDepositSinceDays: { type: 'number', label: t('table.outstandingDepositSinceDays') },
+    depositsCount: { type: 'number', label: t('table.depositsCount') },
+    requiredDepositsCount: { type: 'number', label: t('table.requiredDepositsCount') },
+    outstandingDepositsCount: { type: 'number', label: t('table.outstandingDepositsCount') },
     withdrawals: { type: 'number', label: t('table.withdrawals') },
     notReclaimed: { type: 'number', label: t('table.notReclaimed') },
     interestRate: { type: 'number', label: t('table.interestRate') },
@@ -73,10 +84,11 @@ export function buildLoanColumnFiltersMap(
     terminationModalities: {
       type: 'text',
       label: t('table.terminationModalities'),
+      allowEmpty: true,
     },
-    repayDate: { type: 'date', label: t('table.repayDate') },
-    loanTermDays: { type: 'number', label: t('table.loanTerm') },
-    repaymentPeriodDays: { type: 'number', label: t('table.repaymentPeriod') },
+    repayDate: { type: 'date', label: t('table.repayDate'), allowEmpty: true },
+    loanTermDays: { type: 'number', label: t('table.loanTerm'), allowEmpty: true },
+    repaymentPeriodDays: { type: 'number', label: t('table.repaymentPeriod'), allowEmpty: true },
     status: {
       type: 'select',
       label: t('table.status'),
@@ -88,6 +100,7 @@ export function buildLoanColumnFiltersMap(
     altInterestMethod: {
       type: 'select',
       label: t('table.altInterestMethod'),
+      allowEmpty: true,
       options: Object.entries(InterestMethod).map(([key, value]) => ({
         label: commonT(`enums.interestMethod.${key}`),
         value,
@@ -100,6 +113,10 @@ export function buildLoanColumnFiltersMap(
         label: commonT(`enums.loan.contractStatus.${key}`),
         value,
       })),
+    },
+    isSavingsContract: {
+      type: 'boolean',
+      label: t('table.isSavingsContract'),
     },
     ...createAdditionalFieldFilters('additionalFields', project.configuration.loanAdditionalFields),
   };
@@ -128,27 +145,27 @@ export function buildLenderProfileColumnFiltersMap(
         { label: commonT('enums.lender.type.ORGANISATION'), value: 'ORGANISATION' },
       ],
     },
-    name: { type: 'text', label: t('table.name') },
-    firstName: { type: 'text', label: t('table.firstName') },
-    lastName: { type: 'text', label: t('table.lastName') },
-    organisationName: { type: 'text', label: t('table.organisationName') },
-    titlePrefix: { type: 'text', label: t('table.titlePrefix') },
-    titleSuffix: { type: 'text', label: t('table.titleSuffix') },
-    email: { type: 'text', label: t('table.email') },
-    telNo: { type: 'text', label: t('table.telNo') },
-    address: { type: 'text', label: t('table.address') },
-    street: { type: 'text', label: t('table.street') },
-    addon: { type: 'text', label: t('table.addon') },
-    zip: { type: 'text', label: t('table.zip') },
-    place: { type: 'text', label: t('table.place') },
+    name: { type: 'text', label: t('table.name'), allowEmpty: true },
+    firstName: { type: 'text', label: t('table.firstName'), allowEmpty: true },
+    lastName: { type: 'text', label: t('table.lastName'), allowEmpty: true },
+    organisationName: { type: 'text', label: t('table.organisationName'), allowEmpty: true },
+    titlePrefix: { type: 'text', label: t('table.titlePrefix'), allowEmpty: true },
+    titleSuffix: { type: 'text', label: t('table.titleSuffix'), allowEmpty: true },
+    email: { type: 'text', label: t('table.email'), allowEmpty: true },
+    telNo: { type: 'text', label: t('table.telNo'), allowEmpty: true },
+    address: { type: 'text', label: t('table.address'), allowEmpty: true },
+    street: { type: 'text', label: t('table.street'), allowEmpty: true },
+    addon: { type: 'text', label: t('table.addon'), allowEmpty: true },
+    zip: { type: 'text', label: t('table.zip'), allowEmpty: true },
+    place: { type: 'text', label: t('table.place'), allowEmpty: true },
     country: {
       type: 'select',
       label: t('table.country'),
       options: buildCountryFilterOptions(commonT),
     },
-    banking: { type: 'text', label: t('table.banking') },
-    iban: { type: 'text', label: t('table.iban') },
-    bic: { type: 'text', label: t('table.bic') },
+    banking: { type: 'text', label: t('table.banking'), allowEmpty: true },
+    iban: { type: 'text', label: t('table.iban'), allowEmpty: true },
+    bic: { type: 'text', label: t('table.bic'), allowEmpty: true },
     salutation: {
       type: 'select',
       label: t('table.salutation'),
@@ -224,7 +241,7 @@ export function buildTransactionColumnFiltersMap(
         value,
       })),
     },
-    'transaction.date': { type: 'date', label: t('table.date') },
+    'transaction.date': { type: 'date', label: t('table.date'), allowEmpty: true },
     'transaction.amount': { type: 'number', label: t('table.amount') },
     'transaction.paymentType': {
       type: 'select',

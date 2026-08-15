@@ -76,6 +76,10 @@
       "loading": "Wird geladen...",
       "noResults": "Keine Ergebnisse gefunden"
     },
+    "boolean": {
+      "yes": "Ja",
+      "no": "Nein"
+    },
     "form": {
       "required": "Erforderlich",
       "optional": "Optional",
@@ -175,7 +179,7 @@
       "terminationModalities": {
         "ENDDATE": "Laufzeit bis {date}",
         "TERMINATION": "Kündigungsfrist {duration}",
-        "DURATION": "Laufzeit {duration} (bis {date})"
+        "DURATION": "Laufzeit {duration}"
       },
       "durationUnit": {
         "MONTHS": "Monate",

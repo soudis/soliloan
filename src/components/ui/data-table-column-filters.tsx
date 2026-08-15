@@ -1,8 +1,14 @@
 import type { ColumnFiltersState } from '@tanstack/react-table';
 
+import { isInactiveDateFilterValue } from '@/types/date-filter-value';
+import { isInactiveEnumFilterValue } from '@/types/enum-filter-value';
+import { isInactiveNumberFilterValue } from '@/types/number-filter-value';
+import { isInactiveTextFilterValue } from '@/types/text-filter-value';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
+import { isInactiveBooleanFilterValue } from '@/types/boolean-filter-value';
 
 import {
+  BooleanFilter,
   DateFilter,
   MultiSelectFilter,
   NumberFilter,
@@ -11,9 +17,10 @@ import {
 } from './data-table-column-filters/index';
 
 type ColumnFilterConfig = {
-  type: 'text' | 'select' | 'multi-select' | 'number' | 'date';
+  type: 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
   options?: { label: string; value: string }[];
   label?: string;
+  allowEmpty?: boolean;
 };
 
 interface DataTableColumnFiltersProps {
@@ -28,8 +35,43 @@ interface DataTableColumnFiltersProps {
   };
 }
 
-function isEmptyFilterValue(value: unknown): boolean {
-  return value === '' || value == null || (Array.isArray(value) && value.every((v) => v === '' || v == null));
+function isEmptyFilterValue(value: unknown, type: ColumnFilterConfig['type']): boolean {
+  if (type === 'boolean') {
+    return isInactiveBooleanFilterValue(value);
+  }
+
+  if (value && typeof value === 'object' && !Array.isArray(value) && 'operator' in value) {
+    const operator = (value as { operator: string }).operator;
+    if (operator === 'empty' || operator === 'notEmpty') {
+      return false;
+    }
+    switch (type) {
+      case 'date':
+        return isInactiveDateFilterValue(value);
+      case 'number':
+        return isInactiveNumberFilterValue(value);
+      case 'select':
+        return isInactiveEnumFilterValue(value, 'eq');
+      case 'multi-select':
+        return isInactiveEnumFilterValue(value, 'in');
+      default:
+        return isInactiveTextFilterValue(value);
+    }
+  }
+
+  // Legacy shapes before operator migration
+  switch (type) {
+    case 'number':
+      return isInactiveNumberFilterValue(value);
+    case 'select':
+      return isInactiveEnumFilterValue(value, 'eq');
+    case 'multi-select':
+      return isInactiveEnumFilterValue(value, 'in');
+    case 'date':
+      return isInactiveDateFilterValue(value);
+    default:
+      return isInactiveTextFilterValue(value);
+  }
 }
 
 export function DataTableColumnFilters({
@@ -40,10 +82,10 @@ export function DataTableColumnFilters({
 }: DataTableColumnFiltersProps) {
   const activeFilters = controlled?.columnFilters ?? tableState?.columnFilters ?? [];
 
-  const handleFilterChange = (columnId: string, value: unknown) => {
+  const handleFilterChange = (columnId: string, value: unknown, type: ColumnFilterConfig['type']) => {
     const filters = activeFilters.filter((filter) => filter.id !== columnId);
 
-    if (!isEmptyFilterValue(value)) {
+    if (!isEmptyFilterValue(value, type)) {
       filters.push({ id: columnId, value });
     }
 
@@ -65,16 +107,26 @@ export function DataTableColumnFilters({
         return (
           <div key={columnId} className="flex flex-col space-y-2">
             <span className="text-sm font-medium">{filterConfig.label || columnId}:</span>
-            <div className="flex items-center space-x-2">
+            <div className="flex min-w-0 items-center">
               {(() => {
                 switch (filterConfig.type) {
+                  case 'boolean':
+                    return (
+                      <BooleanFilter
+                        filterState={filterState}
+                        onFilterChange={(value) => {
+                          handleFilterChange(columnId, value, 'boolean');
+                        }}
+                      />
+                    );
                   case 'select':
                     return (
                       <SelectFilter
                         filterState={filterState}
                         options={filterConfig.options || []}
+                        allowEmpty={filterConfig.allowEmpty}
                         onFilterChange={(value) => {
-                          handleFilterChange(columnId, value);
+                          handleFilterChange(columnId, value, 'select');
                         }}
                       />
                     );
@@ -83,8 +135,9 @@ export function DataTableColumnFilters({
                       <MultiSelectFilter
                         filterState={filterState}
                         options={filterConfig.options || []}
+                        allowEmpty={filterConfig.allowEmpty}
                         onFilterChange={(value) => {
-                          handleFilterChange(columnId, value);
+                          handleFilterChange(columnId, value, 'multi-select');
                         }}
                       />
                     );
@@ -92,8 +145,9 @@ export function DataTableColumnFilters({
                     return (
                       <NumberFilter
                         filterState={filterState}
+                        allowEmpty={filterConfig.allowEmpty}
                         onFilterChange={(value) => {
-                          handleFilterChange(columnId, value);
+                          handleFilterChange(columnId, value, 'number');
                         }}
                       />
                     );
@@ -101,8 +155,9 @@ export function DataTableColumnFilters({
                     return (
                       <DateFilter
                         filterState={filterState}
+                        allowEmpty={filterConfig.allowEmpty}
                         onFilterChange={(value) => {
-                          handleFilterChange(columnId, value);
+                          handleFilterChange(columnId, value, 'date');
                         }}
                       />
                     );
@@ -112,8 +167,9 @@ export function DataTableColumnFilters({
                         filterState={filterState}
                         label={filterConfig.label}
                         columnId={columnId}
+                        allowEmpty={filterConfig.allowEmpty}
                         onFilterChange={(value) => {
-                          handleFilterChange(columnId, value);
+                          handleFilterChange(columnId, value, 'text');
                         }}
                       />
                     );

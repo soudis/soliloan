@@ -1,38 +1,33 @@
 import type { Lender, Loan } from '@prisma/client';
 import type { CellContext, ColumnDef, Row, VisibilityState } from '@tanstack/react-table';
-import moment from 'moment';
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import type { ColumnGroupMeta, DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+import {
+  matchesBooleanFilter,
+  matchesEnumFilter,
+  matchesTextFilter,
+} from '@/lib/entity-filters/filter-matchers';
 import { formatDurationDays } from '@/lib/format-duration';
+
 import { formatCurrency, formatPercentage, getLenderName, NumberParser, resolveIntlLocaleForDates } from '@/lib/utils';
 import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat } from './schemas/common';
 
 // Define the custom filter function for compound text fields
 export function compoundTextFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
-  const value = row.getValue(columnId);
-  if (!value) return false;
+  return matchesTextFilter(row.getValue(columnId), filterValue);
+}
 
-  // Convert both the value and filter to lowercase for case-insensitive search
-  const searchValue = String(value).toLowerCase();
-  const searchFilter = String(filterValue).toLowerCase();
-
-  return searchValue.includes(searchFilter);
+// Define the custom filter function for boolean fields
+export function booleanFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
+  const raw = row.getValue(columnId) === true ? 'true' : 'false';
+  return matchesBooleanFilter(raw, filterValue);
 }
 
 // Define the custom filter function for enum fields
 export function enumFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
-  const value = row.getValue(columnId);
-
-  // Support single- and multi-select enum filters.
-  if (Array.isArray(filterValue)) {
-    if (filterValue.length === 0) return true;
-    return filterValue.includes(String(value));
-  }
-
-  // For enum fields, we do an exact match
-  return value === filterValue || filterValue === '';
+  return matchesEnumFilter(row.getValue(columnId), filterValue, 'eq');
 }
 
 // Define the custom filter function type
@@ -78,7 +73,7 @@ export function createColumn<T>(config: ColumnConfig<T>, t: (key: string) => str
     ...config,
     header: ({ column }) =>
       config.header ? <DataTableColumnHeader column={column} title={t(config.header)} /> : undefined,
-    filterFn: config.filterFn || 'includesString',
+    filterFn: config.filterFn || compoundTextFilter,
     sortingFn:
       config.sortingFn ||
       ((rowA, rowB, columnId) => {
@@ -292,6 +287,33 @@ export function createCurrencyColumn<T>(
   column.filterFn = 'inNumberRange';
   return mergeExportMeta(column, { type: 'currency' });
 }
+
+export function createNullableCurrencyColumn<T>(
+  accessorKey: string,
+  headerKey: string | undefined,
+  t: (key: string) => string,
+): ColumnDef<T> {
+  const parser = new NumberParser('de-DE');
+  const column = createColumn<T>(
+    {
+      accessorKey,
+      header: headerKey,
+      align: 'right',
+      cell: ({ row }) => {
+        const rawValue = row.getValue(accessorKey);
+        if (rawValue === null || rawValue === undefined) {
+          return '';
+        }
+        const value = parser.parse(String(rawValue)) || 0;
+        return <div className="text-right tabular-nums">{formatCurrency(value)}</div>;
+      },
+    },
+    t,
+  );
+
+  column.filterFn = 'inNumberRange';
+  return mergeExportMeta(column, { type: 'currency' });
+}
 export function createDateColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,
@@ -445,6 +467,36 @@ export function createEnumBadgeColumn<T>(
     },
   });
 }
+
+export function createBooleanColumn<T>(
+  accessorKey: string,
+  headerKey: string,
+  t: (key: string) => string,
+  commonT: (key: string) => string,
+): ColumnDef<T> {
+  const formatBoolean = (value: unknown) => (value === true ? commonT('ui.boolean.yes') : commonT('ui.boolean.no'));
+
+  const column = createColumn<T>(
+    {
+      accessorKey,
+      header: headerKey,
+      cell: ({ row }) => formatBoolean(row.getValue(accessorKey)),
+      filterFn: booleanFilter,
+      sortingFn: (rowA, rowB, columnId) => {
+        const a = rowA.getValue(columnId) === true ? 1 : 0;
+        const b = rowB.getValue(columnId) === true ? 1 : 0;
+        return a - b;
+      },
+    },
+    t,
+  );
+
+  return mergeExportMeta(column, {
+    type: 'text',
+    getValue: (row) => formatBoolean((row as Record<string, unknown>)[accessorKey]),
+  });
+}
+
 export function createTerminationTypeColumn<T>(
   t: (key: string) => string,
   commonT: (key: string) => string,
@@ -781,12 +833,14 @@ export function createAdditionalFieldFilters<T>(
       filters[`${accessorKey}.${field.id}`] = {
         type: 'text' as const,
         label: field.name,
+        allowEmpty: true,
       };
     }
     if (field.type === AdditionalFieldType.SELECT) {
       filters[`${accessorKey}.${field.id}`] = {
         type: 'select' as const,
         label: field.name,
+        allowEmpty: true,
         options: field.selectOptions.map((option) => ({ label: option, value: option })),
       };
     }
@@ -794,11 +848,19 @@ export function createAdditionalFieldFilters<T>(
       filters[`${accessorKey}.${field.id}`] = {
         type: 'date' as const,
         label: field.name,
+        allowEmpty: true,
       };
     }
     if (field.type === AdditionalFieldType.NUMBER) {
       filters[`${accessorKey}.${field.id}`] = {
         type: 'number' as const,
+        label: field.name,
+        allowEmpty: true,
+      };
+    }
+    if (field.type === AdditionalFieldType.BOOLEAN) {
+      filters[`${accessorKey}.${field.id}`] = {
+        type: 'boolean' as const,
         label: field.name,
       };
     }
@@ -875,11 +937,7 @@ export function formatTerminationModalities(
     case 'DURATION': {
       if (!data.duration || !data.durationType) return '-';
       const duration = `${data.duration} ${durationUnitLabel(data.durationType)}`;
-      const calculatedEndDate = moment(data.signDate)
-        .add(data.duration, data.durationType === 'MONTHS' ? 'months' : 'years')
-        .toDate();
-      const formatted = (formatDate ?? defaultFormatDate)(calculatedEndDate);
-      return commonT('enums.loan.terminationModalities.DURATION', { duration, date: formatted || '-' });
+      return commonT('enums.loan.terminationModalities.DURATION', { duration });
     }
     case 'TERMINATION': {
       if (!data.terminationPeriod || !data.terminationPeriodType) return '-';

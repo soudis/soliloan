@@ -10,10 +10,12 @@ import { getLenderSortValue } from '@/lib/dashboard/table-widget/lender-table-co
 import {
   createAdditionalFieldsColumns,
   createAdditionalFieldDefaultColumnVisibility,
+  createBooleanColumn,
   createCurrencyColumn,
   createDateColumn,
   createDurationDaysColumn,
   createEnumBadgeColumn,
+  createNullableCurrencyColumn,
   createNumberColumn,
   createPercentageColumn,
   createTerminationModalitiesColumn,
@@ -30,12 +32,18 @@ export type LoanTableColumnMeta = {
   useLendersTranslations?: boolean;
 };
 
-const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
+export const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
   { id: 'loanNumber', labelKey: 'table.loanNumber' },
   { id: 'signDate', labelKey: 'table.signDate' },
   { id: 'amount', labelKey: 'table.amount' },
   { id: 'balance', labelKey: 'table.balance' },
   { id: 'deposits', labelKey: 'table.deposits' },
+  { id: 'outstandingDepositSum', labelKey: 'table.outstandingDepositSum' },
+  { id: 'outstandingDepositSinceDate', labelKey: 'table.outstandingDepositSinceDate' },
+  { id: 'outstandingDepositSinceDays', labelKey: 'table.outstandingDepositSinceDays' },
+  { id: 'depositsCount', labelKey: 'table.depositsCount' },
+  { id: 'requiredDepositsCount', labelKey: 'table.requiredDepositsCount' },
+  { id: 'outstandingDepositsCount', labelKey: 'table.outstandingDepositsCount' },
   { id: 'withdrawals', labelKey: 'table.withdrawals' },
   { id: 'notReclaimed', labelKey: 'table.notReclaimed' },
   { id: 'interestRate', labelKey: 'table.interestRate' },
@@ -49,6 +57,7 @@ const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
   { id: 'status', labelKey: 'table.status' },
   { id: 'altInterestMethod', labelKey: 'table.altInterestMethod' },
   { id: 'contractStatus', labelKey: 'table.contractStatus' },
+  { id: 'isSavingsContract', labelKey: 'table.isSavingsContract' },
 ];
 
 const LOAN_COLUMN_GROUP = { key: 'loan' as const, order: 0 };
@@ -106,6 +115,29 @@ export function buildLoanTableColumns(
     createCurrencyColumn<LoanWithCalculations>('amount', 'table.amount', t, locale),
     createCurrencyColumn<LoanWithCalculations>('balance', 'table.balance', t, locale),
     createCurrencyColumn<LoanWithCalculations>('deposits', 'table.deposits', t, locale),
+    createNullableCurrencyColumn<LoanWithCalculations>('outstandingDepositSum', 'table.outstandingDepositSum', t),
+    createDateColumn<LoanWithCalculations>('outstandingDepositSinceDate', 'table.outstandingDepositSinceDate', t, locale),
+    createDurationDaysColumn<LoanWithCalculations>(
+      'outstandingDepositSinceDays',
+      'table.outstandingDepositSinceDays',
+      t,
+      durationT,
+    ),
+    createNumberColumn<LoanWithCalculations>('depositsCount', 'table.depositsCount', t, locale, { integer: true }),
+    createNumberColumn<LoanWithCalculations>(
+      'requiredDepositsCount',
+      'table.requiredDepositsCount',
+      t,
+      locale,
+      { integer: true },
+    ),
+    createNumberColumn<LoanWithCalculations>(
+      'outstandingDepositsCount',
+      'table.outstandingDepositsCount',
+      t,
+      locale,
+      { integer: true },
+    ),
     createCurrencyColumn<LoanWithCalculations>('withdrawals', 'table.withdrawals', t, locale),
     createCurrencyColumn<LoanWithCalculations>('notReclaimed', 'table.notReclaimed', t, locale),
     createPercentageColumn<LoanWithCalculations>('interestRate', 'table.interestRate', t, locale),
@@ -158,6 +190,7 @@ export function buildLoanTableColumns(
         }
       },
     ),
+    createBooleanColumn<LoanWithCalculations>('isSavingsContract', 'table.isSavingsContract', t, commonT),
     ...createAdditionalFieldsColumns<LoanWithCalculations>(
       project.configuration.loanAdditionalFields,
       'additionalFields',
@@ -265,6 +298,8 @@ export function getLoanSortValue(
       return row.altInterestMethod ? commonT(`enums.interestMethod.${row.altInterestMethod}`) : '';
     case 'contractStatus':
       return row.contractStatus ? commonT(`enums.loan.contractStatus.${row.contractStatus}`) : '';
+    case 'isSavingsContract':
+      return row.isSavingsContract ? commonT('ui.boolean.yes') : commonT('ui.boolean.no');
     default: {
       const value = readNestedValue(row, normalizedId);
       if (value instanceof Date) {
@@ -290,6 +325,12 @@ export const LOAN_TABLE_COLUMN_IDS = [
   'amount',
   'balance',
   'deposits',
+  'outstandingDepositSum',
+  'outstandingDepositSinceDate',
+  'outstandingDepositSinceDays',
+  'depositsCount',
+  'requiredDepositsCount',
+  'outstandingDepositsCount',
   'withdrawals',
   'notReclaimed',
   'interestRate',
@@ -303,4 +344,5 @@ export const LOAN_TABLE_COLUMN_IDS = [
   'status',
   'altInterestMethod',
   'contractStatus',
+  'isSavingsContract',
 ] as const;
