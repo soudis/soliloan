@@ -4,7 +4,11 @@ import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import type { ColumnGroupMeta, DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { matchesBooleanFilter } from '@/lib/entity-filters/filter-matchers';
+import {
+  matchesBooleanFilter,
+  matchesEnumFilter,
+  matchesTextFilter,
+} from '@/lib/entity-filters/filter-matchers';
 import { formatDurationDays } from '@/lib/format-duration';
 
 import { formatCurrency, formatPercentage, getLenderName, NumberParser, resolveIntlLocaleForDates } from '@/lib/utils';
@@ -12,14 +16,7 @@ import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat
 
 // Define the custom filter function for compound text fields
 export function compoundTextFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
-  const value = row.getValue(columnId);
-  if (!value) return false;
-
-  // Convert both the value and filter to lowercase for case-insensitive search
-  const searchValue = String(value).toLowerCase();
-  const searchFilter = String(filterValue).toLowerCase();
-
-  return searchValue.includes(searchFilter);
+  return matchesTextFilter(row.getValue(columnId), filterValue);
 }
 
 // Define the custom filter function for boolean fields
@@ -30,16 +27,7 @@ export function booleanFilter<T>(row: Row<T>, columnId: string, filterValue: unk
 
 // Define the custom filter function for enum fields
 export function enumFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
-  const value = row.getValue(columnId);
-
-  // Support single- and multi-select enum filters.
-  if (Array.isArray(filterValue)) {
-    if (filterValue.length === 0) return true;
-    return filterValue.includes(String(value));
-  }
-
-  // For enum fields, we do an exact match
-  return value === filterValue || filterValue === '';
+  return matchesEnumFilter(row.getValue(columnId), filterValue, 'eq');
 }
 
 // Define the custom filter function type
@@ -85,7 +73,7 @@ export function createColumn<T>(config: ColumnConfig<T>, t: (key: string) => str
     ...config,
     header: ({ column }) =>
       config.header ? <DataTableColumnHeader column={column} title={t(config.header)} /> : undefined,
-    filterFn: config.filterFn || 'includesString',
+    filterFn: config.filterFn || compoundTextFilter,
     sortingFn:
       config.sortingFn ||
       ((rowA, rowB, columnId) => {
@@ -845,12 +833,14 @@ export function createAdditionalFieldFilters<T>(
       filters[`${accessorKey}.${field.id}`] = {
         type: 'text' as const,
         label: field.name,
+        allowEmpty: true,
       };
     }
     if (field.type === AdditionalFieldType.SELECT) {
       filters[`${accessorKey}.${field.id}`] = {
         type: 'select' as const,
         label: field.name,
+        allowEmpty: true,
         options: field.selectOptions.map((option) => ({ label: option, value: option })),
       };
     }
@@ -858,12 +848,14 @@ export function createAdditionalFieldFilters<T>(
       filters[`${accessorKey}.${field.id}`] = {
         type: 'date' as const,
         label: field.name,
+        allowEmpty: true,
       };
     }
     if (field.type === AdditionalFieldType.NUMBER) {
       filters[`${accessorKey}.${field.id}`] = {
         type: 'number' as const,
         label: field.name,
+        allowEmpty: true,
       };
     }
     if (field.type === AdditionalFieldType.BOOLEAN) {
