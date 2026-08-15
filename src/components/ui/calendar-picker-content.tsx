@@ -52,16 +52,31 @@ export function CalendarPickerContent({
   useEffect(() => {
     if (!open) return;
     const today = new Date();
-    setMonth(value ?? today);
-    setInputValue(formatDateInput(value ?? today));
+    const next = value ?? today;
+    setMonth(next);
+    setInputValue((current) => {
+      const parsed = parseDateInput(current);
+      if (
+        parsed &&
+        value &&
+        parsed.getFullYear() === value.getUTCFullYear() &&
+        parsed.getMonth() === value.getUTCMonth() &&
+        parsed.getDate() === value.getUTCDate()
+      ) {
+        return current;
+      }
+      return formatDateInput(next);
+    });
   }, [open, value]);
 
-  const applyDate = (date: Date, close = false) => {
+  const applyDate = (date: Date, close = false, formatInput = true) => {
     const utcDate = toUTCDate(date);
     if (!utcDate) return;
     onChange(utcDate);
     setMonth(utcDate);
-    setInputValue(formatDateInput(utcDate));
+    if (formatInput) {
+      setInputValue(formatDateInput(utcDate));
+    }
     if (close) onClose();
   };
 
@@ -80,7 +95,7 @@ export function CalendarPickerContent({
     setInputValue(nextValue);
     const parsed = parseDateInput(nextValue);
     if (parsed) {
-      applyDate(parsed);
+      applyDate(parsed, false, false);
     }
   };
 

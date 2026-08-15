@@ -372,7 +372,11 @@ export function DataTableFilterChip<TData>({
     <Select value={selectValue} onValueChange={handleTargetChange}>
       <SelectTrigger
         aria-label={isQuickSearch ? t('globalFilterField') : t('filterTarget')}
-        className={cn(filterOperatorSegmentClass('default'), sharedSegmentClass, 'max-w-[9rem] [&>span]:truncate')}
+        className={cn(
+          filterOperatorSegmentClass('default'),
+          sharedSegmentClass,
+          'max-w-[9rem] font-bold [&>span]:truncate',
+        )}
       >
         <SelectValue />
       </SelectTrigger>
