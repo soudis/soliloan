@@ -10,6 +10,8 @@ import { tableUrlNuqsOptions, tableUrlParsers } from '@/lib/table-url-parsers';
 
 export type TableUrlState = {
   globalFilter: string;
+  /** Selected quick-search column id; empty string means “Alle”. Not saved in views. */
+  quickSearchField: string;
   sorting: SortingState;
   columnFilters: ColumnFiltersState;
   columnVisibility: VisibilityState;
@@ -17,6 +19,8 @@ export type TableUrlState = {
   pageSize: number;
   selectedView: string;
   viewName: string;
+  /** Whether additional filter chips are shown. Saved in views. */
+  filtersExpanded: boolean;
 };
 
 export type SetTableUrlState = (update: Partial<TableUrlState>) => void;
@@ -24,6 +28,7 @@ export type SetTableUrlState = (update: Partial<TableUrlState>) => void;
 /** The baseline state when no view is selected */
 const DEFAULT_BASELINE: TableUrlState = {
   globalFilter: '',
+  quickSearchField: '',
   sorting: [],
   columnFilters: [],
   columnVisibility: {},
@@ -31,6 +36,7 @@ const DEFAULT_BASELINE: TableUrlState = {
   pageSize: 25,
   selectedView: '',
   viewName: '',
+  filtersExpanded: false,
 };
 
 /**
@@ -43,12 +49,14 @@ function viewToBaseline(
 ): Omit<TableUrlState, 'selectedView'> {
   return {
     globalFilter: data?.globalFilter ?? '',
+    quickSearchField: '',
     sorting: data?.sorting ?? [],
     columnFilters: data?.columnFilters ?? [],
     columnVisibility: data?.columnVisibility ?? defaultColumnVisibility,
     pageIndex: 0, // always reset page on view load
     pageSize: data?.pagination?.pageSize ?? data?.pageSize ?? 25,
     viewName: '',
+    filtersExpanded: data?.filtersExpanded ?? false,
   };
 }
 
@@ -95,6 +103,7 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
   const state = useMemo<TableUrlState>(() => {
     return {
       globalFilter: rawState.q ?? baseline.globalFilter,
+      quickSearchField: rawState.sf ?? baseline.quickSearchField,
       sorting: rawState.sort ?? baseline.sorting,
       columnFilters: rawState.filters ?? baseline.columnFilters,
       columnVisibility: rawState.cols ? { ...defaultColumnVisibility, ...rawState.cols } : baseline.columnVisibility,
@@ -102,6 +111,7 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
       pageSize: rawState.pageSize ?? baseline.pageSize,
       selectedView: rawState.view ?? baseline.selectedView,
       viewName: rawState.viewName ?? '',
+      filtersExpanded: rawState.fe ?? baseline.filtersExpanded,
     };
   }, [rawState, baseline, defaultColumnVisibility]);
 
@@ -141,6 +151,10 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
       if (update.globalFilter !== undefined) {
         raw.q = update.globalFilter !== effectiveBaseline.globalFilter ? update.globalFilter : null;
       }
+      if (update.quickSearchField !== undefined) {
+        raw.sf =
+          update.quickSearchField !== effectiveBaseline.quickSearchField ? update.quickSearchField || null : null;
+      }
       if (update.sorting !== undefined) {
         raw.sort = !isEqual(update.sorting, effectiveBaseline.sorting) ? update.sorting : null;
       }
@@ -160,6 +174,9 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
       }
       if (update.viewName !== undefined) {
         raw.viewName = update.viewName || null;
+      }
+      if (update.filtersExpanded !== undefined) {
+        raw.fe = update.filtersExpanded !== effectiveBaseline.filtersExpanded ? update.filtersExpanded : null;
       }
 
       setRawState(raw, {

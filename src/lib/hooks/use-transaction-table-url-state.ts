@@ -26,12 +26,14 @@ export const DEFAULT_TRANSACTION_TABLE_SORTING: SortingState = [{ id: 'transacti
 
 const DEFAULT_BASELINE: Omit<TransactionTableUrlState, 'selectedView'> = {
   globalFilter: '',
+  quickSearchField: '',
   sorting: DEFAULT_TRANSACTION_TABLE_SORTING,
   columnFilters: [],
   columnVisibility: {},
   pageIndex: 0,
   pageSize: 25,
   viewName: '',
+  filtersExpanded: false,
   txRange: DEFAULT_TRANSACTION_TIME_RANGE,
   txRangeFrom: getDefaultTransactionCustomFrom(),
   txRangeTo: getDefaultTransactionCustomTo(),
@@ -46,12 +48,14 @@ function viewToBaseline(
   const extra = parseTransactionExtraViewData(data);
   return {
     globalFilter: data?.globalFilter ?? '',
+    quickSearchField: '',
     sorting: data?.sorting ?? DEFAULT_BASELINE.sorting,
     columnFilters: data?.columnFilters ?? [],
     columnVisibility: data?.columnVisibility ?? defaultColumnVisibility,
     pageIndex: 0,
     pageSize: data?.pagination?.pageSize ?? data?.pageSize ?? 25,
     viewName: '',
+    filtersExpanded: data?.filtersExpanded ?? false,
     ...extra,
   };
 }
@@ -93,6 +97,7 @@ export function useTransactionTableUrlState(options: UseTransactionTableUrlState
   const state = useMemo<TransactionTableUrlState>(() => {
     return {
       globalFilter: rawState.q ?? baseline.globalFilter,
+      quickSearchField: rawState.sf ?? baseline.quickSearchField,
       sorting: rawState.sort ?? baseline.sorting,
       columnFilters: rawState.filters ?? baseline.columnFilters,
       columnVisibility: rawState.cols ? { ...defaultColumnVisibility, ...rawState.cols } : baseline.columnVisibility,
@@ -100,6 +105,7 @@ export function useTransactionTableUrlState(options: UseTransactionTableUrlState
       pageSize: rawState.pageSize ?? baseline.pageSize,
       selectedView: rawState.view ?? baseline.selectedView,
       viewName: rawState.viewName ?? '',
+      filtersExpanded: rawState.fe ?? baseline.filtersExpanded,
       txRange: rawState.txRange ?? baseline.txRange,
       txRangeFrom: rawState.txRangeFrom ?? baseline.txRangeFrom,
       txRangeTo: rawState.txRangeTo ?? baseline.txRangeTo,
@@ -138,6 +144,10 @@ export function useTransactionTableUrlState(options: UseTransactionTableUrlState
       if (update.globalFilter !== undefined) {
         raw.q = update.globalFilter !== effectiveBaseline.globalFilter ? update.globalFilter : null;
       }
+      if (update.quickSearchField !== undefined) {
+        raw.sf =
+          update.quickSearchField !== effectiveBaseline.quickSearchField ? update.quickSearchField || null : null;
+      }
       if (update.sorting !== undefined) {
         raw.sort = !isEqual(update.sorting, effectiveBaseline.sorting) ? update.sorting : null;
       }
@@ -157,6 +167,9 @@ export function useTransactionTableUrlState(options: UseTransactionTableUrlState
       }
       if (update.viewName !== undefined) {
         raw.viewName = update.viewName || null;
+      }
+      if (update.filtersExpanded !== undefined) {
+        raw.fe = update.filtersExpanded !== effectiveBaseline.filtersExpanded ? update.filtersExpanded : null;
       }
       if (update.txRange !== undefined) {
         raw.txRange = update.txRange !== effectiveBaseline.txRange ? update.txRange : null;

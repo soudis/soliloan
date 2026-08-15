@@ -51,8 +51,9 @@ export function FilterStackedFields({
 }
 
 function filterSizeClass(size: FilterFieldSize) {
-  // Override Input/SelectTrigger `text-base md:text-sm` at all breakpoints.
-  return size === 'sm' ? 'h-8 text-xs md:text-xs' : 'h-9';
+  // Native <select> has no component default; match Input/SelectTrigger.
+  // sm overrides those `text-base md:text-sm` classes at all breakpoints.
+  return size === 'sm' ? 'h-8 text-xs md:text-xs' : 'h-9 text-base md:text-sm';
 }
 
 export function filterOperatorSegmentClass(size: FilterFieldSize = 'default', fullWidth = false) {
@@ -90,6 +91,14 @@ export function filterUnitSegmentClass(size: FilterFieldSize = 'default') {
 export function filterValueSegmentClass(size: FilterFieldSize = 'default') {
   return cn(
     'min-w-0 flex-1 shadow-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+    filterSizeClass(size),
+  );
+}
+
+/** Compact fixed-width number inputs (narrower than flex text fields). */
+export function filterNumberValueSegmentClass(size: FilterFieldSize = 'default') {
+  return cn(
+    'w-24 shrink-0 shadow-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
     filterSizeClass(size),
   );
 }

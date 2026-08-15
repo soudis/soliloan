@@ -30,7 +30,7 @@ export function TextFilter({
       translationNamespace="dataTable"
       variant={variant}
       size={size}
-      placeholder={`Filter ${label || columnId}...`}
+      placeholder={`${label || columnId}...`}
     />
   );
 }

@@ -12,6 +12,7 @@ import {
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { createAdditionalFieldFilters } from '@/lib/table-column-utils';
 import type { EntityFilterEntity, EntityFilterFieldOption } from '@/types/entity-filters';
+import type { NumberFilterOperator } from '@/types/number-filter-value';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
 export type DataTableColumnFilterType = 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
@@ -21,6 +22,7 @@ export type DataTableColumnFilterDefinition = {
   label: string;
   options?: { label: string; value: string }[];
   allowEmpty?: boolean;
+  defaultOperator?: NumberFilterOperator;
 };
 
 const LOAN_STATUS_OPTIONS = [
@@ -53,9 +55,9 @@ export function buildLoanColumnFiltersMap(
   commonT: (key: string) => string,
 ): Record<string, DataTableColumnFilterDefinition> {
   return {
-    loanNumber: { type: 'number', label: t('table.loanNumber') },
+    loanNumber: { type: 'number', label: t('table.loanNumber'), defaultOperator: 'eq' },
     signDate: { type: 'date', label: t('table.signDate'), allowEmpty: false },
-    amount: { type: 'number', label: t('table.amount') },
+    amount: { type: 'number', label: t('table.amount'), defaultOperator: 'eq' },
     balance: { type: 'number', label: t('table.balance') },
     deposits: { type: 'number', label: t('table.deposits') },
     outstandingDepositSum: { type: 'number', label: t('table.outstandingDepositSum') },
@@ -70,7 +72,7 @@ export function buildLoanColumnFiltersMap(
     outstandingDepositsCount: { type: 'number', label: t('table.outstandingDepositsCount') },
     withdrawals: { type: 'number', label: t('table.withdrawals') },
     notReclaimed: { type: 'number', label: t('table.notReclaimed') },
-    interestRate: { type: 'number', label: t('table.interestRate') },
+    interestRate: { type: 'number', label: t('table.interestRate'), defaultOperator: 'eq' },
     interest: { type: 'number', label: t('table.interest') },
     interestPaid: { type: 'number', label: t('table.interestPaid') },
     terminationType: {
@@ -136,7 +138,7 @@ export function buildLenderProfileColumnFiltersMap(
   const additionalFieldsPrefix = idPrefix ? `${idPrefix}additionalFields` : 'additionalFields';
 
   const filters: Record<string, DataTableColumnFilterDefinition> = {
-    lenderNumber: { type: 'number', label: t('table.lenderNumber') },
+    lenderNumber: { type: 'number', label: t('table.lenderNumber'), defaultOperator: 'eq' },
     type: {
       type: 'select',
       label: t('table.type'),
@@ -188,7 +190,7 @@ export function buildLenderProfileColumnFiltersMap(
   if (options?.includeAggregates && options.tLoans) {
     const tLoans = options.tLoans;
     Object.assign(filters, {
-      amount: { type: 'number', label: tLoans('table.amount') },
+      amount: { type: 'number', label: tLoans('table.amount'), defaultOperator: 'eq' },
       balance: { type: 'number', label: tLoans('table.balance') },
       deposits: { type: 'number', label: tLoans('table.deposits') },
       withdrawals: { type: 'number', label: tLoans('table.withdrawals') },

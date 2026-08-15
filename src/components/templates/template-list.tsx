@@ -11,6 +11,7 @@ import { deleteTemplateAction } from '@/actions/templates/mutations/delete-templ
 import { duplicateTemplateAction } from '@/actions/templates/mutations/duplicate-template';
 import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/ui/data-table';
+import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRouter } from '@/i18n/navigation';
@@ -103,7 +104,8 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
     () => [
       {
         accessorKey: 'name',
-        header: t('list.columns.name'),
+        enableSorting: false,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t('list.columns.name')} />,
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
             {row.original.type === 'EMAIL' ? (
@@ -132,17 +134,32 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
       },
       {
         accessorKey: 'type',
-        header: t('list.columns.type'),
+        enableSorting: false,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t('list.columns.type')} />,
         cell: ({ row }) => <span>{row.original.type === 'EMAIL' ? t('types.email') : t('types.document')}</span>,
       },
       {
         accessorKey: 'dataset',
-        header: t('list.columns.dataset'),
+        enableSorting: false,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t('list.columns.dataset')}
+            description={t('list.columns.datasetDescription')}
+          />
+        ),
         cell: ({ row }) => <span>{getDatasetDisplayName(row.original.dataset)}</span>,
       },
       {
         accessorKey: 'createdAt',
-        header: t('list.columns.createdAt'),
+        enableSorting: false,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t('list.columns.createdAtShort')}
+            longTitle={t('list.columns.createdAt')}
+          />
+        ),
         cell: ({ row }) => <span>{new Intl.DateTimeFormat('de-DE').format(new Date(row.original.createdAt))}</span>,
       },
     ],

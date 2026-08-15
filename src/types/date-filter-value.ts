@@ -28,7 +28,7 @@ export const DATE_FILTER_LAST_UNITS = ['days', 'months'] as const;
 export type DateFilterLastUnit = (typeof DATE_FILTER_LAST_UNITS)[number];
 
 export type DateFilterRelativeAmountValue = {
-  amount: number;
+  amount: number | null;
   unit: DateFilterLastUnit;
 };
 
@@ -90,7 +90,13 @@ function isDateFilterLastUnit(value: unknown): value is DateFilterLastUnit {
   return typeof value === 'string' && (DATE_FILTER_LAST_UNITS as readonly string[]).includes(value);
 }
 
-function parseRelativeAmount(value: unknown, fallback: number): number {
+function parseRelativeAmount(value: unknown, fallback: number | null): number | null {
+  if (value === null) {
+    return null;
+  }
+  if (value === undefined || value === '') {
+    return fallback;
+  }
   const parsedAmount = Number(value);
   return Number.isFinite(parsedAmount) ? Math.round(parsedAmount) : fallback;
 }

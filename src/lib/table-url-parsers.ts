@@ -1,5 +1,5 @@
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/react-table';
-import { createParser, parseAsInteger, parseAsString } from 'nuqs';
+import { createParser, parseAsBoolean, parseAsInteger, parseAsString } from 'nuqs';
 
 /**
  * Custom nuqs parser that encodes JSON as base64 to produce URL-safe values.
@@ -25,6 +25,8 @@ function parseAsBase64Json<T>(validator: (value: unknown) => T | null) {
 /** Single source of truth for table URL state (DataTable + sidebar view links). */
 export const tableUrlParsers = {
   q: parseAsString,
+  /** Quick-search field selection (`__all__` omitted — empty means search all). */
+  sf: parseAsString,
   sort: parseAsBase64Json<SortingState>((v) => {
     if (!Array.isArray(v)) return null;
     return v as SortingState;
@@ -41,6 +43,8 @@ export const tableUrlParsers = {
   pageSize: parseAsInteger,
   view: parseAsString,
   viewName: parseAsString,
+  /** Whether the filter chip bar is expanded. */
+  fe: parseAsBoolean,
 } as const;
 
 export const tableUrlNuqsOptions = {
