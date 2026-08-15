@@ -1,11 +1,15 @@
 import type { View } from '@prisma/client';
 import { Star, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import type { TableUrlState } from '@/lib/hooks/use-table-url-state';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu';
+
+/** URL keys that mean the table was opened with intentional state (e.g. widget → table link). */
+const EXPLICIT_TABLE_URL_KEYS = ['filters', 'cols', 'sort', 'q', 'page', 'pageSize', 'viewName'] as const;
 
 interface ViewManagerProps {
   onViewSelect: (view: View | null) => void;
@@ -18,6 +22,7 @@ interface ViewManagerProps {
 
 export function ViewManager({ onViewSelect, onViewDelete, onViewDefault, views, state, viewDirty }: ViewManagerProps) {
   const t = useTranslations('views');
+  const searchParams = useSearchParams();
 
   // Use a ref to store the callback to avoid dependency issues
   const onViewSelectRef = useRef(onViewSelect);
@@ -31,22 +36,31 @@ export function ViewManager({ onViewSelect, onViewDelete, onViewDefault, views, 
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (views && views.length > 0 && !initializedRef.current && !state.selectedView) {
-      initializedRef.current = true;
-      const defaultView =
-        views.find((view: View) => view.isDefault && view.projectId === null) ??
-        views.find((view: View) => view.isDefault && view.projectId != null);
-      if (defaultView) {
-        onViewSelectRef.current(defaultView);
-      } else {
-        onViewSelectRef.current(null); // This will trigger the default state
-      }
-    }
-    // Also mark as initialized if a view is already selected via URL
     if (state.selectedView) {
       initializedRef.current = true;
+      return;
     }
-  }, [views, state.selectedView]);
+
+    if (!views?.length || initializedRef.current) {
+      return;
+    }
+
+    initializedRef.current = true;
+
+    // Keep deep-linked filters/cols/etc. — do not replace them with a default saved view.
+    const hasExplicitTableState = EXPLICIT_TABLE_URL_KEYS.some((key) => searchParams.has(key));
+    if (hasExplicitTableState) {
+      return;
+    }
+
+    const defaultView =
+      views.find((view: View) => view.isDefault && view.projectId === null) ??
+      views.find((view: View) => view.isDefault && view.projectId != null);
+    if (defaultView) {
+      onViewSelectRef.current(defaultView);
+    }
+    // No default view: leave URL/state as-is (do not call onViewSelect(null) — that wipes URL params).
+  }, [views, state.selectedView, searchParams]);
 
   const handleDelete = async (viewId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -78,7 +92,7 @@ export function ViewManager({ onViewSelect, onViewDelete, onViewDefault, views, 
         <Button variant="outline" size="sm" className={viewDirty ? 'italic' : ''}>
           {state.selectedView
             ? views?.find((v) => v.id === state.selectedView)?.name || t('loadView')
-            : t('defaultView')}
+            : state.viewName || t('defaultView')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

@@ -73,6 +73,7 @@ export function SidebarViewItems({ views, viewType, basePath }: SidebarViewItems
                     cols: null,
                     page: null,
                     pageSize: null,
+                    viewName: null,
                     ...(basePath === '/transactions'
                       ? {
                           txRange: null,

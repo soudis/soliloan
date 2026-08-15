@@ -1,7 +1,20 @@
 import type { ClassValue } from 'clsx';
 import { clsx } from 'clsx';
+import {
+  addMonths,
+  addYears,
+  endOfMonth,
+  endOfYear,
+  format,
+  isValid,
+  parse,
+  startOfMonth,
+  startOfYear,
+} from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
 import { twMerge } from 'tailwind-merge';
+
+export const DATE_INPUT_FORMAT = 'dd.MM.yyyy';
 
 /** Shape used by getLenderName - avoids importing Prisma in client-bundled utils */
 type LenderNameFields = {
@@ -81,6 +94,17 @@ export function toUTCDate(date: Date | undefined | null): Date | null {
   return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
 }
 
+/** Format a date as ISO calendar day (yyyy-MM-dd) using UTC components (pairs with {@link toUTCDate}). */
+export function formatIsoDate(date: Date | string | null | undefined): string {
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return '';
+  const year = d.getUTCFullYear();
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 /** Template-friendly short date (e.g. 09.04.2026 in de-DE). */
 export function formatDateShort(date: Date | string | null | undefined, locale: string): string {
   if (!date) return '';
@@ -99,6 +123,63 @@ export function formatDateLong(date: Date | string | null | undefined, locale: s
 
 // Backwards compatible: existing code expects formatDate() to be the long form.
 export const formatDate = formatDateLong;
+
+/** Date picker keyboard input format (e.g. 09.04.2026). */
+export function formatDateInput(date: Date | string | null | undefined): string {
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return '';
+  return format(d, DATE_INPUT_FORMAT);
+}
+
+const DATE_INPUT_PARSE_PATTERN = /^(\d{1,2})\.(\d{1,2})\.(\d{2}|\d{4})$/;
+
+/** Parse keyboard input; accepts D.M.YYYY / D.M.YY with optional leading zeros. */
+export function parseDateInput(value: string): Date | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const match = DATE_INPUT_PARSE_PATTERN.exec(trimmed);
+  if (!match) return null;
+
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const yearToken = match[3];
+  const dateFormat = yearToken.length === 2 ? 'd.M.yy' : 'd.M.yyyy';
+  const parsed = parse(trimmed, dateFormat, new Date());
+  if (!isValid(parsed)) return null;
+  if (parsed.getDate() !== day || parsed.getMonth() + 1 !== month) return null;
+  if (yearToken.length === 4 && parsed.getFullYear() !== Number(yearToken)) return null;
+  return parsed;
+}
+
+function resolvePresetBaseDate(baseDate?: Date | null): Date {
+  return baseDate ?? new Date();
+}
+
+export function getMonthStartDate(baseDate?: Date | null): Date {
+  return startOfMonth(resolvePresetBaseDate(baseDate));
+}
+
+export function getMonthEndDate(baseDate?: Date | null): Date {
+  return endOfMonth(resolvePresetBaseDate(baseDate));
+}
+
+export function getNextMonthStartDate(baseDate?: Date | null): Date {
+  return startOfMonth(addMonths(resolvePresetBaseDate(baseDate), 1));
+}
+
+export function getYearStartDate(baseDate?: Date | null): Date {
+  return startOfYear(resolvePresetBaseDate(baseDate));
+}
+
+export function getYearEndDate(baseDate?: Date | null): Date {
+  return endOfYear(resolvePresetBaseDate(baseDate));
+}
+
+export function getNextYearStartDate(baseDate?: Date | null): Date {
+  return startOfYear(addYears(resolvePresetBaseDate(baseDate), 1));
+}
 
 export class NumberParser {
   private groupSymbol: string;

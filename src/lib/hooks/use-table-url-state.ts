@@ -16,6 +16,7 @@ export type TableUrlState = {
   pageIndex: number;
   pageSize: number;
   selectedView: string;
+  viewName: string;
 };
 
 export type SetTableUrlState = (update: Partial<TableUrlState>) => void;
@@ -29,6 +30,7 @@ const DEFAULT_BASELINE: TableUrlState = {
   pageIndex: 0,
   pageSize: 25,
   selectedView: '',
+  viewName: '',
 };
 
 /**
@@ -46,6 +48,7 @@ function viewToBaseline(
     columnVisibility: data?.columnVisibility ?? defaultColumnVisibility,
     pageIndex: 0, // always reset page on view load
     pageSize: data?.pagination?.pageSize ?? data?.pageSize ?? 25,
+    viewName: '',
   };
 }
 
@@ -98,6 +101,7 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
       pageIndex: rawState.page ?? baseline.pageIndex,
       pageSize: rawState.pageSize ?? baseline.pageSize,
       selectedView: rawState.view ?? baseline.selectedView,
+      viewName: rawState.viewName ?? '',
     };
   }, [rawState, baseline, defaultColumnVisibility]);
 
@@ -153,6 +157,9 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
       }
       if (update.pageSize !== undefined) {
         raw.pageSize = update.pageSize !== effectiveBaseline.pageSize ? update.pageSize : null;
+      }
+      if (update.viewName !== undefined) {
+        raw.viewName = update.viewName || null;
       }
 
       setRawState(raw, {

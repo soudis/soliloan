@@ -164,6 +164,7 @@ export function DataTableHeader<TData>({
           selectedView: view.id,
           pageIndex: 0,
           pageSize: tableState.pageSize,
+          viewName: '',
         });
       }
     } catch (err) {
@@ -247,6 +248,7 @@ export function DataTableHeader<TData>({
                       globalFilter: '',
                       pageIndex: 0,
                       pageSize: 25,
+                      viewName: '',
                     });
                     return;
                   }
@@ -311,6 +313,7 @@ export function DataTableHeader<TData>({
                 isLoading={isSaving}
                 allowSidebar={allowSidebarViews}
                 hasProject={!!projectId}
+                defaultName={tableState.viewName}
               />
             </>
           )}

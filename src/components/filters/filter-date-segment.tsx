@@ -1,8 +1,8 @@
 'use client';
 
-import { de, enUS } from 'date-fns/locale';
 import { X } from 'lucide-react';
 import { useLocale } from 'next-intl';
+import { useState } from 'react';
 
 import {
   filterDateSegmentClass,
@@ -10,13 +10,9 @@ import {
   type FilterFieldVariant,
 } from '@/components/filters/filter-field-group';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+import { CalendarPickerContent } from '@/components/ui/calendar-picker-content';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn, formatDateLong, formatDateShort } from '@/lib/utils';
-
-function toIsoDateString(date: Date): string {
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-}
+import { cn, formatDateLong, formatDateShort, formatIsoDate } from '@/lib/utils';
 
 export function FilterDateSegment({
   label,
@@ -36,11 +32,12 @@ export function FilterDateSegment({
   className?: string;
 }) {
   const locale = useLocale();
-  const dateLocale = locale === 'de' ? de : enUS;
+  const [open, setOpen] = useState(false);
   const formatDateValue = size === 'sm' || variant === 'stacked' ? formatDateShort : formatDateLong;
+  const selectedDate = value ? new Date(value) : undefined;
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           type="button"
@@ -70,12 +67,11 @@ export function FilterDateSegment({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          mode="single"
-          selected={value ? new Date(value) : undefined}
-          onSelect={(date) => onChange(date ? toIsoDateString(date) : undefined)}
-          initialFocus
-          locale={dateLocale}
+        <CalendarPickerContent
+          open={open}
+          value={selectedDate}
+          onChange={(date) => onChange(date ? formatIsoDate(date) : undefined)}
+          onClose={() => setOpen(false)}
         />
       </PopoverContent>
     </Popover>

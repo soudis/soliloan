@@ -2,7 +2,6 @@
 
 import { DurationType } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { Calendar as CalendarIcon } from 'lucide-react';
 import moment from 'moment';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -10,7 +9,7 @@ import { toast } from 'sonner';
 
 import { terminateLoanAction } from '@/actions/loans';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+import { DatePickerInput } from '@/components/ui/date-picker-input';
 import {
   Dialog,
   DialogContent,
@@ -19,8 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn, formatDateLong, getDateFnsLocale } from '@/lib/utils';
+import { formatDateLong, toUTCDate } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 
 interface TerminationDialogProps {
@@ -29,19 +27,13 @@ interface TerminationDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const toUTC = (date: Date) => {
-  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
-};
-
 export function TerminationDialog({ loan, open, onOpenChange }: TerminationDialogProps) {
   const t = useTranslations('dashboard.loans.terminate');
   const commonT = useTranslations('common');
   const locale = useLocale();
-  const dateLocale = getDateFnsLocale(locale);
   const queryClient = useQueryClient();
 
-  const [terminationDate, setTerminationDate] = useState<Date>(toUTC(new Date()));
-  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [terminationDate, setTerminationDate] = useState<Date>(() => toUTCDate(new Date()) ?? new Date());
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const calculatedEndDate =
@@ -58,7 +50,7 @@ export function TerminationDialog({ loan, open, onOpenChange }: TerminationDialo
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (nextOpen) {
-      setTerminationDate(toUTC(new Date()));
+      setTerminationDate(toUTCDate(new Date()) ?? new Date());
     }
     onOpenChange(nextOpen);
   };
@@ -96,35 +88,15 @@ export function TerminationDialog({ loan, open, onOpenChange }: TerminationDialo
         <div className="space-y-4 py-2">
           <div className="space-y-2">
             <span className="text-sm font-medium">{t('terminationDate')}</span>
-            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn('w-full pl-3 text-left font-normal', !terminationDate && 'text-muted-foreground')}
-                >
-                  {terminationDate ? (
-                    formatDateLong(terminationDate, locale)
-                  ) : (
-                    <span>{t('terminationDatePlaceholder')}</span>
-                  )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={terminationDate}
-                  onSelect={(date) => {
-                    if (date) {
-                      setTerminationDate(date);
-                    }
-                    setCalendarOpen(false);
-                  }}
-                  autoFocus
-                  locale={dateLocale}
-                />
-              </PopoverContent>
-            </Popover>
+            <DatePickerInput
+              value={terminationDate}
+              onChange={(date) => {
+                if (date) {
+                  setTerminationDate(date);
+                }
+              }}
+              placeholder={t('terminationDatePlaceholder')}
+            />
           </div>
 
           {calculatedEndDate && (

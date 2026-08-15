@@ -9,7 +9,7 @@ import { parseAsString, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
-import { Input } from '@/components/ui/input';
+import { DatePickerInput } from '@/components/ui/date-picker-input';
 import { useRouter } from '@/i18n/navigation';
 import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
 import {
@@ -26,7 +26,7 @@ import {
   createPercentageColumn,
   enumFilter,
 } from '@/lib/table-column-utils';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatIsoDate } from '@/lib/utils';
 import type { LoanStatus } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { LimitationTypeBadge } from './limitation-type-badge';
@@ -211,19 +211,16 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
         showFilter={true}
         toolbarContent={
           <div className="flex items-center gap-3">
-            <label htmlFor="effectiveDate" className="text-sm font-medium whitespace-nowrap">
-              {t('effectiveDate')}
-            </label>
-            <Input
-              id="effectiveDate"
-              type="date"
+            <span className="text-sm font-medium whitespace-nowrap">{t('effectiveDate')}</span>
+            <DatePickerInput
               value={effectiveDate}
-              onChange={(e) => {
-                if (e.target.value) {
-                  setEffectiveDate(e.target.value);
+              onChange={(date) => {
+                if (date) {
+                  setEffectiveDate(formatIsoDate(date));
                 }
               }}
-              className="w-auto"
+              placeholder={commonT('ui.additionalFields.selectDate')}
+              className="w-auto min-w-[12rem]"
             />
           </div>
         }

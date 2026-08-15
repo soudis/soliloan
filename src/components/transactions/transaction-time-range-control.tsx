@@ -2,16 +2,17 @@
 
 import { useTranslations } from 'next-intl';
 
-import { Input } from '@/components/ui/input';
+import { DatePickerInput } from '@/components/ui/date-picker-input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import type { TransactionTableUrlState } from '@/lib/hooks/use-transaction-table-url-state';
 import type { SetTableUrlState } from '@/lib/hooks/use-table-url-state';
+import type { TransactionTableUrlState } from '@/lib/hooks/use-transaction-table-url-state';
 import {
   TRANSACTION_TIME_RANGE_PRESETS,
   type TransactionTimeRangePreset,
 } from '@/lib/transactions/transaction-time-range';
+import { formatIsoDate } from '@/lib/utils';
 
 interface TransactionTimeRangeControlProps {
   state: Pick<TransactionTableUrlState, 'txRange' | 'txRangeFrom' | 'txRangeTo' | 'includeInterest'>;
@@ -32,6 +33,7 @@ const PRESET_LABEL_KEYS: Record<TransactionTimeRangePreset, string> = {
 
 export function TransactionTimeRangeControl({ state, setTableState }: TransactionTimeRangeControlProps) {
   const t = useTranslations('dashboard.transactions');
+  const commonT = useTranslations('common');
 
   return (
     <div className="flex shrink-0 items-center gap-3">
@@ -56,27 +58,21 @@ export function TransactionTimeRangeControl({ state, setTableState }: Transactio
       {state.txRange === 'custom' && (
         <>
           <div className="flex items-center gap-2">
-            <Label htmlFor="tx-range-from" className="text-sm text-muted-foreground whitespace-nowrap">
-              {t('timeRange.dateFrom')}
-            </Label>
-            <Input
-              id="tx-range-from"
-              type="date"
+            <Label className="text-sm text-muted-foreground whitespace-nowrap">{t('timeRange.dateFrom')}</Label>
+            <DatePickerInput
+              value={state.txRangeFrom || null}
+              onChange={(date) => setTableState({ txRangeFrom: date ? formatIsoDate(date) : '', pageIndex: 0 })}
+              placeholder={commonT('ui.additionalFields.selectDate')}
               className="h-8 w-[150px] shrink-0 bg-background text-sm"
-              value={state.txRangeFrom}
-              onChange={(event) => setTableState({ txRangeFrom: event.target.value, pageIndex: 0 })}
             />
           </div>
           <div className="flex items-center gap-2">
-            <Label htmlFor="tx-range-to" className="text-sm text-muted-foreground whitespace-nowrap">
-              {t('timeRange.dateTo')}
-            </Label>
-            <Input
-              id="tx-range-to"
-              type="date"
+            <Label className="text-sm text-muted-foreground whitespace-nowrap">{t('timeRange.dateTo')}</Label>
+            <DatePickerInput
+              value={state.txRangeTo || null}
+              onChange={(date) => setTableState({ txRangeTo: date ? formatIsoDate(date) : '', pageIndex: 0 })}
+              placeholder={commonT('ui.additionalFields.selectDate')}
               className="h-8 w-[150px] shrink-0 bg-background text-sm"
-              value={state.txRangeTo}
-              onChange={(event) => setTableState({ txRangeTo: event.target.value, pageIndex: 0 })}
             />
           </div>
         </>

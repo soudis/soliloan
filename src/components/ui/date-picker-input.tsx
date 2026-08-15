@@ -1,14 +1,14 @@
 'use client';
 
 import { Calendar as CalendarIcon, X } from 'lucide-react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+import { CalendarPickerContent } from '@/components/ui/calendar-picker-content';
 import { FormControl } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn, formatDateLong, getDateFnsLocale, toUTCDate } from '@/lib/utils';
+import { cn, formatDateLong, toUTCDate } from '@/lib/utils';
 
 interface DatePickerInputProps {
   value: Date | string | '' | null | undefined;
@@ -20,6 +20,7 @@ interface DatePickerInputProps {
   calendarDisabled?: (date: Date) => boolean;
   withFormControl?: boolean;
   className?: string;
+  'aria-label'?: string;
 }
 
 const hasDateValue = (value: Date | string | '' | null | undefined): value is Date | string => {
@@ -38,9 +39,10 @@ export function DatePickerInput({
   calendarDisabled,
   withFormControl = false,
   className,
+  'aria-label': ariaLabel,
 }: DatePickerInputProps) {
   const locale = useLocale();
-  const dateLocale = getDateFnsLocale(locale);
+  const t = useTranslations('common');
   const [internalOpen, setInternalOpen] = useState(false);
   const open = openProp ?? internalOpen;
 
@@ -56,21 +58,33 @@ export function DatePickerInput({
       type="button"
       variant="outline"
       disabled={disabled}
+      aria-label={ariaLabel}
       className={cn('w-full pl-3 text-left font-normal', !hasDateValue(value) && 'text-muted-foreground', className)}
     >
       {hasDateValue(value) ? formatDateLong(value, locale) : <span>{placeholder}</span>}
       <div className="ml-auto flex items-center gap-1">
         {hasDateValue(value) && !disabled && (
-          <button
-            type="button"
+          // biome-ignore lint/a11y/useSemanticElements: cannot nest a <button> inside PopoverTrigger Button
+          <span
+            role="button"
+            tabIndex={0}
+            aria-label={t('ui.actions.clear')}
             className="flex h-4 w-4 items-center justify-center rounded-sm opacity-50 hover:bg-accent hover:opacity-100"
             onClick={(event) => {
+              event.preventDefault();
               event.stopPropagation();
               onChange(null);
             }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                event.stopPropagation();
+                onChange(null);
+              }
+            }}
           >
             <X className="h-3 w-3" />
-          </button>
+          </span>
         )}
         <CalendarIcon className="h-4 w-4 opacity-50" />
       </div>
@@ -81,16 +95,12 @@ export function DatePickerInput({
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>{withFormControl ? <FormControl>{trigger}</FormControl> : trigger}</PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          mode="single"
-          selected={selectedDate}
-          onSelect={(date) => {
-            onChange(toUTCDate(date));
-            handleOpenChange(false);
-          }}
-          autoFocus
-          disabled={calendarDisabled}
-          locale={dateLocale}
+        <CalendarPickerContent
+          open={open}
+          value={selectedDate}
+          onChange={(date) => onChange(date ? toUTCDate(date) : null)}
+          onClose={() => handleOpenChange(false)}
+          calendarDisabled={calendarDisabled}
         />
       </PopoverContent>
     </Popover>

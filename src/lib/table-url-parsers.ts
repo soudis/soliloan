@@ -40,6 +40,7 @@ export const tableUrlParsers = {
   page: parseAsInteger,
   pageSize: parseAsInteger,
   view: parseAsString,
+  viewName: parseAsString,
 } as const;
 
 export const tableUrlNuqsOptions = {

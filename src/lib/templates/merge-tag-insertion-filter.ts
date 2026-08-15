@@ -64,3 +64,51 @@ export function shouldShowLoopChildFieldsGroup(loop: MergeTagLoop, ancestorLoops
   const innermost = stack[0] ?? null;
   return innermost !== null && loop.key === innermost && loop.childFields.length > 0;
 }
+
+/** Dropdown group key for a loop's per-iteration child fields (`loop-fields:transactionsYearly`, …). */
+export function loopChildFieldsGroupKey(loopKey: string): string {
+  return `loop-fields:${loopKey}`;
+}
+
+/**
+ * Decides which merge-tag group the dropdown should show.
+ *
+ * Priority when `preferInnermostLoopFields` is true (fresh open):
+ * 1. Child-fields group for the innermost enclosing loop, if that group exists
+ * 2. Current selection, if still in the available list
+ * 3. First available group
+ *
+ * When `preferInnermostLoopFields` is false (already open; user may have changed group):
+ * skip step 1 so a manual choice is not overridden when the groups list refreshes.
+ */
+export function resolveMergeTagGroupKey(options: {
+  availableGroupKeys: readonly string[];
+  ancestorLoopsInnermostFirst?: readonly string[];
+  currentGroupKey?: string;
+  preferInnermostLoopFields?: boolean;
+}): string {
+  const {
+    availableGroupKeys,
+    ancestorLoopsInnermostFirst = [],
+    currentGroupKey = '',
+    preferInnermostLoopFields = true,
+  } = options;
+
+  if (availableGroupKeys.length === 0) return '';
+
+  if (preferInnermostLoopFields) {
+    const innermost = ancestorLoopsInnermostFirst[0];
+    if (innermost) {
+      const loopGroupKey = loopChildFieldsGroupKey(innermost);
+      if (availableGroupKeys.includes(loopGroupKey)) {
+        return loopGroupKey;
+      }
+    }
+  }
+
+  if (currentGroupKey && availableGroupKeys.includes(currentGroupKey)) {
+    return currentGroupKey;
+  }
+
+  return availableGroupKeys[0] ?? '';
+}

@@ -58,6 +58,7 @@ export function ProjectTableNavItem({ basePath, icon: Icon, label }: ProjectTabl
             cols: null,
             page: null,
             pageSize: null,
+            viewName: null,
             ...(isTransactions
               ? {
                   txRange: null,

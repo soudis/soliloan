@@ -31,6 +31,7 @@ const DEFAULT_BASELINE: Omit<TransactionTableUrlState, 'selectedView'> = {
   columnVisibility: {},
   pageIndex: 0,
   pageSize: 25,
+  viewName: '',
   txRange: DEFAULT_TRANSACTION_TIME_RANGE,
   txRangeFrom: getDefaultTransactionCustomFrom(),
   txRangeTo: getDefaultTransactionCustomTo(),
@@ -50,6 +51,7 @@ function viewToBaseline(
     columnVisibility: data?.columnVisibility ?? defaultColumnVisibility,
     pageIndex: 0,
     pageSize: data?.pagination?.pageSize ?? data?.pageSize ?? 25,
+    viewName: '',
     ...extra,
   };
 }
@@ -97,6 +99,7 @@ export function useTransactionTableUrlState(options: UseTransactionTableUrlState
       pageIndex: rawState.page ?? baseline.pageIndex,
       pageSize: rawState.pageSize ?? baseline.pageSize,
       selectedView: rawState.view ?? baseline.selectedView,
+      viewName: rawState.viewName ?? '',
       txRange: rawState.txRange ?? baseline.txRange,
       txRangeFrom: rawState.txRangeFrom ?? baseline.txRangeFrom,
       txRangeTo: rawState.txRangeTo ?? baseline.txRangeTo,
@@ -151,6 +154,9 @@ export function useTransactionTableUrlState(options: UseTransactionTableUrlState
       }
       if (update.pageSize !== undefined) {
         raw.pageSize = update.pageSize !== effectiveBaseline.pageSize ? update.pageSize : null;
+      }
+      if (update.viewName !== undefined) {
+        raw.viewName = update.viewName || null;
       }
       if (update.txRange !== undefined) {
         raw.txRange = update.txRange !== effectiveBaseline.txRange ? update.txRange : null;
