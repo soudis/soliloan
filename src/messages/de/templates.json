@@ -87,6 +87,7 @@
     "showEditor": "Editor",
     "showPreview": "Vorschau",
     "generatingPdf": "PDF wird erstellt…",
+    "previewRendererPending": "Die HTML- und PDF-Vorschau wird nach der Umstellung des Renderers verfügbar sein.",
     "mergeTags": {
       "groupLabel": "Gruppe",
       "groupPlaceholder": "Gruppe auswählen",
@@ -151,7 +152,8 @@
       "table": "Tabelle",
       "predefinedEmpty": "Keine Schablonen für diesen Vorlagentyp vorhanden.",
       "predefinedLoading": "Schablonen werden geladen…",
-      "predefinedDeleted": "Schablone gelöscht"
+      "predefinedDeleted": "Schablone gelöscht",
+      "predefinedNotReady": "Schablonen können erst nach der Datenmigration in den Editor gezogen werden."
     },
     "settings": {
       "title": "Einstellungen",
@@ -262,6 +264,7 @@
         "columnWidthLabel": "Spalte {column}",
         "columnWidthHint": "Die Werte werden relativ zueinander als Breitenverteilung verwendet.",
         "defaultHeader": "Spalte",
+        "cell": "Zelle",
         "dynamicHint": "Zeilen werden dynamisch aus der Datenquelle generiert.",
         "staticHint": "Die Tabelle hat eine feste Anzahl an Zeilen.",
         "loopKeyContextHint": "Datenquellen hängen von der Verschachtelung ab (z.B. können Transaktionen nur innerhalb eines Darlehen-Datensatzes angezeigt werden).",

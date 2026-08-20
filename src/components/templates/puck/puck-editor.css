@@ -1,0 +1,13 @@
+.template-puck-editor {
+  min-height: 700px;
+}
+
+.template-puck-editor [class*="Puck"] {
+  font-family: inherit;
+}
+
+.template-puck-sidebar :where(ul) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
