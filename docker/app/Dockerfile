@@ -47,7 +47,6 @@ COPY . .
 COPY --from=installer /app/node_modules ./node_modules
 
 RUN pnpm exec prisma generate
-# Webpack + Terser (see next.config.ts). Turbopack/SWC minify breaks Craft.js drag-and-drop.
 RUN pnpm run build
 
 # ------------------------------------------------------------------------
