@@ -216,6 +216,7 @@ export const emailSchemaOptional = z
   .nullable()
   .optional();
 export const emailSchemaRequired = z.string().email({ message: 'validation.common.email' });
+export const passwordSchema = z.string().min(8, { message: 'validation.account.passwordMinLength' });
 // Common contact fields
 export const contactSchema = z.object({
   email: emailSchemaOptional,
