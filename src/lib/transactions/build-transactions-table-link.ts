@@ -22,5 +22,5 @@ export function buildTransactionsTableHrefForHistoryPeriod(options: {
   params.set('txRangeFrom', formatDateForTransactionUrl(options.periodStart));
   params.set('txRangeTo', formatDateForTransactionUrl(options.periodEnd));
 
-  return `/transactions?${params.toString()}`;
+  return `/transactions/list?${params.toString()}`;
 }

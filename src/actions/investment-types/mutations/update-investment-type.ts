@@ -64,7 +64,7 @@ export const updateInvestmentTypeAction = projectAction
       });
     }
 
-    revalidatePath('/investment-types');
+    revalidatePath('/investment-types/list');
 
     return { investmentType: updated };
   });

@@ -22,6 +22,7 @@ import {
 } from '@/lib/dashboard/table-widget/loan-table-column-registry';
 import { buildLoanTableColumnFilters } from '@/lib/entity-filters/filter-definitions';
 import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
+import { TABLE_LIST_PATHS } from '@/lib/table-list-path';
 import type { LoanWithCalculations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
@@ -30,16 +31,17 @@ interface LoanTableProps {
   project: ProjectWithConfiguration;
   projectId: string;
   views: View[];
+  viewId?: string;
 }
 
-export function LoanTable({ loans, project, projectId, views }: LoanTableProps) {
+export function LoanTable({ loans, project, projectId, views, viewId }: LoanTableProps) {
   const t = useTranslations('dashboard.loans');
   const tLenders = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
   const tDuration = useTranslations('common.duration');
   const router = useRouter();
   const locale = useLocale();
-  const selectedViewName = useSelectedViewName(views);
+  const selectedViewName = useSelectedViewName(views, viewId);
   const [suggestedViewName] = useQueryState('viewName', parseAsString);
   const pageSubtitle = selectedViewName || suggestedViewName || null;
 
@@ -113,6 +115,8 @@ export function LoanTable({ loans, project, projectId, views }: LoanTableProps) 
         defaultColumnVisibility={defaultColumnVisibility}
         viewType={ViewType.LOAN}
         views={views}
+        viewId={viewId}
+        listPath={TABLE_LIST_PATHS.loans}
         allowSidebarViews
         showFilter={true}
         showExport

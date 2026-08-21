@@ -35,7 +35,7 @@ export function LenderPageHeader({ lender }: LenderPageHeaderProps) {
       } else {
         toast.success(t('delete.success'), { id: toastId });
         await queryClient.invalidateQueries({ queryKey: ['lender', lender.id] });
-        router.push('/lenders');
+        router.push('/lenders/list');
       }
     } catch (e) {
       toast.error(t('delete.error'), { id: toastId });

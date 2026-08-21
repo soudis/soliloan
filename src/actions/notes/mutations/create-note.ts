@@ -80,7 +80,7 @@ export const createNoteAction = lenderAction
 
     // Revalidate paths
     if (loanId) {
-      revalidatePath('/lenders');
+      revalidatePath('/lenders/list');
     }
     revalidatePath(`/lenders/${lenderId}`);
 

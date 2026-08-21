@@ -2,15 +2,12 @@
 
 import type { ViewType } from '@prisma/client';
 import { Bookmark } from 'lucide-react';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { useQueryStates } from 'nuqs';
+import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
 
-import { useRouter } from '@/i18n/navigation';
+import { Link } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
-import { PROJECT_ID_KEY } from '@/lib/params';
-import { tableUrlNuqsOptions, tableUrlParsers } from '@/lib/table-url-parsers';
-import { transactionTableUrlNuqsOptions, transactionTableUrlParsers } from '@/lib/hooks/transaction-table-url-parsers';
+import { buildTableListHref } from '@/lib/table-list-path';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store';
 import type { SidebarNavView } from '@/types/sidebar-nav';
@@ -21,18 +18,11 @@ interface SidebarViewItemsProps {
   basePath: '/lenders' | '/loans' | '/transactions';
 }
 
-/** Same nuqs instance shape as `useTableUrlState` — updates URL without Next router (fixes same-route ?view= changes). */
 export function SidebarViewItems({ views, viewType, basePath }: SidebarViewItemsProps) {
   const projectId = useProjectId();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const currentViewId = searchParams.get('view');
   const { toggleSidebar } = useAppStore();
-  const router = useRouter();
-  const [, setTableUrl] = useQueryStates(
-    basePath === '/transactions' ? transactionTableUrlParsers : tableUrlParsers,
-    basePath === '/transactions' ? transactionTableUrlNuqsOptions : tableUrlNuqsOptions,
-  );
+  const listPath = `${basePath}/list`;
 
   const items = useMemo(() => {
     return views.filter((v) => {
@@ -46,46 +36,17 @@ export function SidebarViewItems({ views, viewType, basePath }: SidebarViewItems
 
   if (items.length === 0) return null;
 
-  const pathMatches = pathname.includes(basePath);
-  /** Already on /lenders or /loans — only search params change; use nuqs, not router.push. */
-  const onSameTableRoute = pathname.endsWith(basePath);
-
   return (
     <ul className="ml-8 space-y-0.5 border-l border-border pl-2">
       {items.map((view) => {
-        const href =
-          projectId != null && projectId !== ''
-            ? `${basePath}?${PROJECT_ID_KEY}=${encodeURIComponent(projectId)}&view=${encodeURIComponent(view.id)}`
-            : `${basePath}?view=${encodeURIComponent(view.id)}`;
-        const isActive = pathMatches && currentViewId === view.id;
+        const href = buildTableListHref(listPath, view.id, projectId);
+        const isActive = pathname.endsWith(`${listPath}/${view.id}`);
 
         return (
           <li key={view.id}>
-            <button
-              type="button"
+            <Link
+              href={href}
               onClick={() => {
-                if (onSameTableRoute) {
-                  void setTableUrl({
-                    view: view.id,
-                    q: null,
-                    sort: null,
-                    filters: null,
-                    cols: null,
-                    page: null,
-                    pageSize: null,
-                    viewName: null,
-                    ...(basePath === '/transactions'
-                      ? {
-                          txRange: null,
-                          txRangeFrom: null,
-                          txRangeTo: null,
-                          includeInterest: null,
-                        }
-                      : {}),
-                  });
-                } else {
-                  router.push(href);
-                }
                 if (typeof window !== 'undefined' && window.innerWidth < 768) {
                   toggleSidebar();
                 }
@@ -97,7 +58,7 @@ export function SidebarViewItems({ views, viewType, basePath }: SidebarViewItems
             >
               <Bookmark className="h-3.5 w-3.5 shrink-0 opacity-70" aria-hidden />
               <span className="truncate">{view.name}</span>
-            </button>
+            </Link>
           </li>
         );
       })}

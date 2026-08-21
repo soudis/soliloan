@@ -5,6 +5,7 @@ import type { Session } from 'next-auth';
 import { useTranslations } from 'next-intl';
 
 import { usePathname } from '@/i18n/navigation';
+import { pathnameIsTableList, TABLE_LIST_PATHS } from '@/lib/table-list-path';
 import { cn } from '@/lib/utils';
 import { useAppStore, useNavigationUiStore } from '@/store';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -28,17 +29,23 @@ export default function DashboardNavigation({
   const pathname = usePathname();
   const t = useTranslations('navigation');
   const isDashboardPage = pathname === '/dashboard';
-  const isTransactionsPage = pathname === '/transactions' || pathname.startsWith('/transactions/');
   const isFillHeightPage =
-    pathname === '/lenders' ||
-    pathname === '/loans' ||
-    isTransactionsPage ||
-    pathname === '/investment-types' ||
+    pathnameIsTableList(pathname, TABLE_LIST_PATHS.lenders) ||
+    pathnameIsTableList(pathname, TABLE_LIST_PATHS.loans) ||
+    pathnameIsTableList(pathname, TABLE_LIST_PATHS.transactions) ||
+    pathname === '/transactions/import' ||
+    pathname.startsWith('/transactions/import/') ||
+    pathnameIsTableList(pathname, TABLE_LIST_PATHS.investmentTypes) ||
     pathname === '/logbook' ||
     pathname === '/projects';
 
   const isFullWidthPage =
-    pathname === '/lenders' || pathname === '/loans' || isTransactionsPage || pathname === '/investment-types';
+    pathnameIsTableList(pathname, TABLE_LIST_PATHS.lenders) ||
+    pathnameIsTableList(pathname, TABLE_LIST_PATHS.loans) ||
+    pathnameIsTableList(pathname, TABLE_LIST_PATHS.transactions) ||
+    pathname === '/transactions/import' ||
+    pathname.startsWith('/transactions/import/') ||
+    pathnameIsTableList(pathname, TABLE_LIST_PATHS.investmentTypes);
 
   const showSidebar = session.user.isManager;
 

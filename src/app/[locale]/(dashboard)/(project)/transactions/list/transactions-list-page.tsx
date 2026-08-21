@@ -6,15 +6,19 @@ import { getTransactionsByProjectUnsafe } from '@/actions/transactions/queries/g
 import { TransactionTable } from '@/components/transactions/transaction-table';
 import { db } from '@/lib/db';
 import { searchParamsCache } from '@/lib/params';
+import { resolveTableListViewId } from '@/lib/resolve-table-list-view';
+import { TABLE_LIST_PATHS } from '@/lib/table-list-path';
 
-interface PageProps {
+export async function TransactionsListPage({
+  viewId,
+  searchParams,
+}: {
+  viewId?: string;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-
-export default async function TransactionsPage({ searchParams }: PageProps) {
+}) {
   const { projectId } = searchParamsCache.parse(await searchParams);
 
-  const [{ transactions }, projectResult, projectWithManagers, views, connection] = await Promise.all([
+  const [{ transactions }, projectResult, projectWithManagers, viewsResult, connection] = await Promise.all([
     getTransactionsByProjectUnsafe(projectId),
     getProjectUnsafe(projectId),
     db.project.findUnique({
@@ -24,6 +28,9 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
     getViewsByType(ViewType.TRANSACTION, projectId),
     getLinkedBankConnection(projectId),
   ]);
+
+  const views = viewsResult?.views ?? [];
+  const resolvedViewId = resolveTableListViewId(viewId, views, TABLE_LIST_PATHS.transactions, projectId);
 
   const project = {
     ...projectResult,
@@ -35,7 +42,8 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
       transactions={transactions ?? []}
       project={project}
       projectId={projectId}
-      views={views?.views ?? []}
+      views={views}
+      viewId={resolvedViewId}
       hasBankConnection={Boolean(connection)}
     />
   );

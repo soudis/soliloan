@@ -20,22 +20,24 @@ import { buildAllLenderTableColumns } from '@/lib/dashboard/table-widget/lender-
 import { buildLenderTableColumnFilters } from '@/lib/entity-filters/filter-definitions';
 import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
 import { createAdditionalFieldDefaultColumnVisibility } from '@/lib/table-column-utils';
+import { TABLE_LIST_PATHS } from '@/lib/table-list-path';
 import type { LenderListItem } from '@/types/lenders';
 import { useProject } from '../providers/project-provider';
 
 interface LenderTableProps {
   lenders: LenderListItem[];
   views: View[];
+  viewId?: string;
 }
 
-export function LenderTable({ lenders, views }: LenderTableProps) {
+export function LenderTable({ lenders, views, viewId }: LenderTableProps) {
   const router = useRouter();
   const t = useTranslations('dashboard.lenders');
   const tLoans = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const locale = useLocale();
   const { project } = useProject();
-  const selectedViewName = useSelectedViewName(views);
+  const selectedViewName = useSelectedViewName(views, viewId);
 
   type DeleteState = { mode: 'bulk'; ids: string[] } | { mode: 'single'; lenderId: string } | null;
 
@@ -124,6 +126,8 @@ export function LenderTable({ lenders, views }: LenderTableProps) {
         defaultColumnVisibility={defaultColumnVisibility}
         viewType="LENDER"
         views={views}
+        viewId={viewId}
+        listPath={TABLE_LIST_PATHS.lenders}
         allowSidebarViews
         showFilter={true}
         showExport

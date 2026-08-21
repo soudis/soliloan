@@ -45,7 +45,7 @@ export const deleteLoanAction = loanAction.inputSchema(loanIdSchema).action(asyn
   // Revalidate the lender page
   revalidatePath(`/lenders/${loan.lenderId}`);
   // Revalidate the loans page for the project
-  revalidatePath('/loans');
+  revalidatePath('/loans/list');
 
   return { success: true };
 });

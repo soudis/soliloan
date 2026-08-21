@@ -26,6 +26,7 @@ import {
   createPercentageColumn,
   enumFilter,
 } from '@/lib/table-column-utils';
+import { TABLE_LIST_PATHS } from '@/lib/table-list-path';
 import { formatCurrency, formatIsoDate } from '@/lib/utils';
 import type { LoanStatus } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -48,14 +49,15 @@ interface Props {
   investmentTypes: InvestmentTypeWithLoans[];
   project: ProjectWithConfiguration;
   views: View[];
+  viewId?: string;
 }
 
-export function InvestmentTypesPageContent({ investmentTypes, project, views }: Props) {
+export function InvestmentTypesPageContent({ investmentTypes, project, views, viewId }: Props) {
   const t = useTranslations('dashboard.investmentTypes');
   const commonT = useTranslations('common');
   const router = useRouter();
   const locale = useLocale();
-  const selectedViewName = useSelectedViewName(views);
+  const selectedViewName = useSelectedViewName(views, viewId);
   const limitationTypeTimePeriod = commonT('enums.limitationTypeTimePeriod.parenthesized', { months: PERIOD_MONTHS });
   const [effectiveDate, setEffectiveDate] = useQueryState(
     'effectiveDate',
@@ -208,6 +210,8 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views }: 
         defaultColumnVisibility={defaultColumnVisibility}
         viewType={ViewType.INVESTMENT_TYPE}
         views={views}
+        viewId={viewId}
+        listPath={TABLE_LIST_PATHS.investmentTypes}
         showFilter={true}
         toolbarContent={
           <div className="flex items-center gap-3">

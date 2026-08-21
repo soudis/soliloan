@@ -47,8 +47,8 @@ export const enableDeInvestmentActComplianceAction = projectAction
     const maintenanceResult = await maintainLoanInvestmentTypes(db, ctx.projectId);
 
     revalidatePath('/configuration');
-    revalidatePath('/loans');
-    revalidatePath('/investment-types');
+    revalidatePath('/loans/list');
+    revalidatePath('/investment-types/list');
 
     return { investmentTypesCreated: maintenanceResult.investmentTypesCreated };
   });

@@ -4,25 +4,25 @@ import type { View, ViewType } from '@prisma/client';
 import {
   type ColumnDef,
   type FilterFn,
-  type SortingState,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   type RowData,
+  type SortingState,
   useReactTable,
   type VisibilityState,
 } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { type SetTableUrlState, type TableUrlState, useTableUrlState } from '@/lib/hooks/use-table-url-state';
 import {
   matchesDateFilter,
   matchesGlobalFilter,
   matchesNumberRangeFilter,
   matchesTextFilter,
 } from '@/lib/entity-filters/filter-matchers';
+import { type SetTableUrlState, type TableUrlState, useTableUrlState } from '@/lib/hooks/use-table-url-state';
 import {
   addPresentFilter,
   cleanupFiltersForHiddenColumns,
@@ -153,6 +153,10 @@ interface DataTableProps<TData, TValue> {
   /** Controlled table URL state (e.g. transaction table with extra params). */
   tableState?: TableUrlState;
   setTableState?: SetTableUrlState;
+  /** Saved view id from the `/list/[view]` route. */
+  viewId?: string;
+  /** When set, changing the selected view navigates here and wipes table query params. */
+  listPath?: string;
   /** Controlled row selection; when omitted, selection is managed internally. */
   rowSelection?: Record<string, boolean>;
   onRowSelectionChange?: (selection: Record<string, boolean>) => void;
@@ -184,6 +188,8 @@ export function DataTable<TData, TValue>({
   isExtraViewDataDirty,
   tableState: controlledTableState,
   setTableState: controlledSetTableState,
+  viewId,
+  listPath,
   rowSelection: controlledRowSelection,
   onRowSelectionChange: controlledOnRowSelectionChange,
 }: DataTableProps<TData, TValue>) {
@@ -194,6 +200,8 @@ export function DataTable<TData, TValue>({
     views,
     controlledState: controlledTableState,
     controlledSetState: controlledSetTableState,
+    viewId,
+    listPath,
   });
 
   const tableState = internalUrlState.state;
@@ -379,14 +387,20 @@ export function DataTable<TData, TValue>({
     columns: allColumns,
     getRowId: (row) => getRowId(row),
     enableRowSelection: hasBulkActions,
+    // Disabled: the auto page reset fires onPaginationChange during client-side
+    // navigation (view -> view) and the resulting nuqs replaceState cancels the
+    // in-flight Next.js navigation. Page resets are done explicitly instead.
+    autoResetPageIndex: false,
     onSortingChange: (updater) => {
       setTableState({
         sorting: updater instanceof Function ? updater(sorting) : updater,
+        pageIndex: 0,
       });
     },
     onColumnFiltersChange: (updater) => {
       setTableState({
         columnFilters: updater instanceof Function ? updater(columnFilterState) : updater,
+        pageIndex: 0,
       });
     },
     getCoreRowModel: getCoreRowModel(),
@@ -408,10 +422,12 @@ export function DataTable<TData, TValue>({
     },
     onGlobalFilterChange: (updater) => {
       const next = updater instanceof Function ? updater(globalFilter) : updater;
-      setTableState({ globalFilter: next });
+      setTableState({ globalFilter: next, pageIndex: 0 });
     },
     onPaginationChange: (updater) => {
       const resolved = updater instanceof Function ? updater(pagination) : updater;
+      // Skip no-op pagination writes so they don't trigger a nuqs URL update.
+      if (resolved.pageIndex === pagination.pageIndex && resolved.pageSize === pagination.pageSize) return;
       setTableState({
         pageIndex: resolved.pageIndex,
         pageSize: resolved.pageSize,
@@ -497,6 +513,7 @@ export function DataTable<TData, TValue>({
               tableState={tableState}
               setTableState={setTableState}
               allowSidebarViews={allowSidebarViews}
+              autoSelectDefaultView={!listPath}
               showExport={showExport}
               exportPrefix={exportPrefix}
               exportDisabled={exportDisabled}

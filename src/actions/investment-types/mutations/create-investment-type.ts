@@ -46,7 +46,7 @@ export const createInvestmentTypeAction = projectAction
       projectId: ctx.projectId,
     });
 
-    revalidatePath('/investment-types');
+    revalidatePath('/investment-types/list');
 
     return { investmentType };
   });

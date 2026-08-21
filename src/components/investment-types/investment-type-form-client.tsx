@@ -89,7 +89,7 @@ export function InvestmentTypeFormClient({
       } else if (isEditMode && initialData?.id) {
         router.push(`/investment-types/${initialData.id}?projectId=${project.id}`);
       } else {
-        router.push(`/investment-types?projectId=${project.id}`);
+        router.push(`/investment-types/list?projectId=${project.id}`);
       }
     } catch (err) {
       console.error('Error submitting form:', err);

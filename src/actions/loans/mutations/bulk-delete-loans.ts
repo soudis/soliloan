@@ -54,7 +54,7 @@ export const bulkDeleteLoansAction = projectAction
     });
 
     // Revalidate the loans page
-    revalidatePath('/loans');
+    revalidatePath('/loans/list');
 
     // Also revalidate affected lender pages
     const uniqueLenderIds = [...new Set(loans.map((l) => l.lenderId))];
