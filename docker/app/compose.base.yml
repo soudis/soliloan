@@ -14,6 +14,14 @@ services:
       - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}.entrypoints=websecure
       - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}.service=${TRAEFIK_ROUTER_NAME:-soliloan}
       - traefik.http.services.${TRAEFIK_ROUTER_NAME:-soliloan}.loadbalancer.server.port=3000
+      - traefik.http.middlewares.${TRAEFIK_ROUTER_NAME:-soliloan}-authratelimit.ratelimit.average=20
+      - traefik.http.middlewares.${TRAEFIK_ROUTER_NAME:-soliloan}-authratelimit.ratelimit.burst=10
+      - traefik.http.middlewares.${TRAEFIK_ROUTER_NAME:-soliloan}-authratelimit.ratelimit.period=1m
+      - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}-auth.rule=Host(`${TRAEFIK_HOST:?}`) && PathPrefix(`/api/auth`)
+      - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}-auth.entrypoints=websecure
+      - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}-auth.service=${TRAEFIK_ROUTER_NAME:-soliloan}
+      - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}-auth.middlewares=${TRAEFIK_ROUTER_NAME:-soliloan}-authratelimit
+      - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}-auth.priority=100
     environment:
       - TZ=Europe/Berlin
       - NEXT_PUBLIC_SOLILOAN_PROJECT_NAME=${SOLILOAN_PROJECT_NAME:?}

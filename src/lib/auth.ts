@@ -4,6 +4,9 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 
 import { db } from './db';
 
+const MAX_FAILED_LOGIN_ATTEMPTS = 10;
+const LOCKOUT_MINUTES = 15;
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: '/auth/login',
@@ -36,15 +39,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new Error('error.account.noPassword');
         }
 
+        if (user.lockedUntil && user.lockedUntil > new Date()) {
+          throw new Error('error.auth.accountLocked');
+        }
+
         const { verifyPassword } = await import('./utils/password');
         const isValid = await verifyPassword(credentials.password as string, user.password);
 
         if (!isValid) {
+          const failedLoginAttempts = user.failedLoginAttempts + 1;
+          await db.user.update({
+            where: { id: user.id },
+            data: {
+              failedLoginAttempts,
+              lockedUntil:
+                failedLoginAttempts >= MAX_FAILED_LOGIN_ATTEMPTS
+                  ? new Date(Date.now() + LOCKOUT_MINUTES * 60_000)
+                  : null,
+            },
+          });
           throw new Error('Invalid password');
         }
         await db.user.update({
           where: { id: user.id },
-          data: { lastLogin: new Date() },
+          data: { lastLogin: new Date(), failedLoginAttempts: 0, lockedUntil: null },
         });
         const isAdmin = user.isAdmin ?? false;
         const isManager = user.managerOf.length > 0 || isAdmin;
