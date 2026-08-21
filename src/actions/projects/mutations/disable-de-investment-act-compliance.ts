@@ -44,8 +44,8 @@ export const disableDeInvestmentActComplianceAction = projectAction
     }
 
     revalidatePath('/configuration');
-    revalidatePath('/loans');
-    revalidatePath('/investment-types');
+    revalidatePath('/loans/list');
+    revalidatePath('/investment-types/list');
 
     return { success: true as const };
   });

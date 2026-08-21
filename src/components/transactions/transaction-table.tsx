@@ -27,6 +27,7 @@ import {
   getTransactionTimeRangeFromState,
   useTransactionTableUrlState,
 } from '@/lib/hooks/use-transaction-table-url-state';
+import { TABLE_LIST_PATHS } from '@/lib/table-list-path';
 import {
   getTransactionIdFromListItemRowId,
   getTransactionListItemRowId,
@@ -40,6 +41,7 @@ interface TransactionTableProps {
   project: ProjectWithConfiguration;
   projectId: string;
   views: View[];
+  viewId?: string;
   hasBankConnection?: boolean;
 }
 
@@ -48,6 +50,7 @@ export function TransactionTable({
   project,
   projectId,
   views,
+  viewId,
   hasBankConnection = false,
 }: TransactionTableProps) {
   const t = useTranslations('dashboard.transactions');
@@ -58,7 +61,7 @@ export function TransactionTable({
   const tDuration = useTranslations('common.duration');
   const router = useRouter();
   const locale = useLocale();
-  const selectedViewName = useSelectedViewName(views);
+  const selectedViewName = useSelectedViewName(views, viewId);
 
   const defaultColumnVisibility = useMemo(() => buildTransactionTableDefaultColumnVisibility(project), [project]);
 
@@ -70,6 +73,8 @@ export function TransactionTable({
   } = useTransactionTableUrlState({
     defaultColumnVisibility,
     views,
+    viewId,
+    listPath: TABLE_LIST_PATHS.transactions,
   });
 
   type DeleteState = { mode: 'bulk'; ids: string[] } | { mode: 'single'; transactionId: string } | null;
@@ -160,6 +165,8 @@ export function TransactionTable({
         defaultSorting={DEFAULT_TRANSACTION_TABLE_SORTING}
         viewType={ViewType.TRANSACTION}
         views={views}
+        viewId={viewId}
+        listPath={TABLE_LIST_PATHS.transactions}
         allowSidebarViews
         showFilter={true}
         showExport

@@ -51,7 +51,7 @@ export const terminateLoanAction = loanAction
     }
 
     revalidatePath(`/lenders/${loan.lenderId}`);
-    revalidatePath('/loans');
+    revalidatePath('/loans/list');
 
     return { loan: updatedLoan };
   });

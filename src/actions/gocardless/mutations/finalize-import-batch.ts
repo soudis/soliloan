@@ -203,7 +203,7 @@ export const finalizeImportBatchAction = projectAction
       });
     }
 
-    revalidatePath('/transactions');
+    revalidatePath('/transactions/list');
     revalidatePath('/transactions/import');
 
     const remainingRows = await db.bankImportRow.count({

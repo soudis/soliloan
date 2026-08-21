@@ -1,7 +1,7 @@
 import type { View } from '@prisma/client';
 import { Star, Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -18,9 +18,19 @@ interface ViewManagerProps {
   views: View[];
   state: TableUrlState;
   viewDirty: boolean;
+  /** When false, skip applying a starred default view on first load (path-based `/list` routes). */
+  autoSelectDefaultView?: boolean;
 }
 
-export function ViewManager({ onViewSelect, onViewDelete, onViewDefault, views, state, viewDirty }: ViewManagerProps) {
+export function ViewManager({
+  onViewSelect,
+  onViewDelete,
+  onViewDefault,
+  views,
+  state,
+  viewDirty,
+  autoSelectDefaultView = true,
+}: ViewManagerProps) {
   const t = useTranslations('views');
   const searchParams = useSearchParams();
 
@@ -36,6 +46,10 @@ export function ViewManager({ onViewSelect, onViewDelete, onViewDefault, views, 
   const initializedRef = useRef(false);
 
   useEffect(() => {
+    if (!autoSelectDefaultView) {
+      return;
+    }
+
     if (state.selectedView) {
       initializedRef.current = true;
       return;
@@ -60,7 +74,7 @@ export function ViewManager({ onViewSelect, onViewDelete, onViewDefault, views, 
       onViewSelectRef.current(defaultView);
     }
     // No default view: leave URL/state as-is (do not call onViewSelect(null) — that wipes URL params).
-  }, [views, state.selectedView, searchParams]);
+  }, [views, state.selectedView, searchParams, autoSelectDefaultView]);
 
   const handleDelete = async (viewId: string, e: React.MouseEvent) => {
     e.stopPropagation();

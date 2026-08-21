@@ -72,5 +72,5 @@ export function buildLoanTableHrefFromWidget(options: {
   }
 
   const query = params.toString();
-  return query ? `/loans?${query}` : '/loans';
+  return query ? `/loans/list?${query}` : '/loans/list';
 }

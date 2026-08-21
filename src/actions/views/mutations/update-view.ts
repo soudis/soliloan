@@ -7,6 +7,7 @@ import { db } from '@/lib/db';
 import { viewFormUpdateSchema } from '@/lib/schemas/view';
 import { authAction } from '@/lib/utils/safe-action';
 import { assertCanModifyView } from '@/lib/views/access';
+import { revalidateSidebarViews } from '@/lib/views/revalidate-sidebar-views';
 
 export const updateViewAction = authAction
   .schema(
@@ -61,6 +62,8 @@ export const updateViewAction = authAction
         type: data.type as ViewType | undefined,
       },
     });
+
+    revalidateSidebarViews();
 
     return { view: updatedView };
   });

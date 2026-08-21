@@ -2,73 +2,32 @@
 
 import type { LucideIcon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { useQueryStates } from 'nuqs';
 
 import { Link } from '@/i18n/navigation';
-import { transactionTableUrlNuqsOptions, transactionTableUrlParsers } from '@/lib/hooks/transaction-table-url-parsers';
 import { useProjectId } from '@/lib/hooks/use-project-id';
-import { PROJECT_ID_KEY } from '@/lib/params';
-import { tableUrlNuqsOptions, tableUrlParsers } from '@/lib/table-url-parsers';
+import { buildTableListHref } from '@/lib/table-list-path';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store';
 
 interface ProjectTableNavItemProps {
-  basePath: '/lenders' | '/loans' | '/transactions';
+  basePath: '/lenders' | '/loans' | '/transactions' | '/investment-types';
   icon: LucideIcon;
   label: string;
 }
 
-/**
- * Lenders/loans/transactions list entry: keeps `projectId` in the URL and clears table nuqs (`view`, filters, …)
- * when clicking the section link while already on that route (same issue as sidebar pinned views).
- */
+/** Lenders/loans/transactions/investment-types list entry: keeps `projectId` in the URL. */
 export function ProjectTableNavItem({ basePath, icon: Icon, label }: ProjectTableNavItemProps) {
   const pathname = usePathname();
   const projectId = useProjectId();
   const { toggleSidebar } = useAppStore();
-  const isTransactions = basePath === '/transactions';
-  const [, setTableUrl] = useQueryStates(
-    isTransactions ? transactionTableUrlParsers : tableUrlParsers,
-    isTransactions ? transactionTableUrlNuqsOptions : tableUrlNuqsOptions,
-  );
+  const href = buildTableListHref(`${basePath}/list`, null, projectId);
 
-  const href =
-    projectId != null && projectId !== '' ? `${basePath}?${PROJECT_ID_KEY}=${encodeURIComponent(projectId)}` : basePath;
-
-  const pathOnly = href.split('?')[0] ?? basePath;
-  const onSameTableRoute = pathname.endsWith(basePath);
-
-  const isActive =
-    pathname === pathOnly ||
-    pathname.startsWith(`${pathOnly}/`) ||
-    pathname.endsWith(pathOnly) ||
-    pathname.includes(`/${pathOnly}/`);
+  const isActive = pathname.includes(`${basePath}/`) || pathname.endsWith(basePath);
 
   return (
     <Link
       href={href}
-      onClick={(e) => {
-        if (onSameTableRoute) {
-          e.preventDefault();
-          void setTableUrl({
-            view: null,
-            q: null,
-            sort: null,
-            filters: null,
-            cols: null,
-            page: null,
-            pageSize: null,
-            viewName: null,
-            ...(isTransactions
-              ? {
-                  txRange: null,
-                  txRangeFrom: null,
-                  txRangeTo: null,
-                  includeInterest: null,
-                }
-              : {}),
-          });
-        }
+      onClick={() => {
         if (typeof window !== 'undefined' && window.innerWidth < 768) {
           toggleSidebar();
         }

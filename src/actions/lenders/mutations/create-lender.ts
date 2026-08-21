@@ -94,7 +94,7 @@ export const createLenderAction = projectAction.inputSchema(lenderFormSchema).ac
   });
 
   // Revalidate the lenders page
-  revalidatePath('/lenders');
+  revalidatePath('/lenders/list');
 
   return { id: lender.id };
 });

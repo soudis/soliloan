@@ -37,8 +37,8 @@ export const deleteInvestmentTypeAction = projectAction
       projectId: ctx.projectId,
     });
 
-    revalidatePath('/investment-types');
-    revalidatePath('/loans');
+    revalidatePath('/investment-types/list');
+    revalidatePath('/loans/list');
 
     return { success: true };
   });

@@ -55,7 +55,7 @@ export const bulkDeleteLendersAction = projectAction
     });
 
     // Revalidate the project lenders page
-    revalidatePath('/lenders');
+    revalidatePath('/lenders/list');
 
     return { success: true, deletedCount: lenders.length };
   });

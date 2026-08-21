@@ -5,15 +5,19 @@ import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
 import { LoanTable } from '@/components/loans/loan-table';
 import { db } from '@/lib/db';
 import { searchParamsCache } from '@/lib/params';
+import { resolveTableListViewId } from '@/lib/resolve-table-list-view';
+import { TABLE_LIST_PATHS } from '@/lib/table-list-path';
 
-interface PageProps {
+export async function LoansListPage({
+  viewId,
+  searchParams,
+}: {
+  viewId?: string;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-
-export default async function LoansPage({ searchParams }: PageProps) {
+}) {
   const { projectId } = searchParamsCache.parse(await searchParams);
 
-  const [{ loans }, projectResult, projectWithManagers, views] = await Promise.all([
+  const [{ loans }, projectResult, projectWithManagers, viewsResult] = await Promise.all([
     getLoansByProjectUnsafe(projectId),
     getProjectUnsafe(projectId),
     db.project.findUnique({
@@ -23,9 +27,14 @@ export default async function LoansPage({ searchParams }: PageProps) {
     getViewsByType(ViewType.LOAN, projectId),
   ]);
 
+  const views = viewsResult?.views ?? [];
+  const resolvedViewId = resolveTableListViewId(viewId, views, TABLE_LIST_PATHS.loans, projectId);
+
   const project = {
     ...projectResult,
     managers: projectWithManagers?.managers ?? [],
   };
-  return <LoanTable loans={loans ?? []} project={project} projectId={projectId} views={views?.views ?? []} />;
+  return (
+    <LoanTable loans={loans ?? []} project={project} projectId={projectId} views={views} viewId={resolvedViewId} />
+  );
 }

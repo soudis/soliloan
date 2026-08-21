@@ -85,7 +85,7 @@ export function InvestmentTypeDetailContent({ investmentType, project }: Props) 
       toast.error(result.serverError);
     } else {
       toast.success(t('detail.deleteSuccess'));
-      router.push(`/investment-types?projectId=${project.id}`);
+      router.push(`/investment-types/list?projectId=${project.id}`);
     }
     setShowDeleteDialog(false);
   };

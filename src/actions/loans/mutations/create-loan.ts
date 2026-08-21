@@ -119,7 +119,7 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
 
   // Revalidate the lender page and loans page
   revalidatePath(`/lenders/${data.lenderId}`);
-  revalidatePath('/loans');
+  revalidatePath('/loans/list');
 
   return { loan };
 });

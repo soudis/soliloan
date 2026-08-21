@@ -82,7 +82,7 @@ export const bulkDeleteTransactionsAction = projectAction
       revalidatePath(`/lenders/${transaction.loan.lenderId}`);
     }
 
-    revalidatePath('/transactions');
+    revalidatePath('/transactions/list');
 
     return { deletedCount, skippedCount: skippedIds.length, skippedIds };
   });

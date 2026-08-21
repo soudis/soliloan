@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { db } from '@/lib/db';
 import { authAction } from '@/lib/utils/safe-action';
 import { assertCanModifyView } from '@/lib/views/access';
+import { revalidateSidebarViews } from '@/lib/views/revalidate-sidebar-views';
 
 export const deleteViewAction = authAction
   .schema(z.object({ viewId: z.string(), projectId: z.string().optional() }))
@@ -28,6 +29,8 @@ export const deleteViewAction = authAction
     await db.view.delete({
       where: { id: viewId },
     });
+
+    revalidateSidebarViews();
 
     return { success: true };
   });
