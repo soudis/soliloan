@@ -24,6 +24,7 @@ import React from 'react';
 
 import { type DesignComponent, designComponentId, getDocumentLayout } from '@/lib/templates/design-tree';
 import { paddingPropsToPdfPoints, resolvePaddingPx } from '@/lib/templates/padding-utils';
+import { type RasterSize, readRasterSizeFromDataUrl } from '@/lib/templates/raster-image-size';
 import { processTemplate } from '@/lib/templates/template-processor';
 import { stripLoopScaffoldFromTiptapHtml } from '@/lib/templates/tiptap-merge-loop';
 
@@ -368,6 +369,8 @@ export type DesignToPdfOptions = {
   sampleData?: Record<string, unknown>;
   /** Optional logo URL when image has useLogoSource (overrides project logo) */
   logoUrl?: string;
+  /** Intrinsic pixel size of `logoUrl`, used so flex rows grow with the image. */
+  logoDimensions?: RasterSize | null;
   /** Base URL for resolving public asset paths like /soliloan-logo.webp */
   assetBaseUrl?: string;
 };
@@ -400,7 +403,15 @@ export function renderDesignToPdfParts(
   headerBorder: Record<string, unknown>;
   footerBorder: Record<string, unknown>;
 } {
-  const { design, sampleData = {}, logoUrl, assetBaseUrl } = options;
+  const { design, sampleData = {}, logoUrl, logoDimensions, assetBaseUrl } = options;
+
+  const resolveImageAspectRatio = (props: Record<string, unknown> | undefined, src: string): number => {
+    const useLogo = props?.useLogoSource === true;
+    const size = useLogo ? logoDimensions : readRasterSizeFromDataUrl(src);
+    if (size && size.width > 0) return size.height / size.width;
+    // Prefer a square box over cropping a taller logo when dimensions are unknown.
+    return 1;
+  };
   const { Document: _Doc, Page: _Page, View, Text: PdfText, Image: PdfImage } = components;
   const layout = getDocumentLayout(design);
 
@@ -545,7 +556,9 @@ export function renderDesignToPdfParts(
       case 'Image': {
         const resolvedWidth =
           parseImageWidthToPt(props?.width, availableWidth) ?? Math.min(availableWidth, pxToPdfPt(180));
-        const estimatedHeight = Math.max(pxToPdfPt(24), Math.min(resolvedWidth / 3, pxToPdfPt(96)));
+        const rawSrc = props?.useLogoSource === true ? logoUrl || DEFAULT_APP_LOGO_SRC : (props?.src as string) || '';
+        const src = resolvePdfImageSrc(rawSrc, assetBaseUrl);
+        const estimatedHeight = resolvedWidth * resolveImageAspectRatio(props, src);
         return estimatedHeight + pxToPdfPt(16);
       }
 
@@ -704,6 +717,7 @@ export function renderDesignToPdfParts(
               style: {
                 ...baseStyle,
                 ...containerPdfFlexStyle(props, 'row'),
+                overflow: 'visible',
               },
             },
             ...children.map((child, i) =>
@@ -711,7 +725,7 @@ export function renderDesignToPdfParts(
                 View,
                 {
                   key: `${nodeId}-${i}`,
-                  style: { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 },
+                  style: { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0, overflow: 'visible' },
                 },
                 child,
               ),
@@ -793,14 +807,26 @@ export function renderDesignToPdfParts(
         const src = resolvePdfImageSrc(rawSrc, assetBaseUrl);
         if (!src) return null;
         const widthStyle = imageWidthToPdfStyle(props?.width ?? '100%');
+        const aspect = resolveImageAspectRatio(props, src);
+        const absoluteWidthPt = parseImageWidthToPt(props?.width, PDF_PAGE_WIDTH);
+        const imageStyle: Record<string, unknown> = {
+          ...widthStyle,
+          maxWidth: '100%',
+          marginVertical: pxToPdfPt(8),
+          flexShrink: 0,
+          objectFit: 'contain',
+        };
+        // Yoga does not pick up intrinsic image height in a row; set it so the
+        // parent grows instead of clipping the logo to the sibling text height.
+        if (typeof widthStyle.width === 'number') {
+          imageStyle.height = widthStyle.width * aspect;
+        } else if (absoluteWidthPt != null && !(typeof props?.width === 'string' && props.width.trim().endsWith('%'))) {
+          imageStyle.height = absoluteWidthPt * aspect;
+        }
         return React.createElement(PdfImage, {
           key: keyOverride ?? nodeId,
           src,
-          style: {
-            ...widthStyle,
-            maxWidth: '100%',
-            marginVertical: pxToPdfPt(8),
-          },
+          style: imageStyle,
         });
       }
 
