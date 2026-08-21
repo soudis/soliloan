@@ -37,8 +37,8 @@ export function DataTableBody<TData>({
   return (
     <div
       className={cn(
-        'rounded-md border border-border bg-card',
-        fillHeight && 'flex min-h-0 flex-1 flex-col overflow-hidden max-h-full',
+        'overflow-hidden rounded-md border border-border bg-card',
+        fillHeight && 'flex min-h-0 max-h-full flex-1 flex-col',
       )}
     >
       <div className={cn(fillHeight && 'min-h-0 max-h-full flex-1 overflow-auto')}>

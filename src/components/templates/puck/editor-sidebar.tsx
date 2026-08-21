@@ -1,14 +1,15 @@
 'use client';
 
-import { useEditor } from '@craftjs/core';
+import { Puck } from '@puckeditor/core';
 import { ListTree, Plus, Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import { EditorHierarchyPanel } from './editor-hierarchy-panel';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../ui/tooltip';
+import { OutlineDisplayNames } from './outline-display-names';
 import { SettingsPanel } from './settings-panel';
 import { Toolbox } from './toolbox';
+import { useTemplatePuck } from './use-template-puck';
 
 export function EditorSidebar() {
   const t = useTranslations('templates.editor');
@@ -16,12 +17,7 @@ export function EditorSidebar() {
   const [tab, setTab] = useState('toolbox');
   const prevSelectedIdRef = useRef<string | undefined>(undefined);
 
-  const { selectedId } = useEditor((state) => {
-    const v = state.events.selected.values().next().value;
-    return {
-      selectedId: typeof v === 'string' ? v : undefined,
-    };
-  });
+  const selectedId = useTemplatePuck((state) => state.selectedItem?.props.id as string | undefined);
 
   useEffect(() => {
     if (skipSettingsOnSelectionRef.current) {
@@ -37,8 +33,8 @@ export function EditorSidebar() {
 
   return (
     <TooltipProvider>
-      <div className="flex h-full min-h-0 w-full flex-col bg-white">
-        <Tabs value={tab} onValueChange={setTab} className="flex h-full min-h-0 flex-col">
+      <div className="template-puck-sidebar flex min-h-full flex-1 flex-col bg-white">
+        <Tabs value={tab} onValueChange={setTab} className="flex min-h-full flex-1 flex-col">
           <div className="shrink-0 border-b px-4 py-2">
             <TabsList variant="modern" className="mt-0 flex w-full">
               <TabsTrigger variant="modern" size="sm" value="toolbox" className="min-w-0 flex-1 md:flex-1">
@@ -60,7 +56,7 @@ export function EditorSidebar() {
 
           <TabsContent
             value="toolbox"
-            className="mt-0 flex-1 min-h-0 overflow-y-auto focus-visible:outline-none focus-visible:ring-0"
+            className="mt-0 min-h-0 flex-1 overflow-y-auto focus-visible:outline-none focus-visible:ring-0"
           >
             <Toolbox />
           </TabsContent>
@@ -74,13 +70,10 @@ export function EditorSidebar() {
 
           <TabsContent
             value="hierarchy"
-            className="mt-0 flex-1 min-h-0 overflow-y-auto focus-visible:outline-none focus-visible:ring-0"
+            className="mt-0 min-h-0 flex-1 overflow-y-auto p-2 focus-visible:outline-none focus-visible:ring-0"
           >
-            <EditorHierarchyPanel
-              onBeforeSelectNode={() => {
-                skipSettingsOnSelectionRef.current = true;
-              }}
-            />
+            <Puck.Outline />
+            <OutlineDisplayNames />
           </TabsContent>
         </Tabs>
       </div>

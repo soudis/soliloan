@@ -87,6 +87,9 @@
     "showEditor": "Editor",
     "showPreview": "Vorschau",
     "generatingPdf": "PDF wird erstellt…",
+    "previewFailed": "Vorschau konnte nicht erstellt werden.",
+    "designLoadFailed": "Die Vorlage konnte nicht geladen werden. Das gespeicherte Design ist ungültig.",
+    "selectParent": "Übergeordnetes Element auswählen",
     "mergeTags": {
       "groupLabel": "Gruppe",
       "groupPlaceholder": "Gruppe auswählen",
@@ -125,6 +128,7 @@
           "loans": "Felder eines einzelnen Darlehens innerhalb der Darlehens-Schleife.",
           "transactions": "Felder einer Transaktion innerhalb der Transaktions-Schleife.",
           "notes": "Felder einer Notiz innerhalb der Notiz-Schleife.",
+          "loanNotes": "Felder einer Notiz innerhalb der Darlehens-Notiz-Schleife.",
           "transactionsYearly": "Transaktionsfelder in der Jahresdarstellung.",
           "lenders": "Felder eines einzelnen Darlehensgebers innerhalb der Geber-Schleife."
         }
@@ -137,8 +141,16 @@
     },
     "hierarchy": {
       "empty": "Keine Struktur geladen.",
+      "title": "Hierarchie",
+      "collapseAll": "Alle zuklappen",
       "doubleClickHint": "Doppelklick auf einen Eintrag oder das Stiftsymbol anklicken, um den Anzeigenamen zu bearbeiten.",
-      "renameAria": "Anzeigenamen bearbeiten"
+      "renameAria": "Anzeigenamen bearbeiten",
+      "zones": {
+        "header": "Kopfzeile",
+        "footer": "Fußzeile",
+        "default-zone": "Inhalt",
+        "content": "Inhalt"
+      }
     },
     "toolbox": {
       "title": "Blöcke",
@@ -151,7 +163,9 @@
       "table": "Tabelle",
       "predefinedEmpty": "Keine Schablonen für diesen Vorlagentyp vorhanden.",
       "predefinedLoading": "Schablonen werden geladen…",
-      "predefinedDeleted": "Schablone gelöscht"
+      "predefinedDeleted": "Schablone gelöscht",
+      "predefinedInsert": "Schablone einfügen",
+      "predefinedNotReady": "Diese Schablone liegt noch im alten Format vor und kann nicht eingefügt werden."
     },
     "settings": {
       "title": "Einstellungen",
@@ -173,6 +187,10 @@
         "fontSize": "Schriftgröße",
         "textColor": "Textfarbe",
         "textAlign": "Textausrichtung",
+        "align_left": "Links",
+        "align_center": "Zentriert",
+        "align_right": "Rechts",
+        "align_justify": "Blocksatz",
         "insertPlaceholder": "Platzhalter einfügen"
       },
       "container": {
@@ -262,6 +280,7 @@
         "columnWidthLabel": "Spalte {column}",
         "columnWidthHint": "Die Werte werden relativ zueinander als Breitenverteilung verwendet.",
         "defaultHeader": "Spalte",
+        "cell": "Zelle",
         "dynamicHint": "Zeilen werden dynamisch aus der Datenquelle generiert.",
         "staticHint": "Die Tabelle hat eine feste Anzahl an Zeilen.",
         "loopKeyContextHint": "Datenquellen hängen von der Verschachtelung ab (z.B. können Transaktionen nur innerhalb eines Darlehen-Datensatzes angezeigt werden).",
@@ -303,6 +322,9 @@
         },
         "backgroundColor": "Hintergrundfarbe",
         "textColor": "Textfarbe"
+      },
+      "pageBody": {
+        "label": "Dokumentinhalt"
       },
       "pageHeader": {
         "label": "Kopfzeile",

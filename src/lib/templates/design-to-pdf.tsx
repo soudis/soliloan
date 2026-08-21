@@ -22,8 +22,9 @@ function resolvePdfImageSrc(src: string, assetBaseUrl?: string): string {
 
 import React from 'react';
 
-import { getNodesMapFromDesign } from '@/lib/templates/email-generator';
+import { type DesignComponent, designComponentId, getDocumentLayout } from '@/lib/templates/design-tree';
 import { paddingPropsToPdfPoints, resolvePaddingPx } from '@/lib/templates/padding-utils';
+import { type RasterSize, readRasterSizeFromDataUrl } from '@/lib/templates/raster-image-size';
 import { processTemplate } from '@/lib/templates/template-processor';
 import { stripLoopScaffoldFromTiptapHtml } from '@/lib/templates/tiptap-merge-loop';
 
@@ -165,7 +166,7 @@ const TABLE_CELL_PADDING_HORIZONTAL = pxToPdfPt(12);
 const PDF_PAGE_WIDTH = 595;
 const TEXT_LINE_HEIGHT_MULTIPLIER = 1.5;
 
-const NON_LOOPABLE_CONTAINER_IDS = new Set(['ROOT', 'BODY', 'PAGE_HEADER', 'PAGE_FOOTER']);
+const NON_LOOPABLE_CONTAINER_TYPES = new Set(['PageHeader', 'PageFooter', 'Body']);
 
 /** Editor image `width` is CSS (px or %). React-pdf uses points; convert px so PDF matches the editor. */
 function parseImageWidthToPt(value: unknown, relativeToPt: number): number | null {
@@ -195,7 +196,7 @@ function imageWidthToPdfStyle(widthProp: unknown): { width: number | string } {
   return { width: pxToPdfPt(numeric) };
 }
 
-/** Matches `Container` / `buildLayoutStyle` in `user-components/container.tsx` — react-pdf (Yoga) supports the same flex keywords. */
+/** Matches Container layout in the template editor — react-pdf (Yoga) supports the same flex keywords. */
 function containerPdfFlexStyle(
   props: Record<string, unknown> | undefined,
   layout: 'vertical' | 'row',
@@ -286,20 +287,9 @@ const getTableBorderConfig = (props: Record<string, any>) => ({
   borderWidth: getPdfBorderWidth(props.borderWidth),
 });
 
-const getComponentName = (type: unknown): string | undefined => {
-  if (typeof type === 'string') return type;
-  if (!type || typeof type !== 'object') return undefined;
-  const candidate = type as { resolvedName?: string; name?: string };
-  return candidate.resolvedName || candidate.name;
-};
-
-const getContainerLoopItems = (
-  nodeId: string,
-  props: Record<string, unknown> | null | undefined,
-  scopeData: TemplateScope,
-): TemplateScope[] | null => {
-  if (!props || NON_LOOPABLE_CONTAINER_IDS.has(nodeId)) return null;
-  const loopKey = typeof props.loopKey === 'string' ? props.loopKey : '';
+const getContainerLoopItems = (node: DesignComponent, scopeData: TemplateScope): TemplateScope[] | null => {
+  if (NON_LOOPABLE_CONTAINER_TYPES.has(node.type) || node.type !== 'Container') return null;
+  const loopKey = typeof node.props.loopKey === 'string' ? node.props.loopKey : '';
   if (!loopKey) return null;
   const rawValue = getScopeLoopArray(scopeData, loopKey);
   if (!Array.isArray(rawValue)) return [];
@@ -379,6 +369,8 @@ export type DesignToPdfOptions = {
   sampleData?: Record<string, unknown>;
   /** Optional logo URL when image has useLogoSource (overrides project logo) */
   logoUrl?: string;
+  /** Intrinsic pixel size of `logoUrl`, used so flex rows grow with the image. */
+  logoDimensions?: RasterSize | null;
   /** Base URL for resolving public asset paths like /soliloan-logo.webp */
   assetBaseUrl?: string;
 };
@@ -393,7 +385,7 @@ export type PdfComponents = {
 };
 
 /**
- * Renders the design tree (ROOT → PAGE_HEADER, BODY, PAGE_FOOTER) into react-pdf elements.
+ * Renders the Puck design tree (root header/footer slots + content) into react-pdf elements.
  * Returns { header, body, footer, headerPadding, footerPadding, headerBorder, footerBorder, headerHeight, footerHeight }
  * so the route can compose Page with fixed header/footer and padding.
  */
@@ -411,61 +403,35 @@ export function renderDesignToPdfParts(
   headerBorder: Record<string, unknown>;
   footerBorder: Record<string, unknown>;
 } {
-  const { design, sampleData = {}, logoUrl, assetBaseUrl } = options;
-  const nodes = getNodesMapFromDesign(design);
+  const { design, sampleData = {}, logoUrl, logoDimensions, assetBaseUrl } = options;
+
+  const resolveImageAspectRatio = (props: Record<string, unknown> | undefined, src: string): number => {
+    const useLogo = props?.useLogoSource === true;
+    const size = useLogo ? logoDimensions : readRasterSizeFromDataUrl(src);
+    if (size && size.width > 0) return size.height / size.width;
+    // Prefer a square box over cropping a taller logo when dimensions are unknown.
+    return 1;
+  };
   const { Document: _Doc, Page: _Page, View, Text: PdfText, Image: PdfImage } = components;
+  const layout = getDocumentLayout(design);
 
-  const rootNode =
-    nodes.ROOT ??
-    Object.values(nodes).find(
-      (n: any) => n?.linkedNodes?.PAGE_HEADER && n?.linkedNodes?.BODY && n?.linkedNodes?.PAGE_FOOTER,
-    );
-  if (!rootNode) {
-    return {
-      header: null,
-      body: null,
-      footer: null,
-      headerPadding: 0,
-      footerPadding: 0,
-      headerHeight: 0,
-      footerHeight: 0,
-      headerBorder: {},
-      footerBorder: {},
-    };
-  }
+  const emptyParts = {
+    header: null,
+    body: null,
+    footer: null,
+    headerPadding: 0,
+    footerPadding: 0,
+    headerHeight: 0,
+    footerHeight: 0,
+    headerBorder: {},
+    footerBorder: {},
+  };
 
-  const linked = rootNode.linkedNodes || {};
-  const childIds: string[] = rootNode.nodes || [];
-  let headerNodeId = linked.PAGE_HEADER;
-  let bodyNodeId = linked.BODY;
-  let footerNodeId = linked.PAGE_FOOTER;
-  if (!headerNodeId || !bodyNodeId || !footerNodeId) {
-    for (const id of childIds) {
-      const n = nodes[id];
-      const propId = n?.props?.id;
-      if (propId === 'PAGE_HEADER') headerNodeId = id;
-      if (propId === 'BODY') bodyNodeId = id;
-      if (propId === 'PAGE_FOOTER') footerNodeId = id;
-    }
-  }
-
-  const hasDocumentStructure = headerNodeId && bodyNodeId && footerNodeId;
-  if (!hasDocumentStructure) {
-    return {
-      header: null,
-      body: null,
-      footer: null,
-      headerPadding: 0,
-      footerPadding: 0,
-      headerHeight: 0,
-      footerHeight: 0,
-      headerBorder: {},
-      footerBorder: {},
-    };
+  if (!layout.header && !layout.footer && layout.body.length === 0) {
+    return emptyParts;
   }
 
   const data = sampleData as TemplateScope;
-
   const getVerticalBorderWidth = (props: Record<string, unknown> | null | undefined): number => {
     if (!props || typeof props !== 'object') return 0;
     const borderWidth = getPdfBorderWidth(props.borderWidth);
@@ -485,60 +451,47 @@ export function renderDesignToPdfParts(
     return lineCount * lineHeight;
   };
 
-  const getNodeInstanceCount = (nodeId: string, scopeData: TemplateScope): number => {
-    const node = nodes[nodeId];
-    if (!node) return 0;
-    const componentName = getComponentName(node.type);
-    if (componentName !== 'Container') return 1;
-    const loopItems = getContainerLoopItems(nodeId, node.props as Record<string, unknown> | undefined, scopeData);
+  const getNodeInstanceCount = (node: DesignComponent, scopeData: TemplateScope): number => {
+    if (node.type !== 'Container') return 1;
+    const loopItems = getContainerLoopItems(node, scopeData);
     if (loopItems === null) return 1;
     return loopItems.length;
   };
 
   const estimateNodeHeights = (
-    nodeId: string,
+    node: DesignComponent,
     availableWidth: number,
     context: { isHeaderOrFooter: boolean } = { isHeaderOrFooter: false },
     scopeData: TemplateScope = data,
   ): number[] => {
-    const node = nodes[nodeId];
-    if (!node) return [];
-    const componentName = getComponentName(node.type);
-    if (componentName === 'Container') {
-      const loopItems = getContainerLoopItems(nodeId, node.props as Record<string, unknown> | undefined, scopeData);
+    if (node.type === 'Container') {
+      const loopItems = getContainerLoopItems(node, scopeData);
       if (loopItems !== null) {
-        return loopItems.map((item) => estimateNodeHeight(nodeId, availableWidth, context, item, true));
+        return loopItems.map((item) => estimateNodeHeight(node, availableWidth, context, item, true));
       }
     }
-    return [estimateNodeHeight(nodeId, availableWidth, context, scopeData, false)];
+    return [estimateNodeHeight(node, availableWidth, context, scopeData, false)];
   };
 
   const estimateNodeHeight = (
-    nodeId: string,
+    node: DesignComponent,
     availableWidth: number,
     context: { isHeaderOrFooter: boolean } = { isHeaderOrFooter: false },
     scopeData: TemplateScope = data,
     skipLoopExpansion = false,
   ): number => {
-    const node = nodes[nodeId];
-    if (!node) return 0;
-
-    const { type, props, nodes: nodeChildren } = node;
-    const name = getComponentName(type);
-    const childIdsList: string[] = nodeChildren || [];
+    const { type: name, props, children } = node;
 
     if (!skipLoopExpansion && name === 'Container') {
-      const loopItems = getContainerLoopItems(nodeId, props as Record<string, unknown> | undefined, scopeData);
+      const loopItems = getContainerLoopItems(node, scopeData);
       if (loopItems !== null) {
-        return loopItems.reduce(
-          (sum, item) => sum + estimateNodeHeight(nodeId, availableWidth, context, item, true),
-          0,
-        );
+        return loopItems.reduce((sum, item) => sum + estimateNodeHeight(node, availableWidth, context, item, true), 0);
       }
     }
 
     switch (name) {
       case 'Container':
+      case 'Body':
       case 'PageHeader':
       case 'PageFooter': {
         const layout = (props?.layout as string) || 'vertical';
@@ -552,19 +505,17 @@ export function renderDesignToPdfParts(
         const borderHeight = getVerticalBorderWidth(props);
         const innerWidth = Math.max(availableWidth - padLeft - padRight, 80);
 
-        if (childIdsList.length === 0) {
+        if (children.length === 0) {
           return padTop + padBottom + borderHeight;
         }
 
         if (layout === 'horizontal') {
           const childCount = Math.max(
             1,
-            childIdsList.reduce((sum, childId) => sum + getNodeInstanceCount(childId, scopeData), 0),
+            children.reduce((sum, child) => sum + getNodeInstanceCount(child, scopeData), 0),
           );
           const childWidth = Math.max((innerWidth - gap * Math.max(childCount - 1, 0)) / childCount, 40);
-          const childHeights = childIdsList.flatMap((childId) =>
-            estimateNodeHeights(childId, childWidth, context, scopeData),
-          );
+          const childHeights = children.flatMap((child) => estimateNodeHeights(child, childWidth, context, scopeData));
           if (childHeights.length === 0) {
             return padTop + padBottom + borderHeight;
           }
@@ -573,9 +524,7 @@ export function renderDesignToPdfParts(
 
         if (layout === 'grid') {
           const childWidth = Math.max((innerWidth - gap * Math.max(gridCols - 1, 0)) / gridCols, 40);
-          const childHeights = childIdsList.flatMap((childId) =>
-            estimateNodeHeights(childId, childWidth, context, scopeData),
-          );
+          const childHeights = children.flatMap((child) => estimateNodeHeights(child, childWidth, context, scopeData));
           if (childHeights.length === 0) {
             return padTop + padBottom + borderHeight;
           }
@@ -587,9 +536,7 @@ export function renderDesignToPdfParts(
           return padTop + padBottom + borderHeight + totalHeight + gap * Math.max(rowCount - 1, 0);
         }
 
-        const childHeights = childIdsList.flatMap((childId) =>
-          estimateNodeHeights(childId, innerWidth, context, scopeData),
-        );
+        const childHeights = children.flatMap((child) => estimateNodeHeights(child, innerWidth, context, scopeData));
         return (
           padTop +
           padBottom +
@@ -609,7 +556,9 @@ export function renderDesignToPdfParts(
       case 'Image': {
         const resolvedWidth =
           parseImageWidthToPt(props?.width, availableWidth) ?? Math.min(availableWidth, pxToPdfPt(180));
-        const estimatedHeight = Math.max(pxToPdfPt(24), Math.min(resolvedWidth / 3, pxToPdfPt(96)));
+        const rawSrc = props?.useLogoSource === true ? logoUrl || DEFAULT_APP_LOGO_SRC : (props?.src as string) || '';
+        const src = resolvePdfImageSrc(rawSrc, assetBaseUrl);
+        const estimatedHeight = resolvedWidth * resolveImageAspectRatio(props, src);
         return estimatedHeight + pxToPdfPt(16);
       }
 
@@ -693,10 +642,10 @@ export function renderDesignToPdfParts(
         return 0;
 
       default:
-        return childIdsList.reduce(
-          (sum, childId) =>
+        return children.reduce(
+          (sum, child) =>
             sum +
-            estimateNodeHeights(childId, availableWidth, context, scopeData).reduce(
+            estimateNodeHeights(child, availableWidth, context, scopeData).reduce(
               (innerSum, height) => innerSum + height,
               0,
             ),
@@ -706,51 +655,46 @@ export function renderDesignToPdfParts(
   };
 
   const renderNodeInstances = (
-    nodeId: string,
+    node: DesignComponent,
     context: { isHeaderOrFooter: boolean } = { isHeaderOrFooter: false },
     scopeData: TemplateScope = data,
   ): React.ReactNode[] => {
-    const node = nodes[nodeId];
-    if (!node) return [];
-    const componentName = getComponentName(node.type);
-    if (componentName === 'Container') {
-      const loopItems = getContainerLoopItems(nodeId, node.props as Record<string, unknown> | undefined, scopeData);
+    const nodeId = designComponentId(node);
+    if (node.type === 'Container') {
+      const loopItems = getContainerLoopItems(node, scopeData);
       if (loopItems !== null) {
-        return loopItems.map((item, index) => renderNode(nodeId, context, item, `${nodeId}-loop-${index}`, true));
+        return loopItems.map((item, index) => renderNode(node, context, item, `${nodeId}-loop-${index}`, true));
       }
     }
-    return [renderNode(nodeId, context, scopeData, nodeId, false)];
+    return [renderNode(node, context, scopeData, nodeId, false)];
   };
 
   const renderNode = (
-    nodeId: string,
+    node: DesignComponent,
     context: { isHeaderOrFooter: boolean } = { isHeaderOrFooter: false },
     scopeData: TemplateScope = data,
     keyOverride?: string,
     skipLoopExpansion = false,
   ): React.ReactNode => {
-    const node = nodes[nodeId];
-    if (!node) return null;
-
-    const { type, props, nodes: nodeChildren } = node;
-    const name = getComponentName(type);
-    const childIdsList: string[] = nodeChildren || [];
+    const nodeId = designComponentId(node);
+    const { type: name, props, children: childNodes } = node;
 
     if (!skipLoopExpansion && name === 'Container') {
-      const loopItems = getContainerLoopItems(nodeId, props as Record<string, unknown> | undefined, scopeData);
+      const loopItems = getContainerLoopItems(node, scopeData);
       if (loopItems !== null) {
         return React.createElement(
           React.Fragment,
           { key: keyOverride ?? nodeId },
-          ...loopItems.map((item, index) => renderNode(nodeId, context, item, `${nodeId}-loop-${index}`, true)),
+          ...loopItems.map((item, index) => renderNode(node, context, item, `${nodeId}-loop-${index}`, true)),
         );
       }
     }
 
-    const children = childIdsList.flatMap((cid) => renderNodeInstances(cid, context, scopeData));
+    const children = childNodes.flatMap((child) => renderNodeInstances(child, context, scopeData));
 
     switch (name) {
       case 'Container':
+      case 'Body':
       case 'PageHeader':
       case 'PageFooter': {
         const layout = (props?.layout as string) || 'vertical';
@@ -773,6 +717,7 @@ export function renderDesignToPdfParts(
               style: {
                 ...baseStyle,
                 ...containerPdfFlexStyle(props, 'row'),
+                overflow: 'visible',
               },
             },
             ...children.map((child, i) =>
@@ -780,7 +725,7 @@ export function renderDesignToPdfParts(
                 View,
                 {
                   key: `${nodeId}-${i}`,
-                  style: { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 },
+                  style: { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0, overflow: 'visible' },
                 },
                 child,
               ),
@@ -862,14 +807,26 @@ export function renderDesignToPdfParts(
         const src = resolvePdfImageSrc(rawSrc, assetBaseUrl);
         if (!src) return null;
         const widthStyle = imageWidthToPdfStyle(props?.width ?? '100%');
+        const aspect = resolveImageAspectRatio(props, src);
+        const absoluteWidthPt = parseImageWidthToPt(props?.width, PDF_PAGE_WIDTH);
+        const imageStyle: Record<string, unknown> = {
+          ...widthStyle,
+          maxWidth: '100%',
+          marginVertical: pxToPdfPt(8),
+          flexShrink: 0,
+          objectFit: 'contain',
+        };
+        // Yoga does not pick up intrinsic image height in a row; set it so the
+        // parent grows instead of clipping the logo to the sibling text height.
+        if (typeof widthStyle.width === 'number') {
+          imageStyle.height = widthStyle.width * aspect;
+        } else if (absoluteWidthPt != null && !(typeof props?.width === 'string' && props.width.trim().endsWith('%'))) {
+          imageStyle.height = absoluteWidthPt * aspect;
+        }
         return React.createElement(PdfImage, {
           key: keyOverride ?? nodeId,
           src,
-          style: {
-            ...widthStyle,
-            maxWidth: '100%',
-            marginVertical: pxToPdfPt(8),
-          },
+          style: imageStyle,
         });
       }
 
@@ -1012,93 +969,37 @@ export function renderDesignToPdfParts(
     }
   };
 
-  const headerSides = resolvePaddingPx(nodes[headerNodeId]?.props ?? { padding: 16 });
-  const footerSides = resolvePaddingPx(nodes[footerNodeId]?.props ?? { padding: 16 });
+  const headerSides = resolvePaddingPx(layout.header?.props ?? { padding: 16 });
+  const footerSides = resolvePaddingPx(layout.footer?.props ?? { padding: 16 });
   const headerPadding = pxToPdfPt(headerSides.top) + pxToPdfPt(headerSides.bottom);
   const footerPadding = pxToPdfPt(footerSides.top) + pxToPdfPt(footerSides.bottom);
-  const headerHeight = Math.max(
-    headerPadding + pxToPdfPt(16),
-    estimateNodeHeight(headerNodeId, PDF_PAGE_WIDTH, { isHeaderOrFooter: true }),
-  );
-  const footerHeight = Math.max(
-    footerPadding + pxToPdfPt(16),
-    estimateNodeHeight(footerNodeId, PDF_PAGE_WIDTH, { isHeaderOrFooter: true }),
-  );
-  const headerBorder = borderPropsToPdfStyle(nodes[headerNodeId]?.props);
-  const footerBorder = borderPropsToPdfStyle(nodes[footerNodeId]?.props);
+  const headerHeight = layout.header
+    ? Math.max(
+        headerPadding + pxToPdfPt(16),
+        estimateNodeHeight(layout.header, PDF_PAGE_WIDTH, { isHeaderOrFooter: true }),
+      )
+    : 0;
+  const footerHeight = layout.footer
+    ? Math.max(
+        footerPadding + pxToPdfPt(16),
+        estimateNodeHeight(layout.footer, PDF_PAGE_WIDTH, { isHeaderOrFooter: true }),
+      )
+    : 0;
+  const headerBorder = borderPropsToPdfStyle(layout.header?.props);
+  const footerBorder = borderPropsToPdfStyle(layout.footer?.props);
 
-  const header = renderNode(headerNodeId, { isHeaderOrFooter: true });
-  const footer = renderNode(footerNodeId, { isHeaderOrFooter: true });
-  const bodyNode = nodes[bodyNodeId];
-  const bodyChildIds: string[] = bodyNode?.nodes || [];
-  const bodyLayout = (bodyNode?.props?.layout as string) || 'vertical';
-  const bodyGridCols = Math.max(1, Number(bodyNode?.props?.gridColumns) ?? 2);
-  const bodyBg = (bodyNode?.props?.background as string) ?? '#ffffff';
-  const bodyBorderStyle = borderPropsToPdfStyle(bodyNode?.props);
-  const bodyProps = (bodyNode?.props ?? {}) as Record<string, unknown>;
-  const bodyPaddingPdf = paddingPropsToPdfPoints(bodyNode?.props ?? { padding: 56 }, pxToPdfPt);
+  const header = layout.header ? renderNode(layout.header, { isHeaderOrFooter: true }) : null;
+  const footer = layout.footer ? renderNode(layout.footer, { isHeaderOrFooter: true }) : null;
 
-  let bodyContent: React.ReactNode;
-  if (bodyChildIds.length === 0) {
-    bodyContent = null;
-  } else {
-    const bodyChildren = bodyChildIds.flatMap((id) => renderNodeInstances(id));
-    if (bodyLayout === 'horizontal') {
-      bodyContent = React.createElement(
-        View,
-        {
-          style: {
-            ...bodyPaddingPdf,
-            backgroundColor: bodyBg,
-            width: '100%',
-            ...bodyBorderStyle,
-            ...containerPdfFlexStyle(bodyProps, 'row'),
-          },
-        },
-        ...bodyChildren.map((child, i) =>
-          React.createElement(
-            View,
-            { key: i, style: { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 } },
-            child,
-          ),
-        ),
-      );
-    } else if (bodyLayout === 'grid') {
-      const basisPct = bodyGridCols > 1 ? `${100 / bodyGridCols}%` : '100%';
-      bodyContent = React.createElement(
-        View,
-        {
-          style: {
-            ...bodyPaddingPdf,
-            backgroundColor: bodyBg,
-            width: '100%',
-            ...bodyBorderStyle,
-            ...containerPdfFlexStyle(bodyProps, 'row'),
-          },
-        },
-        ...bodyChildren.map((child, i) =>
-          React.createElement(
-            View,
-            { key: i, style: { flexGrow: 0, flexShrink: 0, flexBasis: basisPct, minWidth: 0 } },
-            child,
-          ),
-        ),
-      );
-    } else {
-      bodyContent = React.createElement(
-        View,
-        {
-          style: {
-            ...bodyPaddingPdf,
-            backgroundColor: bodyBg,
-            width: '100%',
-            ...bodyBorderStyle,
-            ...containerPdfFlexStyle(bodyProps, 'vertical'),
-          },
-        },
-        ...bodyChildren,
-      );
-    }
+  let bodyContent: React.ReactNode = null;
+  if (layout.body.length === 1) {
+    bodyContent = renderNode(layout.body[0]);
+  } else if (layout.body.length > 1) {
+    bodyContent = React.createElement(
+      View,
+      { style: { width: '100%', flexDirection: 'column' } },
+      ...layout.body.flatMap((item) => renderNodeInstances(item)),
+    );
   }
 
   return {

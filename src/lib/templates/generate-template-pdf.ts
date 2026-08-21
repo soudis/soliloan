@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import React from 'react';
+import { measureRasterSrc } from '@/lib/templates/raster-image-size';
 
 const FONTS_DIR = path.join(process.cwd(), 'public', 'fonts');
 const DEFAULT_APP_LOGO_PATH = '/soliloan-logo.webp';
@@ -86,6 +87,7 @@ export async function generateTemplatePdfBuffer(params: GenerateTemplatePdfParam
   const { renderDesignToPdfParts } = await import('@/lib/templates/design-to-pdf');
 
   const resolvedLogoUrl = await resolvePdfLogoUrl(params.logoUrl as string | undefined, params.assetBaseUrl);
+  const logoDimensions = resolvedLogoUrl ? await measureRasterSrc(resolvedLogoUrl) : null;
 
   Font.register({
     family: 'Inter',
@@ -102,6 +104,7 @@ export async function generateTemplatePdfBuffer(params: GenerateTemplatePdfParam
       design: params.design,
       sampleData: params.sampleData,
       logoUrl: resolvedLogoUrl,
+      logoDimensions,
       assetBaseUrl: params.assetBaseUrl,
     },
     { Document, Page, View, Text: PdfText, Image: PdfImage },
