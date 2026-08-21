@@ -7,23 +7,33 @@ import { isEmpty } from 'lodash';
 import debounce from 'lodash.debounce';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { type MutableRefObject, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { getMergeTagConfigAction, type MergeTagConfig } from '@/actions/templates/queries/get-merge-tags';
 import { getProjectLogoAction } from '@/actions/templates/queries/get-project-logo';
+import { getMergeTagValuesAction } from '@/actions/templates/queries/get-template-data';
+import { generateDocumentParts, generateEmailHtml } from '@/lib/templates/email-generator';
 import { canOpenTemplatePreview } from '@/lib/templates/merge-tags';
 import { getTemplateConfig } from '@/lib/templates/puck-config';
-import { toPuckData } from '@/lib/templates/puck-data';
+import { type TemplateData, toPuckData, UnrecognizedTemplateDesignError } from '@/lib/templates/puck-data';
+import { processTemplate } from '@/lib/templates/template-processor';
 import { EditorMetadataProvider } from '../editor-context';
 import { LogoProvider } from '../logo-context';
 import { MergeTagConfigProvider } from '../merge-tag-context';
+import { CanvasActionBar } from './canvas-action-bar';
 import { EditorSidebar } from './editor-sidebar';
+import '../user-components/tiptap/tiptap.css';
 import './puck-editor.css';
 import { useTemplatePuck } from './use-template-puck';
 
 const A4_WIDTH_PX = 794;
 const A4_MIN_HEIGHT_PX = 1123;
 const EMAIL_MAX_WIDTH_PX = 600;
+
+const needsProjectScopedTemplateData = (dataset: TemplateDataset) =>
+  dataset === 'PROJECT' || dataset === 'PROJECT_YEARLY';
+
+const needsYearForLenderYearly = (dataset: TemplateDataset) => dataset === 'LENDER_YEARLY';
 
 function PreviewModeSync({ isPreviewing }: { isPreviewing: boolean }) {
   const dispatch = useTemplatePuck((state) => state.dispatch);
@@ -37,6 +47,40 @@ function PreviewModeSync({ isPreviewing }: { isPreviewing: boolean }) {
 
   return null;
 }
+
+function LatestDesignBridge({ designRef }: { designRef: MutableRefObject<TemplateData | null> }) {
+  const data = useTemplatePuck((state) => state.appState.data);
+  useEffect(() => {
+    designRef.current = data;
+  }, [data, designRef]);
+  return null;
+}
+
+const generateAndOpenPdf = async (params: {
+  design: Record<string, unknown>;
+  sampleData?: Record<string, unknown>;
+  logoUrl?: string | null;
+}) => {
+  const response = await fetch('/api/templates/pdf', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      design: params.design,
+      sampleData: params.sampleData ?? {},
+      logoUrl: params.logoUrl ?? undefined,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(errorData?.details || `PDF generation failed (${response.status})`);
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+};
 
 const EditorTopbar = ({
   isPreviewing,
@@ -126,10 +170,62 @@ export function TemplateEditorView({
   const [isMounted, setIsMounted] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState('');
 
   const isDocument = templateType === 'DOCUMENT';
-  const puckData = useMemo(() => toPuckData(initialDesign, templateType), [initialDesign, templateType]);
-  const config = useMemo(() => getTemplateConfig(templateType, t), [templateType, t]);
+  const puckDataResult = useMemo(() => {
+    try {
+      return { data: toPuckData(initialDesign, templateType), error: null };
+    } catch (error) {
+      console.error(error);
+      const message = error instanceof UnrecognizedTemplateDesignError ? error.message : 'invalid-design';
+      return { data: null, error: message };
+    }
+  }, [initialDesign, templateType]);
+  const puckData = puckDataResult.data;
+  const designRef = useRef<TemplateData | null>(puckData);
+  // Puck rebuilds its store (and remounts TipTap) whenever `config` identity changes.
+  // next-intl's `t` is not a reliable dep; labels are static for a given template type.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keep config identity stable across parent re-renders
+  const config = useMemo(() => getTemplateConfig(templateType, t), [templateType]);
+  const iframeConfig = useMemo(() => ({ enabled: false as const }), []);
+  const puckUi = useMemo(() => ({ leftSideBarVisible: false, rightSideBarVisible: false }), []);
+  const puckOverrides = useMemo(
+    () => ({
+      actionBar: ({
+        children,
+        label,
+        parentAction,
+      }: {
+        children?: ReactNode;
+        label?: string;
+        parentAction?: ReactNode;
+      }) => (
+        <CanvasActionBar label={label} parentAction={parentAction}>
+          {children}
+        </CanvasActionBar>
+      ),
+    }),
+    [],
+  );
+  const puckMetadata = useMemo(
+    () => ({
+      dataset,
+      templateType,
+      projectLogo,
+    }),
+    [dataset, templateType, projectLogo],
+  );
+  const editorMetadata = useMemo(
+    () => ({
+      dataset,
+      templateType,
+      projectId: projectId ?? null,
+      isAdmin,
+      isGlobalTemplate,
+    }),
+    [dataset, templateType, projectId, isAdmin, isGlobalTemplate],
+  );
 
   const serverPreviewSnapshotRef = useRef<{
     mergeTagConfig: MergeTagConfig;
@@ -145,6 +241,33 @@ export function TemplateEditorView({
   }
 
   const logoContextValue = useMemo(() => ({ projectLogo, appLogo: '/soliloan-logo.webp' }), [projectLogo]);
+
+  const loadPreviewSampleData = useCallback(async (): Promise<Record<string, unknown>> => {
+    const templateRecordId = selectedRecordId ?? (needsProjectScopedTemplateData(dataset) ? projectId : null);
+    const canLoadMergeData =
+      Boolean(templateRecordId) &&
+      (!needsYearForLenderYearly(dataset) || (selectedYear != null && Number.isFinite(selectedYear)));
+    if (!canLoadMergeData || !templateRecordId) return {};
+
+    try {
+      const mergeResult = await getMergeTagValuesAction({
+        dataset,
+        recordId: templateRecordId,
+        locale: 'de',
+        projectId: projectId ?? undefined,
+        year:
+          needsYearForLenderYearly(dataset) && selectedYear != null && Number.isFinite(selectedYear)
+            ? selectedYear
+            : undefined,
+      });
+      if (!mergeResult?.serverError && mergeResult.data) {
+        return mergeResult.data;
+      }
+    } catch (error) {
+      console.error('Preview error', error);
+    }
+    return {};
+  }, [dataset, projectId, selectedRecordId, selectedYear]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -178,9 +301,14 @@ export function TemplateEditorView({
   const debouncedDesignChange = useMemo(
     () =>
       debounce((data: object) => {
-        onDesignChange(data, '');
+        if (isDocument) {
+          const parts = generateDocumentParts(data, { logoUrl: projectLogo });
+          onDesignChange(data, parts.bodyHtml);
+          return;
+        }
+        onDesignChange(data, generateEmailHtml(data, { logoUrl: projectLogo }));
       }, 500),
-    [onDesignChange],
+    [onDesignChange, isDocument, projectLogo],
   );
 
   useEffect(() => {
@@ -189,21 +317,55 @@ export function TemplateEditorView({
     };
   }, [debouncedDesignChange]);
 
+  const handlePuckChange = useCallback(
+    (data: object) => {
+      if (isEmpty(data)) return;
+      debouncedDesignChange(data);
+    },
+    [debouncedDesignChange],
+  );
+
   const togglePreview = async () => {
+    const design = designRef.current;
+    if (!design) return;
     if (!isDocument) {
-      setIsPreviewing((current) => !current);
+      if (isPreviewing) {
+        setIsPreviewing(false);
+        return;
+      }
+
+      const html = generateEmailHtml(design, { logoUrl: projectLogo });
+      const sampleData = await loadPreviewSampleData();
+      setPreviewHtml(Object.keys(sampleData).length > 0 ? processTemplate(html, sampleData) : html);
+      setIsPreviewing(true);
       return;
     }
 
     setIsGeneratingPdf(true);
     try {
-      toast.info(t('previewRendererPending'));
+      const sampleData = await loadPreviewSampleData();
+      await generateAndOpenPdf({
+        design: design as Record<string, unknown>,
+        sampleData,
+        logoUrl: projectLogo,
+      });
+    } catch (error) {
+      console.error('PDF generation error', error);
+      toast.error(t('previewFailed'));
     } finally {
       setIsGeneratingPdf(false);
     }
   };
 
   if (!isMounted) return null;
+
+  if (!puckData) {
+    return (
+      <div className="flex min-h-[700px] items-center justify-center rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">
+        {t('designLoadFailed')}
+      </div>
+    );
+  }
 
   return (
     <div className="template-puck-editor flex min-h-[700px] flex-col overflow-hidden rounded-lg border bg-card">
@@ -216,37 +378,21 @@ export function TemplateEditorView({
       />
 
       <div className="relative flex flex-1 flex-col">
-        <EditorMetadataProvider
-          value={{
-            dataset,
-            templateType,
-            projectId: projectId ?? null,
-            isAdmin,
-            isGlobalTemplate,
-          }}
-        >
+        <EditorMetadataProvider value={editorMetadata}>
           <LogoProvider value={logoContextValue}>
             <MergeTagConfigProvider value={mergeTagConfig}>
               <Puck
                 config={config}
                 data={puckData}
                 height="100%"
-                iframe={{ enabled: false }}
-                ui={{
-                  leftSideBarVisible: false,
-                  rightSideBarVisible: false,
-                }}
-                metadata={{
-                  dataset,
-                  templateType,
-                  projectLogo,
-                }}
-                onChange={(data) => {
-                  if (isEmpty(data)) return;
-                  debouncedDesignChange(data);
-                }}
+                iframe={iframeConfig}
+                ui={puckUi}
+                overrides={puckOverrides}
+                metadata={puckMetadata}
+                onChange={handlePuckChange}
               >
                 <PreviewModeSync isPreviewing={isPreviewing} />
+                <LatestDesignBridge designRef={designRef} />
                 <div className="flex h-full min-h-[640px] overflow-hidden">
                   <div className="h-full min-h-0 flex-1 overflow-y-auto bg-muted">
                     <div
@@ -276,6 +422,12 @@ export function TemplateEditorView({
             </MergeTagConfigProvider>
           </LogoProvider>
         </EditorMetadataProvider>
+
+        {isPreviewing && !isDocument && (
+          <div className="absolute inset-0 z-30 overflow-auto bg-[#f4f4f5]">
+            <iframe title="Email Preview" srcDoc={previewHtml} className="block min-h-[600px] w-full border-0" />
+          </div>
+        )}
       </div>
     </div>
   );

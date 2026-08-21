@@ -100,7 +100,7 @@ export const sendCommunicationTemplateEmailSchema = z.object({
 
 export type SendCommunicationTemplateEmailFormData = z.infer<typeof sendCommunicationTemplateEmailSchema>;
 
-// --- Predefined Craft Blocks ---
+// --- Predefined template blocks ---
 
 export const createPredefinedBlockSchema = z.object({
   name: z.string().min(1, 'error.predefinedBlock.nameRequired').max(100),

@@ -87,7 +87,8 @@
     "showEditor": "Editor",
     "showPreview": "Vorschau",
     "generatingPdf": "PDF wird erstellt…",
-    "previewRendererPending": "Die HTML- und PDF-Vorschau wird nach der Umstellung des Renderers verfügbar sein.",
+    "previewFailed": "Vorschau konnte nicht erstellt werden.",
+    "designLoadFailed": "Die Vorlage konnte nicht geladen werden. Das gespeicherte Design ist ungültig.",
     "mergeTags": {
       "groupLabel": "Gruppe",
       "groupPlaceholder": "Gruppe auswählen",
@@ -153,7 +154,8 @@
       "predefinedEmpty": "Keine Schablonen für diesen Vorlagentyp vorhanden.",
       "predefinedLoading": "Schablonen werden geladen…",
       "predefinedDeleted": "Schablone gelöscht",
-      "predefinedNotReady": "Schablonen können erst nach der Datenmigration in den Editor gezogen werden."
+      "predefinedInsert": "Schablone einfügen",
+      "predefinedNotReady": "Diese Schablone liegt noch im alten Format vor und kann nicht eingefügt werden."
     },
     "settings": {
       "title": "Einstellungen",
@@ -175,6 +177,10 @@
         "fontSize": "Schriftgröße",
         "textColor": "Textfarbe",
         "textAlign": "Textausrichtung",
+        "align_left": "Links",
+        "align_center": "Zentriert",
+        "align_right": "Rechts",
+        "align_justify": "Blocksatz",
         "insertPlaceholder": "Platzhalter einfügen"
       },
       "container": {
@@ -306,6 +312,9 @@
         },
         "backgroundColor": "Hintergrundfarbe",
         "textColor": "Textfarbe"
+      },
+      "pageBody": {
+        "label": "Dokumentinhalt"
       },
       "pageHeader": {
         "label": "Kopfzeile",

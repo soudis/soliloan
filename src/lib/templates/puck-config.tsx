@@ -1,51 +1,116 @@
+'use client';
+
 import type { TemplateType } from '@prisma/client';
-import type { Config, Slot } from '@puckeditor/core';
+import { type Config, RichTextMenu, type Slot } from '@puckeditor/core';
+import type { Editor } from '@tiptap/react';
 import type { useTranslations } from 'next-intl';
-import type { CSSProperties } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
+import {
+  ContainerBlock,
+  type FlexAlign,
+  type FlexJustify,
+  type LayoutMode,
+} from '@/components/templates/puck/blocks/container-block';
+import { ImageBlock } from '@/components/templates/puck/blocks/image-block';
+import { TableBlock } from '@/components/templates/puck/blocks/table-block';
+import { TextBlock } from '@/components/templates/puck/blocks/text-block';
+import { ZoneBlock } from '@/components/templates/puck/blocks/zone-block';
+import { BorderField } from '@/components/templates/puck/fields/border-field';
+import { ButtonSettingsField } from '@/components/templates/puck/fields/button-settings-field';
+import { ColumnWidthsField } from '@/components/templates/puck/fields/column-widths-field';
+import { ImageSourceField } from '@/components/templates/puck/fields/image-source-field';
+import { LoopKeyField } from '@/components/templates/puck/fields/loop-key-field';
+import { createMergeTagExtension, MergeTagMenuControl } from '@/components/templates/puck/fields/merge-tag-richtext';
+import { PaddingField } from '@/components/templates/puck/fields/padding-field';
+import { SaveAsBlockField } from '@/components/templates/puck/fields/save-as-block-field';
+import { TableCellStyleField } from '@/components/templates/puck/fields/table-cell-field';
+import { resizeTableArrays, type TableCellStyle, type TextAlign } from '@/components/templates/puck/table-model';
+import {
+  type BorderFieldProps,
+  DEFAULT_BORDER,
+  DEFAULT_PADDING,
+  DEFAULT_TABLE_BORDER,
+  type DisplayNameProps,
+  getDefaultBodyProps,
+  getDefaultPageZoneProps,
+  type PaddingProps,
+} from '@/lib/templates/puck-defaults';
 
 type EditorTranslator = ReturnType<typeof useTranslations>;
-
-type Layout = 'vertical' | 'horizontal' | 'grid';
 
 export type TemplateComponentProps = {
   Container: {
     content: Slot;
-    layout: Layout;
+    loopKey: string;
+    layout: LayoutMode;
     gap: number;
     gridColumns: number;
-    padding: number;
+    justifyContent: FlexJustify;
+    alignItems: FlexAlign;
     background: string;
-  };
+    saveAsBlock?: string;
+  } & PaddingProps &
+    BorderFieldProps &
+    DisplayNameProps;
+  Body: {
+    content: Slot;
+    layout: LayoutMode;
+    gap: number;
+    gridColumns: number;
+    justifyContent: FlexJustify;
+    alignItems: FlexAlign;
+    background: string;
+  } & PaddingProps &
+    BorderFieldProps &
+    DisplayNameProps;
   Text: {
     text: string;
     fontSize: number;
     color: string;
-    textAlign: 'left' | 'center' | 'right' | 'justify';
-  };
+    textAlign: TextAlign;
+  } & DisplayNameProps;
   Button: {
     text: string;
     url: string;
     background: string;
     color: string;
-  };
+    useSystemUrl: boolean;
+    systemUrlKey: string;
+    settings?: string;
+  } & DisplayNameProps;
   Image: {
     src: string;
     width: string;
-  };
+    useLogoSource: boolean;
+    source?: string;
+  } & DisplayNameProps;
   Table: {
+    loopKey: string;
     columns: number;
     rows: number;
-  };
+    headerTexts: string[];
+    cellTexts: string[][];
+    headerStyles: TableCellStyle[];
+    cellStyles: TableCellStyle[][];
+    columnWidths: number[];
+    textAlign: TextAlign;
+    cellStyle?: string;
+    _activeCellId?: string | null;
+  } & PaddingProps &
+    BorderFieldProps &
+    DisplayNameProps;
   PageHeader: {
     content: Slot;
-    padding: number;
     background: string;
-  };
+  } & PaddingProps &
+    BorderFieldProps &
+    DisplayNameProps;
   PageFooter: {
     content: Slot;
-    padding: number;
     background: string;
-  };
+  } & PaddingProps &
+    BorderFieldProps &
+    DisplayNameProps;
 };
 
 export type TemplateRootProps = {
@@ -55,40 +120,64 @@ export type TemplateRootProps = {
 
 export type TemplateConfig = Config<TemplateComponentProps, TemplateRootProps>;
 
-const layoutFlex = (layout: Layout, gap: number, gridColumns: number): CSSProperties => {
-  if (layout === 'grid') {
-    return {
-      display: 'grid',
-      gridTemplateColumns: `repeat(${Math.max(1, gridColumns)}, minmax(0, 1fr))`,
-      gap,
-    };
-  }
+const ZONE_DISALLOW = ['PageHeader', 'PageFooter', 'Body'];
+
+function richtextField(t: EditorTranslator) {
   return {
-    display: 'flex',
-    flexDirection: layout === 'horizontal' ? 'row' : 'column',
-    gap,
+    type: 'richtext' as const,
+    contentEditable: true,
+    options: {
+      heading: false,
+      codeBlock: false,
+      code: false,
+      blockquote: false,
+      horizontalRule: false,
+      bulletList: false,
+      orderedList: false,
+    },
+    tiptap: {
+      extensions: [createMergeTagExtension(t('mergeTags.loopBodyPlaceholder'))],
+    },
+    renderInlineMenu: ({ children, editor }: { children: ReactNode; editor: Editor | null }) => (
+      <RichTextMenu>
+        {children}
+        <RichTextMenu.Group>
+          <MergeTagMenuControl editor={editor} />
+        </RichTextMenu.Group>
+      </RichTextMenu>
+    ),
   };
-};
+}
 
 export function getTemplateConfig(type: TemplateType, t: EditorTranslator): TemplateConfig {
   const isDocument = type === 'DOCUMENT';
 
-  const config: TemplateConfig = {
+  return {
     categories: {
       basic: {
         title: t('toolbox.tabBasic'),
         components: ['Container', 'Text', 'Button', 'Image', 'Table'],
         defaultExpanded: true,
       },
-      other: {
-        visible: false,
-      },
+      other: { visible: false },
     },
     components: {
       Container: {
         label: t('toolbox.layout'),
+        resolveFields: (
+          data: { props: TemplateComponentProps['Container'] },
+          { fields }: { fields: Record<string, unknown> },
+        ) => {
+          if (data.props.layout === 'grid') {
+            const { justifyContent: _justify, alignItems: _align, ...rest } = fields;
+            return rest;
+          }
+          const { gridColumns: _gridColumns, ...rest } = fields;
+          return rest;
+        },
         fields: {
-          content: { type: 'slot' },
+          content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW },
+          loopKey: { type: 'custom', render: () => <LoopKeyField /> },
           layout: {
             type: 'select',
             label: t('components.container.layout'),
@@ -100,88 +189,163 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
           },
           gap: { type: 'number', label: t('components.container.gap'), min: 0 },
           gridColumns: { type: 'number', label: t('components.container.gridColumns'), min: 1, max: 6 },
-          padding: { type: 'number', label: t('components.container.padding'), min: 0 },
+          justifyContent: {
+            type: 'select',
+            label: t('components.container.distribution'),
+            options: [
+              { label: t('components.container.justify_flex-start'), value: 'flex-start' },
+              { label: t('components.container.justify_center'), value: 'center' },
+              { label: t('components.container.justify_flex-end'), value: 'flex-end' },
+              { label: t('components.container.justify_space-between'), value: 'space-between' },
+              { label: t('components.container.justify_space-around'), value: 'space-around' },
+            ],
+          },
+          alignItems: {
+            type: 'select',
+            label: t('components.container.alignment'),
+            options: [
+              { label: t('components.container.align_flex-start'), value: 'flex-start' },
+              { label: t('components.container.align_center'), value: 'center' },
+              { label: t('components.container.align_flex-end'), value: 'flex-end' },
+              { label: t('components.container.align_stretch'), value: 'stretch' },
+            ],
+          },
+          padding: { type: 'custom', render: () => <PaddingField /> },
           background: { type: 'text', label: t('components.container.backgroundColor') },
+          borderColor: {
+            type: 'custom',
+            render: () => <BorderField translationPrefix="templates.editor.components.container" />,
+          },
+          saveAsBlock: { type: 'custom', render: () => <SaveAsBlockField /> },
         },
         defaultProps: {
           content: [],
+          displayName: '',
+          loopKey: '',
           layout: 'vertical',
           gap: 8,
           gridColumns: 2,
-          padding: 16,
+          justifyContent: 'flex-start',
+          alignItems: 'stretch',
           background: 'transparent',
+          ...DEFAULT_PADDING,
+          ...DEFAULT_BORDER,
         },
-        render: ({ content: Content, layout, gap, gridColumns, padding, background }) => (
-          <div style={{ ...layoutFlex(layout, gap, gridColumns), padding, background, minHeight: 40 }}>
-            <Content minEmptyHeight={48} />
-          </div>
-        ),
+        render: (props: ComponentProps<typeof ContainerBlock>) => <ContainerBlock {...props} />,
+      },
+      Body: {
+        label: t('components.pageBody.label'),
+        permissions: { delete: false, duplicate: false, drag: false },
+        resolveFields: (
+          data: { props: TemplateComponentProps['Body'] },
+          { fields }: { fields: Record<string, unknown> },
+        ) => {
+          if (data.props.layout === 'grid') {
+            const { justifyContent: _justify, alignItems: _align, ...rest } = fields;
+            return rest;
+          }
+          const { gridColumns: _gridColumns, ...rest } = fields;
+          return rest;
+        },
+        fields: {
+          content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW },
+          layout: {
+            type: 'select',
+            label: t('components.container.layout'),
+            options: [
+              { label: t('components.container.layout_vertical'), value: 'vertical' },
+              { label: t('components.container.layout_horizontal'), value: 'horizontal' },
+              { label: t('components.container.layout_grid'), value: 'grid' },
+            ],
+          },
+          gap: { type: 'number', label: t('components.container.gap'), min: 0 },
+          gridColumns: { type: 'number', label: t('components.container.gridColumns'), min: 1, max: 6 },
+          justifyContent: {
+            type: 'select',
+            label: t('components.container.distribution'),
+            options: [
+              { label: t('components.container.justify_flex-start'), value: 'flex-start' },
+              { label: t('components.container.justify_center'), value: 'center' },
+              { label: t('components.container.justify_flex-end'), value: 'flex-end' },
+              { label: t('components.container.justify_space-between'), value: 'space-between' },
+              { label: t('components.container.justify_space-around'), value: 'space-around' },
+            ],
+          },
+          alignItems: {
+            type: 'select',
+            label: t('components.container.alignment'),
+            options: [
+              { label: t('components.container.align_flex-start'), value: 'flex-start' },
+              { label: t('components.container.align_center'), value: 'center' },
+              { label: t('components.container.align_flex-end'), value: 'flex-end' },
+              { label: t('components.container.align_stretch'), value: 'stretch' },
+            ],
+          },
+          padding: { type: 'custom', render: () => <PaddingField /> },
+          background: { type: 'text', label: t('components.container.backgroundColor') },
+          borderColor: {
+            type: 'custom',
+            render: () => <BorderField translationPrefix="templates.editor.components.container" />,
+          },
+        },
+        defaultProps: getDefaultBodyProps(),
+        render: (props: ComponentProps<typeof ContainerBlock>) => <ContainerBlock {...props} />,
       },
       Text: {
         label: t('toolbox.text'),
         fields: {
-          text: {
-            type: 'richtext',
-            contentEditable: true,
-            options: {
-              heading: false,
-              codeBlock: false,
-              code: false,
-              blockquote: false,
-              horizontalRule: false,
-              bulletList: false,
-              orderedList: false,
-            },
-          },
+          text: richtextField(t),
           fontSize: { type: 'number', label: t('components.text.fontSize'), min: 8, max: 72 },
           color: { type: 'text', label: t('components.text.textColor') },
           textAlign: {
             type: 'radio',
             label: t('components.text.textAlign'),
             options: [
-              { label: 'Links', value: 'left' },
-              { label: 'Zentriert', value: 'center' },
-              { label: 'Rechts', value: 'right' },
-              { label: 'Blocksatz', value: 'justify' },
+              { label: t('components.text.align_left'), value: 'left' },
+              { label: t('components.text.align_center'), value: 'center' },
+              { label: t('components.text.align_right'), value: 'right' },
+              { label: t('components.text.align_justify'), value: 'justify' },
             ],
           },
         },
         defaultProps: {
+          displayName: '',
           text: `<p>${t('components.text.defaultText')}</p>`,
           fontSize: 16,
           color: '#000000',
           textAlign: 'left',
         },
-        render: ({ text, fontSize, color, textAlign }) => (
-          <div style={{ fontSize, color, textAlign, lineHeight: 1.5 }}>{text}</div>
-        ),
+        render: (props: ComponentProps<typeof TextBlock>) => <TextBlock {...props} />,
       },
       Button: {
         label: t('toolbox.button'),
         fields: {
-          text: { type: 'text', label: t('toolbox.button') },
-          url: { type: 'text', label: t('components.button.url') },
+          settings: { type: 'custom', render: () => <ButtonSettingsField /> },
           background: { type: 'text', label: t('components.button.backgroundColor') },
           color: { type: 'text', label: t('components.button.textColor') },
         },
         defaultProps: {
-          text: 'Button',
+          displayName: '',
+          text: t('components.button.defaultText'),
           url: '#',
-          background: '#18181b',
+          background: '#2563eb',
           color: '#ffffff',
+          useSystemUrl: false,
+          systemUrlKey: '',
         },
-        render: ({ text, url, background, color }) => (
+        render: ({ text, url, background, color, useSystemUrl, systemUrlKey }: TemplateComponentProps['Button']) => (
           <a
-            href={url}
+            href={useSystemUrl && systemUrlKey ? `{{system.${systemUrlKey}}}` : url}
             onClick={(event) => event.preventDefault()}
             style={{
               display: 'inline-block',
-              padding: '8px 16px',
+              margin: '8px 0',
+              padding: '10px 20px',
               background,
               color,
               textDecoration: 'none',
               borderRadius: 4,
-              fontSize: 14,
+              fontWeight: 'bold',
             }}
           >
             {text}
@@ -191,107 +355,110 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
       Image: {
         label: t('toolbox.image'),
         fields: {
-          src: { type: 'text', label: t('components.image.imageUrl') },
+          source: { type: 'custom', render: () => <ImageSourceField /> },
           width: { type: 'text', label: t('components.image.width') },
         },
         defaultProps: {
+          displayName: '',
           src: 'https://via.placeholder.com/150',
-          width: '150px',
+          width: '100%',
+          useLogoSource: false,
         },
-        render: ({ src, width }) => (
-          // biome-ignore lint/performance/noImgElement: template canvas preview, not a Next image asset
-          <img src={src} alt="" style={{ width, maxWidth: '100%', height: 'auto', display: 'block' }} />
-        ),
+        render: (props: ComponentProps<typeof ImageBlock>) => <ImageBlock {...props} />,
       },
       Table: {
         label: t('toolbox.table'),
+        resolveData: ({ props }: { props: TemplateComponentProps['Table'] }) => {
+          const withForcedRows =
+            typeof props.loopKey === 'string' && props.loopKey.trim() && props.rows !== 1
+              ? { ...props, rows: 1 }
+              : props;
+          return { props: resizeTableArrays(withForcedRows) };
+        },
+        resolveFields: (
+          data: { props: TemplateComponentProps['Table'] },
+          { fields }: { fields: Record<string, unknown> },
+        ) => {
+          if (typeof data.props.loopKey === 'string' && data.props.loopKey.trim()) {
+            const { rows: _rows, ...rest } = fields;
+            return rest;
+          }
+          return fields;
+        },
         fields: {
+          loopKey: {
+            type: 'custom',
+            render: () => (
+              <LoopKeyField translationPrefix="templates.editor.components.table" emptyOptionKey="staticTable" />
+            ),
+          },
           columns: { type: 'number', label: t('components.table.columns'), min: 1, max: 12 },
           rows: { type: 'number', label: t('components.table.rows'), min: 1, max: 50 },
+          columnWidths: { type: 'custom', render: () => <ColumnWidthsField /> },
+          padding: { type: 'custom', render: () => <PaddingField /> },
+          borderColor: {
+            type: 'custom',
+            render: () => <BorderField translationPrefix="templates.editor.components.table" />,
+          },
+          cellStyle: { type: 'custom', render: () => <TableCellStyleField /> },
         },
         defaultProps: {
+          displayName: '',
+          loopKey: '',
           columns: 3,
-          rows: 2,
+          rows: 1,
+          headerTexts: ['Spalte 1', 'Spalte 2', 'Spalte 3'],
+          cellTexts: [['', '', '']],
+          headerStyles: [],
+          cellStyles: [],
+          columnWidths: [33, 33, 34],
+          textAlign: 'left',
+          padding: 0,
+          ...DEFAULT_TABLE_BORDER,
         },
-        render: ({ columns, rows }) => {
-          const colCount = Math.max(1, columns);
-          const rowCount = Math.max(1, rows);
-          const headerKeys = Array.from({ length: colCount }, (_, index) => `header-${colCount}-${index}`);
-          const rowKeys = Array.from({ length: rowCount }, (_, rowIndex) => `row-${rowCount}-${rowIndex}`);
-          return (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-              <thead>
-                <tr>
-                  {headerKeys.map((headerKey, index) => (
-                    <th
-                      key={headerKey}
-                      style={{ border: '1px solid #e4e4e7', padding: 8, textAlign: 'left', background: '#f4f4f5' }}
-                    >
-                      {t('components.table.defaultHeader')} {index + 1}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rowKeys.map((rowKey) => (
-                  <tr key={rowKey}>
-                    {headerKeys.map((headerKey) => (
-                      <td key={`${rowKey}-${headerKey}`} style={{ border: '1px solid #e4e4e7', padding: 8 }}>
-                        {t('components.table.cell')}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          );
-        },
+        render: (props: ComponentProps<typeof TableBlock>) => <TableBlock {...props} />,
       },
       PageHeader: {
         label: t('components.pageHeader.label'),
-        permissions: {
-          delete: false,
-          duplicate: false,
-          drag: false,
-        },
+        permissions: { delete: false, duplicate: false, drag: false },
         fields: {
-          content: { type: 'slot' },
-          padding: { type: 'number', label: t('components.pageHeader.padding'), min: 0 },
+          content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW },
+          padding: { type: 'custom', render: () => <PaddingField /> },
           background: { type: 'text', label: t('components.pageHeader.backgroundColor') },
+          borderColor: {
+            type: 'custom',
+            render: () => <BorderField translationPrefix="templates.editor.components.pageHeader" />,
+          },
         },
         defaultProps: {
           content: [],
-          padding: 16,
+          displayName: '',
           background: '#ffffff',
+          ...DEFAULT_PADDING,
+          ...DEFAULT_BORDER,
         },
-        render: ({ content: Content, padding, background }) => (
-          <div style={{ padding, background, minHeight: 48, borderBottom: '1px solid #e4e4e7' }}>
-            <Content minEmptyHeight={32} />
-          </div>
-        ),
+        render: (props: ComponentProps<typeof ZoneBlock>) => <ZoneBlock {...props} />,
       },
       PageFooter: {
         label: t('components.pageFooter.label'),
-        permissions: {
-          delete: false,
-          duplicate: false,
-          drag: false,
-        },
+        permissions: { delete: false, duplicate: false, drag: false },
         fields: {
-          content: { type: 'slot' },
-          padding: { type: 'number', label: t('components.pageFooter.padding'), min: 0 },
+          content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW },
+          padding: { type: 'custom', render: () => <PaddingField /> },
           background: { type: 'text', label: t('components.pageFooter.backgroundColor') },
+          borderColor: {
+            type: 'custom',
+            render: () => <BorderField translationPrefix="templates.editor.components.pageFooter" />,
+          },
         },
         defaultProps: {
           content: [],
-          padding: 16,
+          displayName: '',
           background: '#ffffff',
+          ...DEFAULT_PADDING,
+          ...DEFAULT_BORDER,
         },
-        render: ({ content: Content, padding, background }) => (
-          <div style={{ padding, background, minHeight: 48, borderTop: '1px solid #e4e4e7' }}>
-            <Content minEmptyHeight={32} />
-          </div>
-        ),
+        render: (props: ComponentProps<typeof ZoneBlock>) => <ZoneBlock {...props} />,
       },
     },
     root: isDocument
@@ -301,33 +468,29 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
             footer: { type: 'slot', allow: ['PageFooter'] },
           },
           defaultProps: {
-            header: [
-              {
-                type: 'PageHeader',
-                props: { id: 'page-header', content: [], padding: 16, background: '#ffffff' },
-              },
-            ],
-            footer: [
-              {
-                type: 'PageFooter',
-                props: { id: 'page-footer', content: [], padding: 16, background: '#ffffff' },
-              },
-            ],
+            header: [{ type: 'PageHeader', props: getDefaultPageZoneProps('page-header') }],
+            footer: [{ type: 'PageFooter', props: getDefaultPageZoneProps('page-footer') }],
           },
-          render: ({ header: Header, footer: Footer, children }) => (
+          render: ({
+            header: Header,
+            footer: Footer,
+            children,
+          }: {
+            header: (props?: object) => ReactNode;
+            footer: (props?: object) => ReactNode;
+            children: ReactNode;
+          }) => (
             <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', background: '#ffffff' }}>
               <Header />
-              <div style={{ flex: 1, padding: 56 }}>{children}</div>
+              <div style={{ flex: 1, minHeight: 0 }}>{children}</div>
               <Footer />
             </div>
           ),
         }
       : {
-          render: ({ children }) => (
+          render: ({ children }: { children: ReactNode }) => (
             <div style={{ minHeight: 600, background: '#ffffff', padding: 40 }}>{children}</div>
           ),
         },
-  };
-
-  return config;
+  } as unknown as TemplateConfig;
 }

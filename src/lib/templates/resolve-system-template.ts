@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { generateEmailHtml, getNodesMapFromDesign } from '@/lib/templates/email-generator';
+import { generateEmailHtml } from '@/lib/templates/email-generator';
 import { processTemplate } from '@/lib/templates/template-processor';
 
 /**
@@ -41,10 +41,9 @@ export function renderSystemEmailTemplate(
     logoUrl?: string | null;
   },
 ): string | null {
-  const nodes = getNodesMapFromDesign(designJson as Record<string, unknown>);
-  if (!nodes || Object.keys(nodes).length === 0) return null;
+  if (designJson == null) return null;
 
-  const rawHtml = generateEmailHtml(nodes, options);
+  const rawHtml = generateEmailHtml(designJson, options);
   if (!rawHtml || rawHtml.trim().length === 0) return null;
 
   // biome-ignore lint/suspicious/noExplicitAny: processTemplate uses Record<string, any>

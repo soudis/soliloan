@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['@react-pdf/renderer', 'react-pdf-html'],
   experimental: {
     inlineCss: true,
-    turbopackMinify: false,
   },
 };
 

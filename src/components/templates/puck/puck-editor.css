@@ -1,5 +1,6 @@
-.template-puck-editor {
-  min-height: 700px;
+.template-puck-editor [class*="ActionBar-label"] {
+  max-width: 220px;
+  overflow: hidden;
 }
 
 .template-puck-editor [class*="Puck"] {
@@ -10,4 +11,14 @@
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Puck disables pointer events on component descendants so the canvas can drag.
+   Table cells need clicks for TipTap + per-cell sidebar settings. */
+.template-puck-editor .template-table-cell,
+.template-puck-editor .template-table-cell * {
+  pointer-events: auto !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  cursor: text;
 }

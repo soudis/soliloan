@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../ui/tooltip';
+import { OutlineDisplayNames } from './outline-display-names';
+import { SettingsPanel } from './settings-panel';
 import { Toolbox } from './toolbox';
 import { useTemplatePuck } from './use-template-puck';
 
@@ -63,9 +65,7 @@ export function EditorSidebar() {
             value="settings"
             className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden focus-visible:outline-none focus-visible:ring-0"
           >
-            <div className="min-h-0 flex-1 overflow-y-auto">
-              <Puck.Fields wrapFields={false} />
-            </div>
+            <SettingsPanel />
           </TabsContent>
 
           <TabsContent
@@ -73,6 +73,7 @@ export function EditorSidebar() {
             className="mt-0 min-h-0 flex-1 overflow-y-auto p-2 focus-visible:outline-none focus-visible:ring-0"
           >
             <Puck.Outline />
+            <OutlineDisplayNames />
           </TabsContent>
         </Tabs>
       </div>

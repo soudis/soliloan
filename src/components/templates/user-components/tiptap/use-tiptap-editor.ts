@@ -1,9 +1,8 @@
 import BubbleMenu from '@tiptap/extension-bubble-menu';
-import Underline from '@tiptap/extension-underline';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { MergeTag } from './merge-tag-extension';
 
 interface UseTiptapEditorProps {
@@ -16,11 +15,13 @@ interface UseTiptapEditorProps {
 
 export const useTiptapEditor = ({ content, onUpdate, editable, color, fontSize }: UseTiptapEditorProps) => {
   const t = useTranslations('templates.editor');
+  const loopBodyPlaceholder = t('mergeTags.loopBodyPlaceholder');
+  const onUpdateRef = useRef(onUpdate);
+  onUpdateRef.current = onUpdate;
 
   const extensions = useMemo(
     () => [
       StarterKit.configure({
-        // Disable features we don't need for email templates
         heading: false,
         codeBlock: false,
         code: false,
@@ -30,15 +31,14 @@ export const useTiptapEditor = ({ content, onUpdate, editable, color, fontSize }
         orderedList: false,
         listItem: false,
       }),
-      Underline,
       MergeTag.configure({
-        loopBodyPlaceholder: t('mergeTags.loopBodyPlaceholder'),
+        loopBodyPlaceholder,
       }),
       BubbleMenu.configure({
         pluginKey: 'bubbleMenu',
       }),
     ],
-    [t],
+    [loopBodyPlaceholder],
   );
 
   const editor = useEditor(
@@ -53,25 +53,19 @@ export const useTiptapEditor = ({ content, onUpdate, editable, color, fontSize }
           style: `color: ${color || '#000000'}; font-size: ${fontSize || 16}px;`,
         },
       },
-      onUpdate: ({ editor }) => {
-        onUpdate(editor.getHTML());
+      onUpdate: ({ editor: current }) => {
+        onUpdateRef.current(current.getHTML());
       },
     },
-    [extensions],
+    [],
   );
 
-  // Update content when prop changes (from external source)
-  // No longer syncing content from props to prevent state resets during insertion
-  // The editor is now the source of truth during the session
-
-  // Update editable state
   useEffect(() => {
     if (editor) {
       editor.setEditable(editable);
     }
   }, [editable, editor]);
 
-  // Update editor styles when color or fontSize changes
   useEffect(() => {
     if (editor) {
       const editorElement = editor.view.dom;
