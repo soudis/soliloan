@@ -52,6 +52,9 @@ model User {
   lastInvited                 DateTime?
   passwordResetToken          String?
   passwordResetTokenExpiresAt DateTime?
+  inviteTokenExpiresAt        DateTime?
+  failedLoginAttempts         Int                     @default(0)
+  lockedUntil                 DateTime?
   accounts                    Account[]
   lenders                     Lender[]
   notes                       Note[]
