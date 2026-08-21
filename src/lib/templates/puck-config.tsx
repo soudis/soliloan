@@ -176,7 +176,7 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
           return rest;
         },
         fields: {
-          content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW },
+          content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW, label: t('hierarchy.zones.content') },
           loopKey: { type: 'custom', render: () => <LoopKeyField /> },
           layout: {
             type: 'select',
@@ -248,7 +248,7 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
           return rest;
         },
         fields: {
-          content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW },
+          content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW, label: t('hierarchy.zones.content') },
           layout: {
             type: 'select',
             label: t('components.container.layout'),
@@ -422,7 +422,7 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
         label: t('components.pageHeader.label'),
         permissions: { delete: false, duplicate: false, drag: false },
         fields: {
-          content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW },
+          content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW, label: t('hierarchy.zones.content') },
           padding: { type: 'custom', render: () => <PaddingField /> },
           background: { type: 'text', label: t('components.pageHeader.backgroundColor') },
           borderColor: {
@@ -443,7 +443,7 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
         label: t('components.pageFooter.label'),
         permissions: { delete: false, duplicate: false, drag: false },
         fields: {
-          content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW },
+          content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW, label: t('hierarchy.zones.content') },
           padding: { type: 'custom', render: () => <PaddingField /> },
           background: { type: 'text', label: t('components.pageFooter.backgroundColor') },
           borderColor: {
@@ -464,8 +464,8 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
     root: isDocument
       ? {
           fields: {
-            header: { type: 'slot', allow: ['PageHeader'] },
-            footer: { type: 'slot', allow: ['PageFooter'] },
+            header: { type: 'slot', allow: ['PageHeader'], label: t('hierarchy.zones.header') },
+            footer: { type: 'slot', allow: ['PageFooter'], label: t('hierarchy.zones.footer') },
           },
           defaultProps: {
             header: [{ type: 'PageHeader', props: getDefaultPageZoneProps('page-header') }],

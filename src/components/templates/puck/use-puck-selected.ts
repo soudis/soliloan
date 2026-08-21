@@ -4,8 +4,11 @@ import { useCallback, useMemo } from 'react';
 import { findPuckComponentById, ROOT_ZONE } from '@/lib/templates/puck-subtree';
 import { useTemplatePuck } from './use-template-puck';
 
+const EMPTY_PROPS: Record<string, unknown> = {};
+
 export function useSelectedRecord(): Record<string, unknown> {
-  return useTemplatePuck((state) => (state.selectedItem?.props ?? {}) as Record<string, unknown>);
+  const selectedItem = useTemplatePuck((state) => state.selectedItem);
+  return (selectedItem?.props ?? EMPTY_PROPS) as Record<string, unknown>;
 }
 
 export function usePatchSelectedProps() {

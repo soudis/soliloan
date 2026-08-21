@@ -89,6 +89,7 @@
     "generatingPdf": "PDF wird erstellt…",
     "previewFailed": "Vorschau konnte nicht erstellt werden.",
     "designLoadFailed": "Die Vorlage konnte nicht geladen werden. Das gespeicherte Design ist ungültig.",
+    "selectParent": "Übergeordnetes Element auswählen",
     "mergeTags": {
       "groupLabel": "Gruppe",
       "groupPlaceholder": "Gruppe auswählen",
@@ -127,6 +128,7 @@
           "loans": "Felder eines einzelnen Darlehens innerhalb der Darlehens-Schleife.",
           "transactions": "Felder einer Transaktion innerhalb der Transaktions-Schleife.",
           "notes": "Felder einer Notiz innerhalb der Notiz-Schleife.",
+          "loanNotes": "Felder einer Notiz innerhalb der Darlehens-Notiz-Schleife.",
           "transactionsYearly": "Transaktionsfelder in der Jahresdarstellung.",
           "lenders": "Felder eines einzelnen Darlehensgebers innerhalb der Geber-Schleife."
         }
@@ -139,8 +141,16 @@
     },
     "hierarchy": {
       "empty": "Keine Struktur geladen.",
+      "title": "Hierarchie",
+      "collapseAll": "Alle zuklappen",
       "doubleClickHint": "Doppelklick auf einen Eintrag oder das Stiftsymbol anklicken, um den Anzeigenamen zu bearbeiten.",
-      "renameAria": "Anzeigenamen bearbeiten"
+      "renameAria": "Anzeigenamen bearbeiten",
+      "zones": {
+        "header": "Kopfzeile",
+        "footer": "Fußzeile",
+        "default-zone": "Inhalt",
+        "content": "Inhalt"
+      }
     },
     "toolbox": {
       "title": "Blöcke",

@@ -190,6 +190,13 @@ export function TemplateEditorView({
   const config = useMemo(() => getTemplateConfig(templateType, t), [templateType]);
   const iframeConfig = useMemo(() => ({ enabled: false as const }), []);
   const puckUi = useMemo(() => ({ leftSideBarVisible: false, rightSideBarVisible: false }), []);
+  const puckDictionary = useMemo(
+    () => ({
+      'outline-header-title': t('hierarchy.title'),
+      'outline-header-collapseall': t('hierarchy.collapseAll'),
+    }),
+    [t],
+  );
   const puckOverrides = useMemo(
     () => ({
       actionBar: ({
@@ -388,6 +395,7 @@ export function TemplateEditorView({
                 iframe={iframeConfig}
                 ui={puckUi}
                 overrides={puckOverrides}
+                dictionary={puckDictionary}
                 metadata={puckMetadata}
                 onChange={handlePuckChange}
               >
