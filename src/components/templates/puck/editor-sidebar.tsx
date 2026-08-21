@@ -33,8 +33,8 @@ export function EditorSidebar() {
 
   return (
     <TooltipProvider>
-      <div className="template-puck-sidebar flex h-full min-h-0 w-full flex-col bg-white">
-        <Tabs value={tab} onValueChange={setTab} className="flex h-full min-h-0 flex-col">
+      <div className="template-puck-sidebar flex min-h-full flex-1 flex-col bg-white">
+        <Tabs value={tab} onValueChange={setTab} className="flex min-h-full flex-1 flex-col">
           <div className="shrink-0 border-b px-4 py-2">
             <TabsList variant="modern" className="mt-0 flex w-full">
               <TabsTrigger variant="modern" size="sm" value="toolbox" className="min-w-0 flex-1 md:flex-1">

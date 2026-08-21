@@ -7,6 +7,13 @@
   font-family: inherit;
 }
 
+.template-puck-editor .Puck {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
 .template-puck-sidebar :where(ul) {
   margin: 0;
   padding: 0;

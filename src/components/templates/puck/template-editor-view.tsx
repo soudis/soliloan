@@ -401,8 +401,8 @@ export function TemplateEditorView({
               >
                 <PreviewModeSync isPreviewing={isPreviewing} />
                 <LatestDesignBridge designRef={designRef} />
-                <div className="flex h-full min-h-[640px] overflow-hidden">
-                  <div className="h-full min-h-0 flex-1 overflow-y-auto bg-muted">
+                <div className="flex min-h-[640px] flex-1 items-stretch overflow-hidden">
+                  <div className="min-h-0 flex-1 overflow-y-auto bg-muted">
                     <div
                       className="relative mx-auto my-12 flex flex-col bg-white shadow-sm"
                       style={
@@ -421,7 +421,7 @@ export function TemplateEditorView({
                     </div>
                   </div>
                   {!isPreviewing && (
-                    <div className="z-20 flex h-full min-h-0 w-80 shrink-0 flex-col border-l bg-background">
+                    <div className="z-20 flex w-80 shrink-0 flex-col self-stretch border-l bg-background">
                       <EditorSidebar />
                     </div>
                   )}
