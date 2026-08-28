@@ -35,13 +35,21 @@ function hashLayout(layout: DashboardLayoutData): string {
   return createHash('sha256').update(JSON.stringify(layout)).digest('hex').slice(0, 16);
 }
 
+function calendarDayKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export function buildDashboardWidgetResultsCacheKey(
   projectId: string,
   locale: string,
   projectLayout: DashboardLayoutData,
   userLayout: DashboardLayoutData,
+  toDate: Date,
 ): string {
-  return `${projectId}:${locale}:${hashLayout(projectLayout)}:${hashLayout(userLayout)}`;
+  return `${projectId}:${locale}:${calendarDayKey(toDate)}:${hashLayout(projectLayout)}:${hashLayout(userLayout)}`;
 }
 
 function pruneExpired(store: Map<string, DashboardWidgetResultsCacheEntry>, now = Date.now()): void {

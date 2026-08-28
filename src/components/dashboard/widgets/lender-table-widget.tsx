@@ -5,6 +5,7 @@ import { useCallback, useMemo } from 'react';
 
 import type { DashboardLender } from '@/actions/dashboard/get-dashboard-stats';
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
+import { WidgetResultUnavailable } from '@/components/dashboard/widgets/widget-result-unavailable';
 import { useComputedWidgetResult } from '@/hooks/use-computed-widget-result';
 import { useRouter } from '@/i18n/navigation';
 import {
@@ -27,7 +28,7 @@ export function LenderTableWidget({ widget }: { widget: DashboardWidget }) {
 
   const config = useMemo(() => parseLenderTableConfig(widget.config), [widget.config]);
   const computed = useComputedWidgetResult(widget);
-  const filteredLenders = computed.type === 'lender_table_view' ? computed.rows : [];
+  const filteredLenders = computed?.type === 'lender_table_view' ? computed.rows : [];
 
   const columns = useMemo(
     () => buildAllLenderTableColumns<DashboardLender>(project, tLenders, tLoans, commonT, locale),
@@ -38,6 +39,10 @@ export function LenderTableWidget({ widget }: { widget: DashboardWidget }) {
     (row: DashboardLender, columnId: string) => getLenderSortValue(row, columnId, commonT),
     [commonT],
   );
+
+  if (!computed) {
+    return <WidgetResultUnavailable />;
+  }
 
   return (
     <TableViewWidget

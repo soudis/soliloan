@@ -6,6 +6,7 @@ import { useCallback, useMemo } from 'react';
 
 import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
+import { WidgetResultUnavailable } from '@/components/dashboard/widgets/widget-result-unavailable';
 import { useComputedWidgetResult } from '@/hooks/use-computed-widget-result';
 import { useRouter } from '@/i18n/navigation';
 import { buildAllLoanTableColumns, getLoanSortValue } from '@/lib/dashboard/table-widget/loan-table-column-registry';
@@ -26,7 +27,7 @@ export function LoanTableWidget({ widget }: { widget: DashboardWidget }) {
 
   const config = useMemo(() => parseLoanTableConfig(widget.config), [widget.config]);
   const computed = useComputedWidgetResult(widget);
-  const filteredLoans = computed.type === 'loan_table_view' ? computed.rows : [];
+  const filteredLoans = computed?.type === 'loan_table_view' ? computed.rows : [];
 
   const columns = useMemo(
     () => buildAllLoanTableColumns(project, tLoans, tLenders, commonT, locale, (key, values) => tDuration(key, values)),
@@ -37,6 +38,10 @@ export function LoanTableWidget({ widget }: { widget: DashboardWidget }) {
     (row: DashboardLoan, columnId: string) => getLoanSortValue(row, columnId, commonT),
     [commonT],
   );
+
+  if (!computed) {
+    return <WidgetResultUnavailable />;
+  }
 
   return (
     <TableViewWidget

@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
+import { WidgetResultUnavailable } from '@/components/dashboard/widgets/widget-result-unavailable';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useComputedWidgetResult } from '@/hooks/use-computed-widget-result';
 import { Link } from '@/i18n/navigation';
@@ -21,12 +22,16 @@ export function HistoryTableWidget({ widget }: { widget: DashboardWidget }) {
 
   const config = useMemo(() => parseHistoryTableConfig(widget.config), [widget.config]);
   const computed = useComputedWidgetResult(widget);
-  const result = computed.type === 'history_table' ? computed.result : { periods: [], columns: [], cells: {} };
+  const result = computed?.type === 'history_table' ? computed.result : { periods: [], columns: [], cells: {} };
 
   const columnById = useMemo(() => {
     const map = new Map(config.columns.map((col) => [col.id, col]));
     return map;
   }, [config.columns]);
+
+  if (!computed) {
+    return <WidgetResultUnavailable />;
+  }
 
   if (config.columns.length === 0) {
     return <p className="text-sm text-muted-foreground">{t('emptyColumns')}</p>;

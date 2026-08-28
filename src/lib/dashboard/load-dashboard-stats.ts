@@ -2,7 +2,10 @@ import type { Transaction } from '@prisma/client';
 
 import { aggregateLenderLoanSums, type calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFieldsWithPerYear, calculateLoanPerMonth } from '@/lib/calculations/loan-calculations';
-import type { CumulativeTimelineEntry } from '@/lib/dashboard/history-table/cumulative-timeline';
+import {
+  buildCumulativeTimeline,
+  type CumulativeTimelineEntry,
+} from '@/lib/dashboard/history-table/cumulative-timeline';
 import { db } from '@/lib/db';
 import { sanitizeLenderForList } from '@/lib/sanitation/sanitize-lender';
 import { sanitizeLoan } from '@/lib/sanitation/sanitize-loan';
@@ -15,10 +18,14 @@ export type DashboardLender = LenderListItem;
 
 export type DashboardLoan = LoanWithCalculations & {
   history: LoanMonthlyHistory;
-  /** Prefix cumulative totals per month — rebuilt on the client when omitted. */
+  /** Prefix cumulative totals per month — used during widget compute, omitted from the client payload. */
   cumulativeTimeline?: CumulativeTimelineEntry[];
   transactions: Transaction[];
 };
+
+export function omitDashboardLoanTimelines(loans: DashboardLoan[]): DashboardLoan[] {
+  return loans.map(({ cumulativeTimeline: _timeline, ...loan }) => loan);
+}
 
 function buildLoanMonthlyHistory(perMonth: ReturnType<typeof calculateLoanPerMonth>): LoanMonthlyHistory {
   const history: LoanMonthlyHistory = {};
@@ -96,6 +103,7 @@ export async function loadDashboardStats(projectId: string, toDate: Date = new D
       dashboardLoans.push({
         ...sanitized,
         history,
+        cumulativeTimeline: buildCumulativeTimeline(history),
         transactions: parsedLoan.transactions,
       });
     }

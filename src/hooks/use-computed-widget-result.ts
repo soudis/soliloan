@@ -10,7 +10,7 @@ import { buildWidgetComputeCacheKey } from '@/lib/dashboard/widget-compute-cache
 import type { WidgetComputeResult } from '@/lib/dashboard/widget-compute-result-types';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 
-export function useComputedWidgetResult(widget: DashboardWidget): WidgetComputeResult {
+export function useComputedWidgetResult(widget: DashboardWidget): WidgetComputeResult | null {
   const { loans, lenders, toDate, project, getOrComputeWidgetResult, widgetResults, hasFullDataset } =
     useDashboardData();
   const { scope } = useDashboardLayoutData();
@@ -18,10 +18,7 @@ export function useComputedWidgetResult(widget: DashboardWidget): WidgetComputeR
 
   return useMemo(() => {
     if (!hasFullDataset) {
-      return (
-        widgetResults[scope][widget.id] ??
-        computeWidgetResult(widget, { loans: [], lenders: [], toDate, project, i18n })
-      );
+      return widgetResults[scope][widget.id] ?? null;
     }
 
     return profileWidgetCompute({

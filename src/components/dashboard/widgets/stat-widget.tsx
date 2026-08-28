@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
-
+import { WidgetResultUnavailable } from '@/components/dashboard/widgets/widget-result-unavailable';
 import { useComputedWidgetResult } from '@/hooks/use-computed-widget-result';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
 import { getSignedMetricValueClassName } from '@/lib/dashboard/get-signed-metric-value-class-name';
@@ -23,6 +23,9 @@ export function StatWidget({ widget }: { widget: DashboardWidget }) {
 
   const config = useMemo(() => parseStatWidgetConfig(widget.config), [widget.config]);
   const computedResult = useComputedWidgetResult(widget);
+  if (!computedResult) {
+    return <WidgetResultUnavailable />;
+  }
   const computed = computedResult.type === 'stat' ? computedResult.values : [];
 
   if (config.stats.length === 0) {
