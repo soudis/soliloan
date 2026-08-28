@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: needed */
+import { type DesignComponent, getDocumentLayout, getEmailComponents } from '@/lib/templates/design-tree';
 import { paddingPropsToCssString, resolvePaddingPx } from '@/lib/templates/padding-utils';
 import { stripLoopScaffoldFromTiptapHtml } from '@/lib/templates/tiptap-merge-loop';
 
@@ -186,6 +187,8 @@ const resolveTemplateImageSrc = ({
 };
 
 const EMAIL_MAX_WIDTH = 600;
+/** Matches the Puck email root canvas (`puck-config` root render). */
+const EMAIL_ROOT_PADDING_PX = 40;
 
 /**
  * Wrap raw body HTML in a full HTML document with the Inter font loaded,
@@ -213,182 +216,203 @@ const wrapInDocument = (bodyHtml: string): string => {
 </html>`;
 };
 
+type HtmlRenderOptions = {
+  logoUrl?: string | null;
+  wrapFlexChildren: boolean;
+};
+
+const renderTableHtml = (props: Record<string, any>): string => {
+  const cols = props.columns || 3;
+  const headerTexts: string[] = props.headerTexts || [];
+  const cellTexts: string[][] = props.cellTexts || [[]];
+  const headerStyles: TableCellStyle[] = props.headerStyles || [];
+  const cellStyles: TableCellStyle[][] = props.cellStyles || [];
+  const loopKey = props.loopKey || '';
+  const isDynamic = loopKey.length > 0;
+  const rowCount = isDynamic ? 1 : props.rows || 1;
+  const tableTextAlign = (props.textAlign as TableTextAlign) || 'left';
+  const columnWidths = normalizeTableColumnWidths(props.columnWidths, cols);
+  const borderConfig = getTableBorderConfig(props);
+  const showVerticalGrid = borderConfig.borderLeft || borderConfig.borderRight;
+  const showHorizontalGrid = borderConfig.borderTop || borderConfig.borderBottom;
+  const colgroup = `<colgroup>${columnWidths.map((width) => `<col style="width: ${width}%;" />`).join('')}</colgroup>`;
+
+  let headerCells = '';
+  for (let c = 0; c < cols; c++) {
+    const cellContent = processTiptapContent(headerTexts[c] || '');
+    const cellStyle = resolveTableCellStyle(headerStyles[c], true, tableTextAlign);
+    headerCells += `<th style="${buildHtmlTableCellStyle({
+      isHeader: true,
+      style: cellStyle,
+      width: columnWidths[c] ?? 100 / cols,
+      showRightBorder: showVerticalGrid && c < cols - 1,
+      showBottomBorder: showHorizontalGrid,
+      borderConfig,
+    })}">${cellContent}</th>`;
+  }
+  const headerRow = `<tr>${headerCells}</tr>`;
+
+  let bodyRows = '';
+  for (let r = 0; r < rowCount; r++) {
+    let cells = '';
+    for (let c = 0; c < cols; c++) {
+      const cellContent = processTiptapContent(cellTexts[r]?.[c] || '');
+      const cellStyle = resolveTableCellStyle(cellStyles[r]?.[c], false, tableTextAlign);
+      cells += `<td style="${buildHtmlTableCellStyle({
+        isHeader: false,
+        style: cellStyle,
+        width: columnWidths[c] ?? 100 / cols,
+        showRightBorder: showVerticalGrid && c < cols - 1,
+        showBottomBorder: showHorizontalGrid && (isDynamic || r < rowCount - 1),
+        borderConfig,
+      })}">${cellContent}</td>`;
+    }
+    bodyRows += `<tr>${cells}</tr>`;
+  }
+
+  const padCss = paddingPropsToCssString(props);
+  return `<div style="width: 100%; box-sizing: border-box; padding: ${padCss}; margin: 0;"><table style="width: 100%; border-collapse: collapse; table-layout: fixed; box-sizing: border-box; margin: 0; padding: 0; ${buildTableOuterBorderCss(borderConfig)}">${colgroup}<thead>${headerRow}</thead><tbody>${isDynamic ? `{{#${loopKey}}}` : ''}${bodyRows}${isDynamic ? `{{/${loopKey}}}` : ''}</tbody></table></div>`;
+};
+
+const renderTextHtml = (props: Record<string, any>): string => {
+  const finalContent = processTiptapContent(props.text || '');
+  const textAlign = props.textAlign || 'left';
+  return `<div style="font-family: ${EMAIL_FONT_FAMILY}; font-size: ${props.fontSize || 16}px; color: ${props.color || '#000000'}; margin: 0; line-height: 1.5; text-align: ${textAlign};">${finalContent}</div>`;
+};
+
+const renderButtonHtml = (props: Record<string, any>): string => {
+  const btnUrl = props.useSystemUrl && props.systemUrlKey ? `{{system.${props.systemUrlKey}}}` : props.url || '#';
+  return `<div style="margin: 10px 0;"><a href="${btnUrl}" style="font-family: ${EMAIL_FONT_FAMILY}; background-color: ${props.background || '#2563eb'}; color: ${props.color || '#ffffff'}; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold;">${props.text || 'Button'}</a></div>`;
+};
+
+const renderImageHtml = (props: Record<string, any>, logoUrl?: string | null): string => {
+  return `<img src="${resolveTemplateImageSrc({
+    src: props.src,
+    useLogoSource: props.useLogoSource,
+    logoUrl,
+  })}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" />`;
+};
+
+const renderSlotHtml = (node: DesignComponent, options: HtmlRenderOptions): string => {
+  const { type, props, children } = node;
+  const layout = (props.layout as string) || 'vertical';
+  const gap = Number(props.gap) || 0;
+  const gridCols = Math.max(1, Number(props.gridColumns) || 2);
+  const bgColor = (props.background as string) || 'transparent';
+  const padCss = paddingPropsToCssString(props);
+  const justify = (props.justifyContent as string) || 'flex-start';
+  const align = (props.alignItems as string) || 'stretch';
+  const borderCss = borderPropsToCss(props);
+  const loopKey = type === 'Container' ? (props.loopKey as string) || '' : '';
+
+  if (layout === 'horizontal') {
+    const inner = options.wrapFlexChildren
+      ? children
+          .map(
+            (child) =>
+              `<div style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0;">${renderComponentHtml(child, options)}</div>`,
+          )
+          .join('')
+      : children.map((child) => renderComponentHtml(child, options)).join('');
+    const flexStyle =
+      `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+    return wrapWithLoop(`<div style="${flexStyle}">${inner}</div>`, loopKey);
+  }
+
+  if (layout === 'grid') {
+    if (options.wrapFlexChildren) {
+      const basisPct = gridCols > 1 ? `calc((100% - ${(gridCols - 1) * gap}px) / ${gridCols})` : '100%';
+      const inner = children
+        .map(
+          (child) =>
+            `<div style="flex-grow: 0; flex-shrink: 0; flex-basis: ${basisPct}; min-width: 0;">${renderComponentHtml(child, options)}</div>`,
+        )
+        .join('');
+      const flexStyle =
+        `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+      return wrapWithLoop(`<div style="${flexStyle}">${inner}</div>`, loopKey);
+    }
+    const content = children.map((child) => renderComponentHtml(child, options)).join('');
+    const divStyle = `padding: ${padCss}; background-color: ${bgColor}; ${borderCss}`.trim();
+    return wrapWithLoop(
+      `<div style="${divStyle}"><!--[if mso]><table style="width:100%;border-spacing:${gap}px;" cellpadding="0"><tr><![endif]--><div style="display: grid; grid-template-columns: repeat(${gridCols}, 1fr); gap: ${gap}px;">${content}</div><!--[if mso]></tr></table><![endif]--></div>`,
+      loopKey,
+    );
+  }
+
+  const content = children.map((child) => renderComponentHtml(child, options)).join('');
+  const verticalStyle =
+    `display: flex; flex-direction: column; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
+  return wrapWithLoop(`<div style="${verticalStyle}">${content}</div>`, loopKey);
+};
+
+const renderComponentHtml = (node: DesignComponent, options: HtmlRenderOptions): string => {
+  const { type, props, children } = node;
+
+  switch (type) {
+    case 'Container':
+    case 'Body':
+    case 'PageHeader':
+    case 'PageFooter':
+      return renderSlotHtml(node, options);
+    case 'Text':
+      return renderTextHtml(props);
+    case 'Button':
+      return renderButtonHtml(props);
+    case 'Image':
+      return renderImageHtml(props, options.logoUrl);
+    case 'Table':
+      return renderTableHtml(props);
+    default:
+      return children.map((child) => renderComponentHtml(child, options)).join('');
+  }
+};
+
+type BorderConfig = {
+  borderTop: boolean;
+  borderRight: boolean;
+  borderBottom: boolean;
+  borderLeft: boolean;
+  borderColor: string;
+  borderStyle: string;
+  borderWidth: number;
+};
+
+const borderConfigFromProps = (props: Record<string, unknown> | undefined): BorderConfig | null => {
+  if (!props) return null;
+  return {
+    borderTop: props.borderTop === true,
+    borderRight: props.borderRight === true,
+    borderBottom: props.borderBottom === true,
+    borderLeft: props.borderLeft === true,
+    borderColor: (props.borderColor as string) ?? '#e4e4e7',
+    borderStyle: (props.borderStyle as string) ?? 'solid',
+    borderWidth: Number(props.borderWidth) || 1,
+  };
+};
+
 export const generateEmailHtml = (
-  nodes: Record<string, any>,
+  design: unknown,
   options?: {
     logoUrl?: string | null;
   },
 ) => {
-  const rootNode = nodes.ROOT;
-  if (!rootNode) return '';
+  const items = getEmailComponents(design);
+  if (items.length === 0) return '';
 
-  const renderNode = (nodeId: string): string => {
-    const node = nodes[nodeId];
-    if (!node) return '';
-
-    const { type, props, nodes: childNodes } = node;
-    const componentName = typeof type === 'string' ? type : type.resolvedName || type.name;
-
-    let content = '';
-    if (childNodes && childNodes.length > 0) {
-      content = childNodes.map((childId: string) => renderNode(childId)).join('');
-    }
-
-    switch (componentName) {
-      case 'Container': {
-        const layout = props.layout || 'vertical';
-        const gap = props.gap || 0;
-        const gridCols = props.gridColumns || 2;
-        const bgColor = props.background || 'transparent';
-        const padCss = paddingPropsToCssString(props);
-        const justify = props.justifyContent || 'flex-start';
-        const align = props.alignItems || 'stretch';
-        const borderCss = borderPropsToCss(props);
-        const loopKey = props.loopKey || '';
-
-        if (layout === 'horizontal') {
-          const flexStyle =
-            `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
-          return wrapWithLoop(`<div style="${flexStyle}">${content}</div>`, loopKey);
-        }
-        if (layout === 'grid') {
-          const divStyle = `padding: ${padCss}; background-color: ${bgColor}; ${borderCss}`.trim();
-          return wrapWithLoop(
-            `<div style="${divStyle}"><!--[if mso]><table style="width:100%;border-spacing:${gap}px;" cellpadding="0"><tr><![endif]--><div style="display: grid; grid-template-columns: repeat(${gridCols}, 1fr); gap: ${gap}px;">${content}</div><!--[if mso]></tr></table><![endif]--></div>`,
-            loopKey,
-          );
-        }
-        const verticalStyle =
-          `display: flex; flex-direction: column; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
-        return wrapWithLoop(`<div style="${verticalStyle}">${content}</div>`, loopKey);
-      }
-
-      case 'Text': {
-        const finalContent = processTiptapContent(props.text || '');
-        const textAlign = props.textAlign || 'left';
-        return `<div style="font-family: ${EMAIL_FONT_FAMILY}; font-size: ${props.fontSize || 16}px; color: ${props.color || '#000000'}; margin: 0; line-height: 1.5; text-align: ${textAlign};">${finalContent}</div>`;
-      }
-
-      case 'Button': {
-        const btnUrl = props.useSystemUrl && props.systemUrlKey ? `{{system.${props.systemUrlKey}}}` : props.url || '#';
-        return `
-          <div style="margin: 10px 0;">
-            <a href="${btnUrl}" style="font-family: ${EMAIL_FONT_FAMILY}; background-color: ${props.background || '#2563eb'}; color: ${props.color || '#ffffff'}; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold;">
-              ${props.text || 'Button'}
-            </a>
-          </div>
-        `;
-      }
-
-      case 'Image':
-        return `<img src="${resolveTemplateImageSrc({
-          src: props.src,
-          useLogoSource: props.useLogoSource,
-          logoUrl: options?.logoUrl,
-        })}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" />`;
-
-      case 'Table': {
-        const cols = props.columns || 3;
-        const headerTexts: string[] = props.headerTexts || [];
-        const cellTexts: string[][] = props.cellTexts || [[]];
-        const headerStyles: TableCellStyle[] = props.headerStyles || [];
-        const cellStyles: TableCellStyle[][] = props.cellStyles || [];
-        const loopKey = props.loopKey || '';
-        const isDynamic = loopKey.length > 0;
-        const rowCount = isDynamic ? 1 : props.rows || 1;
-        const tableTextAlign = (props.textAlign as TableTextAlign) || 'left';
-        const columnWidths = normalizeTableColumnWidths(props.columnWidths, cols);
-        const borderConfig = getTableBorderConfig(props);
-        const showVerticalGrid = borderConfig.borderLeft || borderConfig.borderRight;
-        const showHorizontalGrid = borderConfig.borderTop || borderConfig.borderBottom;
-        const colgroup = `<colgroup>${columnWidths
-          .map((width) => `<col style="width: ${width}%;" />`)
-          .join('')}</colgroup>`;
-
-        let headerCells = '';
-        for (let c = 0; c < cols; c++) {
-          const cellContent = processTiptapContent(headerTexts[c] || '');
-          const cellStyle = resolveTableCellStyle(headerStyles[c], true, tableTextAlign);
-          headerCells += `<th style="${buildHtmlTableCellStyle({
-            isHeader: true,
-            style: cellStyle,
-            width: columnWidths[c] ?? 100 / cols,
-            showRightBorder: showVerticalGrid && c < cols - 1,
-            showBottomBorder: showHorizontalGrid,
-            borderConfig,
-          })}">${cellContent}</th>`;
-        }
-        const headerRow = `<tr>${headerCells}</tr>`;
-
-        let bodyRows = '';
-        for (let r = 0; r < rowCount; r++) {
-          let cells = '';
-          for (let c = 0; c < cols; c++) {
-            const cellContent = processTiptapContent(cellTexts[r]?.[c] || '');
-            const cellStyle = resolveTableCellStyle(cellStyles[r]?.[c], false, tableTextAlign);
-            cells += `<td style="${buildHtmlTableCellStyle({
-              isHeader: false,
-              style: cellStyle,
-              width: columnWidths[c] ?? 100 / cols,
-              showRightBorder: showVerticalGrid && c < cols - 1,
-              showBottomBorder: showHorizontalGrid && (isDynamic || r < rowCount - 1),
-              borderConfig,
-            })}">${cellContent}</td>`;
-          }
-          bodyRows += `<tr>${cells}</tr>`;
-        }
-
-        const padCss = paddingPropsToCssString(props);
-        const tableHtml = `<div style="width: 100%; box-sizing: border-box; padding: ${padCss}; margin: 0;"><table style="width: 100%; border-collapse: collapse; table-layout: fixed; box-sizing: border-box; margin: 0; padding: 0; ${buildTableOuterBorderCss(borderConfig)}">${colgroup}<thead>${headerRow}</thead><tbody>${isDynamic ? `{{#${loopKey}}}` : ''}${bodyRows}${isDynamic ? `{{/${loopKey}}}` : ''}</tbody></table></div>`;
-        return tableHtml;
-      }
-
-      case 'Loop':
-        return `{{#${props.loopKey}}}${content}{{/${props.loopKey}}}`;
-
-      case 'Canvas': // Root or sub-canvas
-      case 'Element':
-        return content;
-
-      default:
-        return content;
-    }
-  };
-
-  const bodyHtml = renderNode('ROOT');
+  const content = items
+    .map((item) => renderComponentHtml(item, { logoUrl: options?.logoUrl, wrapFlexChildren: false }))
+    .join('');
+  const bodyHtml = `<div style="padding: ${EMAIL_ROOT_PADDING_PX}px; background-color: #ffffff; width: 100%;">${content}</div>`;
   return wrapInDocument(bodyHtml);
 };
 
 /**
- * Normalize Craft.js serialized output to a flat nodes map.
- * query.serialize() returns JSON that may be the raw SerializedNodes object
- * or (in some setups) a wrapper like { nodes: SerializedNodes }.
- */
-export const getNodesMapFromSerialized = (serialized: string): Record<string, any> => {
-  const parsed = JSON.parse(serialized) as Record<string, unknown>;
-  return getNodesMapFromDesign(parsed);
-};
-
-/**
- * Normalize a design object (e.g. from initialDesign or JSON.parse) to a flat nodes map.
- */
-export const getNodesMapFromDesign = (design: Record<string, unknown> | null | undefined): Record<string, any> => {
-  if (!design || typeof design !== 'object') return {};
-  if (design.nodes && typeof design.nodes === 'object' && !Array.isArray(design.nodes)) {
-    return design.nodes as Record<string, any>;
-  }
-  return design as Record<string, any>;
-};
-
-/**
- * For document templates: extract the header, body, and footer HTML separately.
- * ROOT's children can be stored in two ways:
- * 1. linkedNodes: { PAGE_HEADER: nodeId, BODY: nodeId, PAGE_FOOTER: nodeId }
- * 2. nodes: [nodeId1, nodeId2, nodeId3] with each node having props.id = 'PAGE_HEADER' | 'BODY' | 'PAGE_FOOTER'
- * Your saved design uses (2) with props.id, so we resolve by matching props.id when linkedNodes is empty.
+ * For document templates: extract header, body, and footer HTML from Puck Data
+ * (`root.props.header` / `content` / `root.props.footer`). Craft JSON is converted first.
  */
 export const generateDocumentParts = (
-  nodes: Record<string, any>,
+  design: unknown,
   options?: {
     logoUrl?: string | null;
   },
@@ -398,34 +422,16 @@ export const generateDocumentParts = (
   footerHtml: string;
   headerPadding: number;
   footerPadding: number;
-  headerBorder: {
-    borderTop: boolean;
-    borderRight: boolean;
-    borderBottom: boolean;
-    borderLeft: boolean;
-    borderColor: string;
-    borderStyle: string;
-    borderWidth: number;
-  } | null;
-  footerBorder: {
-    borderTop: boolean;
-    borderRight: boolean;
-    borderBottom: boolean;
-    borderLeft: boolean;
-    borderColor: string;
-    borderStyle: string;
-    borderWidth: number;
-  } | null;
+  headerBorder: BorderConfig | null;
+  footerBorder: BorderConfig | null;
 } => {
-  const rootNode =
-    nodes.ROOT ??
-    Object.values(nodes).find(
-      (n: any) => n?.linkedNodes?.PAGE_HEADER && n?.linkedNodes?.BODY && n?.linkedNodes?.PAGE_FOOTER,
-    );
-  if (!rootNode) {
+  const layout = getDocumentLayout(design);
+  const renderOptions: HtmlRenderOptions = { logoUrl: options?.logoUrl, wrapFlexChildren: true };
+
+  if (!layout.header && !layout.footer) {
     return {
       headerHtml: '',
-      bodyHtml: '',
+      bodyHtml: generateEmailHtml(design, options),
       footerHtml: '',
       headerPadding: 0,
       footerPadding: 0,
@@ -434,252 +440,19 @@ export const generateDocumentParts = (
     };
   }
 
-  const linked = rootNode.linkedNodes || {};
-  const childIds: string[] = rootNode.nodes || [];
-  let headerNodeId = linked.PAGE_HEADER;
-  let bodyNodeId = linked.BODY;
-  let footerNodeId = linked.PAGE_FOOTER;
-
-  // When linkedNodes is empty (e.g. saved design from DB), resolve by props.id
-  if (!headerNodeId || !bodyNodeId || !footerNodeId) {
-    for (const id of childIds) {
-      const n = nodes[id];
-      const propId = n?.props?.id;
-      if (propId === 'PAGE_HEADER') headerNodeId = id;
-      if (propId === 'BODY') bodyNodeId = id;
-      if (propId === 'PAGE_FOOTER') footerNodeId = id;
-    }
-  }
-
-  const hasDocumentStructure = headerNodeId && bodyNodeId && footerNodeId;
-
-  if (!hasDocumentStructure) {
-    return {
-      headerHtml: '',
-      bodyHtml: generateEmailHtml(nodes, options),
-      footerHtml: '',
-      headerPadding: 0,
-      footerPadding: 0,
-      headerBorder: null,
-      footerBorder: null,
-    };
-  }
-
-  // Build a render function that processes a subtree
-  const renderNode = (nodeId: string): string => {
-    const node = nodes[nodeId];
-    if (!node) return '';
-
-    const { type, props, nodes: nodeChildren } = node;
-    const componentName = typeof type === 'string' ? type : type.resolvedName || type.name;
-
-    let content = '';
-    if (nodeChildren && nodeChildren.length > 0) {
-      content = nodeChildren.map((childId: string) => renderNode(childId)).join('');
-    }
-
-    // Reuse the same rendering logic as generateEmailHtml
-    switch (componentName) {
-      case 'Container':
-      case 'PageHeader':
-      case 'PageFooter': {
-        const layout = props.layout || 'vertical';
-        const gap = props.gap || 0;
-        const gridCols = Math.max(1, props.gridColumns || 2);
-        const bgColor = props.background || 'transparent';
-        const padCss = paddingPropsToCssString(props);
-        const justify = props.justifyContent || 'flex-start';
-        const align = props.alignItems || 'stretch';
-        const borderCss = borderPropsToCss(props);
-        const loopKey = componentName === 'Container' ? props.loopKey || '' : '';
-
-        if (layout === 'horizontal') {
-          const flexChildren = (nodeChildren || []).map(
-            (childId: string) =>
-              `<div style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0;">${renderNode(childId)}</div>`,
-          );
-          const inner = flexChildren.join('');
-          const flexStyle =
-            `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
-          return wrapWithLoop(`<div style="${flexStyle}">${inner}</div>`, loopKey);
-        }
-        if (layout === 'grid') {
-          const gapPx = gap;
-          const basisPct = gridCols > 1 ? `calc((100% - ${(gridCols - 1) * gapPx}px) / ${gridCols})` : '100%';
-          const flexChildren = (nodeChildren || []).map(
-            (childId: string) =>
-              `<div style="flex-grow: 0; flex-shrink: 0; flex-basis: ${basisPct}; min-width: 0;">${renderNode(childId)}</div>`,
-          );
-          const inner = flexChildren.join('');
-          const flexStyle =
-            `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
-          return wrapWithLoop(`<div style="${flexStyle}">${inner}</div>`, loopKey);
-        }
-        // vertical (default)
-        const verticalStyle =
-          `display: flex; flex-direction: column; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
-        return wrapWithLoop(`<div style="${verticalStyle}">${content}</div>`, loopKey);
-      }
-
-      case 'Text': {
-        const finalContent = processTiptapContent(props.text || '');
-        const textAlign = props.textAlign || 'left';
-        return `<div style="font-family: ${EMAIL_FONT_FAMILY}; font-size: ${props.fontSize || 16}px; color: ${props.color || '#000000'}; margin: 0; line-height: 1.5; text-align: ${textAlign};">${finalContent}</div>`;
-      }
-
-      case 'Button': {
-        const docBtnUrl =
-          props.useSystemUrl && props.systemUrlKey ? `{{system.${props.systemUrlKey}}}` : props.url || '#';
-        return `<div style="margin: 10px 0;"><a href="${docBtnUrl}" style="font-family: ${EMAIL_FONT_FAMILY}; background-color: ${props.background || '#2563eb'}; color: ${props.color || '#ffffff'}; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold;">${props.text || 'Button'}</a></div>`;
-      }
-
-      case 'Image':
-        return `<img src="${resolveTemplateImageSrc({
-          src: props.src,
-          useLogoSource: props.useLogoSource,
-          logoUrl: options?.logoUrl,
-        })}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" />`;
-
-      case 'Table': {
-        const cols = props.columns || 3;
-        const headerTexts: string[] = props.headerTexts || [];
-        const cellTexts: string[][] = props.cellTexts || [[]];
-        const headerStyles: TableCellStyle[] = props.headerStyles || [];
-        const cellStyles: TableCellStyle[][] = props.cellStyles || [];
-        const loopKey = props.loopKey || '';
-        const isDynamic = loopKey.length > 0;
-        const rowCount = isDynamic ? 1 : props.rows || 1;
-        const tableTextAlign = (props.textAlign as TableTextAlign) || 'left';
-        const columnWidths = normalizeTableColumnWidths(props.columnWidths, cols);
-        const borderConfig = getTableBorderConfig(props);
-        const showVerticalGrid = borderConfig.borderLeft || borderConfig.borderRight;
-        const showHorizontalGrid = borderConfig.borderTop || borderConfig.borderBottom;
-        const colgroup = `<colgroup>${columnWidths
-          .map((width) => `<col style="width: ${width}%;" />`)
-          .join('')}</colgroup>`;
-
-        let headerCells = '';
-        for (let c = 0; c < cols; c++) {
-          const cellContent = processTiptapContent(headerTexts[c] || '');
-          const cellStyle = resolveTableCellStyle(headerStyles[c], true, tableTextAlign);
-          headerCells += `<th style="${buildHtmlTableCellStyle({
-            isHeader: true,
-            style: cellStyle,
-            width: columnWidths[c] ?? 100 / cols,
-            showRightBorder: showVerticalGrid && c < cols - 1,
-            showBottomBorder: showHorizontalGrid,
-            borderConfig,
-          })}">${cellContent}</th>`;
-        }
-        const headerRow = `<tr>${headerCells}</tr>`;
-
-        let bodyRows = '';
-        for (let r = 0; r < rowCount; r++) {
-          let cells = '';
-          for (let c = 0; c < cols; c++) {
-            const cellContent = processTiptapContent(cellTexts[r]?.[c] || '');
-            const cellStyle = resolveTableCellStyle(cellStyles[r]?.[c], false, tableTextAlign);
-            cells += `<td style="${buildHtmlTableCellStyle({
-              isHeader: false,
-              style: cellStyle,
-              width: columnWidths[c] ?? 100 / cols,
-              showRightBorder: showVerticalGrid && c < cols - 1,
-              showBottomBorder: showHorizontalGrid && (isDynamic || r < rowCount - 1),
-              borderConfig,
-            })}">${cellContent}</td>`;
-          }
-          bodyRows += `<tr>${cells}</tr>`;
-        }
-
-        const padCss = paddingPropsToCssString(props);
-        return `<div style="width: 100%; box-sizing: border-box; padding: ${padCss}; margin: 0;"><table style="width: 100%; border-collapse: collapse; table-layout: fixed; box-sizing: border-box; margin: 0; padding: 0; ${buildTableOuterBorderCss(borderConfig)}">${colgroup}<thead>${headerRow}</thead><tbody>${isDynamic ? `{{#${loopKey}}}` : ''}${bodyRows}${isDynamic ? `{{/${loopKey}}}` : ''}</tbody></table></div>`;
-      }
-
-      default:
-        return content;
-    }
-  };
-
-  const headerHtml = renderNode(headerNodeId);
-  const footerHtml = renderNode(footerNodeId);
-
-  // Extract vertical padding sum (px) for metadata / layout hints
-  const headerPx = resolvePaddingPx(nodes[headerNodeId]?.props ?? { padding: 16 });
-  const footerPx = resolvePaddingPx(nodes[footerNodeId]?.props ?? { padding: 16 });
-  const headerPadding = headerPx.top + headerPx.bottom;
-  const footerPadding = footerPx.top + footerPx.bottom;
-
-  // For the body, render the BODY node's children with the same layout as Container (horizontal/grid/vertical)
-  const bodyNode = nodes[bodyNodeId];
-  const bodyChildren = bodyNode?.nodes ?? [];
-  const bodyLayout = bodyNode?.props?.layout || 'vertical';
-  const bodyGap = bodyNode?.props?.gap ?? 0;
-  const bodyGridCols = Math.max(1, bodyNode?.props?.gridColumns ?? 2);
-  const bodyPaddingCss = paddingPropsToCssString(bodyNode?.props ?? { padding: 56 });
-  const bodyBg = bodyNode?.props?.background ?? '#ffffff';
-  const bodyJustify = bodyNode?.props?.justifyContent ?? 'flex-start';
-  const bodyAlign = bodyNode?.props?.alignItems ?? 'stretch';
-  const bodyBorderCss = borderPropsToCss(bodyNode?.props ?? {});
-
-  let bodyContentHtml: string;
-  if (bodyChildren.length === 0) {
-    bodyContentHtml = `<div style="padding: ${bodyPaddingCss}; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}"></div>`;
-  } else if (bodyLayout === 'horizontal') {
-    const flexChildren = bodyChildren.map(
-      (childId: string) =>
-        `<div style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0;">${renderNode(childId)}</div>`,
-    );
-    const flexStyle =
-      `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${bodyGap}px; justify-content: ${bodyJustify}; align-items: ${bodyAlign}; padding: ${bodyPaddingCss}; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
-    bodyContentHtml = `<div style="${flexStyle}">${flexChildren.join('')}</div>`;
-  } else if (bodyLayout === 'grid') {
-    const gapPx = bodyGap;
-    const basisPct = bodyGridCols > 1 ? `calc((100% - ${(bodyGridCols - 1) * gapPx}px) / ${bodyGridCols})` : '100%';
-    const flexChildren = bodyChildren.map(
-      (childId: string) =>
-        `<div style="flex-grow: 0; flex-shrink: 0; flex-basis: ${basisPct}; min-width: 0;">${renderNode(childId)}</div>`,
-    );
-    const flexStyle =
-      `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${bodyGap}px; padding: ${bodyPaddingCss}; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
-    bodyContentHtml = `<div style="${flexStyle}">${flexChildren.join('')}</div>`;
-  } else {
-    const bodyContent = bodyChildren.map((childId: string) => renderNode(childId)).join('');
-    const verticalStyle =
-      `display: flex; flex-direction: column; gap: ${bodyGap}px; justify-content: ${bodyJustify}; align-items: ${bodyAlign}; padding: ${bodyPaddingCss}; background-color: ${bodyBg}; width: 100%; ${bodyBorderCss}`.trim();
-    bodyContentHtml = `<div style="${verticalStyle}">${bodyContent}</div>`;
-  }
-
-  // Border config for PDF header/footer (native View styles, since we render them as Text/View not HTML)
-  const headerBorder = nodes[headerNodeId]?.props
-    ? {
-        borderTop: nodes[headerNodeId].props.borderTop === true,
-        borderRight: nodes[headerNodeId].props.borderRight === true,
-        borderBottom: nodes[headerNodeId].props.borderBottom === true,
-        borderLeft: nodes[headerNodeId].props.borderLeft === true,
-        borderColor: nodes[headerNodeId].props.borderColor ?? '#e4e4e7',
-        borderStyle: nodes[headerNodeId].props.borderStyle ?? 'solid',
-        borderWidth: Number(nodes[headerNodeId].props.borderWidth) || 1,
-      }
-    : null;
-  const footerBorder = nodes[footerNodeId]?.props
-    ? {
-        borderTop: nodes[footerNodeId].props.borderTop === true,
-        borderRight: nodes[footerNodeId].props.borderRight === true,
-        borderBottom: nodes[footerNodeId].props.borderBottom === true,
-        borderLeft: nodes[footerNodeId].props.borderLeft === true,
-        borderColor: nodes[footerNodeId].props.borderColor ?? '#e4e4e7',
-        borderStyle: nodes[footerNodeId].props.borderStyle ?? 'solid',
-        borderWidth: Number(nodes[footerNodeId].props.borderWidth) || 1,
-      }
-    : null;
+  const headerHtml = layout.header ? renderComponentHtml(layout.header, renderOptions) : '';
+  const footerHtml = layout.footer ? renderComponentHtml(layout.footer, renderOptions) : '';
+  const headerPx = resolvePaddingPx(layout.header?.props ?? { padding: 16 });
+  const footerPx = resolvePaddingPx(layout.footer?.props ?? { padding: 16 });
+  const bodyHtml = layout.body.map((item) => renderComponentHtml(item, renderOptions)).join('');
 
   return {
     headerHtml,
-    bodyHtml: wrapInDocument(bodyContentHtml),
+    bodyHtml: wrapInDocument(bodyHtml),
     footerHtml,
-    headerPadding,
-    footerPadding,
-    headerBorder,
-    footerBorder,
+    headerPadding: headerPx.top + headerPx.bottom,
+    footerPadding: footerPx.top + footerPx.bottom,
+    headerBorder: borderConfigFromProps(layout.header?.props),
+    footerBorder: borderConfigFromProps(layout.footer?.props),
   };
 };

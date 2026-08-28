@@ -14,8 +14,8 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { needsSampleRecordSelection } from '@/lib/templates/merge-tags';
 import type { TemplateEditorPageData } from '@/lib/templates/template-editor-page-data';
+import { TemplateEditorView } from './puck/template-editor-view';
 import { SampleDataSelector } from './sample-data-selector';
-import { TemplateEditorView } from './template-editor-view';
 
 interface TemplateEditorProps {
   template: {
