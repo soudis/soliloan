@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import type { Session } from 'next-auth';
 import { useTranslations } from 'next-intl';
 
+import { ProjectsCatalogProvider } from '@/components/providers/project-provider';
 import { usePathname } from '@/i18n/navigation';
 import { pathnameIsTableList, TABLE_LIST_PATHS } from '@/lib/table-list-path';
 import { cn } from '@/lib/utils';
@@ -50,55 +51,62 @@ export default function DashboardNavigation({
   const showSidebar = session.user.isManager;
 
   return (
-    <div className="flex h-dvh flex-col">
-      <TopNav
-        session={session}
-        isSidebarOpen={isSidebarOpen}
-        setIsSidebarOpen={toggleSidebar}
-        showSidebarToggle={showSidebar}
-      />
+    <ProjectsCatalogProvider projects={projects}>
+      <div className="flex h-dvh flex-col">
+        <TopNav
+          session={session}
+          isSidebarOpen={isSidebarOpen}
+          setIsSidebarOpen={toggleSidebar}
+          showSidebarToggle={showSidebar}
+        />
 
-      <div className="flex min-h-0 flex-1">
-        {showSidebar && (
-          <SidebarNav isSidebarOpen={isSidebarOpen} session={session} projects={projects} sidebarViews={sidebarViews} />
-        )}
+        <div className="flex min-h-0 flex-1">
+          {showSidebar && (
+            <SidebarNav
+              isSidebarOpen={isSidebarOpen}
+              session={session}
+              projects={projects}
+              sidebarViews={sidebarViews}
+            />
+          )}
 
-        {/* Main Content */}
-        <main
-          className={cn(
-            'relative flex-1 bg-[color-mix(in_oklch,var(--background)_60%,var(--muted)_40%)]',
-            isFillHeightPage ? 'flex min-h-0 flex-col overflow-hidden' : 'min-h-0 flex-1 overflow-y-auto',
-          )}
-        >
-          {isProjectSwitching && (
-            <div
-              className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-background/70 backdrop-blur-[2px]"
-              aria-live="polite"
-              aria-busy="true"
-            >
-              <Loader2 className="h-10 w-10 animate-spin text-primary" />
-              <p className="text-sm font-medium text-muted-foreground">{t('switchingProject')}</p>
-            </div>
-          )}
-          <div
+          {/* Main Content */}
+          <main
             className={cn(
-              'mx-auto w-full px-6',
-              isFillHeightPage || isFullWidthPage
-                ? cn(
-                    'flex min-h-0 flex-1 flex-col py-8',
-                    isFullWidthPage ? 'max-w-none' : showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg',
-                  )
-                : cn(
-                    'mx-auto w-full px-6 py-8',
-                    isDashboardPage || showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg',
-                    !isDashboardPage && 'container',
-                  ),
+              'relative flex-1 bg-[color-mix(in_oklch,var(--background)_60%,var(--muted)_40%)]',
+              isFillHeightPage ? 'flex min-h-0 flex-col overflow-hidden' : 'min-h-0 flex-1 overflow-y-auto',
             )}
           >
-            {children}
-          </div>
-        </main>
+            {isProjectSwitching && (
+              <div
+                className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-background/70 backdrop-blur-[2px]"
+                aria-live="polite"
+                aria-busy="true"
+              >
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <p className="text-sm font-medium text-muted-foreground">{t('switchingProject')}</p>
+              </div>
+            )}
+            <div
+              className={cn(
+                'mx-auto w-full px-6',
+                isFillHeightPage || isFullWidthPage
+                  ? cn(
+                      'flex min-h-0 flex-1 flex-col py-8',
+                      isFullWidthPage ? 'max-w-none' : showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg',
+                    )
+                  : cn(
+                      'mx-auto w-full px-6 py-8',
+                      isDashboardPage || showSidebar ? 'max-w-screen-xl' : 'max-w-screen-lg',
+                      !isDashboardPage && 'container',
+                    ),
+              )}
+            >
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
+    </ProjectsCatalogProvider>
   );
 }
