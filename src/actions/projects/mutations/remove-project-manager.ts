@@ -4,8 +4,8 @@ import { Entity, Operation } from '@prisma/client';
 import { z } from 'zod';
 import { createAuditEntry, getManagerContext } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
+import { loadProject } from '@/lib/projects/get-project';
 import { projectAction } from '@/lib/utils/safe-action';
-import { getProjectUnsafe } from '../queries/get-project';
 
 export const removeProjectManagerAction = projectAction
   .inputSchema(
@@ -63,6 +63,6 @@ export const removeProjectManagerAction = projectAction
       projectId,
     });
 
-    const updated = await getProjectUnsafe(projectId);
+    const updated = await loadProject(projectId);
     return { project: updated };
   });

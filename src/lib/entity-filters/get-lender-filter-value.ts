@@ -1,15 +1,15 @@
 import { getLenderName } from '@/lib/utils';
-import type { LenderWithCalculations } from '@/types/lenders';
+import type { LenderListItem } from '@/types/lenders';
 
-export function getLenderAddress(lender: LenderWithCalculations): string {
+export function getLenderAddress(lender: LenderListItem): string {
   return [lender.street, lender.addon, lender.zip, lender.place].filter(Boolean).join(' ');
 }
 
-export function getLenderBanking(lender: LenderWithCalculations): string {
+export function getLenderBanking(lender: LenderListItem): string {
   return [lender.iban, lender.bic].filter(Boolean).join(' ');
 }
 
-export function getLenderFilterValue(lender: LenderWithCalculations, field: string): unknown {
+export function getLenderFilterValue(lender: LenderListItem, field: string): unknown {
   if (field.startsWith('additionalFields.')) {
     const key = field.replace('additionalFields.', '');
     return lender.additionalFields?.[key];

@@ -429,6 +429,7 @@
     "loanCount": "Anzahl der Kredite"
   },
   "widgets": {
+    "resultUnavailable": "Widget-Daten konnten nicht geladen werden.",
     "historyTable": {
       "periodColumn": "Zeitraum",
       "periodLinkTitle": "Transaktionen für {period} anzeigen",

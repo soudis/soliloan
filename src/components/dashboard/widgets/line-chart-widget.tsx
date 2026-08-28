@@ -13,17 +13,16 @@ import {
   Tooltip,
 } from 'chart.js';
 import { useTranslations } from 'next-intl';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
-
+import { WidgetResultUnavailable } from '@/components/dashboard/widgets/widget-result-unavailable';
 import { useAnimatedChartData } from '@/hooks/use-animated-chart-data';
-import { type ChartComputeContext, useDashboardChartResult } from '@/hooks/use-dashboard-chart-result';
+import { useComputedWidgetResult } from '@/hooks/use-computed-widget-result';
 import { chartColorAtIndex } from '@/lib/dashboard/chart/chart-dataset-colors';
 import { resolveLineChartDatasetStyle } from '@/lib/dashboard/chart/line-chart-dataset-style';
 import { zeroLinePlugin } from '@/lib/dashboard/chart/zero-line-plugin';
 import { DASHBOARD_CHART_ANIMATION } from '@/lib/dashboard/chart-animation';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
-import { computeLineChart } from '@/lib/dashboard/line-chart/compute-line-chart';
 import { cn } from '@/lib/utils';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import { parseLineChartConfig } from '@/types/dashboard-widgets/line-chart';
@@ -33,32 +32,9 @@ ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Tooltip,
 
 export function LineChartWidget({ widget }: { widget: DashboardWidget }) {
   const t = useTranslations('dashboard.widgets.lineChart');
-  const tHistoryTable = useTranslations('dashboard.widgets.historyTable');
-  const tHistory = useTranslations('dashboard.customizer.historyTable');
-  const commonT = useTranslations('common');
-
   const config = useMemo(() => parseLineChartConfig(widget.config), [widget.config]);
-
-  const compute = useCallback(
-    ({ loans, toDate, fieldOptions, locale, formatMonth }: ChartComputeContext) =>
-      computeLineChart(
-        loans,
-        config,
-        toDate,
-        fieldOptions,
-        locale,
-        formatMonth,
-        t('emptyValue'),
-        t('otherCategory'),
-        tHistoryTable('untilNow'),
-        (key, values) => commonT(key, values),
-        (key, values) => t(key, values),
-        (metric) => tHistory(`metrics.${metric}`),
-      ),
-    [config, t, tHistory, tHistoryTable, commonT],
-  );
-
-  const result = useDashboardChartResult(widget, config.series.length > 0, compute);
+  const computed = useComputedWidgetResult(widget);
+  const result = computed?.type === 'line_chart' ? computed.result : null;
 
   const chartData = useMemo<ChartData<'line'> | null>(() => {
     if (!result) {
@@ -111,6 +87,10 @@ export function LineChartWidget({ widget }: { widget: DashboardWidget }) {
     }),
     [config.beginAtZero, config.series],
   );
+
+  if (!computed) {
+    return <WidgetResultUnavailable />;
+  }
 
   if (config.series.length === 0) {
     return <p className="text-sm text-muted-foreground">{t('emptySeries')}</p>;

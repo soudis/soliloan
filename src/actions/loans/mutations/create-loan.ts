@@ -4,6 +4,7 @@ import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 import { createAuditEntry, getLenderContext, getLoanContext, removeNullFields } from '@/lib/audit-trail';
+import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { normalizeLoanInterestRate } from '@/lib/schemas/investment-type';
 import { loanFormSchema } from '@/lib/schemas/loan';
@@ -119,7 +120,8 @@ export const createLoanAction = lenderAction.inputSchema(loanFormSchema).action(
 
   // Revalidate the lender page and loans page
   revalidatePath(`/lenders/${data.lenderId}`);
-  revalidatePath('/loans');
+  revalidatePath('/loans/list');
+  invalidateDashboardWidgetResultsCache(loan.lender.projectId);
 
   return { loan };
 });

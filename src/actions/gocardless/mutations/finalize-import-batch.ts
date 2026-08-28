@@ -11,6 +11,7 @@ import {
   removeNullFields,
 } from '@/lib/audit-trail';
 import { calculateLoanFields } from '@/lib/calculations/loan-calculations';
+import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { isLoanEligibleForTransaction } from '@/lib/gocardless/import-matching';
 import type {
@@ -203,8 +204,9 @@ export const finalizeImportBatchAction = projectAction
       });
     }
 
-    revalidatePath('/transactions');
+    revalidatePath('/transactions/list');
     revalidatePath('/transactions/import');
+    invalidateDashboardWidgetResultsCache(projectId);
 
     const remainingRows = await db.bankImportRow.count({
       where: { batch: { projectId } },

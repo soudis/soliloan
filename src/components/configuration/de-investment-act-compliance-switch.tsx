@@ -219,7 +219,7 @@ export function DeInvestmentActComplianceSwitch({
                 <AlertDialogCancel>{t('enableDialog.close')}</AlertDialogCancel>
                 <AlertDialogAction asChild>
                   <Link
-                    href={`/investment-types?projectId=${projectId}`}
+                    href={`/investment-types/list?projectId=${projectId}`}
                     className="inline-flex items-center gap-2"
                     onClick={() => setDialogOpen(false)}
                   >

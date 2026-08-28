@@ -1,10 +1,10 @@
 import { getBankConnections } from '@/actions/gocardless/queries/get-bank-connections';
-import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
 import { ConfigurationPage } from '@/components/configuration/configuration-page';
 import { db } from '@/lib/db';
 import { getInviteValidDays } from '@/lib/env';
 import { countGermanLoans } from '@/lib/investment-types/count-german-loans';
 import { searchParamsCache } from '@/lib/params';
+import { getProjectUnsafe } from '@/lib/projects/get-project';
 import { getProjectSystemTemplatesOverviewRows } from '@/lib/templates/project-system-templates-overview';
 
 interface PageProps {

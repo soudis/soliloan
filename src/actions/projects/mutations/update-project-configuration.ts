@@ -3,10 +3,11 @@
 import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
 import { createAuditEntry, getChangedFields } from '@/lib/audit-trail';
 import { auth } from '@/lib/auth';
+import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
+import { loadProject } from '@/lib/projects/get-project';
 import { type ConfigurationFormData, configurationFormSchema } from '@/lib/schemas/configuration';
 import { projectAction } from '@/lib/utils/safe-action';
 
@@ -17,7 +18,7 @@ export async function updateConfiguration(projectId: string, data: Configuration
   }
 
   // Fetch the current project
-  const project = await getProjectUnsafe(projectId);
+  const project = await loadProject(projectId);
 
   if (!project) {
     throw new Error('error.project.notFound');
@@ -50,8 +51,9 @@ export async function updateConfiguration(projectId: string, data: Configuration
 
   // Revalidate the project configuration page
   revalidatePath('/configuration');
+  invalidateDashboardWidgetResultsCache(projectId);
 
-  return getProjectUnsafe(projectId);
+  return loadProject(projectId);
 }
 
 export const updateConfigurationAction = projectAction

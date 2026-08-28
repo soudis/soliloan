@@ -1,6 +1,7 @@
-import { getLenderAction, getProjectUnsafe } from '@/actions';
+import { getLenderAction } from '@/actions';
 import { NewLoanClient } from '@/components/loans/new-loan-client';
 import { searchParamsCache } from '@/lib/params';
+import { getProjectUnsafe } from '@/lib/projects/get-project';
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

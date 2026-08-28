@@ -8,14 +8,11 @@ import {
 } from '@prisma/client';
 import { omit } from 'lodash';
 import moment, { type Moment } from 'moment';
-
+import { calculateOutstandingDeposits } from '@/lib/loans/savings-contract';
 import type { CalculationOptions } from '@/types/calculation';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
-
-import { calculateOutstandingDeposits } from '@/lib/loans/savings-contract';
-
-import { getLoanTermDays, getRepaymentPeriodDays } from './loan-duration-metrics';
 import { createdAtDescSorter, transactionSorter } from '../utils/sorters';
+import { getLoanTermDays, getRepaymentPeriodDays } from './loan-duration-metrics';
 
 export const isRepaid = (loan: LoanWithRelations, toDate: Date) => {
   // check if all money was paid back until given date
@@ -311,6 +308,8 @@ export const calculateLoanPerYear = (
   }));
 };
 
+export type LoanPerYearResult = ReturnType<typeof calculateLoanPerYear>;
+
 type LoanPeriodAccumulator = {
   year: number;
   month: number;
@@ -343,6 +342,7 @@ export const calculateLoanPerMonth = (
   loan: LoanWithRelations,
   toDateParameter?: Date,
   currentTransactionId?: string,
+  precomputedPerYear?: LoanPerYearResult,
 ) => {
   let toDate = moment(toDateParameter);
   const repaymentDate = isRepaid(loan, toDate.toDate());
@@ -363,7 +363,7 @@ export const calculateLoanPerMonth = (
     return [];
   }
 
-  const perYear = calculateLoanPerYear(loan, toDateParameter, currentTransactionId);
+  const perYear = precomputedPerYear ?? calculateLoanPerYear(loan, toDateParameter, currentTransactionId);
   const perYearByYear = new Map(perYear.map((yearEntry) => [yearEntry.year, yearEntry]));
 
   const firstMonth = moment(firstTransaction.date).startOf('month');
@@ -557,13 +557,13 @@ const getInterestBookingDate = (year: number, toDate: Date, repaidDate: Date | f
   return moment(toDate).year() === year ? moment(toDate).toDate() : moment().set('year', year).endOf('year').toDate();
 };
 
-export function calculateLoanFields<T>(loan: LoanWithRelations & T, options: CalculationOptions = {}) {
+export function calculateLoanFieldsWithPerYear<T>(loan: LoanWithRelations & T, options: CalculationOptions = {}) {
   const { toDate = new Date(), interestYear = moment().year(), client = false } = options ?? {};
   const numbers = calculateNumbersToDate(loan, toDate, interestYear);
   const isTerminated = isLoanTerminated(loan);
   const repaidDate = isRepaid(loan, toDate);
 
-  return {
+  const calculated = {
     ...loan,
     notes: (client ? loan.notes.filter((note) => note.public) : loan.notes).sort(createdAtDescSorter),
     files: loan.files
@@ -596,16 +596,22 @@ export function calculateLoanFields<T>(loan: LoanWithRelations & T, options: Cal
       }))
       .concat(
         numbers.perYear
-          .filter((numbers) => numbers.interest.toNumber() > 0)
-          .map((numbers) => ({
-            id: `${numbers.year}-interest`,
+          .filter((yearNumbers) => yearNumbers.interest.toNumber() > 0)
+          .map((yearNumbers) => ({
+            id: `${yearNumbers.year}-interest`,
             type: TransactionType.INTEREST,
-            date: getInterestBookingDate(numbers.year, toDate, repaidDate),
-            amount: numbers.interest.toNumber(),
+            date: getInterestBookingDate(yearNumbers.year, toDate, repaidDate),
+            amount: yearNumbers.interest.toNumber(),
             paymentType: PaymentType.OTHER,
             loanId: loan.id,
           })),
       )
       .sort(transactionSorter),
   };
+
+  return { calculated, perYear: numbers.perYear };
+}
+
+export function calculateLoanFields<T>(loan: LoanWithRelations & T, options: CalculationOptions = {}) {
+  return calculateLoanFieldsWithPerYear(loan, options).calculated;
 }

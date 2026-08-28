@@ -1,5 +1,6 @@
 import { ViewType } from '@prisma/client';
-import { getProjects, getViewsByType } from '@/actions';
+import { getViewsByType } from '@/actions';
+import { getProjects } from '@/lib/projects/get-projects';
 import { requireSession } from '@/lib/require-session';
 import { ProjectsPageContent } from './projects-page-content';
 

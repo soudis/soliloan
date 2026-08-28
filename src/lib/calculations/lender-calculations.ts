@@ -9,6 +9,62 @@ import { mergeLenderFiles, mergeLenderNotes } from '../utils/lender-notes-files'
 import { createdAtDescSorter, loansSorter } from '../utils/sorters';
 import { calculateLoanFields } from './loan-calculations';
 
+type LoanForLenderAggregates = {
+  balance: number;
+  interest: number;
+  deposits: number;
+  withdrawals: number;
+  interestPaid: number;
+  interestError: number;
+  notReclaimed: number;
+  amount: number;
+  interestRate: number;
+  status: LoanStatus | string;
+};
+
+export function aggregateLenderLoanSums(loans: LoanForLenderAggregates[]) {
+  const sums = {
+    balance: 0,
+    interest: 0,
+    deposits: 0,
+    withdrawals: 0,
+    interestPaid: 0,
+    interestError: 0,
+    notReclaimed: 0,
+    amount: 0,
+    interestRate: 0,
+    balanceInterestRate: 0,
+    totalLoans: loans.length,
+    activeLoans: loans.filter((loan) => loan.status === LoanStatus.ACTIVE).length,
+    activeAmount: loans.filter((loan) => loan.status === LoanStatus.ACTIVE).reduce((acc, loan) => acc + loan.amount, 0),
+  };
+
+  for (const loan of loans) {
+    sums.balance += loan.balance;
+    sums.interest += loan.interest;
+    sums.deposits += loan.deposits;
+    sums.withdrawals += loan.withdrawals;
+    sums.interestPaid += loan.interestPaid;
+    sums.interestError += loan.interestError;
+    sums.notReclaimed += loan.notReclaimed;
+    sums.amount += loan.amount;
+    sums.interestRate += loan.interestRate * loan.amount;
+    sums.balanceInterestRate += loan.balance * loan.interestRate;
+  }
+
+  sums.interestRate =
+    sums.interestRate > 0 && sums.amount > 0
+      ? new Prisma.Decimal(sums.interestRate).div(new Prisma.Decimal(sums.amount)).toNumber()
+      : 0;
+
+  sums.balanceInterestRate =
+    sums.balanceInterestRate > 0 && sums.balance > 0
+      ? new Prisma.Decimal(sums.balanceInterestRate).div(new Prisma.Decimal(sums.balance)).toNumber()
+      : 0;
+
+  return sums;
+}
+
 export function calculateLenderFields(lender: LenderWithRelations, options: CalculationOptions = {}) {
   const { client = false } = options ?? {};
 
@@ -22,49 +78,7 @@ export function calculateLenderFields(lender: LenderWithRelations, options: Calc
       };
     }) ?? [];
 
-  // Initialize sums object
-  const sums = {
-    balance: 0,
-    interest: 0,
-    deposits: 0,
-    withdrawals: 0,
-    interestPaid: 0,
-    interestError: 0,
-    notReclaimed: 0,
-    amount: 0,
-    interestRate: 0,
-    balanceInterestRate: 0,
-    totalLoans: loans?.length ?? 0,
-    activeLoans: loans?.filter((loan) => loan.status === LoanStatus.ACTIVE).length ?? 0,
-    activeAmount:
-      loans?.filter((loan) => loan.status === LoanStatus.ACTIVE).reduce((acc, loan) => acc + loan.amount, 0) ?? 0,
-  };
-
-  // Use forEach instead of reduce to avoid TypeScript issues
-  if (loans && loans.length > 0) {
-    loans.forEach((loan) => {
-      sums.balance += loan.balance;
-      sums.interest += loan.interest;
-      sums.deposits += loan.deposits;
-      sums.withdrawals += loan.withdrawals;
-      sums.interestPaid += loan.interestPaid;
-      sums.interestError += loan.interestError;
-      sums.notReclaimed += loan.notReclaimed;
-      sums.amount += loan.amount;
-      sums.interestRate += loan.interestRate * loan.amount;
-      sums.balanceInterestRate += loan.balance * loan.interestRate;
-    });
-  }
-
-  sums.interestRate =
-    sums.interestRate > 0 && sums.amount > 0
-      ? new Prisma.Decimal(sums.interestRate).div(new Prisma.Decimal(sums.amount)).toNumber()
-      : 0;
-
-  sums.balanceInterestRate =
-    sums.balanceInterestRate > 0 && sums.balance > 0
-      ? new Prisma.Decimal(sums.balanceInterestRate).div(new Prisma.Decimal(sums.balance)).toNumber()
-      : 0;
+  const sums = aggregateLenderLoanSums(loans);
 
   const notes = (client ? lender.notes.filter((note) => note.public) : lender.notes).sort(createdAtDescSorter);
   const files = lender.files

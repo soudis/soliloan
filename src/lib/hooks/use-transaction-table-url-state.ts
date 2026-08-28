@@ -6,13 +6,16 @@ import { isEqual } from 'lodash';
 import { useQueryStates } from 'nuqs';
 import { useCallback, useMemo } from 'react';
 
+import { useRouter } from '@/i18n/navigation';
 import {
   parseTransactionExtraViewData,
   type TransactionTableExtraViewData,
   transactionTableUrlNuqsOptions,
   transactionTableUrlParsers,
 } from '@/lib/hooks/transaction-table-url-parsers';
+import { useProjectId } from '@/lib/hooks/use-project-id';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
+import { buildTableListHref } from '@/lib/table-list-path';
 import {
   DEFAULT_TRANSACTION_TIME_RANGE,
   getDefaultTransactionCustomFrom,
@@ -63,6 +66,8 @@ function viewToBaseline(
 interface UseTransactionTableUrlStateOptions {
   defaultColumnVisibility?: VisibilityState;
   views?: View[];
+  viewId?: string;
+  listPath?: string;
 }
 
 const EMPTY_COLUMN_VISIBILITY: VisibilityState = {};
@@ -71,11 +76,15 @@ const EMPTY_VIEWS: View[] = [];
 export function useTransactionTableUrlState(options: UseTransactionTableUrlStateOptions = {}) {
   const defaultColumnVisibility = options.defaultColumnVisibility ?? EMPTY_COLUMN_VISIBILITY;
   const views = options.views ?? EMPTY_VIEWS;
+  const listPath = options.listPath;
+  const routeViewId = listPath ? (options.viewId ?? '') : undefined;
+  const router = useRouter();
+  const projectId = useProjectId();
 
   const [rawState, setRawState] = useQueryStates(transactionTableUrlParsers, transactionTableUrlNuqsOptions);
 
   const baseline = useMemo<TransactionTableUrlState>(() => {
-    const selectedViewId = rawState.view;
+    const selectedViewId = routeViewId !== undefined ? routeViewId : (rawState.view ?? '');
 
     if (selectedViewId) {
       const view = views.find((v) => v.id === selectedViewId);
@@ -90,9 +99,9 @@ export function useTransactionTableUrlState(options: UseTransactionTableUrlState
     return {
       ...DEFAULT_BASELINE,
       columnVisibility: defaultColumnVisibility,
-      selectedView: rawState.view ?? '',
+      selectedView: selectedViewId,
     };
-  }, [rawState.view, views, defaultColumnVisibility]);
+  }, [rawState.view, routeViewId, views, defaultColumnVisibility]);
 
   const state = useMemo<TransactionTableUrlState>(() => {
     return {
@@ -103,7 +112,7 @@ export function useTransactionTableUrlState(options: UseTransactionTableUrlState
       columnVisibility: rawState.cols ? { ...defaultColumnVisibility, ...rawState.cols } : baseline.columnVisibility,
       pageIndex: rawState.page ?? baseline.pageIndex,
       pageSize: rawState.pageSize ?? baseline.pageSize,
-      selectedView: rawState.view ?? baseline.selectedView,
+      selectedView: baseline.selectedView,
       viewName: rawState.viewName ?? '',
       filtersExpanded: rawState.fe ?? baseline.filtersExpanded,
       txRange: rawState.txRange ?? baseline.txRange,
@@ -115,6 +124,11 @@ export function useTransactionTableUrlState(options: UseTransactionTableUrlState
 
   const setState = useCallback(
     (update: Partial<TransactionTableUrlState>) => {
+      if (listPath && update.selectedView !== undefined && update.selectedView !== (routeViewId ?? '')) {
+        router.push(buildTableListHref(listPath, update.selectedView || null, projectId));
+        return;
+      }
+
       let effectiveBaseline = baseline;
 
       if (update.selectedView !== undefined && update.selectedView !== baseline.selectedView) {
@@ -138,7 +152,7 @@ export function useTransactionTableUrlState(options: UseTransactionTableUrlState
 
       const raw: Record<string, unknown> = {};
 
-      if (update.selectedView !== undefined) {
+      if (listPath === undefined && update.selectedView !== undefined) {
         raw.view = update.selectedView || null;
       }
       if (update.globalFilter !== undefined) {
@@ -187,7 +201,7 @@ export function useTransactionTableUrlState(options: UseTransactionTableUrlState
 
       setRawState(raw, { shallow: true, history: 'replace' });
     },
-    [baseline, views, defaultColumnVisibility, setRawState],
+    [baseline, views, defaultColumnVisibility, setRawState, listPath, routeViewId, router, projectId],
   );
 
   const extraViewData = useMemo(

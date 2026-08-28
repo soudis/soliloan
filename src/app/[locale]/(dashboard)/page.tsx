@@ -1,21 +1,35 @@
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-
-import { getProjects } from '@/actions/projects/queries/get-projects';
+import { firstAccessibleProjectId, LAST_PROJECT_COOKIE_NAME, parseLastProjectCookie } from '@/lib/last-project-cookie';
+import { PROJECT_ID_KEY } from '@/lib/params';
+import { getProjects } from '@/lib/projects/get-projects';
 import { requireSession } from '@/lib/require-session';
 
 interface DashboardRootPageProps {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function DashboardRootPage({ params }: DashboardRootPageProps) {
+export default async function DashboardRootPage({ params, searchParams }: DashboardRootPageProps) {
   const session = await requireSession();
 
   const result = await getProjects(session);
   const projects = result?.projects ?? [];
   const { locale } = await params;
+  const resolvedSearchParams = await searchParams;
 
   if (projects.length > 0) {
-    redirect(`/${locale}/dashboard?projectId=${projects[0].id}`);
+    const projectIdFromUrl =
+      typeof resolvedSearchParams[PROJECT_ID_KEY] === 'string' ? resolvedSearchParams[PROJECT_ID_KEY] : undefined;
+    const cookieStore = await cookies();
+    const lastProjectId = parseLastProjectCookie(cookieStore.get(LAST_PROJECT_COOKIE_NAME)?.value, session.user.id);
+    const preferredProjectId =
+      firstAccessibleProjectId(
+        [projectIdFromUrl, lastProjectId, projects[0].id],
+        projects.map((p) => p.id),
+      ) ?? projects[0].id;
+
+    redirect(`/${locale}/dashboard?projectId=${preferredProjectId}`);
   }
 
   if (!session.user.isManager && session.user.loanedToProjects.length > 0) {

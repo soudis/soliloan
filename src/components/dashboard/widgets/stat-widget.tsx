@@ -2,14 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
-
-import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
+import { WidgetResultUnavailable } from '@/components/dashboard/widgets/widget-result-unavailable';
+import { useComputedWidgetResult } from '@/hooks/use-computed-widget-result';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
 import { getSignedMetricValueClassName } from '@/lib/dashboard/get-signed-metric-value-class-name';
-import { cn } from '@/lib/utils';
 import { resolveStatDisplayTitle } from '@/lib/dashboard/resolve-stat-display-title';
-import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
-import { computeAllStatValues } from '@/lib/dashboard/stat-widget/compute-stat-value';
+import { cn } from '@/lib/utils';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import {
   DEFAULT_STAT_GRID_COLUMNS,
@@ -22,22 +20,13 @@ export function StatWidget({ widget }: { widget: DashboardWidget }) {
   const tMetrics = useTranslations('dashboard.customizer.historyTable');
   const tStatCustomizer = useTranslations('dashboard.customizer.stat');
   const tDuration = useTranslations('common.duration');
-  const commonT = useTranslations('common');
-  const { loans, toDate, fieldOptions } = useDashboardData();
 
   const config = useMemo(() => parseStatWidgetConfig(widget.config), [widget.config]);
-
-  const computed = useMemo(
-    () =>
-      profileWidgetCompute({
-        widgetType: widget.type,
-        widgetId: widget.id,
-        loanCount: loans.length,
-        compute: () =>
-          computeAllStatValues(loans, config.stats, toDate, fieldOptions, (key, values) => commonT(key, values)),
-      }),
-    [config.stats, loans, toDate, fieldOptions, commonT, widget.id, widget.type],
-  );
+  const computedResult = useComputedWidgetResult(widget);
+  if (!computedResult) {
+    return <WidgetResultUnavailable />;
+  }
+  const computed = computedResult.type === 'stat' ? computedResult.values : [];
 
   if (config.stats.length === 0) {
     return <p className="text-sm text-muted-foreground">{t('emptyStats')}</p>;
