@@ -10,6 +10,7 @@ import {
   getTransactionContext,
   removeNullFields,
 } from '@/lib/audit-trail';
+import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { transactionIdSchema } from '@/lib/schemas/common';
 import { transactionAction } from '@/lib/utils/safe-action';
@@ -67,6 +68,7 @@ export const deleteTransactionAction = transactionAction
     // Revalidate the lender page (loans are viewed within lender detail)
     revalidatePath(`/lenders/${transaction.loan.lenderId}`);
     revalidatePath('/transactions/list');
+    invalidateDashboardWidgetResultsCache(transaction.loan.lender.projectId);
 
     return { success: true };
   });

@@ -1,52 +1,28 @@
 'use client';
 
 import { ArcElement, type ChartData, Chart as ChartJS, type ChartOptions, Legend, Tooltip } from 'chart.js';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { Pie } from 'react-chartjs-2';
 
-import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { useAnimatedChartData } from '@/hooks/use-animated-chart-data';
+import { useComputedWidgetResult } from '@/hooks/use-computed-widget-result';
 import { chartColorAtIndex } from '@/lib/dashboard/chart/chart-dataset-colors';
 import { DASHBOARD_CHART_ANIMATION } from '@/lib/dashboard/chart-animation';
 import { formatDashboardMetricValue } from '@/lib/dashboard/format-metric-value';
-import { computePieChart } from '@/lib/dashboard/pie-chart/compute-pie-chart';
-import { profileWidgetCompute } from '@/lib/dashboard/profile-widget-compute';
 import { cn } from '@/lib/utils';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import { getPieChartHeightClassName, parsePieChartConfig } from '@/types/dashboard-widgets/pie-chart';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+const EMPTY_PIE = { slices: [] as { key: string; label: string; value: number }[], total: 0 };
+
 export function PieChartWidget({ widget }: { widget: DashboardWidget }) {
   const t = useTranslations('dashboard.widgets.pieChart');
-  const commonT = useTranslations('common');
-  const locale = useLocale();
-  const { loans, toDate, fieldOptions } = useDashboardData();
-
   const config = useMemo(() => parsePieChartConfig(widget.config), [widget.config]);
-
-  const result = useMemo(
-    () =>
-      profileWidgetCompute({
-        widgetType: widget.type,
-        widgetId: widget.id,
-        loanCount: loans.length,
-        compute: () =>
-          computePieChart(
-            loans,
-            config,
-            toDate,
-            fieldOptions,
-            locale,
-            t('emptyValue'),
-            t('otherCategory'),
-            (key, values) => commonT(key, values),
-            (key, values) => t(key, values),
-          ),
-      }),
-    [loans, config, toDate, fieldOptions, locale, t, commonT, widget.id, widget.type],
-  );
+  const computed = useComputedWidgetResult(widget);
+  const result = computed.type === 'pie_chart' ? computed.result : EMPTY_PIE;
 
   const chartData = useMemo<ChartData<'pie'>>(
     () => ({
