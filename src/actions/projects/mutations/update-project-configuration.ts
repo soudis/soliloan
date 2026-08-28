@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createAuditEntry, getChangedFields } from '@/lib/audit-trail';
 import { auth } from '@/lib/auth';
+import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { loadProject } from '@/lib/projects/get-project';
 import { type ConfigurationFormData, configurationFormSchema } from '@/lib/schemas/configuration';
@@ -50,6 +51,7 @@ export async function updateConfiguration(projectId: string, data: Configuration
 
   // Revalidate the project configuration page
   revalidatePath('/configuration');
+  invalidateDashboardWidgetResultsCache(projectId);
 
   return loadProject(projectId);
 }

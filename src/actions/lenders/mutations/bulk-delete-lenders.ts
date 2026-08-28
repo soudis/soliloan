@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 import { createAuditEntry, getLenderContext, removeNullFields } from '@/lib/audit-trail';
+import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { projectAction } from '@/lib/utils/safe-action';
 
@@ -56,6 +57,7 @@ export const bulkDeleteLendersAction = projectAction
 
     // Revalidate the project lenders page
     revalidatePath('/lenders/list');
+    invalidateDashboardWidgetResultsCache(projectId);
 
     return { success: true, deletedCount: lenders.length };
   });

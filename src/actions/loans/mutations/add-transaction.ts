@@ -10,8 +10,9 @@ import {
   getTransactionContext,
   removeNullFields,
 } from '@/lib/audit-trail';
-import { sendTransactionNotificationToLender } from '@/lib/email';
+import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
+import { sendTransactionNotificationToLender } from '@/lib/email';
 import { transactionFormSchema } from '@/lib/schemas/transaction';
 import { loanAction } from '@/lib/utils/safe-action';
 
@@ -87,6 +88,7 @@ export const addTransactionAction = loanAction
 
     // Revalidate the lender page (loans are viewed within lender detail)
     revalidatePath(`/lenders/${loan.lenderId}`);
+    invalidateDashboardWidgetResultsCache(loan.lender.projectId);
 
     if (data.notifyLender && loan.lender.email) {
       await sendTransactionNotificationToLender({

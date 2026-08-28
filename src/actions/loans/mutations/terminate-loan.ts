@@ -4,6 +4,7 @@ import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createAuditEntry, getChangedFields, getLenderContext, getLoanContext } from '@/lib/audit-trail';
+import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { loanAction } from '@/lib/utils/safe-action';
 
@@ -52,6 +53,7 @@ export const terminateLoanAction = loanAction
 
     revalidatePath(`/lenders/${loan.lenderId}`);
     revalidatePath('/loans/list');
+    invalidateDashboardWidgetResultsCache(loan.lender.projectId);
 
     return { loan: updatedLoan };
   });

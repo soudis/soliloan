@@ -4,6 +4,7 @@ import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 import { createAuditEntry, getLenderContext, removeNullFields } from '@/lib/audit-trail';
+import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { lenderIdSchema } from '@/lib/schemas/common';
 import { lenderAction } from '@/lib/utils/safe-action';
@@ -43,6 +44,7 @@ export const deleteLenderAction = lenderAction.schema(lenderIdSchema).action(asy
 
   // Revalidate the project lenders page
   revalidatePath('/lenders/list');
+  invalidateDashboardWidgetResultsCache(lender.projectId);
 
   return { success: true };
 });

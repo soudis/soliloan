@@ -4,6 +4,7 @@ import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createAuditEntry, getChangedFields } from '@/lib/audit-trail';
+import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { projectAction } from '@/lib/utils/safe-action';
 
@@ -46,6 +47,7 @@ export const disableDeInvestmentActComplianceAction = projectAction
     revalidatePath('/configuration');
     revalidatePath('/loans/list');
     revalidatePath('/investment-types/list');
+    invalidateDashboardWidgetResultsCache(ctx.projectId);
 
     return { success: true as const };
   });
