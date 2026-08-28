@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
 
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
+import { WidgetResultUnavailable } from '@/components/dashboard/widgets/widget-result-unavailable';
 import { useComputedWidgetResult } from '@/hooks/use-computed-widget-result';
 import { useRouter } from '@/i18n/navigation';
 import {
@@ -30,7 +31,7 @@ export function TransactionTableWidget({ widget }: { widget: DashboardWidget }) 
 
   const config = useMemo(() => parseTransactionTableConfig(widget.config), [widget.config]);
   const computed = useComputedWidgetResult(widget);
-  const filteredRows = computed.type === 'transaction_table_view' ? computed.rows : [];
+  const filteredRows = computed?.type === 'transaction_table_view' ? computed.rows : [];
 
   const columns = useMemo(
     () =>
@@ -44,6 +45,10 @@ export function TransactionTableWidget({ widget }: { widget: DashboardWidget }) 
     (row: TransactionListItem, columnId: string) => getTransactionSortValue(row, columnId, commonT),
     [commonT],
   );
+
+  if (!computed) {
+    return <WidgetResultUnavailable />;
+  }
 
   return (
     <TableViewWidget

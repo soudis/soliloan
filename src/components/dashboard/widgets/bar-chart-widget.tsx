@@ -13,7 +13,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
-
+import { WidgetResultUnavailable } from '@/components/dashboard/widgets/widget-result-unavailable';
 import { useAnimatedChartData } from '@/hooks/use-animated-chart-data';
 import { useComputedWidgetResult } from '@/hooks/use-computed-widget-result';
 import { chartColorAtIndex } from '@/lib/dashboard/chart/chart-dataset-colors';
@@ -30,7 +30,7 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
   const t = useTranslations('dashboard.widgets.barChart');
   const config = useMemo(() => parseBarChartConfig(widget.config), [widget.config]);
   const computed = useComputedWidgetResult(widget);
-  const result = computed.type === 'bar_chart' ? computed.result : null;
+  const result = computed?.type === 'bar_chart' ? computed.result : null;
 
   const chartData = useMemo<ChartData<'bar'> | null>(() => {
     if (!result) {
@@ -83,6 +83,10 @@ export function BarChartWidget({ widget }: { widget: DashboardWidget }) {
     }),
     [config.series, config.seriesLayout],
   );
+
+  if (!computed) {
+    return <WidgetResultUnavailable />;
+  }
 
   if (config.series.length === 0) {
     return <p className="text-sm text-muted-foreground">{t('emptySeries')}</p>;

@@ -7,6 +7,7 @@ import { DashboardDataProvider } from '@/components/dashboard/dashboard-data-pro
 import { computeLayoutWidgetResults } from '@/lib/dashboard/compute-widget-result';
 import { dashboardCustomizeParser } from '@/lib/dashboard/dashboard-url-params';
 import { createDefaultLayoutData } from '@/lib/dashboard/layout-utils';
+import { omitDashboardLoanTimelines } from '@/lib/dashboard/load-dashboard-stats';
 import { loadDashboardWidgetI18n } from '@/lib/dashboard/load-dashboard-widget-i18n';
 import type { DashboardWidgetResultsByScope } from '@/lib/dashboard/widget-compute-result-types';
 import {
@@ -28,6 +29,10 @@ function parseCustomizeParam(searchParams: { [key: string]: string | string[] | 
   return dashboardCustomizeParser.parseServerSide(value);
 }
 
+function isLayoutError(result: Awaited<ReturnType<typeof getDashboardLayoutsForPage>>): result is { error: string } {
+  return 'error' in result;
+}
+
 async function DashboardLoadError() {
   const t = await getTranslations('dashboard.page');
   return (
@@ -42,13 +47,23 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const { projectId } = searchParamsCache.parse(resolvedSearchParams);
   const isCustomizing = parseCustomizeParam(resolvedSearchParams);
 
-  const [layoutResult, session] = await Promise.all([getDashboardLayoutsForPage(projectId), requireSession()]);
+  // Stats is CPU-heavy after the query. Start it with layouts only when we know we need
+  // the blob (customizer). View mode checks the widget cache first so a hit is not stalled
+  // by an in-flight calculateLoanPerMonth on the event loop.
+  const statsPromise = isCustomizing ? getDashboardStats(projectId) : null;
+
+  const [layoutResult, session, locale] = await Promise.all([
+    getDashboardLayoutsForPage(projectId),
+    requireSession(),
+    getLocale(),
+  ]);
 
   const isAdmin = session.user.isAdmin;
-
-  const fallback = createDefaultLayoutData();
-  const projectLayout = layoutResult.error ? fallback : (layoutResult.project?.layout ?? fallback);
-  const userLayout = layoutResult.error ? fallback : (layoutResult.user?.layout ?? fallback);
+  const fallback = isLayoutError(layoutResult)
+    ? createDefaultLayoutData()
+    : (layoutResult.globalDefault ?? createDefaultLayoutData());
+  const projectLayout = isLayoutError(layoutResult) ? fallback : (layoutResult.project?.layout ?? fallback);
+  const userLayout = isLayoutError(layoutResult) ? fallback : (layoutResult.user?.layout ?? fallback);
 
   let toDate: Date;
   let widgetResults: DashboardWidgetResultsByScope | undefined;
@@ -57,17 +72,16 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   let hasFullDataset = false;
 
   if (isCustomizing) {
-    const statsResult = await getDashboardStats(projectId);
-    if ('error' in statsResult || !statsResult.loans || !statsResult.lenders || !statsResult.toDate) {
+    const statsResult = await statsPromise;
+    if (!statsResult || 'error' in statsResult || !statsResult.loans || !statsResult.lenders || !statsResult.toDate) {
       return <DashboardLoadError />;
     }
     toDate = new Date(statsResult.toDate);
-    loans = statsResult.loans;
+    loans = omitDashboardLoanTimelines(statsResult.loans);
     lenders = statsResult.lenders;
     hasFullDataset = true;
   } else {
-    const locale = await getLocale();
-    const cacheKey = buildDashboardWidgetResultsCacheKey(projectId, locale, projectLayout, userLayout);
+    const cacheKey = buildDashboardWidgetResultsCacheKey(projectId, locale, projectLayout, userLayout, new Date());
     const cached = getDashboardWidgetResultsCache(cacheKey);
 
     if (cached) {

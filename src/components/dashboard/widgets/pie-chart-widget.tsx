@@ -4,7 +4,7 @@ import { ArcElement, type ChartData, Chart as ChartJS, type ChartOptions, Legend
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { Pie } from 'react-chartjs-2';
-
+import { WidgetResultUnavailable } from '@/components/dashboard/widgets/widget-result-unavailable';
 import { useAnimatedChartData } from '@/hooks/use-animated-chart-data';
 import { useComputedWidgetResult } from '@/hooks/use-computed-widget-result';
 import { chartColorAtIndex } from '@/lib/dashboard/chart/chart-dataset-colors';
@@ -22,7 +22,7 @@ export function PieChartWidget({ widget }: { widget: DashboardWidget }) {
   const t = useTranslations('dashboard.widgets.pieChart');
   const config = useMemo(() => parsePieChartConfig(widget.config), [widget.config]);
   const computed = useComputedWidgetResult(widget);
-  const result = computed.type === 'pie_chart' ? computed.result : EMPTY_PIE;
+  const result = computed?.type === 'pie_chart' ? computed.result : EMPTY_PIE;
 
   const chartData = useMemo<ChartData<'pie'>>(
     () => ({
@@ -66,6 +66,10 @@ export function PieChartWidget({ widget }: { widget: DashboardWidget }) {
     }),
     [config.chartVariant, config.measure, result.total],
   );
+
+  if (!computed) {
+    return <WidgetResultUnavailable />;
+  }
 
   if (result.slices.length === 0) {
     return <p className="text-sm text-muted-foreground">{t('emptyData')}</p>;
