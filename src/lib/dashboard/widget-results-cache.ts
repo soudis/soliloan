@@ -1,17 +1,15 @@
-import { createHash } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 
 import type { DashboardWidgetResultsByScope } from '@/lib/dashboard/widget-compute-result-types';
-import type { DashboardLayoutData } from '@/types/dashboard-layout';
 
 /**
  * Mutations bust immediately. TTL only covers “until today” clock drift between writes.
- * One hour is plenty: interest accrual over minutes is not dashboard-visible, and
- * a 60s window would recompute on almost every revisit.
+ * Layout identity is not hashed: normalizing layouts can mint new widget/series ids on
+ * every read, which made JSON hashes miss even when bouncing between the same projects.
  */
 export const DASHBOARD_WIDGET_RESULTS_TTL_MS = 60 * 60 * 1000;
 
-const MAX_CACHE_ENTRIES = 64;
+const MAX_CACHE_ENTRIES = 256;
 
 type DashboardWidgetResultsCacheEntry = {
   projectId: string;
@@ -31,10 +29,6 @@ function getStore(): Map<string, DashboardWidgetResultsCacheEntry> {
   return globalForCache.dashboardWidgetResultsCache;
 }
 
-function hashLayout(layout: DashboardLayoutData): string {
-  return createHash('sha256').update(JSON.stringify(layout)).digest('hex').slice(0, 16);
-}
-
 function calendarDayKey(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -44,12 +38,11 @@ function calendarDayKey(date: Date): string {
 
 export function buildDashboardWidgetResultsCacheKey(
   projectId: string,
+  userId: string,
   locale: string,
-  projectLayout: DashboardLayoutData,
-  userLayout: DashboardLayoutData,
   toDate: Date,
 ): string {
-  return `${projectId}:${locale}:${calendarDayKey(toDate)}:${hashLayout(projectLayout)}:${hashLayout(userLayout)}`;
+  return `${projectId}:${userId}:${locale}:${calendarDayKey(toDate)}`;
 }
 
 function pruneExpired(store: Map<string, DashboardWidgetResultsCacheEntry>, now = Date.now()): void {
@@ -60,16 +53,36 @@ function pruneExpired(store: Map<string, DashboardWidgetResultsCacheEntry>, now 
   }
 }
 
+function touchLru(
+  store: Map<string, DashboardWidgetResultsCacheEntry>,
+  key: string,
+  entry: DashboardWidgetResultsCacheEntry,
+): void {
+  store.delete(key);
+  store.set(key, entry);
+}
+
+function logCache(event: 'hit' | 'miss' | 'set', key: string): void {
+  if (process.env.ENVIRONMENT !== 'staging' && process.env.NODE_ENV !== 'development') {
+    return;
+  }
+  console.info(`[dashboard-cache] ${event} ${key}`);
+}
+
 export function getDashboardWidgetResultsCache(key: string): DashboardWidgetResultsCacheEntry | null {
   const store = getStore();
   const entry = store.get(key);
   if (!entry) {
+    logCache('miss', key);
     return null;
   }
   if (entry.expiresAt <= Date.now()) {
     store.delete(key);
+    logCache('miss', key);
     return null;
   }
+  touchLru(store, key, entry);
+  logCache('hit', key);
   return entry;
 }
 
@@ -79,7 +92,7 @@ export function setDashboardWidgetResultsCache(
 ): void {
   const store = getStore();
   pruneExpired(store);
-  if (store.size >= MAX_CACHE_ENTRIES) {
+  if (store.size >= MAX_CACHE_ENTRIES && !store.has(key)) {
     const oldestKey = store.keys().next().value;
     if (oldestKey) {
       store.delete(oldestKey);
@@ -89,6 +102,11 @@ export function setDashboardWidgetResultsCache(
     ...entry,
     expiresAt: Date.now() + DASHBOARD_WIDGET_RESULTS_TTL_MS,
   });
+  logCache('set', key);
+}
+
+function revalidateDashboardPath(): void {
+  revalidatePath('/dashboard');
 }
 
 export function invalidateDashboardWidgetResultsCache(projectId: string): void {
@@ -99,5 +117,21 @@ export function invalidateDashboardWidgetResultsCache(projectId: string): void {
       store.delete(key);
     }
   }
-  revalidatePath('/dashboard');
+  revalidateDashboardPath();
+}
+
+export function invalidateDashboardWidgetResultsCacheForUser(userId: string): void {
+  const store = getStore();
+  for (const key of store.keys()) {
+    const parts = key.split(':');
+    if (parts[1] === userId) {
+      store.delete(key);
+    }
+  }
+  revalidateDashboardPath();
+}
+
+export function clearDashboardWidgetResultsCache(): void {
+  getStore().clear();
+  revalidateDashboardPath();
 }
