@@ -2,6 +2,10 @@
 
 import { resolveScopedLayout, upsertScopedLayout } from '@/lib/dashboard/layout-db';
 import { cloneLayoutData } from '@/lib/dashboard/layout-utils';
+import {
+  invalidateDashboardWidgetResultsCache,
+  invalidateDashboardWidgetResultsCacheForUser,
+} from '@/lib/dashboard/widget-results-cache';
 import { copyDashboardLayoutSchema } from '@/lib/schemas/dashboard-layout';
 import { authAction } from '@/lib/utils/safe-action';
 import { assertCanManageProject } from '@/lib/views/access';
@@ -30,8 +34,10 @@ export const copyDashboardLayoutAction = authAction
 
     if (targetScope === 'project') {
       await upsertScopedLayout('PROJECT', cloned, projectId);
+      invalidateDashboardWidgetResultsCache(projectId);
     } else {
       await upsertScopedLayout('USER', cloned, userId);
+      invalidateDashboardWidgetResultsCacheForUser(userId);
     }
 
     return { layout: cloned };

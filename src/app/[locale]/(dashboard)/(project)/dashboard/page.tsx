@@ -81,8 +81,9 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     lenders = statsResult.lenders;
     hasFullDataset = true;
   } else {
-    const cacheKey = buildDashboardWidgetResultsCacheKey(projectId, locale, projectLayout, userLayout, new Date());
-    const cached = getDashboardWidgetResultsCache(cacheKey);
+    const userId = session.user.id;
+    const cacheKey = userId ? buildDashboardWidgetResultsCacheKey(projectId, userId, locale, new Date()) : null;
+    const cached = cacheKey ? getDashboardWidgetResultsCache(cacheKey) : null;
 
     if (cached) {
       toDate = new Date(cached.toDate);
@@ -109,11 +110,13 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           project: computeLayoutWidgetResults(projectLayout, computeCtx),
           user: computeLayoutWidgetResults(userLayout, computeCtx),
         };
-        setDashboardWidgetResultsCache(cacheKey, {
-          projectId,
-          toDate: statsResult.toDate,
-          widgetResults,
-        });
+        if (cacheKey) {
+          setDashboardWidgetResultsCache(cacheKey, {
+            projectId,
+            toDate: statsResult.toDate,
+            widgetResults,
+          });
+        }
       }
     }
   }
