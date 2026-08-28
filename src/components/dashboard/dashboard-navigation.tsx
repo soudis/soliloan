@@ -73,7 +73,7 @@ export default function DashboardNavigation({
           {/* Main Content */}
           <main
             className={cn(
-              'relative flex-1 bg-[color-mix(in_oklch,var(--background)_60%,var(--muted)_40%)]',
+              'relative flex-1 bg-[color-mix(in_oklab,var(--background)_45%,var(--card)_55%)]',
               isFillHeightPage ? 'flex min-h-0 flex-col overflow-hidden' : 'min-h-0 flex-1 overflow-y-auto',
             )}
           >
