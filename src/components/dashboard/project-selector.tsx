@@ -27,10 +27,7 @@ export default function ProjectSelector({ projects }: { projects: ProjectWithCon
   const failSafeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const switchStartedAtRef = useRef<number | null>(null);
 
-  const [projectId] = useQueryState(PROJECT_ID_KEY, {
-    ...projectIdParser,
-    shallow: false,
-  });
+  const [projectId, setProjectId] = useQueryState(PROJECT_ID_KEY, projectIdParser.withOptions({ shallow: false }));
   const currentProjectId = projectId && projectId.length > 0 ? projectId : null;
 
   const selectedProject = projects.find((p) => p.id === currentProjectId) ?? null;
@@ -57,6 +54,14 @@ export default function ProjectSelector({ projects }: { projects: ProjectWithCon
     return () => clearTimeout(id);
   }, [currentProjectId, setProjectSwitching]);
 
+  useEffect(() => {
+    return () => {
+      if (failSafeRef.current) {
+        clearTimeout(failSafeRef.current);
+      }
+    };
+  }, []);
+
   const handleProjectChange = (newProjectId: string) => {
     if (newProjectId === currentProjectId) return;
 
@@ -73,15 +78,12 @@ export default function ProjectSelector({ projects }: { projects: ProjectWithCon
       setProjectSwitching(false);
     }, 15000);
 
-    const href = `/dashboard?${PROJECT_ID_KEY}=${encodeURIComponent(newProjectId)}`;
-    const onDashboard = pathnameIsDashboard(pathname);
-
-    if (onDashboard) {
-      router.replace(href);
-      router.refresh();
-    } else {
-      router.push(href);
+    if (pathnameIsDashboard(pathname)) {
+      void setProjectId(newProjectId);
+      return;
     }
+
+    router.push(`/dashboard?${PROJECT_ID_KEY}=${encodeURIComponent(newProjectId)}`);
   };
 
   return (
