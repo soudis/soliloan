@@ -4,12 +4,14 @@ import { ViewType } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 import {
   Box,
+  CircleHelp,
   FileText,
   FlaskConical,
   HandCoins,
   History,
   LayoutDashboard,
   LogOut,
+  MessagesSquare,
   Receipt,
   Scale,
   Settings,
@@ -119,6 +121,13 @@ export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews: ini
               {process.env.NODE_ENV === 'development' && (
                 <NavItem href="/sandbox" icon={FlaskConical} label={t('sandbox')} />
               )}
+            </div>
+            <div className="space-y-2 border-t pt-4">
+              <span className="text-sm font-medium">{t('help')}</span>
+              <div className="space-y-1 pt-1">
+                <NavItem href="/help/faq" icon={CircleHelp} label={t('faq')} />
+                <NavItem href="/help/forum" icon={MessagesSquare} label={t('forum')} />
+              </div>
             </div>
           </nav>
 

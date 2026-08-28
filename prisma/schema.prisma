@@ -63,6 +63,8 @@ model User {
   predefinedBlocks            PredefinedCraftBlock[]
   dashboardLayouts            DashboardLayout[]
   highscores                  HighscoreEntry[]
+  faqArticles                 FaqArticle[]
+  media                       Media[]
 }
 
 model HighscoreEntry {
@@ -327,6 +329,45 @@ model Note {
   createdBy   User     @relation(fields: [createdById], references: [id])
   lender      Lender   @relation(fields: [lenderId], references: [id])
   loan        Loan?    @relation(fields: [loanId], references: [id])
+}
+
+model FaqCategory {
+  id        String       @id @default(cuid())
+  name      String
+  slug      String       @unique
+  position  Int
+  articles  FaqArticle[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model FaqArticle {
+  id          String       @id @default(cuid())
+  title       String
+  slug        String       @unique
+  body        Json
+  searchText  String       @default("")
+  published   Boolean      @default(false)
+  position    Int
+  categoryId  String
+  category    FaqCategory  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  createdById String
+  createdBy   User         @relation(fields: [createdById], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([categoryId, position])
+  @@index([published])
+}
+
+model Media {
+  id          String   @id @default(cuid())
+  mimeType    String
+  name        String
+  data        Bytes
+  createdAt   DateTime @default(now())
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
 }
 
 enum TemplateType {

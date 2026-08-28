@@ -23,15 +23,26 @@ export function FormSwitch({ name, label, hint, className, labelPlacement = 'top
       name={name}
       render={({ field }) => (
         <FormItem className={className}>
-          <div className={cn(labelPlacement === 'inline' && 'flex items-center justify-between gap-4')}>
-            {label && <FormLabel>{label}</FormLabel>}
-            <FormControl>
-              <Switch
-                checked={field.value && field.value !== 'false'}
-                onCheckedChange={field.onChange}
-                className={cn(labelPlacement === 'top' && 'mt-2')}
-              />
-            </FormControl>
+          <div className={cn(labelPlacement === 'inline' && 'flex items-center gap-2')}>
+            {labelPlacement === 'inline' ? (
+              <>
+                <FormControl>
+                  <Switch checked={field.value && field.value !== 'false'} onCheckedChange={field.onChange} />
+                </FormControl>
+                {label && <FormLabel className="cursor-pointer">{label}</FormLabel>}
+              </>
+            ) : (
+              <>
+                {label && <FormLabel>{label}</FormLabel>}
+                <FormControl>
+                  <Switch
+                    checked={field.value && field.value !== 'false'}
+                    onCheckedChange={field.onChange}
+                    className="mt-2"
+                  />
+                </FormControl>
+              </>
+            )}
           </div>
           {hint && <FormDescription className="text-sm text-muted-foreground/80">{hint}</FormDescription>}
         </FormItem>

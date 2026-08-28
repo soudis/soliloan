@@ -38,7 +38,10 @@ export default function DashboardNavigation({
     pathname.startsWith('/transactions/import/') ||
     pathnameIsTableList(pathname, TABLE_LIST_PATHS.investmentTypes) ||
     pathname === '/logbook' ||
-    pathname === '/projects';
+    pathname === '/projects' ||
+    pathname === '/help/faq' ||
+    pathname.startsWith('/help/faq/') ||
+    pathname === '/help/forum';
 
   const isFullWidthPage =
     pathnameIsTableList(pathname, TABLE_LIST_PATHS.lenders) ||

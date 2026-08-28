@@ -1,0 +1,135 @@
+.faq-tiptap-editor,
+.faq-tiptap-renderer {
+  min-height: 1.5rem;
+}
+
+.faq-tiptap-editor {
+  cursor: text;
+  outline: none;
+}
+
+.faq-tiptap-editor .tiptap,
+.faq-tiptap-renderer .tiptap {
+  outline: none;
+}
+
+.faq-tiptap-editor p,
+.faq-tiptap-renderer p {
+  margin: 0 0 0.75rem;
+}
+
+.faq-tiptap-editor h2,
+.faq-tiptap-renderer h2 {
+  margin: 1.5rem 0 0.75rem;
+  font-size: 1.35rem;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.faq-tiptap-editor h3,
+.faq-tiptap-renderer h3 {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1.15rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.faq-tiptap-editor ul,
+.faq-tiptap-renderer ul,
+.faq-tiptap-editor ol,
+.faq-tiptap-renderer ol {
+  margin: 0 0 0.75rem;
+  padding-left: 1.25rem;
+}
+
+.faq-tiptap-editor ul,
+.faq-tiptap-renderer ul {
+  list-style: disc;
+}
+
+.faq-tiptap-editor ol,
+.faq-tiptap-renderer ol {
+  list-style: decimal;
+}
+
+.faq-tiptap-editor li,
+.faq-tiptap-renderer li {
+  margin: 0.15rem 0;
+}
+
+.faq-tiptap-editor blockquote,
+.faq-tiptap-renderer blockquote {
+  margin: 0 0 0.75rem;
+  border-left: 3px solid var(--border);
+  padding-left: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.faq-tiptap-editor code,
+.faq-tiptap-renderer code {
+  border-radius: 0.25rem;
+  background: var(--muted);
+  padding: 0.1rem 0.3rem;
+  font-size: 0.9em;
+}
+
+.faq-tiptap-editor pre,
+.faq-tiptap-renderer pre {
+  margin: 0 0 0.75rem;
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  background: var(--muted);
+  padding: 0.75rem 1rem;
+}
+
+.faq-tiptap-editor pre code,
+.faq-tiptap-renderer pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.faq-tiptap-link,
+.faq-tiptap-editor a[href],
+.faq-tiptap-renderer a[href] {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.faq-tiptap-image,
+.faq-tiptap-editor img,
+.faq-tiptap-renderer img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0.75rem 0;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+}
+
+.faq-tiptap-editor img {
+  cursor: pointer;
+}
+
+.faq-tiptap-table,
+.faq-tiptap-editor table,
+.faq-tiptap-renderer table {
+  width: 100%;
+  margin: 0 0 0.75rem;
+  border-collapse: collapse;
+}
+
+.faq-tiptap-editor th,
+.faq-tiptap-renderer th,
+.faq-tiptap-editor td,
+.faq-tiptap-renderer td {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.6rem;
+  vertical-align: top;
+}
+
+.faq-tiptap-editor th,
+.faq-tiptap-renderer th {
+  background: var(--muted);
+  font-weight: 600;
+}
