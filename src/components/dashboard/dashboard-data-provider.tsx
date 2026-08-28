@@ -4,6 +4,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 
 import type { DashboardLender, DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
+import { useProject } from '@/components/providers/project-provider';
+import { buildCumulativeTimeline } from '@/lib/dashboard/history-table/cumulative-timeline';
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -24,14 +26,13 @@ export function DashboardDataProvider({
   loans,
   lenders,
   toDate,
-  project,
 }: {
   children: React.ReactNode;
   loans: DashboardLoan[];
   lenders: DashboardLender[];
   toDate: Date;
-  project: ProjectWithConfiguration;
 }) {
+  const { project } = useProject();
   const tLoans = useTranslations('dashboard.loans');
   const tLenders = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
@@ -40,11 +41,24 @@ export function DashboardDataProvider({
   localeRef.current = locale;
   const computeCacheRef = useRef(new Map<string, unknown>());
 
+  const loansWithTimeline = useMemo(
+    () =>
+      loans.map((loan) =>
+        loan.cumulativeTimeline
+          ? loan
+          : {
+              ...loan,
+              cumulativeTimeline: buildCumulativeTimeline(loan.history),
+            },
+      ),
+    [loans],
+  );
+
   // Cached widget results bake in translated labels, so invalidate on locale change as well as data change.
   // biome-ignore lint/correctness/useExhaustiveDependencies: only clear cache when data or locale changes
   useEffect(() => {
     computeCacheRef.current.clear();
-  }, [loans, lenders, toDate, locale]);
+  }, [loansWithTimeline, lenders, toDate, locale]);
 
   const getOrComputeWidgetResult = useCallback(<T,>(key: string, compute: () => T): T => {
     // Namespace by locale so a language switch never serves stale, previously-translated results.
@@ -65,14 +79,14 @@ export function DashboardDataProvider({
 
   const value = useMemo(
     () => ({
-      loans,
+      loans: loansWithTimeline,
       lenders,
       toDate,
       project,
       fieldOptions,
       getOrComputeWidgetResult,
     }),
-    [loans, lenders, toDate, project, fieldOptions, getOrComputeWidgetResult],
+    [loansWithTimeline, lenders, toDate, project, fieldOptions, getOrComputeWidgetResult],
   );
 
   return <DashboardDataContext.Provider value={value}>{children}</DashboardDataContext.Provider>;

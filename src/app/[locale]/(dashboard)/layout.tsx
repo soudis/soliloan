@@ -1,7 +1,7 @@
 'use server';
 
-import { getProjects } from '@/actions/projects/queries/get-projects';
 import DashboardNavigation from '@/components/dashboard/dashboard-navigation';
+import { getProjects } from '@/lib/projects/get-projects';
 import { requireSession } from '@/lib/require-session';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {

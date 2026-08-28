@@ -2,9 +2,9 @@ import { ViewType } from '@prisma/client';
 import { notFound } from 'next/navigation';
 import { getViewsByType } from '@/actions';
 import { getInvestmentTypesByProjectUnsafe } from '@/actions/investment-types/queries/get-investment-types-by-project';
-import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
 import { InvestmentTypesPageContent } from '@/components/investment-types/investment-types-page-content';
 import { searchParamsCache } from '@/lib/params';
+import { getProjectUnsafe } from '@/lib/projects/get-project';
 import { resolveTableListViewId } from '@/lib/resolve-table-list-view';
 import { TABLE_LIST_PATHS } from '@/lib/table-list-path';
 

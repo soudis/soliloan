@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
-import { getProjectUnsafe } from '@/actions/projects';
 import { ProjectProvider } from '@/components/providers/project-provider';
+import { getProjectUnsafe } from '@/lib/projects/get-project';
 import { requiereManagerOfProject } from '@/lib/require-session';
 
 export default async function ProjectLayout({ children }: { children: React.ReactNode }) {

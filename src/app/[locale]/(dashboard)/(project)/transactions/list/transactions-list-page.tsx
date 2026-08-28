@@ -1,7 +1,7 @@
 import { ViewType } from '@prisma/client';
 import { getViewsByType } from '@/actions';
 import { getLinkedBankConnection } from '@/actions/gocardless/queries/get-import-batch';
-import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
+import { getProjectUnsafe } from '@/lib/projects/get-project';
 import { getTransactionsByProjectUnsafe } from '@/actions/transactions/queries/get-transactions-by-project';
 import { TransactionTable } from '@/components/transactions/transaction-table';
 import { db } from '@/lib/db';

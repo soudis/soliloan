@@ -1,9 +1,8 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-
-import { getProjects } from '@/actions/projects/queries/get-projects';
 import { firstAccessibleProjectId, LAST_PROJECT_COOKIE_NAME, parseLastProjectCookie } from '@/lib/last-project-cookie';
 import { PROJECT_ID_KEY } from '@/lib/params';
+import { getProjects } from '@/lib/projects/get-projects';
 import { requireSession } from '@/lib/require-session';
 
 interface DashboardRootPageProps {

@@ -1,7 +1,7 @@
 import { ViewType } from '@prisma/client';
 import { getViewsByType } from '@/actions';
 import { getLoansByProjectUnsafe } from '@/actions/loans/queries/get-loans-by-project';
-import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
+import { getProjectUnsafe } from '@/lib/projects/get-project';
 import { LoanTable } from '@/components/loans/loan-table';
 import { db } from '@/lib/db';
 import { searchParamsCache } from '@/lib/params';
