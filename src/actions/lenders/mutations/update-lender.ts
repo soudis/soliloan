@@ -4,6 +4,7 @@ import { Entity, Language, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createAuditEntry, getChangedFields, getLenderContext } from '@/lib/audit-trail';
+import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { maintainLoanInvestmentTypes } from '@/lib/investment-types/maintain-loan-investment-types';
 import { lenderFormSchema } from '@/lib/schemas/lender';
@@ -93,13 +94,14 @@ export const updateLenderAction = lenderAction
 
     if (lender.project.configuration.deInvestmentActCompliance && lender.country !== updatedLender.country) {
       await maintainLoanInvestmentTypes(db, lender.projectId);
-      revalidatePath('/loans');
-      revalidatePath('/investment-types');
+      revalidatePath('/loans/list');
+      revalidatePath('/investment-types/list');
     }
 
     // Revalidate the lenders page
     revalidatePath(`/lenders/${updatedLender.id}`);
-    revalidatePath('/lenders');
+    revalidatePath('/lenders/list');
+    invalidateDashboardWidgetResultsCache(lender.projectId);
 
     return { success: true };
   });

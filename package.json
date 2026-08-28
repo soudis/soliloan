@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "biome lint",
+    "lint:fix": "biome lint --write",
     "export:templates": "tsx scripts/export-email-templates.ts",
     "export:global-dashboard-layout": "tsx scripts/export-global-dashboard-layout.ts",
     "prisma:generate": "prisma generate",

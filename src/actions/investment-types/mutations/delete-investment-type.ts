@@ -4,6 +4,7 @@ import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createAuditEntry, getInvestmentTypeContext, removeNullFields } from '@/lib/audit-trail';
+import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { projectAction } from '@/lib/utils/safe-action';
 
@@ -37,8 +38,9 @@ export const deleteInvestmentTypeAction = projectAction
       projectId: ctx.projectId,
     });
 
-    revalidatePath('/investment-types');
-    revalidatePath('/loans');
+    revalidatePath('/investment-types/list');
+    revalidatePath('/loans/list');
+    invalidateDashboardWidgetResultsCache(ctx.projectId);
 
     return { success: true };
   });

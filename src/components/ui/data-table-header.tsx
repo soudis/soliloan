@@ -31,6 +31,7 @@ import {
   getNextAvailableFilterTarget,
   getPresentColumnFilterIds,
 } from '@/lib/table-filter-presence';
+import { SIDEBAR_VIEWS_QUERY_KEY } from '@/lib/views/sidebar-views-query';
 import type { NumberFilterOperator } from '@/types/number-filter-value';
 import { DataTableExportDialog } from './data-table-export-dialog';
 import { DataTableFilterChip } from './data-table-filter-chip';
@@ -69,6 +70,8 @@ interface DataTableHeaderProps<TData> {
   isExtraViewDataDirty?: (savedData: Record<string, unknown> | undefined) => boolean;
   toolbarContent?: ReactNode;
   onRowClick?: (row: TData) => void;
+  /** When false, do not auto-apply a saved default view on `/list` (path-based views). */
+  autoSelectDefaultView?: boolean;
 }
 
 export function DataTableHeader<TData>({
@@ -90,6 +93,7 @@ export function DataTableHeader<TData>({
   extraViewData,
   isExtraViewDataDirty,
   onRowClick,
+  autoSelectDefaultView = true,
 }: DataTableHeaderProps<TData>) {
   const projectId = useProjectId();
   const router = useRouter();
@@ -159,6 +163,7 @@ export function DataTableHeader<TData>({
       }
 
       await queryClient.invalidateQueries({ queryKey: ['views', viewType] });
+      await queryClient.invalidateQueries({ queryKey: SIDEBAR_VIEWS_QUERY_KEY });
       router.refresh();
     } catch (err) {
       console.error('Error updating view:', err);
@@ -188,6 +193,7 @@ export function DataTableHeader<TData>({
       const view = result?.data?.view;
 
       await queryClient.invalidateQueries({ queryKey: ['views', viewType] });
+      await queryClient.invalidateQueries({ queryKey: SIDEBAR_VIEWS_QUERY_KEY });
       router.refresh();
       if (view) {
         // Select the new view — since the saved data matches current state,
@@ -211,6 +217,7 @@ export function DataTableHeader<TData>({
 
     await executeUpdateView({ viewId, data: { isDefault }, ...(projectId && { projectId }) });
     queryClient.invalidateQueries({ queryKey: ['views', viewType] });
+    queryClient.invalidateQueries({ queryKey: SIDEBAR_VIEWS_QUERY_KEY });
     router.refresh();
   };
 
@@ -219,6 +226,7 @@ export function DataTableHeader<TData>({
 
     await executeDeleteView({ viewId });
     queryClient.invalidateQueries({ queryKey: ['views', viewType] });
+    queryClient.invalidateQueries({ queryKey: SIDEBAR_VIEWS_QUERY_KEY });
     router.refresh();
   };
 
@@ -304,6 +312,7 @@ export function DataTableHeader<TData>({
                 viewDirty={viewDirty}
                 views={views}
                 state={tableState}
+                autoSelectDefaultView={autoSelectDefaultView}
                 onViewDefault={handleViewDefault}
                 onViewSelect={(view) => {
                   if (view === null) {

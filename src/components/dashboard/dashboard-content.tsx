@@ -227,7 +227,7 @@ export function DashboardContent({ statsData, loansDistribution, loans, userName
           <h2 className="mb-2 text-xl font-semibold">{t('lenders.title')}</h2>
           <p className="mb-4 text-sm text-muted-foreground">{t('lenders.description')}</p>
           <Button asChild variant="outline" className="w-full">
-            <Link href="/lenders">{t('lenders.viewLenders')}</Link>
+            <Link href="/lenders/list">{t('lenders.viewLenders')}</Link>
           </Button>
         </div>
 
@@ -238,7 +238,7 @@ export function DashboardContent({ statsData, loansDistribution, loans, userName
           <h2 className="mb-2 text-xl font-semibold">{t('loans.title')}</h2>
           <p className="mb-4 text-sm text-muted-foreground">{t('loans.details')}</p>
           <Button asChild variant="outline" className="w-full">
-            <Link href="/loans">{t('loans.viewLoans')}</Link>
+            <Link href="/loans/list">{t('loans.viewLoans')}</Link>
           </Button>
         </div>
       </div>

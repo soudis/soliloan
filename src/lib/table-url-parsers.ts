@@ -22,7 +22,7 @@ function parseAsBase64Json<T>(validator: (value: unknown) => T | null) {
   });
 }
 
-/** Single source of truth for table URL state (DataTable + sidebar view links). */
+/** Table URL state (filters, sort, pagination). `view` is still used by logbook/projects. */
 export const tableUrlParsers = {
   q: parseAsString,
   /** Quick-search field selection (`__all__` omitted — empty means search all). */

@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 
 import { getLoanAction } from '@/actions/loans';
-import { getProjectUnsafe } from '@/actions/projects/queries/get-project';
+import { getProjectUnsafe } from '@/lib/projects/get-project';
 import { EditLoanClient } from '@/components/loans/edit-loan-client';
 import { searchParamsCache } from '@/lib/params';
 

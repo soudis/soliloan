@@ -1,7 +1,7 @@
 'use server';
 
 import { getGlobalDefaultLayout, resolveScopedLayout } from '@/lib/dashboard/layout-db';
-import { auth } from '@/lib/auth';
+import { requireSession } from '@/lib/require-session';
 import { assertCanManageProject } from '@/lib/views/access';
 import type { DashboardLayoutData } from '@/types/dashboard-layout';
 
@@ -12,7 +12,7 @@ export type ResolvedDashboardLayout = {
 
 export async function getDashboardLayoutsForPage(projectId: string) {
   try {
-    const session = await auth();
+    const session = await requireSession();
     if (!session?.user?.id) {
       return { error: 'Unauthorized' };
     }

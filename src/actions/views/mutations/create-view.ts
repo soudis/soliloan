@@ -7,6 +7,7 @@ import { db } from '@/lib/db';
 import { viewFormSchema } from '@/lib/schemas/view';
 import { authAction } from '@/lib/utils/safe-action';
 import { assertCanManageProject } from '@/lib/views/access';
+import { revalidateSidebarViews } from '@/lib/views/revalidate-sidebar-views';
 
 export const createViewAction = authAction
   .inputSchema(viewFormSchema.extend({ projectId: z.string().optional() }))
@@ -65,6 +66,8 @@ export const createViewAction = authAction
           : {}),
       },
     });
+
+    revalidateSidebarViews();
 
     return { view };
   });

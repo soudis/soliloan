@@ -144,9 +144,12 @@ export function createEmptyRow(): DashboardLayoutRow {
   };
 }
 
+/** Stable id so an empty fallback layout hashes the same across requests (widget-result cache). */
+export const STABLE_EMPTY_LAYOUT_ROW_ID = 'default-empty-row';
+
 export function createDefaultLayoutData(): DashboardLayoutData {
   return {
-    rows: [createEmptyRow()],
+    rows: [{ id: STABLE_EMPTY_LAYOUT_ROW_ID, widgets: [] }],
   };
 }
 

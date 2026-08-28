@@ -20,6 +20,7 @@ import { ProjectLogo } from '@/components/dashboard/project-logo';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { DASHBOARD_CUSTOMIZE_KEY, dashboardCustomizeParser } from '@/lib/dashboard/dashboard-url-params';
 import { cloneLayoutData } from '@/lib/dashboard/layout-utils';
 import type { DashboardLayoutData, DashboardLayoutScopeKey } from '@/types/dashboard-layout';
 
@@ -48,7 +49,10 @@ export function DashboardCustomizer({
     'dashboardScope',
     parseAsStringLiteral(['project', 'user'] as const).withDefault('project'),
   );
-  const [isCustomizing, setIsCustomizing] = useState(false);
+  const [isCustomizing, setIsCustomizing] = useQueryState(
+    DASHBOARD_CUSTOMIZE_KEY,
+    dashboardCustomizeParser.withOptions({ shallow: false, history: 'push' }),
+  );
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
@@ -166,14 +170,14 @@ export function DashboardCustomizer({
   };
 
   const exitCustomizing = () => {
-    setIsCustomizing(false);
+    void setIsCustomizing(false);
     setSelectedWidgetId(null);
     setSaveStatus('idle');
   };
 
   const handleToggleCustomizing = () => {
     if (!isCustomizing) {
-      setIsCustomizing(true);
+      void setIsCustomizing(true);
       return;
     }
     if (isDirty || isOtherScopeDirty) {

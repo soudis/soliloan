@@ -4,6 +4,7 @@ import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createAuditEntry, getChangedFields } from '@/lib/audit-trail';
+import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { maintainLoanInvestmentTypes } from '@/lib/investment-types/maintain-loan-investment-types';
 import { projectAction } from '@/lib/utils/safe-action';
@@ -47,8 +48,9 @@ export const enableDeInvestmentActComplianceAction = projectAction
     const maintenanceResult = await maintainLoanInvestmentTypes(db, ctx.projectId);
 
     revalidatePath('/configuration');
-    revalidatePath('/loans');
-    revalidatePath('/investment-types');
+    revalidatePath('/loans/list');
+    revalidatePath('/investment-types/list');
+    invalidateDashboardWidgetResultsCache(ctx.projectId);
 
     return { investmentTypesCreated: maintenanceResult.investmentTypesCreated };
   });

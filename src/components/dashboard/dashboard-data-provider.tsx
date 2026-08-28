@@ -4,9 +4,14 @@ import { useLocale, useTranslations } from 'next-intl';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 
 import type { DashboardLender, DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
+import { useProject } from '@/components/providers/project-provider';
+import { buildCumulativeTimeline } from '@/lib/dashboard/history-table/cumulative-timeline';
+import type { DashboardWidgetResultsByScope } from '@/lib/dashboard/widget-compute-result-types';
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
 import type { ProjectWithConfiguration } from '@/types/projects';
+
+const EMPTY_WIDGET_RESULTS: DashboardWidgetResultsByScope = { project: {}, user: {} };
 
 export type DashboardDataContextValue = {
   loans: DashboardLoan[];
@@ -15,6 +20,8 @@ export type DashboardDataContextValue = {
   project: ProjectWithConfiguration;
   fieldOptions: EntityFilterFieldOption[];
   getOrComputeWidgetResult: <T>(key: string, compute: () => T) => T;
+  hasFullDataset: boolean;
+  widgetResults: DashboardWidgetResultsByScope;
 };
 
 const DashboardDataContext = createContext<DashboardDataContextValue | null>(null);
@@ -24,14 +31,17 @@ export function DashboardDataProvider({
   loans,
   lenders,
   toDate,
-  project,
+  hasFullDataset,
+  widgetResults = EMPTY_WIDGET_RESULTS,
 }: {
   children: React.ReactNode;
   loans: DashboardLoan[];
   lenders: DashboardLender[];
   toDate: Date;
-  project: ProjectWithConfiguration;
+  hasFullDataset: boolean;
+  widgetResults?: DashboardWidgetResultsByScope;
 }) {
+  const { project } = useProject();
   const tLoans = useTranslations('dashboard.loans');
   const tLenders = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
@@ -40,14 +50,28 @@ export function DashboardDataProvider({
   localeRef.current = locale;
   const computeCacheRef = useRef(new Map<string, unknown>());
 
+  const loansWithTimeline = useMemo(
+    () =>
+      hasFullDataset
+        ? loans.map((loan) =>
+            loan.cumulativeTimeline
+              ? loan
+              : {
+                  ...loan,
+                  cumulativeTimeline: buildCumulativeTimeline(loan.history),
+                },
+          )
+        : loans,
+    [hasFullDataset, loans],
+  );
+
   // Cached widget results bake in translated labels, so invalidate on locale change as well as data change.
   // biome-ignore lint/correctness/useExhaustiveDependencies: only clear cache when data or locale changes
   useEffect(() => {
     computeCacheRef.current.clear();
-  }, [loans, lenders, toDate, locale]);
+  }, [loansWithTimeline, lenders, toDate, locale]);
 
   const getOrComputeWidgetResult = useCallback(<T,>(key: string, compute: () => T): T => {
-    // Namespace by locale so a language switch never serves stale, previously-translated results.
     const namespacedKey = `${localeRef.current}:${key}`;
     const cached = computeCacheRef.current.get(namespacedKey);
     if (cached !== undefined) {
@@ -65,14 +89,25 @@ export function DashboardDataProvider({
 
   const value = useMemo(
     () => ({
-      loans,
+      loans: loansWithTimeline,
       lenders,
       toDate,
       project,
       fieldOptions,
       getOrComputeWidgetResult,
+      hasFullDataset,
+      widgetResults,
     }),
-    [loans, lenders, toDate, project, fieldOptions, getOrComputeWidgetResult],
+    [
+      loansWithTimeline,
+      lenders,
+      toDate,
+      project,
+      fieldOptions,
+      getOrComputeWidgetResult,
+      hasFullDataset,
+      widgetResults,
+    ],
   );
 
   return <DashboardDataContext.Provider value={value}>{children}</DashboardDataContext.Provider>;

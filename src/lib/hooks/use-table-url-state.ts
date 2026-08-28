@@ -6,6 +6,9 @@ import { isEqual } from 'lodash';
 import { useQueryStates } from 'nuqs';
 import { useCallback, useMemo } from 'react';
 
+import { useRouter } from '@/i18n/navigation';
+import { useProjectId } from '@/lib/hooks/use-project-id';
+import { buildTableListHref } from '@/lib/table-list-path';
 import { tableUrlNuqsOptions, tableUrlParsers } from '@/lib/table-url-parsers';
 
 export type TableUrlState = {
@@ -65,6 +68,10 @@ interface UseTableUrlStateOptions {
   views?: View[];
   controlledState?: TableUrlState;
   controlledSetState?: SetTableUrlState;
+  /** Saved view id from the `/list/[view]` route. */
+  viewId?: string;
+  /** When set, changing the selected view navigates here and wipes table query params. */
+  listPath?: string;
 }
 
 /** Stable fallbacks — inline `{}` / `[]` defaults in callers change identity every render and invalidates memoized URL state. */
@@ -74,12 +81,16 @@ const EMPTY_VIEWS: View[] = [];
 export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
   const defaultColumnVisibility = options.defaultColumnVisibility ?? EMPTY_COLUMN_VISIBILITY;
   const views = options.views ?? EMPTY_VIEWS;
+  const listPath = options.listPath;
+  const routeViewId = listPath ? (options.viewId ?? '') : undefined;
+  const router = useRouter();
+  const projectId = useProjectId();
 
   const [rawState, setRawState] = useQueryStates(tableUrlParsers, tableUrlNuqsOptions);
 
   // Compute the baseline from the selected view (or defaults)
   const baseline = useMemo<TableUrlState>(() => {
-    const selectedViewId = rawState.view;
+    const selectedViewId = routeViewId !== undefined ? routeViewId : (rawState.view ?? '');
 
     if (selectedViewId) {
       const view = views.find((v) => v.id === selectedViewId);
@@ -95,9 +106,9 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
     return {
       ...DEFAULT_BASELINE,
       columnVisibility: defaultColumnVisibility,
-      selectedView: rawState.view ?? '',
+      selectedView: selectedViewId,
     };
-  }, [rawState.view, views, defaultColumnVisibility]);
+  }, [rawState.view, routeViewId, views, defaultColumnVisibility]);
 
   // Merge baseline with URL overrides to produce effective state
   const state = useMemo<TableUrlState>(() => {
@@ -109,7 +120,7 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
       columnVisibility: rawState.cols ? { ...defaultColumnVisibility, ...rawState.cols } : baseline.columnVisibility,
       pageIndex: rawState.page ?? baseline.pageIndex,
       pageSize: rawState.pageSize ?? baseline.pageSize,
-      selectedView: rawState.view ?? baseline.selectedView,
+      selectedView: baseline.selectedView,
       viewName: rawState.viewName ?? '',
       filtersExpanded: rawState.fe ?? baseline.filtersExpanded,
     };
@@ -118,6 +129,11 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
   // setState: only write values that differ from baseline, clear those that match
   const setState: SetTableUrlState = useCallback(
     (update) => {
+      if (listPath && update.selectedView !== undefined && update.selectedView !== (routeViewId ?? '')) {
+        router.push(buildTableListHref(listPath, update.selectedView || null, projectId));
+        return;
+      }
+
       const raw: Record<string, unknown> = {};
 
       // When the view changes, compute the new baseline immediately so we can
@@ -142,8 +158,8 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
         }
       }
 
-      // View param: write if non-empty, clear if empty
-      if (update.selectedView !== undefined) {
+      // Query-param tables (logbook, projects) still store the view in `?view=`.
+      if (listPath === undefined && update.selectedView !== undefined) {
         raw.view = update.selectedView || null;
       }
 
@@ -184,7 +200,7 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
         history: 'replace',
       });
     },
-    [baseline, views, defaultColumnVisibility, setRawState],
+    [baseline, views, defaultColumnVisibility, setRawState, listPath, routeViewId, router, projectId],
   );
 
   return {

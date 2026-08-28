@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo } from 'react';
+import { useProjectId } from '@/lib/hooks/use-project-id';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
 type ProjectContextType = {
@@ -10,14 +11,36 @@ type ProjectContextType = {
 
 const ProjectContext = createContext<ProjectContextType | null>(null);
 
+const ProjectsCatalogContext = createContext<ProjectWithConfiguration[]>([]);
+
+export function ProjectsCatalogProvider({
+  projects,
+  children,
+}: {
+  projects: ProjectWithConfiguration[];
+  children: React.ReactNode;
+}) {
+  return <ProjectsCatalogContext.Provider value={projects}>{children}</ProjectsCatalogContext.Provider>;
+}
+
 export function ProjectProvider({
-  project,
+  project: serverProject,
   children,
 }: {
   project: ProjectWithConfiguration;
   children: React.ReactNode;
 }) {
-  return <ProjectContext.Provider value={{ project, projectId: project.id }}>{children}</ProjectContext.Provider>;
+  const catalog = useContext(ProjectsCatalogContext);
+  const urlProjectId = useProjectId();
+  const project = useMemo(() => {
+    if (!urlProjectId || serverProject.id === urlProjectId) {
+      return serverProject;
+    }
+    return catalog.find((p) => p.id === urlProjectId) ?? serverProject;
+  }, [catalog, serverProject, urlProjectId]);
+
+  const value = useMemo(() => ({ project, projectId: project.id }), [project]);
+  return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;
 }
 
 export function useProject() {

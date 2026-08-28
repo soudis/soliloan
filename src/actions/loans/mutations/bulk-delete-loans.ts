@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 import { createAuditEntry, getLenderContext, getLoanContext, removeNullFields } from '@/lib/audit-trail';
+import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { projectAction } from '@/lib/utils/safe-action';
 
@@ -54,7 +55,8 @@ export const bulkDeleteLoansAction = projectAction
     });
 
     // Revalidate the loans page
-    revalidatePath('/loans');
+    revalidatePath('/loans/list');
+    invalidateDashboardWidgetResultsCache(projectId);
 
     // Also revalidate affected lender pages
     const uniqueLenderIds = [...new Set(loans.map((l) => l.lenderId))];

@@ -11,6 +11,7 @@ import {
   getTransactionContext,
   removeNullFields,
 } from '@/lib/audit-trail';
+import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { projectAction } from '@/lib/utils/safe-action';
 
@@ -82,7 +83,8 @@ export const bulkDeleteTransactionsAction = projectAction
       revalidatePath(`/lenders/${transaction.loan.lenderId}`);
     }
 
-    revalidatePath('/transactions');
+    revalidatePath('/transactions/list');
+    invalidateDashboardWidgetResultsCache(projectId);
 
     return { deletedCount, skippedCount: skippedIds.length, skippedIds };
   });
