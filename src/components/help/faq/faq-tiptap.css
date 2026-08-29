@@ -89,11 +89,13 @@
 }
 
 .faq-tiptap-link,
-.faq-tiptap-editor a[href],
-.faq-tiptap-renderer a[href] {
+.faq-tiptap-editor a,
+.faq-tiptap-renderer a {
   color: var(--primary);
   text-decoration: underline;
   text-underline-offset: 2px;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 .faq-tiptap-image,

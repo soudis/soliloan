@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { EMPTY_FAQ_DOC } from '@/lib/help/faq-constants';
 import { slugify } from '@/lib/help/slugify';
 
+import { richTextBodyActionSchema } from './rich-text';
+
 const requiredSlug = z.preprocess(
   (value) => {
     if (typeof value !== 'string') return '';
@@ -37,6 +39,10 @@ export const faqArticleFormSchema = z.object({
 });
 
 export type FaqArticleFormData = z.infer<typeof faqArticleFormSchema>;
+
+export const faqArticleActionSchema = faqArticleFormSchema.omit({ body: true }).extend({
+  body: richTextBodyActionSchema,
+});
 
 export const faqCategoryFormSchema = z.object({
   name: requiredTitle,

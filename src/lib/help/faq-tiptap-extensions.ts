@@ -7,22 +7,35 @@ import StarterKit from '@tiptap/starter-kit';
 
 type FaqTiptapOptions = {
   openOnClick?: boolean;
+  headings?: boolean;
+  autolink?: boolean;
 };
 
-export function getFaqTiptapExtensions({ openOnClick = false }: FaqTiptapOptions = {}): Extensions {
+export function getFaqTiptapExtensions({
+  openOnClick = false,
+  headings = true,
+  autolink = true,
+}: FaqTiptapOptions = {}): Extensions {
   return [
     StarterKit.configure({
-      heading: { levels: [2, 3] },
+      heading: headings ? { levels: [2, 3] } : false,
       horizontalRule: false,
       link: false,
+      underline: false,
     }),
     Underline,
     Link.configure({
-      autolink: true,
-      linkOnPaste: true,
+      autolink,
+      linkOnPaste: autolink,
       openOnClick,
       defaultProtocol: 'https',
       protocols: ['http', 'https', 'mailto', 'tel'],
+      isAllowedUri: (url, ctx) => {
+        if (!url) return false;
+        const trimmed = url.trim();
+        if (trimmed.startsWith('/') || trimmed.startsWith('#')) return true;
+        return ctx.defaultValidate(trimmed);
+      },
       HTMLAttributes: {
         class: 'faq-tiptap-link',
         rel: 'noopener noreferrer',

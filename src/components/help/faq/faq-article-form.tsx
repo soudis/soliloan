@@ -14,6 +14,7 @@ import { useRouter } from '@/i18n/navigation';
 import { EMPTY_FAQ_DOC } from '@/lib/help/faq-constants';
 import { slugify } from '@/lib/help/slugify';
 import { type FaqArticleFormData, faqArticleFormSchema } from '@/lib/schemas/faq';
+import { serializeRichTextBody } from '@/lib/schemas/rich-text';
 import type { FaqArticleRecord, FaqTocArticle, FaqTocCategory } from '@/types/faq';
 
 import { FaqArticleFormFields } from './faq-article-form-fields';
@@ -57,7 +58,8 @@ export function FaqArticleForm({ initialData, categories, pickerArticles, onCanc
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
       setError(null);
-      const result = isEditMode ? await update({ ...data, id: initialData?.id ?? '' }) : await create(data);
+      const payload = { ...data, body: serializeRichTextBody(data.body) };
+      const result = isEditMode ? await update({ ...payload, id: initialData?.id ?? '' }) : await create(payload);
 
       if (result?.data && 'fieldErrors' in result.data && result.data.fieldErrors) {
         for (const [field, message] of Object.entries(result.data.fieldErrors)) {

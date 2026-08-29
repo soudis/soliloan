@@ -22,6 +22,8 @@ type FaqRichTextEditorProps = {
   onChange: (json: JSONContent) => void;
   pickerArticles: Pick<FaqTocArticle, 'title' | 'slug'>[];
   className?: string;
+  headings?: boolean;
+  editorClassName?: string;
 };
 
 type ImageDialogState = {
@@ -33,7 +35,14 @@ type ImageDialogState = {
   editPos?: number;
 };
 
-export function FaqRichTextEditor({ value, onChange, pickerArticles, className }: FaqRichTextEditorProps) {
+export function FaqRichTextEditor({
+  value,
+  onChange,
+  pickerArticles,
+  className,
+  headings = true,
+  editorClassName,
+}: FaqRichTextEditorProps) {
   const t = useTranslations('help.editor');
   const tError = useTranslations();
   const pendingFilesRef = useRef<File[]>([]);
@@ -44,8 +53,9 @@ export function FaqRichTextEditor({ value, onChange, pickerArticles, className }
   const editor = useFaqTiptapEditor({
     content: value ?? EMPTY_FAQ_DOC,
     editable: true,
+    headings,
     onUpdate: onChange,
-    editorClassName: 'faq-tiptap-editor outline-none min-h-[16rem] px-3 py-2',
+    editorClassName: editorClassName ?? 'faq-tiptap-editor outline-none min-h-[16rem] px-3 py-2',
   });
 
   const openNextPendingFile = useCallback(() => {
@@ -161,7 +171,12 @@ export function FaqRichTextEditor({ value, onChange, pickerArticles, className }
         className,
       )}
     >
-      <FaqEditorToolbar editor={editor} pickerArticles={pickerArticles} onSelectImageFiles={enqueueImageFiles} />
+      <FaqEditorToolbar
+        editor={editor}
+        pickerArticles={pickerArticles}
+        onSelectImageFiles={enqueueImageFiles}
+        headings={headings}
+      />
       <EditorContent editor={editor} />
       <FaqImageAltDialog
         open={Boolean(imageDialog)}

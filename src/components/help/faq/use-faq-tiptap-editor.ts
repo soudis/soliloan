@@ -12,6 +12,7 @@ type UseFaqTiptapEditorOptions = {
   content: JSONContent;
   editable: boolean;
   openOnClick?: boolean;
+  headings?: boolean;
   onUpdate?: (json: JSONContent) => void;
   editorClassName: string;
 };
@@ -20,10 +21,14 @@ export function useFaqTiptapEditor({
   content,
   editable,
   openOnClick = false,
+  headings = true,
   onUpdate,
   editorClassName,
 }: UseFaqTiptapEditorOptions) {
-  const extensions = useMemo(() => getFaqTiptapExtensions({ openOnClick }), [openOnClick]);
+  const extensions = useMemo(
+    () => getFaqTiptapExtensions({ openOnClick, headings, autolink: editable }),
+    [openOnClick, headings, editable],
+  );
   const lastEmittedRef = useRef<string | null>(null);
   const contentJson = JSON.stringify(content ?? EMPTY_FAQ_DOC);
 
@@ -37,6 +42,17 @@ export function useFaqTiptapEditor({
         attributes: {
           class: editorClassName,
         },
+        handleClick: editable
+          ? undefined
+          : (_view, _pos, event) => {
+              if (!(event.target instanceof Element)) return false;
+              const link = event.target.closest('a');
+              const href = link?.getAttribute('href');
+              if (!link || !href) return false;
+              event.preventDefault();
+              window.open(href, link.getAttribute('target') || '_blank', 'noopener,noreferrer');
+              return true;
+            },
       },
       onUpdate: onUpdate
         ? ({ editor: ed }) => {

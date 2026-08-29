@@ -33,6 +33,7 @@ type FaqEditorToolbarProps = {
   editor: Editor;
   pickerArticles: Pick<FaqTocArticle, 'title' | 'slug'>[];
   onSelectImageFiles: (files: File[]) => void;
+  headings?: boolean;
 };
 
 function ToolbarButton({
@@ -65,7 +66,12 @@ function ToolbarButton({
   );
 }
 
-export function FaqEditorToolbar({ editor, pickerArticles, onSelectImageFiles }: FaqEditorToolbarProps) {
+export function FaqEditorToolbar({
+  editor,
+  pickerArticles,
+  onSelectImageFiles,
+  headings = true,
+}: FaqEditorToolbarProps) {
   const t = useTranslations('help.editor');
   const [, bumpToolbar] = useReducer((n: number) => n + 1, 0);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -91,22 +97,25 @@ export function FaqEditorToolbar({ editor, pickerArticles, onSelectImageFiles }:
         >
           <Text className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton
-          label={t('heading2')}
-          active={editor.isActive('heading', { level: 2 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        >
-          <Heading2 className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          label={t('heading3')}
-          active={editor.isActive('heading', { level: 3 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        >
-          <Heading3 className="h-4 w-4" />
-        </ToolbarButton>
-
-        <Separator orientation="vertical" className="mx-0.5 h-5 shrink-0" />
+        {headings ? (
+          <>
+            <ToolbarButton
+              label={t('heading2')}
+              active={editor.isActive('heading', { level: 2 })}
+              onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            >
+              <Heading2 className="h-4 w-4" />
+            </ToolbarButton>
+            <ToolbarButton
+              label={t('heading3')}
+              active={editor.isActive('heading', { level: 3 })}
+              onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            >
+              <Heading3 className="h-4 w-4" />
+            </ToolbarButton>
+            <Separator orientation="vertical" className="mx-0.5 h-5 shrink-0" />
+          </>
+        ) : null}
 
         <ToolbarButton
           label={t('bold')}
@@ -207,7 +216,21 @@ export function FaqEditorToolbar({ editor, pickerArticles, onSelectImageFiles }:
         articles={pickerArticles}
         onOpenChange={setLinkOpen}
         onApply={(href) => {
-          editor.chain().focus().extendMarkRange('link').setLink({ href }).run();
+          const { empty } = editor.state.selection;
+          if (empty) {
+            const label = href.startsWith('/help/faq/') ? href.slice('/help/faq/'.length) : href;
+            editor
+              .chain()
+              .focus()
+              .insertContent({
+                type: 'text',
+                text: label,
+                marks: [{ type: 'link', attrs: { href } }],
+              })
+              .run();
+          } else {
+            editor.chain().focus().extendMarkRange('link').setLink({ href }).run();
+          }
           setLinkOpen(false);
         }}
         onRemove={() => {

@@ -41,7 +41,8 @@ export default function DashboardNavigation({
     pathname === '/projects' ||
     pathname === '/help/faq' ||
     pathname.startsWith('/help/faq/') ||
-    pathname === '/help/forum';
+    pathname === '/help/forum' ||
+    pathname.startsWith('/help/forum/');
 
   const isFullWidthPage =
     pathnameIsTableList(pathname, TABLE_LIST_PATHS.lenders) ||

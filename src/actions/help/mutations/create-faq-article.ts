@@ -6,12 +6,12 @@ import { assertUniqueFaqArticleSlug, normalizeFaqSlug } from '@/lib/help/ensure-
 import { extractFaqSearchText, sanitizeFaqBody } from '@/lib/help/faq-body';
 import { nextFaqArticlePosition } from '@/lib/help/find-faq-article';
 import { revalidateFaqPaths } from '@/lib/help/revalidate-faq';
-import { faqArticleFormSchema } from '@/lib/schemas/faq';
+import { faqArticleActionSchema } from '@/lib/schemas/faq';
 import { adminAction } from '@/lib/utils/safe-action';
 import { slugFieldError } from './slug-field-error';
 
 export const createFaqArticleAction = adminAction
-  .inputSchema(faqArticleFormSchema)
+  .inputSchema(faqArticleActionSchema)
   .action(async ({ parsedInput, ctx }) => {
     const slug = normalizeFaqSlug(parsedInput.slug);
     try {

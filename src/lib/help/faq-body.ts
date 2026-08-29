@@ -1,6 +1,6 @@
 import type { JSONContent } from '@tiptap/core';
 
-import { EMPTY_FAQ_DOC, extractFaqMediaIdFromSrc, FAQ_ARTICLE_PATH_PATTERN } from '@/lib/help/faq-constants';
+import { EMPTY_FAQ_DOC, extractFaqMediaIdFromSrc } from '@/lib/help/faq-constants';
 import { mediaUrl } from '@/lib/media';
 
 const ALLOWED_NODES = new Set([
@@ -27,24 +27,27 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function stripLocalePrefix(pathname: string): string {
+  return pathname.replace(/^\/[a-z]{2}(?=\/)/, '');
+}
+
 function sanitizeHref(href: unknown): string | null {
   if (typeof href !== 'string') return null;
   const trimmed = href.trim();
-  if (FAQ_ARTICLE_PATH_PATTERN.test(trimmed)) return trimmed;
+  if (!trimmed) return null;
+
   try {
     const url = new URL(trimmed);
-    if (
-      url.protocol === 'http:' ||
-      url.protocol === 'https:' ||
-      url.protocol === 'mailto:' ||
-      url.protocol === 'tel:'
-    ) {
-      return trimmed;
-    }
+    if (url.protocol === 'mailto:' || url.protocol === 'tel:') return trimmed;
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+    const path = stripLocalePrefix(`${url.pathname}${url.search}${url.hash}`);
+    if (path.startsWith('/help/')) return path;
+    return trimmed;
   } catch {
+    const path = stripLocalePrefix(trimmed);
+    if (path.startsWith('/help/') || path.startsWith('#')) return path;
     return null;
   }
-  return null;
 }
 
 function sanitizeMarks(marks: unknown): JSONContent['marks'] {
@@ -72,7 +75,7 @@ function sanitizeMarks(marks: unknown): JSONContent['marks'] {
   return next.length > 0 ? next : undefined;
 }
 
-function sanitizeNode(node: unknown): JSONContent | null {
+function sanitizeNode(node: unknown, allowHeadings: boolean): JSONContent | null {
   if (!isRecord(node) || typeof node.type !== 'string' || !ALLOWED_NODES.has(node.type)) {
     return null;
   }
@@ -104,25 +107,28 @@ function sanitizeNode(node: unknown): JSONContent | null {
     };
   }
 
+  const type = node.type === 'heading' && !allowHeadings ? 'paragraph' : node.type;
   const attrs: Record<string, unknown> = {};
-  if (node.type === 'heading') {
+  if (type === 'heading') {
     const level = isRecord(node.attrs) ? node.attrs.level : undefined;
     attrs.level = level === 3 ? 3 : 2;
   }
 
   const content = Array.isArray(node.content)
-    ? node.content.map(sanitizeNode).filter((child): child is JSONContent => child !== null)
+    ? node.content
+        .map((child) => sanitizeNode(child, allowHeadings))
+        .filter((child): child is JSONContent => child !== null)
     : undefined;
 
   return {
-    type: node.type,
+    type,
     ...(Object.keys(attrs).length > 0 ? { attrs } : {}),
     ...(content && content.length > 0 ? { content } : {}),
   };
 }
 
-export function sanitizeFaqBody(input: unknown): JSONContent {
-  const sanitized = sanitizeNode(input);
+export function sanitizeFaqBody(input: unknown, options?: { allowHeadings?: boolean }): JSONContent {
+  const sanitized = sanitizeNode(input, options?.allowHeadings !== false);
   if (sanitized?.type !== 'doc') {
     return EMPTY_FAQ_DOC;
   }
@@ -130,6 +136,10 @@ export function sanitizeFaqBody(input: unknown): JSONContent {
     return EMPTY_FAQ_DOC;
   }
   return sanitized;
+}
+
+export function sanitizeForumBody(input: unknown): JSONContent {
+  return sanitizeFaqBody(input, { allowHeadings: false });
 }
 
 export function extractFaqSearchText(doc: JSONContent): string {
@@ -148,6 +158,10 @@ export function extractFaqSearchText(doc: JSONContent): string {
 
   walk(doc);
   return parts.join(' ').replace(/\s+/g, ' ').trim();
+}
+
+export function isEmptyRichText(doc: JSONContent): boolean {
+  return extractFaqSearchText(doc).length === 0 && extractFaqMediaIds(doc).length === 0;
 }
 
 export function extractFaqMediaIds(doc: JSONContent): string[] {
