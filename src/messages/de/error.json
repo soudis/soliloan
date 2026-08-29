@@ -72,6 +72,29 @@
     "cannotChangeInterestRateWithLoans": "Der Zinssatz kann nicht geändert werden, da bereits Kredite zugeordnet sind.",
     "cannotDeleteWithLoans": "Die Anlageart kann nicht gelöscht werden, da ihr Kredite zugeordnet sind."
   },
+  "media": {
+    "notFound": "Datei nicht gefunden.",
+    "missingFile": "Bitte eine Datei auswählen.",
+    "tooLarge": "Die Datei darf höchstens 5 MB groß sein.",
+    "invalidType": "Nur PNG-, JPEG- und WebP-Bilder sind erlaubt."
+  },
+  "faq": {
+    "articleNotFound": "Artikel nicht gefunden.",
+    "categoryNotFound": "Kategorie nicht gefunden.",
+    "categoryHasArticles": "Die Kategorie enthält noch Artikel und kann nicht gelöscht werden.",
+    "slugTaken": "Dieser Slug ist bereits vergeben.",
+    "slugReserved": "Dieser Slug ist reserviert."
+  },
+  "forum": {
+    "boardNotFound": "Forum nicht gefunden.",
+    "threadNotFound": "Thema nicht gefunden.",
+    "postNotFound": "Beitrag nicht gefunden.",
+    "slugTaken": "Dieser Slug ist bereits vergeben.",
+    "slugReserved": "Dieser Slug ist reserviert.",
+    "threadLocked": "Dieses Thema ist gesperrt.",
+    "postHasReplies": "Beiträge mit Antworten können nicht gelöscht werden.",
+    "emptyBody": "Bitte einen Beitragstext oder ein Bild einfügen."
+  },
   "migration": {
     "fetchFailed": "Datenpaket konnte nicht von der DKP-v1 API heruntergeladen werden. Bitte URL und Token prüfen.",
     "noDatabaseJson": "Das ZIP-Archiv enthält keine database.json Datei.",

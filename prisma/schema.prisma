@@ -63,6 +63,13 @@ model User {
   predefinedBlocks            PredefinedCraftBlock[]
   dashboardLayouts            DashboardLayout[]
   highscores                  HighscoreEntry[]
+  faqArticles                 FaqArticle[]
+  media                       Media[]
+  forumThreads                ForumThread[]
+  forumPosts                  ForumPost[]
+  forumBoardModerators        ForumBoardModerator[]
+  forumPostReactions          ForumPostReaction[]
+  forumThreadReads            ForumThreadRead[]
 }
 
 model HighscoreEntry {
@@ -327,6 +334,132 @@ model Note {
   createdBy   User     @relation(fields: [createdById], references: [id])
   lender      Lender   @relation(fields: [lenderId], references: [id])
   loan        Loan?    @relation(fields: [loanId], references: [id])
+}
+
+model FaqCategory {
+  id        String       @id @default(cuid())
+  name      String
+  slug      String       @unique
+  position  Int
+  articles  FaqArticle[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model FaqArticle {
+  id          String       @id @default(cuid())
+  title       String
+  slug        String       @unique
+  body        Json
+  searchText  String       @default("")
+  published   Boolean      @default(false)
+  position    Int
+  categoryId  String
+  category    FaqCategory  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  createdById String
+  createdBy   User         @relation(fields: [createdById], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([categoryId, position])
+  @@index([published])
+}
+
+model Media {
+  id          String   @id @default(cuid())
+  mimeType    String
+  name        String
+  data        Bytes
+  createdAt   DateTime @default(now())
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+}
+
+model ForumBoard {
+  id          String                @id @default(cuid())
+  name        String
+  slug        String                @unique
+  description String                @default("")
+  position    Int
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  threads     ForumThread[]
+  moderators  ForumBoardModerator[]
+}
+
+model ForumBoardModerator {
+  boardId String
+  userId  String
+  board   ForumBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([boardId, userId])
+  @@index([userId])
+}
+
+model ForumThread {
+  id           String            @id @default(cuid())
+  title        String
+  boardId      String
+  authorId     String
+  pinned       Boolean           @default(false)
+  locked       Boolean           @default(false)
+  lastPostedAt DateTime          @default(now())
+  replyCount   Int               @default(0)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  board        ForumBoard        @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  author       User              @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  posts        ForumPost[]
+  reads        ForumThreadRead[]
+
+  @@index([boardId, pinned, lastPostedAt])
+  @@index([authorId])
+}
+
+model ForumPost {
+  id         String              @id @default(cuid())
+  threadId   String
+  authorId   String
+  parentId   String?
+  body       Json
+  searchText String              @default("")
+  editedAt   DateTime?
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  thread     ForumThread         @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author     User                @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  parent     ForumPost?          @relation("ForumPostReplies", fields: [parentId], references: [id], onDelete: Restrict)
+  replies    ForumPost[]         @relation("ForumPostReplies")
+  reactions  ForumPostReaction[]
+
+  @@index([threadId, createdAt])
+  @@index([parentId])
+  @@index([authorId])
+}
+
+model ForumPostReaction {
+  id        String    @id @default(cuid())
+  postId    String
+  userId    String
+  emoji     String
+  createdAt DateTime  @default(now())
+  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId])
+}
+
+model ForumThreadRead {
+  threadId   String
+  userId     String
+  lastReadAt DateTime
+  thread     ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([threadId, userId])
+  @@index([userId])
 }
 
 enum TemplateType {
