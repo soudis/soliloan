@@ -12,12 +12,13 @@ import { setPassword } from '@/actions/auth';
 import { FormField } from '@/components/form/form-field';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
+import { passwordSchema } from '@/lib/schemas/common';
 
 // Define the form schema
 const formSchema = z
   .object({
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    confirmPassword: z.string().min(8, 'Password must be at least 8 characters'),
+    password: passwordSchema,
+    confirmPassword: passwordSchema,
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
