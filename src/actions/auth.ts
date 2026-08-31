@@ -28,8 +28,10 @@ export async function setPassword(token: string, password: string) {
       return { success: false, error: 'Invalid or expired token' };
     }
 
-    // Check if the token has expired
-    if (user.passwordResetTokenExpiresAt && user.passwordResetTokenExpiresAt < new Date()) {
+    // A missing expiry counts as expired, so a token can never outlive its window.
+    const expiresAt = user.passwordResetToken === token ? user.passwordResetTokenExpiresAt : user.inviteTokenExpiresAt;
+
+    if (!expiresAt || expiresAt < new Date()) {
       return { success: false, error: 'Token has expired' };
     }
 
@@ -41,6 +43,7 @@ export async function setPassword(token: string, password: string) {
       where: { id: user.id },
       data: {
         inviteToken: null,
+        inviteTokenExpiresAt: null,
         password: hashedPassword,
         passwordResetToken: null,
         passwordResetTokenExpiresAt: null,
