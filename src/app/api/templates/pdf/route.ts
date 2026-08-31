@@ -14,7 +14,7 @@ import { generateTemplatePdfBuffer } from '@/lib/templates/generate-template-pdf
 export async function POST(request: Request) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.isManager) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
     const assetBaseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : new URL(request.url).origin;

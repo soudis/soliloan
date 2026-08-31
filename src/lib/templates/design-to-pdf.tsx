@@ -1,17 +1,25 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: needed */
 const DEFAULT_APP_LOGO_SRC = '/soliloan-logo.webp';
 
+/**
+ * Image sources are rendered server side, so anything but inline data and the app's own
+ * origin is dropped to keep a document from making the server request arbitrary addresses.
+ */
 function resolvePdfImageSrc(src: string, assetBaseUrl?: string): string {
   if (!src) return src;
-  if (src.startsWith('data:') || src.startsWith('http://') || src.startsWith('https://')) {
-    return src;
+  if (src.startsWith('data:')) return src;
+
+  const baseUrl = (assetBaseUrl || process.env.SOLILOAN_URL || process.env.NEXTAUTH_URL || '').replace(/\/+$/, '');
+
+  if (src.startsWith('/')) {
+    return baseUrl ? `${baseUrl}${src}` : src;
   }
-  if (!src.startsWith('/')) {
+
+  if (baseUrl && (src === baseUrl || src.startsWith(`${baseUrl}/`))) {
     return src;
   }
 
-  const baseUrl = (assetBaseUrl || process.env.SOLILOAN_URL || process.env.NEXTAUTH_URL || '').replace(/\/+$/, '');
-  return baseUrl ? `${baseUrl}${src}` : src;
+  return '';
 }
 
 /**
