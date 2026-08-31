@@ -13,7 +13,7 @@ import {
 } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
 import { fileSchema } from '@/lib/schemas/file';
-import { createThumbnail } from '@/lib/utils/file';
+import { createThumbnail, MAX_UPLOAD_BYTES } from '@/lib/utils/file';
 import { lenderAction } from '@/lib/utils/safe-action';
 
 export const addFileAction = lenderAction
@@ -49,7 +49,11 @@ export const addFileAction = lenderAction
     // Convert base64 back to Uint8Array
     const binaryData = Buffer.from(base64Data, 'base64');
 
-    const thumbnailData = await createThumbnail(binaryData, mimeType);
+    if (binaryData.byteLength > MAX_UPLOAD_BYTES) {
+      throw new Error('error.file.tooLarge');
+    }
+
+    const thumbnailData = await createThumbnail(binaryData);
 
     // Create the file
     const file = await db.file.create({

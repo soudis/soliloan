@@ -544,7 +544,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
             }
           }
 
-          const thumbnailData = shouldEmptyFile ? null : await createThumbnail(fileData, file.mime);
+          const thumbnailData = shouldEmptyFile ? null : await createThumbnail(fileData);
 
           await tx.file.create({
             data: {

@@ -29,6 +29,9 @@
   "note": {
     "notFound": "Notiz nicht gefunden."
   },
+  "file": {
+    "tooLarge": "Die Datei ist zu groß. Maximal 10 MB sind erlaubt."
+  },
   "template": {
     "notFound": "Vorlage nicht gefunden.",
     "systemCannotDelete": "Systemvorlagen können nicht gelöscht werden.",
