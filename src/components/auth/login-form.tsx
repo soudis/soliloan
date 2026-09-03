@@ -66,8 +66,20 @@ export function LoginForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField name="email" label={t('email')} placeholder={t('email')} type="email" />
-        <FormField name="password" label={t('password')} placeholder="********" type="password" />
+        <FormField
+          name="email"
+          label={t('email')}
+          placeholder={t('email')}
+          type="email"
+          autoComplete="username"
+        />
+        <FormField
+          name="password"
+          label={t('password')}
+          placeholder="********"
+          type="password"
+          autoComplete="current-password"
+        />
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center sm:gap-0">
           <div className="flex items-center space-x-2">
             <Checkbox

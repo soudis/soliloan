@@ -53,7 +53,13 @@ export function ForgotPasswordForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField name="email" label={t('login.email')} placeholder={t('login.email')} type="email" />
+        <FormField
+          name="email"
+          label={t('login.email')}
+          placeholder={t('login.email')}
+          type="email"
+          autoComplete="email"
+        />
         <div className="flex items-center justify-between">
           <Link href="/auth/login" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
             {t('forgotPassword.backToLogin')}

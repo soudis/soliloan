@@ -148,6 +148,7 @@ export function InterestRateInput({
                           placeholder={t('investmentTypeSearchPlaceholder')}
                           value={searchQuery}
                           onChange={(event) => setSearchQuery(event.target.value)}
+                          autoComplete="off"
                         />
                       </div>
                       <div className="max-h-[300px] overflow-y-auto">

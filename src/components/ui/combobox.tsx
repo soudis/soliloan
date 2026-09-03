@@ -73,6 +73,7 @@ export function Combobox({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               disabled={disabled}
+              autoComplete="off"
             />
           </div>
           <div className="max-h-[300px] overflow-y-auto">

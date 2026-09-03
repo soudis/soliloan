@@ -66,12 +66,19 @@ export function SetPasswordForm({ token }: SetPasswordFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField name="password" label={t('setPassword.password')} placeholder="********" type="password" />
+        <FormField
+          name="password"
+          label={t('setPassword.password')}
+          placeholder="********"
+          type="password"
+          autoComplete="new-password"
+        />
         <FormField
           name="confirmPassword"
           label={t('setPassword.confirmPassword')}
           placeholder="********"
           type="password"
+          autoComplete="new-password"
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? t('setPassword.submitting') : t('setPassword.submit')}
