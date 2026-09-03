@@ -27,7 +27,7 @@ export function FormCheckbox({ name, label, hint, className, disabled }: FormChe
             <FormControl>
               <Checkbox
                 className="mt-0.5"
-                checked={field.value === true}
+                checked={field.value === true || field.value === 'true'}
                 disabled={disabled}
                 onCheckedChange={(v) => field.onChange(v === true)}
               />

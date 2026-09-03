@@ -12,9 +12,18 @@ interface FormSwitchProps {
   hint?: string;
   className?: string;
   labelPlacement?: 'top' | 'inline';
+  /** Persist checked state as 'true'/'false' strings (additional fields). */
+  stringValue?: boolean;
 }
 
-export function FormSwitch({ name, label, hint, className, labelPlacement = 'top' }: FormSwitchProps) {
+export function FormSwitch({
+  name,
+  label,
+  hint,
+  className,
+  labelPlacement = 'top',
+  stringValue = false,
+}: FormSwitchProps) {
   const form = useFormContext();
 
   return (
@@ -27,8 +36,8 @@ export function FormSwitch({ name, label, hint, className, labelPlacement = 'top
             {label && <FormLabel>{label}</FormLabel>}
             <FormControl>
               <Switch
-                checked={field.value && field.value !== 'false'}
-                onCheckedChange={field.onChange}
+                checked={field.value === true || field.value === 'true'}
+                onCheckedChange={(checked) => field.onChange(stringValue ? (checked ? 'true' : 'false') : checked)}
                 className={cn(labelPlacement === 'top' && 'mt-2')}
               />
             </FormControl>

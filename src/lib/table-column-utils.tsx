@@ -14,6 +14,7 @@ import { formatDurationDays } from '@/lib/format-duration';
 
 import { formatCurrency, formatPercentage, getLenderName, NumberParser, resolveIntlLocaleForDates } from '@/lib/utils';
 import { type AdditionalFieldConfig, AdditionalFieldType, AdditionalNumberFormat } from './schemas/common';
+import { isAdditionalBooleanTrue } from './utils/additional-fields';
 
 // Define the custom filter function for compound text fields
 export function compoundTextFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
@@ -22,7 +23,7 @@ export function compoundTextFilter<T>(row: Row<T>, columnId: string, filterValue
 
 // Define the custom filter function for boolean fields
 export function booleanFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
-  const raw = row.getValue(columnId) === true ? 'true' : 'false';
+  const raw = isAdditionalBooleanTrue(row.getValue(columnId)) ? 'true' : 'false';
   return matchesBooleanFilter(raw, filterValue);
 }
 
@@ -529,7 +530,8 @@ export function createBooleanColumn<T>(
   commonT: (key: string) => string,
   options?: { align?: 'left' | 'right' | 'center' },
 ): ColumnDef<T> {
-  const formatBoolean = (value: unknown) => (value === true ? commonT('ui.boolean.yes') : commonT('ui.boolean.no'));
+  const formatBoolean = (value: unknown) =>
+    isAdditionalBooleanTrue(value) ? commonT('ui.boolean.yes') : commonT('ui.boolean.no');
   const align = options?.align ?? 'left';
 
   const column = createColumn<T>(
@@ -540,8 +542,8 @@ export function createBooleanColumn<T>(
       cell: ({ row }) => <div className={getTextAlignClass(align)}>{formatBoolean(row.getValue(accessorKey))}</div>,
       filterFn: booleanFilter,
       sortingFn: (rowA, rowB, columnId) => {
-        const a = rowA.getValue(columnId) === true ? 1 : 0;
-        const b = rowB.getValue(columnId) === true ? 1 : 0;
+        const a = isAdditionalBooleanTrue(rowA.getValue(columnId)) ? 1 : 0;
+        const b = isAdditionalBooleanTrue(rowB.getValue(columnId)) ? 1 : 0;
         return a - b;
       },
     },
@@ -782,6 +784,7 @@ export function createAdditionalFieldsColumns<T>(
   accessorKey: string,
   t: (key: string) => string,
   locale: string,
+  commonT?: (key: string) => string,
 ): ColumnDef<T>[] {
   return (config?.map((field) => {
     const fieldKey = `${accessorKey}.${field.id}`;
@@ -825,6 +828,37 @@ export function createAdditionalFieldsColumns<T>(
           id: fieldKey,
         } as ColumnDef<T>,
         { label: field.name },
+      );
+    }
+
+    if (field.type === AdditionalFieldType.BOOLEAN) {
+      const formatBoolean = (value: unknown) =>
+        isAdditionalBooleanTrue(value)
+          ? (commonT?.('ui.boolean.yes') ?? 'true')
+          : (commonT?.('ui.boolean.no') ?? 'false');
+      return mergeExportMeta(
+        {
+          ...createColumn<T>(
+            {
+              accessorKey: fieldKey,
+              cell: ({ row }) => formatBoolean(row.getValue(fieldKey)),
+              filterFn: booleanFilter,
+              sortingFn: (rowA, rowB, columnId) => {
+                const a = isAdditionalBooleanTrue(rowA.getValue(columnId)) ? 1 : 0;
+                const b = isAdditionalBooleanTrue(rowB.getValue(columnId)) ? 1 : 0;
+                return a - b;
+              },
+            },
+            t,
+          ),
+          id: fieldKey,
+          header: ({ column }) => <DataTableColumnHeader column={column} title={field.name} longTitle={field.name} />,
+        } as ColumnDef<T>,
+        {
+          label: field.name,
+          type: 'text',
+          getValue: (row) => formatBoolean(readFieldPath(row as Record<string, unknown>, fieldKey)),
+        },
       );
     }
 
