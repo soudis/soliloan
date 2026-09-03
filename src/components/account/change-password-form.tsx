@@ -48,18 +48,21 @@ export function ChangePasswordForm() {
             label={t('currentPassword')}
             placeholder={t('currentPasswordPlaceholder')}
             type="password"
+            autoComplete="current-password"
           />
           <FormField
             name="newPassword"
             label={t('newPassword')}
             placeholder={t('newPasswordPlaceholder')}
             type="password"
+            autoComplete="new-password"
           />
           <FormField
             name="confirmPassword"
             label={t('confirmPassword')}
             placeholder={t('confirmPasswordPlaceholder')}
             type="password"
+            autoComplete="new-password"
           />
         </div>
         <div className="flex justify-end pt-4">
