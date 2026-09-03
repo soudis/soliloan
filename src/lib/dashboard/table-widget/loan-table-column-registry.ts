@@ -223,6 +223,7 @@ export function buildLoanTableColumns(
       'additionalFields',
       t,
       locale,
+      commonT,
     ),
   ];
 }

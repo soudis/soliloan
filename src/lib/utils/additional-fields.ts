@@ -11,6 +11,10 @@ import {
 } from '../schemas/common';
 import { formatCurrency, formatDateLong, formatNumber, formatPercentage, NumberParser } from '../utils';
 
+export function isAdditionalBooleanTrue(value: unknown): boolean {
+  return value === true || value === 'true';
+}
+
 export function normalizeAdditionalBooleanValue(value: unknown, fallback?: unknown): 'true' | 'false' {
   if (value === true || value === 'true') return 'true';
   if (value === false || value === 'false') return 'false';
@@ -102,14 +106,25 @@ export const validateAdditionalFields =
   };
 
 export const hasAdditionalFields = (values: AdditionalFieldValues, config?: AdditionalFieldConfig[]) => {
-  return config && config.length > 0 && config.some((field) => values?.[field.id] && values?.[field.id] !== '');
+  return (
+    !!config &&
+    config.length > 0 &&
+    config.some((field) => {
+      if (field.type === AdditionalFieldType.BOOLEAN) return true;
+      return Boolean(values?.[field.id] && values[field.id] !== '');
+    })
+  );
 };
 
 export const formatAdditionalFieldValue = (
   value: string | null | undefined,
   config: AdditionalFieldConfig,
   locale: string,
+  booleanLabels?: { yes: string; no: string },
 ) => {
+  if (config.type === AdditionalFieldType.BOOLEAN) {
+    return isAdditionalBooleanTrue(value) ? (booleanLabels?.yes ?? 'true') : (booleanLabels?.no ?? 'false');
+  }
   if (!value) {
     return '';
   }

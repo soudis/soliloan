@@ -113,7 +113,13 @@ export function buildAllLenderTableColumns<T extends LenderListItem = LenderList
       () => 'outline',
     ),
 
-    ...createAdditionalFieldsColumns<T>(project.configuration.lenderAdditionalFields, 'additionalFields', t, locale),
+    ...createAdditionalFieldsColumns<T>(
+      project.configuration.lenderAdditionalFields,
+      'additionalFields',
+      t,
+      locale,
+      commonT,
+    ),
 
     createCurrencyColumn<T>('amount', 'table.amount', tLoans, locale),
 

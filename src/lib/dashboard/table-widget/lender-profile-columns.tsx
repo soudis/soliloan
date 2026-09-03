@@ -354,9 +354,10 @@ function createProfileAdditionalFieldsColumns<T>(
   idPrefix: string,
   t: (key: string) => string,
   locale: string,
+  commonT: (key: string) => string,
 ): ColumnDef<T>[] {
   const accessorRoot = columnId(idPrefix, 'additionalFields');
-  return createAdditionalFieldsColumns<T>(config, accessorRoot, t, locale).map((column) => {
+  return createAdditionalFieldsColumns<T>(config, accessorRoot, t, locale, commonT).map((column) => {
     const fieldKey = column.id?.replace(`${accessorRoot}.`, '') ?? '';
     return {
       ...column,
@@ -450,6 +451,7 @@ export function buildLenderProfileColumns<T>({
         idPrefix,
         t,
         locale,
+        commonT,
       ),
     );
   }
