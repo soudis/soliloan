@@ -2,7 +2,8 @@
 
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useFieldArray, useFormContext } from 'react-hook-form';
+import { useEffect } from 'react';
+import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { FormControl, FormField as FormFieldWrapper, FormItem } from '@/components/ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -16,6 +17,26 @@ import { FormSelect } from './form-select';
 
 interface FormFieldConfiguratorProps {
   name: string;
+}
+
+function EnforceBooleanFieldConstraints({ name }: { name: string }) {
+  const { setValue, getValues } = useFormContext();
+  const type = useWatch({ name: `${name}.type` });
+
+  useEffect(() => {
+    if (type !== AdditionalFieldType.BOOLEAN) return;
+
+    if (getValues(`${name}.required`) !== true) {
+      setValue(`${name}.required`, true, { shouldDirty: false, shouldValidate: false });
+    }
+
+    const defaultValue = getValues(`${name}.defaultValue`);
+    if (defaultValue !== true && defaultValue !== 'true' && defaultValue !== false && defaultValue !== 'false') {
+      setValue(`${name}.defaultValue`, 'false', { shouldDirty: false, shouldValidate: false });
+    }
+  }, [type, name, getValues, setValue]);
+
+  return null;
 }
 
 export function FormFieldConfigurator({ name }: FormFieldConfiguratorProps) {
@@ -84,9 +105,14 @@ export function FormFieldConfigurator({ name }: FormFieldConfiguratorProps) {
                 </TableHeader>
                 <TableBody>
                   {fields.length > 0 ? (
-                    fields.map((field, index) => (
+                    fields.map((field, index) => {
+                      const fieldType = watch(`${name}.${index}.type`);
+                      const isBoolean = fieldType === AdditionalFieldType.BOOLEAN;
+
+                      return (
                       <TableRow key={field.id}>
                         <TableCell className="align-top">
+                          <EnforceBooleanFieldConstraints name={`${name}.${index}`} />
                           <FormField
                             name={`${name}.${index}.name`}
                             placeholder={t('fieldNamePlaceholder')}
@@ -101,14 +127,14 @@ export function FormFieldConfigurator({ name }: FormFieldConfiguratorProps) {
                           />
                         </TableCell>
                         <TableCell className="align-top">
-                          {watch(`${name}.${index}.type`) === AdditionalFieldType.NUMBER && (
+                          {fieldType === AdditionalFieldType.NUMBER && (
                             <FormSelect
                               name={`${name}.${index}.numberFormat`}
                               placeholder={t('numberFormat')}
                               options={numberFormatOptions}
                             />
                           )}
-                          {watch(`${name}.${index}.type`) === AdditionalFieldType.SELECT && (
+                          {fieldType === AdditionalFieldType.SELECT && (
                             <FormChipInput
                               name={`${name}.${index}.selectOptions`}
                               placeholder={t('addOptionPlaceholder')}
@@ -117,10 +143,12 @@ export function FormFieldConfigurator({ name }: FormFieldConfiguratorProps) {
                           )}
                         </TableCell>
                         <TableCell className="align-top">
-                          {watch(`${name}.${index}.type`) === AdditionalFieldType.BOOLEAN && (
-                            <FormCheckbox name={`${name}.${index}.defaultValue`} className="justify-center" />
+                          {isBoolean && (
+                            <div className="flex h-10 items-center justify-center">
+                              <FormCheckbox name={`${name}.${index}.defaultValue`} className="justify-center" />
+                            </div>
                           )}
-                          {watch(`${name}.${index}.type`) === AdditionalFieldType.SELECT && (
+                          {fieldType === AdditionalFieldType.SELECT && (
                             <FormSelect
                               name={`${name}.${index}.defaultValue`}
                               placeholder={t('selectOption')}
@@ -132,10 +160,10 @@ export function FormFieldConfigurator({ name }: FormFieldConfiguratorProps) {
                               required={false}
                             />
                           )}
-                          {watch(`${name}.${index}.type`) === AdditionalFieldType.DATE && (
+                          {fieldType === AdditionalFieldType.DATE && (
                             <FormDatePicker name={`${name}.${index}.defaultValue`} placeholder={t('selectDate')} />
                           )}
-                          {watch(`${name}.${index}.type`) === AdditionalFieldType.NUMBER && (
+                          {fieldType === AdditionalFieldType.NUMBER && (
                             <FormNumberInput
                               name={`${name}.${index}.defaultValue`}
                               placeholder={t('enterValue')}
@@ -150,12 +178,18 @@ export function FormFieldConfigurator({ name }: FormFieldConfiguratorProps) {
                               }
                             />
                           )}
-                          {watch(`${name}.${index}.type`) === AdditionalFieldType.TEXT && (
+                          {fieldType === AdditionalFieldType.TEXT && (
                             <FormField name={`${name}.${index}.defaultValue`} placeholder={t('enterValue')} />
                           )}
                         </TableCell>
-                        <TableCell className="align-top pt-6">
-                          <FormCheckbox name={`${name}.${index}.required`} className="justify-center" />
+                        <TableCell className="align-top">
+                          <div className="flex h-10 items-center justify-center">
+                            <FormCheckbox
+                              name={`${name}.${index}.required`}
+                              className="justify-center"
+                              disabled={isBoolean}
+                            />
+                          </div>
                         </TableCell>
                         <TableCell className="align-top">
                           <Button
@@ -169,7 +203,8 @@ export function FormFieldConfigurator({ name }: FormFieldConfiguratorProps) {
                           </Button>
                         </TableCell>
                       </TableRow>
-                    ))
+                      );
+                    })
                   ) : (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">

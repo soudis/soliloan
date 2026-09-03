@@ -11,10 +11,21 @@ import {
 } from '../schemas/common';
 import { formatCurrency, formatDateLong, formatNumber, formatPercentage, NumberParser } from '../utils';
 
+export function normalizeAdditionalBooleanValue(value: unknown, fallback?: unknown): 'true' | 'false' {
+  if (value === true || value === 'true') return 'true';
+  if (value === false || value === 'false') return 'false';
+  if (fallback === true || fallback === 'true') return 'true';
+  return 'false';
+}
+
 export const additionalFieldDefaults = (config: AdditionalFieldConfig[], values: AdditionalFieldValues) => {
   const defaults: AdditionalFieldValues = {};
   for (const field of config) {
-    defaults[field.id] = values?.[field.id] ?? field.defaultValue ?? '';
+    if (field.type === AdditionalFieldType.BOOLEAN) {
+      defaults[field.id] = normalizeAdditionalBooleanValue(values?.[field.id], field.defaultValue);
+    } else {
+      defaults[field.id] = values?.[field.id] ?? field.defaultValue ?? '';
+    }
   }
   return defaults;
 };
@@ -29,6 +40,7 @@ export const parseAdditionalFields = <T extends { additionalFields?: unknown }>(
     additionalFields: additionalFieldValuesSchema.parse(data.additionalFields),
   };
 };
+
 export const validateAdditionalFields =
   (name: string, config?: AdditionalFieldConfig[]) => (data: unknown, ctx: z.RefinementCtx) => {
     if (!config) return;
@@ -37,6 +49,9 @@ export const validateAdditionalFields =
     if (fieldValues === null || fieldValues === undefined) return;
     if (typeof fieldValues !== 'object' || Array.isArray(fieldValues)) return;
     for (const field of config) {
+      if (field.type === AdditionalFieldType.BOOLEAN) {
+        continue;
+      }
       if (field.type === AdditionalFieldType.SELECT) {
         if (
           fieldValues[field.id] &&

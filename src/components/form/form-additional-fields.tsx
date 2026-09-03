@@ -72,7 +72,7 @@ export function FormAdditionalFields({ config, name }: FormAdditionalFieldsProps
               />
             );
           case AdditionalFieldType.BOOLEAN:
-            return <FormSwitch key={fieldConfig.id} name={fieldName} label={label} />;
+            return <FormSwitch key={fieldConfig.id} name={fieldName} label={label} stringValue />;
           default:
             return null;
         }

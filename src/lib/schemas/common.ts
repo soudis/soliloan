@@ -316,6 +316,14 @@ export const additionalFieldConfigSchema = z
     ) {
       ctx.addIssue({ code: 'custom', message: 'validation.common.required', path: ['defaultValue'] });
     }
+  })
+  .transform((data) => {
+    if (data.type !== AdditionalFieldType.BOOLEAN) return data;
+    return {
+      ...data,
+      required: true,
+      defaultValue: data.defaultValue === 'true' ? 'true' : 'false',
+    };
   });
 
 export const additionalFieldConfigArraySchema = z.array(additionalFieldConfigSchema).optional().nullable();
