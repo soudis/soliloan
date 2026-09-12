@@ -2,7 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db';
-import { sendPasswordInvitationEmail, type LenderInviteContext } from '@/lib/email';
+import { type LenderInviteContext, sendPasswordInvitationEmail } from '@/lib/email';
+import { getInviteValidDays } from '@/lib/env';
 import { lenderIdSchema } from '@/lib/schemas/common';
 import { generateToken } from '@/lib/token';
 import { lenderAction } from '@/lib/utils/safe-action';
@@ -40,9 +41,8 @@ export const sendInvitationEmailAction = lenderAction
     // Generate a token for password reset
     const token = generateToken();
 
-    // Calculate expiration date (7 days from now)
     const expirationDate = new Date();
-    expirationDate.setHours(expirationDate.getHours() + 7 * 24);
+    expirationDate.setDate(expirationDate.getDate() + getInviteValidDays());
 
     // Update the user with the token and expiration date
     await db.user.update({

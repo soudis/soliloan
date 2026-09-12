@@ -54,6 +54,7 @@ model User {
   passwordResetTokenExpiresAt DateTime?
   forumDigestDelayMinutes     Int                     @default(60)
   forumDigestDueAt            DateTime?
+  inviteTokenExpiresAt        DateTime?
   failedLoginAttempts         Int                     @default(0)
   lockedUntil                 DateTime?
   accounts                    Account[]

@@ -4,6 +4,7 @@ import { Entity, Operation } from '@prisma/client';
 import { z } from 'zod';
 import { createAuditEntry, getManagerContext } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
+import { getInviteValidDays } from '@/lib/env';
 import { type ProjectManagerInviteContext, sendProjectManagerInvitationEmail } from '@/lib/email';
 import { loadProject } from '@/lib/projects/get-project';
 import { generateToken } from '@/lib/token';
@@ -41,7 +42,7 @@ export const addProjectManagerAction = projectAction
 
     const invitationToken = generateToken();
     const expirationDate = new Date();
-    expirationDate.setHours(expirationDate.getHours() + 7 * 24);
+    expirationDate.setDate(expirationDate.getDate() + getInviteValidDays());
 
     if (!user) {
       const password = 'test12345xy';
@@ -57,6 +58,7 @@ export const addProjectManagerAction = projectAction
           emailVerified: null,
           password: passwordHashed,
           inviteToken: invitationToken,
+          inviteTokenExpiresAt: expirationDate,
           passwordResetToken: invitationToken,
           passwordResetTokenExpiresAt: expirationDate,
           lastInvited: new Date(),
@@ -68,6 +70,7 @@ export const addProjectManagerAction = projectAction
         where: { id: user.id },
         data: {
           inviteToken: invitationToken,
+          inviteTokenExpiresAt: expirationDate,
           passwordResetToken: invitationToken,
           passwordResetTokenExpiresAt: expirationDate,
           lastInvited: new Date(),

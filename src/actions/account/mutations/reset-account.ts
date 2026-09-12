@@ -15,6 +15,7 @@ export const resetAccountAction = authAction.action(async ({ ctx: { session } })
         emailVerified: null,
         password: null,
         inviteToken: null,
+        inviteTokenExpiresAt: null,
         image: null,
         isAdmin: null,
         lastLogin: null,
