@@ -2,6 +2,7 @@ import {
   ContractStatus,
   Country,
   InterestMethod,
+  InterestPaymentType,
   NotificationType,
   PaymentType,
   Salutation,
@@ -75,6 +76,14 @@ export function buildLoanColumnFiltersMap(
     interestRate: { type: 'number', label: t('table.interestRate'), defaultOperator: 'eq' },
     interest: { type: 'number', label: t('table.interest') },
     interestPaid: { type: 'number', label: t('table.interestPaid') },
+    interestPaymentType: {
+      type: 'select',
+      label: t('table.interestPaymentType'),
+      options: Object.entries(InterestPaymentType).map(([key, value]) => ({
+        label: commonT(`enums.loan.interestPaymentType.${key}`),
+        value,
+      })),
+    },
     terminationType: {
       type: 'multi-select',
       label: t('table.terminationType'),

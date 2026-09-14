@@ -181,6 +181,10 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                     </span>
                   }
                 />
+                <InfoItem
+                  label={t('table.interestPaymentType')}
+                  value={commonT(`enums.loan.interestPaymentType.${loan.interestPaymentType}`)}
+                />
                 {loan.isSavingsContract && <SavingsContractInfoItem loan={loan} />}
               </div>
               <div className="space-y-3">

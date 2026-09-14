@@ -178,6 +178,10 @@
         "QUARTERLY": "Vierteljährlich",
         "ANNUALLY": "Jährlich"
       },
+      "interestPaymentType": {
+        "YEARLY": "Jährlich",
+        "END": "Ende der Laufzeit"
+      },
       "terminationType": {
         "TERMINATION": "Kündigungsfrist",
         "ENDDATE": "Laufzeit - Datum",

@@ -5,7 +5,7 @@ import { extname, join } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import type { Prisma, PrismaClient } from '@prisma/client';
-import { Country, InterestMethod } from '@prisma/client';
+import { Country, InterestMethod, InterestPaymentType } from '@prisma/client';
 import AdmZip from 'adm-zip';
 import { isAfter } from 'date-fns';
 import { normalizeStoredEmail } from '@/lib/utils/email';
@@ -18,6 +18,8 @@ import {
   mapContractStatus,
   mapCountry,
   mapInterestMethod,
+  mapInterestPaymentType,
+  parseInterestPaymentType,
   mapLenderNames,
   mapLenderType,
   mapLoanPeriodFields,
@@ -367,6 +369,8 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
         const contractToLoanMap = new Map<number, string>();
         const contractToUserIdMap = new Map<number, number>();
         let loanCount = 0;
+        const defaultInterestPaymentType =
+          parseInterestPaymentType(projectInfo.defaults?.interest_payment_type) ?? InterestPaymentType.END;
 
         for (const contract of data.contract) {
           const lenderId = userToLenderMap.get(contract.user_id);
@@ -427,6 +431,12 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
               ...periodFields,
               amount: contract.amount,
               interestRate,
+              interestPaymentType: mapInterestPaymentType(
+                contract.interest_payment_type,
+                defaultInterestPaymentType,
+                warnings,
+                contract.id,
+              ),
               altInterestMethod: mapInterestMethod(contract.interest_method, warnings, contract.id),
               contractStatus: mapContractStatus(contract.status),
             },

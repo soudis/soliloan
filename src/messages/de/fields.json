@@ -45,6 +45,7 @@
     "terminationDate": "Kündigungsdatum (kurz)",
     "terminationDateLong": "Kündigungsdatum (lang)",
     "terminationType": "Kündigungsart",
+    "interestPaymentType": "Zinsauszahlungsart",
     "contractStatus": "Vertragsstatus",
     "isSavingsContract": "Ansparvertrag",
     "savingsRateType": "Einzahlungsart",

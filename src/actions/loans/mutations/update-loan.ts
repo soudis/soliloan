@@ -70,6 +70,7 @@ export const updateLoanAction = loanAction
         signDate: data.signDate ?? new Date(),
         amount: data.amount,
         interestRate: data.interestRate,
+        interestPaymentType: data.interestPaymentType,
         terminationType: data.terminationType,
         endDate: data.endDate,
         terminationPeriod: data.terminationPeriod,

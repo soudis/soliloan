@@ -69,6 +69,7 @@ export function LoanForm({
     signDate: initialData?.signDate || '',
     amount: formatNumber(initialData?.amount) || ('' as const),
     interestRate: formatNumber(initialData?.interestRate, 0, 3) || ('' as const),
+    interestPaymentType: initialData?.interestPaymentType || 'YEARLY',
     altInterestMethod: initialData?.altInterestMethod || null,
     contractStatus: initialData?.contractStatus || 'PENDING',
     terminationType: initialData?.terminationType || 'TERMINATION',
