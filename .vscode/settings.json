@@ -16,5 +16,8 @@
   },
   "files.exclude": {
     "**/.git": false
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
   }
 }
