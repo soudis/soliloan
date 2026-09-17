@@ -20,31 +20,36 @@ export const loanIdSchema = z.object({ loanId: idSchema });
 export const transactionIdSchema = z.object({ transactionId: idSchema });
 
 // Generic number schemas
+const parseNumberInput = (parser: NumberParser, val: unknown) => {
+  if (val === '' || val === null || val === undefined) return null;
+  if (typeof val === 'number') return Number.isFinite(val) ? val : null;
+  return parser.parse(String(val));
+};
+
 export const createNumberSchema = (min?: number, errorMessage = 'validation.common.required') => {
   const parser = new NumberParser('de-DE');
-  return min
+  // min can be 0 (e.g. 0% interest); don't treat it as missing
+  return min != null
     ? z.preprocess(
-        (val) => (val === '' ? null : parser.parse(val as string)),
+        (val) => parseNumberInput(parser, val),
         z.coerce.number({ message: errorMessage }).min(min, validationError('validation.common.numberMin', { min })),
       )
-    : z.preprocess(
-        (val) => (val === '' ? null : parser.parse(val as string)),
-        z.coerce.number({ message: errorMessage }),
-      );
+    : z.preprocess((val) => parseNumberInput(parser, val), z.coerce.number({ message: errorMessage }));
 };
 
 export const createNumberSchemaRequired = (min?: number, errorMessage = 'validation.common.required') => {
   const parser = new NumberParser('de-DE');
-  return min
+  // min can be 0 (e.g. 0% interest); don't treat it as missing
+  return min != null
     ? z.preprocess(
-        (val) => (val === '' ? null : parser.parse(val as string)),
+        (val) => parseNumberInput(parser, val),
         z
           .number({ message: errorMessage })
           .min(min, validationError('validation.common.numberMin', { min }))
           .refine((val) => val !== null, { message: errorMessage }),
       )
     : z.preprocess(
-        (val) => (val === '' ? null : parser.parse(val as string)),
+        (val) => parseNumberInput(parser, val),
         z.number({ message: errorMessage }).refine((val) => val !== null, { message: errorMessage }),
       );
 };
