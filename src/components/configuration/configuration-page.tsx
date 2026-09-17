@@ -1,7 +1,7 @@
 'use client';
 
 import type { BankConnection } from '@prisma/client';
-import { Files as FilesIcon, FileText, Settings2, User, UserCog, Wallet } from 'lucide-react';
+import { Files as FilesIcon, FileText, Scale, Settings2, User, UserCog, Wallet } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
@@ -15,12 +15,13 @@ import type { ProjectWithConfiguration } from '@/types/projects';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ConfigurationFormGeneral } from './configuration-form-general';
 
+import { ConfigurationFormLegal } from './configuration-form-legal';
 import { ConfigurationFormLender } from './configuration-form-lender';
 import { ConfigurationFormLoans } from './configuration-form-loans';
 import { ConfigurationFormManagers } from './configuration-form-managers';
 import { ProjectTemplatesTab } from './project-templates-tab';
 
-export type ConfigurationTabValue = 'general' | 'lender' | 'loans' | 'templates' | 'files';
+export type ConfigurationTabValue = 'general' | 'managers' | 'lender' | 'loans' | 'legal' | 'templates' | 'files';
 
 type Props = {
   project: ProjectWithConfiguration;
@@ -40,7 +41,9 @@ export const ConfigurationPage = ({
   const t = useTranslations('dashboard.configuration');
   const [activeTab, setActiveTab] = useQueryState(
     'tab',
-    parseAsStringLiteral(['general', 'lender', 'loans', 'templates', 'files'] as const).withDefault('general'),
+    parseAsStringLiteral(['general', 'managers', 'lender', 'loans', 'legal', 'templates', 'files'] as const).withDefault(
+      'general',
+    ),
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -85,6 +88,10 @@ export const ConfigurationPage = ({
           <Wallet className="h-5 w-5 md:h-4 md:w-4" />
           <span>{t('tabs.loans')}</span>
         </TabsTrigger>
+        <TabsTrigger value="legal" variant="modern">
+          <Scale className="h-5 w-5 md:h-4 md:w-4" />
+          <span>{t('tabs.legal')}</span>
+        </TabsTrigger>
         <TabsTrigger value="templates" variant="modern">
           <FileText className="h-5 w-5 md:h-4 md:w-4" />
           <span>{t('tabs.templates')}</span>
@@ -119,11 +126,17 @@ export const ConfigurationPage = ({
         <ConfigurationFormLoans
           onSubmit={handleSubmit}
           project={project}
-          germanLoansCount={germanLoansCount}
           hasHistoricTransactions={project.hasHistoricTransactions}
           initialData={project.configuration}
           isLoading={isExecuting}
           error={error}
+        />
+      </TabsContent>
+      <TabsContent value="legal">
+        <ConfigurationFormLegal
+          projectId={project.id}
+          germanLoansCount={germanLoansCount}
+          initialEnabled={project.configuration.deInvestmentActCompliance}
         />
       </TabsContent>
       <TabsContent value="templates">
