@@ -51,8 +51,10 @@ export const LenderPage = ({ lender }: Props) => {
 
   return (
     <div className="flex flex-col gap-6 mb-256">
-      <div className="lg:sticky lg:top-0 lg:z-30 lg:-mx-6 lg:px-6 lg:pb-4 lg:bg-transparent lg:backdrop-blur-sm lg:border-b lg:border-border/60">
-        <LenderPageHeader lender={lender} />
+      <div className="lg:pointer-events-none lg:sticky lg:top-0 lg:z-30 lg:-mx-6 lg:px-6 lg:pb-4 lg:bg-transparent lg:backdrop-blur-sm lg:border-b lg:border-border/60">
+        <div className="lg:pointer-events-auto">
+          <LenderPageHeader lender={lender} />
+        </div>
       </div>
 
       {/* Mobile/Tablet: horizontal nav bar */}

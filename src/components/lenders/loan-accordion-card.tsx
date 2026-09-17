@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, Pencil, ShieldX, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
-import { useEffect, useRef, useState } from 'react';
+import { type KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { deleteLoanAction, revertTerminateLoanAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
@@ -74,6 +74,14 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
     }
   };
 
+  const toggleOpen = () => setIsOpen((prev) => !prev);
+
+  const handleHeaderKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    toggleOpen();
+  };
+
   const handleRevertTermination = async () => {
     const toastId = toast.loading(t('terminate.revertLoading'));
     try {
@@ -94,34 +102,38 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
       ref={cardRef}
       className="scroll-mt-24 rounded-lg border border-border bg-card text-card-foreground shadow-none"
     >
-      {/* Collapsible header */}
-      <div className="flex w-full items-center p-4 gap-2">
-        {/** biome-ignore lint/a11y/useKeyWithClickEvents: needed */}
-        <div
-          onClick={() => setIsOpen((prev) => !prev)}
-          className="flex flex-row items-center justify-between text-left cursor-pointer w-full"
-        >
-          <div className="flex flex-col gap-1 min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold">
-                {t('table.loanNumberShort')} #{loan.loanNumber}
-              </span>
-            </div>
-            <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
-              <span>{formatCurrency(loan.amount)}</span>
-              <span>·</span>
-              <span>{formatPercentage(loan.interestRate)}</span>
-              <span>·</span>
-              <span>{formatDateShort(loan.signDate, locale)}</span>
-            </div>
+      {/* Entire header toggles; only the action controls stop the click */}
+      <div
+        role="button"
+        tabIndex={0}
+        aria-expanded={isOpen}
+        aria-label={isOpen ? t('accordion.collapse') : t('accordion.expand')}
+        onClick={toggleOpen}
+        onKeyDown={handleHeaderKeyDown}
+        className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 p-4 cursor-pointer"
+      >
+        <div className="flex min-w-0 flex-col gap-1 text-left">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold">
+              {t('table.loanNumberShort')} #{loan.loanNumber}
+            </span>
           </div>
-          <div className="flex items-center justify-center">
-            <LoanStatusBadge status={loan.status} />
+          <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+            <span>{formatCurrency(loan.amount)}</span>
+            <span>·</span>
+            <span>{formatPercentage(loan.interestRate)}</span>
+            <span>·</span>
+            <span>{formatDateShort(loan.signDate, locale)}</span>
           </div>
-          {/* biome-ignore lint/a11y/useKeyWithClickEvents: toolbar only stops accordion toggle propagation */}
+        </div>
+        <div className="flex items-center justify-center">
+          <LoanStatusBadge status={loan.status} />
+        </div>
+        <div className="flex items-center justify-end gap-1">
           <div
-            className="flex gap-1 shrink-0 ml-auto items-center justify-end flex-1"
-            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1"
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => event.stopPropagation()}
           >
             <TemplateQuickActions
               projectId={loan.lender.projectId}
@@ -134,10 +146,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={(e) => {
-                e.stopPropagation();
-                router.push(`/loans/${loan.id}/edit`);
-              }}
+              onClick={() => router.push(`/loans/${loan.id}/edit`)}
             >
               <Pencil className="h-3.5 w-3.5" />
               <span className="sr-only">{commonT('ui.actions.edit')}</span>
@@ -145,21 +154,24 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
             <Button
               variant="ghost"
               size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsConfirmOpen(true);
-              }}
+              onClick={() => setIsConfirmOpen(true)}
               className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/5"
             >
               <Trash2 className="h-3.5 w-3.5" />
               <span className="sr-only">{commonT('ui.actions.delete')}</span>
             </Button>
-            <ChevronDown
-              className={cn(
-                'ml-2 h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200',
-                isOpen && 'rotate-180',
-              )}
-            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              aria-expanded={isOpen}
+              aria-label={isOpen ? t('accordion.collapse') : t('accordion.expand')}
+              onClick={toggleOpen}
+            >
+              <ChevronDown
+                className={cn('h-3.5 w-3.5 transition-transform duration-200', isOpen && 'rotate-180')}
+              />
+            </Button>
           </div>
         </div>
       </div>
