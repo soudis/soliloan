@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
 import { ChevronDown, Mail, Phone } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import type { KeyboardEvent } from 'react';
 
 import { ProjectLogo } from '@/components/dashboard/project-logo';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
@@ -37,6 +38,12 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
     onOpenChange(!isOpen);
   };
 
+  const handleHeaderKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    handleToggle();
+  };
+
   const getTerminationModalities = () => formatTerminationModalities(loan, commonT, (d) => formatDateShort(d, locale));
 
   const lender = loan.lender;
@@ -53,10 +60,17 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
 
   return (
     <div className="scroll-mt-24 rounded-lg border border-border bg-card text-card-foreground shadow-none">
-      <div className="flex w-full items-stretch gap-3 p-4 md:p-5">
-        {/** biome-ignore lint/a11y/useKeyWithClickEvents: accordion */}
-        <div onClick={handleToggle} className="flex flex-1 flex-col gap-3 cursor-pointer min-w-0 text-left">
-          <div className="flex flex-wrap items-center gap-3">
+      <div
+        role="button"
+        tabIndex={0}
+        aria-expanded={isOpen}
+        aria-label={isOpen ? t('accordion.collapse') : t('accordion.expand')}
+        onClick={handleToggle}
+        onKeyDown={handleHeaderKeyDown}
+        className="flex flex-col gap-3 p-4 md:p-5 cursor-pointer"
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-3 text-left">
             <ProjectLogo
               project={project}
               className="h-14 w-14 md:h-16 md:w-16 rounded-2xl border border-border shrink-0"
@@ -83,47 +97,45 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
                 )}
               </div>
             </div>
-            {/* biome-ignore lint/a11y/useKeyWithClickEvents: toolbar stops accordion toggle only */}
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              className="flex items-center gap-2"
-            >
-              {projectEmail && (
-                <Button asChild variant="outline" size="sm" className="h-9 px-3 sm:px-3">
-                  <a href={`mailto:${projectEmail}`}>
-                    <Mail className="h-4 w-4 shrink-0" />
-                    <span className="hidden sm:ml-2 sm:inline">{tMy('contact')}</span>
-                    <span className="sr-only sm:hidden">{tMy('contact')}</span>
-                  </a>
-                </Button>
-              )}
-              <TemplateQuickActions
-                lenderSelfService
-                projectId={lender.projectId}
-                mode="loan"
-                lenderId={lender.id}
-                loanId={loan.id}
-                density="default"
-              />
-            </div>
           </div>
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-t pt-3">
-            <div>
-              <div className="text-xs text-muted-foreground">{tMy('balance')}</div>
-              <div className="text-xl font-semibold tabular-nums">{formatCurrency(loan.balance)}</div>
-            </div>
-            <ChevronDown
-              className={cn(
-                'h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200',
-                isOpen && 'rotate-180',
-              )}
-              aria-hidden
+          <div
+            className="flex items-center gap-2"
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => event.stopPropagation()}
+          >
+            {projectEmail && (
+              <Button asChild variant="outline" size="sm" className="h-9 px-3 sm:px-3">
+                <a href={`mailto:${projectEmail}`}>
+                  <Mail className="h-4 w-4 shrink-0" />
+                  <span className="hidden sm:ml-2 sm:inline">{tMy('contact')}</span>
+                  <span className="sr-only sm:hidden">{tMy('contact')}</span>
+                </a>
+              </Button>
+            )}
+            <TemplateQuickActions
+              lenderSelfService
+              projectId={lender.projectId}
+              mode="loan"
+              lenderId={lender.id}
+              loanId={loan.id}
+              density="default"
             />
-            <div className="justify-self-end">
-              <LoanStatusBadge status={loan.status} />
-            </div>
+          </div>
+        </div>
+        <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 border-t pt-3">
+          <div className="text-left">
+            <div className="text-xs text-muted-foreground">{tMy('balance')}</div>
+            <div className="text-xl font-semibold tabular-nums">{formatCurrency(loan.balance)}</div>
+          </div>
+          <ChevronDown
+            className={cn(
+              'h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200',
+              isOpen && 'rotate-180',
+            )}
+            aria-hidden
+          />
+          <div className="justify-self-end">
+            <LoanStatusBadge status={loan.status} />
           </div>
         </div>
       </div>

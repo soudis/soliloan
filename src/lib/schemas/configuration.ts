@@ -57,6 +57,9 @@ export const configurationFormLoanSchema = z.object({
   interestMethod: interestMethodEnumRequired,
   altInterestMethods: z.array(z.enum(InterestMethod)).default([]).optional(),
   loanAdditionalFields: z.array(additionalFieldConfigSchema).default([]).optional(),
+});
+
+export const configurationFormLegalSchema = z.object({
   deInvestmentActCompliance: z.coerce.boolean().default(false),
 });
 
@@ -69,6 +72,7 @@ export const configurationFormSchema = z.union([
 export type ConfigurationFormGeneralData = z.infer<typeof configurationFormGeneralSchema>;
 export type ConfigurationFormLenderData = z.infer<typeof configurationFormLenderSchema>;
 export type ConfigurationFormLoanData = z.infer<typeof configurationFormLoanSchema>;
+export type ConfigurationFormLegalData = z.infer<typeof configurationFormLegalSchema>;
 export type LoanTemplateFormData = z.infer<typeof loanTemplateFormSchema>;
 
 export type ConfigurationFormData = z.infer<typeof configurationFormSchema>;

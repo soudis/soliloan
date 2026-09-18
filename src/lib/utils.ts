@@ -192,14 +192,15 @@ export class NumberParser {
     this.decimalSymbol = parts.find((part) => part.type === 'decimal')?.value ?? ',';
   }
 
-  parse(localizedNumber: string): number | null {
+  parse(localizedNumber: string | number): number | null {
+    if (typeof localizedNumber === 'number') {
+      return Number.isFinite(localizedNumber) ? localizedNumber : null;
+    }
     if (!localizedNumber) {
       return null;
     }
 
-    return typeof localizedNumber === 'string'
-      ? Number(localizedNumber.replaceAll(this.groupSymbol, '').replaceAll(this.decimalSymbol, '.'))
-      : localizedNumber;
+    return Number(localizedNumber.replaceAll(this.groupSymbol, '').replaceAll(this.decimalSymbol, '.'));
   }
 
   strip(localizedNumber: string): string {

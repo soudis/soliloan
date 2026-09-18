@@ -295,7 +295,7 @@ export function TemplateQuickActions({
 
     return (
       <>
-        <DropdownMenu modal>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button
               type="button"
@@ -468,7 +468,7 @@ export function TemplateQuickActions({
         )}
       >
         {docTemplates.length > 0 && (
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button
                 type="button"
@@ -496,7 +496,7 @@ export function TemplateQuickActions({
         )}
 
         {emailTemplates.length > 0 && (
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button
                 type="button"
