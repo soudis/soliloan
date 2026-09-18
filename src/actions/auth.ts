@@ -1,9 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-
+import { tokenExpiryForUser } from '@/lib/auth-set-password';
 import { db } from '@/lib/db';
 import { sendPasswordResetEmail } from '@/lib/email';
+import { userNameSchema } from '@/lib/schemas/account';
 import { passwordSchema } from '@/lib/schemas/common';
 import { generateToken } from '@/lib/token';
 import { normalizeStoredEmail } from '@/lib/utils/email';
@@ -16,9 +17,10 @@ const PASSWORD_RESET_COOLDOWN_MS = 5 * 60 * 1000;
  * Set a user's password using a token
  * @param token The password reset token
  * @param password The new password
+ * @param name Display name, required when the user has no name yet (new manager invite)
  * @returns Object with success status and message
  */
-export async function setPassword(token: string, password: string) {
+export async function setPassword(token: string, password: string, name?: string) {
   try {
     if (!passwordSchema.safeParse(password).success) {
       return { success: false, error: 'validation.account.passwordMinLength' };
@@ -37,10 +39,20 @@ export async function setPassword(token: string, password: string) {
     }
 
     // A missing expiry counts as expired, so a token can never outlive its window.
-    const expiresAt = user.passwordResetToken === token ? user.passwordResetTokenExpiresAt : user.inviteTokenExpiresAt;
+    const expiresAt = tokenExpiryForUser(user, token);
 
     if (!expiresAt || expiresAt < new Date()) {
       return { success: false, error: 'Token has expired' };
+    }
+
+    const needsName = user.name.trim().length === 0;
+    let nextName = user.name;
+    if (needsName) {
+      const parsedName = userNameSchema.safeParse(name);
+      if (!parsedName.success) {
+        return { success: false, error: 'validation.account.nameRequired' };
+      }
+      nextName = parsedName.data;
     }
 
     // Hash the new password
@@ -50,6 +62,7 @@ export async function setPassword(token: string, password: string) {
     await db.user.update({
       where: { id: user.id },
       data: {
+        name: nextName,
         inviteToken: null,
         inviteTokenExpiresAt: null,
         password: hashedPassword,

@@ -369,6 +369,10 @@
     "publicLender": "Für Kreditgeber*innen verfügbar",
     "duplicated": "Vorlage dupliziert",
     "deleted": "Vorlage gelöscht",
+    "restoredFromFile": "Vorlage aus Datei geladen",
+    "restoreAllFromFileSuccess": "{count, plural, one {# Systemvorlage aus Datei geladen} other {# Systemvorlagen aus Datei geladen}}",
+    "restoreAllFromFilePartial": "{restored} von {total} Systemvorlagen aus Datei geladen",
+    "restoreAllFromFileNone": "Keine Systemvorlage konnte aus einer Datei geladen werden",
     "columns": {
       "name": "Name",
       "type": "Typ",
@@ -383,7 +387,22 @@
       "duplicate": "Duplizieren",
       "duplicateTooltip": "Erzeugt eine zusätzliche Kopie dieser Vorlage im gleichen Projekt.",
       "delete": "Löschen",
-      "deleteTooltip": "Löscht die Vorlage unwiderruflich aus dem Projekt."
+      "deleteTooltip": "Löscht die Vorlage unwiderruflich aus dem Projekt.",
+      "restoreFromFile": "Aus Datei laden",
+      "restoreFromFileTooltip": "Ersetzt Design und Betreff bzw. Dateiname durch die Repository-Datei dieser Systemvorlage.",
+      "restoreAllFromFile": "Alle aus Datei laden"
+    },
+    "restoreFromFileDialog": {
+      "title": "Vorlage aus Datei laden?",
+      "description": "Das aktuelle Design von \"{name}\" wird durch die Datei im Repository ersetzt. Änderungen an dieser Vorlage in der Datenbank gehen verloren.",
+      "cancel": "Abbrechen",
+      "confirm": "Aus Datei laden"
+    },
+    "restoreAllFromFileDialog": {
+      "title": "Alle Systemvorlagen aus Datei laden?",
+      "description": "Design und Betreff bzw. Dateiname aller globalen Systemvorlagen werden durch die Dateien im Repository ersetzt. Änderungen an diesen Vorlagen in der Datenbank gehen verloren.",
+      "cancel": "Abbrechen",
+      "confirm": "Alle laden"
     },
     "deleteDialog": {
       "title": "Vorlage löschen",

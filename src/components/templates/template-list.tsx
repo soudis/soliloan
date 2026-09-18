@@ -2,13 +2,14 @@
 
 import type { CommunicationTemplate } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Copy, Edit, FileText, Mail, Trash2 } from 'lucide-react';
+import { Copy, Edit, FileText, FolderSync, Mail, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { deleteTemplateAction } from '@/actions/templates/mutations/delete-template';
 import { duplicateTemplateAction } from '@/actions/templates/mutations/duplicate-template';
+import { restoreSystemTemplateFromFileAction } from '@/actions/templates/mutations/restore-system-template-from-file';
 import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
@@ -33,9 +34,14 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
   const currentProjectId = useProjectId();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<Pick<CommunicationTemplate, 'id' | 'name'> | null>(null);
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+  const [templateToRestore, setTemplateToRestore] = useState<Pick<CommunicationTemplate, 'id' | 'name'> | null>(null);
 
   const { executeAsync: deleteTemplate } = useAction(deleteTemplateAction);
   const { executeAsync: duplicateTemplate } = useAction(duplicateTemplateAction);
+  const { executeAsync: restoreFromFile, isExecuting: isRestoringFromFile } = useAction(
+    restoreSystemTemplateFromFileAction,
+  );
 
   const handleOpenTemplate = useCallback(
     (template: Pick<CommunicationTemplate, 'id' | 'isGlobal'>) => {
@@ -71,6 +77,11 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
     setDeleteDialogOpen(true);
   }, []);
 
+  const handleRestoreFromFileClick = useCallback((template: Pick<CommunicationTemplate, 'id' | 'name'>) => {
+    setTemplateToRestore(template);
+    setRestoreDialogOpen(true);
+  }, []);
+
   const tableData = useMemo(() => {
     if (externalTemplates !== undefined) return externalTemplates;
     const list = project?.templates ?? [];
@@ -98,6 +109,24 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
 
     setDeleteDialogOpen(false);
     setTemplateToDelete(null);
+  };
+
+  const handleRestoreFromFileConfirm = async () => {
+    if (!templateToRestore) return;
+
+    const result = await restoreFromFile({
+      templateId: templateToRestore.id,
+    });
+
+    if (result?.serverError) {
+      toast.error(result.serverError);
+    } else {
+      toast.success(t('list.restoredFromFile'));
+      router.refresh();
+    }
+
+    setRestoreDialogOpen(false);
+    setTemplateToRestore(null);
   };
 
   const columns = useMemo<ColumnDef<CommunicationTemplateWithProject>[]>(
@@ -193,6 +222,19 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
             </TooltipContent>
           </Tooltip>
         ) : null}
+        {isAdmin && row.isSystem && row.systemKey ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuItem disabled={isRestoringFromFile} onClick={() => handleRestoreFromFileClick(row)}>
+                <FolderSync className="h-4 w-4 mr-2" />
+                {t('list.actions.restoreFromFile')}
+              </DropdownMenuItem>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="max-w-xs">
+              {t('list.actions.restoreFromFileTooltip')}
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
         {(!row.isSystem || project) && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -211,7 +253,16 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
         )}
       </>
     ),
-    [project, t, handleOpenTemplate, handleDuplicate, handleDeleteClick],
+    [
+      project,
+      isAdmin,
+      t,
+      handleOpenTemplate,
+      handleDuplicate,
+      handleDeleteClick,
+      handleRestoreFromFileClick,
+      isRestoringFromFile,
+    ],
   );
 
   return (
@@ -237,6 +288,15 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
         description={t('list.deleteDialog.description', { name: templateToDelete?.name ?? '' })}
         confirmText={t('list.deleteDialog.confirm')}
         cancelText={t('list.deleteDialog.cancel')}
+      />
+      <ConfirmDialog
+        open={restoreDialogOpen}
+        onOpenChange={setRestoreDialogOpen}
+        onConfirm={handleRestoreFromFileConfirm}
+        title={t('list.restoreFromFileDialog.title')}
+        description={t('list.restoreFromFileDialog.description', { name: templateToRestore?.name ?? '' })}
+        confirmText={t('list.restoreFromFileDialog.confirm')}
+        cancelText={t('list.restoreFromFileDialog.cancel')}
       />
     </>
   );

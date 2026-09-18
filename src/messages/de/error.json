@@ -36,6 +36,9 @@
     "notFound": "Vorlage nicht gefunden.",
     "systemCannotDelete": "Systemvorlagen können nicht gelöscht werden.",
     "systemFieldsOnly": "Bei Systemvorlagen sind nur Betreff/Dateiname änderbar.",
+    "cannotRestoreFromFile": "Diese Vorlage kann nicht aus einer Datei geladen werden.",
+    "systemDesignFileNotFound": "Die Vorlagendatei für diese Systemvorlage wurde nicht gefunden.",
+    "systemDesignFileInvalid": "Die Vorlagendatei für diese Systemvorlage ist ungültig.",
     "quickActionMissingContext": "Es fehlen Angaben für diese Vorlage (z. B. Jahr)."
   },
   "account": {
