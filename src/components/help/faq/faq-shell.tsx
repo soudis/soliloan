@@ -5,8 +5,8 @@ import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import { HelpSearch } from '@/components/help/help-search';
-import { Button } from '@/components/ui/button';
-import { Link } from '@/i18n/navigation';
+import { ActionButton } from '@/components/ui/action-button';
+import { useRouter } from '@/i18n/navigation';
 import type { FaqToc } from '@/types/faq';
 
 import { FaqCategoryDialog } from './faq-category-dialog';
@@ -20,6 +20,7 @@ type FaqShellProps = {
 
 export function FaqShell({ toc, isAdmin, children }: FaqShellProps) {
   const t = useTranslations('help.faqPage');
+  const router = useRouter();
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -30,12 +31,13 @@ export function FaqShell({ toc, isAdmin, children }: FaqShellProps) {
           {isAdmin ? (
             <>
               <FaqCategoryDialog categories={toc.categories} />
-              <Button asChild size="sm">
-                <Link href="/help/faq/new">
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t('newArticle')}
-                </Link>
-              </Button>
+              <ActionButton
+                intent="add"
+                density="header"
+                icon={<Plus className="h-4 w-4" />}
+                label={t('newArticle')}
+                onClick={() => router.push('/help/faq/new')}
+              />
             </>
           ) : null}
         </div>

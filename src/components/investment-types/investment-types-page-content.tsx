@@ -3,11 +3,10 @@
 import { type InvestmentType, LimitationType, type Loan, type View, ViewType } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Plus } from 'lucide-react';
-import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
-import { Button } from '@/components/ui/button';
+import { ActionButton } from '@/components/ui/action-button';
 import { DataTable } from '@/components/ui/data-table';
 import { DatePickerInput } from '@/components/ui/date-picker-input';
 import { useRouter } from '@/i18n/navigation';
@@ -194,12 +193,13 @@ export function InvestmentTypesPageContent({ investmentTypes, project, views, vi
           <h1 className="text-3xl font-bold">{t('title')}</h1>
           <p className="mt-0.5 text-base font-normal text-muted-foreground">{selectedViewName ?? t('description')}</p>
         </div>
-        <Button asChild>
-          <Link href={`/investment-types/new?projectId=${project.id}`}>
-            <Plus className="w-4 h-4 mr-2" />
-            {t('create')}
-          </Link>
-        </Button>
+        <ActionButton
+          intent="add"
+          density="header"
+          icon={<Plus className="h-4 w-4" />}
+          label={t('create')}
+          onClick={() => router.push(`/investment-types/new?projectId=${project.id}`)}
+        />
       </div>
 
       <DataTable

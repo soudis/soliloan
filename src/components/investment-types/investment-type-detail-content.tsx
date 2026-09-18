@@ -11,6 +11,7 @@ import { createContext, type ReactNode, useContext, useMemo, useState } from 're
 import { toast } from 'sonner';
 import { deleteInvestmentTypeAction } from '@/actions/investment-types';
 import { LoanStatusBadge } from '@/components/loans/loan-status-badge';
+import { ActionButton } from '@/components/ui/action-button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -184,16 +185,20 @@ export function InvestmentTypeDetailContent({ investmentType, project }: Props) 
           <h1 className="truncate text-3xl font-bold">{pageTitle}</h1>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <Button variant="outline" asChild>
-            <Link href={`/investment-types/${investmentType.id}/edit?projectId=${project.id}`}>
-              <Pencil className="w-4 h-4 mr-2" />
-              {t('detail.edit')}
-            </Link>
-          </Button>
-          <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
-            <Trash2 className="w-4 h-4 mr-2" />
-            {t('detail.delete')}
-          </Button>
+          <ActionButton
+            intent="edit"
+            density="header"
+            icon={<Pencil className="h-4 w-4" />}
+            label={t('detail.edit')}
+            onClick={() => router.push(`/investment-types/${investmentType.id}/edit?projectId=${project.id}`)}
+          />
+          <ActionButton
+            intent="delete"
+            density="header"
+            icon={<Trash2 className="h-4 w-4" />}
+            label={t('detail.delete')}
+            onClick={() => setShowDeleteDialog(true)}
+          />
         </div>
       </div>
 

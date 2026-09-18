@@ -251,7 +251,7 @@ export function SandboxClient() {
 
       {/* ActionButton */}
       <Section title="ActionButton">
-        <Showcase label="Varianten">
+        <Showcase label="Icon (ghost)">
           <ActionButton icon={<Pencil className="h-4 w-4" />} tooltip="Bearbeiten" onClick={() => {}} />
           <ActionButton
             icon={<Trash2 className="h-4 w-4" />}
@@ -265,6 +265,12 @@ export function SandboxClient() {
             onClick={() => {}}
             disabled
           />
+        </Showcase>
+        <Showcase label="Header">
+          <ActionButton intent="add" density="header" icon={<Plus className="h-4 w-4" />} label="Hinzufügen" />
+          <ActionButton intent="neutral" density="header" icon={<Pencil className="h-4 w-4" />} label="Download" />
+          <ActionButton intent="edit" density="header" icon={<Pencil className="h-4 w-4" />} label="Bearbeiten" />
+          <ActionButton intent="delete" density="header" icon={<Trash2 className="h-4 w-4" />} label="Löschen" />
         </Showcase>
       </Section>
     </div>

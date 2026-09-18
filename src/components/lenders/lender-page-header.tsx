@@ -6,20 +6,25 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { deleteLenderAction } from '@/actions/lenders/mutations/delete-lender';
+import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
+import { ActionButton } from '@/components/ui/action-button';
 import { useRouter } from '@/i18n/navigation';
 import { getLenderName } from '@/lib/utils';
 import type { LenderWithCalculations } from '@/types/lenders';
-import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { ConfirmDialog } from '../generic/confirm-dialog';
-import { Button } from '../ui/button';
+import { AddEntityMenu } from './add-entity-menu';
 
 interface LenderPageHeaderProps {
   lender: LenderWithCalculations;
+  onAddNote: () => void;
+  onAddFile: () => void;
 }
 
-export function LenderPageHeader({ lender }: LenderPageHeaderProps) {
+export function LenderPageHeader({ lender, onAddNote, onAddFile }: LenderPageHeaderProps) {
   const t = useTranslations('dashboard.lenders');
   const commonT = useTranslations('common');
+  const notesT = useTranslations('dashboard.notes');
+  const filesT = useTranslations('dashboard.files');
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -54,24 +59,31 @@ export function LenderPageHeader({ lender }: LenderPageHeaderProps) {
       </div>
       <div className="flex gap-2 mt-2 sm:mt-0 flex-wrap items-center justify-end">
         <TemplateQuickActions projectId={lender.projectId} mode="lender" lenderId={lender.id} />
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-9 w-9 p-0 sm:h-auto sm:w-auto sm:px-3 sm:py-1.5"
+        <AddEntityMenu
+          items={[
+            {
+              id: 'loan',
+              label: commonT('terms.loan'),
+              onSelect: () => router.push(`/loans/new?lenderId=${lender.id}`),
+            },
+            { id: 'note', label: notesT('text'), onSelect: onAddNote },
+            { id: 'file', label: filesT('file'), onSelect: onAddFile },
+          ]}
+        />
+        <ActionButton
+          intent="edit"
+          density="header"
+          icon={<Pencil className="h-4 w-4" />}
+          label={commonT('ui.actions.edit')}
           onClick={() => router.push(`/lenders/${lender.id}/edit`)}
-        >
-          <Pencil className="h-4 w-4 sm:mr-2" />
-          <span className="hidden sm:inline">{commonT('ui.actions.edit')}</span>
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
+        />
+        <ActionButton
+          intent="delete"
+          density="header"
+          icon={<Trash2 className="h-4 w-4" />}
+          label={commonT('ui.actions.delete')}
           onClick={() => setIsConfirmOpen(true)}
-          className="h-9 w-9 p-0 sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 text-destructive hover:text-destructive/90 border-destructive/50 hover:bg-destructive/5"
-        >
-          <Trash2 className="h-4 w-4 sm:mr-2" />
-          <span className="hidden sm:inline">{commonT('ui.actions.delete')}</span>
-        </Button>
+        />
       </div>
 
       <ConfirmDialog

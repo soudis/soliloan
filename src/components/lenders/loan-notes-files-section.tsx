@@ -2,36 +2,36 @@
 
 import { Files as FilesIcon, NotebookPen } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { LenderDetailsWithCalculations } from '@/types/lenders';
+import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { Files } from '../generic/files';
 import { Notes } from '../generic/notes';
 import { AddTypeButton } from './add-entity-menu';
 
-interface LenderNotesFilesSectionProps {
-  lender: LenderDetailsWithCalculations;
+interface LoanNotesFilesSectionProps {
+  loan: LoanDetailsWithCalculations;
   onAddNote: () => void;
   onAddFile: () => void;
 }
 
-export function LenderNotesFilesSection({ lender, onAddNote, onAddFile }: LenderNotesFilesSectionProps) {
-  const t = useTranslations('dashboard.lenders.lenderPage');
+export function LoanNotesFilesSection({ loan, onAddNote, onAddFile }: LoanNotesFilesSectionProps) {
+  const t = useTranslations('dashboard.loans');
   const notesT = useTranslations('dashboard.notes');
   const filesT = useTranslations('dashboard.files');
 
   return (
-    <div id="notes-files" className="scroll-mt-24 grid grid-cols-1 gap-8 lg:grid-cols-2">
+    <div id={`loan-notes-files-${loan.id}`} className="scroll-mt-24 grid grid-cols-1 gap-8 lg:grid-cols-2">
       <div>
         <div className="mb-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <NotebookPen className="h-4 w-4 text-muted-foreground" />
             <h3 className="text-sm font-medium text-muted-foreground">
-              {t('sections.notes')}
-              {lender.allNotes.length > 0 && <span className="ml-1.5 text-xs">({lender.allNotes.length})</span>}
+              {t('table.notes')}
+              {loan.notes.length > 0 && <span className="ml-1.5 text-xs">({loan.notes.length})</span>}
             </h3>
           </div>
           <AddTypeButton label={notesT('text')} onClick={onAddNote} />
         </div>
-        <Notes notes={lender.allNotes} lenderId={lender.id} loans={lender.loans} />
+        <Notes notes={loan.notes} lenderId={loan.lender.id} loanId={loan.id} />
       </div>
 
       <div>
@@ -39,13 +39,13 @@ export function LenderNotesFilesSection({ lender, onAddNote, onAddFile }: Lender
           <div className="flex items-center gap-2">
             <FilesIcon className="h-4 w-4 text-muted-foreground" />
             <h3 className="text-sm font-medium text-muted-foreground">
-              {t('sections.files')}
-              {lender.allFiles.length > 0 && <span className="ml-1.5 text-xs">({lender.allFiles.length})</span>}
+              {t('table.files')}
+              {loan.files.length > 0 && <span className="ml-1.5 text-xs">({loan.files.length})</span>}
             </h3>
           </div>
           <AddTypeButton label={filesT('file')} onClick={onAddFile} />
         </div>
-        <Files lenderId={lender.id} loans={lender.loans} files={lender.allFiles} />
+        <Files files={loan.files} lenderId={loan.lender.id} loanId={loan.id} />
       </div>
     </div>
   );

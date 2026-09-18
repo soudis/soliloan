@@ -11,7 +11,7 @@ import { deleteTransactionAction } from '@/actions/loans';
 import { bulkDeleteTransactionsAction } from '@/actions/transactions/mutations/bulk-delete-transactions';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { TransactionTimeRangeControl } from '@/components/transactions/transaction-time-range-control';
-import { Button } from '@/components/ui/button';
+import { ActionButton } from '@/components/ui/action-button';
 import type { BulkAction } from '@/components/ui/data-table';
 import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -149,10 +149,13 @@ export function TransactionTable({
           ) : null}
         </div>
         {hasBankConnection ? (
-          <Button type="button" variant="outline" onClick={() => router.push('/transactions/import')}>
-            <ArrowDownToLine className="mr-2 h-4 w-4" />
-            {tImport('button')}
-          </Button>
+          <ActionButton
+            intent="neutral"
+            density="header"
+            icon={<ArrowDownToLine className="h-4 w-4" />}
+            label={tImport('button')}
+            onClick={() => router.push('/transactions/import')}
+          />
         ) : null}
       </div>
 

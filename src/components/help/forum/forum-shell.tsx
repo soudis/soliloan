@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 import { markForumBoardReadAction } from '@/actions/help';
 import { HelpSearch } from '@/components/help/help-search';
+import { ActionButton } from '@/components/ui/action-button';
 import { Button } from '@/components/ui/button';
 import { Link, useRouter } from '@/i18n/navigation';
 import type { ForumBoardListItem, ForumManagerOption } from '@/types/forum';
@@ -99,12 +100,13 @@ export function ForumShell({
           ) : null}
           {showManageBoards && isAdmin ? <ForumBoardDialog boards={boards} managers={managers} /> : null}
           {newThreadHref ? (
-            <Button asChild size="sm">
-              <Link href={newThreadHref}>
-                <Plus className="mr-2 h-4 w-4" />
-                {t('newThread')}
-              </Link>
-            </Button>
+            <ActionButton
+              intent="add"
+              density="header"
+              icon={<Plus className="h-4 w-4" />}
+              label={t('newThread')}
+              onClick={() => router.push(newThreadHref)}
+            />
           ) : null}
         </div>
       </div>

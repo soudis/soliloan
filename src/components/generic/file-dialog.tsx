@@ -21,9 +21,11 @@ interface FileDialogProps {
   loans?: LoanDetailsWithCalculations[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Called after a successful upload (not cancel). */
+  onCreated?: () => void;
 }
 
-export function FileDialog({ lenderId, loanId, open, loans, onOpenChange }: FileDialogProps) {
+export function FileDialog({ lenderId, loanId, open, loans, onOpenChange, onCreated }: FileDialogProps) {
   const t = useTranslations('dashboard.files');
   const commonT = useTranslations('common');
   const queryClient = useQueryClient();
@@ -64,6 +66,7 @@ export function FileDialog({ lenderId, loanId, open, loans, onOpenChange }: File
         throw new Error(result.serverError || 'Validation failed');
       }
       toast.success(t('createSuccess'));
+      onCreated?.();
       onOpenChange(false);
       form.reset();
       queryClient.invalidateQueries({ queryKey: ['lender'] });

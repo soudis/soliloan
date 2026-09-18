@@ -26,7 +26,7 @@ export function useNoteTiptapEditor({ content, editable, onUpdate }: UseNoteTipt
       editable,
       editorProps: {
         attributes: {
-          class: editable ? 'note-tiptap-editor outline-none min-h-full' : 'note-tiptap-renderer outline-none',
+          class: editable ? 'note-tiptap-editor outline-none min-h-[5rem]' : 'note-tiptap-renderer outline-none',
         },
         handleDOMEvents: editable
           ? {
