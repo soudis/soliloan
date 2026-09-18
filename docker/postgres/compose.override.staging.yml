@@ -1,8 +1,11 @@
-# Staging Postgres: isolated container and volume (no host port binding).
+# Staging Postgres: isolated container and volume.
+# Host port is localhost-only and 5433 so it does not collide with production on the same server.
 
 services:
   postgres:
     container_name: soliloan-staging-postgres
+    ports:
+      - 127.0.0.1:5433:5432
 
 volumes:
   soliloan-db:
