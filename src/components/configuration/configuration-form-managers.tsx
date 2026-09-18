@@ -8,12 +8,13 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { removeProjectManagerAction } from '@/actions/projects';
+import { removeProjectManagerAction, resendProjectManagerInvitationAction } from '@/actions/projects';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { ActionButton } from '@/components/ui/action-button';
 import { Button } from '@/components/ui/button';
 import { FormSection } from '@/components/ui/form-section';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useRouter } from '@/i18n/navigation';
 import { formatDateLong } from '@/lib/utils';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import { AddManagerDialog } from './add-manager-dialog';
@@ -25,10 +26,8 @@ type Props = {
 
 export function ConfigurationFormManagers({ project, inviteValidDays }: Props) {
   const t = useTranslations('dashboard.configuration');
-  const { data: session } = useSession();
-
-  if (!session?.user) throw new Error(t('managers.userNotFound'));
-  const user = session?.user;
+  const { data: session, status: sessionStatus } = useSession();
+  const router = useRouter();
 
   const queryClient = useQueryClient();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -36,14 +35,49 @@ export function ConfigurationFormManagers({ project, inviteValidDays }: Props) {
     open: false,
     manager: null,
   });
+  const [resendingManagerId, setResendingManagerId] = useState<string | null>(null);
 
   const { executeAsync: removeManager, isExecuting: isRemoving } = useAction(removeProjectManagerAction);
+  const { executeAsync: resendInvite } = useAction(resendProjectManagerInvitationAction);
 
   const handleManagerAdded = () => {
     setAddDialogOpen(false);
+    router.refresh();
+  };
+
+  const handleResendInvite = async (manager: User) => {
+    setResendingManagerId(manager.id);
+    try {
+      const result = await resendInvite({
+        projectId: project.id,
+        managerId: manager.id,
+      });
+
+      if (result?.serverError) {
+        toast.error(result.serverError);
+        return;
+      }
+
+      if (result?.validationErrors) {
+        return;
+      }
+
+      toast.success(t('managers.resendInviteSuccess'));
+      await queryClient.invalidateQueries({ queryKey: ['projects'] });
+      router.refresh();
+    } catch {
+      toast.error(t('managers.resendInviteError'));
+    } finally {
+      setResendingManagerId(null);
+    }
   };
 
   const managers = project.managers ?? [];
+
+  if (sessionStatus === 'loading' || !session?.user) {
+    return null;
+  }
+  const user = session.user;
 
   const handleUnlinkClick = (manager: User) => {
     setUnlinkDialogState({ open: true, manager });
@@ -69,6 +103,7 @@ export function ConfigurationFormManagers({ project, inviteValidDays }: Props) {
     if (result?.data?.project) {
       await queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success(t('managers.removeManagerSuccess'));
+      router.refresh();
     }
 
     setUnlinkDialogState({ open: false, manager: null });
@@ -108,7 +143,12 @@ export function ConfigurationFormManagers({ project, inviteValidDays }: Props) {
                   <TableRow key={manager.id}>
                     <TableCell>{manager.email ?? '–'}</TableCell>
                     <TableCell>{manager.name || '–'}</TableCell>
-                    <PendingMessage manager={manager} inviteValidDays={inviteValidDays} />
+                    <PendingMessage
+                      manager={manager}
+                      inviteValidDays={inviteValidDays}
+                      onResend={() => handleResendInvite(manager)}
+                      isResending={resendingManagerId === manager.id}
+                    />
                     <TableCell>
                       <ActionButton
                         variant="ghost"
@@ -155,10 +195,10 @@ export function ConfigurationFormManagers({ project, inviteValidDays }: Props) {
   );
 }
 
-function SendAgainButton({ onClick }: { onClick?: () => void }) {
+function SendAgainButton({ onClick, disabled }: { onClick?: () => void; disabled?: boolean }) {
   const t = useTranslations('dashboard.configuration');
   return (
-    <Button type="button" variant="secondary" size="sm" className="h-7" onClick={onClick}>
+    <Button type="button" variant="secondary" size="sm" className="h-7" onClick={onClick} disabled={disabled}>
       <Repeat2 className="h-4 w-4" />
       {t('managers.sendAgain')}
     </Button>
@@ -168,9 +208,11 @@ function SendAgainButton({ onClick }: { onClick?: () => void }) {
 type PendingMessageProps = {
   manager: User;
   inviteValidDays: number;
+  onResend: () => void;
+  isResending: boolean;
 };
 
-function PendingMessage({ manager, inviteValidDays }: PendingMessageProps) {
+function PendingMessage({ manager, inviteValidDays, onResend, isResending }: PendingMessageProps) {
   const t = useTranslations('dashboard.configuration');
   const locale = useLocale();
   const isActive = manager.inviteToken == null;
@@ -188,14 +230,14 @@ function PendingMessage({ manager, inviteValidDays }: PendingMessageProps) {
         <span className="flex items-center gap-2">
           <Mail className="h-4 w-4" />
           {t('managers.statusPendingInvite')}
-          <SendAgainButton onClick={() => {}} />
+          <SendAgainButton onClick={onResend} disabled={isResending} />
         </span>
       )}
       {isExpired && (
         <span className="flex items-center gap-2">
           <ClockAlert className="h-4 w-4" />
           {t('managers.statusExpiredInvite', { expiresAt: expiresAtFormatted })}
-          <SendAgainButton onClick={() => {}} />
+          <SendAgainButton onClick={onResend} disabled={isResending} />
         </span>
       )}
       {isActive && t('managers.statusActive')}

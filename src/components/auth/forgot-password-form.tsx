@@ -40,7 +40,7 @@ export function ForgotPasswordForm() {
       if (result.success) {
         toast.success(t('forgotPassword.success'));
       } else {
-        toast.error(result.error || t('forgotPassword.error'));
+        toast.error(t('forgotPassword.error'));
       }
     } catch (error) {
       console.error('Error requesting password reset:', error);

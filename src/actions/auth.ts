@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { tokenExpiryForUser } from '@/lib/auth-set-password';
 import { db } from '@/lib/db';
-import { sendPasswordResetEmail } from '@/lib/email';
+import { EMAIL_SEND_FAILED, sendPasswordResetEmail } from '@/lib/email';
 import { userNameSchema } from '@/lib/schemas/account';
 import { passwordSchema } from '@/lib/schemas/common';
 import { generateToken } from '@/lib/token';
@@ -12,6 +12,18 @@ import { hashPassword } from '@/lib/utils/password';
 
 const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 const PASSWORD_RESET_COOLDOWN_MS = 5 * 60 * 1000;
+
+/**
+ * Cooldown only applies to a live 1-hour password-reset token.
+ * Manager/lender invites reuse `passwordResetTokenExpiresAt` with a multi-day TTL;
+ * those must not suppress reset emails.
+ */
+function isPasswordResetInCooldown(passwordResetTokenExpiresAt: Date | null, now = Date.now()): boolean {
+  if (!passwordResetTokenExpiresAt) return false;
+  const remainingMs = passwordResetTokenExpiresAt.getTime() - now;
+  if (remainingMs <= 0 || remainingMs > PASSWORD_RESET_TTL_MS) return false;
+  return remainingMs > PASSWORD_RESET_TTL_MS - PASSWORD_RESET_COOLDOWN_MS;
+}
 
 /**
  * Set a user's password using a token
@@ -106,8 +118,7 @@ export async function requestPasswordReset(email: string) {
       return { success: true }; // Return success even if user not found for security
     }
 
-    const remainingMs = user.passwordResetTokenExpiresAt ? user.passwordResetTokenExpiresAt.getTime() - Date.now() : 0;
-    if (remainingMs > PASSWORD_RESET_TTL_MS - PASSWORD_RESET_COOLDOWN_MS) {
+    if (isPasswordResetInCooldown(user.passwordResetTokenExpiresAt)) {
       return { success: true };
     }
 
@@ -130,6 +141,9 @@ export async function requestPasswordReset(email: string) {
     return { success: true };
   } catch (error) {
     console.error('Error requesting password reset:', error);
+    if (error instanceof Error && error.message === EMAIL_SEND_FAILED) {
+      return { success: false, error: EMAIL_SEND_FAILED };
+    }
     return { success: false, error: 'Failed to request password reset' };
   }
 }

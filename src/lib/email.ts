@@ -3,10 +3,13 @@ import nodemailer, { type SendMailOptions } from 'nodemailer';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 import React from 'react';
 import { db } from '@/lib/db';
+import { absoluteAppUrl } from '@/lib/help/forum-urls';
 import { renderSystemEmailTemplate, resolveSystemTemplate } from '@/lib/templates/resolve-system-template';
-import { getAppBaseUrl, getDefaultSystemLinkMergeData } from '@/lib/templates/system-merge-links';
+import { getDefaultSystemLinkMergeData } from '@/lib/templates/system-merge-links';
 import { getTemplateData } from '@/lib/templates/template-data';
 import { resolveTemplateSubject } from '@/lib/templates/template-subject-filename';
+
+export const EMAIL_SEND_FAILED = 'error.email.sendFailed';
 
 function getSmtpTransportOptions(): SMTPTransport.Options {
   const port = Number(process.env.SMTP_PORT) || 587;
@@ -23,19 +26,64 @@ function getSmtpTransportOptions(): SMTPTransport.Options {
     secure = port === 465;
   }
 
+  const user = process.env.SMTP_USER?.trim();
+  const pass = process.env.SMTP_PASSWORD ?? '';
+
   return {
     host: process.env.SMTP_HOST,
     port,
     secure,
     requireTLS: port === 587 && !secure,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
-    },
+    connectionTimeout: 15_000,
+    greetingTimeout: 15_000,
+    socketTimeout: 30_000,
+    ...(user ? { auth: { user, pass } } : {}),
   };
 }
 
-const transporter = nodemailer.createTransport(getSmtpTransportOptions());
+function smtpErrorDetails(error: unknown) {
+  if (error && typeof error === 'object') {
+    const e = error as { message?: string; code?: string; command?: string; response?: string };
+    return { message: e.message, code: e.code, command: e.command, response: e.response };
+  }
+  return { message: String(error) };
+}
+
+function isEmailSendError(error: unknown): boolean {
+  return error instanceof Error && error.message === EMAIL_SEND_FAILED;
+}
+
+async function sendMailOnce(mail: SendMailOptions) {
+  if (!process.env.SMTP_HOST) {
+    throw new Error('SMTP_HOST is not set');
+  }
+
+  const transporter = nodemailer.createTransport(getSmtpTransportOptions());
+  try {
+    return await transporter.sendMail(mail);
+  } finally {
+    transporter.close();
+  }
+}
+
+async function dispatchMail(mail: SendMailOptions) {
+  const payload: SendMailOptions = {
+    from: process.env.SMTP_FROM,
+    ...mail,
+  };
+
+  try {
+    try {
+      return await sendMailOnce(payload);
+    } catch (firstError) {
+      console.error('SMTP send failed, retrying once', smtpErrorDetails(firstError));
+      return await sendMailOnce(payload);
+    }
+  } catch (error) {
+    console.error('SMTP send failed', smtpErrorDetails(error));
+    throw new Error(EMAIL_SEND_FAILED);
+  }
+}
 
 /**
  * Send an email using nodemailer with a React email component.
@@ -43,8 +91,7 @@ const transporter = nodemailer.createTransport(getSmtpTransportOptions());
 export async function sendEmail(to: string, subject: string, html: React.ReactElement) {
   const htmlContent = render(html);
 
-  return transporter.sendMail({
-    from: process.env.SMTP_FROM,
+  return dispatchMail({
     to,
     subject,
     html: await htmlContent,
@@ -60,8 +107,7 @@ export async function sendRawEmail(
   html: string,
   extras?: Pick<SendMailOptions, 'headers' | 'list'>,
 ) {
-  return transporter.sendMail({
-    from: process.env.SMTP_FROM,
+  return dispatchMail({
     to,
     subject,
     html,
@@ -90,16 +136,15 @@ async function sendLegacyPasswordInvitationEmail(
   );
 }
 
-function buildSystemUrls(token: string) {
-  const base = getAppBaseUrl();
-  const inviteUrl = `${base}/auth/set-password?token=${token}`;
+function buildSystemUrls(token: string, locale = 'de') {
+  const inviteUrl = absoluteAppUrl(`/auth/set-password?token=${encodeURIComponent(token)}`, locale);
 
   return {
     ...getDefaultSystemLinkMergeData(),
     passwordReset: inviteUrl,
     emailVerification: inviteUrl,
     invitation: inviteUrl,
-    login: `${base}/auth/login`,
+    login: absoluteAppUrl('/auth/login', locale),
   };
 }
 
@@ -247,7 +292,7 @@ export async function sendPasswordInvitationEmail(
   projectName: string,
   lenderContext?: LenderInviteContext,
 ) {
-  const systemUrls = buildSystemUrls(token);
+  const systemUrls = buildSystemUrls(token, locale);
   const resetUrl = systemUrls.passwordReset;
 
   // Try system template path when project context is available
@@ -267,6 +312,7 @@ export async function sendPasswordInvitationEmail(
         return;
       }
     } catch (err) {
+      if (isEmailSendError(err)) throw err;
       console.error('Failed to render system invite template, falling back to legacy', err);
     }
   }
@@ -281,7 +327,7 @@ export async function sendProjectManagerInvitationEmail(
   locale: string,
   managerContext: ProjectManagerInviteContext,
 ) {
-  const systemUrls = buildSystemUrls(token);
+  const systemUrls = buildSystemUrls(token, locale);
 
   try {
     const sent = await sendSystemTemplateEmail({
@@ -298,6 +344,7 @@ export async function sendProjectManagerInvitationEmail(
       return;
     }
   } catch (err) {
+    if (isEmailSendError(err)) throw err;
     console.error('Failed to render manager invite template, falling back to legacy', err);
   }
 
@@ -330,13 +377,14 @@ export async function sendTransactionNotificationToLender(args: {
       subject: 'Neue Zahlung',
     });
   } catch (err) {
+    if (isEmailSendError(err)) throw err;
     console.error('Failed to send transaction notification email', err);
     return false;
   }
 }
 
 export async function sendPasswordResetEmail(to: string, name: string, token: string, userId: string, locale = 'de') {
-  const systemUrls = buildSystemUrls(token);
+  const systemUrls = buildSystemUrls(token, locale);
   const resetUrl = systemUrls.passwordReset;
 
   try {
@@ -354,6 +402,7 @@ export async function sendPasswordResetEmail(to: string, name: string, token: st
       return;
     }
   } catch (err) {
+    if (isEmailSendError(err)) throw err;
     console.error('Failed to send password reset via system template, falling back to legacy', err);
   }
 
