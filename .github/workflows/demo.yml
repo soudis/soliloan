@@ -1,0 +1,170 @@
+# Demo deploy via manual workflow_dispatch.
+#
+# In the GitHub Actions UI: Actions → Demo: Deployment → Run workflow.
+# - "Use workflow from" selects which revision of this pipeline to run (usually main).
+# - "ref" is the branch, tag, or SHA to build and deploy onto the demo instance.
+#
+# Deploys to the same server as production/staging; Traefik serves demo at
+# https://demo.<SOLILOAN_DOMAIN> (e.g. https://demo.direktkredit.app).
+# Docker Hub image tag is always `:demo`.
+#
+# Host prerequisite (once):
+#   docker network create soliloan_demo_backend_network
+#
+# Additional secret (demo-only):
+#   DEMO_POSTGRES_PASSWORD — Postgres password for the demo database container
+#
+# Reuses remaining GitHub Actions secrets and variables from production
+# (see production.yml).
+
+name: 'Demo: Deployment'
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git branch, tag, or SHA to build and deploy'
+        required: true
+        type: string
+        default: 'main'
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  TAG: demo
+  COMPOSE_PROJECT_NAME: soliloan-demo
+  DEMO_DOMAIN: demo.${{ vars.SOLILOAN_DOMAIN }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/app/Dockerfile
+          push: true
+          tags: ${{ vars.DOCKERHUB_REPOSITORY }}:${{ env.TAG }}
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NEXT_PUBLIC_SOLILOAN_PROJECT_NAME=${{ vars.SOLILOAN_PROJECT_NAME }}
+            NEXT_PUBLIC_SOLILOAN_URL=https://${{ env.DEMO_DOMAIN }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: needs.build.result == 'success'
+    env:
+      PROD_SSH_PORT: ${{ vars.PROD_SSH_PORT || 22 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        # Compose files and deploy script come from this workflow revision,
+        # not from the app branch being deployed.
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PROD_SSH_KEY }}
+
+      - name: Write demo .env and deploy
+        env:
+          DATABASE_URL: postgresql://soliloan:${{ secrets.DEMO_POSTGRES_PASSWORD }}@postgres:5432/soliloan
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          POSTGRES_PASSWORD: ${{ secrets.DEMO_POSTGRES_PASSWORD }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          SOLILOAN_ADMIN_PASSWORD: ${{ secrets.SOLILOAN_ADMIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${PROD_SSH_PORT}" "${{ vars.PROD_SSH_HOST }}" >> ~/.ssh/known_hosts
+
+          umask 077
+          {
+            echo "COMPOSE_PROJECT_NAME=${{ env.COMPOSE_PROJECT_NAME }}"
+            echo "DOCKER_IMAGE_TAG=${{ env.TAG }}"
+            echo "DOCKERHUB_REPOSITORY=${{ vars.DOCKERHUB_REPOSITORY }}"
+            echo "TRAEFIK_HOST=${{ env.DEMO_DOMAIN }}"
+            echo "TRAEFIK_ROUTER_NAME=soliloan-demo"
+            echo "ENVIRONMENT=demo"
+            echo "POSTGRES_DB=soliloan"
+            echo "POSTGRES_USER=soliloan"
+            echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
+            echo "DATABASE_URL=${DATABASE_URL}"
+            echo "NEXTAUTH_SECRET=${NEXTAUTH_SECRET}"
+            echo "CRON_SECRET=${CRON_SECRET}"
+            echo "NEXTAUTH_URL=https://${{ env.DEMO_DOMAIN }}"
+            echo "NEXTAUTH_URL_INTERNAL=http://localhost:3000"
+            echo "AUTH_TRUST_HOST=true"
+            echo "SOLILOAN_DOMAIN=${{ env.DEMO_DOMAIN }}"
+            echo "SOLILOAN_URL=https://${{ env.DEMO_DOMAIN }}"
+            echo "SOLILOAN_PROJECT_NAME=${{ vars.SOLILOAN_PROJECT_NAME }}"
+            echo "SOLILOAN_DEFAULT_LANGUAGE=de"
+            echo "SOLILOAN_INVITE_VALID_DAYS=14"
+            echo "SOLILOAN_ADMIN_EMAIL=${{ vars.SOLILOAN_ADMIN_EMAIL }}"
+            echo "SOLILOAN_ADMIN_PASSWORD=${SOLILOAN_ADMIN_PASSWORD}"
+            echo "SMTP_HOST=${{ vars.SMTP_HOST }}"
+            echo "SMTP_PORT=${{ vars.SMTP_PORT }}"
+            echo "SMTP_USER=${{ vars.SMTP_USER }}"
+            echo "SMTP_PASSWORD=${SMTP_PASSWORD}"
+            echo "SMTP_SECURE=${{ vars.SMTP_SECURE || 'false' }}"
+            echo "SMTP_FROM=${{ vars.SMTP_FROM }}"
+          } > .env
+
+          docker compose -f docker/compose.demo.yml --env-file .env --project-directory . config > compose.deploy.yml
+
+          REMOTE_DIR="/docker/soliloan/${{ env.TAG }}"
+          SSH_TARGET="${{ vars.PROD_SSH_USER }}@${{ vars.PROD_SSH_HOST }}"
+
+          ssh -p "${PROD_SSH_PORT}" "${SSH_TARGET}" "mkdir -p ${REMOTE_DIR}"
+
+          scp -P "${PROD_SSH_PORT}" compose.deploy.yml "${SSH_TARGET}:${REMOTE_DIR}/compose.yml"
+          scp -P "${PROD_SSH_PORT}" .env "${SSH_TARGET}:${REMOTE_DIR}/.env"
+
+          REMOTE_SH="/tmp/soliloan-remote-deploy-$$.sh"
+          printf '%s\n' \
+            'set -euo pipefail' \
+            'cd "$(dirname "$0")"' \
+            'read -r DOCKERHUB_TOKEN' \
+            'echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin' \
+            'docker compose -f compose.yml --env-file .env pull app' \
+            'docker compose -f compose.yml --env-file .env up -d postgres' \
+            'ATTEMPTS=0' \
+            'until docker compose -f compose.yml --env-file .env exec -T postgres pg_isready -U soliloan -d soliloan; do' \
+            '  ATTEMPTS=$((ATTEMPTS + 1))' \
+            '  if [ "$ATTEMPTS" -ge 30 ]; then echo "Postgres not ready after 60s"; exit 1; fi' \
+            '  sleep 2' \
+            'done' \
+            'docker compose -f compose.yml --env-file .env run --rm app pnpm exec prisma migrate deploy' \
+            'docker compose -f compose.yml --env-file .env up -d' \
+            'docker image prune -f' \
+            'docker logout' > "${REMOTE_SH}"
+          scp -P "${PROD_SSH_PORT}" "${REMOTE_SH}" "${SSH_TARGET}:${REMOTE_DIR}/remote-deploy.sh"
+          rm -f "${REMOTE_SH}"
+
+          USER_Q=$(printf '%q' '${{ vars.DOCKERHUB_USERNAME }}')
+          printf '%s\n' "${DOCKERHUB_TOKEN}" | ssh -p "${PROD_SSH_PORT}" "${SSH_TARGET}" \
+            "DOCKERHUB_USERNAME=${USER_Q} bash -c $(printf '%q' "cd ${REMOTE_DIR} && bash ./remote-deploy.sh")"

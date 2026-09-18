@@ -1,0 +1,13 @@
+# Demo Postgres: isolated container and volume.
+# Host port is localhost-only and 5434 so it does not collide with production (5432)
+# or staging (5433) on the same server.
+
+services:
+  postgres:
+    container_name: soliloan-demo-postgres
+    ports:
+      - 127.0.0.1:5434:5432
+
+volumes:
+  soliloan-db:
+    name: soliloan-demo-db
