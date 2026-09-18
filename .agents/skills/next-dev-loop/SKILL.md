@@ -123,6 +123,11 @@ manual rather than from memory.
 
 ## gotchas
 
+- **This repo's Docker dev (`pnpm docker:dev up`):** MCP is
+  `http://localhost:3000/_next/mcp` (host loopback). Open `agent-browser`
+  at `https://soliloan.localhost`, not `http://localhost:3000` — auth
+  cookies will not apply on the published port. Rewrite `/app/...` paths
+  from MCP tools to this repository root. See `AGENTS.md`.
 - **Preserve `.next` while the development server is running.** Moving or
   deleting it disconnects the server from its generated state and discards
   incremental caches. Moving it to a backup is still a reset. If a production

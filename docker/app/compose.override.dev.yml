@@ -30,6 +30,12 @@ services:
       - SMTP_HOST=mailpit
       - SMTP_PORT=1025
       - SMTP_FROM=noreply@soliloan.localhost
+    ports:
+      # Host loopback only: next-devtools-mcp and next-dev-loop probe /_next/mcp
+      # at http://localhost:3000. Browser and auth stay on Traefik
+      # (https://soliloan.localhost). Do not publish 0.0.0.0:3000 — MCP is a
+      # privileged dev endpoint.
+      - "127.0.0.1:3000:3000"
     volumes:
       - ./:/app:cached
       - /app/node_modules
