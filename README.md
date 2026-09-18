@@ -69,13 +69,27 @@ This command will:
 
 Once all services are running, you can access:
 
-- **Application**: https://soliloan.localhost
+- **Application**: https://soliloan.localhost (use this in the browser)
+- **Next.js MCP**: http://localhost:3000/_next/mcp (host agent tools only)
 - **Traefik Dashboard**: http://localhost:8080 (for debugging routing)
 
 > **Note**: Make sure to add `soliloan.localhost` to your `/etc/hosts` file:
 > ```
 > 127.0.0.1 soliloan.localhost
 > ```
+
+#### Host vs container (Next.js MCP)
+
+`next dev` runs inside the `app` container. Traefik terminates TLS and serves the UI; port 3000 is published to **host loopback only** so coding agents can reach the Next.js MCP endpoint.
+
+| Surface | URL | Use for |
+| --- | --- | --- |
+| Traefik (HTTPS) | https://soliloan.localhost | Browser, `agent-browser`, login cookies |
+| Next.js MCP | http://localhost:3000/_next/mcp | `next-devtools-mcp`, `next-dev-loop` probes |
+
+Do not use `http://localhost:3000` as the app origin: `NEXTAUTH_URL` is `https://soliloan.localhost`, so session cookies will not apply.
+
+MCP tools report filesystem paths from inside the container (`/app/...`). That directory is this repository on the host, except `node_modules`, which is an anonymous Docker volume. Run `pnpm install` on the host if you need `node_modules/next/dist/docs/` for the editor or agents.
 
 ### Development Workflow
 
@@ -125,8 +139,8 @@ pnpm docker:dev exec app pnpm prisma db seed
 The development environment consists of three main services:
 
 #### 1. Application Service (`app`)
-- **Base Image**: Node.js 20 with pnpm
-- **Port**: 3000 (internal)
+- **Base Image**: Node.js 24 with pnpm
+- **Port**: 3000 (published to `127.0.0.1:3000` for Next.js MCP; UI via Traefik)
 - **Features**: 
   - Hot reloading with Turbopack
   - Volume mounting for live code changes
@@ -153,9 +167,10 @@ The development environment consists of three main services:
 #### Common Issues
 
 **1. Port Conflicts**
-If you encounter port conflicts, check what's running on ports 80, 443, 5432, or 8080:
+If you encounter port conflicts, check what's running on ports 80, 443, 3000, 5432, or 8080:
 ```bash
 sudo lsof -i :80
+sudo lsof -i :3000
 sudo lsof -i :5432
 ```
 
