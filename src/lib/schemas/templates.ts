@@ -45,6 +45,12 @@ export const deleteTemplateSchema = z.object({
 
 export type DeleteTemplateFormData = z.infer<typeof deleteTemplateSchema>;
 
+export const restoreSystemTemplateFromFileSchema = z.object({
+  templateId: z.string(),
+});
+
+export type RestoreSystemTemplateFromFileFormData = z.infer<typeof restoreSystemTemplateFromFileSchema>;
+
 // Duplicate template schema
 export const duplicateTemplateSchema = z.object({
   id: z.string(),

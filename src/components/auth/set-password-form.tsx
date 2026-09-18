@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -12,45 +12,54 @@ import { setPassword } from '@/actions/auth';
 import { FormField } from '@/components/form/form-field';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
+import { userNameSchema } from '@/lib/schemas/account';
 import { passwordSchema } from '@/lib/schemas/common';
 
-// Define the form schema
-const formSchema = z
-  .object({
-    password: passwordSchema,
-    confirmPassword: passwordSchema,
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ['confirmPassword'],
-  });
-
-type FormValues = z.infer<typeof formSchema>;
+type SetPasswordFormValues = {
+  name: string | null;
+  password: string;
+  confirmPassword: string;
+};
 
 interface SetPasswordFormProps {
   token: string;
+  requireName: boolean;
 }
 
-export function SetPasswordForm({ token }: SetPasswordFormProps) {
+export function SetPasswordForm({ token, requireName }: SetPasswordFormProps) {
   const t = useTranslations('auth');
   const tRoot = useTranslations();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Initialize the form
-  const form = useForm<FormValues>({
+  const formSchema = useMemo(
+    () =>
+      z
+        .object({
+          name: requireName ? userNameSchema : z.string().nullable(),
+          password: passwordSchema,
+          confirmPassword: passwordSchema,
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+          message: 'validation.account.passwordMismatch',
+          path: ['confirmPassword'],
+        }),
+    [requireName],
+  );
+
+  const form = useForm<SetPasswordFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: requireName ? '' : null,
       password: '',
       confirmPassword: '',
     },
   });
 
-  // Handle form submission
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: SetPasswordFormValues) => {
     setIsLoading(true);
     try {
-      const result = await setPassword(token, data.password);
+      const result = await setPassword(token, data.password, requireName ? (data.name ?? undefined) : undefined);
       if (result.success) {
         toast.success(t('setPassword.success'));
         router.push('/auth/login');
@@ -72,6 +81,15 @@ export function SetPasswordForm({ token }: SetPasswordFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {requireName ? (
+          <FormField
+            name="name"
+            label={t('setPassword.name')}
+            placeholder={t('setPassword.namePlaceholder')}
+            autoComplete="username"
+            required
+          />
+        ) : null}
         <FormField
           name="password"
           label={t('setPassword.password')}

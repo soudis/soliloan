@@ -5,8 +5,10 @@ import { FORUM_DIGEST_DELAY_MINUTES } from '@/lib/help/forum-constants';
 
 import { passwordSchema, selectEnumRequired } from './common';
 
+export const userNameSchema = z.string().trim().min(2, { message: 'validation.account.nameRequired' });
+
 export const updateProfileSchema = z.object({
-  name: z.string().min(2, { message: 'validation.account.nameRequired' }),
+  name: userNameSchema,
   language: selectEnumRequired(Language, 'validation.common.required'),
 });
 

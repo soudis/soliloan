@@ -64,7 +64,7 @@
             {
               "type": "Text",
               "props": {
-                "text": "<p>Du wurdest eingeladen einen Account auf <span data-merge-tag-id=\"platform.name\" data-merge-tag-label=\"Plattformname\" data-merge-tag=\"platform.name\" class=\"merge-tag-pill\">{{Plattformname}}</span> zu erstellen um die Kredite für das Projekt <span data-merge-tag-id=\"config.name\" data-merge-tag-label=\"Projektname\" data-merge-tag=\"config.name\" class=\"merge-tag-pill\">{{Projektname}}</span> zu verwalten:</p>",
+                "text": "<p>Du wurdest eingeladen, die Kredite für das Projekt <span data-merge-tag-id=\"config.name\" data-merge-tag-label=\"Projektname\" data-merge-tag=\"config.name\" class=\"merge-tag-pill\">{{Projektname}}</span> auf <span data-merge-tag-id=\"platform.name\" data-merge-tag-label=\"Plattformname\" data-merge-tag=\"platform.name\" class=\"merge-tag-pill\">{{Plattformname}}</span> zu verwalten. Du kannst dich hier mit deinem bestehenden Account anmelden oder einen Account erstellen:</p>",
                 "color": "#000000",
                 "fontSize": 16,
                 "textAlign": "left",
@@ -75,7 +75,7 @@
               "type": "Button",
               "props": {
                 "url": "#",
-                "text": "Account erstellen",
+                "text": "{{platform.name}}",
                 "color": "#ffffff",
                 "background": "#2563eb",
                 "systemUrlKey": "invitation",
@@ -126,5 +126,5 @@
       }
     }
   },
-  "subjectOrFilename": "Vewalte die Kredite von {{project.name}}"
+  "subjectOrFilename": "Verwalte die Kredite von {{project.name}}"
 }

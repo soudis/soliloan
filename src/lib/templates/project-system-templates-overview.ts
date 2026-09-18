@@ -1,8 +1,8 @@
 import type { TemplateDataset } from '@prisma/client';
 import { db } from '@/lib/db';
-import { STARTER_TEMPLATE_SYSTEM_KEYS } from '@/lib/templates/starter-template-system-keys';
+import { PROJECT_HIDDEN_STARTER_TEMPLATE_SYSTEM_KEYS } from '@/lib/templates/starter-template-system-keys';
 
-const starterKeys = [...STARTER_TEMPLATE_SYSTEM_KEYS];
+const hiddenStarterKeys = [...PROJECT_HIDDEN_STARTER_TEMPLATE_SYSTEM_KEYS];
 
 export type ProjectSystemTemplateOverviewRow = {
   globalTemplateId: string;
@@ -30,7 +30,7 @@ export async function getProjectSystemTemplatesOverviewRows(
       dataset: { not: 'USER' },
       systemKey: { not: null },
       NOT: {
-        systemKey: { in: starterKeys },
+        systemKey: { in: hiddenStarterKeys },
       },
     },
     orderBy: { name: 'asc' },

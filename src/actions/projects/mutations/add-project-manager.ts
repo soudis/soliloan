@@ -4,8 +4,8 @@ import { Entity, Operation } from '@prisma/client';
 import { z } from 'zod';
 import { createAuditEntry, getManagerContext } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
-import { getInviteValidDays } from '@/lib/env';
 import { type ProjectManagerInviteContext, sendProjectManagerInvitationEmail } from '@/lib/email';
+import { getInviteValidDays } from '@/lib/env';
 import { loadProject } from '@/lib/projects/get-project';
 import { generateToken } from '@/lib/token';
 import { normalizeStoredEmail } from '@/lib/utils/email';
@@ -29,6 +29,7 @@ export const addProjectManagerAction = projectAction
     });
 
     if (!project) throw new Error('error.project.notFound');
+    if (!project.configuration) throw new Error('error.configuration.notFound');
 
     let user = await db.user.findUnique({
       where: { email: normalizedEmail },
@@ -40,16 +41,13 @@ export const addProjectManagerAction = projectAction
       throw new Error('error.configuration.managerAlreadyAdded');
     }
 
-    const invitationToken = generateToken();
-    const expirationDate = new Date();
-    expirationDate.setDate(expirationDate.getDate() + getInviteValidDays());
+    const isNewUser = !user;
 
     if (!user) {
-      const password = 'test12345xy';
-      const passwordHashed = await hashPassword(password);
-
-      if (!project.configuration) throw new Error('error.configuration.notFound');
-      const configuration = project.configuration;
+      const invitationToken = generateToken();
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + getInviteValidDays());
+      const passwordHashed = await hashPassword(generateToken());
 
       user = await db.user.create({
         data: {
@@ -62,18 +60,7 @@ export const addProjectManagerAction = projectAction
           passwordResetToken: invitationToken,
           passwordResetTokenExpiresAt: expirationDate,
           lastInvited: new Date(),
-          language: configuration.userLanguage ?? undefined,
-        },
-      });
-    } else {
-      user = await db.user.update({
-        where: { id: user.id },
-        data: {
-          inviteToken: invitationToken,
-          inviteTokenExpiresAt: expirationDate,
-          passwordResetToken: invitationToken,
-          passwordResetTokenExpiresAt: expirationDate,
-          lastInvited: new Date(),
+          language: project.configuration.userLanguage ?? undefined,
         },
       });
     }
@@ -102,22 +89,22 @@ export const addProjectManagerAction = projectAction
       projectId,
     });
 
-    if (!project.configuration) throw new Error('error.configuration.notFound');
+    if (isNewUser && user.inviteToken) {
+      const managerContext: ProjectManagerInviteContext = {
+        projectId: project.id,
+        projectName: project.configuration.name,
+        projectSlug: project.slug,
+        configData: project.configuration as unknown as Record<string, unknown>,
+      };
 
-    const managerContext: ProjectManagerInviteContext = {
-      projectId: project.id,
-      projectName: project.configuration.name,
-      projectSlug: project.slug,
-      configData: project.configuration as unknown as Record<string, unknown>,
-    };
-
-    await sendProjectManagerInvitationEmail(
-      normalizedEmail,
-      user.name || project.configuration.name,
-      invitationToken,
-      user.language || 'de',
-      managerContext,
-    );
+      await sendProjectManagerInvitationEmail(
+        normalizedEmail,
+        user.name || project.configuration.name,
+        user.inviteToken,
+        user.language || 'de',
+        managerContext,
+      );
+    }
 
     const updated = await loadProject(projectId);
     return { project: updated };

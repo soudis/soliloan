@@ -58,12 +58,21 @@ FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Keep Prisma CLI/config/migrations in the runtime image so startup can apply
-# production migrations and seed data before Next.js begins accepting traffic.
+# Keep Prisma CLI/config/migrations and system template designs in the runtime
+# image. Admin "load from file" and seed read `prisma/system-template-designs`
+# from disk (staging/production use this same image).
 COPY --from=builder /app .
 RUN test -f prisma.config.ts \
   && test -d prisma/migrations \
   && test -d prisma/system-template-designs \
+  && test -f prisma/system-template-designs/password-reset-email.json \
+  && test -f prisma/system-template-designs/forum-unread-email.json \
+  && test -f prisma/system-template-designs/manager-invite-email.json \
+  && test -f prisma/system-template-designs/lender-invite-email.json \
+  && test -f prisma/system-template-designs/transaction-notification-email.json \
+  && test -f prisma/system-template-designs/yearly-account-notification.json \
+  && test -f prisma/system-template-designs/defaultEmail.json \
+  && test -f prisma/system-template-designs/defaultDocument.json \
   && test -x node_modules/.bin/prisma \
   && test -x node_modules/.bin/tsx
 

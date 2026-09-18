@@ -12,6 +12,7 @@ async function resolveDesignAndSubjectForCreate(input: {
   designJson: unknown;
   subjectOrFilename: string | null | undefined;
   sourceTemplateId?: string;
+  projectId?: string | null;
 }): Promise<{ designJson: Prisma.InputJsonValue; subjectOrFilename: string | null }> {
   let designJson: Prisma.InputJsonValue = (input.designJson ?? {}) as Prisma.InputJsonValue;
 
@@ -29,7 +30,7 @@ async function resolveDesignAndSubjectForCreate(input: {
   let subjectOrFilename: string | null = typeof raw === 'string' && raw.trim() !== '' ? raw.trim() : null;
 
   if (isEmptyDesignJson(designJson)) {
-    const starter = await getDefaultStarterTemplateContent(input.type);
+    const starter = await getDefaultStarterTemplateContent(input.type, input.projectId);
     if (starter) {
       designJson = starter.designJson as Prisma.InputJsonValue;
       if (subjectOrFilename == null && starter.subjectOrFilename) {
@@ -54,6 +55,7 @@ export const createTemplateAction = projectAction
       designJson: data.designJson,
       subjectOrFilename: data.subjectOrFilename,
       sourceTemplateId: data.sourceTemplateId,
+      projectId: data.isGlobal ? undefined : data.projectId,
     });
 
     const template = await db.communicationTemplate.create({

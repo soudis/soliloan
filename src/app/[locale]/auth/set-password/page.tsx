@@ -1,17 +1,19 @@
-'use client';
-
-import { useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-
+import { getTranslations } from 'next-intl/server';
+import { Suspense } from 'react';
 import { SetPasswordForm } from '@/components/auth/set-password-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getSetPasswordTokenContext } from '@/lib/auth-set-password';
 
-export default function SetPasswordPage() {
-  const t = useTranslations('auth');
-  const searchParams = useSearchParams();
-  const token = searchParams.get('token');
+type SetPasswordPageProps = {
+  searchParams: Promise<{ token?: string }>;
+};
 
-  if (!token) {
+export default async function SetPasswordPage({ searchParams }: SetPasswordPageProps) {
+  const t = await getTranslations('auth');
+  const { token } = await searchParams;
+  const context = token ? await getSetPasswordTokenContext(token) : null;
+
+  if (!token || !context) {
     return (
       <Card>
         <CardHeader>
@@ -22,20 +24,25 @@ export default function SetPasswordPage() {
     );
   }
 
+  const title = context.requireName ? t('setPassword.inviteTitle') : t('setPassword.title');
+  const description = context.requireName ? t('setPassword.inviteDescription') : t('setPassword.description');
+
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">{t('setPassword.title')}</h2>
-        <p className="mt-2 text-center text-sm text-gray-600">{t('setPassword.description')}</p>
+        <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">{title}</h2>
+        <p className="mt-2 text-center text-sm text-gray-600">{description}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>{t('setPassword.title')}</CardTitle>
-          <CardDescription>{t('setPassword.description')}</CardDescription>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
-          <SetPasswordForm token={token} />
+          <Suspense>
+            <SetPasswordForm token={token} requireName={context.requireName} />
+          </Suspense>
         </CardContent>
       </Card>
     </div>
