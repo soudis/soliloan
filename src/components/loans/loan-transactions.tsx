@@ -2,7 +2,7 @@
 
 import type { Transaction } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -10,13 +10,11 @@ import { toast } from 'sonner';
 import { deleteTransactionAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
+import { ActionButton } from '@/components/ui/action-button';
 import { cn, formatCurrency, formatDateLong } from '@/lib/utils';
-import type { LoanDetailsWithCalculations } from '@/types/loans';
-
+import { type LoanDetailsWithCalculations, LoanStatus } from '@/types/loans';
 import { Button } from '../ui/button';
-import { Label } from '../ui/label';
 import { Switch } from '../ui/switch';
-import { LoanAddTransactionControl } from './loan-add-transaction-control';
 import {
   LoanBalanceSummary,
   TRANSACTION_ACTIONS_SLOT_CLASS,
@@ -24,6 +22,7 @@ import {
   transactionIcon,
   transactionIconBackground,
 } from './loan-balance-summary';
+import { TransactionDialog } from './transaction-dialog';
 
 const PAGE_SIZE = 10;
 
@@ -36,9 +35,13 @@ interface LoanTransactionsProps {
   /** Show deposit/interest/withdrawal totals and balance below the list (same data as BalanceTable sums) */
   showBalanceSummary?: boolean;
   /**
-   * When false, the add control is omitted so the parent can render {@link LoanAddTransactionControl} elsewhere.
+   * When false, the add control is omitted (e.g. lender portal).
    */
   showAddTransaction?: boolean;
+  /** When false, hide interest bookings initially (shorter payment list). Default true. */
+  defaultShowBookings?: boolean;
+  /** When set, + Zahlung calls this instead of opening an internal dialog. */
+  onAddTransaction?: () => void;
 }
 
 export function LoanTransactions({
@@ -48,14 +51,17 @@ export function LoanTransactions({
   readOnly = false,
   showBalanceSummary = false,
   showAddTransaction = true,
+  defaultShowBookings = true,
+  onAddTransaction,
 }: LoanTransactionsProps) {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const locale = useLocale();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
-  const [showBookings, setShowBookings] = useState(true);
+  const [showBookings, setShowBookings] = useState(defaultShowBookings);
   const [page, setPage] = useState(0);
+  const [internalAddOpen, setInternalAddOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const filtered = useMemo(() => {
@@ -92,35 +98,47 @@ export function LoanTransactions({
   const lastNonInterest = transactions.findLast((tx) => tx.type !== 'INTEREST');
 
   const addTransactionEnabled = !readOnly && showAddTransaction;
+  const addTransactionDisabled = loan.status === LoanStatus.REPAID;
+
+  const handleAddTransaction = () => {
+    if (onAddTransaction) {
+      onAddTransaction();
+      return;
+    }
+    setInternalAddOpen(true);
+  };
 
   return (
     <>
-      <div className="space-y-1">
-        {addTransactionEnabled && (
-          <LoanAddTransactionControl loanId={loanId} loan={loan} className="mb-4 w-full border-dashed py-6" />
-        )}
-
-        <div className="flex items-center justify-between">
-          <h4 className="mb-2 text-sm font-medium text-muted-foreground">{t('table.transactions')}</h4>
-
-          <div className="flex items-center justify-between space-x-4 pb-2">
-            <div className="flex items-center gap-2">
-              <Switch
-                id="bookings-mode"
-                checked={showBookings}
-                onCheckedChange={(checked) => {
-                  setShowBookings(checked);
-                  setPage(0);
-                }}
-              />
-              <Label htmlFor="bookings-mode" className="cursor-pointer text-xs text-muted-foreground">
-                {showBookings ? t('table.bookings') : t('table.transactions')}
-              </Label>
-            </div>
-            <span className="text-xs text-muted-foreground tabular-nums">
-              {filtered.length} {filtered.length === 1 ? 'Eintrag' : 'Einträge'}
-            </span>
+      <div id={`loan-transactions-${loanId}`} className="space-y-1">
+        <div className="flex items-center justify-between gap-2 pb-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <Switch
+              id={`bookings-mode-${loanId}`}
+              checked={showBookings}
+              onCheckedChange={(checked) => {
+                setShowBookings(checked);
+                setPage(0);
+              }}
+            />
+            <label
+              htmlFor={`bookings-mode-${loanId}`}
+              className="cursor-pointer text-sm font-medium text-muted-foreground"
+            >
+              {showBookings ? t('table.bookings') : t('table.transactions')}
+            </label>
           </div>
+          {addTransactionEnabled && (
+            <ActionButton
+              intent="add"
+              density="xs"
+              icon={<Plus className="size-3" />}
+              label={commonT('terms.transaction')}
+              onClick={handleAddTransaction}
+              disabled={addTransactionDisabled}
+              tooltip={addTransactionDisabled ? t('transactions.addDisabledRepaid') : undefined}
+            />
+          )}
         </div>
 
         {paginated.map((transaction) => (
@@ -204,6 +222,10 @@ export function LoanTransactions({
           description={t('transactions.delete.confirmDescription')}
           confirmText={commonT('ui.actions.delete')}
         />
+      )}
+
+      {addTransactionEnabled && !onAddTransaction && (
+        <TransactionDialog loanId={loanId} loan={loan} open={internalAddOpen} onOpenChange={setInternalAddOpen} />
       )}
     </>
   );

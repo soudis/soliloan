@@ -6,6 +6,7 @@ import { useAction } from 'next-safe-action/hooks';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { deleteFaqCategoryAction } from '@/actions/help';
+import { ActionButton } from '@/components/ui/action-button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,10 +49,7 @@ export function FaqCategoryDialog({ categories }: FaqCategoryDialogProps) {
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button type="button" variant="outline" size="sm">
-            <FolderCog className="mr-2 h-4 w-4" />
-            {t('title')}
-          </Button>
+          <ActionButton intent="neutral" density="header" icon={<FolderCog className="h-4 w-4" />} label={t('title')} />
         </DialogTrigger>
         <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>

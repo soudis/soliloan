@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { ProjectDialog } from '@/components/projects/project-dialog';
-import { Button } from '@/components/ui/button';
+import { ActionButton } from '@/components/ui/action-button';
 import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useRouter } from '@/i18n/navigation';
@@ -333,14 +333,20 @@ export function ProjectsPageContent({ views, projects }: ProjectsPageContentProp
       <div className="mb-6 flex shrink-0 items-center justify-between">
         <h1 className="text-3xl font-bold">{t('title')}</h1>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => router.push('/projects/migrate-new')}>
-            <Import className="mr-2 h-4 w-4" />
-            {t('migrate.button')}
-          </Button>
-          <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('new.title')}
-          </Button>
+          <ActionButton
+            intent="neutral"
+            density="header"
+            icon={<Import className="h-4 w-4" />}
+            label={t('migrate.button')}
+            onClick={() => router.push('/projects/migrate-new')}
+          />
+          <ActionButton
+            intent="add"
+            density="header"
+            icon={<Plus className="h-4 w-4" />}
+            label={t('new.title')}
+            onClick={() => setDialogOpen(true)}
+          />
         </div>
       </div>
 

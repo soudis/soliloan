@@ -15,6 +15,7 @@ import {
   getLenderSampleLenderYearsAction,
   getSampleLenderYearsAction,
 } from '@/actions/templates/queries/get-template-data';
+import { ActionButton } from '@/components/ui/action-button';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -57,7 +58,7 @@ export type TemplateQuickActionsProps = {
   lenderSelfService?: boolean;
   /**
    * `default`: outline buttons with optional label on sm+ (lender header).
-   * `toolbar`: ghost icon buttons `h-8 w-8` (loan card toolbar, next to edit/delete).
+   * `toolbar`: outline icon buttons `h-8 w-8` (loan card toolbar, next to edit/delete).
    * `compact`: ghost icon buttons `h-7 w-7` (transaction rows).
    */
   density?: 'default' | 'compact' | 'toolbar';
@@ -453,10 +454,11 @@ export function TemplateQuickActions({
     return null;
   }
 
-  const triggerClass = density === 'compact' ? 'h-7 w-7' : density === 'toolbar' ? 'h-8 w-8' : 'h-9 px-3 sm:px-3';
-
   const isIconTrigger = density === 'compact' || density === 'toolbar';
   const iconClassName = density === 'default' ? 'h-4 w-4' : 'h-3.5 w-3.5';
+  const actionDensity = density === 'default' ? 'header' : density === 'toolbar' ? 'icon' : 'icon';
+  const actionIntent = density === 'compact' ? undefined : 'neutral';
+  const compactClass = density === 'compact' ? 'h-7 w-7 text-muted-foreground hover:text-foreground' : undefined;
 
   return (
     <>
@@ -470,16 +472,14 @@ export function TemplateQuickActions({
         {docTemplates.length > 0 && (
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant={isIconTrigger ? 'ghost' : 'outline'}
-                size={isIconTrigger ? 'icon' : 'sm'}
-                className={triggerClass}
-              >
-                <Download className={cn('shrink-0', iconClassName)} />
-                {!isIconTrigger && <span className="hidden sm:ml-2 sm:inline">{t('download')}</span>}
-                {isIconTrigger && <span className="sr-only">{t('download')}</span>}
-              </Button>
+              <ActionButton
+                intent={actionIntent}
+                density={actionDensity}
+                className={compactClass}
+                icon={<Download className={cn('shrink-0', iconClassName)} />}
+                label={isIconTrigger ? undefined : t('download')}
+                srOnly={isIconTrigger ? t('download') : undefined}
+              />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
               {docTemplates.map((tpl) => (
@@ -498,16 +498,14 @@ export function TemplateQuickActions({
         {emailTemplates.length > 0 && (
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant={isIconTrigger ? 'ghost' : 'outline'}
-                size={isIconTrigger ? 'icon' : 'sm'}
-                className={triggerClass}
-              >
-                <Mail className={cn('shrink-0', iconClassName)} />
-                {!isIconTrigger && <span className="hidden sm:ml-2 sm:inline">{t('email')}</span>}
-                {isIconTrigger && <span className="sr-only">{t('email')}</span>}
-              </Button>
+              <ActionButton
+                intent={actionIntent}
+                density={actionDensity}
+                className={compactClass}
+                icon={<Mail className={cn('shrink-0', iconClassName)} />}
+                label={isIconTrigger ? undefined : t('email')}
+                srOnly={isIconTrigger ? t('email') : undefined}
+              />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
               {emailTemplates.map((tpl) => (

@@ -4,10 +4,10 @@ import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
 import { ChevronDown, Mail, Phone } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import type { KeyboardEvent } from 'react';
 
 import { ProjectLogo } from '@/components/dashboard/project-logo';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
+import { NEUTRAL_ACTION_BUTTON_CLASS } from '@/components/ui/action-button-classes';
 import { Button } from '@/components/ui/button';
 import { InfoItem } from '@/components/ui/info-item';
 import { formatTerminationModalities } from '@/lib/table-column-utils';
@@ -38,12 +38,6 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
     onOpenChange(!isOpen);
   };
 
-  const handleHeaderKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    event.preventDefault();
-    handleToggle();
-  };
-
   const getTerminationModalities = () => formatTerminationModalities(loan, commonT, (d) => formatDateShort(d, locale));
 
   const lender = loan.lender;
@@ -57,20 +51,21 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
 
   const bankingLines = [lender.iban || null, lender.bic || null].filter(Boolean);
   const ibanGroups = lender.iban ? splitIbanIntoGroups(lender.iban) : [];
+  const contentId = `lender-loan-accordion-${loan.id}`;
+  const triggerId = `lender-loan-accordion-trigger-${loan.id}`;
 
   return (
     <div className="scroll-mt-24 rounded-lg border border-border bg-card text-card-foreground shadow-none">
-      <div
-        role="button"
-        tabIndex={0}
-        aria-expanded={isOpen}
-        aria-label={isOpen ? t('accordion.collapse') : t('accordion.expand')}
-        onClick={handleToggle}
-        onKeyDown={handleHeaderKeyDown}
-        className="flex flex-col gap-3 p-4 md:p-5 cursor-pointer"
-      >
+      <div className="flex flex-col gap-3 p-4 md:p-5">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex min-w-0 flex-1 items-center gap-3 text-left">
+          <button
+            type="button"
+            id={triggerId}
+            aria-expanded={isOpen}
+            aria-controls={contentId}
+            onClick={handleToggle}
+            className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
+          >
             <ProjectLogo
               project={project}
               className="h-14 w-14 md:h-16 md:w-16 rounded-2xl border border-border shrink-0"
@@ -97,18 +92,18 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
                 )}
               </div>
             </div>
-          </div>
-          <div
-            className="flex items-center gap-2"
-            onClick={(event) => event.stopPropagation()}
-            onKeyDown={(event) => event.stopPropagation()}
-          >
+          </button>
+          <div className="flex items-center gap-2">
             {projectEmail && (
-              <Button asChild variant="outline" size="sm" className="h-9 px-3 sm:px-3">
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className={cn(NEUTRAL_ACTION_BUTTON_CLASS, 'h-9 w-9 p-0 sm:w-auto sm:px-3')}
+              >
                 <a href={`mailto:${projectEmail}`}>
                   <Mail className="h-4 w-4 shrink-0" />
-                  <span className="hidden sm:ml-2 sm:inline">{tMy('contact')}</span>
-                  <span className="sr-only sm:hidden">{tMy('contact')}</span>
+                  <span className="sr-only sm:not-sr-only sm:inline">{tMy('contact')}</span>
                 </a>
               </Button>
             )}
@@ -122,7 +117,14 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
             />
           </div>
         </div>
-        <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 border-t pt-3">
+        <button
+          type="button"
+          aria-expanded={isOpen}
+          aria-controls={contentId}
+          aria-label={isOpen ? t('accordion.collapse') : t('accordion.expand')}
+          onClick={handleToggle}
+          className="grid w-full cursor-pointer grid-cols-[1fr_auto_1fr] items-center gap-2 border-t pt-3"
+        >
           <div className="text-left">
             <div className="text-xs text-muted-foreground">{tMy('balance')}</div>
             <div className="text-xl font-semibold tabular-nums">{formatCurrency(loan.balance)}</div>
@@ -137,13 +139,13 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
           <div className="justify-self-end">
             <LoanStatusBadge status={loan.status} />
           </div>
-        </div>
+        </button>
       </div>
 
       {isOpen && (
-        <>
+        <section id={contentId} aria-labelledby={triggerId}>
           <div className="border-t px-4 pb-4 pt-4 md:px-5">
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
               <div className="space-y-3">
                 <InfoItem
                   label={t('table.signDate')}
@@ -183,7 +185,7 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
                   />
                 )}
               </div>
-              <div className="space-y-3 lg:pl-2">
+              <div className="space-y-3 xl:pl-2">
                 <InfoItem
                   label={tMy('contact')}
                   value={
@@ -232,7 +234,7 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
           </div>
 
           <div className="border-t pb-0">
-            <div className="grid grid-cols-1 lg:grid-cols-2 lg:items-stretch">
+            <div className="grid grid-cols-1 xl:grid-cols-2 xl:items-stretch">
               <div className="space-y-1 px-4 py-4 md:px-5">
                 <LoanTransactions
                   loanId={loan.id}
@@ -243,14 +245,14 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
                   showAddTransaction={false}
                 />
               </div>
-              <div className="flex min-h-0 flex-col border-t border-border lg:border-t-0 lg:border-l lg:border-border">
-                <div className="flex flex-1 flex-col space-y-3 px-4 pb-4 pt-4 md:px-5 lg:py-4 lg:pl-6 lg:pr-4">
+              <div className="flex min-h-0 flex-col border-t border-border xl:border-t-0 xl:border-l xl:border-border">
+                <div className="flex flex-1 flex-col space-y-3 px-4 pb-4 pt-4 md:px-5 xl:py-4 xl:pl-6 xl:pr-4">
                   <LoanBalanceSummary loan={loan} readOnly />
                 </div>
               </div>
             </div>
           </div>
-        </>
+        </section>
       )}
     </div>
   );

@@ -190,6 +190,7 @@
   [data-slot="select-trigger"],
   [data-slot="button"] {
     box-shadow: none;
+    background-clip: padding-box;
   }
 }
 
@@ -200,6 +201,8 @@
 
   .border {
     @apply border-border;
+    /* Fill stays inside the 1px stroke so rounded corners don't darken. */
+    background-clip: padding-box;
   }
 
   body {

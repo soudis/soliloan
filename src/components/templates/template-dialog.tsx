@@ -3,10 +3,9 @@
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { TemplateCreateFormContent } from '@/components/templates/template-metadata-form';
+import { ActionButton } from '@/components/ui/action-button';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 interface TemplateDialogProps {
   projectId?: string;
@@ -24,10 +23,7 @@ export function TemplateDialog({ projectId, isAdmin, onCreated, children }: Temp
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children ?? (
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            {t('dialog.trigger')}
-          </Button>
+          <ActionButton intent="add" density="header" icon={<Plus className="h-4 w-4" />} label={t('dialog.trigger')} />
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

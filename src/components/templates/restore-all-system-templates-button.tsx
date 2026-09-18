@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { restoreAllSystemTemplatesFromFileAction } from '@/actions/templates/mutations/restore-system-template-from-file';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
-import { Button } from '@/components/ui/button';
+import { ActionButton } from '@/components/ui/action-button';
 import { useRouter } from '@/i18n/navigation';
 
 export function RestoreAllSystemTemplatesButton() {
@@ -36,10 +36,14 @@ export function RestoreAllSystemTemplatesButton() {
 
   return (
     <>
-      <Button type="button" variant="outline" disabled={isExecuting} onClick={() => setConfirmOpen(true)}>
-        <FolderSync className="h-4 w-4 mr-2" />
-        {t('list.actions.restoreAllFromFile')}
-      </Button>
+      <ActionButton
+        intent="neutral"
+        density="header"
+        icon={<FolderSync className="h-4 w-4" />}
+        label={t('list.actions.restoreAllFromFile')}
+        disabled={isExecuting}
+        onClick={() => setConfirmOpen(true)}
+      />
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}

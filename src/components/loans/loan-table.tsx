@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 
 import { bulkDeleteLoansAction, deleteLoanAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
-import { Button } from '@/components/ui/button';
+import { ActionButton } from '@/components/ui/action-button';
 import type { BulkAction } from '@/components/ui/data-table';
 import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -101,10 +101,13 @@ export function LoanTable({ loans, project, projectId, views, viewId }: LoanTabl
           <h1 className="text-3xl font-bold">{t('title')}</h1>
           {pageSubtitle ? <p className="mt-0.5 text-base font-normal text-muted-foreground">{pageSubtitle}</p> : null}
         </div>
-        <Button onClick={() => router.push('/loans/new')}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t('new.title')}
-        </Button>
+        <ActionButton
+          intent="add"
+          density="header"
+          icon={<Plus className="h-4 w-4" />}
+          label={t('new.title')}
+          onClick={() => router.push('/loans/new')}
+        />
       </div>
 
       <DataTable
