@@ -14,10 +14,12 @@ services:
       - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}.entrypoints=websecure
       - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}.service=${TRAEFIK_ROUTER_NAME:-soliloan}
       - traefik.http.services.${TRAEFIK_ROUTER_NAME:-soliloan}.loadbalancer.server.port=3000
+      # Brute-force shield for credential POSTs only. Matching /de/auth pages 429s a
+      # normal Next.js login load (document + RSC + prefetch) after logout.
       - traefik.http.middlewares.${TRAEFIK_ROUTER_NAME:-soliloan}-authratelimit.ratelimit.average=20
       - traefik.http.middlewares.${TRAEFIK_ROUTER_NAME:-soliloan}-authratelimit.ratelimit.burst=10
       - traefik.http.middlewares.${TRAEFIK_ROUTER_NAME:-soliloan}-authratelimit.ratelimit.period=1m
-      - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}-auth.rule=Host(`${TRAEFIK_HOST:?}`) && (PathPrefix(`/api/auth`) || PathPrefix(`/auth`) || PathPrefix(`/de/auth`))
+      - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}-auth.rule=Host(`${TRAEFIK_HOST:?}`) && PathPrefix(`/api/auth`) && Method(`POST`)
       - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}-auth.entrypoints=websecure
       - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}-auth.service=${TRAEFIK_ROUTER_NAME:-soliloan}
       - traefik.http.routers.${TRAEFIK_ROUTER_NAME:-soliloan}-auth.middlewares=${TRAEFIK_ROUTER_NAME:-soliloan}-authratelimit
