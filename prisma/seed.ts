@@ -82,7 +82,7 @@ const SYSTEM_TEMPLATES: Array<{
   {
     systemKey: 'defaultEmail',
     name: 'Standardvorlage E-Mail',
-    description: 'Ausgangsdesign für neue E-Mail-Vorlagen (bearbeitbar unter Admin)',
+    description: 'Ausgangsdesign für neue E-Mail-Vorlagen. Kann projektbezogen überschrieben werden.',
     type: 'EMAIL' as const,
     dataset: TemplateDataset.LENDER,
   },
