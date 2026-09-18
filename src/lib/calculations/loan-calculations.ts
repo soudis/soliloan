@@ -12,7 +12,7 @@ import { calculateOutstandingDeposits } from '@/lib/loans/savings-contract';
 import type { CalculationOptions } from '@/types/calculation';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
 import { createdAtDescSorter, transactionSorter } from '../utils/sorters';
-import { getLoanTermDays, getRepaymentPeriodDays } from './loan-duration-metrics';
+import { getFirstDepositDateFromTransactions, getLoanTermDays, getRepaymentPeriodDays } from './loan-duration-metrics';
 
 export const isRepaid = (loan: LoanWithRelations, toDate: Date) => {
   // check if all money was paid back until given date
@@ -36,13 +36,18 @@ export const isLoanTerminated = (loan: LoanWithRelations) => {
 };
 
 export const getLoanStatus = (loan: LoanWithRelations, toDate: Date) => {
-  if (loan.transactions.length === 0) {
+  const firstDeposit = getFirstDepositDateFromTransactions(loan.transactions);
+  if (!firstDeposit || moment(firstDeposit).isAfter(toDate, 'day')) {
     return LoanStatus.NOTDEPOSITED;
   }
   if (isRepaid(loan, toDate)) {
     return LoanStatus.REPAID;
   }
-  if (isLoanTerminated(loan)) {
+  if (
+    loan.terminationType === TerminationType.TERMINATION &&
+    loan.terminationDate &&
+    !moment(loan.terminationDate).isAfter(toDate, 'day')
+  ) {
     return LoanStatus.TERMINATED;
   }
   return LoanStatus.ACTIVE;
@@ -574,6 +579,7 @@ export function calculateLoanFieldsWithPerYear<T>(loan: LoanWithRelations & T, o
     isTerminated,
     repayDate: getRepayDate(loan),
     status: getLoanStatus(loan, toDate),
+    firstDepositDate: getFirstDepositDateFromTransactions(loan.transactions),
     amount: loan.amount,
     interestRate: loan.interestRate,
     // add calculated totals (balance, withdrawals, deposits, notReclaimed, interestPaid, interest)
