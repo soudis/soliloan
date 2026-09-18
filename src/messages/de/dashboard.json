@@ -1248,6 +1248,9 @@
       "statusPendingInvite": "Einladung verschickt",
       "statusExpiredInvite": "Einladung abgelaufen am {expiresAt}",
       "sendAgain": "Erneut senden",
+      "resendInviteSuccess": "Einladung wurde erneut gesendet",
+      "resendInviteError": "Einladung konnte nicht erneut gesendet werden.",
+      "addManagerEmailFailed": "Verwalter*in hinzugefügt. Die Einladungs-E-Mail konnte nicht gesendet werden. Bitte erneut senden.",
       "noManagers": "Noch keine Verwalter*innen",
       "addManagerSuccess": "Verwalter*in hinzugefügt",
       "addManagerDialogTitle": "Verwalter*in hinzufügen",
@@ -1260,7 +1263,8 @@
       "unlinkSelfConfirmDescription": "Sind Sie sicher, dass Sie sich selbst als Verwalter*in dieses Projekts entfernen möchten? Sie haben danach keinen Zugriff mehr auf die Konfiguration dieses Projekts.",
       "unlinkAdminSelfConfirmDescription": "Sind Sie sicher, dass Sie sich selbst Verwalter*in dieses Projekts entfernen möchten? Als Administrator*in behalten Sie weiterhin Zugriff auf das Projekt.",
       "removeManagerSuccess": "Verwalter*in entfernt.",
-      "cannotUnlinkLastManagerTooltip": "Es muss mindestens eine Verwalter*in im Projekt bleiben."
+      "cannotUnlinkLastManagerTooltip": "Es muss mindestens eine Verwalter*in im Projekt bleiben.",
+      "userNotFound": "Benutzer*in nicht gefunden."
     }
   },
   "notes": {

@@ -13,6 +13,7 @@ import { FormField } from '@/components/form/form-field';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
+import { useRouter } from '@/i18n/navigation';
 
 const addManagerFormSchema = z.object({
   email: z.string().min(1, { message: 'validation.common.required' }).email({ message: 'validation.common.email' }),
@@ -35,6 +36,7 @@ export function AddManagerDialog({ open, onOpenChange, projectId, onManagerAdded
   const t = useTranslations('dashboard.configuration');
   const commonT = useTranslations('common');
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { executeAsync: addManager, isExecuting } = useAction(addProjectManagerAction);
 
   const form = useForm<AddManagerFormData>({
@@ -58,8 +60,13 @@ export function AddManagerDialog({ open, onOpenChange, projectId, onManagerAdded
       return;
     }
     if (result?.data?.project) {
-      toast.success(t('managers.addManagerSuccess'));
+      if (result.data.emailSent === false) {
+        toast.warning(t('managers.addManagerEmailFailed'));
+      } else {
+        toast.success(t('managers.addManagerSuccess'));
+      }
       await queryClient.invalidateQueries({ queryKey: ['projects'] });
+      router.refresh();
       onManagerAdded?.();
       onOpenChange(false);
       form.reset(defaultValues);

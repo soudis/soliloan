@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { createAuditEntry, getManagerContext } from '@/lib/audit-trail';
 import { db } from '@/lib/db';
 import { type ProjectManagerInviteContext, sendProjectManagerInvitationEmail } from '@/lib/email';
-import { getInviteValidDays } from '@/lib/env';
+import { rotateManagerInvitationTokens } from '@/lib/invites/rotate-manager-invitation';
 import { loadProject } from '@/lib/projects/get-project';
 import { generateToken } from '@/lib/token';
 import { normalizeStoredEmail } from '@/lib/utils/email';
@@ -44,9 +44,6 @@ export const addProjectManagerAction = projectAction
     const isNewUser = !user;
 
     if (!user) {
-      const invitationToken = generateToken();
-      const expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() + getInviteValidDays());
       const passwordHashed = await hashPassword(generateToken());
 
       user = await db.user.create({
@@ -55,15 +52,13 @@ export const addProjectManagerAction = projectAction
           name: '',
           emailVerified: null,
           password: passwordHashed,
-          inviteToken: invitationToken,
-          inviteTokenExpiresAt: expirationDate,
-          passwordResetToken: invitationToken,
-          passwordResetTokenExpiresAt: expirationDate,
-          lastInvited: new Date(),
           language: project.configuration.userLanguage ?? undefined,
         },
       });
     }
+
+    const shouldInvite = isNewUser || Boolean(user.inviteToken);
+    const invitationToken = shouldInvite ? await rotateManagerInvitationTokens(user.id) : null;
 
     await db.project.update({
       where: { id: projectId },
@@ -89,7 +84,8 @@ export const addProjectManagerAction = projectAction
       projectId,
     });
 
-    if (isNewUser && user.inviteToken) {
+    let emailSent = true;
+    if (invitationToken) {
       const managerContext: ProjectManagerInviteContext = {
         projectId: project.id,
         projectName: project.configuration.name,
@@ -97,15 +93,20 @@ export const addProjectManagerAction = projectAction
         configData: project.configuration as unknown as Record<string, unknown>,
       };
 
-      await sendProjectManagerInvitationEmail(
-        normalizedEmail,
-        user.name || project.configuration.name,
-        user.inviteToken,
-        user.language || 'de',
-        managerContext,
-      );
+      try {
+        await sendProjectManagerInvitationEmail(
+          normalizedEmail,
+          user.name || project.configuration.name,
+          invitationToken,
+          user.language || 'de',
+          managerContext,
+        );
+      } catch (error) {
+        console.error('Failed to send manager invitation email', error);
+        emailSent = false;
+      }
     }
 
     const updated = await loadProject(projectId);
-    return { project: updated };
+    return { project: updated, emailSent };
   });
