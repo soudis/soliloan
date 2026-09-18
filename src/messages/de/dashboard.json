@@ -785,6 +785,10 @@
     "description": "Verwalte deine Kredite und deren Details.",
     "viewLoans": "Kredite anzeigen",
     "details": "Verwalte deine Kredite und deren Details.",
+    "accordion": {
+      "expand": "Kredit aufklappen",
+      "collapse": "Kredit zuklappen"
+    },
     "dropdown": {
       "selectFallback": "Kredit auswählen"
     },
@@ -1068,6 +1072,7 @@
       "managers": "Verwalter*innen",
       "lender": "Kreditgeber*innen",
       "loans": "Kredite",
+      "legal": "Rechtliches",
       "templates": "Vorlagen",
       "files": "Downloads"
     },
