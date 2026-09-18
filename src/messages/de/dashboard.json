@@ -872,6 +872,7 @@
       "isSavingsContract": "Ansparvertrag",
       "isSavingsContractShort": "Ansparv.",
       "signDate": "Vertragsdatum",
+      "firstDepositDate": "Einzahlungsdatum",
       "repayDate": "Rückzahlungsfrist",
       "repayDateShort": "Rückzahlung",
       "loanTerm": "Kreditlaufzeit",

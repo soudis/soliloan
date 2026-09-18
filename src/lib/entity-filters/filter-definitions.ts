@@ -58,6 +58,7 @@ export function buildLoanColumnFiltersMap(
   return {
     loanNumber: { type: 'number', label: t('table.loanNumber'), defaultOperator: 'eq' },
     signDate: { type: 'date', label: t('table.signDate'), allowEmpty: false },
+    firstDepositDate: { type: 'date', label: t('table.firstDepositDate'), allowEmpty: true },
     amount: { type: 'number', label: t('table.amount'), defaultOperator: 'eq' },
     balance: { type: 'number', label: t('table.balance') },
     deposits: { type: 'number', label: t('table.deposits') },

@@ -8,8 +8,8 @@ import {
 } from '@/lib/dashboard/table-widget/lender-profile-columns';
 import { getLenderSortValue } from '@/lib/dashboard/table-widget/lender-table-column-registry';
 import {
-  createAdditionalFieldsColumns,
   createAdditionalFieldDefaultColumnVisibility,
+  createAdditionalFieldsColumns,
   createBooleanColumn,
   createCurrencyColumn,
   createDateColumn,
@@ -35,6 +35,7 @@ export type LoanTableColumnMeta = {
 export const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
   { id: 'loanNumber', labelKey: 'table.loanNumber' },
   { id: 'signDate', labelKey: 'table.signDate' },
+  { id: 'firstDepositDate', labelKey: 'table.firstDepositDate' },
   { id: 'amount', labelKey: 'table.amount' },
   { id: 'deposits', labelKey: 'table.deposits' },
   { id: 'withdrawals', labelKey: 'table.withdrawals' },
@@ -133,6 +134,7 @@ export function buildLoanTableColumns(
   return [
     createNumberColumn<LoanWithCalculations>('loanNumber', 'table.loanNumber', t, locale, { hashPrefix: true }),
     createDateColumn<LoanWithCalculations>('signDate', 'table.signDate', t, locale),
+    createDateColumn<LoanWithCalculations>('firstDepositDate', 'table.firstDepositDate', t, locale),
     createCurrencyColumn<LoanWithCalculations>('amount', 'table.amount', t, locale),
     createCurrencyColumn<LoanWithCalculations>('deposits', 'table.deposits', t, locale),
     createCurrencyColumn<LoanWithCalculations>('withdrawals', 'table.withdrawals', t, locale),
@@ -361,6 +363,7 @@ export function getLoanSortValue(
 export const LOAN_TABLE_COLUMN_IDS = [
   'loanNumber',
   'signDate',
+  'firstDepositDate',
   'amount',
   'deposits',
   'withdrawals',

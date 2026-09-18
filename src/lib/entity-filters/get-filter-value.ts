@@ -1,11 +1,11 @@
 import type { Transaction } from '@prisma/client';
 import moment from 'moment';
-
-import { formatTerminationModalities } from '@/lib/table-column-utils';
 import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
+import { getLoanStatus } from '@/lib/calculations/loan-calculations';
+import { hasFirstDepositOnOrBefore } from '@/lib/calculations/loan-duration-metrics';
+import { formatTerminationModalities } from '@/lib/table-column-utils';
 import type { LoanMonthlyNumbers } from '@/types/dashboard';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
-import { getLoanStatus } from '@/lib/calculations/loan-calculations';
 
 import { isLenderAggregateFilterField } from './filter-definitions';
 
@@ -139,6 +139,8 @@ export function getLoanFilterValue(
       return getLenderDisplayName(loan.lender);
     case 'signDate':
       return loan.signDate;
+    case 'firstDepositDate':
+      return loan.firstDepositDate;
     case 'amount':
       return loan.amount;
     case 'interestRate':
@@ -203,12 +205,5 @@ export function loanActiveAtPeriodEnd(
   loan: DashboardLoan & { transactions?: Transaction[] },
   periodEnd: Date,
 ): boolean {
-  if (moment(loan.signDate).isAfter(periodEnd, 'day')) {
-    return false;
-  }
-  if (!loan.transactions?.length) {
-    return false;
-  }
-  const status = getLoanStatusAtPeriod(loan, periodEnd);
-  return status !== LoanStatus.NOTDEPOSITED;
+  return hasFirstDepositOnOrBefore(loan, periodEnd);
 }
