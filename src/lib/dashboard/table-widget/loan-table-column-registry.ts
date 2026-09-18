@@ -49,6 +49,7 @@ export const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] =
   { id: 'interestRate', labelKey: 'table.interestRate' },
   { id: 'interest', labelKey: 'table.interest' },
   { id: 'interestPaid', labelKey: 'table.interestPaid' },
+  { id: 'interestPaymentType', labelKey: 'table.interestPaymentType' },
   { id: 'terminationType', labelKey: 'table.terminationType' },
   { id: 'terminationModalities', labelKey: 'table.terminationModalities' },
   { id: 'repayDate', labelKey: 'table.repayDate' },
@@ -160,6 +161,14 @@ export function buildLoanTableColumns(
     createPercentageColumn<LoanWithCalculations>('interestRate', 'table.interestRate', t, locale),
     createCurrencyColumn<LoanWithCalculations>('interest', 'table.interest', t, locale),
     createCurrencyColumn<LoanWithCalculations>('interestPaid', 'table.interestPaid', t, locale),
+    createEnumBadgeColumn<LoanWithCalculations>(
+      'interestPaymentType',
+      'table.interestPaymentType',
+      'enums.loan.interestPaymentType',
+      t,
+      commonT,
+      () => 'outline',
+    ),
     createEnumBadgeColumn<LoanWithCalculations>(
       'terminationType',
       'table.terminationType',
@@ -322,6 +331,8 @@ export function getLoanSortValue(
       return commonT(`enums.loan.status.${row.status}`);
     case 'terminationType':
       return row.terminationType ? commonT(`enums.loan.terminationType.${row.terminationType}`) : '';
+    case 'interestPaymentType':
+      return row.interestPaymentType ? commonT(`enums.loan.interestPaymentType.${row.interestPaymentType}`) : '';
     case 'altInterestMethod':
       return row.altInterestMethod ? commonT(`enums.interestMethod.${row.altInterestMethod}`) : '';
     case 'contractStatus':
@@ -364,6 +375,7 @@ export const LOAN_TABLE_COLUMN_IDS = [
   'interestRate',
   'interest',
   'interestPaid',
+  'interestPaymentType',
   'terminationType',
   'terminationModalities',
   'repayDate',

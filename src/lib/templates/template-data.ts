@@ -20,6 +20,7 @@ import { transactionSorter } from '@/lib/utils/sorters';
 import deDashboardMessages from '@/messages/de/dashboard.json';
 import type { LenderWithRelations } from '@/types/lenders';
 import type { LoanWithRelations } from '@/types/loans';
+import { interestPaymentTypeLabel } from './interest-payment-type-label';
 
 /** Options for template rendering (e.g. reporting year for `LENDER_YEARLY`). */
 export type TemplateDataOptions = {
@@ -437,6 +438,7 @@ function formatLoanFields(loan: TemplateLoanRecord, locale: string) {
     endDateLong: formatDateLong(loan.endDate, locale),
     terminationDate: formatDateShort(loan.terminationDate, locale),
     terminationDateLong: formatDateLong(loan.terminationDate, locale),
+    interestPaymentType: interestPaymentTypeLabel(loan.interestPaymentType as string | null | undefined),
     contractStatus: loan.contractStatus === 'COMPLETED' ? 'Abgeschlossen' : 'Laufend',
     isSavingsContract: loan.isSavingsContract ? 'Ja' : 'Nein',
     savingsRateType: loan.isSavingsContract ? savingsRateTypeLabel(loan.savingsRateType) : '',

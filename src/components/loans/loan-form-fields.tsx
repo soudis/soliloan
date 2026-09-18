@@ -1,6 +1,6 @@
 'use client';
 
-import { ContractStatus, type Lender } from '@prisma/client';
+import { ContractStatus, InterestPaymentType, type Lender } from '@prisma/client';
 import { FileX, PiggyBank } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -104,15 +104,27 @@ export function LoanFormFields({ lenders, isEditMode = false, currentLoanId }: L
               </div>
             )}
 
-            <FormSelect
-              name="contractStatus"
-              label={`${t('new.form.contractStatus')} *`}
-              placeholder={commonT('ui.form.selectPlaceholder')}
-              options={Object.keys(ContractStatus).map((key) => ({
-                value: key,
-                label: commonT(`enums.loan.contractStatus.${key}`),
-              }))}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormSelect
+                name="interestPaymentType"
+                label={`${t('new.form.interestPaymentType')} *`}
+                placeholder={commonT('ui.form.selectPlaceholder')}
+                options={Object.keys(InterestPaymentType).map((key) => ({
+                  value: key,
+                  label: commonT(`enums.loan.interestPaymentType.${key}`),
+                }))}
+              />
+
+              <FormSelect
+                name="contractStatus"
+                label={`${t('new.form.contractStatus')} *`}
+                placeholder={commonT('ui.form.selectPlaceholder')}
+                options={Object.keys(ContractStatus).map((key) => ({
+                  value: key,
+                  label: commonT(`enums.loan.contractStatus.${key}`),
+                }))}
+              />
+            </div>
           </FormSection>
 
           <div className="flex min-w-0 flex-col gap-8 lg:w-1/2">

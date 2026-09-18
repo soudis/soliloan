@@ -3,6 +3,7 @@ import {
   Country,
   DurationType,
   InterestMethod,
+  InterestPaymentType,
   LenderType,
   NotificationType,
   PaymentType,
@@ -172,6 +173,37 @@ export function mapInterestMethod(
   if (mapped) return mapped;
   warnings.push({ entity: 'contract', legacyId, message: `Unbekannte Zinsmethode "${value}" -> null` });
   return null;
+}
+
+export function parseInterestPaymentType(value: string | null | undefined): InterestPaymentType | null {
+  switch ((value ?? '').toLowerCase()) {
+    case 'yearly':
+      return InterestPaymentType.YEARLY;
+    case 'end':
+      return InterestPaymentType.END;
+    default:
+      return null;
+  }
+}
+
+export function mapInterestPaymentType(
+  value: string | null | undefined,
+  fallback: InterestPaymentType,
+  warnings: MigrationWarning[],
+  legacyId: number,
+): InterestPaymentType {
+  const mapped = parseInterestPaymentType(value);
+  if (mapped) return mapped;
+
+  if (value !== null && value !== undefined && value !== '') {
+    warnings.push({
+      entity: 'contract',
+      legacyId,
+      message: `Unbekannte Zinsauszahlungsart "${value}" -> Default ${fallback}`,
+    });
+  }
+
+  return fallback;
 }
 
 export function mapContractStatus(value: string): ContractStatus {

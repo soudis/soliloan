@@ -1,4 +1,12 @@
-import { ContractStatus, Country, DurationType, InterestMethod, Salutation, ViewType } from '@prisma/client';
+import {
+  ContractStatus,
+  Country,
+  DurationType,
+  InterestMethod,
+  InterestPaymentType,
+  Salutation,
+  ViewType,
+} from '@prisma/client';
 import { z } from 'zod';
 
 import { isValidIban } from '@/lib/utils/iban';
@@ -244,6 +252,9 @@ export const bankingSchema = z.object({
 // Interest method enum
 export const interestMethodEnum = selectEnumOptional(InterestMethod);
 export const interestMethodEnumRequired = selectEnumRequired(InterestMethod);
+
+// Interest payment type enum
+export const interestPaymentTypeEnum = selectEnumRequired(InterestPaymentType);
 
 // Salutation enum
 export const salutationEnumRequired = selectEnumRequired(Salutation);

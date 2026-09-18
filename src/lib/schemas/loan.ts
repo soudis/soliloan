@@ -1,4 +1,10 @@
-import type { ContractStatus, DurationType, InterestMethod, SavingsRateType } from '@prisma/client';
+import type {
+  ContractStatus,
+  DurationType,
+  InterestMethod,
+  InterestPaymentType,
+  SavingsRateType,
+} from '@prisma/client';
 import { SavingsRateType as SavingsRateTypeEnum, TerminationType } from '@prisma/client';
 import { z } from 'zod';
 
@@ -8,6 +14,7 @@ import {
   createDateSchema,
   createNumberSchemaRequired,
   interestMethodEnum,
+  interestPaymentTypeEnum,
   optionalIntSchema,
   optionalNumberSchema,
   periodTypeEnum,
@@ -125,6 +132,7 @@ export const loanFormSchema = z
     signDate: createDateSchema(true),
     amount: createNumberSchemaRequired(0.01),
     interestRate: createNumberSchemaRequired(0),
+    interestPaymentType: interestPaymentTypeEnum,
 
     // Termination Information
     ...loanTerminationSchema.shape,
@@ -150,6 +158,7 @@ export type LoanFormClientData = {
   signDate: Date | '' | null;
   amount: string;
   interestRate: string;
+  interestPaymentType: InterestPaymentType | null;
   terminationType: TerminationType;
   endDate: Date | '' | null;
   terminationPeriod: '' | number | null;

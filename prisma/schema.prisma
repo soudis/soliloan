@@ -296,6 +296,7 @@ model Loan {
   savingsLastDepositDate  DateTime?
   amount                Float
   interestRate          Float
+  interestPaymentType   InterestPaymentType @default(YEARLY)
   altInterestMethod     InterestMethod?
   contractStatus        ContractStatus
   investmentTypeId      String?
@@ -686,6 +687,11 @@ enum DashboardLayoutScope {
   GLOBAL_DEFAULT
   PROJECT
   USER
+}
+
+enum InterestPaymentType {
+  YEARLY
+  END
 }
 
 enum TerminationType {

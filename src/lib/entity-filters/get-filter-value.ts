@@ -143,6 +143,8 @@ export function getLoanFilterValue(
       return loan.amount;
     case 'interestRate':
       return loan.interestRate;
+    case 'interestPaymentType':
+      return loan.interestPaymentType;
     case 'terminationType':
       return loan.terminationType;
     case 'terminationModalities':
