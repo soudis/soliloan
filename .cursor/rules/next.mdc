@@ -12,6 +12,8 @@ globs: **/*.tsx, **/*.ts, src/**/*.ts, src/**/*.tsx
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
+When using `next-dev-loop` or Next.js MCP against `pnpm docker:dev up`, follow **Docker development (host vs container)** in `AGENTS.md`: probe MCP at `http://localhost:3000/_next/mcp`, drive the browser at `https://soliloan.localhost`, and rewrite container paths `/app/...` to this repository root.
+
 # Next.js Best Practices
 
 ## PNPM

@@ -35,6 +35,9 @@ The project uses a modular Docker Compose architecture.
 - **Environment**:
   - `NODE_ENV=development`
   - Uses `soliloan.localhost` domain via Traefik.
+- **Ports**:
+  - Publishes `127.0.0.1:3000:3000` so host tools can reach `/_next/mcp`.
+  - Browser and auth stay on Traefik (`https://soliloan.localhost`). Do not treat `http://localhost:3000` as the app origin.
 
 # Networking & Traefik
 
