@@ -6,18 +6,39 @@ import type { LoanWithRelations } from '@/types/loans';
 
 import { isRepaid } from './loan-calculations';
 
-type LoanWithTransactions = Pick<LoanWithRelations, 'transactions' | 'terminationType' | 'terminationDate'>;
+type LoanWithTransactions = Pick<LoanWithRelations, 'transactions' | 'terminationType' | 'terminationDate'> & {
+  firstDepositDate?: Date | null;
+};
 
 function asLoanWithRelations(loan: LoanWithTransactions): LoanWithRelations {
   return loan as LoanWithRelations;
 }
 
-export function getFirstDepositDate(loan: LoanWithTransactions): Date | null {
-  const deposits = loan.transactions
+export function getFirstDepositDateFromTransactions(
+  transactions: { type: TransactionType; date: Date }[] | undefined,
+): Date | null {
+  if (!transactions?.length) {
+    return null;
+  }
+
+  const deposits = transactions
     .filter((transaction) => transaction.type === TransactionType.DEPOSIT)
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 
   return deposits[0]?.date ?? null;
+}
+
+export function getFirstDepositDate(loan: LoanWithTransactions): Date | null {
+  if (loan.firstDepositDate !== undefined) {
+    return loan.firstDepositDate;
+  }
+
+  return getFirstDepositDateFromTransactions(loan.transactions);
+}
+
+export function hasFirstDepositOnOrBefore(loan: LoanWithTransactions, periodEnd: Date): boolean {
+  const firstDeposit = getFirstDepositDate(loan);
+  return firstDeposit != null && !moment(firstDeposit).isAfter(periodEnd, 'day');
 }
 
 export function getLoanTermEndDate(loan: LoanWithTransactions, toDate: Date): Date {
