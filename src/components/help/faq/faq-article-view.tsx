@@ -66,17 +66,19 @@ export function FaqArticleView({ article, isAdmin, categories, pickerArticles }:
         {isAdmin ? (
           <>
             <ActionButton
+              intent="edit"
+              density="icon"
               icon={<Pencil className="h-4 w-4" />}
               tooltip={tUi('edit')}
               srOnly={tUi('edit')}
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
               onClick={() => void setEditing(true)}
             />
             <ActionButton
+              intent="delete"
+              density="icon"
               icon={<Trash2 className="h-4 w-4" />}
               tooltip={tUi('delete')}
               srOnly={tUi('delete')}
-              className="h-8 w-8 text-muted-foreground hover:text-destructive"
               onClick={() => setConfirmDelete(true)}
             />
           </>

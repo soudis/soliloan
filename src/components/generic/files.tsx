@@ -2,7 +2,7 @@
 
 import type { File } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { Download, FileIcon, FileText, Image as ImageIcon, Lock, Plus, Trash2, Unlock } from 'lucide-react';
+import { Download, FileIcon, FileText, Image as ImageIcon, Lock, Trash2, Unlock } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -13,7 +13,6 @@ import { formatDateLong } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { Button } from '../ui/button';
 import { ConfirmDialog } from './confirm-dialog';
-import { FileDialog } from './file-dialog';
 import { LoanReferenceLink } from './loan-reference-link';
 
 interface FilesProps {
@@ -23,10 +22,9 @@ interface FilesProps {
   lenderId: string;
 }
 
-export function Files({ files, loans, loanId, lenderId }: FilesProps) {
+export function Files({ files, loans, lenderId }: FilesProps) {
   const t = useTranslations('dashboard.files');
   const commonT = useTranslations('common');
-  const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const [isConfirmOpen, setIsConfirmOpen] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -105,121 +103,107 @@ export function Files({ files, loans, loanId, lenderId }: FilesProps) {
   };
 
   return (
-    <>
-      <div className="mt-6 flex flex-col gap-4">
-        <Button variant="outline" className="w-full border-dashed py-6" onClick={() => setIsFileDialogOpen(true)}>
-          <Plus className="h-8 w-8 mb-2" />
-          <span className="text-sm">{t('add')}</span>
-        </Button>
-
-        <div className="grid grid-cols-1 gap-4 auto-rows-fr">
-          {files.map((file) => (
-            <div
-              key={file.id}
-              className="min-h-[120px] relative group rounded-lg border border-border shadow-none transition-colors duration-200 h-full flex overflow-hidden"
-              style={{
-                backgroundColor: file.public
-                  ? 'color-mix(in oklch, var(--warning) 15%, var(--background))'
-                  : 'color-mix(in oklch, var(--info) 15%, var(--background))',
-                border: '1px solid rgba(0,0,0,0.05)',
-              }}
-            >
-              {hasThumbnail(file.mimeType) && !imageErrors[file.id] ? (
-                <div className="relative w-32 flex-shrink-0">
-                  {/** biome-ignore lint/performance/noImgElement: needed */}
-                  <img
-                    src={`/api/files/${file.id}/thumbnail`}
-                    alt={file.name}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    onError={() => handleImageError(file.id)}
-                  />
-                </div>
-              ) : (
-                <div
-                  className={`w-32 flex-shrink-0 flex items-center justify-center relative ${file.public ? 'bg-warning/20' : 'bg-info/20'}`}
-                >
-                  {getFileTypeIcon(file)}
-                </div>
-              )}
-
-              <div className="absolute top-2 right-2 flex space-x-1 z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 bg-background/50 hover:bg-background"
-                  onClick={() => handleDownloadFile(file)}
-                >
-                  <Download className="h-4 w-4" />
-                  <span className="sr-only">{commonT('ui.actions.download')}</span>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 bg-background/50 hover:bg-background"
-                  onClick={() => setIsConfirmOpen(file.id)}
-                >
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                  <span className="sr-only">{commonT('ui.actions.delete')}</span>
-                </Button>
+    <div className="flex flex-col gap-4">
+      {files.length === 0 && <p className="text-sm text-muted-foreground">{t('noFiles')}</p>}
+      <div className="grid grid-cols-1 gap-4 auto-rows-fr">
+        {files.map((file) => (
+          <div
+            key={file.id}
+            className="min-h-[120px] relative group rounded-lg border border-border shadow-none transition-colors duration-200 h-full flex overflow-hidden"
+            style={{
+              backgroundColor: file.public
+                ? 'color-mix(in oklch, var(--warning) 15%, var(--background))'
+                : 'color-mix(in oklch, var(--info) 15%, var(--background))',
+              border: '1px solid rgba(0,0,0,0.05)',
+            }}
+          >
+            {hasThumbnail(file.mimeType) && !imageErrors[file.id] ? (
+              <div className="relative w-32 flex-shrink-0">
+                {/** biome-ignore lint/performance/noImgElement: needed */}
+                <img
+                  src={`/api/files/${file.id}/thumbnail`}
+                  alt={file.name}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  onError={() => handleImageError(file.id)}
+                />
               </div>
-              <div className="flex flex-col h-full p-3 flex-1">
-                <div className="flex items-start space-x-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium">{file.name}</div>
-                    <div className="text-xs text-muted-foreground mt-1">{getFileTypeLabel(file.mimeType)}</div>
-                    {file.description && <div className="text-xs text-muted-foreground mt-1">{file.description}</div>}
-                  </div>
-                </div>
-                <div className="flex items-center justify-end space-x-3  mt-auto pt-2">
-                  {file.loanId && loans && (
-                    <LoanReferenceLink
-                      loanId={file.loanId}
-                      loanNumber={loans.find((loan) => loan.id === file.loanId)?.loanNumber}
-                      className="mr-auto"
-                    />
-                  )}
-
-                  {file.createdAt && (
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      {formatDateLong(file.createdAt, locale)}
-                    </div>
-                  )}
-                  <div className="text-xs text-muted-foreground">{file.createdBy.name}</div>
-                  <div className="text-xs text-muted-foreground">•</div>
-                  {file.public ? (
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      <Unlock className="h-3 w-3 mr-1" />
-                      {t('public')}
-                    </div>
-                  ) : (
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      <Lock className="h-3 w-3 mr-1" />
-                      {t('private')}
-                    </div>
-                  )}
-                </div>
+            ) : (
+              <div
+                className={`w-32 flex-shrink-0 flex items-center justify-center relative ${file.public ? 'bg-warning/20' : 'bg-info/20'}`}
+              >
+                {getFileTypeIcon(file)}
               </div>
+            )}
 
-              <ConfirmDialog
-                open={isConfirmOpen === file.id}
-                onOpenChange={(open) => setIsConfirmOpen(open ? file.id : null)}
-                onConfirm={() => handleDeleteFile(file.id)}
-                title={t('delete.confirmTitle')}
-                description={t('delete.confirmDescription', { name: file.name })}
-                confirmText={commonT('ui.actions.delete')}
-              />
+            <div className="absolute top-2 right-2 flex space-x-1 z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 bg-background/50 hover:bg-background"
+                onClick={() => handleDownloadFile(file)}
+              >
+                <Download className="h-4 w-4" />
+                <span className="sr-only">{commonT('ui.actions.download')}</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 bg-background/50 hover:bg-background"
+                onClick={() => setIsConfirmOpen(file.id)}
+              >
+                <Trash2 className="h-4 w-4 text-destructive" />
+                <span className="sr-only">{commonT('ui.actions.delete')}</span>
+              </Button>
             </div>
-          ))}
-        </div>
-      </div>
+            <div className="flex flex-col h-full p-3 flex-1">
+              <div className="flex items-start space-x-3">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium">{file.name}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{getFileTypeLabel(file.mimeType)}</div>
+                  {file.description && <div className="text-xs text-muted-foreground mt-1">{file.description}</div>}
+                </div>
+              </div>
+              <div className="flex items-center justify-end space-x-3  mt-auto pt-2">
+                {file.loanId && loans && (
+                  <LoanReferenceLink
+                    loanId={file.loanId}
+                    loanNumber={loans.find((loan) => loan.id === file.loanId)?.loanNumber}
+                    className="mr-auto"
+                  />
+                )}
 
-      <FileDialog
-        lenderId={lenderId}
-        loanId={loanId}
-        loans={loans}
-        open={isFileDialogOpen}
-        onOpenChange={setIsFileDialogOpen}
-      />
-    </>
+                {file.createdAt && (
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    {formatDateLong(file.createdAt, locale)}
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground">{file.createdBy.name}</div>
+                <div className="text-xs text-muted-foreground">•</div>
+                {file.public ? (
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <Unlock className="h-3 w-3 mr-1" />
+                    {t('public')}
+                  </div>
+                ) : (
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <Lock className="h-3 w-3 mr-1" />
+                    {t('private')}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <ConfirmDialog
+              open={isConfirmOpen === file.id}
+              onOpenChange={(open) => setIsConfirmOpen(open ? file.id : null)}
+              onConfirm={() => handleDeleteFile(file.id)}
+              title={t('delete.confirmTitle')}
+              description={t('delete.confirmDescription', { name: file.name })}
+              confirmText={commonT('ui.actions.delete')}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

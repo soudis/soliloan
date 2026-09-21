@@ -68,15 +68,16 @@ export function NoteRichTextEditor({ value, onChange, placeholder, className }: 
         'flex min-h-[120px] flex-col overflow-hidden rounded-md border border-border bg-background',
         className,
       )}
+      onMouseDown={(event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        if (target.closest('button, input, textarea')) return;
+        if (editor.view.dom.contains(target) && target !== editor.view.dom) return;
+        editor.chain().focus('end').run();
+      }}
     >
       <NoteEditorToolbar editor={editor} />
-      <div
-        className="relative min-h-[5rem] flex-1 px-3 py-2"
-        onMouseDown={(event) => {
-          if (event.target !== event.currentTarget) return;
-          editor.chain().focus('end').run();
-        }}
-      >
+      <div className="relative min-h-[5rem] flex-1 px-3 py-2">
         {placeholder && isEmpty && !isFocused ? (
           <p className="pointer-events-none absolute left-3 top-2 text-sm text-muted-foreground">{placeholder}</p>
         ) : null}

@@ -24,9 +24,11 @@ interface TransactionDialogProps {
   loan: LoanDetailsWithCalculations;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Called after a successful create (not cancel). */
+  onCreated?: () => void;
 }
 
-export function TransactionDialog({ loanId, loan, open, onOpenChange }: TransactionDialogProps) {
+export function TransactionDialog({ loanId, loan, open, onOpenChange, onCreated }: TransactionDialogProps) {
   const t = useTranslations('dashboard.loans');
   const commonT = useTranslations('common');
   const locale = useLocale();
@@ -60,6 +62,7 @@ export function TransactionDialog({ loanId, loan, open, onOpenChange }: Transact
       return;
     }
     toast.success(t('transactions.createSuccess'));
+    onCreated?.();
     onOpenChange(false);
     form.reset();
     queryClient.invalidateQueries({ queryKey: ['lender'] });

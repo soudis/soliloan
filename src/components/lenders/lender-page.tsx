@@ -2,7 +2,9 @@
 
 import { BarChart3, Files as FilesIcon, User, Wallet } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { FileDialog } from '@/components/generic/file-dialog';
+import { NoteDialog } from '@/components/generic/note-dialog';
 import type { LenderDetailsWithCalculations } from '@/types/lenders';
 import { LenderContactSection } from './lender-contact-section';
 import { LenderFinancialsSection } from './lender-financials-section';
@@ -17,6 +19,8 @@ type Props = {
 
 export const LenderPage = ({ lender }: Props) => {
   const t = useTranslations('dashboard.lenders.lenderPage');
+  const [noteCreateOpen, setNoteCreateOpen] = useState(false);
+  const [fileCreateOpen, setFileCreateOpen] = useState(false);
 
   const totalNotes = lender.allNotes.length;
   const totalFiles = lender.allFiles.length;
@@ -53,24 +57,33 @@ export const LenderPage = ({ lender }: Props) => {
     <div className="flex flex-col gap-6 mb-256">
       <div className="lg:pointer-events-none lg:sticky lg:top-0 lg:z-30 lg:-mx-6 lg:px-6 lg:pb-4 lg:bg-transparent lg:backdrop-blur-sm lg:border-b lg:border-border/60">
         <div className="lg:pointer-events-auto">
-          <LenderPageHeader lender={lender} />
+          <LenderPageHeader
+            lender={lender}
+            onAddNote={() => setNoteCreateOpen(true)}
+            onAddFile={() => setFileCreateOpen(true)}
+          />
         </div>
       </div>
 
-      {/* Mobile/Tablet: horizontal nav bar */}
       <SectionNavBar items={navItems} />
 
       <div className="flex gap-8">
-        {/* Desktop: sticky sidebar nav */}
         <SectionNavSidebar items={navItems} />
 
         <div className="flex-1 min-w-0 flex flex-col gap-8">
           <LenderContactSection lender={lender} />
           <LenderFinancialsSection lender={lender} />
           <LenderLoansSection lender={lender} />
-          <LenderNotesFilesSection lender={lender} />
+          <LenderNotesFilesSection
+            lender={lender}
+            onAddNote={() => setNoteCreateOpen(true)}
+            onAddFile={() => setFileCreateOpen(true)}
+          />
         </div>
       </div>
+
+      <NoteDialog lenderId={lender.id} loans={lender.loans} open={noteCreateOpen} onOpenChange={setNoteCreateOpen} />
+      <FileDialog lenderId={lender.id} loans={lender.loans} open={fileCreateOpen} onOpenChange={setFileCreateOpen} />
     </div>
   );
 };

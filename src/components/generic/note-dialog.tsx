@@ -25,9 +25,11 @@ interface NoteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   note?: Note;
+  /** Called after a successful create (not update or cancel). */
+  onCreated?: () => void;
 }
 
-export function NoteDialog({ lenderId, loanId, open, loans, onOpenChange, note }: NoteDialogProps) {
+export function NoteDialog({ lenderId, loanId, open, loans, onOpenChange, note, onCreated }: NoteDialogProps) {
   const t = useTranslations('dashboard.notes');
   const commonT = useTranslations('common');
   const queryClient = useQueryClient();
@@ -78,6 +80,7 @@ export function NoteDialog({ lenderId, loanId, open, loans, onOpenChange, note }
       return;
     }
     toast.success(note ? t('updateSuccess') : t('createSuccess'));
+    if (!note) onCreated?.();
     onOpenChange(false);
     form.reset();
     queryClient.invalidateQueries({ queryKey: ['lender'] });
