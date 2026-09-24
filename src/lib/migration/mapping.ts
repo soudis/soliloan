@@ -158,6 +158,8 @@ const INTEREST_METHOD_MAP: Record<string, InterestMethod> = {
   '30E360_nocompound': InterestMethod.E30_360_NOCOMPOUND,
   ACT_360_compound: InterestMethod.ACT_360_COMPOUND,
   ACT_360_nocompound: InterestMethod.ACT_360_NOCOMPOUND,
+  '360_compound': InterestMethod.ACT_360_COMPOUND,
+  '360_nocompound': InterestMethod.ACT_360_NOCOMPOUND,
   ACT_ACT_compound: InterestMethod.ACT_ACT_COMPOUND,
   ACT_ACT_nocompound: InterestMethod.ACT_ACT_NOCOMPOUND,
 };
