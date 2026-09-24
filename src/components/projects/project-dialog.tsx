@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { createProjectAction } from '@/actions/projects';
@@ -41,7 +41,12 @@ export function ProjectDialog({ open, onOpenChange }: ProjectDialogProps) {
     }
   }, [open, form.reset]);
 
+  const { isSubmitting } = form.formState;
+  const submitLock = useRef(false);
+
   const handleSubmit = form.handleSubmit(async (data) => {
+    if (submitLock.current) return;
+    submitLock.current = true;
     try {
       const result = await createProjectAction(data);
       if (result?.serverError || result?.validationErrors) {
@@ -63,6 +68,8 @@ export function ProjectDialog({ open, onOpenChange }: ProjectDialogProps) {
     } catch (error) {
       console.error('Error creating project:', error);
       toast.error(t('create.error'));
+    } finally {
+      submitLock.current = false;
     }
   });
 
@@ -80,10 +87,12 @@ export function ProjectDialog({ open, onOpenChange }: ProjectDialogProps) {
             </div>
 
             <div className="flex justify-end space-x-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                 {commonT('ui.actions.cancel')}
               </Button>
-              <Button type="submit">{commonT('ui.actions.create')}</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? commonT('ui.actions.creating') : commonT('ui.actions.create')}
+              </Button>
             </div>
           </form>
         </Form>

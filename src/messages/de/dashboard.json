@@ -820,7 +820,8 @@
         "confirmDescription": "Sind Sie sicher, dass Sie diese Zahlung löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
         "success": "Zahlung erfolgreich gelöscht.",
         "error": "Fehler beim Löschen der Zahlung.",
-        "loading": "Zahlung wird gelöscht..."
+        "loading": "Zahlung wird gelöscht...",
+        "onlyLatest": "Nur die neueste Zahlung kann gelöscht werden."
       },
       "errors": {
         "deleteFailed": "Konnte Zahlung nicht löschen."

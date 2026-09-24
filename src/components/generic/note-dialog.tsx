@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { Note } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import z from 'zod';
@@ -61,30 +61,39 @@ export function NoteDialog({ lenderId, loanId, open, loans, onOpenChange, note, 
     }
   }, [open, note, loanId, form.reset]);
 
-  const handleSubmit = form.handleSubmit(async (data) => {
-    const result = note
-      ? await updateNoteAction({
-          noteId: note.id,
-          lenderId,
-          loanId: data.loanId ?? undefined,
-          data,
-        })
-      : await createNoteAction({
-          lenderId,
-          loanId: data.loanId ?? undefined,
-          data,
-        });
+  const { isSubmitting } = form.formState;
+  const submitLock = useRef(false);
 
-    if (result?.serverError || result?.validationErrors) {
-      toast.error(result.serverError || (note ? t('updateError') : t('createError')));
-      return;
+  const handleSubmit = form.handleSubmit(async (data) => {
+    if (submitLock.current) return;
+    submitLock.current = true;
+    try {
+      const result = note
+        ? await updateNoteAction({
+            noteId: note.id,
+            lenderId,
+            loanId: data.loanId ?? undefined,
+            data,
+          })
+        : await createNoteAction({
+            lenderId,
+            loanId: data.loanId ?? undefined,
+            data,
+          });
+
+      if (result?.serverError || result?.validationErrors) {
+        toast.error(result.serverError || (note ? t('updateError') : t('createError')));
+        return;
+      }
+      toast.success(note ? t('updateSuccess') : t('createSuccess'));
+      if (!note) onCreated?.();
+      onOpenChange(false);
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ['lender'] });
+      queryClient.invalidateQueries({ queryKey: ['loans'] });
+    } finally {
+      submitLock.current = false;
     }
-    toast.success(note ? t('updateSuccess') : t('createSuccess'));
-    if (!note) onCreated?.();
-    onOpenChange(false);
-    form.reset();
-    queryClient.invalidateQueries({ queryKey: ['lender'] });
-    queryClient.invalidateQueries({ queryKey: ['loans'] });
   });
 
   return (
@@ -99,10 +108,18 @@ export function NoteDialog({ lenderId, loanId, open, loans, onOpenChange, note, 
             <NoteFormFields loans={loans} loanId={loanId} />
 
             <div className="flex justify-end space-x-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                 {commonT('ui.actions.cancel')}
               </Button>
-              <Button type="submit">{note ? commonT('ui.actions.save') : commonT('ui.actions.create')}</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting
+                  ? note
+                    ? commonT('ui.actions.saving')
+                    : commonT('ui.actions.creating')
+                  : note
+                    ? commonT('ui.actions.save')
+                    : commonT('ui.actions.create')}
+              </Button>
             </div>
           </form>
         </Form>

@@ -1,6 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { tokenExpiryForUser } from '@/lib/auth-set-password';
 import { db } from '@/lib/db';
 import { EMAIL_SEND_FAILED, sendPasswordResetEmail } from '@/lib/email';
@@ -82,10 +81,6 @@ export async function setPassword(token: string, password: string, name?: string
         passwordResetTokenExpiresAt: null,
       },
     });
-
-    // Revalidate the auth pages
-    revalidatePath('/auth/login');
-    revalidatePath('/auth/set-password');
 
     return { success: true };
   } catch (error) {

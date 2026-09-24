@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { File } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -65,7 +65,12 @@ export function FileDialog({ lenderId, loanId, open, loans, onOpenChange, file, 
     });
   }, [open, file, loanId, form.reset]);
 
+  const { isSubmitting } = form.formState;
+  const submitLock = useRef(false);
+
   const handleSubmit = form.handleSubmit(async (data) => {
+    if (submitLock.current) return;
+    submitLock.current = true;
     try {
       if (file) {
         const result = await updateFileAction({
@@ -109,6 +114,8 @@ export function FileDialog({ lenderId, loanId, open, loans, onOpenChange, file, 
     } catch (error) {
       console.error(file ? 'Error updating file:' : 'Error creating file:', error);
       toast.error(error instanceof Error ? error.message : file ? t('updateError') : t('createError'));
+    } finally {
+      submitLock.current = false;
     }
   });
 
@@ -124,10 +131,18 @@ export function FileDialog({ lenderId, loanId, open, loans, onOpenChange, file, 
             <FileFormFields loans={loans} loanId={loanId} editing={Boolean(file)} />
 
             <div className="flex justify-end space-x-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                 {commonT('ui.actions.cancel')}
               </Button>
-              <Button type="submit">{file ? commonT('ui.actions.save') : commonT('ui.actions.create')}</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting
+                  ? file
+                    ? commonT('ui.actions.saving')
+                    : commonT('ui.actions.creating')
+                  : file
+                    ? commonT('ui.actions.save')
+                    : commonT('ui.actions.create')}
+              </Button>
             </div>
           </form>
         </Form>

@@ -159,21 +159,19 @@ export function LoanTransactions({
               <div className={TRANSACTION_AMOUNT_CLASS}>{formatCurrency(transaction.amount)}</div>
               {!readOnly && (
                 <div className={TRANSACTION_ACTIONS_SLOT_CLASS}>
-                  {transaction.type !== 'INTEREST' ? (
-                    <TemplateQuickActions
-                      projectId={loan.lender.projectId}
-                      mode="transaction"
-                      lenderId={loan.lender.id}
-                      loanId={loan.id}
-                      transactionId={transaction.id}
-                      rowMenu={{
-                        showDelete: transaction.id === lastNonInterest?.id,
-                        onDelete: () => handleDeleteClick(transaction.id),
-                      }}
-                    />
-                  ) : (
-                    <span className="inline-flex h-7 w-7" aria-hidden />
-                  )}
+                  <TemplateQuickActions
+                    projectId={loan.lender.projectId}
+                    mode="transaction"
+                    lenderId={loan.lender.id}
+                    loanId={loan.id}
+                    transactionId={transaction.id}
+                    rowMenu={{
+                      showDelete: true,
+                      deleteDisabled: transaction.id !== lastNonInterest?.id,
+                      deleteDisabledTooltip: t('transactions.delete.onlyLatest'),
+                      onDelete: () => handleDeleteClick(transaction.id),
+                    }}
+                  />
                 </div>
               )}
             </div>
