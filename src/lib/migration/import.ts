@@ -116,6 +116,19 @@ function mapLenderCountry(
   return Country.DE;
 }
 
+function mapInterestMethodOrWarn(
+  value: string | null | undefined,
+  warnings: MigrationWarning[],
+  entity: MigrationWarning['entity'],
+  legacyId: number | null,
+): InterestMethod | null {
+  const mapped = mapInterestMethod(value);
+  if (!mapped && emptyToNull(value)) {
+    warnings.push({ entity, legacyId, message: `Unbekannte Zinsmethode "${value}" -> null` });
+  }
+  return mapped;
+}
+
 export async function fetchAndExtractDataPackage(
   baseUrl: string,
   accessToken: string,
@@ -183,11 +196,12 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
         const defaults = projectInfo.defaults;
 
         const interestMethod =
-          mapInterestMethod(defaults?.interest_method ?? null, warnings, 0) ?? InterestMethod.ACT_360_COMPOUND;
+          mapInterestMethodOrWarn(defaults?.interest_method ?? null, warnings, 'project', null) ??
+          InterestMethod.ACT_360_COMPOUND;
 
         const altInterestMethods = (defaults?.interest_methods_alternative ?? [])
           .filter((m): m is string => m !== null && m !== undefined)
-          .map((m) => mapInterestMethod(m, warnings, 0))
+          .map((m) => mapInterestMethodOrWarn(m, warnings, 'project', null))
           .filter((m): m is InterestMethod => m !== null);
 
         const lenderAdditionalFields = [
@@ -437,7 +451,7 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
                 warnings,
                 contract.id,
               ),
-              altInterestMethod: mapInterestMethod(contract.interest_method, warnings, contract.id),
+              altInterestMethod: mapInterestMethodOrWarn(contract.interest_method, warnings, 'contract', contract.id),
               contractStatus: mapContractStatus(contract.status),
             },
           });
