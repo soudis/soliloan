@@ -7,7 +7,7 @@
  *   pnpm exec tsx scripts/backfill-after-migration.ts interestPaymentType --dry-run
  *   pnpm exec tsx scripts/backfill-after-migration.ts interestPaymentType --slug my-project
  *
- * Env (default file `.env.backfill`, override with `--env path`):
+ * Env (default file `scripts/.backfill-after-migration.env`, override with `--env path`):
  *
  *   TARGET_DATABASE_URL=postgresql://...
  *   MIGRATION_BASE_URL=https://old-dkp.example.com
@@ -54,17 +54,19 @@ Options:
   --slug <slug>           Target project slug (default: projectid from the data package)
   --dry-run               Print planned updates; do not write
   --env <path>            Env file with TARGET_DATABASE_URL, MIGRATION_BASE_URL,
-                          MIGRATION_ACCESS_TOKEN (default: .env.backfill)
+                          MIGRATION_ACCESS_TOKEN (default: scripts/.backfill-after-migration.env)
   --help                  Show this help
 `);
 }
+
+const DEFAULT_ENV_PATH = 'scripts/.backfill-after-migration.env';
 
 function parseArgs(argv: string[]): GlobalOptions {
   const options: GlobalOptions = {
     command: null,
     dryRun: false,
     slug: null,
-    envPath: '.env.backfill',
+    envPath: DEFAULT_ENV_PATH,
     help: false,
   };
 
@@ -77,7 +79,7 @@ function parseArgs(argv: string[]): GlobalOptions {
     } else if (arg === '--slug') {
       options.slug = argv[++i] ?? '';
     } else if (arg === '--env') {
-      options.envPath = argv[++i] ?? '.env.backfill';
+      options.envPath = argv[++i] ?? DEFAULT_ENV_PATH;
     } else if (arg.startsWith('-')) {
       throw new Error(`Unknown argument: ${arg}`);
     } else if (options.command === null) {

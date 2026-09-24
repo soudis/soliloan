@@ -8,7 +8,7 @@
  *   pnpm exec tsx scripts/copy-project.ts --slug source-slug --include-bank
  *   pnpm exec tsx scripts/copy-project.ts --slug source-slug --dry-run
  *
- * Env (default file `.env.copy`, override with `--env path`):
+ * Env (default file `scripts/.copy-project.env`, override with `--env path`):
  *
  *   SOURCE_DATABASE_URL=postgresql://...
  *   TARGET_DATABASE_URL=postgresql://...
@@ -55,10 +55,12 @@ Options:
   --include-bank          Also copy GoCardless bank connection / import rows
   --dry-run               Print plan and counts; do not write
   --env <path>            Env file with SOURCE_DATABASE_URL and TARGET_DATABASE_URL
-                          (default: .env.copy)
+                          (default: scripts/.copy-project.env)
   --help                  Show this help
 `);
 }
+
+const DEFAULT_ENV_PATH = 'scripts/.copy-project.env';
 
 function parseArgs(argv: string[]): CliOptions {
   const options: CliOptions = {
@@ -66,7 +68,7 @@ function parseArgs(argv: string[]): CliOptions {
     targetSlug: null,
     includeBank: false,
     dryRun: false,
-    envPath: '.env.copy',
+    envPath: DEFAULT_ENV_PATH,
     help: false,
   };
 
@@ -83,7 +85,7 @@ function parseArgs(argv: string[]): CliOptions {
     } else if (arg === '--target-slug') {
       options.targetSlug = argv[++i] ?? '';
     } else if (arg === '--env') {
-      options.envPath = argv[++i] ?? '.env.copy';
+      options.envPath = argv[++i] ?? DEFAULT_ENV_PATH;
     } else {
       throw new Error(`Unknown argument: ${arg}`);
     }
