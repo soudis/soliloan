@@ -5,7 +5,7 @@ import { DurationType, type LoanTemplate, TerminationType } from '@prisma/client
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -29,7 +29,11 @@ export function LoanTemplateDialog({ configurationId, initialValues, open, onOpe
   const commonT = useTranslations('common');
   const queryClient = useQueryClient();
 
-  const { executeAsync: upsertLoanTemplate, reset: resetAction } = useAction(upsertLoanTemplateAction, {
+  const {
+    executeAsync: upsertLoanTemplate,
+    isExecuting,
+    reset: resetAction,
+  } = useAction(upsertLoanTemplateAction, {
     onSuccess: () => {
       if (initialValues) {
         toast.success(t('editSuccess'));
@@ -85,6 +89,8 @@ export function LoanTemplateDialog({ configurationId, initialValues, open, onOpe
     });
   }, [open]);
 
+  const submitLock = useRef(false);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -97,13 +103,19 @@ export function LoanTemplateDialog({ configurationId, initialValues, open, onOpe
             onSubmit={(event) => {
               event.stopPropagation();
               form.handleSubmit(async (values) => {
-                await upsertLoanTemplate({
-                  ...convertEmptyToNull(values),
-                  configurationId,
-                  name: values.name,
-                  terminationType: values.terminationType,
-                  endDate: values.endDate,
-                });
+                if (submitLock.current) return;
+                submitLock.current = true;
+                try {
+                  await upsertLoanTemplate({
+                    ...convertEmptyToNull(values),
+                    configurationId,
+                    name: values.name,
+                    terminationType: values.terminationType,
+                    endDate: values.endDate,
+                  });
+                } finally {
+                  submitLock.current = false;
+                }
               })(event);
             }}
             className="space-y-4"
@@ -117,10 +129,19 @@ export function LoanTemplateDialog({ configurationId, initialValues, open, onOpe
                 onClick={() => {
                   onOpenChange(false);
                 }}
+                disabled={isExecuting}
               >
                 {commonT('ui.actions.cancel')}
               </Button>
-              <Button type="submit">{initialValues ? commonT('ui.actions.save') : commonT('ui.actions.create')}</Button>
+              <Button type="submit" disabled={isExecuting}>
+                {isExecuting
+                  ? initialValues
+                    ? commonT('ui.actions.saving')
+                    : commonT('ui.actions.creating')
+                  : initialValues
+                    ? commonT('ui.actions.save')
+                    : commonT('ui.actions.create')}
+              </Button>
             </div>
           </form>
         </Form>

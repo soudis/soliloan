@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -40,7 +41,12 @@ export function FileDialog({ lenderId, loanId, open, loans, onOpenChange, onCrea
     },
   });
 
+  const { isSubmitting } = form.formState;
+  const submitLock = useRef(false);
+
   const handleSubmit = form.handleSubmit(async (data) => {
+    if (submitLock.current) return;
+    submitLock.current = true;
     try {
       // Get the file from the form
       const fileInput = document.getElementById('file') as HTMLInputElement;
@@ -74,6 +80,8 @@ export function FileDialog({ lenderId, loanId, open, loans, onOpenChange, onCrea
     } catch (error) {
       console.error('Error creating file:', error);
       toast.error(error instanceof Error ? error.message : t('createError'));
+    } finally {
+      submitLock.current = false;
     }
   });
 
@@ -89,10 +97,12 @@ export function FileDialog({ lenderId, loanId, open, loans, onOpenChange, onCrea
             <FileFormFields loans={loans} loanId={loanId} />
 
             <div className="flex justify-end space-x-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                 {commonT('ui.actions.cancel')}
               </Button>
-              <Button type="submit">{commonT('ui.actions.create')}</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? commonT('ui.actions.creating') : commonT('ui.actions.create')}
+              </Button>
             </div>
           </form>
         </Form>

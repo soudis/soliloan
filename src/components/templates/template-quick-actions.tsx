@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { buildTemplateUseSearchParams } from '@/lib/templates/template-download-query';
 import { cn } from '@/lib/utils';
 
@@ -68,6 +69,9 @@ export type TemplateQuickActionsProps = {
    */
   rowMenu?: {
     showDelete: boolean;
+    /** When true, the delete item stays visible but cannot be selected. */
+    deleteDisabled?: boolean;
+    deleteDisabledTooltip?: string;
     onDelete: () => void;
   };
 };
@@ -343,10 +347,14 @@ export function TemplateQuickActions({
             )}
             {showSeparatorBeforeDelete ? <DropdownMenuSeparator /> : null}
             {rowMenu.showDelete ? (
-              <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => rowMenu.onDelete()}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                {commonT('ui.actions.delete')}
-              </DropdownMenuItem>
+              <TooltipProvider>
+                <DeleteMenuItem
+                  disabled={rowMenu.deleteDisabled}
+                  tooltip={rowMenu.deleteDisabled ? rowMenu.deleteDisabledTooltip : undefined}
+                  label={commonT('ui.actions.delete')}
+                  onDelete={rowMenu.onDelete}
+                />
+              </TooltipProvider>
             ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -614,5 +622,49 @@ export function TemplateQuickActions({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function DeleteMenuItem({
+  disabled,
+  tooltip,
+  label,
+  onDelete,
+}: {
+  disabled?: boolean;
+  tooltip?: string;
+  label: string;
+  onDelete: () => void;
+}) {
+  const item = (
+    <DropdownMenuItem
+      disabled={disabled}
+      className="text-destructive focus:text-destructive"
+      onSelect={(event) => {
+        if (disabled) {
+          event.preventDefault();
+          return;
+        }
+        onDelete();
+      }}
+    >
+      <Trash2 className="mr-2 h-4 w-4" />
+      {label}
+    </DropdownMenuItem>
+  );
+
+  if (!disabled || !tooltip) {
+    return item;
+  }
+
+  // The menu item itself cannot be the tooltip trigger: focusing it on hover
+  // (and painting the tooltip under the z-[200] menu) dismisses the hint immediately.
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="block">{item}</span>
+      </TooltipTrigger>
+      <TooltipContent className="z-[250]">{tooltip}</TooltipContent>
+    </Tooltip>
   );
 }

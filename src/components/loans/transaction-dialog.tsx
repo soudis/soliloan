@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -52,21 +52,30 @@ export function TransactionDialog({ loanId, loan, open, onOpenChange, onCreated 
     form.reset(defaultValues);
   }, [open]);
 
+  const { isSubmitting } = form.formState;
+  const submitLock = useRef(false);
+
   const handleSubmit = form.handleSubmit(async (data) => {
-    const result = await addTransactionAction({
-      loanId,
-      data,
-    });
-    if (result?.serverError || result?.validationErrors) {
-      toast.error(t('transactions.createError'));
-      return;
+    if (submitLock.current) return;
+    submitLock.current = true;
+    try {
+      const result = await addTransactionAction({
+        loanId,
+        data,
+      });
+      if (result?.serverError || result?.validationErrors) {
+        toast.error(t('transactions.createError'));
+        return;
+      }
+      toast.success(t('transactions.createSuccess'));
+      onCreated?.();
+      onOpenChange(false);
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ['lender'] });
+      queryClient.invalidateQueries({ queryKey: ['loans'] });
+    } finally {
+      submitLock.current = false;
     }
-    toast.success(t('transactions.createSuccess'));
-    onCreated?.();
-    onOpenChange(false);
-    form.reset();
-    queryClient.invalidateQueries({ queryKey: ['lender'] });
-    queryClient.invalidateQueries({ queryKey: ['loans'] });
   });
 
   return (
@@ -104,10 +113,12 @@ export function TransactionDialog({ loanId, loan, open, onOpenChange, onCreated 
             />
 
             <div className="flex justify-end space-x-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                 {commonT('ui.actions.cancel')}
               </Button>
-              <Button type="submit">{commonT('ui.actions.create')}</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? commonT('ui.actions.creating') : commonT('ui.actions.create')}
+              </Button>
             </div>
           </form>
         </Form>
