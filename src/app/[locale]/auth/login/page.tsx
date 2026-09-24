@@ -14,7 +14,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <div className="space-y-4 md:space-y-8">
-      <Card className="border-none gap-4 py-4 md:gap-6 md:py-6">
+      <Card className="gap-4 py-4 md:gap-6 md:py-6">
         <CardHeader className="hidden md:block">
           <CardTitle>{t('title')}</CardTitle>
           <CardDescription>{t('description')}</CardDescription>

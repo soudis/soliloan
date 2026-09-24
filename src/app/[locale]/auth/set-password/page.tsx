@@ -29,11 +29,6 @@ export default async function SetPasswordPage({ searchParams }: SetPasswordPageP
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">{title}</h2>
-        <p className="mt-2 text-center text-sm text-gray-600">{description}</p>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>{title}</CardTitle>
@@ -41,7 +36,7 @@ export default async function SetPasswordPage({ searchParams }: SetPasswordPageP
         </CardHeader>
         <CardContent>
           <Suspense>
-            <SetPasswordForm token={token} requireName={context.requireName} />
+            <SetPasswordForm token={token} requireName={context.requireName} email={context.email} />
           </Suspense>
         </CardContent>
       </Card>

@@ -17,6 +17,7 @@ export async function getSetPasswordTokenContext(token: string) {
     },
     select: {
       name: true,
+      email: true,
       passwordResetToken: true,
       passwordResetTokenExpiresAt: true,
       inviteTokenExpiresAt: true,
@@ -34,5 +35,6 @@ export async function getSetPasswordTokenContext(token: string) {
 
   return {
     requireName: user.name.trim().length === 0,
+    email: user.email,
   };
 }
