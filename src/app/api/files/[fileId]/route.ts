@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { contentDispositionAttachment } from '@/lib/utils/file';
+import { contentDispositionAttachment, contentDispositionInline } from '@/lib/utils/file';
 
-export async function GET(_: Request, { params }: { params: Promise<{ fileId: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ fileId: string }> }) {
   try {
     const { fileId } = await params;
     const session = await auth();
@@ -58,11 +58,12 @@ export async function GET(_: Request, { params }: { params: Promise<{ fileId: st
       return new NextResponse('Forbidden', { status: 403 });
     }
 
-    // Return the file data
+    const inline = new URL(request.url).searchParams.get('inline') === '1';
+
     return new NextResponse(file.data, {
       headers: {
         'Content-Type': file.mimeType,
-        'Content-Disposition': contentDispositionAttachment(file.name),
+        'Content-Disposition': inline ? contentDispositionInline(file.name) : contentDispositionAttachment(file.name),
       },
     });
   } catch (error) {

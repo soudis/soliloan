@@ -31,6 +31,7 @@
     "notFound": "Notiz nicht gefunden."
   },
   "file": {
+    "notFound": "Datei nicht gefunden.",
     "tooLarge": "Die Datei ist zu groß. Maximal 10 MB sind erlaubt."
   },
   "template": {

@@ -97,11 +97,19 @@ export async function createThumbnail(
 
 const FILENAME_BAD_CHARS = /[/\\?%*:|"<>]/g;
 
-export function contentDispositionAttachment(name: string): string {
+function contentDisposition(disposition: 'attachment' | 'inline', name: string): string {
   const safeName =
     name
       .replace(FILENAME_BAD_CHARS, '_')
       .replace(/[\r\n]/g, '')
       .trim() || 'download';
-  return `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(safeName)}`;
+  return `${disposition}; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(safeName)}`;
+}
+
+export function contentDispositionAttachment(name: string): string {
+  return contentDisposition('attachment', name);
+}
+
+export function contentDispositionInline(name: string): string {
+  return contentDisposition('inline', name);
 }
