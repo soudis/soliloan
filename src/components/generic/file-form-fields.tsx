@@ -13,33 +13,37 @@ import { LoanDropdown } from '../lenders/loan-dropdown';
 type FileFormFieldsProps = {
   loans?: LoanDetailsWithCalculations[];
   loanId?: string;
+  /** Hide the binary picker when only metadata is being edited. */
+  editing?: boolean;
 };
 
-export function FileFormFields({ loans, loanId }: FileFormFieldsProps) {
+export function FileFormFields({ loans, loanId, editing = false }: FileFormFieldsProps) {
   const t = useTranslations('dashboard.files');
   const form = useFormContext<FileFormData>();
 
   return (
     <>
-      <div className="space-y-2">
-        <label htmlFor="file" className="text-sm font-medium">
-          {t('file')}
-        </label>
-        <input
-          id="file"
-          type="file"
-          className="w-full cursor-pointer rounded-md border border-border bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium"
-          required
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              // Set the name field to the file name without extension
-              const fileName = file.name.replace(/\.[^/.]+$/, '');
-              form.setValue('name', fileName);
-            }
-          }}
-        />
-      </div>
+      {!editing && (
+        <div className="space-y-2">
+          <label htmlFor="file" className="text-sm font-medium">
+            {t('file')}
+          </label>
+          <input
+            id="file"
+            type="file"
+            className="w-full cursor-pointer rounded-md border border-border bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium"
+            required
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                // Set the name field to the file name without extension
+                const fileName = file.name.replace(/\.[^/.]+$/, '');
+                form.setValue('name', fileName);
+              }
+            }}
+          />
+        </div>
+      )}
 
       {!loanId && loans && (
         <FormItem>
