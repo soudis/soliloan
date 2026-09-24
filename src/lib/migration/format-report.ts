@@ -1,4 +1,9 @@
-import type { MigrationReport } from './types';
+import type { MigrationReport, MigrationWarning } from './types';
+
+export function formatMigrationWarningLabel(warning: MigrationWarning): string {
+  if (warning.legacyId === null) return warning.entity;
+  return `${warning.entity}#${warning.legacyId}`;
+}
 
 type TranslateFunction = (key: string, values?: Record<string, string | number>) => string;
 
@@ -39,7 +44,7 @@ export function formatMigrationReportAsPlainText(report: MigrationReport, t: Tra
     lines.push('-'.repeat(warningsTitle.length));
 
     for (const warning of report.warnings) {
-      lines.push(`${warning.entity}#${warning.legacyId}: ${warning.message}`);
+      lines.push(`${formatMigrationWarningLabel(warning)}: ${warning.message}`);
     }
   }
 

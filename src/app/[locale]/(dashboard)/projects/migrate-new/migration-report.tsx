@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { formatMigrationReportAsPlainText } from '@/lib/migration/format-report';
+import { formatMigrationReportAsPlainText, formatMigrationWarningLabel } from '@/lib/migration/format-report';
 import type { MigrationReport } from '@/lib/migration/types';
 
 interface MigrationReportViewProps {
@@ -121,7 +121,7 @@ export function MigrationReportView({ report }: MigrationReportViewProps) {
                 className="text-sm bg-yellow-500/10 rounded p-2 flex gap-2"
               >
                 <span className="font-mono text-xs text-muted-foreground shrink-0">
-                  {warning.entity}#{warning.legacyId}
+                  {formatMigrationWarningLabel(warning)}
                 </span>
                 <span>{warning.message}</span>
               </div>

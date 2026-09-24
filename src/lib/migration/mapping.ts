@@ -164,17 +164,10 @@ const INTEREST_METHOD_MAP: Record<string, InterestMethod> = {
   ACT_ACT_nocompound: InterestMethod.ACT_ACT_NOCOMPOUND,
 };
 
-export function mapInterestMethod(
-  value: string | null | undefined,
-  warnings: MigrationWarning[],
-  legacyId: number,
-): InterestMethod | null {
+export function mapInterestMethod(value: string | null | undefined): InterestMethod | null {
   const v = emptyToNull(value);
   if (!v) return null;
-  const mapped = INTEREST_METHOD_MAP[v];
-  if (mapped) return mapped;
-  warnings.push({ entity: 'contract', legacyId, message: `Unbekannte Zinsmethode "${value}" -> null` });
-  return null;
+  return INTEREST_METHOD_MAP[v] ?? null;
 }
 
 export function parseInterestPaymentType(value: string | null | undefined): InterestPaymentType | null {
