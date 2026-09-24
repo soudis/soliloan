@@ -125,7 +125,7 @@ export interface Dkpv1ProjectInfo {
 
 // Migration report types
 
-export type MigrationWarningEntity = 'admin' | 'user' | 'contract' | 'transaction' | 'file' | 'note';
+export type MigrationWarningEntity = 'project' | 'admin' | 'user' | 'contract' | 'transaction' | 'file' | 'note';
 
 export interface MigrationWarning {
   entity: MigrationWarningEntity;
