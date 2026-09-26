@@ -10,6 +10,7 @@ import help from './help.json';
 import legal from './legal.json';
 import logbook from './logbook.json';
 import navigation from './navigation.json';
+import processes from './processes.json';
 import templates from './templates.json';
 import validation from './validation.json';
 import views from './views.json';
@@ -22,6 +23,7 @@ export default {
   common,
   dashboard,
   navigation,
+  processes,
   dataTable,
   views,
   logbook,

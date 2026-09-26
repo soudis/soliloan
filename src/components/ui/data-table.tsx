@@ -144,6 +144,8 @@ interface DataTableProps<TData, TValue> {
   /** Compare extra view fields for dirty state. */
   isExtraViewDataDirty?: (savedData: Record<string, unknown> | undefined) => boolean;
   toolbarContent?: React.ReactNode;
+  /** Where `toolbarContent` sits in the table header. */
+  toolbarAlign?: 'start' | 'center' | 'end';
   /** Fill parent height: toolbar and pagination stay fixed; table body scrolls vertically. */
   fillHeight?: boolean;
   /** Show Excel export button in the toolbar. */
@@ -184,6 +186,7 @@ export function DataTable<TData, TValue>({
   showExport = false,
   exportPrefix,
   toolbarContent,
+  toolbarAlign = 'center',
   extraViewData,
   isExtraViewDataDirty,
   tableState: controlledTableState,
@@ -293,8 +296,8 @@ export function DataTable<TData, TValue>({
             data-bulk-select
           >
             <Checkbox
-              checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
-              onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+              checked={table.getIsAllRowsSelected() || (table.getIsSomeRowsSelected() && 'indeterminate')}
+              onCheckedChange={(value) => table.toggleAllRowsSelected(!!value)}
               aria-label="Select all"
             />
           </label>
@@ -518,6 +521,7 @@ export function DataTable<TData, TValue>({
               exportPrefix={exportPrefix}
               exportDisabled={exportDisabled}
               toolbarExtra={toolbarContent}
+              toolbarAlign={toolbarAlign}
               extraViewData={extraViewData}
               isExtraViewDataDirty={isExtraViewDataDirty}
               toolbarContent={toolbarContent}

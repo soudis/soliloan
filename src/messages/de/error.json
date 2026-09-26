@@ -6,6 +6,9 @@
     "title": "Zugriff verweigert",
     "message": "Nur Administratoren haben Zugriff auf diese Seite."
   },
+  "sepa": {
+    "debtor": "IBAN und BIC in den Projekteinstellungen passen nicht zusammen."
+  },
   "project": {
     "notFound": "Projekt nicht gefunden.",
     "updateFailed": "Fehler beim Aktualisieren der Projekt-Konfiguration."

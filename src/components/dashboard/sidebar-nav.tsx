@@ -17,6 +17,7 @@ import {
   Settings,
   Users,
   Wallet,
+  Workflow,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { Session } from 'next-auth';
@@ -113,6 +114,7 @@ export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews: ini
                 <ProjectTableNavItem basePath="/transactions" icon={Receipt} label={t('transactions')} />
                 <SidebarViewItems views={sidebarViews} viewType={ViewType.TRANSACTION} basePath="/transactions" />
               </div>
+              <NavItem href="/processes" icon={Workflow} label={t('processes')} />
               <NavItem href="/logbook" icon={History} label={t('logbook')} />
               {showInvestmentTypes && (
                 <ProjectTableNavItem basePath="/investment-types" icon={Scale} label={t('investmentTypes')} />

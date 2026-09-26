@@ -2,16 +2,29 @@
 
 import { type View, ViewType } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
-import { ArrowDownToLine, Pencil, Trash2 } from 'lucide-react';
+import { ArrowDownToLine, FileCode, Mail, Pencil, Trash2, Wand2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { deleteTransactionAction } from '@/actions/loans';
 import { bulkDeleteTransactionsAction } from '@/actions/transactions/mutations/bulk-delete-transactions';
+import { previewNotifyTransactionsAction } from '@/actions/transactions/mutations/notify-transactions';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
+import { NotifyTransactionsDialog } from '@/components/transactions/notify-transactions-dialog';
+import { OutboundPaymentDialog } from '@/components/transactions/outbound-payment-dialog';
 import { TransactionTimeRangeControl } from '@/components/transactions/transaction-time-range-control';
 import { ActionButton } from '@/components/ui/action-button';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 import type { BulkAction } from '@/components/ui/data-table';
 import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -27,6 +40,7 @@ import {
   getTransactionTimeRangeFromState,
   useTransactionTableUrlState,
 } from '@/lib/hooks/use-transaction-table-url-state';
+import { isOutboundSepaType } from '@/lib/processes/payout-groups';
 import { TABLE_LIST_PATHS } from '@/lib/table-list-path';
 import {
   getTransactionIdFromListItemRowId,
@@ -54,6 +68,7 @@ export function TransactionTable({
   hasBankConnection = false,
 }: TransactionTableProps) {
   const t = useTranslations('dashboard.transactions');
+  const tProcesses = useTranslations('processes');
   const tImport = useTranslations('dashboard.transactions.import');
   const tLoans = useTranslations('dashboard.loans');
   const tLenders = useTranslations('dashboard.lenders');
@@ -78,22 +93,85 @@ export function TransactionTable({
   });
 
   type DeleteState = { mode: 'bulk'; ids: string[] } | { mode: 'single'; transactionId: string } | null;
+  type SkippedDelete = {
+    id: string;
+    loanNumber: number | null;
+    lenderName: string | null;
+    reason: 'notFound' | 'interest' | 'notLatest';
+  };
 
   const [deleteState, setDeleteState] = useState<DeleteState>(null);
+  const [skippedDeletes, setSkippedDeletes] = useState<SkippedDelete[]>([]);
+  const [outbound, setOutbound] = useState<{ mode: 'sepa' | 'stepper'; rows: TransactionListItem[] } | null>(null);
+  const [notify, setNotify] = useState<{
+    transactionIds: string[];
+    preview: {
+      sample: { html: string; subject: string } | null;
+      alreadyNotifiedCount: number;
+      missingEmailCount: number;
+      realCount: number;
+    };
+  } | null>(null);
 
-  const { execute: executeBulkDelete } = useAction(bulkDeleteTransactionsAction, {
-    onSuccess: ({ data }) => {
-      if (!data) return;
-      if (data.skippedCount > 0) {
-        toast.success(t('bulkDelete.partialSuccess', { deleted: data.deletedCount, skipped: data.skippedCount }));
-      } else {
-        toast.success(t('bulkDelete.success', { count: data.deletedCount }));
-      }
-    },
-    onError: ({ error }) => {
-      toast.error(error.serverError ?? t('bulkDelete.error'));
-    },
-  });
+  const { executeAsync: executeBulkDelete, isExecuting: isDeleting } = useAction(bulkDeleteTransactionsAction);
+  const { executeAsync: previewNotify } = useAction(previewNotifyTransactionsAction);
+
+  const rowsForSelection = (rowIds: string[]) => {
+    const wanted = new Set(rowIds);
+    return transactions.filter((row) => wanted.has(getTransactionListItemRowId(row)));
+  };
+
+  const openOutbound = (mode: 'sepa' | 'stepper', rowIds: string[]) => {
+    const selected = rowsForSelection(rowIds);
+    if (selected.length === 0 || !selected.every((row) => isOutboundSepaType(row.type))) {
+      toast.error(tProcesses('sepa.outboundOnly'));
+      return;
+    }
+    setOutbound({ mode, rows: selected });
+  };
+
+  const openNotify = async (rowIds: string[]) => {
+    const selected = rowsForSelection(rowIds).filter((row) => row.type !== 'INTEREST');
+    if (selected.length === 0) {
+      toast.error(t('notify.interestOnly'));
+      return;
+    }
+    const result = await previewNotify({
+      projectId,
+      transactionIds: selected.map((row) => row.id),
+    });
+    if (result?.serverError || !result?.data) {
+      toast.error(result?.serverError ?? t('notify.noSample'));
+      return;
+    }
+    setNotify({ transactionIds: selected.map((row) => row.id), preview: result.data });
+  };
+
+  const confirmBulkDelete = async () => {
+    if (deleteState?.mode !== 'bulk') return;
+    const result = await executeBulkDelete({ projectId, transactionIds: deleteState.ids });
+    if (result?.serverError || !result?.data) {
+      toast.error(result?.serverError ?? t('bulkDelete.error'));
+      return;
+    }
+    if (result.data.skipped.length === 0) {
+      toast.success(t('bulkDelete.success', { count: result.data.deletedCount }));
+      setDeleteState(null);
+      setSkippedDeletes([]);
+      return;
+    }
+    if (result.data.deletedCount > 0) {
+      toast.success(
+        t('bulkDelete.partialSuccess', { deleted: result.data.deletedCount, skipped: result.data.skipped.length }),
+      );
+    }
+    setSkippedDeletes(
+      result.data.skipped.map((entry) => ({
+        ...entry,
+        reason: entry.id.endsWith('-interest') ? 'interest' : entry.reason,
+      })),
+    );
+  };
 
   const { execute: executeDeleteTransaction } = useAction(deleteTransactionAction, {
     onSuccess: () => {
@@ -106,10 +184,28 @@ export function TransactionTable({
 
   const bulkActions: BulkAction[] = [
     {
+      label: t('notify.action'),
+      icon: <Mail className="h-4 w-4" />,
+      onClick: (ids) => {
+        void openNotify(ids);
+      },
+    },
+    {
+      label: t('outbound.assistant'),
+      icon: <Wand2 className="h-4 w-4" />,
+      onClick: (ids) => openOutbound('stepper', ids),
+    },
+    {
+      label: t('outbound.sepa'),
+      icon: <FileCode className="h-4 w-4" />,
+      onClick: (ids) => openOutbound('sepa', ids),
+    },
+    {
       label: commonT('ui.actions.delete'),
       icon: <Trash2 className="h-4 w-4" />,
       variant: 'destructive',
       onClick: (ids) => {
+        setSkippedDeletes([]);
         setDeleteState({
           mode: 'bulk',
           ids: ids.map(getTransactionIdFromListItemRowId),
@@ -202,22 +298,93 @@ export function TransactionTable({
       />
 
       <ConfirmDialog
-        open={deleteState !== null}
+        open={deleteState?.mode === 'single'}
         onOpenChange={(open) => !open && setDeleteState(null)}
-        title={deleteState?.mode === 'bulk' ? t('bulkDelete.confirmTitle') : t('delete.confirmTitle')}
-        description={
-          deleteState?.mode === 'bulk'
-            ? t('bulkDelete.confirmDescription', { count: deleteState.ids.length })
-            : t('delete.confirmDescription')
-        }
+        title={t('delete.confirmTitle')}
+        description={t('delete.confirmDescription')}
         onConfirm={() => {
-          if (deleteState?.mode === 'bulk') {
-            executeBulkDelete({ projectId, transactionIds: deleteState.ids });
-          } else if (deleteState?.mode === 'single') {
+          if (deleteState?.mode === 'single') {
             executeDeleteTransaction({ transactionId: deleteState.transactionId });
           }
         }}
       />
+
+      <AlertDialog
+        open={deleteState?.mode === 'bulk'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteState(null);
+            setSkippedDeletes([]);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {skippedDeletes.length > 0 ? t('bulkDelete.skippedTitle') : t('bulkDelete.confirmTitle')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {skippedDeletes.length > 0
+                ? t('bulkDelete.skippedDescription')
+                : t('bulkDelete.confirmDescription', {
+                    count: deleteState?.mode === 'bulk' ? deleteState.ids.length : 0,
+                  })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {skippedDeletes.length > 0 ? (
+            <ul className="max-h-60 space-y-2 overflow-y-auto text-sm">
+              {skippedDeletes.map((entry) => (
+                <li key={entry.id}>
+                  <span className="font-medium">
+                    {[entry.lenderName, entry.loanNumber != null ? `#${entry.loanNumber}` : null]
+                      .filter(Boolean)
+                      .join(' · ') || entry.id}
+                  </span>
+                  {` — ${t(`bulkDelete.reasons.${entry.reason}`)}`}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <AlertDialogFooter>
+            <AlertDialogCancel>{commonT('ui.actions.cancel')}</AlertDialogCancel>
+            {skippedDeletes.length === 0 ? (
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={isDeleting}
+                onClick={() => void confirmBulkDelete()}
+              >
+                {commonT('ui.actions.delete')}
+              </Button>
+            ) : null}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {outbound ? (
+        <OutboundPaymentDialog
+          open
+          mode={outbound.mode}
+          rows={outbound.rows}
+          project={project}
+          projectId={projectId}
+          onOpenChange={(open) => {
+            if (!open) setOutbound(null);
+          }}
+        />
+      ) : null}
+
+      {notify ? (
+        <NotifyTransactionsDialog
+          open
+          projectId={projectId}
+          transactionIds={notify.transactionIds}
+          preview={notify.preview}
+          onOpenChange={(open) => {
+            if (!open) setNotify(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

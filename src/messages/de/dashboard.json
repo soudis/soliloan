@@ -688,6 +688,7 @@
       "type": "Transaktionsart",
       "typeShort": "Art",
       "date": "Datum",
+      "lenderNotifiedAt": "Informiert am",
       "amount": "Betrag",
       "paymentType": "Zahlungsart",
       "paymentTypeShort": "Zahlung"
@@ -718,7 +719,34 @@
       "confirmDescription": "Sind Sie sicher, dass Sie {count} Transaktionen löschen möchten? Nicht löschbare Transaktionen werden übersprungen.",
       "success": "{count} Transaktionen erfolgreich gelöscht.",
       "partialSuccess": "{deleted} Transaktionen gelöscht, {skipped} übersprungen.",
-      "error": "Fehler beim Löschen der Transaktionen."
+      "error": "Fehler beim Löschen der Transaktionen.",
+      "skippedTitle": "Nicht gelöschte Transaktionen",
+      "skippedDescription": "Gelöscht werden kann nur die jeweils letzte echte Buchung eines Kredits. Berechnete Zinszeilen können nicht gelöscht werden.",
+      "reasons": {
+        "notLatest": "Nicht die letzte Buchung dieses Kredits",
+        "interest": "Berechnete Zinszeile",
+        "notFound": "Buchung wurde nicht gefunden"
+      }
+    },
+    "notify": {
+      "action": "E-Mail senden",
+      "title": "Kreditgeber*innen informieren",
+      "description": "Für jede ausgewählte Buchung wird die bestehende Transaktions-E-Mail gesendet.",
+      "sample": "Beispiel für die erste ausgewählte Buchung",
+      "alreadyNotified": "{count, plural, one {# Buchung wurde bereits mitgeteilt.} other {# Buchungen wurden bereits mitgeteilt.}}",
+      "resend": "Diese ebenfalls erneut senden",
+      "skipAlready": "Diese auslassen",
+      "missingEmail": "{count, plural, one {# Buchung hat keine E-Mail-Adresse und wird übersprungen.} other {# Buchungen haben keine E-Mail-Adresse und werden übersprungen.}}",
+      "choiceRequired": "Bitte wähle, ob bereits mitgeteilte Buchungen erneut gesendet werden.",
+      "interestOnly": "Berechnete Zinszeilen können nicht per E-Mail verschickt werden.",
+      "noSample": "Für die Auswahl konnte keine E-Mail erzeugt werden.",
+      "sent": "{count, plural, one {# E-Mail wurde gesendet.} other {# E-Mails wurden gesendet.}}",
+      "failed": "{count, plural, one {# E-Mail konnte nicht gesendet werden.} other {# E-Mails konnten nicht gesendet werden.}}",
+      "noneSent": "Es wurde keine E-Mail gesendet."
+    },
+    "outbound": {
+      "assistant": "Assistent",
+      "sepa": "SEPA-XML"
     },
     "import": {
       "button": "Banktransaktionen",
