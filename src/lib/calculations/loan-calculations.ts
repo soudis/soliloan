@@ -610,6 +610,7 @@ export function calculateLoanFieldsWithPerYear<T>(loan: LoanWithRelations & T, o
             amount: yearNumbers.interest.toNumber(),
             paymentType: PaymentType.OTHER,
             loanId: loan.id,
+            lenderNotifiedAt: null,
           })),
       )
       .sort(transactionSorter),

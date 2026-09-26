@@ -1,4 +1,4 @@
-import { Faker, base, de, en } from '@faker-js/faker';
+import { base, de, en, Faker } from '@faker-js/faker';
 
 import { normalizeStoredEmail } from '@/lib/utils/email';
 
@@ -106,7 +106,7 @@ function anonymizeUser(user: Dkpv1User, emailDomain: string): void {
 
   const countryCode = (user.country ?? 'DE').slice(0, 2).toUpperCase();
   user.IBAN = faker.finance.iban({ countryCode });
-  user.BIC = faker.finance.bic();
+  // keep original BIC because it needs to match country code and faker doesn't support to generate a BIC for a given country code
 
   user.passwordHashed = '';
   user.password = '';

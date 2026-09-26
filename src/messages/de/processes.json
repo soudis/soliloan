@@ -1,0 +1,93 @@
+{
+  "title": "Prozesse",
+  "tabs": {
+    "yearlyInterest": "Jährliche Zinsauszahlung"
+  },
+  "yearlyInterest": {
+    "year": "Jahr",
+    "description": "Wähle die Kredite in der Tabelle aus und starte den Assistenten, um die offenen Zinsen auszuzahlen.",
+    "openPayouts": "Auszahlungen {year} anzeigen",
+    "assistant": "Assistent",
+    "loading": "Zinsen werden berechnet…",
+    "error": "Die Zinsen konnten nicht berechnet werden.",
+    "empty": "Für dieses Jahr gibt es keine offenen Zinsen.",
+    "columns": {
+      "loanNumber": "Kredit",
+      "lender": "Kreditgeber*in",
+      "interestRate": "Zinssatz",
+      "unpaid": "Offene Zinsen"
+    },
+    "created": "{count, plural, one {# Zinsauszahlung wurde gebucht.} other {# Zinsauszahlungen wurden gebucht.}}",
+    "nothingCreated": "Es wurde keine Zinsauszahlung gebucht.",
+    "emailsSent": "{count, plural, one {# E-Mail wurde gesendet.} other {# E-Mails wurden gesendet.}}",
+    "emailsFailed": "{count, plural, one {# E-Mail konnte nicht gesendet werden.} other {# E-Mails konnten nicht gesendet werden.}}"
+  },
+  "grouping": {
+    "label": "Gruppierung",
+    "lender": "Pro Kreditgeber*in",
+    "transaction": "Pro Transaktion",
+    "hint": "Pro Kreditgeber*in werden alle Kredite einer Person zusammengefasst: ein Schritt und eine Überweisung. Pro Transaktion bleibt jeder Kredit ein eigener Schritt und eine eigene Überweisung.",
+    "hintOutbound": "Pro Kreditgeber*in werden die Buchungen einer Person zusammengefasst, getrennt nach Art (Zinsen, Auszahlung, Kündigung). Pro Transaktion bleibt jede Buchung einzeln.",
+    "required": "Bitte wähle eine Gruppierung."
+  },
+  "sepa": {
+    "title": "SEPA-XML",
+    "description": "Du lädst eine Überweisungsdatei herunter und importierst sie im Online-Banking. Deine Bank legt daraus die Überweisungen an.",
+    "option": "Du lädst eine Überweisungsdatei herunter und importierst sie im Online-Banking um die jeweiligen Überweisungen anzulegen. Die Zinsauszahlungen werden hier gleichzeitig als Transaktionen gebucht.",
+    "executionDate": "Ausführungsdatum",
+    "download": "SEPA-XML herunterladen und Transaktionen anlegen",
+    "disabled": "In den Projekteinstellungen fehlt noch: {fields}.",
+    "gaps": {
+      "name": "Name",
+      "iban": "IBAN",
+      "bic": "BIC"
+    },
+    "creditorGaps": {
+      "name": "Name",
+      "iban": "IBAN"
+    },
+    "reasons": {
+      "name": "Name fehlt",
+      "iban": "IBAN fehlt oder ist ungültig",
+      "bic": "BIC ist ungültig",
+      "bicCountry": "BIC passt nicht zum Land der IBAN",
+      "amount": "Betrag ist ungültig",
+      "unknown": "SEPA-Prüfung fehlgeschlagen"
+    },
+    "skippedColumns": {
+      "lender": "Kreditgeber*in",
+      "loan": "Kredit",
+      "reason": "Grund"
+    },
+    "skippedTitle": "Nicht in der SEPA-Datei",
+    "skippedDescription": "Diese Einträge sind nicht in der SEPA-Datei. Es wurde keine Buchung angelegt, die offenen Zinsen bleiben in der Liste.",
+    "skippedExportDescription": "Diese Einträge fehlen in der Datei. Die Buchungen selbst bleiben unverändert.",
+    "noFile": "Es konnte keine SEPA-Datei erzeugt werden.",
+    "outboundOnly": "SEPA-XML und der Assistent sind nur möglich, wenn ausschließlich Zinsauszahlungen, Auszahlungen oder Kündigungen ausgewählt sind."
+  },
+  "wizard": {
+    "title": "Assistent für die Zinsauszahlung",
+    "intro": "Buche die offenen Zinsen. Du kannst eine SEPA-Datei für deine Bank erzeugen oder die Überweisungen Schritt für Schritt selbst anlegen.",
+    "emailLenders": "Kreditgeber*innen per E-Mail über die Buchungen informieren",
+    "manual": "Einzeln auszahlen",
+    "manualDescription": "Du gehst die ausgewählten Kredite nacheinander durch. Bei jedem Schritt siehst du die Bankdaten und einen QR-Code. Wenn du die Überweisung in deiner Bank angelegt hast, bestätigst du den Schritt und die Buchung wird gespeichert.",
+    "reviewDescription": "Du gehst die ausgewählten Buchungen nacheinander durch, mit Bankdaten und QR-Code. Es wird nichts neu gebucht.",
+    "acknowledge": "Überweisung ist angelegt",
+    "skip": "Überspringen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "close": "Schließen",
+    "loans": "Kredite",
+    "total": "Summe",
+    "emailThisStep": "E-Mail für diese Buchungen senden",
+    "stepProgress": "Schritt {current} von {total}: {name}"
+  },
+  "party": {
+    "name": "Name",
+    "iban": "IBAN",
+    "bic": "BIC",
+    "address": "Adresse",
+    "loan": "Direktkredit {loanNumber}",
+    "empty": "Nicht hinterlegt"
+  }
+}

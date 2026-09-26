@@ -13,6 +13,7 @@ import {
 } from '@/lib/audit-trail';
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
+import { getLenderName } from '@/lib/utils';
 import { projectAction } from '@/lib/utils/safe-action';
 
 const bulkDeleteTransactionsSchema = z.object({
@@ -42,16 +43,23 @@ export const bulkDeleteTransactionsAction = projectAction
       },
     });
 
-    if (transactions.length === 0) {
-      throw new Error('No transactions found');
-    }
-
+    const foundIds = new Set(transactions.map((transaction) => transaction.id));
     let deletedCount = 0;
-    const skippedIds: string[] = [];
+    const skipped: {
+      id: string;
+      loanNumber: number | null;
+      lenderName: string | null;
+      reason: 'notFound' | 'interest' | 'notLatest';
+    }[] = transactionIds
+      .filter((id) => !foundIds.has(id))
+      .map((id) => ({ id, loanNumber: null, lenderName: null, reason: 'notFound' as const }));
 
     for (const transaction of transactions) {
+      const loanNumber = transaction.loan.loanNumber;
+      const lenderName = getLenderName(transaction.loan.lender);
+
       if (transaction.type === TransactionType.INTEREST) {
-        skippedIds.push(transaction.id);
+        skipped.push({ id: transaction.id, loanNumber, lenderName, reason: 'interest' });
         continue;
       }
 
@@ -60,7 +68,7 @@ export const bulkDeleteTransactionsAction = projectAction
         .find((tx) => tx.type !== TransactionType.INTEREST);
 
       if (lastNonInterest?.id !== transaction.id) {
-        skippedIds.push(transaction.id);
+        skipped.push({ id: transaction.id, loanNumber, lenderName, reason: 'notLatest' });
         continue;
       }
 
@@ -86,5 +94,5 @@ export const bulkDeleteTransactionsAction = projectAction
     revalidatePath('/transactions/list');
     invalidateDashboardWidgetResultsCache(projectId);
 
-    return { deletedCount, skippedCount: skippedIds.length, skippedIds };
+    return { deletedCount, skipped };
   });
