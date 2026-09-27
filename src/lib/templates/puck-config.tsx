@@ -5,6 +5,7 @@ import { type Config, RichTextMenu, type Slot } from '@puckeditor/core';
 import type { Editor } from '@tiptap/react';
 import type { useTranslations } from 'next-intl';
 import type { ComponentProps, ReactNode } from 'react';
+import { WithConditionBadge } from '@/components/templates/puck/blocks/condition-badge';
 import {
   ContainerBlock,
   type FlexAlign,
@@ -23,8 +24,11 @@ import { LoopKeyField } from '@/components/templates/puck/fields/loop-key-field'
 import { createMergeTagExtension, MergeTagMenuControl } from '@/components/templates/puck/fields/merge-tag-richtext';
 import { PaddingField } from '@/components/templates/puck/fields/padding-field';
 import { SaveAsBlockField } from '@/components/templates/puck/fields/save-as-block-field';
+import { ShowIfField } from '@/components/templates/puck/fields/show-if-field';
 import { TableCellStyleField } from '@/components/templates/puck/fields/table-cell-field';
+import { TemplateConditionMenuControl } from '@/components/templates/puck/fields/template-condition-menu';
 import { resizeTableArrays, type TableCellStyle, type TextAlign } from '@/components/templates/puck/table-model';
+import { TemplateCondition as TemplateConditionNode } from '@/components/templates/user-components/tiptap/template-condition-extension';
 import {
   type BorderFieldProps,
   DEFAULT_BORDER,
@@ -35,8 +39,13 @@ import {
   getDefaultPageZoneProps,
   type PaddingProps,
 } from '@/lib/templates/puck-defaults';
+import type { TemplateCondition } from '@/lib/templates/template-condition';
 
 type EditorTranslator = ReturnType<typeof useTranslations>;
+
+type ShowIfProps = { showIf?: TemplateCondition };
+
+const showIfPuckField = { type: 'custom' as const, render: () => <ShowIfField /> };
 
 export type TemplateComponentProps = {
   Container: {
@@ -51,7 +60,8 @@ export type TemplateComponentProps = {
     saveAsBlock?: string;
   } & PaddingProps &
     BorderFieldProps &
-    DisplayNameProps;
+    DisplayNameProps &
+    ShowIfProps;
   Body: {
     content: Slot;
     layout: LayoutMode;
@@ -62,13 +72,15 @@ export type TemplateComponentProps = {
     background: string;
   } & PaddingProps &
     BorderFieldProps &
-    DisplayNameProps;
+    DisplayNameProps &
+    ShowIfProps;
   Text: {
     text: string;
     fontSize: number;
     color: string;
     textAlign: TextAlign;
-  } & DisplayNameProps;
+  } & DisplayNameProps &
+    ShowIfProps;
   Button: {
     text: string;
     url: string;
@@ -77,13 +89,15 @@ export type TemplateComponentProps = {
     useSystemUrl: boolean;
     systemUrlKey: string;
     settings?: string;
-  } & DisplayNameProps;
+  } & DisplayNameProps &
+    ShowIfProps;
   Image: {
     src: string;
     width: string;
     useLogoSource: boolean;
     source?: string;
-  } & DisplayNameProps;
+  } & DisplayNameProps &
+    ShowIfProps;
   Table: {
     loopKey: string;
     columns: number;
@@ -98,19 +112,22 @@ export type TemplateComponentProps = {
     _activeCellId?: string | null;
   } & PaddingProps &
     BorderFieldProps &
-    DisplayNameProps;
+    DisplayNameProps &
+    ShowIfProps;
   PageHeader: {
     content: Slot;
     background: string;
   } & PaddingProps &
     BorderFieldProps &
-    DisplayNameProps;
+    DisplayNameProps &
+    ShowIfProps;
   PageFooter: {
     content: Slot;
     background: string;
   } & PaddingProps &
     BorderFieldProps &
-    DisplayNameProps;
+    DisplayNameProps &
+    ShowIfProps;
 };
 
 export type TemplateRootProps = {
@@ -136,13 +153,14 @@ function richtextField(t: EditorTranslator) {
       orderedList: false,
     },
     tiptap: {
-      extensions: [createMergeTagExtension(t('mergeTags.loopBodyPlaceholder'))],
+      extensions: [createMergeTagExtension(t('mergeTags.loopBodyPlaceholder')), TemplateConditionNode],
     },
     renderInlineMenu: ({ children, editor }: { children: ReactNode; editor: Editor | null }) => (
       <RichTextMenu>
         {children}
         <RichTextMenu.Group>
           <MergeTagMenuControl editor={editor} />
+          <TemplateConditionMenuControl editor={editor} />
         </RichTextMenu.Group>
       </RichTextMenu>
     ),
@@ -178,6 +196,7 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
         fields: {
           content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW, label: t('hierarchy.zones.content') },
           loopKey: { type: 'custom', render: () => <LoopKeyField /> },
+          showIf: showIfPuckField,
           layout: {
             type: 'select',
             label: t('components.container.layout'),
@@ -228,10 +247,15 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
           justifyContent: 'flex-start',
           alignItems: 'stretch',
           background: 'transparent',
+          showIf: [],
           ...DEFAULT_PADDING,
           ...DEFAULT_BORDER,
         },
-        render: (props: ComponentProps<typeof ContainerBlock>) => <ContainerBlock {...props} />,
+        render: (props: ComponentProps<typeof ContainerBlock> & ShowIfProps) => (
+          <WithConditionBadge showIf={props.showIf}>
+            <ContainerBlock {...props} />
+          </WithConditionBadge>
+        ),
       },
       Body: {
         label: t('components.pageBody.label'),
@@ -249,6 +273,7 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
         },
         fields: {
           content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW, label: t('hierarchy.zones.content') },
+          showIf: showIfPuckField,
           layout: {
             type: 'select',
             label: t('components.container.layout'),
@@ -288,12 +313,17 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
             render: () => <BorderField translationPrefix="templates.editor.components.container" />,
           },
         },
-        defaultProps: getDefaultBodyProps(),
-        render: (props: ComponentProps<typeof ContainerBlock>) => <ContainerBlock {...props} />,
+        defaultProps: { ...getDefaultBodyProps(), showIf: [] },
+        render: (props: ComponentProps<typeof ContainerBlock> & ShowIfProps) => (
+          <WithConditionBadge showIf={props.showIf}>
+            <ContainerBlock {...props} />
+          </WithConditionBadge>
+        ),
       },
       Text: {
         label: t('toolbox.text'),
         fields: {
+          showIf: showIfPuckField,
           text: richtextField(t),
           fontSize: { type: 'number', label: t('components.text.fontSize'), min: 8, max: 72 },
           color: { type: 'text', label: t('components.text.textColor') },
@@ -314,12 +344,18 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
           fontSize: 16,
           color: '#000000',
           textAlign: 'left',
+          showIf: [],
         },
-        render: (props: ComponentProps<typeof TextBlock>) => <TextBlock {...props} />,
+        render: (props: ComponentProps<typeof TextBlock> & ShowIfProps) => (
+          <WithConditionBadge showIf={props.showIf}>
+            <TextBlock {...props} />
+          </WithConditionBadge>
+        ),
       },
       Button: {
         label: t('toolbox.button'),
         fields: {
+          showIf: showIfPuckField,
           settings: { type: 'custom', render: () => <ButtonSettingsField /> },
           background: { type: 'text', label: t('components.button.backgroundColor') },
           color: { type: 'text', label: t('components.button.textColor') },
@@ -332,29 +368,41 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
           color: '#ffffff',
           useSystemUrl: false,
           systemUrlKey: '',
+          showIf: [],
         },
-        render: ({ text, url, background, color, useSystemUrl, systemUrlKey }: TemplateComponentProps['Button']) => (
-          <a
-            href={useSystemUrl && systemUrlKey ? `{{system.${systemUrlKey}}}` : url}
-            onClick={(event) => event.preventDefault()}
-            style={{
-              display: 'inline-block',
-              margin: '8px 0',
-              padding: '10px 20px',
-              background,
-              color,
-              textDecoration: 'none',
-              borderRadius: 4,
-              fontWeight: 'bold',
-            }}
-          >
-            {text}
-          </a>
+        render: ({
+          text,
+          url,
+          background,
+          color,
+          useSystemUrl,
+          systemUrlKey,
+          showIf,
+        }: TemplateComponentProps['Button']) => (
+          <WithConditionBadge showIf={showIf}>
+            <a
+              href={useSystemUrl && systemUrlKey ? `{{system.${systemUrlKey}}}` : url}
+              onClick={(event) => event.preventDefault()}
+              style={{
+                display: 'inline-block',
+                margin: '8px 0',
+                padding: '10px 20px',
+                background,
+                color,
+                textDecoration: 'none',
+                borderRadius: 4,
+                fontWeight: 'bold',
+              }}
+            >
+              {text}
+            </a>
+          </WithConditionBadge>
         ),
       },
       Image: {
         label: t('toolbox.image'),
         fields: {
+          showIf: showIfPuckField,
           source: { type: 'custom', render: () => <ImageSourceField /> },
           width: { type: 'text', label: t('components.image.width') },
         },
@@ -363,8 +411,13 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
           src: '',
           width: '100%',
           useLogoSource: true,
+          showIf: [],
         },
-        render: (props: ComponentProps<typeof ImageBlock>) => <ImageBlock {...props} />,
+        render: (props: ComponentProps<typeof ImageBlock> & ShowIfProps) => (
+          <WithConditionBadge showIf={props.showIf}>
+            <ImageBlock {...props} />
+          </WithConditionBadge>
+        ),
       },
       Table: {
         label: t('toolbox.table'),
@@ -386,6 +439,7 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
           return fields;
         },
         fields: {
+          showIf: showIfPuckField,
           loopKey: {
             type: 'custom',
             render: () => (
@@ -414,15 +468,21 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
           columnWidths: [33, 33, 34],
           textAlign: 'left',
           padding: 0,
+          showIf: [],
           ...DEFAULT_TABLE_BORDER,
         },
-        render: (props: ComponentProps<typeof TableBlock>) => <TableBlock {...props} />,
+        render: (props: ComponentProps<typeof TableBlock> & ShowIfProps) => (
+          <WithConditionBadge showIf={props.showIf}>
+            <TableBlock {...props} />
+          </WithConditionBadge>
+        ),
       },
       PageHeader: {
         label: t('components.pageHeader.label'),
         permissions: { delete: false, duplicate: false, drag: false },
         fields: {
           content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW, label: t('hierarchy.zones.content') },
+          showIf: showIfPuckField,
           padding: { type: 'custom', render: () => <PaddingField /> },
           background: { type: 'text', label: t('components.pageHeader.backgroundColor') },
           borderColor: {
@@ -434,16 +494,22 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
           content: [],
           displayName: '',
           background: '#ffffff',
+          showIf: [],
           ...DEFAULT_PADDING,
           ...DEFAULT_BORDER,
         },
-        render: (props: ComponentProps<typeof ZoneBlock>) => <ZoneBlock {...props} />,
+        render: (props: ComponentProps<typeof ZoneBlock> & ShowIfProps) => (
+          <WithConditionBadge showIf={props.showIf}>
+            <ZoneBlock {...props} />
+          </WithConditionBadge>
+        ),
       },
       PageFooter: {
         label: t('components.pageFooter.label'),
         permissions: { delete: false, duplicate: false, drag: false },
         fields: {
           content: { type: 'slot', visible: false, disallow: ZONE_DISALLOW, label: t('hierarchy.zones.content') },
+          showIf: showIfPuckField,
           padding: { type: 'custom', render: () => <PaddingField /> },
           background: { type: 'text', label: t('components.pageFooter.backgroundColor') },
           borderColor: {
@@ -455,10 +521,15 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
           content: [],
           displayName: '',
           background: '#ffffff',
+          showIf: [],
           ...DEFAULT_PADDING,
           ...DEFAULT_BORDER,
         },
-        render: (props: ComponentProps<typeof ZoneBlock>) => <ZoneBlock {...props} />,
+        render: (props: ComponentProps<typeof ZoneBlock> & ShowIfProps) => (
+          <WithConditionBadge showIf={props.showIf}>
+            <ZoneBlock {...props} />
+          </WithConditionBadge>
+        ),
       },
     },
     root: isDocument

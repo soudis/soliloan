@@ -2,8 +2,8 @@
 
 import type { TemplateDataset, TemplateType } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
-
 import { db } from '@/lib/db';
+import type { DataTableColumnFilterType } from '@/lib/entity-filters/filter-definitions';
 import {
   BOARD_DIGEST_FIELDS,
   buildLoopTags,
@@ -20,6 +20,9 @@ export type MergeTagField = {
   label: string;
   value: string;
   entity: string;
+  /** Set for project additional fields so conditions can pick the right operator. */
+  filterType?: DataTableColumnFilterType;
+  selectOptions?: string[];
 };
 
 export type MergeTagLoop = {
@@ -47,7 +50,23 @@ type AdditionalFieldDef = {
   name: string;
   type: string;
   label?: string;
+  selectOptions?: string[];
 };
+
+function additionalFilterType(type: string): DataTableColumnFilterType {
+  switch (type) {
+    case 'number':
+      return 'number';
+    case 'date':
+      return 'date';
+    case 'select':
+      return 'select';
+    case 'boolean':
+      return 'boolean';
+    default:
+      return 'text';
+  }
+}
 
 /**
  * Get merge tag configuration for a dataset with translated labels
@@ -215,6 +234,8 @@ export async function getMergeTagConfigAction(
             label: field.label || field.name,
             value: `{{lender.additionalFields.${field.id}}}`,
             entity: 'lender',
+            filterType: additionalFilterType(field.type),
+            selectOptions: Array.isArray(field.selectOptions) ? field.selectOptions : undefined,
           });
         }
       }
@@ -228,6 +249,8 @@ export async function getMergeTagConfigAction(
             label: field.label || field.name,
             value: `{{loan.additionalFields.${field.id}}}`,
             entity: 'loan',
+            filterType: additionalFilterType(field.type),
+            selectOptions: Array.isArray(field.selectOptions) ? field.selectOptions : undefined,
           });
         }
       }

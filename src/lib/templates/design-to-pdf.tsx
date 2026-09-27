@@ -13,13 +13,20 @@ import { type DesignComponent, designComponentId, getDocumentLayout } from '@/li
 import { paddingPropsToPdfPoints, resolvePaddingPx } from '@/lib/templates/padding-utils';
 import { type RasterSize, readRasterSizeFromDataUrl } from '@/lib/templates/raster-image-size';
 import { resolveTemplateImageSrc } from '@/lib/templates/resolve-template-image-src';
+import {
+  matchesTemplateCondition,
+  readTemplateRaw,
+  replaceConditionPills,
+  TEMPLATE_RAW_KEY,
+} from '@/lib/templates/template-condition';
 import { processTemplate } from '@/lib/templates/template-processor';
 import { stripLoopScaffoldFromTiptapHtml } from '@/lib/templates/tiptap-merge-loop';
 
 // ─── Tiptap HTML → text for PDF (merge tags → {{x}}, then strip HTML) ─────
 function processTiptapContent(html: string): string {
   const stripped = stripLoopScaffoldFromTiptapHtml((html || '').replace(/<p>/g, '').replace(/<\/p>/g, '<br />'));
-  const withMergeTags = stripped.replace(
+  const withConditions = replaceConditionPills(stripped);
+  const withMergeTags = withConditions.replace(
     /<span[^>]*data-merge-tag="([^"]*)"[^>]*>.*?<\/span>/g,
     (_: string, tag: string) => `{{${tag.replace(/[{}]/g, '')}}}`,
   );
@@ -140,8 +147,28 @@ const getScopeLoopArray = (scopeData: TemplateScope, loopKey: string): unknown =
   return loopKey in scopeData ? scopeData[loopKey] : undefined;
 };
 
-const createChildScope = (parentScope: TemplateScope, childScope: TemplateScope): TemplateScope =>
-  Object.assign(Object.create(parentScope), childScope);
+const createChildScope = (
+  parentScope: TemplateScope,
+  childScope: TemplateScope,
+  rawChild?: TemplateScope,
+): TemplateScope => {
+  const child = Object.assign(Object.create(parentScope), childScope) as TemplateScope;
+  const parentRaw = readTemplateRaw(parentScope);
+  const nextRaw = rawChild ? (Object.assign(Object.create(parentRaw), rawChild) as TemplateScope) : parentRaw;
+  child[TEMPLATE_RAW_KEY] = nextRaw;
+  return child;
+};
+
+const loopItemScope = (parentScope: TemplateScope, loopKey: string, item: unknown, index: number): TemplateScope => {
+  const rawList = getScopeLoopArray(readTemplateRaw(parentScope), loopKey);
+  const rawItem = Array.isArray(rawList) ? rawList[index] : undefined;
+  const rawChild = rawItem && typeof rawItem === 'object' && !Array.isArray(rawItem) ? (rawItem as TemplateScope) : {};
+  const display = item && typeof item === 'object' && !Array.isArray(item) ? (item as TemplateScope) : {};
+  return createChildScope(parentScope, display, rawChild);
+};
+
+const scopeShowsBlock = (showIf: unknown, scopeData: TemplateScope): boolean =>
+  matchesTemplateCondition(showIf, readTemplateRaw(scopeData));
 
 const DEFAULT_TABLE_HEADER_FONT_SIZE = 13;
 const DEFAULT_TABLE_BODY_FONT_SIZE = 14;
@@ -282,8 +309,10 @@ const getContainerLoopItems = (node: DesignComponent, scopeData: TemplateScope):
   const rawValue = getScopeLoopArray(scopeData, loopKey);
   if (!Array.isArray(rawValue)) return [];
   return rawValue
-    .filter((item): item is TemplateScope => typeof item === 'object' && item !== null)
-    .map((item) => createChildScope(scopeData, item));
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => typeof item === 'object' && item !== null)
+    .map(({ item, index }) => loopItemScope(scopeData, loopKey, item, index))
+    .filter((scope) => scopeShowsBlock(node.props.showIf, scope));
 };
 
 const buildTableOuterBorderPdfStyle = (
@@ -477,6 +506,11 @@ export function renderDesignToPdfParts(
       }
     }
 
+    const estimateLoopKey = typeof props?.loopKey === 'string' ? props.loopKey : '';
+    if (!(name === 'Table' && estimateLoopKey.length > 0) && !scopeShowsBlock(props?.showIf, scopeData)) {
+      return 0;
+    }
+
     switch (name) {
       case 'Container':
       case 'Body':
@@ -599,8 +633,11 @@ export function renderDesignToPdfParts(
           const loopArr = isDynamic ? getScopeLoopArray(scopeData, loopKey) : undefined;
           const rowData =
             isDynamic && Array.isArray(loopArr)
-              ? createChildScope(scopeData, (loopArr[rowIndex] as TemplateScope | undefined) ?? {})
+              ? loopItemScope(scopeData, loopKey, loopArr[rowIndex], rowIndex)
               : scopeData;
+          if (isDynamic && !scopeShowsBlock(props?.showIf, rowData)) {
+            return 0;
+          }
           return estimateTableRowHeight(
             cellTexts[rowIndex] || [],
             (colIndex) =>
@@ -676,6 +713,11 @@ export function renderDesignToPdfParts(
           ...loopItems.map((item, index) => renderNode(node, context, item, `${nodeId}-loop-${index}`, true)),
         );
       }
+    }
+
+    const renderLoopKey = typeof props?.loopKey === 'string' ? props.loopKey : '';
+    if (!(name === 'Table' && renderLoopKey.length > 0) && !scopeShowsBlock(props?.showIf, scopeData)) {
+      return null;
     }
 
     const children = childNodes.flatMap((child) => renderNodeInstances(child, context, scopeData));
@@ -865,7 +907,8 @@ export function renderDesignToPdfParts(
         if (isDynamic && Array.isArray(getScopeLoopArray(scopeData, loopKey))) {
           const items = getScopeLoopArray(scopeData, loopKey) as TemplateScope[];
           items.forEach((item, r) => {
-            const rowScope = createChildScope(scopeData, item);
+            const rowScope = loopItemScope(scopeData, loopKey, item, r);
+            if (!scopeShowsBlock(props?.showIf, rowScope)) return;
             const cells = Array.from({ length: cols }, (_, c) => {
               const cellHtml = (cellTexts[0]?.[c] as string) || '';
               const withData = processTemplate(processTiptapContent(cellHtml), rowScope);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { ShowIfField } from '../fields/show-if-field';
 import type { TextAlign } from '../table-model';
 import { usePatchSelectedProps, useSelectedRecord } from '../use-puck-selected';
 import { TextAlignButtons } from './text-align-buttons';
@@ -15,6 +16,7 @@ export function TextSettings() {
 
   return (
     <div className="space-y-4 p-4">
+      <ShowIfField />
       <div className="space-y-2">
         <label className="block text-xs font-medium" htmlFor="fontSize">
           {t('fontSize')}

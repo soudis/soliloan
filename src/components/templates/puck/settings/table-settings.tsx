@@ -6,6 +6,7 @@ import { BlockPaddingFields } from '../../block-padding-fields';
 import { BorderField } from '../fields/border-field';
 import { ColumnWidthsField } from '../fields/column-widths-field';
 import { LoopKeyField } from '../fields/loop-key-field';
+import { ShowIfField } from '../fields/show-if-field';
 import { TableCellStyleField } from '../fields/table-cell-field';
 import { resizeTableArrays, type TableCellStyle, type TextAlign } from '../table-model';
 import { usePatchSelectedProps, useSelectedRecord } from '../use-puck-selected';
@@ -49,6 +50,7 @@ export function TableSettings() {
 
   return (
     <div className="space-y-4 p-4">
+      <ShowIfField />
       <Tabs defaultValue="structure">
         <TabsList variant="modern" className="mt-0">
           <TabsTrigger variant="modern" size="sm" value="structure">

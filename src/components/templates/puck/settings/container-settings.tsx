@@ -22,6 +22,7 @@ import type { FlexAlign, FlexJustify, LayoutMode } from '../blocks/container-blo
 import { BorderField } from '../fields/border-field';
 import { LoopKeyField } from '../fields/loop-key-field';
 import { SaveAsBlockField } from '../fields/save-as-block-field';
+import { ShowIfField } from '../fields/show-if-field';
 import { usePatchSelectedProps, useSelectedComponentType, useSelectedRecord } from '../use-puck-selected';
 import { parseColor, rgbaToString, rgbToHex } from './color-utils';
 import { LayoutButton, ToggleButton } from './icon-toggle';
@@ -91,6 +92,7 @@ export function ContainerSettings() {
 
   return (
     <div className="space-y-4 p-4">
+      <ShowIfField />
       <Tabs defaultValue="layout">
         <TabsList variant="modern" className="mt-0">
           <TabsTrigger variant="modern" size="sm" value="layout">

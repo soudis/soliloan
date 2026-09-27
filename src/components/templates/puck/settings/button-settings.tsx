@@ -7,6 +7,7 @@ import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/ge
 import { useEditorMetadata } from '../../editor-context';
 import { useMergeTagConfig } from '../../merge-tag-context';
 import { MergeTagDropdown } from '../../merge-tag-dropdown';
+import { ShowIfField } from '../fields/show-if-field';
 import { usePatchSelectedProps, usePuckAncestorLoops, useSelectedRecord } from '../use-puck-selected';
 
 const SYSTEM_URL_KEYS = [
@@ -70,6 +71,7 @@ export function ButtonSettings() {
 
   return (
     <div className="space-y-4 p-4">
+      <ShowIfField />
       <div className="space-y-2">
         <label className="text-xs font-medium" htmlFor="buttonText">
           {t('buttonText')}

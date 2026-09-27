@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { BlockPaddingFields } from '../../block-padding-fields';
 import { BorderField } from '../fields/border-field';
+import { ShowIfField } from '../fields/show-if-field';
 import { usePatchSelectedProps, useSelectedRecord } from '../use-puck-selected';
 import { usePaddingAdapter } from './use-padding-adapter';
 
@@ -16,6 +17,7 @@ export function ZoneSettings({ translationPrefix }: { translationPrefix: string 
 
   return (
     <div className="space-y-4 p-4">
+      <ShowIfField />
       <BlockPaddingFields idPrefix="zone" props={paddingProps} setProp={setProp} />
       <div className="space-y-2">
         <label htmlFor="zoneBg" className="text-xs font-medium">

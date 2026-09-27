@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLogo } from '../../logo-context';
+import { ShowIfField } from '../fields/show-if-field';
 import { usePatchSelectedProps, useSelectedRecord } from '../use-puck-selected';
 
 export function ImageSettings() {
@@ -24,6 +25,7 @@ export function ImageSettings() {
 
   return (
     <div className="space-y-4 p-4">
+      <ShowIfField />
       <Tabs
         defaultValue={defaultTab}
         onValueChange={(value) => {
