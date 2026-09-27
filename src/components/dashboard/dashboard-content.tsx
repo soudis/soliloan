@@ -10,6 +10,7 @@ import { YearlyDataChart } from '@/components/dashboard/yearly-data-chart';
 import { YearlyTable } from '@/components/dashboard/yearly-table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useProjectHref } from '@/lib/hooks/use-project-href';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
 import type { LoanWithCalculations } from '@/types/loans';
 
@@ -78,6 +79,7 @@ interface DashboardContentProps {
 
 export function DashboardContent({ statsData, loansDistribution, loans, userName }: DashboardContentProps) {
   const t = useTranslations('dashboard');
+  const projectHref = useProjectHref();
 
   return (
     <div>
@@ -227,7 +229,7 @@ export function DashboardContent({ statsData, loansDistribution, loans, userName
           <h2 className="mb-2 text-xl font-semibold">{t('lenders.title')}</h2>
           <p className="mb-4 text-sm text-muted-foreground">{t('lenders.description')}</p>
           <Button asChild variant="outline" className="w-full">
-            <Link href="/lenders/list">{t('lenders.viewLenders')}</Link>
+            <Link href={projectHref('/lenders/list')}>{t('lenders.viewLenders')}</Link>
           </Button>
         </div>
 
@@ -238,7 +240,7 @@ export function DashboardContent({ statsData, loansDistribution, loans, userName
           <h2 className="mb-2 text-xl font-semibold">{t('loans.title')}</h2>
           <p className="mb-4 text-sm text-muted-foreground">{t('loans.details')}</p>
           <Button asChild variant="outline" className="w-full">
-            <Link href="/loans/list">{t('loans.viewLoans')}</Link>
+            <Link href={projectHref('/loans/list')}>{t('loans.viewLoans')}</Link>
           </Button>
         </div>
       </div>

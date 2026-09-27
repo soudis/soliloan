@@ -12,6 +12,7 @@ import {
   buildAllLenderTableColumns,
   getLenderSortValue,
 } from '@/lib/dashboard/table-widget/lender-table-column-registry';
+import { withProjectId } from '@/lib/project-href';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import { parseLenderTableConfig } from '@/types/dashboard-widgets/table-view';
 
@@ -51,7 +52,7 @@ export function LenderTableWidget({ widget }: { widget: DashboardWidget }) {
       columns={columns}
       emptyMessage={t('emptyData')}
       getSortValue={getSortValue}
-      onRowClick={(row) => router.push(`/lenders/${row.id}`)}
+      onRowClick={(row) => router.push(withProjectId(`/lenders/${row.id}`, project.id))}
     />
   );
 }

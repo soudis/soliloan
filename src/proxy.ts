@@ -45,44 +45,43 @@ function redirectWithProjectId(request: NextRequest, projectId: string, userId?:
   return response;
 }
 
+function applySetCookies(from: Response, to: NextResponse) {
+  for (const cookie of from.headers.getSetCookie()) {
+    to.headers.append('set-cookie', cookie);
+  }
+}
+
+type ProxySessionUser = { id?: string; isAdmin?: boolean; managerOf?: string[] };
+
+/** Project id to attach when the request URL has none. Uses the session already read for auth. */
+async function resolveMissingProjectId(
+  request: NextRequest,
+  sessionUser: ProxySessionUser | undefined,
+): Promise<string | null> {
+  const userId = sessionUser?.id;
+  const lastProjectId = parseLastProjectCookie(request.cookies.get(LAST_PROJECT_COOKIE_NAME)?.value, userId);
+  if (lastProjectId && userCanAccessProject(lastProjectId, sessionUser)) {
+    return lastProjectId;
+  }
+  if (sessionUser?.managerOf && sessionUser.managerOf.length > 0) {
+    return sessionUser.managerOf[0];
+  }
+  if (sessionUser?.isAdmin) {
+    const project = await db.project.findFirst({ select: { id: true } });
+    return project?.id ?? null;
+  }
+  return null;
+}
+
 const handleI18nRouting = createIntlMiddleware(routing);
 
 export async function proxy(request: NextRequest) {
-  // Forward projectId from referer when missing (so links without ?projectId= keep the selected project)
   const { searchParams, pathname } = request.nextUrl;
   const projectIdFromUrl = searchParams.get(PROJECT_ID_KEY);
 
-  if (!searchParams.has(PROJECT_ID_KEY)) {
-    const referer = request.headers.get('referer');
-    if (referer) {
-      try {
-        const refererUrl = new URL(referer);
-        const prevProjectId = refererUrl.searchParams.get(PROJECT_ID_KEY);
-        if (prevProjectId) {
-          return redirectWithProjectId(request, prevProjectId);
-        }
-      } catch {
-        // Ignore invalid referer URLs
-      }
-    }
-    const session = await auth();
-    const userId = session?.user.id;
-    const lastProjectId = parseLastProjectCookie(request.cookies.get(LAST_PROJECT_COOKIE_NAME)?.value, userId);
-    if (lastProjectId && userCanAccessProject(lastProjectId, session?.user)) {
-      return redirectWithProjectId(request, lastProjectId, userId);
-    }
-    if (session?.user.managerOf && session.user.managerOf.length > 0) {
-      return redirectWithProjectId(request, session.user.managerOf[0], userId);
-    }
-    if (session?.user.isAdmin) {
-      const project = await db.project.findFirst();
-      return redirectWithProjectId(request, project?.id ?? '', userId);
-    }
-  }
-
   // Handle authentication
   // ---
-  let sessionUser: { id?: string; isAdmin?: boolean; managerOf?: string[] } | undefined;
+  let sessionUser: ProxySessionUser | undefined;
 
   const authResponse = await auth(async (authRequest) => {
     sessionUser = authRequest.auth?.user;
@@ -106,6 +105,18 @@ export async function proxy(request: NextRequest) {
   // Return response other than 200 to redirect properly
   if (authResponse?.status !== 200) {
     return authResponse;
+  }
+
+  // Attach the selected project when a link omitted ?projectId=
+  if (!projectIdFromUrl) {
+    const projectId = await resolveMissingProjectId(request, sessionUser);
+    if (projectId) {
+      const redirectResponse = redirectWithProjectId(request, projectId, sessionUser?.id);
+      if (authResponse) {
+        applySetCookies(authResponse, redirectResponse);
+      }
+      return redirectResponse;
+    }
   }
 
   // Handle i18n

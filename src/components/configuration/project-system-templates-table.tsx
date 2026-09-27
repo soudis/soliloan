@@ -16,6 +16,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { withProjectId } from '@/lib/project-href';
 import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
 import type { ProjectSystemTemplateOverviewRow } from '@/lib/templates/project-system-templates-overview';
 
@@ -63,7 +64,7 @@ export function ProjectSystemTemplatesTable({ projectId, initialRows }: ProjectS
       } else if (result?.data?.id) {
         toast.success(t('project.systemList.toast.customized'));
         load();
-        router.push(`/configuration/templates/${result.data.id}`);
+        router.push(withProjectId(`/configuration/templates/${result.data.id}`, projectId));
       }
     },
     [duplicateTemplate, load, projectId, router, t],
@@ -71,9 +72,9 @@ export function ProjectSystemTemplatesTable({ projectId, initialRows }: ProjectS
 
   const handleEdit = useCallback(
     (row: ProjectSystemTemplateOverviewRow) => {
-      router.push(`/configuration/templates/${row.effectiveTemplateId}`);
+      router.push(withProjectId(`/configuration/templates/${row.effectiveTemplateId}`, projectId));
     },
-    [router],
+    [router, projectId],
   );
 
   const handleResetConfirm = useCallback(async () => {

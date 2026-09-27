@@ -3,6 +3,7 @@
 import { Wallet } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
+import { withProjectId } from '@/lib/project-href';
 import type { LenderDetailsWithCalculations } from '@/types/lenders';
 import { AddTypeButton } from './add-entity-menu';
 import { LoanAccordionCard } from './loan-accordion-card';
@@ -31,7 +32,7 @@ export function LenderLoansSection({ lender }: LenderLoansSectionProps) {
           </div>
           <AddTypeButton
             label={commonT('terms.loan')}
-            onClick={() => router.push(`/loans/new?lenderId=${lender.id}`)}
+            onClick={() => router.push(withProjectId(`/loans/new?lenderId=${lender.id}`, lender.projectId))}
           />
         </div>
 

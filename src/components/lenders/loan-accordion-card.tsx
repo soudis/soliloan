@@ -13,6 +13,7 @@ import { NoteDialog } from '@/components/generic/note-dialog';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { InfoItem } from '@/components/ui/info-item';
 import { useRouter } from '@/i18n/navigation';
+import { withProjectId } from '@/lib/project-href';
 import { formatTerminationModalities } from '@/lib/table-column-utils';
 import { cn, formatCurrency, formatDateLong, formatDateShort, formatPercentage } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
@@ -218,7 +219,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
             icon={<Pencil className="h-3.5 w-3.5" />}
             tooltip={commonT('ui.actions.edit')}
             srOnly={commonT('ui.actions.edit')}
-            onClick={() => router.push(`/loans/${loan.id}/edit`)}
+            onClick={() => router.push(withProjectId(`/loans/${loan.id}/edit`, project.id))}
           />
           <ActionButton
             intent="delete"

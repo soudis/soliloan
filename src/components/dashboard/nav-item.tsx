@@ -4,6 +4,8 @@ import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { useProjectHref } from '@/lib/hooks/use-project-href';
+import { isProjectScopedPath } from '@/lib/project-href';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store';
 
@@ -15,13 +17,15 @@ interface NavItemProps {
 
 export function NavItem({ href, icon: Icon, label }: NavItemProps) {
   const pathname = usePathname();
+  const projectHref = useProjectHref();
+  const linkHref = isProjectScopedPath(href) ? projectHref(href) : href;
   const isActive =
     pathname === href || pathname.startsWith(`${href}/`) || pathname.endsWith(href) || pathname.includes(`/${href}/`);
   const { toggleSidebar } = useAppStore();
 
   return (
     <Link
-      href={href}
+      href={linkHref}
       onClick={() => {
         // Close sidebar on mobile when a navigation item is clicked
         if (window.innerWidth < 768) {

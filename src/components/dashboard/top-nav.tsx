@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Link as LocaleLink } from '@/i18n/navigation';
+import { useProjectHref } from '@/lib/hooks/use-project-href';
 import { getSoliloanProjectName } from '@/lib/project-name';
 
 interface TopNavProps {
@@ -35,7 +36,9 @@ export function TopNav({ session, isSidebarOpen, setIsSidebarOpen, showSidebarTo
   const displayName = session.user?.name?.trim() || session.user?.email || '';
   const email = session.user?.email;
 
-  const homeHref = !session.user.isManager && session.user.loanedToProjects.length > 0 ? '/my-loans' : '/dashboard';
+  const projectHref = useProjectHref();
+  const homeHref =
+    !session.user.isManager && session.user.loanedToProjects.length > 0 ? '/my-loans' : projectHref('/dashboard');
 
   return (
     <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

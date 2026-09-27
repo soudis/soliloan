@@ -12,6 +12,7 @@ import {
   buildAllTransactionTableColumns,
   getTransactionSortValue,
 } from '@/lib/dashboard/table-widget/transaction-table-column-registry';
+import { withProjectId } from '@/lib/project-href';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import { parseTransactionTableConfig } from '@/types/dashboard-widgets/table-view';
 import type { TransactionListItem } from '@/types/transactions';
@@ -57,7 +58,9 @@ export function TransactionTableWidget({ widget }: { widget: DashboardWidget }) 
       columns={columns as ColumnDef<TransactionListItem>[]}
       emptyMessage={t('emptyData')}
       getSortValue={getSortValue}
-      onRowClick={(row) => router.push(`/lenders/${row.loan.lender.id}?loanId=${row.loan.id}`)}
+      onRowClick={(row) =>
+        router.push(withProjectId(`/lenders/${row.loan.lender.id}?loanId=${row.loan.id}`, project.id))
+      }
     />
   );
 }

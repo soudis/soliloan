@@ -19,6 +19,7 @@ import { LENDER_DETAIL_COLUMN_META } from '@/lib/dashboard/table-widget/lender-p
 import { buildAllLenderTableColumns } from '@/lib/dashboard/table-widget/lender-table-column-registry';
 import { buildLenderTableColumnFilters } from '@/lib/entity-filters/filter-definitions';
 import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
+import { withProjectId } from '@/lib/project-href';
 import { createAdditionalFieldDefaultColumnVisibility } from '@/lib/table-column-utils';
 import { TABLE_LIST_PATHS } from '@/lib/table-list-path';
 import type { LenderListItem } from '@/types/lenders';
@@ -117,7 +118,7 @@ export function LenderTable({ lenders, views, viewId }: LenderTableProps) {
           density="header"
           icon={<Plus className="h-4 w-4" />}
           label={t('new.title')}
-          onClick={() => router.push('/lenders/new')}
+          onClick={() => router.push(withProjectId('/lenders/new', project.id))}
         />
       </div>
 
@@ -135,13 +136,13 @@ export function LenderTable({ lenders, views, viewId }: LenderTableProps) {
         showFilter={true}
         showExport
         exportPrefix="Darlehensgeber"
-        onRowClick={(row) => router.push(`/lenders/${row.id}`)}
+        onRowClick={(row) => router.push(withProjectId(`/lenders/${row.id}`, project.id))}
         bulkActions={bulkActions}
         actions={(row) => (
           <>
             <DropdownMenuItem
               onClick={() => {
-                router.push(`/loans/new?lenderId=${row.id}`);
+                router.push(withProjectId(`/loans/new?lenderId=${row.id}`, project.id));
               }}
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -149,7 +150,7 @@ export function LenderTable({ lenders, views, viewId }: LenderTableProps) {
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                router.push(`/lenders/${row.id}/edit`);
+                router.push(withProjectId(`/lenders/${row.id}/edit`, project.id));
               }}
             >
               <Pencil className="h-4 w-4 mr-2" />

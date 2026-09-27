@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { DataTable } from '@/components/ui/data-table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { AuditContext } from '@/lib/audit-trail';
+import { useProjectHref } from '@/lib/hooks/use-project-href';
 import { createColumn } from '@/lib/table-column-utils';
 import { formatPercentage } from '@/lib/utils';
 
@@ -21,6 +22,7 @@ interface LogbookTableProps {
 
 export function LogbookTable({ changes, views }: LogbookTableProps) {
   const t = useTranslations('logbook');
+  const projectHref = useProjectHref();
   const [selectedChange, setSelectedChange] = useState<Change | null>(null);
 
   const getChangeDescription = (change: Change) => {
@@ -204,7 +206,7 @@ export function LogbookTable({ changes, views }: LogbookTableProps) {
                     {part}
                     {index < array.length - 1 && (
                       <Link
-                        href={`/lenders/${context.lender?.id}?loanId=${context.loan?.id}`}
+                        href={projectHref(`/lenders/${context.lender?.id}?loanId=${context.loan?.id}`)}
                         className="text-primary hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -231,7 +233,7 @@ export function LogbookTable({ changes, views }: LogbookTableProps) {
                     {part}
                     {index < array.length - 1 && context.lender && (
                       <Link
-                        href={`/lenders/${context.lender.id}`}
+                        href={projectHref(`/lenders/${context.lender.id}`)}
                         className="text-primary hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
