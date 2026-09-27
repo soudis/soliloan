@@ -18,6 +18,7 @@ const emptyNumbers = (): LoanMonthlyNumbers => ({
   interestPaid: 0,
   interest: 0,
   interestError: 0,
+  interestBaseAmount: 0,
 });
 
 export function buildCumulativeTimeline(history: LoanMonthlyHistory): CumulativeTimelineEntry[] {
@@ -53,6 +54,7 @@ export function buildCumulativeTimeline(history: LoanMonthlyHistory): Cumulative
       running.interest += entry.interest;
       running.interestError += entry.interestError;
       running.end = entry.end;
+      running.interestBaseAmount = entry.interestBaseAmount;
       running.begin = firstBegin ?? 0;
 
       entries.push({

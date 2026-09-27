@@ -10,6 +10,7 @@ const TYPES_WITH_DEFAULT_CONFIG: DashboardWidgetType[] = [
   'history_table',
   'stat',
   'pie_chart',
+  'aggregation_table',
   'bar_chart',
   'line_chart',
   'loan_table_view',

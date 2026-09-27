@@ -1,4 +1,4 @@
-import type { Transaction } from '@prisma/client';
+import type { InterestMethod, Transaction } from '@prisma/client';
 
 import { aggregateLenderLoanSums, type calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFieldsWithPerYear, calculateLoanPerMonth } from '@/lib/calculations/loan-calculations';
@@ -21,6 +21,8 @@ export type DashboardLoan = LoanWithCalculations & {
   /** Prefix cumulative totals per month — used during widget compute, omitted from the client payload. */
   cumulativeTimeline?: CumulativeTimelineEntry[];
   transactions: Transaction[];
+  /** Alt method when set, otherwise the project default. */
+  interestMethod: InterestMethod;
 };
 
 export function omitDashboardLoanTimelines(loans: DashboardLoan[]): DashboardLoan[] {
@@ -40,6 +42,7 @@ function buildLoanMonthlyHistory(perMonth: ReturnType<typeof calculateLoanPerMon
       interestPaid: entry.interestPaid.toNumber(),
       interest: entry.interest.toNumber(),
       interestError: entry.interestError.toNumber(),
+      interestBaseAmount: entry.interestBaseAmount.toNumber(),
     };
 
     if (!history[entry.year]) {
@@ -100,11 +103,13 @@ export async function loadDashboardStats(projectId: string, toDate: Date = new D
       const history = buildLoanMonthlyHistory(perMonth);
 
       calculatedLoans.push(calculated);
+      const interestMethod = parsedLoan.altInterestMethod ?? parsedLoan.lender.project.configuration.interestMethod;
       dashboardLoans.push({
         ...sanitized,
         history,
         cumulativeTimeline: buildCumulativeTimeline(history),
         transactions: parsedLoan.transactions,
+        interestMethod,
       });
     }
 

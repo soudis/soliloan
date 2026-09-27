@@ -173,10 +173,8 @@ function sumMetricForLoans(
         break;
       }
       case 'interestRateAvg': {
-        // Include only loans active at period end (positive balance), but weight
-        // by contract amount to stay consistent with stat and pie widgets.
         if (periodNumbers && periodNumbers.end > 0) {
-          const weight = interestRateAverageWeight(loan);
+          const weight = interestRateAverageWeight(loan, periodNumbers);
           rateWeighted += Number(loan.interestRate) * weight;
           weightSum += weight;
         }

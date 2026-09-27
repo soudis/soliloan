@@ -6,6 +6,7 @@ import {
   type DashboardWidgetType,
   type DashboardWidgetWidth,
 } from '@/types/dashboard-layout';
+import { createDefaultAggregationTableConfig } from '@/types/dashboard-widgets/aggregation-table';
 import { createDefaultBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
 import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { createDefaultLineChartConfig } from '@/types/dashboard-widgets/line-chart';
@@ -66,6 +67,7 @@ export const DEFAULT_WIDTH_BY_TYPE: Record<DashboardWidgetType, DashboardWidgetW
   lender_table_view: 'full',
   transaction_table_view: 'full',
   pie_chart: 'half',
+  aggregation_table: 'full',
   line_chart: 'half',
   bar_chart: 'half',
   stat: 'quarter',
@@ -161,6 +163,7 @@ export function widgetShowsCardHeader(widget: { type: DashboardWidgetType; title
     widget.type === 'stat' ||
     widget.type === 'history_table' ||
     widget.type === 'pie_chart' ||
+    widget.type === 'aggregation_table' ||
     widget.type === 'bar_chart' ||
     widget.type === 'line_chart' ||
     widget.type === 'loan_table_view' ||
@@ -181,6 +184,8 @@ export function createDefaultWidgetConfig(type: DashboardWidgetType): Record<str
       return createDefaultStatWidgetConfig();
     case 'pie_chart':
       return createDefaultPieChartConfig();
+    case 'aggregation_table':
+      return createDefaultAggregationTableConfig();
     case 'bar_chart':
       return createDefaultBarChartConfig();
     case 'line_chart':

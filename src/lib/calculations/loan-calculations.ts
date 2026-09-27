@@ -472,6 +472,10 @@ export const calculateLoanPerMonth = (
       currentMonth.end = new Prisma.Decimal(0);
     }
 
+    // The field starts as the opening base. Keep the base after this month's
+    // transactions so a non-compound interest-rate weight can use it.
+    currentMonth.interestBaseAmount = interestBaseAmount;
+
     if (!isLastMonth) {
       const nextMonth = cursor.clone().add(1, 'month');
       const crossesYearBoundary = nextMonth.year() !== year;
