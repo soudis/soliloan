@@ -113,6 +113,10 @@
     "noProjectJson": "Das Datenpaket enthält keine project.json. Bitte DKP-v1 auf die neueste Version aktualisieren.",
     "noProjectId": "Die project.json enthält keine gültige Projekt-ID (projectid)."
   },
+  "dashboard": {
+    "seedLayoutNotFound": "Die Seed-Datei für das Standard-Dashboard wurde nicht gefunden.",
+    "seedLayoutInvalid": "Die Seed-Datei für das Standard-Dashboard ist ungültig."
+  },
   "email": {
     "sendFailed": "E-Mail konnte nicht gesendet werden. Bitte später erneut versuchen."
   },
