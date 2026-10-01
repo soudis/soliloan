@@ -22,6 +22,16 @@ _Avoid_: Darlehensvertrag
 The principal amount of a Kredit.
 _Avoid_: Darlehensbetrag
 
+### Dashboard
+
+**Benachrichtigung**:
+A condition in a Direktkredit project that the person running the project should look at. Plural: Benachrichtigungen.
+_Avoid_: Benachrichtigungsart
+
+**Benachrichtigungsart**:
+How a Kreditgeber*in is contacted: online, email, or post.
+_Avoid_: Benachrichtigung
+
 ### Template blocks
 
 **Bedingung**:

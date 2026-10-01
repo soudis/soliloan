@@ -26,6 +26,7 @@ import { parseAggregationTableConfig } from '@/types/dashboard-widgets/aggregati
 import { parseBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
 import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { parseLineChartConfig } from '@/types/dashboard-widgets/line-chart';
+import { parseNotificationsConfig } from '@/types/dashboard-widgets/notifications';
 import { type PieChartChartSize, parsePieChartConfig } from '@/types/dashboard-widgets/pie-chart';
 import { parseStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
 import {
@@ -40,6 +41,7 @@ import { HistoryTableSettings } from './history-table-settings';
 import { LenderTableSettings } from './lender-table-settings';
 import { LineChartSettings } from './line-chart-settings';
 import { LoanTableSettings } from './loan-table-settings';
+import { NotificationsSettings } from './notifications-settings';
 import { PieChartSettings } from './pie-chart-settings';
 import { StatWidgetSettings } from './stat-widget-settings';
 import { TransactionTableSettings } from './transaction-table-settings';
@@ -63,6 +65,7 @@ function createSettingsSchema(widgetType: DashboardWidgetType) {
       widgetType === 'loan_table_view' ||
       widgetType === 'lender_table_view' ||
       widgetType === 'transaction_table_view' ||
+      widgetType === 'notifications' ||
       widgetType === 'divider'
         ? z.string()
         : z.string().min(1),
@@ -274,6 +277,9 @@ export function DashboardWidgetSettings() {
             onConfigChange={handleConfigChange}
           />
         ) : null}
+        {widget.type === 'notifications' ? (
+          <NotificationsSettings config={parseNotificationsConfig(widget.config)} onConfigChange={handleConfigChange} />
+        ) : null}
         {widget.type !== 'history_table' &&
         widget.type !== 'stat' &&
         widget.type !== 'pie_chart' &&
@@ -283,6 +289,7 @@ export function DashboardWidgetSettings() {
         widget.type !== 'loan_table_view' &&
         widget.type !== 'lender_table_view' &&
         widget.type !== 'transaction_table_view' &&
+        widget.type !== 'notifications' &&
         widget.type !== 'divider' ? (
           <p className="mt-6 text-xs text-muted-foreground">{t('typeSettingsComingSoon')}</p>
         ) : null}

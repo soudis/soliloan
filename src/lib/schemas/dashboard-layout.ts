@@ -14,6 +14,7 @@ import { historyTableWidgetConfigSchema } from './dashboard-widgets/history-tabl
 import { lenderTableWidgetConfigSchema } from './dashboard-widgets/lender-table';
 import { lineChartWidgetConfigSchema } from './dashboard-widgets/line-chart';
 import { loanTableWidgetConfigSchema } from './dashboard-widgets/loan-table';
+import { notificationsWidgetConfigSchema } from './dashboard-widgets/notifications';
 import { pieChartWidgetConfigSchema } from './dashboard-widgets/pie-chart';
 import { statWidgetConfigSchema } from './dashboard-widgets/stat-widget';
 import { transactionTableWidgetConfigSchema } from './dashboard-widgets/transaction-table';
@@ -39,6 +40,7 @@ const WIDGET_CONFIG_SCHEMAS: Record<DashboardWidgetType, z.ZodTypeAny> = {
   loan_table_view: loanTableWidgetConfigSchema,
   lender_table_view: lenderTableWidgetConfigSchema,
   transaction_table_view: transactionTableWidgetConfigSchema,
+  notifications: notificationsWidgetConfigSchema,
   divider: dividerConfigSchema,
 };
 
@@ -52,6 +54,7 @@ const TITLE_OPTIONAL_TYPES: ReadonlySet<DashboardWidgetType> = new Set([
   'loan_table_view',
   'lender_table_view',
   'transaction_table_view',
+  'notifications',
   'divider',
 ]);
 
