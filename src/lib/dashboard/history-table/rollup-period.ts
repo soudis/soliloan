@@ -1,10 +1,11 @@
 import moment from 'moment';
 
 import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
-import type { LoanMonthlyHistory, LoanMonthlyNumbers } from '@/types/dashboard';
 import { getLoanStatusAtPeriod, type PeriodSnapshot } from '@/lib/entity-filters/get-filter-value';
+import type { LoanMonthlyHistory, LoanMonthlyNumbers } from '@/types/dashboard';
 
 import { lookupCumulativeAtDate } from './cumulative-timeline';
+import { historyMonthCountsForPeriodEnd } from './history-month-cutoff';
 
 export type HistoryPeriod = {
   key: string;
@@ -54,6 +55,7 @@ const emptyNumbers = (): LoanMonthlyNumbers => ({
   interestPaid: 0,
   interest: 0,
   interestError: 0,
+  interestBaseAmount: 0,
 });
 
 export function collectPeriodKeysFromLoans(
@@ -192,21 +194,24 @@ function getMonthEntry(history: LoanMonthlyHistory, year: number, month: number)
   return history[year]?.[month] ?? null;
 }
 
-export function rollupYearFromHistory(history: LoanMonthlyHistory, year: number, periodEnd?: Date): LoanMonthlyNumbers {
+export function rollupYearFromHistory(
+  history: LoanMonthlyHistory,
+  year: number,
+  periodEnd?: Date,
+  transactions?: DashboardLoan['transactions'],
+): LoanMonthlyNumbers {
   const months = history[year];
   if (!months) {
     return emptyNumbers();
   }
-  const periodEndMoment = periodEnd ? moment(periodEnd).endOf('day') : null;
   const monthKeys = Object.keys(months)
     .map(Number)
     .sort((a, b) => a - b)
     .filter((month) => {
-      if (!periodEndMoment) {
+      if (!periodEnd) {
         return true;
       }
-      const monthEnd = moment({ year, month: month - 1 }).endOf('month');
-      return !monthEnd.isAfter(periodEndMoment, 'day');
+      return historyMonthCountsForPeriodEnd(history, transactions, year, month, periodEnd);
     });
 
   if (monthKeys.length === 0) {
@@ -249,6 +254,7 @@ export function rollupYearFromHistory(history: LoanMonthlyHistory, year: number,
     interestPaid,
     interest,
     interestError,
+    interestBaseAmount: last.interestBaseAmount,
   };
 }
 
@@ -261,7 +267,7 @@ export function getPeriodNumbers(
     if (!loan.history[period.year]) {
       return null;
     }
-    return rollupYearFromHistory(loan.history, period.year, period.periodEnd);
+    return rollupYearFromHistory(loan.history, period.year, period.periodEnd, loan.transactions);
   }
   if (!period.month) {
     return null;
@@ -270,13 +276,24 @@ export function getPeriodNumbers(
 }
 
 export function getCumulativeNumbers(loan: DashboardLoan, period: HistoryPeriod): LoanMonthlyNumbers {
-  if (loan.cumulativeTimeline?.length) {
-    return lookupCumulativeAtDate(loan.cumulativeTimeline, period.periodEnd);
+  const timeline = loan.cumulativeTimeline;
+  if (timeline?.length) {
+    const last = timeline[timeline.length - 1];
+    const inLastMonth =
+      last !== undefined &&
+      moment(period.periodEnd).isSame(moment({ year: last.year, month: last.month - 1 }), 'month');
+    if (
+      last &&
+      inLastMonth &&
+      historyMonthCountsForPeriodEnd(loan.history, loan.transactions, last.year, last.month, period.periodEnd)
+    ) {
+      return last.cumulative;
+    }
+    return lookupCumulativeAtDate(timeline, period.periodEnd);
   }
 
   const result = emptyNumbers();
   let firstBegin: number | null = null;
-  const periodEnd = moment(period.periodEnd);
 
   const yearKeys = Object.keys(loan.history)
     .map(Number)
@@ -291,8 +308,7 @@ export function getCumulativeNumbers(loan: DashboardLoan, period: HistoryPeriod)
       .map(Number)
       .sort((a, b) => a - b);
     for (const month of monthKeys) {
-      const monthEnd = moment({ year, month: month - 1 }).endOf('month');
-      if (monthEnd.isAfter(periodEnd)) {
+      if (!historyMonthCountsForPeriodEnd(loan.history, loan.transactions, year, month, period.periodEnd)) {
         continue;
       }
       const entry = months[month];
@@ -309,6 +325,7 @@ export function getCumulativeNumbers(loan: DashboardLoan, period: HistoryPeriod)
       result.interest += entry.interest;
       result.interestError += entry.interestError;
       result.end = entry.end;
+      result.interestBaseAmount = entry.interestBaseAmount;
     }
   }
 

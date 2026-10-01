@@ -1,17 +1,16 @@
 import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
-import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';
-import { filtersNeedPeriodSnapshot, getFilterDefinitionForField } from '@/lib/entity-filters/filter-definitions';
-import { getLoanFilterValue } from '@/lib/entity-filters/get-filter-value';
+import { resolveGroupKey } from '@/lib/dashboard/chart/resolve-group-key';
 import {
   createAggregateMetricCache,
   getOrBuildPeriodSnapshot,
 } from '@/lib/dashboard/history-table/compute-history-table';
-import type { HistoryPeriod } from '@/lib/dashboard/history-table/rollup-period';
+import { getPeriodNumbers, type HistoryPeriod } from '@/lib/dashboard/history-table/rollup-period';
 import { interestRateAverageWeight } from '@/lib/dashboard/interest-rate-average';
+import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';
+import { filtersNeedPeriodSnapshot, getFilterDefinitionForField } from '@/lib/entity-filters/filter-definitions';
+import { getLoanFilterValue } from '@/lib/entity-filters/get-filter-value';
 import { getPieChartDiscriminator, type PieChartWidgetConfig } from '@/types/dashboard-widgets/pie-chart';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
-
-import { resolveGroupKey } from '@/lib/dashboard/chart/resolve-group-key';
 
 import { getLoanMetricValue } from './get-loan-metric-value';
 
@@ -113,7 +112,8 @@ export function computePieChart(
     }
 
     if (config.measure === 'interestRateAvg') {
-      const weight = interestRateAverageWeight(loan);
+      const periodNumbers = getPeriodNumbers(loan, discPeriod, 'monthly');
+      const weight = periodNumbers ? interestRateAverageWeight(loan, periodNumbers) : 0;
       if (weight > 0) {
         acc.rateWeighted += measureValue * weight;
         acc.weightSum += weight;
@@ -130,8 +130,8 @@ export function computePieChart(
     if (config.measureAggregation === 'count') {
       value = acc.count;
     } else if (config.measure === 'interestRateAvg') {
-      // A rate is never summable: always render the contract-amount weighted
-      // average regardless of the selected aggregation.
+      // A rate is never summable: always render the weighted average
+      // regardless of the selected aggregation.
       value = acc.weightSum > 0 ? acc.rateWeighted / acc.weightSum : 0;
     } else if (config.measureAggregation === 'average') {
       value = acc.count > 0 ? acc.sum / acc.count : 0;

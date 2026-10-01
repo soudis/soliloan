@@ -1,43 +1,13 @@
-import moment from 'moment';
-
 import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { loanActiveAtPeriodEnd } from '@/lib/entity-filters/get-filter-value';
 import type { HistoryTableMetric } from '@/types/dashboard-widgets/history-table';
 
+import { historyHasMonthForPeriodEnd } from '../history-table/history-month-cutoff';
 import type { LoanMetricCacheMap } from '../history-table/loan-metric-cache';
 import type { HistoryPeriod } from '../history-table/rollup-period';
 
 function loanHasHistoryBeforePeriodEnd(loan: DashboardLoan, period: HistoryPeriod): boolean {
-  const periodEnd = moment(period.periodEnd);
-
-  const timeline = loan.cumulativeTimeline;
-  if (timeline?.length) {
-    // Timeline is sorted ascending by periodEndMs, so the first entry is the loan's
-    // earliest history. Only count the loan if that entry is on or before the period end.
-    const earliest = timeline[0];
-    const periodEndMs = moment(period.periodEnd).endOf('day').valueOf();
-    return earliest !== undefined && earliest.periodEndMs <= periodEndMs;
-  }
-
-  for (const yearStr of Object.keys(loan.history)) {
-    const year = Number(yearStr);
-    const months = loan.history[year];
-    if (!months) {
-      continue;
-    }
-    for (const monthStr of Object.keys(months)) {
-      const month = Number(monthStr);
-      if (!months[month]) {
-        continue;
-      }
-      const monthEnd = moment({ year, month: month - 1 }).endOf('month');
-      if (!monthEnd.isAfter(periodEnd, 'day')) {
-        return true;
-      }
-    }
-  }
-
-  return false;
+  return historyHasMonthForPeriodEnd(loan.history, loan.transactions, period.periodEnd);
 }
 
 function getCachedLoanMetrics(loan: DashboardLoan, period: HistoryPeriod, loanMetricCaches: LoanMetricCacheMap) {

@@ -8,14 +8,15 @@ import {
   type DashboardWidgetWidth,
 } from '@/types/dashboard-layout';
 
+import { aggregationTableWidgetConfigSchema } from './dashboard-widgets/aggregation-table';
 import { barChartWidgetConfigSchema } from './dashboard-widgets/bar-chart';
 import { historyTableWidgetConfigSchema } from './dashboard-widgets/history-table';
 import { lenderTableWidgetConfigSchema } from './dashboard-widgets/lender-table';
 import { lineChartWidgetConfigSchema } from './dashboard-widgets/line-chart';
 import { loanTableWidgetConfigSchema } from './dashboard-widgets/loan-table';
-import { transactionTableWidgetConfigSchema } from './dashboard-widgets/transaction-table';
 import { pieChartWidgetConfigSchema } from './dashboard-widgets/pie-chart';
 import { statWidgetConfigSchema } from './dashboard-widgets/stat-widget';
+import { transactionTableWidgetConfigSchema } from './dashboard-widgets/transaction-table';
 
 const MAX_WIDGET_ID_LENGTH = 200;
 const MAX_WIDGET_TITLE_LENGTH = 200;
@@ -31,6 +32,7 @@ const dividerConfigSchema = z.object({}).default({});
 const WIDGET_CONFIG_SCHEMAS: Record<DashboardWidgetType, z.ZodTypeAny> = {
   history_table: historyTableWidgetConfigSchema,
   pie_chart: pieChartWidgetConfigSchema,
+  aggregation_table: aggregationTableWidgetConfigSchema,
   bar_chart: barChartWidgetConfigSchema,
   line_chart: lineChartWidgetConfigSchema,
   stat: statWidgetConfigSchema,
@@ -44,6 +46,7 @@ const TITLE_OPTIONAL_TYPES: ReadonlySet<DashboardWidgetType> = new Set([
   'stat',
   'history_table',
   'pie_chart',
+  'aggregation_table',
   'bar_chart',
   'line_chart',
   'loan_table_view',

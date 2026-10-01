@@ -1,16 +1,16 @@
 import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import {
+  type AggregateMetricCache,
   createAggregateMetricCache,
   filterLoansForHistoryColumn,
-  type AggregateMetricCache,
 } from '@/lib/dashboard/history-table/compute-history-table';
-import { interestRateAverageWeight } from '@/lib/dashboard/interest-rate-average';
 import type { LoanMetricCacheMap } from '@/lib/dashboard/history-table/loan-metric-cache';
 import type { HistoryPeriod } from '@/lib/dashboard/history-table/rollup-period';
-import type { HistoryTableWidgetConfig, HistoryTableColumnConfig } from '@/types/dashboard-widgets/history-table';
+import { interestRateAverageWeight } from '@/lib/dashboard/interest-rate-average';
+import type { HistoryTableColumnConfig, HistoryTableWidgetConfig } from '@/types/dashboard-widgets/history-table';
 import {
-  isHistoryTableStatMetric,
   type HistoryTableStatMetric,
+  isHistoryTableStatMetric,
   type StatAggregation,
   type StatItemConfig,
 } from '@/types/dashboard-widgets/stat-widget';
@@ -132,11 +132,11 @@ function computeWeightedInterestRateAverage(
     if (rate === null || Number.isNaN(rate)) {
       continue;
     }
-    const balance = getPerLoanStatSnapshotValue(loan, 'balance', period, loanMetricCaches) ?? 0;
-    if (balance <= 0) {
+    const cumulative = loanMetricCaches.get(loan.id)?.cumulativeByPeriodKey.get(period.key);
+    if (!cumulative || cumulative.end <= 0) {
       continue;
     }
-    const weight = interestRateAverageWeight(loan);
+    const weight = interestRateAverageWeight(loan, cumulative);
     rateWeighted += rate * weight;
     weightSum += weight;
   }
