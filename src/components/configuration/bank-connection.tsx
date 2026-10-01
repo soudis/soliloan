@@ -11,6 +11,7 @@ import { deleteBankConnectionAction } from '@/actions/gocardless/mutations/delet
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useRouter } from '@/i18n/navigation';
+import { withProjectId } from '@/lib/project-href';
 import { LinkBankAccountDialog } from './link-bank-account-dialog';
 
 type Props = {
@@ -107,7 +108,7 @@ export function BankConnection({ projectId, connections, defaultCountry }: Props
                   className="w-full"
                   variant="outline"
                   size="sm"
-                  onClick={() => router.push('/transactions/import')}
+                  onClick={() => router.push(withProjectId('/transactions/import', projectId))}
                 >
                   <ArrowDownToLine className="h-4 w-4" />
                   {tImport('button')}

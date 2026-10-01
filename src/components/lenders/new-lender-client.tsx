@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { createLenderAction } from '@/actions/lenders';
 import { LenderForm } from '@/components/lenders/lender-form';
 import { useRouter } from '@/i18n/navigation';
+import { withProjectId } from '@/lib/project-href';
 import type { LenderFormData } from '@/lib/schemas/lender';
 
 interface NewLenderClientProps {
@@ -37,7 +38,7 @@ export function NewLenderClient({ projectId }: NewLenderClientProps) {
       toast.success(t('new.form.success'));
 
       if (result?.data?.id) {
-        router.push(`/lenders/${result.data.id}`);
+        router.push(withProjectId(`/lenders/${result.data.id}`, projectId));
       }
     } catch (error) {
       console.error('Error submitting form:', error);

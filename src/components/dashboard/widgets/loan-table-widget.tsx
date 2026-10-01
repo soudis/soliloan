@@ -10,6 +10,7 @@ import { WidgetResultUnavailable } from '@/components/dashboard/widgets/widget-r
 import { useComputedWidgetResult } from '@/hooks/use-computed-widget-result';
 import { useRouter } from '@/i18n/navigation';
 import { buildAllLoanTableColumns, getLoanSortValue } from '@/lib/dashboard/table-widget/loan-table-column-registry';
+import { withProjectId } from '@/lib/project-href';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import { parseLoanTableConfig } from '@/types/dashboard-widgets/table-view';
 
@@ -50,7 +51,7 @@ export function LoanTableWidget({ widget }: { widget: DashboardWidget }) {
       columns={columns as ColumnDef<DashboardLoan>[]}
       emptyMessage={t('emptyData')}
       getSortValue={getSortValue}
-      onRowClick={(row) => router.push(`/lenders/${row.lender.id}?loanId=${row.id}`)}
+      onRowClick={(row) => router.push(withProjectId(`/lenders/${row.lender.id}?loanId=${row.id}`, project.id))}
     />
   );
 }

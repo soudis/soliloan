@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { updateLoanAction } from '@/actions/loans';
 import { LoanForm, type LoanFormSubmitResult } from '@/components/loans/loan-form';
 import { useRouter } from '@/i18n/navigation';
+import { withProjectId } from '@/lib/project-href';
 import type { LoanFormData } from '@/lib/schemas/loan';
 import { getLenderName } from '@/lib/utils';
 import type { LoanWithRelations } from '@/types/loans';
@@ -46,7 +47,7 @@ export function EditLoanClient({ loan, project }: EditLoanClientProps) {
 
       toast.success(t('edit.form.success'));
       if (updatedLoan) {
-        router.push(`/lenders/${updatedLoan.lenderId}?tab=loans&loanId=${updatedLoan.id}`);
+        router.push(withProjectId(`/lenders/${updatedLoan.lenderId}?tab=loans&loanId=${updatedLoan.id}`, project.id));
       }
       return undefined;
     } catch (error) {

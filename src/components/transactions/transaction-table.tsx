@@ -40,6 +40,7 @@ import {
   getTransactionTimeRangeFromState,
   useTransactionTableUrlState,
 } from '@/lib/hooks/use-transaction-table-url-state';
+import { withProjectId } from '@/lib/project-href';
 import { isOutboundSepaType } from '@/lib/processes/payout-groups';
 import { TABLE_LIST_PATHS } from '@/lib/table-list-path';
 import {
@@ -250,7 +251,7 @@ export function TransactionTable({
             density="header"
             icon={<ArrowDownToLine className="h-4 w-4" />}
             label={tImport('button')}
-            onClick={() => router.push('/transactions/import')}
+            onClick={() => router.push(withProjectId('/transactions/import', projectId))}
           />
         ) : null}
       </div>
@@ -276,11 +277,17 @@ export function TransactionTable({
         isExtraViewDataDirty={isExtraViewDataDirty}
         toolbarContent={<TransactionTimeRangeControl state={tableState} setTableState={setTableState} />}
         getRowId={getTransactionListItemRowId}
-        onRowClick={(row) => router.push(`/lenders/${row.loan.lender.id}?loanId=${row.loan.id}`)}
+        onRowClick={(row) =>
+          router.push(withProjectId(`/lenders/${row.loan.lender.id}?loanId=${row.loan.id}`, projectId))
+        }
         bulkActions={bulkActions}
         actions={(row) => (
           <>
-            <DropdownMenuItem onClick={() => router.push(`/lenders/${row.loan.lender.id}?loanId=${row.loan.id}`)}>
+            <DropdownMenuItem
+              onClick={() =>
+                router.push(withProjectId(`/lenders/${row.loan.lender.id}?loanId=${row.loan.id}`, projectId))
+              }
+            >
               <Pencil className="h-4 w-4 mr-2" />
               {commonT('ui.actions.edit')}
             </DropdownMenuItem>
