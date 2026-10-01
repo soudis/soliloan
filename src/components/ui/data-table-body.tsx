@@ -16,6 +16,8 @@ interface DataTableBodyProps<TData> {
   lastRowActionsMenuClosedAtRef?: RefObject<number>;
   /** Scroll table rows vertically; column headers stay sticky at the top of the scroll area. */
   fillHeight?: boolean;
+  /** Replaces the default “no results” text. */
+  emptyMessage?: string;
 }
 
 function nonActionsCellBg(hasRowClick: boolean) {
@@ -31,6 +33,7 @@ export function DataTableBody<TData>({
   hasBulkSelect,
   lastRowActionsMenuClosedAtRef,
   fillHeight = false,
+  emptyMessage,
 }: DataTableBodyProps<TData>) {
   const t = useTranslations('dataTable');
 
@@ -137,7 +140,7 @@ export function DataTableBody<TData>({
             ) : (
               <TableRow>
                 <TableCell colSpan={table.getAllColumns().length} className="h-24 bg-card text-center">
-                  {t('noResults')}
+                  {emptyMessage ?? t('noResults')}
                 </TableCell>
               </TableRow>
             )}

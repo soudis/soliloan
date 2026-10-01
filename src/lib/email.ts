@@ -148,6 +148,63 @@ function buildSystemUrls(token: string, locale = 'de') {
   };
 }
 
+export async function renderSystemTemplateEmailContent(args: {
+  systemKey: string;
+  projectId?: string | null;
+  templateRecordId?: string | null;
+  additionalMergeData?: Record<string, unknown>;
+  fallbackSubject: string;
+}): Promise<{ html: string; subject: string } | null> {
+  const template = await resolveSystemTemplate(args.systemKey, args.projectId);
+  if (!template) return null;
+
+  const templateDataOptions =
+    template.dataset === 'LENDER_YEARLY'
+      ? (() => {
+          const y = args.additionalMergeData?.year;
+          if (typeof y === 'number' && Number.isFinite(y)) return { year: y };
+          if (typeof y === 'string' && /^\d{4}$/.test(y)) return { year: Number.parseInt(y, 10) };
+          return { year: new Date().getFullYear() - 1 };
+        })()
+      : undefined;
+
+  const templateData = await getTemplateData(
+    template.dataset,
+    args.templateRecordId,
+    'de',
+    args.projectId ?? undefined,
+    templateDataOptions,
+  );
+  if (!templateData) return null;
+
+  const mergeData: Record<string, unknown> = {
+    ...templateData,
+    ...(args.additionalMergeData ?? {}),
+  };
+
+  let logoUrl: string | null = null;
+  const configLogo = (mergeData.config as { logo?: unknown } | undefined)?.logo;
+  if (typeof configLogo === 'string' && configLogo.length > 0) {
+    logoUrl = configLogo;
+  } else if (args.projectId) {
+    const project = await db.project.findUnique({
+      where: { id: args.projectId },
+      select: {
+        configuration: {
+          select: { logo: true },
+        },
+      },
+    });
+    logoUrl = project?.configuration?.logo ?? null;
+  }
+
+  const html = renderSystemEmailTemplate(template.designJson, mergeData, { logoUrl });
+  if (!html) return null;
+
+  const subject = resolveTemplateSubject(template.subjectOrFilename, mergeData, args.fallbackSubject);
+  return { html, subject };
+}
+
 async function sendSystemTemplateEmail({
   systemKey,
   projectId,
@@ -163,59 +220,16 @@ async function sendSystemTemplateEmail({
   to: string;
   subject: string;
 }) {
-  const template = await resolveSystemTemplate(systemKey, projectId);
-  if (!template) return false;
-
-  const templateDataOptions =
-    template.dataset === 'LENDER_YEARLY'
-      ? (() => {
-          const y = additionalMergeData?.year;
-          if (typeof y === 'number' && Number.isFinite(y)) return { year: y };
-          if (typeof y === 'string' && /^\d{4}$/.test(y)) return { year: Number.parseInt(y, 10) };
-          return { year: new Date().getFullYear() - 1 };
-        })()
-      : undefined;
-
-  const templateData = await getTemplateData(
-    template.dataset,
+  const content = await renderSystemTemplateEmailContent({
+    systemKey,
+    projectId,
     templateRecordId,
-    'de',
-    projectId ?? undefined,
-    templateDataOptions,
-  );
-  if (!templateData) return false;
+    additionalMergeData,
+    fallbackSubject: subject,
+  });
+  if (!content) return false;
 
-  const mergeData: Record<string, unknown> = {
-    ...templateData,
-    ...(additionalMergeData ?? {}),
-  };
-
-  let logoUrl: string | null = null;
-  const configLogo = (mergeData.config as { logo?: unknown } | undefined)?.logo;
-  if (typeof configLogo === 'string' && configLogo.length > 0) {
-    logoUrl = configLogo;
-  } else if (projectId) {
-    const project = await db.project.findUnique({
-      where: { id: projectId },
-      select: {
-        configuration: {
-          select: { logo: true },
-        },
-      },
-    });
-    logoUrl = project?.configuration?.logo ?? null;
-  }
-
-  const html = renderSystemEmailTemplate(template.designJson, mergeData, { logoUrl });
-  if (!html) return false;
-
-  const finalSubject = resolveTemplateSubject(
-    template.subjectOrFilename,
-    mergeData as Record<string, unknown>,
-    subject,
-  );
-
-  await sendRawEmail(to, finalSubject, html);
+  await sendRawEmail(to, content.subject, content.html);
   return true;
 }
 
@@ -363,6 +377,20 @@ export async function sendProjectManagerInvitationEmail(
  * Notify the lender about a newly booked transaction (manager opt-in).
  * Uses system template `transaction-notification-email` (project override if present).
  */
+const TRANSACTION_NOTIFICATION_SUBJECT = 'Neue Zahlung';
+
+export async function renderTransactionNotificationEmail(args: {
+  transactionId: string;
+  projectId: string;
+}): Promise<{ html: string; subject: string } | null> {
+  return renderSystemTemplateEmailContent({
+    systemKey: 'transaction-notification-email',
+    projectId: args.projectId,
+    templateRecordId: args.transactionId,
+    fallbackSubject: TRANSACTION_NOTIFICATION_SUBJECT,
+  });
+}
+
 export async function sendTransactionNotificationToLender(args: {
   to: string;
   transactionId: string;
@@ -374,13 +402,36 @@ export async function sendTransactionNotificationToLender(args: {
       projectId: args.projectId,
       templateRecordId: args.transactionId,
       to: args.to,
-      subject: 'Neue Zahlung',
+      subject: TRANSACTION_NOTIFICATION_SUBJECT,
     });
   } catch (err) {
     if (isEmailSendError(err)) throw err;
     console.error('Failed to send transaction notification email', err);
     return false;
   }
+}
+
+/** Sends the transaction notification and records when the lender was informed. */
+export async function notifyLenderAboutTransaction(args: {
+  to: string | null | undefined;
+  transactionId: string;
+  projectId: string;
+}): Promise<'sent' | 'skipped' | 'failed'> {
+  const email = args.to?.trim();
+  if (!email) return 'skipped';
+
+  const sent = await sendTransactionNotificationToLender({
+    to: email,
+    transactionId: args.transactionId,
+    projectId: args.projectId,
+  });
+  if (!sent) return 'failed';
+
+  await db.transaction.update({
+    where: { id: args.transactionId },
+    data: { lenderNotifiedAt: new Date() },
+  });
+  return 'sent';
 }
 
 export async function sendPasswordResetEmail(to: string, name: string, token: string, userId: string, locale = 'de') {

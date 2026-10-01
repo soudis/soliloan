@@ -12,15 +12,15 @@ import {
   buildLenderProfileColumns,
   buildLenderProfileDefaultColumnVisibility,
 } from '@/lib/dashboard/table-widget/lender-profile-columns';
+import { getLenderSortValue } from '@/lib/dashboard/table-widget/lender-table-column-registry';
 import {
   buildLoanTableColumns,
   getLoanSortValue,
   LOAN_TABLE_STATIC_COLUMN_META,
 } from '@/lib/dashboard/table-widget/loan-table-column-registry';
-import { getLenderSortValue } from '@/lib/dashboard/table-widget/lender-table-column-registry';
 import {
-  createColumn,
   createAdditionalFieldDefaultColumnVisibility,
+  createColumn,
   enumFilter,
   remapColumnsForNestedAccessor,
   withColumnGroup,
@@ -41,6 +41,7 @@ export type TransactionTableColumnMeta = {
 const TRANSACTION_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
   { id: 'transaction.type', labelKey: 'table.type' },
   { id: 'transaction.date', labelKey: 'table.date' },
+  { id: 'transaction.lenderNotifiedAt', labelKey: 'table.lenderNotifiedAt' },
   { id: 'transaction.amount', labelKey: 'table.amount' },
   { id: 'transaction.paymentType', labelKey: 'table.paymentType' },
 ];
@@ -51,6 +52,7 @@ const DEFAULT_VISIBLE_COLUMN_IDS = [
   'loan.loanNumber',
   'transaction.type',
   'transaction.date',
+  'transaction.lenderNotifiedAt',
   'transaction.amount',
 ] as const;
 
@@ -109,6 +111,7 @@ function buildTransactionColumns<T extends TransactionListItem>(
 ): ColumnDef<T>[] {
   const typeId = transactionColumnId('type');
   const dateId = transactionColumnId('date');
+  const notifiedId = transactionColumnId('lenderNotifiedAt');
   const amountId = transactionColumnId('amount');
   const paymentTypeId = transactionColumnId('paymentType');
 
@@ -164,6 +167,37 @@ function buildTransactionColumns<T extends TransactionListItem>(
   );
   dateColumn.filterFn = dateRangeFilter as FilterFn<T>;
 
+  const notifiedColumn = createColumn<T>(
+    {
+      id: notifiedId,
+      accessorKey: notifiedId,
+      header: 'table.lenderNotifiedAt',
+      accessorFn: (row) => row.lenderNotifiedAt?.toISOString() ?? '',
+      cell: ({ row }) => {
+        const value = row.original.lenderNotifiedAt;
+        if (!value) return '';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '';
+        return date.toLocaleDateString(resolveIntlLocaleForDates(locale), {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
+      },
+      meta: {
+        export: {
+          type: 'date',
+          getValue: (row) => {
+            const value = (row as T).lenderNotifiedAt;
+            return value ? new Date(value) : null;
+          },
+        },
+      },
+    },
+    t,
+  );
+  notifiedColumn.filterFn = dateRangeFilter as FilterFn<T>;
+
   const amountColumn = createColumn<T>(
     {
       id: amountId,
@@ -210,7 +244,7 @@ function buildTransactionColumns<T extends TransactionListItem>(
     t,
   );
 
-  return [typeColumn, dateColumn, amountColumn, paymentTypeColumn];
+  return [typeColumn, dateColumn, notifiedColumn, amountColumn, paymentTypeColumn];
 }
 
 export function buildAllTransactionTableColumns(
@@ -310,6 +344,8 @@ export function getTransactionSortValue(
         return commonT(`enums.transaction.paymentType.${row.paymentType}`);
       case 'date':
         return new Date(row.date);
+      case 'lenderNotifiedAt':
+        return row.lenderNotifiedAt ? new Date(row.lenderNotifiedAt) : null;
       case 'amount':
         return row.amount;
       default:

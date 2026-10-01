@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { CalendarPickerContent } from '@/components/ui/calendar-picker-content';
 import { FormControl } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn, formatDateLong, toUTCDate } from '@/lib/utils';
+import { cn, formatDateLong, formatDateShort, toUTCDate } from '@/lib/utils';
 
 interface DatePickerInputProps {
   value: Date | string | '' | null | undefined;
@@ -20,6 +20,8 @@ interface DatePickerInputProps {
   calendarDisabled?: (date: Date) => boolean;
   withFormControl?: boolean;
   className?: string;
+  /** Format shown on the closed trigger. The calendar itself is unchanged. */
+  display?: 'short' | 'long';
   'aria-label'?: string;
 }
 
@@ -39,6 +41,7 @@ export function DatePickerInput({
   calendarDisabled,
   withFormControl = false,
   className,
+  display = 'long',
   'aria-label': ariaLabel,
 }: DatePickerInputProps) {
   const locale = useLocale();
@@ -52,6 +55,7 @@ export function DatePickerInput({
   };
 
   const selectedDate = hasDateValue(value) ? (value instanceof Date ? value : new Date(value)) : undefined;
+  const formatTriggerDate = display === 'short' ? formatDateShort : formatDateLong;
 
   const trigger = (
     <Button
@@ -61,7 +65,7 @@ export function DatePickerInput({
       aria-label={ariaLabel}
       className={cn('w-full pl-3 text-left font-normal', !hasDateValue(value) && 'text-muted-foreground', className)}
     >
-      {hasDateValue(value) ? formatDateLong(value, locale) : <span>{placeholder}</span>}
+      {hasDateValue(value) ? formatTriggerDate(value, locale) : <span>{placeholder}</span>}
       <div className="ml-auto flex items-center gap-1">
         {hasDateValue(value) && !disabled && (
           // biome-ignore lint/a11y/useSemanticElements: cannot nest a <button> inside PopoverTrigger Button

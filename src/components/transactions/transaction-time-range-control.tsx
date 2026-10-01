@@ -63,6 +63,7 @@ export function TransactionTimeRangeControl({ state, setTableState }: Transactio
               value={state.txRangeFrom || null}
               onChange={(date) => setTableState({ txRangeFrom: date ? formatIsoDate(date) : '', pageIndex: 0 })}
               placeholder={commonT('ui.additionalFields.selectDate')}
+              display="short"
               className="h-8 w-[150px] shrink-0 bg-background text-sm"
             />
           </div>
@@ -72,6 +73,7 @@ export function TransactionTimeRangeControl({ state, setTableState }: Transactio
               value={state.txRangeTo || null}
               onChange={(date) => setTableState({ txRangeTo: date ? formatIsoDate(date) : '', pageIndex: 0 })}
               placeholder={commonT('ui.additionalFields.selectDate')}
+              display="short"
               className="h-8 w-[150px] shrink-0 bg-background text-sm"
             />
           </div>

@@ -65,6 +65,10 @@ function viewToBaseline(
 
 interface UseTableUrlStateOptions {
   defaultColumnVisibility?: VisibilityState;
+  /** Applied when no saved view is selected. Omitted from the URL until the user changes them. */
+  defaultColumnFilters?: ColumnFiltersState;
+  /** Whether the filter chip bar starts open when no saved view is selected. */
+  defaultFiltersExpanded?: boolean;
   views?: View[];
   controlledState?: TableUrlState;
   controlledSetState?: SetTableUrlState;
@@ -76,10 +80,13 @@ interface UseTableUrlStateOptions {
 
 /** Stable fallbacks — inline `{}` / `[]` defaults in callers change identity every render and invalidates memoized URL state. */
 const EMPTY_COLUMN_VISIBILITY: VisibilityState = {};
+const EMPTY_COLUMN_FILTERS: ColumnFiltersState = [];
 const EMPTY_VIEWS: View[] = [];
 
 export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
   const defaultColumnVisibility = options.defaultColumnVisibility ?? EMPTY_COLUMN_VISIBILITY;
+  const defaultColumnFilters = options.defaultColumnFilters ?? EMPTY_COLUMN_FILTERS;
+  const defaultFiltersExpanded = options.defaultFiltersExpanded ?? false;
   const views = options.views ?? EMPTY_VIEWS;
   const listPath = options.listPath;
   const routeViewId = listPath ? (options.viewId ?? '') : undefined;
@@ -106,9 +113,11 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
     return {
       ...DEFAULT_BASELINE,
       columnVisibility: defaultColumnVisibility,
+      columnFilters: defaultColumnFilters,
+      filtersExpanded: defaultFiltersExpanded,
       selectedView: selectedViewId,
     };
-  }, [rawState.view, routeViewId, views, defaultColumnVisibility]);
+  }, [rawState.view, routeViewId, views, defaultColumnVisibility, defaultColumnFilters, defaultFiltersExpanded]);
 
   // Merge baseline with URL overrides to produce effective state
   const state = useMemo<TableUrlState>(() => {
@@ -153,6 +162,8 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
           effectiveBaseline = {
             ...DEFAULT_BASELINE,
             columnVisibility: defaultColumnVisibility,
+            columnFilters: defaultColumnFilters,
+            filtersExpanded: defaultFiltersExpanded,
             selectedView: '',
           };
         }
@@ -200,7 +211,18 @@ export function useTableUrlState(options: UseTableUrlStateOptions = {}) {
         history: 'replace',
       });
     },
-    [baseline, views, defaultColumnVisibility, setRawState, listPath, routeViewId, router, projectId],
+    [
+      baseline,
+      views,
+      defaultColumnVisibility,
+      defaultColumnFilters,
+      defaultFiltersExpanded,
+      setRawState,
+      listPath,
+      routeViewId,
+      router,
+      projectId,
+    ],
   );
 
   return {
