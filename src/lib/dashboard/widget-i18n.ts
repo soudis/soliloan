@@ -14,6 +14,7 @@ export type DashboardWidgetI18n = {
   tLenders: TranslateFn;
   tTransactions: TranslateFn;
   tPie: TranslateFn;
+  tAggregation: TranslateFn;
   tLine: TranslateFn;
   tBar: TranslateFn;
   historyUntilNow: string;
@@ -28,6 +29,7 @@ export function createDashboardWidgetI18n(deps: {
   tLenders: TranslateFn;
   tTransactions: TranslateFn;
   tPie: TranslateFn;
+  tAggregation: TranslateFn;
   tLine: TranslateFn;
   tBar: TranslateFn;
   tHistoryTableWidget: TranslateFn;
@@ -41,6 +43,7 @@ export function createDashboardWidgetI18n(deps: {
     tLenders: deps.tLenders,
     tTransactions: deps.tTransactions,
     tPie: deps.tPie,
+    tAggregation: deps.tAggregation,
     tLine: deps.tLine,
     tBar: deps.tBar,
     historyUntilNow: deps.tHistoryTableWidget('untilNow'),

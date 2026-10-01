@@ -1,6 +1,7 @@
 export const DASHBOARD_WIDGET_TYPES = [
   'history_table',
   'pie_chart',
+  'aggregation_table',
   'line_chart',
   'bar_chart',
   'stat',

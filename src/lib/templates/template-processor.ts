@@ -1,3 +1,5 @@
+import { evaluateTemplateConditions, readTemplateRaw, TEMPLATE_RAW_KEY } from '@/lib/templates/template-condition';
+
 /** Loop arrays may live on the prototype (see `createChildScope`); use `in`, not `Object.hasOwn`. */
 const getLoopArray = (data: Record<string, unknown>, key: string): unknown => (key in data ? data[key] : undefined);
 
@@ -8,8 +10,16 @@ const createLoopScope = (
   return Object.assign(Object.create(parentData), item);
 };
 
+function loopItemRaw(raw: Record<string, unknown>, key: string, index: number): Record<string, unknown> {
+  const rawItems = getLoopArray(raw, key);
+  if (!Array.isArray(rawItems)) return {};
+  const item = rawItems[index];
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return {};
+  return item as Record<string, unknown>;
+}
+
 export const processTemplate = (template: string, currentData: Record<string, unknown>): string => {
-  let result = template;
+  const raw = readTemplateRaw(currentData);
   const loopStartRegex = /\{\{#(\w+)\}\}/g;
   let loopMatch: RegExpExecArray | null;
   let loopReplacementResult = '';
@@ -47,9 +57,11 @@ export const processTemplate = (template: string, currentData: Record<string, un
       const items = getLoopArray(currentData, key);
       if (Array.isArray(items)) {
         loopReplacementResult += items
-          .map((item) => {
+          .map((item, index) => {
             if (!item || typeof item !== 'object') return '';
-            return processTemplate(innerContent, createLoopScope(currentData, item as Record<string, unknown>));
+            const displayChild = createLoopScope(currentData, item as Record<string, unknown>);
+            displayChild[TEMPLATE_RAW_KEY] = createLoopScope(raw, loopItemRaw(raw, key, index));
+            return processTemplate(innerContent, displayChild);
           })
           .join('');
       }
@@ -59,13 +71,14 @@ export const processTemplate = (template: string, currentData: Record<string, un
   }
 
   loopReplacementResult += template.substring(lastEnd);
-  result = loopReplacementResult;
+  const conditioned = evaluateTemplateConditions(loopReplacementResult, raw);
 
   // Improved tag regex to support optional spaces and broader key characters (e.g. {{ project-name }})
   const tagRegex = /\{\{\s*([a-zA-Z0-9.\-_#/]+)\s*\}\}/g;
-  result = result.replace(tagRegex, (match, path) => {
+  return conditioned.replace(tagRegex, (match, path) => {
     if (path.startsWith('#') || path.startsWith('/')) return match;
     const parts = path.split('.');
+    if (parts[0] === TEMPLATE_RAW_KEY) return match;
     let value: unknown = currentData;
     for (const part of parts) {
       if (!value || typeof value !== 'object') return match;
@@ -73,5 +86,4 @@ export const processTemplate = (template: string, currentData: Record<string, un
     }
     return value !== undefined && value !== null ? String(value) : match;
   });
-  return result;
 };

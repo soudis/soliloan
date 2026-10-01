@@ -67,8 +67,8 @@
       "sourceTemplate": "Vorlage als Basis",
       "sourceTemplatePlaceholder": "Globale Vorlage auswählen",
       "sourceTemplateNone": "Keine (Standardvorlage)",
-      "isPublic": "Für Darlehensgeber sichtbar",
-      "isPublicHint": "Wenn aktiv, können Darlehensgeber dieses Dokument bei ihrem Darlehensvertrag als PDF laden (nur Dokumentvorlagen)."
+      "isPublic": "Für Kreditgeber*innen sichtbar",
+      "isPublicHint": "Wenn aktiv, können Kreditgeber*innen dieses Dokument bei ihrem Kreditvertrag als PDF laden (nur Dokumentvorlagen)."
     }
   },
   "editor": {
@@ -80,7 +80,7 @@
     "documentEditorComingSoon": "Der Dokument-Editor wird in Kürze verfügbar sein",
     "sampleDatasetLabel": "Beispieldatensatz",
     "selectSampleRecord": "{type} auswählen",
-    "selectSampleLenderYearly": "Darlehensgeber*in auswählen",
+    "selectSampleLenderYearly": "Kreditgeber*in auswählen",
     "selectSampleProject": "Projekt auswählen",
     "selectSampleYear": "Jahr auswählen",
     "noSampleRecords": "Keine Datensätze verfügbar",
@@ -106,31 +106,31 @@
       "bubbleItalic": "Kursiv",
       "bubbleUnderline": "Unterstrichen",
       "groupDescriptions": {
-        "additionalLender": "Frei konfigurierbare Zusatzfelder am Darlehensgeber.",
-        "additionalLoan": "Frei konfigurierbare Zusatzfelder am Darlehensvertrag.",
-        "loops": "Wiederholungsblöcke für Listen (z. B. alle Darlehen oder Transaktionen).",
+        "additionalLender": "Frei konfigurierbare Zusatzfelder der Kreditgeber*in.",
+        "additionalLoan": "Frei konfigurierbare Zusatzfelder am Kreditvertrag.",
+        "loops": "Wiederholungsblöcke für Listen (z. B. alle Kredite oder Transaktionen).",
         "entity": {
           "config": "Firmen- und Kontaktdaten aus der Projektkonfiguration.",
           "user": "Angaben zur aktuell angemeldeten Nutzer:in.",
-          "lender": "Stammdaten und Kennzahlen eines Darlehensgebers.",
-          "loan": "Vertrags- und Saldoangaben eines Darlehens.",
-          "latestTransaction": "Werte aus der letzten Transaktion des Darlehens.",
+          "lender": "Stammdaten und Kennzahlen der Kreditgeber*in.",
+          "loan": "Vertrags- und Saldoangaben eines Kredits.",
+          "latestTransaction": "Werte aus der letzten Transaktion des Kredits.",
           "lenderYearly": "Jahreswerte und Bewegungen auf Gesamtebene.",
-          "loanYearly": "Jahreswerte je Darlehensvertrag innerhalb der Schleife.",
-          "transaction": "Einzelne Buchung innerhalb eines Darlehens.",
-          "note": "Notiz zu einem Darlehen oder passendem Kontext.",
+          "loanYearly": "Jahreswerte je Kreditvertrag innerhalb der Schleife.",
+          "transaction": "Einzelne Buchung innerhalb eines Kredits.",
+          "note": "Notiz zu einem Kredit oder passendem Kontext.",
           "platform": "App-weite Metaangaben (z. B. Plattformname).",
           "page": "Seitennummerierung für mehrseitige PDFs.",
           "project": "Name und technische ID des Projekts.",
           "misc": "Unabhängig von Datensätzen (z. B. aktuelles Datum)."
         },
         "loopChild": {
-          "loans": "Felder eines einzelnen Darlehens innerhalb der Darlehens-Schleife.",
+          "loans": "Felder eines einzelnen Kredits innerhalb der Kredit-Schleife.",
           "transactions": "Felder einer Transaktion innerhalb der Transaktions-Schleife.",
           "notes": "Felder einer Notiz innerhalb der Notiz-Schleife.",
-          "loanNotes": "Felder einer Notiz innerhalb der Darlehens-Notiz-Schleife.",
+          "loanNotes": "Felder einer Notiz innerhalb der Kredit-Notiz-Schleife.",
           "transactionsYearly": "Transaktionsfelder in der Jahresdarstellung.",
-          "lenders": "Felder eines einzelnen Darlehensgebers innerhalb der Geber-Schleife."
+          "lenders": "Felder der Kreditgeber*in innerhalb der Kreditgeber*in-Schleife."
         }
       }
     },
@@ -167,11 +167,59 @@
       "predefinedInsert": "Schablone einfügen",
       "predefinedNotReady": "Diese Schablone liegt noch im alten Format vor und kann nicht eingefügt werden."
     },
+    "loopRibbon": {
+      "end": "Ende"
+    },
     "settings": {
       "title": "Einstellungen",
       "delete": "Komponente löschen",
       "noSelection": "Wähle eine Komponente aus, um ihre Einstellungen zu bearbeiten.",
       "displayName": "Anzeigename"
+    },
+    "conditions": {
+      "label": "Bedingung",
+      "hint": "Sichtbar, wenn alle Regeln zutreffen.",
+      "empty": "Block wird immer angezeigt. Füge Regeln hinzu, um ihn nur fallweise anzuzeigen.",
+      "addRule": "Regel hinzufügen",
+      "removeRule": "Regel entfernen",
+      "noFields": "In diesem Kontext gibt es keine Felder für eine Bedingung.",
+      "field": "Feld",
+      "badge": "Wenn",
+      "summaryJoin": "und",
+      "summaryBetween": "zwischen {start} und {end}",
+      "summaryFrom": "ab {value}",
+      "summaryUntil": "bis {value}",
+      "summaryLast": "letzte {span}",
+      "summaryNext": "nächste {span}",
+      "summaryOlderThan": "älter als {span}",
+      "summaryNewerThan": "neuer als {span}",
+      "if": "Wenn",
+      "else": "Sonst",
+      "end": "Ende",
+      "insert": "Bedingung einfügen",
+      "edit": "Bedingung bearbeiten",
+      "thenPlaceholder": "Dann",
+      "elsePlaceholder": "Sonst",
+      "savingsRateFixed": "Feste Rate",
+      "savingsRateVarying": "Variable Raten",
+      "groups": {
+        "lender": "Kreditgeber*in",
+        "loan": "Kredit",
+        "transaction": "Transaktion",
+        "latestTransaction": "Letzte Transaktion",
+        "note": "Notiz",
+        "user": "Benutzer",
+        "digest": "Zusammenfassung",
+        "thread": "Thema",
+        "board": "Forum",
+        "moreThread": "Weitere Themen",
+        "config": "Konfiguration",
+        "platform": "Plattform",
+        "misc": "Allgemein",
+        "project": "Projekt",
+        "lenderYearly": "Jahreswerte",
+        "loanYearly": "Kredit (Jahr)"
+      }
     },
     "padding": {
       "uniform": "Innenabstand (Basis)",
@@ -183,6 +231,8 @@
     },
     "components": {
       "text": {
+        "tabStyle": "Stil",
+        "tabData": "Daten",
         "defaultText": "Hier Text eingeben",
         "fontSize": "Schriftgröße",
         "textColor": "Textfarbe",
@@ -203,7 +253,7 @@
         "staticContainer": "Keine Wiederholung",
         "dynamicHint": "Der Container wird fuer jedes Element der Datenquelle wiederholt.",
         "staticHint": "Der Container wird genau einmal angezeigt.",
-        "loopKeyContextHint": "Datenquellen hängen von der Verschachtelung ab (z. B. Darlehens-Felder außerhalb, Transaktionen innerhalb eines Darlehen-Loops).",
+        "loopKeyContextHint": "Datenquellen hängen von der Verschachtelung ab (z. B. Kredit-Felder außerhalb, Transaktionen innerhalb eines Kredit-Loops).",
         "layout": "Layout",
         "layout_vertical": "Vertikal (untereinander)",
         "layout_horizontal": "Horizontal (nebeneinander)",
@@ -260,6 +310,7 @@
         "width": "Breite (e.g. 100%, 200px)",
         "tabUpload": "Hochladen",
         "tabLogo": "Logo",
+        "tabData": "Daten",
         "uploadImage": "Bild hochladen",
         "clickToUpload": "Klicke zum Hochladen",
         "logoProjectHint": "Verwendet das Logo aus der Projekt-Konfiguration.",
@@ -281,7 +332,7 @@
         "cell": "Zelle",
         "dynamicHint": "Zeilen werden dynamisch aus der Datenquelle generiert.",
         "staticHint": "Die Tabelle hat eine feste Anzahl an Zeilen.",
-        "loopKeyContextHint": "Datenquellen hängen von der Verschachtelung ab (z.B. können Transaktionen nur innerhalb eines Darlehen-Datensatzes angezeigt werden).",
+        "loopKeyContextHint": "Datenquellen hängen von der Verschachtelung ab (z.B. können Transaktionen nur innerhalb eines Kredit-Datensatzes angezeigt werden).",
         "border": "Rahmen",
         "borderTop": "Oben",
         "borderRight": "Rechts",
@@ -314,9 +365,9 @@
           "emailVerification": "E-Mail bestätigen",
           "invitation": "Einladung annehmen",
           "login": "Anmelden",
-          "projectLink": "Projektseite (Kreditgeber)",
-          "lenderLink": "Kreditgeber-Dashboard",
-          "loanLink": "Darlehensseite (Kreditgeber)"
+          "projectLink": "Projektseite (Kreditgeber*in)",
+          "lenderLink": "Kreditgeber*in-Dashboard",
+          "loanLink": "Kreditseite (Kreditgeber*in)"
         },
         "backgroundColor": "Hintergrundfarbe",
         "textColor": "Textfarbe"

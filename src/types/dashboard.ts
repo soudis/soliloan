@@ -8,6 +8,8 @@ export type LoanMonthlyNumbers = {
   interestPaid: number;
   interest: number;
   interestError: number;
+  /** Interest-bearing amount after this month's transactions. A stock, like `end`. */
+  interestBaseAmount: number;
 };
 
 /** Per-loan history keyed by year, then month. */

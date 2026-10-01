@@ -236,6 +236,9 @@ importers:
       react-pdf-html:
         specifier: ^2.1.5
         version: 2.1.5(@react-pdf/renderer@4.5.1(react@19.3.0))(react@19.3.0)
+      sepa:
+        specifier: ^3.1.0
+        version: 3.1.0
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -3785,6 +3788,9 @@ packages:
     resolution: {integrity: sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==}
     engines: {node: '>=10'}
     hasBin: true
+
+  sepa@3.1.0:
+    resolution: {integrity: sha512-L6GrvYWr1pwCmNiWC+8bCESdN1J6JcvHhjlrOWeSathPHdHi3LexaGbXTm6h6EaMvv+cKjI0sL93WtSNrmRLBw==}
 
   seq-queue@0.0.5:
     resolution: {integrity: sha512-hr3Wtp/GZIc/6DAGPDcV4/9WoZhjrkXsi5B/07QgX8tsdc6ilr7BFM6PM6rbdAX1kFSDYeZGLipIZZKyQP0O5Q==}
@@ -7451,6 +7457,8 @@ snapshots:
 
   semver@7.8.5:
     optional: true
+
+  sepa@3.1.0: {}
 
   seq-queue@0.0.5: {}
 

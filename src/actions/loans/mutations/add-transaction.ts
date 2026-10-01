@@ -12,7 +12,7 @@ import {
 } from '@/lib/audit-trail';
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
-import { sendTransactionNotificationToLender } from '@/lib/email';
+import { notifyLenderAboutTransaction } from '@/lib/email';
 import { transactionFormSchema } from '@/lib/schemas/transaction';
 import { loanAction } from '@/lib/utils/safe-action';
 
@@ -90,8 +90,8 @@ export const addTransactionAction = loanAction
     revalidatePath(`/lenders/${loan.lenderId}`);
     invalidateDashboardWidgetResultsCache(loan.lender.projectId);
 
-    if (data.notifyLender && loan.lender.email) {
-      await sendTransactionNotificationToLender({
+    if (data.notifyLender) {
+      await notifyLenderAboutTransaction({
         to: loan.lender.email,
         transactionId: transaction.id,
         projectId: loan.lender.projectId,

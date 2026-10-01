@@ -13,6 +13,7 @@ export function useDashboardWidgetI18n(): DashboardWidgetI18n {
   const tLenders = useTranslations('dashboard.lenders');
   const tTransactions = useTranslations('dashboard.transactions');
   const tPie = useTranslations('dashboard.widgets.pieChart');
+  const tAggregation = useTranslations('dashboard.widgets.aggregationTable');
   const tLine = useTranslations('dashboard.widgets.lineChart');
   const tBar = useTranslations('dashboard.widgets.barChart');
   const tHistoryTableWidget = useTranslations('dashboard.widgets.historyTable');
@@ -29,6 +30,7 @@ export function useDashboardWidgetI18n(): DashboardWidgetI18n {
         tLenders: (key, values) => tLenders(key, values),
         tTransactions: (key, values) => tTransactions(key, values),
         tPie: (key, values) => tPie(key, values),
+        tAggregation: (key, values) => tAggregation(key, values),
         tLine: (key, values) => tLine(key, values),
         tBar: (key, values) => tBar(key, values),
         tHistoryTableWidget: (key, values) => tHistoryTableWidget(key, values),
@@ -42,6 +44,7 @@ export function useDashboardWidgetI18n(): DashboardWidgetI18n {
       tLenders,
       tTransactions,
       tPie,
+      tAggregation,
       tLine,
       tBar,
       tHistoryTableWidget,

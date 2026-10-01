@@ -1,13 +1,7 @@
 'use server';
 
 import { calculateLoanFields } from '@/lib/calculations/loan-calculations';
-import { db } from '@/lib/db';
-import {
-  lenderFilesRelation,
-  lenderNotesRelation,
-  loanFilesRelation,
-  loanNotesRelation,
-} from '@/lib/prisma/notes-files-relations';
+import { loadProjectLoans } from '@/lib/loans/load-project-loans';
 import { sanitizeLoan } from '@/lib/sanitation/sanitize-loan';
 import { projectIdSchema } from '@/lib/schemas/common';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
@@ -15,41 +9,7 @@ import { projectAction } from '@/lib/utils/safe-action';
 
 export async function getLoansByProjectUnsafe(projectId: string) {
   try {
-    const loans = await db.loan.findMany({
-      where: {
-        lender: {
-          projectId,
-        },
-      },
-      orderBy: {
-        signDate: 'desc',
-      },
-      include: {
-        lender: {
-          include: {
-            project: {
-              include: {
-                configuration: { select: { interestMethod: true } },
-              },
-            },
-            user: {
-              select: {
-                name: true,
-                id: true,
-                email: true,
-                lastLogin: true,
-                lastInvited: true,
-              },
-            },
-            notes: lenderNotesRelation,
-            files: lenderFilesRelation,
-          },
-        },
-        transactions: true,
-        notes: loanNotesRelation,
-        files: loanFilesRelation,
-      },
-    });
+    const loans = await loadProjectLoans(projectId);
 
     // Calculate virtual fields for each loan
     const loansWithCalculations = loans.map((loan) =>

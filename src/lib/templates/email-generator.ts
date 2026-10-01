@@ -2,6 +2,7 @@
 import { type DesignComponent, getDocumentLayout, getEmailComponents } from '@/lib/templates/design-tree';
 import { paddingPropsToCssString, resolvePaddingPx } from '@/lib/templates/padding-utils';
 import { resolveTemplateImageSrc as resolveSafeImageSrc } from '@/lib/templates/resolve-template-image-src';
+import { replaceConditionPills, wrapWithTemplateCondition } from '@/lib/templates/template-condition';
 import { stripLoopScaffoldFromTiptapHtml } from '@/lib/templates/tiptap-merge-loop';
 
 /**
@@ -11,9 +12,10 @@ import { stripLoopScaffoldFromTiptapHtml } from '@/lib/templates/tiptap-merge-lo
 const processTiptapContent = (html: string): string => {
   // TipTap usually returns HTML wrapped in <p> tags.
   const stripped = stripLoopScaffoldFromTiptapHtml(html.replace(/<p>/g, '').replace(/<\/p>/g, '<br />'));
+  const withConditions = replaceConditionPills(stripped);
 
   // Convert <span data-merge-tag="..."> back to {{tag}}.
-  const withMergeTags = stripped.replace(
+  const withMergeTags = withConditions.replace(
     /<span[^>]*data-merge-tag="([^"]*)"[^>]*>.*?<\/span>/g,
     (_match: string, tag: string) => {
       const rawTag = tag.replace(/[{}]/g, '');
@@ -261,7 +263,8 @@ const renderTableHtml = (props: Record<string, any>): string => {
         borderConfig,
       })}">${cellContent}</td>`;
     }
-    bodyRows += `<tr>${cells}</tr>`;
+    const rowHtml = `<tr>${cells}</tr>`;
+    bodyRows += isDynamic ? wrapWithTemplateCondition(rowHtml, props.showIf) : rowHtml;
   }
 
   const padCss = paddingPropsToCssString(props);
@@ -271,20 +274,23 @@ const renderTableHtml = (props: Record<string, any>): string => {
 const renderTextHtml = (props: Record<string, any>): string => {
   const finalContent = processTiptapContent(props.text || '');
   const textAlign = props.textAlign || 'left';
-  return `<div style="font-family: ${EMAIL_FONT_FAMILY}; font-size: ${props.fontSize || 16}px; color: ${props.color || '#000000'}; margin: 0; line-height: 1.5; text-align: ${textAlign};">${finalContent}</div>`;
+  const padCss = paddingPropsToCssString(props);
+  return `<div style="font-family: ${EMAIL_FONT_FAMILY}; font-size: ${props.fontSize || 16}px; color: ${props.color || '#000000'}; margin: 0; padding: ${padCss}; line-height: 1.5; text-align: ${textAlign};">${finalContent}</div>`;
 };
 
 const renderButtonHtml = (props: Record<string, any>): string => {
   const btnUrl = props.useSystemUrl && props.systemUrlKey ? `{{system.${props.systemUrlKey}}}` : props.url || '#';
-  return `<div style="margin: 10px 0;"><a href="${btnUrl}" style="font-family: ${EMAIL_FONT_FAMILY}; background-color: ${props.background || '#2563eb'}; color: ${props.color || '#ffffff'}; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold;">${props.text || 'Button'}</a></div>`;
+  const padCss = paddingPropsToCssString(props);
+  return `<div style="margin: 10px 0; padding: ${padCss};"><a href="${btnUrl}" style="font-family: ${EMAIL_FONT_FAMILY}; background-color: ${props.background || '#2563eb'}; color: ${props.color || '#ffffff'}; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold;">${props.text || 'Button'}</a></div>`;
 };
 
 const renderImageHtml = (props: Record<string, any>, logoUrl?: string | null): string => {
-  return `<img src="${resolveTemplateImageSrc({
+  const padCss = paddingPropsToCssString(props);
+  return `<div style="padding: ${padCss};"><img src="${resolveTemplateImageSrc({
     src: props.src,
     useLogoSource: props.useLogoSource,
     logoUrl,
-  })}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" />`;
+  })}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" /></div>`;
 };
 
 const renderSlotHtml = (node: DesignComponent, options: HtmlRenderOptions): string => {
@@ -310,7 +316,7 @@ const renderSlotHtml = (node: DesignComponent, options: HtmlRenderOptions): stri
       : children.map((child) => renderComponentHtml(child, options)).join('');
     const flexStyle =
       `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
-    return wrapWithLoop(`<div style="${flexStyle}">${inner}</div>`, loopKey);
+    return wrapWithLoop(wrapWithTemplateCondition(`<div style="${flexStyle}">${inner}</div>`, props.showIf), loopKey);
   }
 
   if (layout === 'grid') {
@@ -324,12 +330,15 @@ const renderSlotHtml = (node: DesignComponent, options: HtmlRenderOptions): stri
         .join('');
       const flexStyle =
         `display: flex; flex-direction: row; flex-wrap: wrap; gap: ${gap}px; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
-      return wrapWithLoop(`<div style="${flexStyle}">${inner}</div>`, loopKey);
+      return wrapWithLoop(wrapWithTemplateCondition(`<div style="${flexStyle}">${inner}</div>`, props.showIf), loopKey);
     }
     const content = children.map((child) => renderComponentHtml(child, options)).join('');
     const divStyle = `padding: ${padCss}; background-color: ${bgColor}; ${borderCss}`.trim();
     return wrapWithLoop(
-      `<div style="${divStyle}"><!--[if mso]><table style="width:100%;border-spacing:${gap}px;" cellpadding="0"><tr><![endif]--><div style="display: grid; grid-template-columns: repeat(${gridCols}, 1fr); gap: ${gap}px;">${content}</div><!--[if mso]></tr></table><![endif]--></div>`,
+      wrapWithTemplateCondition(
+        `<div style="${divStyle}"><!--[if mso]><table style="width:100%;border-spacing:${gap}px;" cellpadding="0"><tr><![endif]--><div style="display: grid; grid-template-columns: repeat(${gridCols}, 1fr); gap: ${gap}px;">${content}</div><!--[if mso]></tr></table><![endif]--></div>`,
+        props.showIf,
+      ),
       loopKey,
     );
   }
@@ -337,7 +346,10 @@ const renderSlotHtml = (node: DesignComponent, options: HtmlRenderOptions): stri
   const content = children.map((child) => renderComponentHtml(child, options)).join('');
   const verticalStyle =
     `display: flex; flex-direction: column; gap: ${gap}px; justify-content: ${justify}; align-items: ${align}; padding: ${padCss}; background-color: ${bgColor}; width: 100%; ${borderCss}`.trim();
-  return wrapWithLoop(`<div style="${verticalStyle}">${content}</div>`, loopKey);
+  return wrapWithLoop(
+    wrapWithTemplateCondition(`<div style="${verticalStyle}">${content}</div>`, props.showIf),
+    loopKey,
+  );
 };
 
 const renderComponentHtml = (node: DesignComponent, options: HtmlRenderOptions): string => {
@@ -350,13 +362,16 @@ const renderComponentHtml = (node: DesignComponent, options: HtmlRenderOptions):
     case 'PageFooter':
       return renderSlotHtml(node, options);
     case 'Text':
-      return renderTextHtml(props);
+      return wrapWithTemplateCondition(renderTextHtml(props), props.showIf);
     case 'Button':
-      return renderButtonHtml(props);
+      return wrapWithTemplateCondition(renderButtonHtml(props), props.showIf);
     case 'Image':
-      return renderImageHtml(props, options.logoUrl);
-    case 'Table':
-      return renderTableHtml(props);
+      return wrapWithTemplateCondition(renderImageHtml(props, options.logoUrl), props.showIf);
+    case 'Table': {
+      const tableHtml = renderTableHtml(props);
+      const loopKey = typeof props.loopKey === 'string' ? props.loopKey : '';
+      return loopKey.length > 0 ? tableHtml : wrapWithTemplateCondition(tableHtml, props.showIf);
+    }
     default:
       return children.map((child) => renderComponentHtml(child, options)).join('');
   }

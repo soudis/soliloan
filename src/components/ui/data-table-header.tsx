@@ -24,6 +24,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
+import { cn } from '@/lib/utils';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
 import {
   addPresentFilter,
@@ -66,6 +67,7 @@ interface DataTableHeaderProps<TData> {
   exportPrefix?: string;
   exportDisabled?: boolean;
   toolbarExtra?: React.ReactNode;
+  toolbarAlign?: 'start' | 'center' | 'end';
   extraViewData?: Record<string, unknown>;
   isExtraViewDataDirty?: (savedData: Record<string, unknown> | undefined) => boolean;
   toolbarContent?: ReactNode;
@@ -90,6 +92,7 @@ export function DataTableHeader<TData>({
   exportPrefix,
   exportDisabled = false,
   toolbarExtra,
+  toolbarAlign = 'center',
   extraViewData,
   isExtraViewDataDirty,
   onRowClick,
@@ -252,10 +255,18 @@ export function DataTableHeader<TData>({
     );
   }, [views, tableState, defaultColumnVisibility, defaultSorting, isExtraViewDataDirty]);
 
+  const toolbarSpansHeader = toolbarAlign === 'start' && !showFilter && !showColumnVisibility && !viewType && !showExport;
+
   return (
     <>
-      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 py-4">
+      <div
+        className={cn(
+          'grid items-center gap-4 py-4',
+          toolbarSpansHeader ? 'grid-cols-1' : 'grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]',
+        )}
+      >
         <div className="flex min-w-0 flex-wrap items-center gap-2">
+          {toolbarAlign === 'start' ? toolbarExtra : null}
           {showFilter &&
             (hasColumnFilterConfig ? (
               <>
@@ -304,8 +315,11 @@ export function DataTableHeader<TData>({
               />
             ))}
         </div>
-        <div className="justify-self-center">{toolbarExtra}</div>
-        <div className="flex shrink-0 items-center justify-end space-x-2">
+        <div className={cn('justify-self-center', toolbarSpansHeader && 'hidden')}>
+          {toolbarAlign === 'center' ? toolbarExtra : null}
+        </div>
+        <div className={cn('flex shrink-0 items-center justify-end space-x-2', toolbarSpansHeader && 'hidden')}>
+          {toolbarAlign === 'end' ? toolbarExtra : null}
           {viewType && (
             <>
               <ViewManager

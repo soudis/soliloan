@@ -1,7 +1,6 @@
 import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import type { LoanMonthlyNumbers } from '@/types/dashboard';
 
-import { lookupCumulativeAtDate, type CumulativeTimelineEntry } from './cumulative-timeline';
 import { getCumulativeNumbers, getPeriodNumbers, type HistoryPeriod } from './rollup-period';
 
 export type LoanMetricCache = {
@@ -11,15 +10,7 @@ export type LoanMetricCache = {
 
 export type LoanMetricCacheMap = Map<string, LoanMetricCache>;
 
-function getLoanTimeline(loan: DashboardLoan): CumulativeTimelineEntry[] | undefined {
-  return loan.cumulativeTimeline;
-}
-
 function cumulativeForPeriod(loan: DashboardLoan, period: HistoryPeriod): LoanMonthlyNumbers {
-  const timeline = getLoanTimeline(loan);
-  if (timeline?.length) {
-    return lookupCumulativeAtDate(timeline, period.periodEnd);
-  }
   return getCumulativeNumbers(loan, period);
 }
 

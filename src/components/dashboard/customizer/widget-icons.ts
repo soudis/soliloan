@@ -1,4 +1,4 @@
-import { BarChart3, Hash, LineChart, Minus, PieChart, Receipt, Table2, Users } from 'lucide-react';
+import { BarChart3, Calculator, Hash, LineChart, Minus, PieChart, Receipt, Table2, Users } from 'lucide-react';
 import type { ComponentType } from 'react';
 
 import type { DashboardWidgetType } from '@/types/dashboard-layout';
@@ -7,6 +7,7 @@ import type { DashboardWidgetType } from '@/types/dashboard-layout';
 export const WIDGET_TYPE_ICONS: Record<DashboardWidgetType, ComponentType<{ className?: string }>> = {
   history_table: Table2,
   pie_chart: PieChart,
+  aggregation_table: Calculator,
   line_chart: LineChart,
   bar_chart: BarChart3,
   stat: Hash,

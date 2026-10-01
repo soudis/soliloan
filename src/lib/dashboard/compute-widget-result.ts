@@ -1,4 +1,5 @@
 import type { DashboardLender, DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
+import { computeAggregationTable } from '@/lib/dashboard/aggregation-table/compute-aggregation-table';
 import { computeBarChart } from '@/lib/dashboard/bar-chart/compute-bar-chart';
 import { computeHistoryTable } from '@/lib/dashboard/history-table/compute-history-table';
 import { computeLineChart } from '@/lib/dashboard/line-chart/compute-line-chart';
@@ -20,6 +21,7 @@ import {
   buildTransactionFilterFieldOptions,
 } from '@/lib/entity-filters/filter-definitions';
 import type { DashboardLayoutData, DashboardWidget } from '@/types/dashboard-layout';
+import { parseAggregationTableConfig } from '@/types/dashboard-widgets/aggregation-table';
 import { parseBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
 import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { parseLineChartConfig } from '@/types/dashboard-widgets/line-chart';
@@ -83,6 +85,22 @@ export function computeWidgetResult(widget: DashboardWidget, ctx: DashboardWidge
           i18n.tPie('otherCategory'),
           i18n.commonT,
           i18n.tPie,
+        ),
+      };
+    }
+    case 'aggregation_table': {
+      const config = parseAggregationTableConfig(widget.config);
+      return {
+        type: 'aggregation_table',
+        result: computeAggregationTable(
+          loans,
+          config,
+          toDate,
+          fieldOptions,
+          i18n.locale,
+          i18n.tAggregation('emptyValue'),
+          i18n.commonT,
+          i18n.tAggregation,
         ),
       };
     }

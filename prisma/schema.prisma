@@ -309,13 +309,14 @@ model Loan {
 }
 
 model Transaction {
-  id          String          @id @default(cuid())
-  loanId      String
-  type        TransactionType
-  date        DateTime
-  amount      Float
-  paymentType PaymentType
-  loan        Loan            @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  id               String          @id @default(cuid())
+  loanId           String
+  type             TransactionType
+  date             DateTime
+  amount           Float
+  paymentType      PaymentType
+  lenderNotifiedAt DateTime?
+  loan             Loan            @relation(fields: [loanId], references: [id], onDelete: Cascade)
 }
 
 model File {

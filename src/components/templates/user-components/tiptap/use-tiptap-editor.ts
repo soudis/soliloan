@@ -4,6 +4,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef } from 'react';
 import { MergeTag } from './merge-tag-extension';
+import { TemplateCondition } from './template-condition-extension';
 
 interface UseTiptapEditorProps {
   content: string;
@@ -34,6 +35,7 @@ export const useTiptapEditor = ({ content, onUpdate, editable, color, fontSize }
       MergeTag.configure({
         loopBodyPlaceholder,
       }),
+      TemplateCondition,
       BubbleMenu.configure({
         pluginKey: 'bubbleMenu',
       }),

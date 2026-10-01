@@ -20,8 +20,8 @@ export function LayoutButton({
       title={label}
       className={`flex items-center justify-center rounded-md border p-2 transition-colors ${
         isActive
-          ? 'border-primary bg-primary text-white'
-          : 'border-border bg-white text-muted-foreground hover:border-border hover:text-foreground'
+          ? 'border-primary bg-primary text-primary-foreground'
+          : 'border-border bg-background text-muted-foreground hover:border-border hover:text-foreground'
       }`}
     >
       <Icon className="h-4 w-4" />
@@ -47,8 +47,8 @@ export function ToggleButton({
       title={label}
       className={`flex items-center justify-center rounded-md border p-1.5 transition-colors ${
         isActive
-          ? 'border-primary bg-primary text-white'
-          : 'border-border bg-white text-muted-foreground hover:border-border hover:text-foreground'
+          ? 'border-primary bg-primary text-primary-foreground'
+          : 'border-border bg-background text-muted-foreground hover:border-border hover:text-foreground'
       }`}
     >
       <Icon className="h-3.5 w-3.5" />

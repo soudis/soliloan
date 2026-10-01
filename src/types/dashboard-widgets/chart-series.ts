@@ -6,7 +6,7 @@ import {
   type HistoryTableAggregation,
   type HistoryTableMetric,
   isHistoryMetricColumnValid,
-} from './history-table';
+} from './history-metrics';
 
 export type ChartSeriesMetric = HistoryTableMetric;
 

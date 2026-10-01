@@ -148,7 +148,6 @@ export function TableBlock({
   paddingRight,
   paddingBottom,
   paddingLeft,
-  displayName,
 }: TableBlockProps) {
   const selectedId = useTemplatePuck((state) => state.selectedItem?.props.id as string | undefined);
   const activeCellId = useTemplatePuck((state) => {
@@ -278,7 +277,7 @@ export function TableBlock({
 
   return (
     <div className="flex w-full flex-col overflow-hidden rounded-md">
-      <LoopRibbon loopKey={loopKey} label={displayName} />
+      <LoopRibbon loopKey={loopKey} />
       {table}
       <LoopRibbonEnd loopKey={loopKey} />
     </div>

@@ -90,7 +90,6 @@ export function ContainerBlock({
   borderColor,
   borderStyle,
   borderWidth,
-  displayName,
 }: ContainerBlockProps) {
   const hasLoop = loopKey.trim().length > 0;
   const layoutStyle = useMemo(
@@ -137,7 +136,7 @@ export function ContainerBlock({
 
   return (
     <div className="flex min-h-[50px] w-full flex-col overflow-hidden rounded-md">
-      <LoopRibbon loopKey={loopKey} label={displayName} />
+      <LoopRibbon loopKey={loopKey} />
       {body}
       <LoopRibbonEnd loopKey={loopKey} />
     </div>

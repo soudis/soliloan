@@ -405,7 +405,7 @@ export function TemplateEditorView({
                 <div className="flex min-h-[640px] flex-1 items-stretch overflow-hidden">
                   <div className="min-h-0 flex-1 overflow-y-auto bg-muted">
                     <div
-                      className="relative mx-auto my-12 flex flex-col bg-white shadow-sm"
+                      className="template-document-surface relative mx-auto my-12 flex flex-col bg-white text-black shadow-sm"
                       style={
                         isDocument
                           ? { width: A4_WIDTH_PX, maxWidth: A4_WIDTH_PX, minHeight: A4_MIN_HEIGHT_PX }

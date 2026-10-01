@@ -22,6 +22,7 @@ import {
   widgetIsFullWidthLocked,
 } from '@/lib/dashboard/layout-utils';
 import { DASHBOARD_WIDGET_WIDTHS, type DashboardWidgetType, type DashboardWidgetWidth } from '@/types/dashboard-layout';
+import { parseAggregationTableConfig } from '@/types/dashboard-widgets/aggregation-table';
 import { parseBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
 import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { parseLineChartConfig } from '@/types/dashboard-widgets/line-chart';
@@ -32,7 +33,7 @@ import {
   parseLoanTableConfig,
   parseTransactionTableConfig,
 } from '@/types/dashboard-widgets/table-view';
-import { TransactionTableSettings } from './transaction-table-settings';
+import { AggregationTableSettings } from './aggregation-table-settings';
 import { BarChartSettings } from './bar-chart-settings';
 import { useDashboardEditor, useDashboardLayoutData } from './dashboard-layout-context';
 import { HistoryTableSettings } from './history-table-settings';
@@ -41,6 +42,7 @@ import { LineChartSettings } from './line-chart-settings';
 import { LoanTableSettings } from './loan-table-settings';
 import { PieChartSettings } from './pie-chart-settings';
 import { StatWidgetSettings } from './stat-widget-settings';
+import { TransactionTableSettings } from './transaction-table-settings';
 
 const settingsWidthSchema = z.enum(DASHBOARD_WIDGET_WIDTHS);
 
@@ -55,6 +57,7 @@ function createSettingsSchema(widgetType: DashboardWidgetType) {
       widgetType === 'stat' ||
       widgetType === 'history_table' ||
       widgetType === 'pie_chart' ||
+      widgetType === 'aggregation_table' ||
       widgetType === 'bar_chart' ||
       widgetType === 'line_chart' ||
       widgetType === 'loan_table_view' ||
@@ -247,6 +250,12 @@ export function DashboardWidgetSettings() {
         {widget.type === 'pie_chart' ? (
           <PieChartSettings config={parsePieChartConfig(widget.config)} onConfigChange={handleConfigChange} />
         ) : null}
+        {widget.type === 'aggregation_table' ? (
+          <AggregationTableSettings
+            config={parseAggregationTableConfig(widget.config)}
+            onConfigChange={handleConfigChange}
+          />
+        ) : null}
         {widget.type === 'bar_chart' ? (
           <BarChartSettings config={parseBarChartConfig(widget.config)} onConfigChange={handleConfigChange} />
         ) : null}
@@ -268,6 +277,7 @@ export function DashboardWidgetSettings() {
         {widget.type !== 'history_table' &&
         widget.type !== 'stat' &&
         widget.type !== 'pie_chart' &&
+        widget.type !== 'aggregation_table' &&
         widget.type !== 'bar_chart' &&
         widget.type !== 'line_chart' &&
         widget.type !== 'loan_table_view' &&

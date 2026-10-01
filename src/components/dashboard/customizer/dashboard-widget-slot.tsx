@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import type { DashboardWidget } from '@/types/dashboard-layout';
 import { parseLoanTableConfig } from '@/types/dashboard-widgets/table-view';
 
+import { AggregationTableWidget } from '../widgets/aggregation-table-widget';
 import { BarChartWidget } from '../widgets/bar-chart-widget';
 import { DividerWidget } from '../widgets/divider-widget';
 import { HistoryTableWidget } from '../widgets/history-table-widget';
@@ -80,6 +81,8 @@ function DashboardWidgetSlotComponent({ widget, rowId }: { widget: DashboardWidg
         return <StatWidget widget={widget} />;
       case 'pie_chart':
         return <PieChartWidget widget={widget} />;
+      case 'aggregation_table':
+        return <AggregationTableWidget widget={widget} />;
       case 'bar_chart':
         return <BarChartWidget widget={widget} />;
       case 'line_chart':
