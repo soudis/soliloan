@@ -15,6 +15,7 @@ import {
   upsertUserDashboardLayoutAction,
 } from '@/actions/dashboard/mutations/upsert-dashboard-layout';
 import { upsertGlobalDashboardLayoutAction } from '@/actions/dashboard/mutations/upsert-global-dashboard-layout';
+import { loadGlobalDashboardLayoutSeedAction } from '@/actions/dashboard/queries/load-global-dashboard-layout-seed';
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { ProjectLogo } from '@/components/dashboard/project-logo';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
@@ -127,6 +128,22 @@ export function DashboardCustomizer({
       toast.success(t('saveAsGlobalDefaultSuccess'));
     } catch {
       toast.error(t('saveAsGlobalDefaultError'));
+    }
+  };
+
+  const handleLoadSeedLayout = async () => {
+    try {
+      const result = await loadGlobalDashboardLayoutSeedAction({});
+      if (result?.serverError || result?.validationErrors || !result?.data?.layout) {
+        toast.error(t('loadSeedLayoutError'));
+        return;
+      }
+
+      setLayout(cloneLayoutData(result.data.layout));
+      setSelectedWidgetId(null);
+      toast.success(t('loadSeedLayoutSuccess'));
+    } catch {
+      toast.error(t('loadSeedLayoutError'));
     }
   };
 
@@ -278,6 +295,7 @@ export function DashboardCustomizer({
                   isTargetScopeDirty={isOtherScopeDirty}
                   onCopyLayout={handleCopyToOtherScope}
                   onSaveAsGlobalDefault={handleSaveAsGlobalDefault}
+                  onLoadSeedLayout={handleLoadSeedLayout}
                   onResetToGlobalDefault={handleResetToGlobalDefault}
                 />
               </aside>

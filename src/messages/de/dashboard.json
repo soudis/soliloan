@@ -351,6 +351,20 @@
       "title": "Transaktionstabelle",
       "emptyData": "Keine Transaktionen für die aktuelle Auswahl."
     },
+    "notifications": {
+      "hint": "Aktivierte Benachrichtigungen erscheinen, sobald etwas dazu vorliegt.",
+      "repaySoonDays": "Tage im Voraus",
+      "kinds": {
+        "openInterest": "Offene Zinsauszahlungen",
+        "repayOverdue": "Rückzahlung überfällig",
+        "notDeposited": "Kredit nicht eingezahlt",
+        "savingsRateOpen": "Rate im Ansparvertrag offen",
+        "repaySoon": "Rückzahlung steht bald an",
+        "bankImport": "Bankimport nicht abgeschlossen",
+        "investmentTypeCapacity": "Anlageform über dem VermAnlG-Limit",
+        "requiredFields": "Pflichtfelder fehlen"
+      }
+    },
     "placeholder": "Widget-Inhalt folgt in Kürze.",
     "dragWidget": "Widget verschieben",
     "a11y": {
@@ -377,6 +391,11 @@
     "saveAsGlobalDefaultConfirmDescription": "Das aktuelle {scope}-Layout (inkl. nicht gespeicherter Änderungen) wird als Standard für neue Projekt- und Benutzer-Dashboards verwendet, die noch kein eigenes Layout haben.",
     "saveAsGlobalDefaultSuccess": "Globales Standard-Layout gespeichert",
     "saveAsGlobalDefaultError": "Speichern des globalen Standard-Layouts fehlgeschlagen",
+    "loadSeedLayout": "Seed-Layout laden",
+    "loadSeedLayoutConfirmTitle": "Seed-Layout laden?",
+    "loadSeedLayoutConfirmDescription": "Das aktuelle {scope}-Layout im Editor wird durch das Layout aus der Seed-Datei ersetzt. Das gespeicherte Dashboard bleibt unverändert, bis du speicherst.",
+    "loadSeedLayoutSuccess": "Seed-Layout geladen",
+    "loadSeedLayoutError": "Seed-Layout konnte nicht geladen werden",
     "resetToGlobalDefault": "Auf Standard zurücksetzen",
     "resetToGlobalDefaultConfirmTitle": "Auf Standard-Dashboard zurücksetzen?",
     "resetToGlobalDefaultConfirmDescription": "Das {scope}-Dashboard wird auf das Standard-Layout zurückgesetzt. Eigene Änderungen gehen verloren.",
@@ -398,7 +417,8 @@
       "divider": "Trennlinie",
       "loan_table_view": "Kredittabelle",
       "lender_table_view": "Kreditgeber-Tabelle",
-      "transaction_table_view": "Transaktionstabelle"
+      "transaction_table_view": "Transaktionstabelle",
+      "notifications": "Benachrichtigungen"
     }
   },
   "welcome": "Willkommen, {name}!",
@@ -508,6 +528,28 @@
     },
     "transactionTable": {
       "emptyData": "Keine Transaktionen für die gewählten Einstellungen."
+    },
+    "notifications": {
+      "empty": "Im Moment ist nichts offen.",
+      "page": "{page} von {pages}",
+      "lines": {
+        "openInterest": "{count, plural, one {Im Jahr {year} sind die Zinsen von # Kredit noch nicht ausgezahlt.} other {Im Jahr {year} sind die Zinsen von # Krediten noch nicht ausgezahlt.}}",
+        "repayOverdue": "{count, plural, one {# Kredit hätte schon zurückgezahlt werden sollen.} other {# Kredite hätten schon zurückgezahlt werden sollen.}}",
+        "notDeposited": "{count, plural, one {# Kredit ist noch nicht eingezahlt.} other {# Kredite sind noch nicht eingezahlt.}}",
+        "savingsRateOpen": "{count, plural, one {# Ansparvertrag hat noch offene Raten.} other {# Ansparverträge haben noch offene Raten.}}",
+        "repaySoon": "{count, plural, one {# Kredit steht {days, plural, one {im nächsten Tag} other {in den nächsten # Tagen}} zur Rückzahlung an.} other {# Kredite stehen {days, plural, one {im nächsten Tag} other {in den nächsten # Tagen}} zur Rückzahlung an.}}",
+        "bankImport": "{count, plural, one {# Zeile im Bankimport ist noch nicht abgeschlossen.} other {# Zeilen im Bankimport sind noch nicht abgeschlossen.}}",
+        "investmentTypeCapacity": "{count, plural, one {# Anlageform liegt über dem VermAnlG-Limit.} other {# Anlageformen liegen über dem VermAnlG-Limit.}}",
+        "requiredFields": "{count, plural, one {Bei # Kreditgeber*in fehlen Pflichtfelder.} other {Bei # Kreditgeber*innen fehlen Pflichtfelder.}}"
+      },
+      "missingFields": {
+        "street": "Straße",
+        "zip": "PLZ",
+        "place": "Ort",
+        "country": "Land",
+        "email": "E-Mail",
+        "telNo": "Telefon"
+      }
     }
   },
   "yearlyTable": {

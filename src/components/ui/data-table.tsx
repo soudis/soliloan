@@ -426,9 +426,7 @@ export function DataTable<TData, TValue>({
       const next = updater instanceof Function ? updater(columnVisibility) : updater;
       const cleanup = cleanupFiltersForHiddenColumns({
         nextVisibility: next,
-        columnFilters: columnFilterState,
         quickSearchField: tableState.quickSearchField,
-        filterConfig: columnFilters,
       });
       setTableState({
         columnVisibility: next,

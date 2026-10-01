@@ -2,6 +2,7 @@ import type { DashboardLender, DashboardLoan } from '@/actions/dashboard/get-das
 import type { AggregationTableResult } from '@/lib/dashboard/aggregation-table/compute-aggregation-table';
 import type { ChartDataModel } from '@/lib/dashboard/chart/chart-data-model';
 import type { HistoryTableResult } from '@/lib/dashboard/history-table/compute-history-table';
+import type { NotificationLine } from '@/lib/dashboard/notifications/compute-notifications';
 import type { PieChartResult } from '@/lib/dashboard/pie-chart/compute-pie-chart';
 import type { DashboardLayoutScopeKey } from '@/types/dashboard-layout';
 import type { StatItemConfig } from '@/types/dashboard-widgets/stat-widget';
@@ -56,6 +57,11 @@ export type DividerWidgetComputeResult = {
   type: 'divider';
 };
 
+export type NotificationsWidgetComputeResult = {
+  type: 'notifications';
+  lines: NotificationLine[];
+};
+
 export type WidgetComputeResult =
   | StatWidgetComputeResult
   | HistoryTableWidgetComputeResult
@@ -66,6 +72,7 @@ export type WidgetComputeResult =
   | LoanTableWidgetComputeResult
   | LenderTableWidgetComputeResult
   | TransactionTableWidgetComputeResult
-  | DividerWidgetComputeResult;
+  | DividerWidgetComputeResult
+  | NotificationsWidgetComputeResult;
 
 export type DashboardWidgetResultsByScope = Record<DashboardLayoutScopeKey, Record<string, WidgetComputeResult>>;

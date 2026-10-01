@@ -10,6 +10,7 @@ import { createDefaultAggregationTableConfig } from '@/types/dashboard-widgets/a
 import { createDefaultBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
 import { createDefaultHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { createDefaultLineChartConfig } from '@/types/dashboard-widgets/line-chart';
+import { createDefaultNotificationsConfig } from '@/types/dashboard-widgets/notifications';
 import { createDefaultPieChartConfig } from '@/types/dashboard-widgets/pie-chart';
 import { createDefaultStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
 import {
@@ -72,6 +73,7 @@ export const DEFAULT_WIDTH_BY_TYPE: Record<DashboardWidgetType, DashboardWidgetW
   bar_chart: 'half',
   stat: 'quarter',
   divider: 'full',
+  notifications: 'half',
 };
 
 export function widgetIsFullWidthLocked(type: DashboardWidgetType): boolean {
@@ -168,7 +170,8 @@ export function widgetShowsCardHeader(widget: { type: DashboardWidgetType; title
     widget.type === 'line_chart' ||
     widget.type === 'loan_table_view' ||
     widget.type === 'lender_table_view' ||
-    widget.type === 'transaction_table_view'
+    widget.type === 'transaction_table_view' ||
+    widget.type === 'notifications'
   ) {
     return widget.title.trim().length > 0;
   }
@@ -196,6 +199,8 @@ export function createDefaultWidgetConfig(type: DashboardWidgetType): Record<str
       return createDefaultLenderTableConfig();
     case 'transaction_table_view':
       return createDefaultTransactionTableConfig();
+    case 'notifications':
+      return createDefaultNotificationsConfig();
     default:
       return {};
   }

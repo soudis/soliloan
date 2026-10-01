@@ -3,6 +3,8 @@ import { computeAggregationTable } from '@/lib/dashboard/aggregation-table/compu
 import { computeBarChart } from '@/lib/dashboard/bar-chart/compute-bar-chart';
 import { computeHistoryTable } from '@/lib/dashboard/history-table/compute-history-table';
 import { computeLineChart } from '@/lib/dashboard/line-chart/compute-line-chart';
+import { computeNotifications } from '@/lib/dashboard/notifications/compute-notifications';
+import type { NotificationExtras } from '@/lib/dashboard/notifications/notification-extras';
 import { computePieChart } from '@/lib/dashboard/pie-chart/compute-pie-chart';
 import { computeAllStatValues } from '@/lib/dashboard/stat-widget/compute-stat-value';
 import {
@@ -25,6 +27,7 @@ import { parseAggregationTableConfig } from '@/types/dashboard-widgets/aggregati
 import { parseBarChartConfig } from '@/types/dashboard-widgets/bar-chart';
 import { parseHistoryTableConfig } from '@/types/dashboard-widgets/history-table';
 import { parseLineChartConfig } from '@/types/dashboard-widgets/line-chart';
+import { parseNotificationsConfig } from '@/types/dashboard-widgets/notifications';
 import { parsePieChartConfig } from '@/types/dashboard-widgets/pie-chart';
 import { parseStatWidgetConfig } from '@/types/dashboard-widgets/stat-widget';
 import {
@@ -40,10 +43,11 @@ export type DashboardWidgetComputeContext = {
   toDate: Date;
   project: ProjectWithConfiguration;
   i18n: DashboardWidgetI18n;
+  notificationExtras: NotificationExtras;
 };
 
 export function computeWidgetResult(widget: DashboardWidget, ctx: DashboardWidgetComputeContext): WidgetComputeResult {
-  const { loans, lenders, toDate, project, i18n } = ctx;
+  const { loans, lenders, toDate, project, i18n, notificationExtras } = ctx;
   const fieldOptions = buildAllFilterFieldOptions(project, i18n.tLoans, i18n.tLenders, i18n.commonT);
 
   switch (widget.type) {
@@ -169,6 +173,25 @@ export function computeWidgetResult(widget: DashboardWidget, ctx: DashboardWidge
       return {
         type: 'lender_table_view',
         rows: filterLendersForTableWidget(lenders, config.filters, lenderFieldOptions),
+      };
+    }
+    case 'notifications': {
+      const config = parseNotificationsConfig(widget.config);
+      return {
+        type: 'notifications',
+        lines: computeNotifications({
+          config,
+          loans,
+          lenders,
+          toDate,
+          projectId: project.id,
+          project: {
+            deInvestmentActCompliance: project.configuration.deInvestmentActCompliance,
+            lenderRequiredFields: project.configuration.lenderRequiredFields,
+            lenderAdditionalFields: project.configuration.lenderAdditionalFields,
+          },
+          extras: notificationExtras,
+        }),
       };
     }
     case 'transaction_table_view': {

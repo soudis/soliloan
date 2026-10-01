@@ -1,6 +1,5 @@
-import moment from 'moment';
-
 import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
+import { loanStartedOnOrBefore } from '@/lib/calculations/loan-duration-metrics';
 import type { EntityFilter, EntityFilterFieldOption } from '@/types/entity-filters';
 
 import { getFilterDefinitionForField, isDynamicLoanFilterField } from './filter-definitions';
@@ -21,7 +20,7 @@ export function loanMatchesFilters(
   context: LoanFilterContext,
   fieldOptions: EntityFilterFieldOption[],
 ): boolean {
-  if (moment(loan.signDate).isAfter(context.periodEnd, 'day')) {
+  if (!loanStartedOnOrBefore(loan, context.periodEnd)) {
     return false;
   }
 
