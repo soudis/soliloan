@@ -3,6 +3,7 @@
 import type { View, ViewType } from '@prisma/client';
 import {
   type ColumnDef,
+  type ColumnFiltersState,
   type FilterFn,
   getCoreRowModel,
   getFilteredRowModel,
@@ -129,7 +130,13 @@ interface DataTableProps<TData, TValue> {
   showFilter?: boolean;
   columnFilters?: DataTableColumnFilters;
   defaultColumnVisibility?: VisibilityState;
+  /** Baseline column filters when no saved view is selected. */
+  defaultColumnFilters?: ColumnFiltersState;
+  /** Open the filter chip bar when no saved view is selected. */
+  defaultFiltersExpanded?: boolean;
   defaultSorting?: SortingState;
+  /** Shown in the table body when the current filter matches no rows. */
+  emptyMessage?: string;
   viewType?: ViewType;
   isLoading?: boolean;
   /** Render `DropdownMenuItem` (and optional `DropdownMenuSeparator`) children; shown inside the row … menu. */
@@ -174,7 +181,10 @@ export function DataTable<TData, TValue>({
   showFilter = true,
   columnFilters = {},
   defaultColumnVisibility,
+  defaultColumnFilters,
+  defaultFiltersExpanded = false,
   defaultSorting,
+  emptyMessage,
   viewType,
   views,
   allowSidebarViews = false,
@@ -200,6 +210,8 @@ export function DataTable<TData, TValue>({
 
   const internalUrlState = useTableUrlState({
     defaultColumnVisibility,
+    defaultColumnFilters,
+    defaultFiltersExpanded,
     views,
     controlledState: controlledTableState,
     controlledSetState: controlledSetTableState,
@@ -547,6 +559,7 @@ export function DataTable<TData, TValue>({
           hasBulkSelect={hasBulkActions}
           lastRowActionsMenuClosedAtRef={actions && onRowClick ? lastRowActionsMenuClosedAtRef : undefined}
           fillHeight={fillHeight}
+          emptyMessage={emptyMessage}
         />
 
         {showPagination && (

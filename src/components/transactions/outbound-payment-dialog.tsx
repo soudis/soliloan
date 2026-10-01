@@ -10,10 +10,10 @@ import { PaymentDetails } from '@/components/processes/payment-details';
 import { SepaSkippedTable } from '@/components/processes/sepa-skipped-table';
 import { StepProgress } from '@/components/processes/step-progress';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { DatePickerInput } from '@/components/ui/date-picker-input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { downloadXml } from '@/lib/processes/download-xml';
 import {
   type DebtorGap,
@@ -82,7 +82,8 @@ function lenderFor(rows: TransactionListItem[], lenderId: string): YearlyInteres
 export function OutboundPaymentDialog({ open, mode, rows, project, projectId, onOpenChange }: Props) {
   const t = useTranslations('processes');
   const tOutbound = useTranslations('dashboard.transactions.outbound');
-  const [grouping, setGrouping] = useState<PayoutGrouping | null>(null);
+  const [groupByLender, setGroupByLender] = useState(false);
+  const grouping: PayoutGrouping = groupByLender ? 'lender' : 'transaction';
   const [executionDate, setExecutionDate] = useState<Date | null>(new Date());
   const [phase, setPhase] = useState<'choose' | 'steps' | 'skipped'>('choose');
   const [stepIndex, setStepIndex] = useState(0);
@@ -90,12 +91,12 @@ export function OutboundPaymentDialog({ open, mode, rows, project, projectId, on
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const sepaGaps = projectSepaGaps(project.configuration);
-  const groups = useMemo(() => (grouping ? groupPayoutRows(toPayoutRows(rows), grouping, true) : []), [grouping, rows]);
+  const groups = useMemo(() => groupPayoutRows(toPayoutRows(rows), grouping, true), [grouping, rows]);
   const step = groups[stepIndex];
   const lender = step ? lenderFor(rows, step.lenderId) : undefined;
 
   const reset = () => {
-    setGrouping(null);
+    setGroupByLender(false);
     setExecutionDate(new Date());
     setPhase('choose');
     setStepIndex(0);
@@ -109,7 +110,7 @@ export function OutboundPaymentDialog({ open, mode, rows, project, projectId, on
   };
 
   const download = async () => {
-    if (!grouping || !executionDate) return;
+    if (!executionDate) return;
     const utcDate = toUTCDate(executionDate);
     if (!utcDate) return;
     setIsSubmitting(true);
@@ -161,20 +162,12 @@ export function OutboundPaymentDialog({ open, mode, rows, project, projectId, on
 
         {phase === 'choose' ? (
           <div className="space-y-4">
-            <div className="space-y-2">
-              <div className="text-sm font-medium">{t('grouping.label')}</div>
-              <RadioGroup value={grouping ?? ''} onValueChange={(value) => setGrouping(value as PayoutGrouping)}>
-                <Label className="flex items-center gap-2 font-normal">
-                  <RadioGroupItem value="lender" />
-                  {t('grouping.lender')}
-                </Label>
-                <Label className="flex items-center gap-2 font-normal">
-                  <RadioGroupItem value="transaction" />
-                  {t('grouping.transaction')}
-                </Label>
-              </RadioGroup>
-              <p className="text-sm text-muted-foreground">{t('grouping.hintOutbound')}</p>
-              {!grouping ? <p className="text-sm text-muted-foreground">{t('grouping.required')}</p> : null}
+            <div className="space-y-1">
+              <Label className="flex items-center gap-2 font-normal">
+                <Checkbox checked={groupByLender} onCheckedChange={(checked) => setGroupByLender(checked === true)} />
+                {t('grouping.byLender')}
+              </Label>
+              <p className="pl-6 text-sm text-muted-foreground">{t('grouping.hintOutbound')}</p>
             </div>
             {mode === 'sepa' ? (
               sepaGaps.length > 0 ? (
@@ -195,15 +188,14 @@ export function OutboundPaymentDialog({ open, mode, rows, project, projectId, on
               {mode === 'sepa' ? (
                 <Button
                   type="button"
-                  disabled={!grouping || sepaGaps.length > 0 || !executionDate || isSubmitting}
+                  disabled={sepaGaps.length > 0 || !executionDate || isSubmitting}
                   onClick={() => void download()}
                 >
-                  {t('sepa.download')}
+                  {t('sepa.create')}
                 </Button>
               ) : (
                 <Button
                   type="button"
-                  disabled={!grouping}
                   onClick={() => {
                     setPhase('steps');
                     setStepIndex(0);

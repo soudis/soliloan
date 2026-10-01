@@ -15,7 +15,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { DatePickerInput } from '@/components/ui/date-picker-input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { downloadXml } from '@/lib/processes/download-xml';
 import {
   type CreditorGap,
@@ -67,7 +66,8 @@ function loansToRows(loans: YearlyInterestLoanView[], year: number): PayoutRow[]
 export function YearlyInterestWizard({ open, onOpenChange, projectId, year, loans, sepaGaps }: Props) {
   const t = useTranslations('processes');
   const queryClient = useQueryClient();
-  const [grouping, setGrouping] = useState<PayoutGrouping | null>(null);
+  const [groupByLender, setGroupByLender] = useState(false);
+  const grouping: PayoutGrouping = groupByLender ? 'lender' : 'transaction';
   const [emailLenders, setEmailLenders] = useState(false);
   const [executionDate, setExecutionDate] = useState<Date | null>(new Date(year, 11, 31));
   const [phase, setPhase] = useState<'start' | 'steps' | 'skipped'>('start');
@@ -77,12 +77,12 @@ export function YearlyInterestWizard({ open, onOpenChange, projectId, year, loan
   const [skipped, setSkipped] = useState<SkippedLender[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const steps = grouping ? groupPayoutRows(loansToRows(loans, year), grouping, false) : [];
+  const steps = groupPayoutRows(loansToRows(loans, year), grouping, false);
   const step = steps[stepIndex];
   const lender = step ? loans.find((loan) => loan.lender.id === step.lenderId)?.lender : undefined;
 
   const reset = () => {
-    setGrouping(null);
+    setGroupByLender(false);
     setEmailLenders(false);
     setExecutionDate(new Date(year, 11, 31));
     setPhase('start');
@@ -114,7 +114,7 @@ export function YearlyInterestWizard({ open, onOpenChange, projectId, year, loan
   };
 
   const runSepa = async () => {
-    if (!grouping || !executionDate) return;
+    if (!executionDate) return;
     const utcDate = toUTCDate(executionDate);
     if (!utcDate) return;
     setIsSubmitting(true);
@@ -188,19 +188,12 @@ export function YearlyInterestWizard({ open, onOpenChange, projectId, year, loan
 
         {phase === 'start' ? (
           <div className="space-y-6">
-            <div className="space-y-2">
-              <div className="text-sm font-medium">{t('grouping.label')}</div>
-              <RadioGroup value={grouping ?? ''} onValueChange={(value) => setGrouping(value as PayoutGrouping)}>
-                <Label className="flex items-center gap-2 font-normal">
-                  <RadioGroupItem value="lender" />
-                  {t('grouping.lender')}
-                </Label>
-                <Label className="flex items-center gap-2 font-normal">
-                  <RadioGroupItem value="transaction" />
-                  {t('grouping.transaction')}
-                </Label>
-              </RadioGroup>
-              <p className="text-sm text-muted-foreground">{t('grouping.hint')}</p>
+            <div className="space-y-1">
+              <Label className="flex items-center gap-2 font-normal">
+                <Checkbox checked={groupByLender} onCheckedChange={(checked) => setGroupByLender(checked === true)} />
+                {t('grouping.byLender')}
+              </Label>
+              <p className="pl-6 text-sm text-muted-foreground">{t('grouping.hint')}</p>
             </div>
 
             <Label className="flex items-center gap-2 font-normal">
@@ -225,7 +218,7 @@ export function YearlyInterestWizard({ open, onOpenChange, projectId, year, loan
               )}
               <Button
                 type="button"
-                disabled={!grouping || sepaGaps.length > 0 || !executionDate || isSubmitting}
+                disabled={sepaGaps.length > 0 || !executionDate || isSubmitting}
                 onClick={() => void runSepa()}
               >
                 {t('sepa.download')}
@@ -240,7 +233,6 @@ export function YearlyInterestWizard({ open, onOpenChange, projectId, year, loan
               <Button
                 type="button"
                 variant="secondary"
-                disabled={!grouping}
                 onClick={() => {
                   setPhase('steps');
                   setStepIndex(0);

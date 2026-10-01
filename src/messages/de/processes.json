@@ -4,13 +4,12 @@
     "yearlyInterest": "Jährliche Zinsauszahlung"
   },
   "yearlyInterest": {
-    "year": "Jahr",
-    "description": "Wähle die Kredite in der Tabelle aus und starte den Assistenten, um die offenen Zinsen auszuzahlen.",
-    "openPayouts": "Auszahlungen {year} anzeigen",
+    "description": "Wähle die Kredite in der Tabelle aus und starte den Assistenten, um die offenen Zinsen auszuzahlen. Du kannst eine SEPA-Datei herunterladen und sie im Online-Banking importieren, oder die Überweisungen Schritt für Schritt selbst anlegen.",
+    "payouts": "{count, plural, one {# Auszahlung} other {# Auszahlungen}}",
     "assistant": "Assistent",
     "loading": "Zinsen werden berechnet…",
     "error": "Die Zinsen konnten nicht berechnet werden.",
-    "empty": "Für dieses Jahr gibt es keine offenen Zinsen.",
+    "empty": "Für dieses Jahr gibt es keine offenen Zinsen (mehr)",
     "columns": {
       "loanNumber": "Kredit",
       "lender": "Kreditgeber*in",
@@ -23,12 +22,9 @@
     "emailsFailed": "{count, plural, one {# E-Mail konnte nicht gesendet werden.} other {# E-Mails konnten nicht gesendet werden.}}"
   },
   "grouping": {
-    "label": "Gruppierung",
-    "lender": "Pro Kreditgeber*in",
-    "transaction": "Pro Transaktion",
-    "hint": "Pro Kreditgeber*in werden alle Kredite einer Person zusammengefasst: ein Schritt und eine Überweisung. Pro Transaktion bleibt jeder Kredit ein eigener Schritt und eine eigene Überweisung.",
-    "hintOutbound": "Pro Kreditgeber*in werden die Buchungen einer Person zusammengefasst, getrennt nach Art (Zinsen, Auszahlung, Kündigung). Pro Transaktion bleibt jede Buchung einzeln.",
-    "required": "Bitte wähle eine Gruppierung."
+    "byLender": "Auszahlungen pro Kreditgeber*in gruppieren",
+    "hint": "Alle Kredite einer Person werden zu einem Schritt und einer Überweisung zusammengefasst. Ohne Häkchen bekommt jeder Kredit eine eigene Überweisung.",
+    "hintOutbound": "Alle Buchungen einer Person werden zusammengefasst, getrennt nach Art (Zinsen, Auszahlung, Kündigung). Ohne Häkchen bleibt jede Buchung eine eigene Überweisung."
   },
   "sepa": {
     "title": "SEPA-XML",
@@ -36,6 +32,7 @@
     "option": "Du lädst eine Überweisungsdatei herunter und importierst sie im Online-Banking um die jeweiligen Überweisungen anzulegen. Die Zinsauszahlungen werden hier gleichzeitig als Transaktionen gebucht.",
     "executionDate": "Ausführungsdatum",
     "download": "SEPA-XML herunterladen und Transaktionen anlegen",
+    "create": "SEPA-XML herunterladen",
     "disabled": "In den Projekteinstellungen fehlt noch: {fields}.",
     "gaps": {
       "name": "Name",

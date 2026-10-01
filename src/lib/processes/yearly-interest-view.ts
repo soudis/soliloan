@@ -1,3 +1,5 @@
+import type { LoanWithCalculations } from '@/types/loans';
+
 export type YearlyInterestLenderView = {
   id: string;
   name: string;
@@ -9,6 +11,11 @@ export type YearlyInterestLenderView = {
   zip: string | null;
   place: string | null;
   country: string | null;
+};
+
+/** Loan-table row for one year, limited to loans that still have unpaid interest. */
+export type YearlyInterestLoanRow = LoanWithCalculations & {
+  unpaidYearlyInterest: number;
 };
 
 export type YearlyInterestLoanView = {

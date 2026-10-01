@@ -1,27 +1,78 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import type { ColumnDef } from '@tanstack/react-table';
+import { InterestPaymentType } from '@prisma/client';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import type { ColumnDef, ColumnFiltersState } from '@tanstack/react-table';
 import { Wand2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { parseAsInteger, useQueryState } from 'nuqs';
 import { useMemo, useState } from 'react';
 
 import { getYearlyInterestPayoutAction } from '@/actions/processes/queries/get-yearly-interest-payout';
 import { YearlyInterestWizard } from '@/components/processes/yearly-interest-wizard';
+import { useProject } from '@/components/providers/project-provider';
 import { Button } from '@/components/ui/button';
 import type { BulkAction } from '@/components/ui/data-table';
 import { DataTable } from '@/components/ui/data-table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRouter } from '@/i18n/navigation';
-import { useProjectId } from '@/lib/hooks/use-project-id';
+import { buildAllLoanTableColumns } from '@/lib/dashboard/table-widget/loan-table-column-registry';
+import { buildLoanTableColumnFilters } from '@/lib/entity-filters/filter-definitions';
 import { buildYearlyInterestPayoutHref } from '@/lib/processes/yearly-interest-link';
-import type { YearlyInterestLoanView } from '@/lib/processes/yearly-interest-view';
-import { formatCurrency, formatPercentage } from '@/lib/utils';
+import type { YearlyInterestLoanRow, YearlyInterestLoanView } from '@/lib/processes/yearly-interest-view';
+import { createCurrencyColumn, withColumnGroup } from '@/lib/table-column-utils';
+import { getLenderName } from '@/lib/utils';
+
+const VISIBLE_COLUMN_IDS = [
+  'loanNumber',
+  'lender.name',
+  'interestRate',
+  'interestPaymentType',
+  'unpaidYearlyInterest',
+] as const;
+
+const YEARLY_INTEREST_DEFAULT_FILTERS: ColumnFiltersState = [
+  {
+    id: 'interestPaymentType',
+    value: { operator: 'eq', value: InterestPaymentType.YEARLY },
+  },
+];
+
+function columnId(column: ColumnDef<YearlyInterestLoanRow>): string {
+  if (column.id) return column.id;
+  if ('accessorKey' in column && typeof column.accessorKey === 'string') return column.accessorKey;
+  return '';
+}
+
+function toPayoutView(loan: YearlyInterestLoanRow): YearlyInterestLoanView {
+  return {
+    id: loan.id,
+    loanNumber: loan.loanNumber,
+    interestRate: loan.interestRate,
+    unpaid: loan.unpaidYearlyInterest,
+    lender: {
+      id: loan.lender.id,
+      name: getLenderName(loan.lender),
+      email: loan.lender.email,
+      iban: loan.lender.iban,
+      bic: loan.lender.bic,
+      street: loan.lender.street,
+      addon: loan.lender.addon,
+      zip: loan.lender.zip,
+      place: loan.lender.place,
+      country: loan.lender.country,
+    },
+  };
+}
 
 export function YearlyInterestTab() {
   const t = useTranslations('processes.yearlyInterest');
-  const projectId = useProjectId();
+  const tLoans = useTranslations('dashboard.loans');
+  const tLenders = useTranslations('dashboard.lenders');
+  const commonT = useTranslations('common');
+  const tDuration = useTranslations('common.duration');
+  const locale = useLocale();
+  const { project, projectId } = useProject();
   const router = useRouter();
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useQueryState('year', parseAsInteger.withDefault(currentYear));
@@ -30,8 +81,8 @@ export function YearlyInterestTab() {
   const query = useQuery({
     queryKey: ['yearly-interest', projectId, year],
     enabled: Boolean(projectId),
+    placeholderData: keepPreviousData,
     queryFn: async () => {
-      if (!projectId) throw new Error('missing project');
       const result = await getYearlyInterestPayoutAction({ projectId, year });
       if (result?.serverError || !result?.data) {
         throw new Error(result?.serverError ?? 'failed');
@@ -40,7 +91,7 @@ export function YearlyInterestTab() {
     },
   });
 
-  const loans = query.data?.loans ?? [];
+  const loans = (query.data?.loans ?? []) as YearlyInterestLoanRow[];
   const minYear = query.data?.minYear ?? currentYear;
   const maxYear = query.data?.maxYear ?? currentYear;
   const years = useMemo(() => {
@@ -50,33 +101,39 @@ export function YearlyInterestTab() {
     return values.sort((a, b) => a - b);
   }, [minYear, maxYear, year]);
 
-  const columns = useMemo<ColumnDef<YearlyInterestLoanView>[]>(
-    () => [
-      {
-        id: 'loanNumber',
-        accessorKey: 'loanNumber',
-        header: t('columns.loanNumber'),
-      },
-      {
-        id: 'lender',
-        accessorFn: (row) => row.lender.name,
-        header: t('columns.lender'),
-      },
-      {
-        id: 'interestRate',
-        accessorKey: 'interestRate',
-        header: t('columns.interestRate'),
-        cell: ({ row }) => formatPercentage(row.original.interestRate),
-      },
-      {
-        id: 'unpaid',
-        accessorKey: 'unpaid',
-        header: t('columns.unpaid'),
-        meta: { style: { textAlign: 'right' } },
-        cell: ({ row }) => <div className="text-right tabular-nums">{formatCurrency(row.original.unpaid)}</div>,
-      },
-    ],
-    [t],
+  const columns = useMemo<ColumnDef<YearlyInterestLoanRow>[]>(() => {
+    const loanColumns = buildAllLoanTableColumns(project, tLoans, tLenders, commonT, locale, (key, values) =>
+      tDuration(key, values),
+    ) as ColumnDef<YearlyInterestLoanRow>[];
+    const unpaidColumn = withColumnGroup(
+      [createCurrencyColumn<YearlyInterestLoanRow>('unpaidYearlyInterest', 'columns.unpaid', t, locale)],
+      { key: 'loan', order: 0 },
+    )[0];
+    if (!unpaidColumn) return loanColumns;
+
+    const withUnpaid = [...loanColumns];
+    const paymentTypeIndex = withUnpaid.findIndex((column) => columnId(column) === 'interestPaymentType');
+    withUnpaid.splice(paymentTypeIndex === -1 ? withUnpaid.length : paymentTypeIndex + 1, 0, unpaidColumn);
+
+    const priority = new Set<string>(VISIBLE_COLUMN_IDS);
+    const leading = VISIBLE_COLUMN_IDS.map((id) => withUnpaid.find((column) => columnId(column) === id)).filter(
+      (column): column is ColumnDef<YearlyInterestLoanRow> => column !== undefined,
+    );
+    const rest = withUnpaid.filter((column) => !priority.has(columnId(column)));
+    return [...leading, ...rest];
+  }, [project, tLoans, tLenders, commonT, locale, tDuration, t]);
+
+  const defaultColumnVisibility = useMemo(() => {
+    const visible = new Set<string>(VISIBLE_COLUMN_IDS);
+    return Object.fromEntries(columns.map((column) => [columnId(column), visible.has(columnId(column))]));
+  }, [columns]);
+
+  const columnFilters = useMemo(
+    () => ({
+      ...buildLoanTableColumnFilters(project, tLoans, tLenders, commonT),
+      unpaidYearlyInterest: { type: 'number' as const, label: t('columns.unpaid') },
+    }),
+    [project, tLoans, tLenders, commonT, t],
   );
 
   const bulkActions: BulkAction[] = [
@@ -84,58 +141,55 @@ export function YearlyInterestTab() {
       label: t('assistant'),
       icon: <Wand2 className="h-4 w-4" />,
       onClick: (ids) => {
-        setWizardLoans(loans.filter((loan) => ids.includes(loan.id)));
+        setWizardLoans(loans.filter((loan) => ids.includes(loan.id)).map(toPayoutView));
       },
     },
   ];
 
-  if (!projectId) return null;
+  const payoutCount = query.data?.payoutCount ?? 0;
 
   return (
     <div className="space-y-4">
-      {query.isLoading ? <p className="text-sm text-muted-foreground">{t('loading')}</p> : null}
-      {query.isError ? <p className="text-sm text-destructive">{t('error')}</p> : null}
-
+      <p className="text-sm text-muted-foreground">{t('description')}</p>
       <DataTable
         columns={columns}
         data={loans}
         bulkActions={bulkActions}
         getRowId={(row) => row.id}
-        showFilter={false}
-        showColumnVisibility={false}
-        toolbarAlign="start"
+        columnFilters={columnFilters}
+        defaultColumnVisibility={defaultColumnVisibility}
+        defaultColumnFilters={YEARLY_INTEREST_DEFAULT_FILTERS}
+        defaultFiltersExpanded
+        showExport
+        exportPrefix="Zinsauszahlung"
+        isLoading={query.isPending && !query.data}
+        emptyMessage={query.isError ? t('error') : t('empty')}
+        toolbarAlign="center"
         toolbarContent={
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{t('year')}</span>
-              <Select value={String(year)} onValueChange={(value) => void setYear(Number(value))}>
-                <SelectTrigger className="w-28">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((value) => (
-                    <SelectItem key={value} value={String(value)}>
-                      {value}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <p className="text-sm text-muted-foreground">{t('description')}</p>
-            {query.data && query.data.payoutCount > 0 ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => router.push(buildYearlyInterestPayoutHref(projectId, year))}
-              >
-                {t('openPayouts', { year })}
-              </Button>
-            ) : null}
+          <div className="flex items-center gap-2">
+            <Select value={String(year)} onValueChange={(value) => void setYear(Number(value))}>
+              <SelectTrigger className="h-9 w-28">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((value) => (
+                  <SelectItem key={value} value={String(value)}>
+                    {value}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={payoutCount === 0}
+              onClick={() => router.push(buildYearlyInterestPayoutHref(projectId, year))}
+            >
+              {t('payouts', { count: payoutCount })}
+            </Button>
           </div>
         }
       />
-      {query.isSuccess && loans.length === 0 ? <p className="text-sm text-muted-foreground">{t('empty')}</p> : null}
 
       {wizardLoans && query.data ? (
         <YearlyInterestWizard

@@ -1,4 +1,4 @@
-import { InterestPaymentType, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import moment from 'moment';
 
 import { calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
@@ -23,10 +23,6 @@ export function transactionCalendarYear(date: Date): number {
  * `interestPaid` is the sum of INTERESTPAYMENT amounts, which are stored negative.
  */
 export function unpaidYearlyInterest(loan: LoanWithRelations, year: number): number {
-  if (loan.interestPaymentType !== InterestPaymentType.YEARLY) {
-    return 0;
-  }
-
   const perYear = calculateLoanPerYear(loan, payoutAsOfDate(year));
   const entry = perYear.find((row) => row.year === year);
   if (!entry) {

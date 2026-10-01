@@ -1,13 +1,16 @@
 'use server';
 
-import { InterestPaymentType, TransactionType } from '@prisma/client';
+import { TransactionType } from '@prisma/client';
 import moment from 'moment';
 import { z } from 'zod';
 
+import { calculateLoanFields } from '@/lib/calculations/loan-calculations';
 import { db } from '@/lib/db';
+import { loadProjectLoans } from '@/lib/loans/load-project-loans';
 import { projectSepaGaps } from '@/lib/processes/payout-groups';
 import { unpaidYearlyInterest } from '@/lib/processes/yearly-interest';
-import { getLenderName } from '@/lib/utils';
+import { sanitizeLoan } from '@/lib/sanitation/sanitize-loan';
+import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { projectAction } from '@/lib/utils/safe-action';
 import type { LoanWithRelations } from '@/types/loans';
 
@@ -22,7 +25,7 @@ export const getYearlyInterestPayoutAction = projectAction
     const project = await db.project.findUnique({
       where: { id: projectId },
       select: {
-        configuration: { select: { name: true, iban: true, bic: true, interestMethod: true } },
+        configuration: { select: { name: true, iban: true, bic: true } },
       },
     });
 
@@ -30,16 +33,7 @@ export const getYearlyInterestPayoutAction = projectAction
       throw new Error('error.project.notFound');
     }
 
-    const loans = await db.loan.findMany({
-      where: {
-        interestPaymentType: InterestPaymentType.YEARLY,
-        lender: { projectId },
-      },
-      include: {
-        lender: true,
-        transactions: true,
-      },
-    });
+    const loans = await loadProjectLoans(projectId);
 
     let minYear = year;
     let payoutCount = 0;
@@ -55,45 +49,19 @@ export const getYearlyInterestPayoutAction = projectAction
         }
       }
 
-      const forCalculation = {
+      const parsed = parseAdditionalFields({
         ...loan,
-        notes: [],
-        files: [],
-        lender: {
-          ...loan.lender,
-          notes: [],
-          files: [],
-          project: {
-            configuration: {
-              interestMethod: project.configuration.interestMethod,
-            },
-          },
-        },
-      } as unknown as LoanWithRelations;
-
-      const unpaid = unpaidYearlyInterest(forCalculation, year);
+        lender: parseAdditionalFields(loan.lender),
+      });
+      const unpaid = unpaidYearlyInterest(parsed as unknown as LoanWithRelations, year);
       if (unpaid <= 0) {
         return [];
       }
 
       return [
         {
-          id: loan.id,
-          loanNumber: loan.loanNumber,
-          interestRate: loan.interestRate,
-          unpaid,
-          lender: {
-            id: loan.lender.id,
-            name: getLenderName(loan.lender),
-            email: loan.lender.email,
-            iban: loan.lender.iban,
-            bic: loan.lender.bic,
-            street: loan.lender.street,
-            addon: loan.lender.addon,
-            zip: loan.lender.zip,
-            place: loan.lender.place,
-            country: loan.lender.country,
-          },
+          ...sanitizeLoan(calculateLoanFields(parsed)),
+          unpaidYearlyInterest: unpaid,
         },
       ];
     });

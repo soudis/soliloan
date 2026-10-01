@@ -1,6 +1,6 @@
 'use server';
 
-import { Entity, InterestPaymentType, Operation, PaymentType, TransactionType } from '@prisma/client';
+import { Entity, Operation, PaymentType, TransactionType } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
@@ -66,7 +66,6 @@ export const createYearlyInterestPayoutsAction = projectAction
     const loadedLoans = await db.loan.findMany({
       where: {
         id: { in: loanIds },
-        interestPaymentType: InterestPaymentType.YEARLY,
         lender: { projectId },
       },
       include: { lender: true, transactions: true },
