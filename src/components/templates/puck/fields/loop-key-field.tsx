@@ -60,7 +60,7 @@ export function LoopKeyField({
           }
           patch({ loopKey: nextKey });
         }}
-        className="w-full rounded border bg-white px-2 py-1.5 text-sm"
+        className="w-full rounded border bg-background px-2 py-1.5 text-sm text-foreground"
       >
         <option value="">{t(emptyOptionKey)}</option>
         {selectableLoops.map((loop) => (

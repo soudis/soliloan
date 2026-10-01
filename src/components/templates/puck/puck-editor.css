@@ -29,3 +29,83 @@
   -webkit-user-select: text !important;
   cursor: text;
 }
+
+/* Sidebar chrome follows the app theme. Puck's own surfaces inherit these tokens. */
+.template-puck-sidebar {
+  color-scheme: light;
+}
+
+.template-puck-sidebar
+  :where(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="file"]):not([type="range"]),
+    select,
+    textarea
+  ) {
+  background-color: var(--input);
+  color: var(--foreground);
+}
+
+.template-puck-sidebar :where(select option, select optgroup) {
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+}
+
+.dark .template-puck-sidebar {
+  color-scheme: dark;
+  --puck-color-surface: var(--card);
+  --puck-color-surface-muted: var(--muted);
+  --puck-color-surface-subtle: var(--background);
+  --puck-color-surface-inverse: var(--foreground);
+  --puck-color-border: color-mix(in oklch, var(--border) 28%, transparent);
+  --puck-color-border-hover: var(--border);
+  --puck-color-border-muted: color-mix(in oklch, var(--border) 18%, transparent);
+  --puck-color-text: var(--foreground);
+  --puck-color-text-secondary: var(--muted-foreground);
+  --puck-color-text-muted: var(--muted-foreground);
+  --puck-color-text-subtle: var(--muted-foreground);
+  --puck-color-text-inverse: var(--background);
+  --puck-color-interactive: var(--foreground);
+  --puck-color-interactive-hover: var(--foreground);
+  --puck-color-interactive-soft: var(--muted);
+  --puck-color-interactive-soft-hover: color-mix(in oklch, var(--foreground) 12%, var(--card));
+  --puck-color-interactive-neutral-hover: color-mix(in oklch, var(--foreground) 12%, var(--card));
+}
+
+/*
+ * The edited page stays in the light palette even when the app is dark.
+ * Tailwind utilities read the inherited --color-* values, so both the raw
+ * tokens and the theme aliases are pinned here.
+ */
+.template-document-surface {
+  color-scheme: light;
+  --background: oklch(0.966 0.0053 106.4982);
+  --foreground: oklch(0.1638 0 0);
+  --card: oklch(0.997 0 0);
+  --card-foreground: oklch(0.1638 0 0);
+  --popover: oklch(0.997 0 0);
+  --popover-foreground: oklch(0.1638 0 0);
+  --primary: oklch(0.1638 0 0);
+  --primary-foreground: oklch(0.997 0 0);
+  --muted: oklch(0.9393 0.0097 72.6591);
+  --muted-foreground: oklch(0.4459 0 0);
+  --accent: oklch(0.9433 0.1284 100.8403);
+  --accent-foreground: oklch(0.1638 0 0);
+  --border: oklch(0.1448 0 0);
+  --input: oklch(1 0 0);
+  --ring: oklch(0.1448 0 0);
+  --color-background: oklch(0.966 0.0053 106.4982);
+  --color-foreground: oklch(0.1638 0 0);
+  --color-card: oklch(0.997 0 0);
+  --color-card-foreground: oklch(0.1638 0 0);
+  --color-popover: oklch(0.997 0 0);
+  --color-popover-foreground: oklch(0.1638 0 0);
+  --color-primary: oklch(0.1638 0 0);
+  --color-primary-foreground: oklch(0.997 0 0);
+  --color-muted: oklch(0.9393 0.0097 72.6591);
+  --color-muted-foreground: oklch(0.4459 0 0);
+  --color-accent: oklch(0.9433 0.1284 100.8403);
+  --color-accent-foreground: oklch(0.1638 0 0);
+  --color-border: oklch(0.1448 0 0);
+  --color-input: oklch(1 0 0);
+  --color-ring: oklch(0.1448 0 0);
+}

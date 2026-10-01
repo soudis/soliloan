@@ -31,12 +31,12 @@
     "amount": "Gesamtbetrag",
     "interestRate": "Durchschn. Zinssatz",
     "balanceInterestRate": "Gewichteter Zinssatz",
-    "totalLoans": "Anzahl Darlehen",
-    "activeLoans": "Aktive Darlehen"
+    "totalLoans": "Anzahl Kredite",
+    "activeLoans": "Aktive Kredite"
   },
   "loan": {
     "loanNumber": "Kreditnummer",
-    "amount": "Darlehensbetrag",
+    "amount": "Kreditbetrag",
     "interestRate": "Zinssatz",
     "signDate": "Vertragsdatum (kurz)",
     "signDateLong": "Vertragsdatum (lang)",
@@ -167,11 +167,11 @@
     "slug": "Projekt-ID"
   },
   "loops": {
-    "loans": "Für jedes Darlehen",
+    "loans": "Für jeden Kredit",
     "transactions": "Für jede Transaktion",
     "transactionsYearly": "Für jede Transaktion (Jahr)",
     "notes": "Für jede Notiz",
-    "lenders": "Für jeden Darlehensgeber",
+    "lenders": "Für jede*n Kreditgeber*in",
     "threads": "Für jedes ungelesene Thema",
     "moreThreads": "Weitere Themen"
   },
@@ -182,11 +182,11 @@
     "thread": "Thema",
     "board": "Forum",
     "moreThread": "Weitere Themen",
-    "lender": "Darlehensgeber",
-    "loan": "Darlehen",
+    "lender": "Kreditgeber*in",
+    "loan": "Kredit",
     "latestTransaction": "Letzte Transaktion",
     "lenderYearly": "Jährliche Daten (Gesamt)",
-    "loanYearly": "Jährliche Daten (Darlehen)",
+    "loanYearly": "Jährliche Daten (Kredit)",
     "transaction": "Transaktion",
     "note": "Notiz",
     "platform": "Plattform",

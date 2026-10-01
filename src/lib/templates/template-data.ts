@@ -14,6 +14,17 @@ import {
 } from '@/lib/prisma/notes-files-relations';
 import { getSoliloanProjectName } from '@/lib/project-name';
 import { withSystemMergeData } from '@/lib/templates/system-merge-links';
+import { withTemplateRaw } from '@/lib/templates/template-condition';
+import {
+  type RawLoanDates,
+  rawLenderFields,
+  rawLoanFields,
+  rawNoteScope,
+  rawTransactionFields,
+  rawTransactionScope,
+  rawYearlyFields,
+  readAdditionalFieldConfigs,
+} from '@/lib/templates/template-raw-scope';
 import { formatCurrency, formatDateLong, formatDateShort, formatPercentage, getLenderName } from '@/lib/utils';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { transactionSorter } from '@/lib/utils/sorters';
@@ -81,7 +92,9 @@ function paymentTypeLabel(paymentType: string | undefined, locale: string): stri
 const lenderTemplateInclude = {
   project: {
     include: {
-      configuration: { select: { interestMethod: true } },
+      configuration: {
+        select: { interestMethod: true, lenderAdditionalFields: true, loanAdditionalFields: true },
+      },
     },
   },
   loans: {
@@ -109,7 +122,9 @@ const loanTemplateInclude = {
     include: {
       project: {
         include: {
-          configuration: { select: { interestMethod: true } },
+          configuration: {
+            select: { interestMethod: true, lenderAdditionalFields: true, loanAdditionalFields: true },
+          },
         },
       },
       loans: {
@@ -143,8 +158,7 @@ function getPlatformData() {
   };
 }
 
-function getMiscMergeTagValues(locale: string) {
-  const now = new Date();
+function getMiscMergeTagValues(now: Date, locale: string) {
   return {
     dateShort: formatDateShort(now, locale),
     dateLong: formatDateLong(now, locale),
@@ -381,6 +395,114 @@ function buildTransactionsYearlyList(
   return [opening, ...middle, closing];
 }
 
+function rawYearlyBoundaryRow(position: 'opening' | 'closing', balance: number, year: number) {
+  const date = position === 'opening' ? new Date(year, 0, 1) : new Date(year, 11, 31);
+  const typeKey = position === 'opening' ? 'YEAR_OPENING_BALANCE' : 'YEAR_CLOSING_BALANCE';
+  return rawTransactionScope({
+    type: typeKey,
+    amount: balance,
+    date,
+    paymentType: '',
+  });
+}
+
+function buildRawTransactionsYearlyList(loan: TemplateLoanRecord, year: number, yearRow: YearlyRow | undefined) {
+  const begin = yearRow ? yearRow.begin.toNumber() : 0;
+  const end = yearRow ? yearRow.end.toNumber() : 0;
+  const opening = rawYearlyBoundaryRow('opening', begin, year);
+  const closing = rawYearlyBoundaryRow('closing', end, year);
+  const inYear = [...(loan.transactions ?? [])]
+    .filter((transaction) => new Date(transaction.date as Date | string).getFullYear() === year)
+    .sort((a, b) => transactionSorter(a as Transaction, b as Transaction));
+  const middle = inYear.map((transaction) => rawTransactionScope(transaction));
+  return [opening, ...middle, closing];
+}
+
+function loanRawDates(loan: TemplateLoanRecord): RawLoanDates {
+  const resolvedFirstDepositDate = loan.isSavingsContract
+    ? resolveSavingsFirstDepositDate(loan.savingsFirstDepositDate, loan.signDate)
+    : null;
+  const resolvedLastDepositDate = loan.isSavingsContract
+    ? resolveSavingsLastDepositDate(
+        loan.savingsFirstDepositDate,
+        loan.savingsLastDepositDate,
+        loan.savingsDepositCount,
+        loan.signDate,
+      )
+    : null;
+  return {
+    signDate: loan.signDate,
+    endDate: loan.endDate,
+    terminationDate: loan.terminationDate,
+    savingsFirstDepositDate: resolvedFirstDepositDate,
+    savingsLastDepositDate: resolvedLastDepositDate,
+    repaidDate: loan.repaidDate,
+    repayDate: loan.repayDate,
+  };
+}
+
+function additionalConfigsFrom(source: unknown): {
+  lender: ReturnType<typeof readAdditionalFieldConfigs>;
+  loan: ReturnType<typeof readAdditionalFieldConfigs>;
+} {
+  const project = source && typeof source === 'object' && 'project' in source ? source.project : undefined;
+  const configuration =
+    project && typeof project === 'object' && project && 'configuration' in project ? project.configuration : undefined;
+  const config =
+    configuration && typeof configuration === 'object' && configuration
+      ? (configuration as { lenderAdditionalFields?: unknown; loanAdditionalFields?: unknown })
+      : {};
+  return {
+    lender: readAdditionalFieldConfigs(config.lenderAdditionalFields),
+    loan: readAdditionalFieldConfigs(config.loanAdditionalFields),
+  };
+}
+
+function rawLoanLoopItem(loan: TemplateLoanRecord, loanConfigs: ReturnType<typeof readAdditionalFieldConfigs>) {
+  return {
+    loan: rawLoanFields(loan, loanRawDates(loan), loanConfigs),
+    transactions: (loan.transactions ?? []).map((transaction) => rawTransactionScope(transaction)),
+    notes: (loan.notes ?? []).map((note) => rawNoteScope(note)),
+  };
+}
+
+function buildLenderRaw(
+  lender: TemplateLenderRecord,
+  configs: {
+    lender: ReturnType<typeof readAdditionalFieldConfigs>;
+    loan: ReturnType<typeof readAdditionalFieldConfigs>;
+  },
+) {
+  return {
+    lender: rawLenderFields(lender, configs.lender),
+    loans: (lender.loans ?? []).map((loan) => rawLoanLoopItem(loan, configs.loan)),
+    notes: (lender.notes ?? []).map((note) => rawNoteScope(note)),
+  };
+}
+
+function withMergeScopes(
+  now: Date,
+  locale: string,
+  config: Record<string, string>,
+  display: Record<string, unknown>,
+  raw: Record<string, unknown>,
+) {
+  return withTemplateRaw(
+    withSystemMergeData({
+      platform: getPlatformData(),
+      config,
+      misc: getMiscMergeTagValues(now, locale),
+      ...display,
+    }),
+    {
+      platform: getPlatformData(),
+      config,
+      misc: { dateShort: now },
+      ...raw,
+    },
+  );
+}
+
 function savingsRateTypeLabel(rateType: string | null | undefined) {
   if (rateType === 'FIXED') return 'Feste Rate';
   if (rateType === 'VARYING') return 'Variable Raten';
@@ -587,6 +709,7 @@ function buildLenderYearlyTemplateData(lender: TemplateLenderRecord, year: numbe
     interestError: 0,
   };
 
+  const configs = additionalConfigsFrom(lender);
   /** All loans appear in `{{#loans}}` / PDF loops; `loanYearly` is per-year (zeros if no row). */
   const loans = (lender.loans ?? []).map((loan: TemplateLoanRecord) => {
     let yearRow: YearlyRow | undefined;
@@ -607,14 +730,32 @@ function buildLenderYearlyTemplateData(lender: TemplateLenderRecord, year: numbe
       // keep zeros for this loan
     }
 
+    const yearlyNumbers = {
+      begin: yearRow ? yearRow.begin.toNumber() : 0,
+      end: yearRow ? yearRow.end.toNumber() : 0,
+      deposits: yearRow ? yearRow.deposits.toNumber() : 0,
+      withdrawals: yearRow ? yearRow.withdrawals.toNumber() : 0,
+      interest: yearRow ? yearRow.interest.toNumber() : 0,
+      interestPaid: yearRow ? yearRow.interestPaid.toNumber() : 0,
+      notReclaimed: yearRow ? yearRow.notReclaimed.toNumber() : 0,
+      interestError: yearRow ? yearRow.interestError.toNumber() : 0,
+    };
+
     return {
-      loan: formatLoanFields(loan, locale),
-      loanYearly: formatYearlyScopeFields(year, yearRow, locale),
-      transactions: Array.isArray(loan.transactions)
-        ? loan.transactions.map((transaction: TemplateTransactionRecord) => formatTransaction(transaction, locale))
-        : [],
-      transactionsYearly: buildTransactionsYearlyList(loan, year, yearRow, locale),
-      notes: Array.isArray(loan.notes) ? loan.notes.map((note: TemplateNoteRecord) => formatNote(note, locale)) : [],
+      display: {
+        loan: formatLoanFields(loan, locale),
+        loanYearly: formatYearlyScopeFields(year, yearRow, locale),
+        transactions: Array.isArray(loan.transactions)
+          ? loan.transactions.map((transaction: TemplateTransactionRecord) => formatTransaction(transaction, locale))
+          : [],
+        transactionsYearly: buildTransactionsYearlyList(loan, year, yearRow, locale),
+        notes: Array.isArray(loan.notes) ? loan.notes.map((note: TemplateNoteRecord) => formatNote(note, locale)) : [],
+      },
+      raw: {
+        ...rawLoanLoopItem(loan, configs.loan),
+        loanYearly: rawYearlyFields(year, yearlyNumbers),
+        transactionsYearly: buildRawTransactionsYearlyList(loan, year, yearRow),
+      },
     };
   });
 
@@ -636,11 +777,30 @@ function buildLenderYearlyTemplateData(lender: TemplateLenderRecord, year: numbe
     ),
   };
 
+  const lenderYearlyRaw = rawYearlyFields(year, {
+    begin: agg.begin,
+    end: agg.end,
+    deposits: agg.deposits,
+    withdrawals: agg.withdrawals,
+    interest: agg.interest,
+    interestPaid: agg.interestPaid,
+    notReclaimed: agg.notReclaimed,
+    interestError: agg.interestError,
+  });
+
   return {
-    lender: formatLenderFields(lender, locale),
-    lenderYearly,
-    loans,
-    notes: (lender.notes ?? []).map((note: TemplateNoteRecord) => formatNote(note, locale)),
+    display: {
+      lender: formatLenderFields(lender, locale),
+      lenderYearly,
+      loans: loans.map((item) => item.display),
+      notes: (lender.notes ?? []).map((note: TemplateNoteRecord) => formatNote(note, locale)),
+    },
+    raw: {
+      lender: rawLenderFields(lender, configs.lender),
+      lenderYearly: lenderYearlyRaw,
+      loans: loans.map((item) => item.raw),
+      notes: (lender.notes ?? []).map((note) => rawNoteScope(note)),
+    },
   };
 }
 
@@ -653,6 +813,8 @@ async function getProjectTemplateData(projectId: string, locale: string) {
       configuration: {
         select: {
           name: true,
+          lenderAdditionalFields: true,
+          loanAdditionalFields: true,
         },
       },
       lenders: {
@@ -663,7 +825,12 @@ async function getProjectTemplateData(projectId: string, locale: string) {
 
   if (!project) return null;
 
+  const now = new Date();
   const config = await getConfigData(project.id);
+  const projectConfigs = {
+    lender: readAdditionalFieldConfigs(project.configuration?.lenderAdditionalFields),
+    loan: readAdditionalFieldConfigs(project.configuration?.loanAdditionalFields),
+  };
   const lenders = project.lenders.map((lender) =>
     calculateLenderFields(
       parseAdditionalFields({
@@ -672,17 +839,34 @@ async function getProjectTemplateData(projectId: string, locale: string) {
       }),
     ),
   );
-
-  return withSystemMergeData({
-    platform: getPlatformData(),
-    config,
-    misc: getMiscMergeTagValues(locale),
-    project: {
-      name: project.configuration?.name ?? '',
-      slug: project.slug,
-    },
-    lenders: lenders.map((lender) => buildLenderTemplateData(lender, locale)),
+  const lenderScopes = lenders.map((lender) => {
+    const fromLender = additionalConfigsFrom(lender);
+    const configs = fromLender.lender.length > 0 || fromLender.loan.length > 0 ? fromLender : projectConfigs;
+    return {
+      display: buildLenderTemplateData(lender, locale),
+      raw: buildLenderRaw(lender, configs),
+    };
   });
+
+  return withMergeScopes(
+    now,
+    locale,
+    config,
+    {
+      project: {
+        name: project.configuration?.name ?? '',
+        slug: project.slug,
+      },
+      lenders: lenderScopes.map((scope) => scope.display),
+    },
+    {
+      project: {
+        name: project.configuration?.name ?? '',
+        slug: project.slug,
+      },
+      lenders: lenderScopes.map((scope) => scope.raw),
+    },
+  );
 }
 
 export async function getTemplateData(
@@ -698,15 +882,17 @@ export async function getTemplateData(
     const lender = await getCalculatedLender(recordId);
     if (!lender) return null;
 
+    const now = new Date();
     const resolvedProjectId = projectId || lender.project?.id;
     const config = resolvedProjectId ? await getConfigData(resolvedProjectId) : {};
 
-    return withSystemMergeData({
-      platform: getPlatformData(),
+    return withMergeScopes(
+      now,
+      locale,
       config,
-      misc: getMiscMergeTagValues(locale),
-      ...buildLenderTemplateData(lender, locale),
-    });
+      buildLenderTemplateData(lender, locale),
+      buildLenderRaw(lender, additionalConfigsFrom(lender)),
+    );
   }
 
   if (dataset === 'LOAN') {
@@ -715,25 +901,38 @@ export async function getTemplateData(
     const loan = await getCalculatedLoan(recordId);
     if (!loan) return null;
 
+    const now = new Date();
     const resolvedProjectId = projectId || loan.lender.project?.id;
     const config = resolvedProjectId ? await getConfigData(resolvedProjectId) : {};
     const sortedTransactions = [...(loan.transactions ?? [])].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
-    const latest = sortedTransactions[0];
+    const latest = sortedTransactions[0] as TemplateTransactionRecord | undefined;
+    const configs = additionalConfigsFrom(loan.lender);
 
-    return withSystemMergeData({
-      platform: getPlatformData(),
+    return withMergeScopes(
+      now,
+      locale,
       config,
-      misc: getMiscMergeTagValues(locale),
-      lender: formatLenderFields(loan.lender, locale),
-      loan: formatLoanFields(loan, locale),
-      latestTransaction: latest
-        ? formatTransactionMergeFields(latest as TemplateTransactionRecord, locale)
-        : { type: '', amount: '', date: '', dateLong: '', paymentType: '' },
-      transactions: (loan.transactions ?? []).map((transaction) => formatTransaction(transaction, locale)),
-      notes: (loan.notes ?? []).map((note) => formatNote(note, locale)),
-    });
+      {
+        lender: formatLenderFields(loan.lender, locale),
+        loan: formatLoanFields(loan, locale),
+        latestTransaction: latest
+          ? formatTransactionMergeFields(latest, locale)
+          : { type: '', amount: '', date: '', dateLong: '', paymentType: '' },
+        transactions: (loan.transactions ?? []).map((transaction) => formatTransaction(transaction, locale)),
+        notes: (loan.notes ?? []).map((note) => formatNote(note, locale)),
+      },
+      {
+        lender: rawLenderFields(loan.lender, configs.lender),
+        loan: rawLoanFields(loan, loanRawDates(loan), configs.loan),
+        latestTransaction: latest
+          ? rawTransactionFields(latest)
+          : { type: '', amount: null, date: null, paymentType: '' },
+        transactions: (loan.transactions ?? []).map((transaction) => rawTransactionScope(transaction)),
+        notes: (loan.notes ?? []).map((note) => rawNoteScope(note)),
+      },
+    );
   }
 
   if (dataset === 'TRANSACTION') {
@@ -751,19 +950,31 @@ export async function getTemplateData(
     const specificTx = (loan.transactions ?? []).find((t) => (t as { id?: string }).id === recordId);
     if (!specificTx) return null;
 
+    const now = new Date();
     const resolvedProjectId = projectId || loan.lender.project?.id;
     const config = resolvedProjectId ? await getConfigData(resolvedProjectId) : {};
+    const configs = additionalConfigsFrom(loan.lender);
+    const transaction = specificTx as TemplateTransactionRecord;
 
-    return withSystemMergeData({
-      platform: getPlatformData(),
+    return withMergeScopes(
+      now,
+      locale,
       config,
-      misc: getMiscMergeTagValues(locale),
-      lender: formatLenderFields(loan.lender, locale),
-      loan: formatLoanFields(loan, locale),
-      transaction: formatTransactionMergeFields(specificTx as TemplateTransactionRecord, locale),
-      transactions: (loan.transactions ?? []).map((transaction) => formatTransaction(transaction, locale)),
-      notes: (loan.notes ?? []).map((note) => formatNote(note, locale)),
-    });
+      {
+        lender: formatLenderFields(loan.lender, locale),
+        loan: formatLoanFields(loan, locale),
+        transaction: formatTransactionMergeFields(transaction, locale),
+        transactions: (loan.transactions ?? []).map((item) => formatTransaction(item, locale)),
+        notes: (loan.notes ?? []).map((note) => formatNote(note, locale)),
+      },
+      {
+        lender: rawLenderFields(loan.lender, configs.lender),
+        loan: rawLoanFields(loan, loanRawDates(loan), configs.loan),
+        transaction: rawTransactionFields(transaction),
+        transactions: (loan.transactions ?? []).map((item) => rawTransactionScope(item)),
+        notes: (loan.notes ?? []).map((note) => rawNoteScope(note)),
+      },
+    );
   }
 
   if (dataset === 'USER') {
@@ -775,15 +986,10 @@ export async function getTemplateData(
       : { name: 'Anna Beispiel', email: 'anna@example.com' };
     if (!user) return null;
 
-    return withSystemMergeData({
-      platform: getPlatformData(),
-      misc: getMiscMergeTagValues(locale),
-      user: {
-        name: user.name ?? '',
-        email: user.email ?? '',
-      },
-      ...sampleForumDigestMergeData(locale),
-    });
+    const now = new Date();
+    const digest = sampleForumDigestMergeData(locale);
+    const userFields = { name: user.name ?? '', email: user.email ?? '' };
+    return withMergeScopes(now, locale, {}, { user: userFields, ...digest }, { user: userFields, ...digest });
   }
 
   if (dataset === 'PROJECT' || dataset === 'PROJECT_YEARLY') {
@@ -799,18 +1005,15 @@ export async function getTemplateData(
     const lender = await getCalculatedLender(recordId);
     if (!lender) return null;
 
+    const now = new Date();
     const resolvedProjectId = projectId || lender.project?.id;
     const config = resolvedProjectId ? await getConfigData(resolvedProjectId) : {};
 
     const lastCompleteYear = new Date().getFullYear() - 1;
     const requestedYear = options?.year ?? lastCompleteYear;
     if (requestedYear > lastCompleteYear) return null;
-    return withSystemMergeData({
-      platform: getPlatformData(),
-      config,
-      misc: getMiscMergeTagValues(locale),
-      ...buildLenderYearlyTemplateData(lender, requestedYear, locale),
-    });
+    const yearly = buildLenderYearlyTemplateData(lender, requestedYear, locale);
+    return withMergeScopes(now, locale, config, yearly.display, yearly.raw);
   }
 
   return null;

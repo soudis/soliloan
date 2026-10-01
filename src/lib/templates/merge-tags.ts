@@ -462,9 +462,9 @@ export function getDatasetDisplayName(dataset: TemplateDataset): string {
     case 'USER':
       return 'Benutzer';
     case 'LENDER':
-      return 'Darlehensgeber';
+      return 'Kreditgeber*in';
     case 'LOAN':
-      return 'Darlehen';
+      return 'Kredit';
     case 'TRANSACTION':
       return 'Transaktion';
     case 'PROJECT':

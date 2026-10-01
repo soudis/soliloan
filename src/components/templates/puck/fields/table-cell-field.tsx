@@ -174,7 +174,7 @@ export function TableCellStyleField() {
               setDropdownOpen(true);
             }
           }}
-          className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-3 py-2 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <PlusCircle className="h-3 w-3" />
           {tText('insertPlaceholder')}

@@ -6,6 +6,7 @@ import { BlockPaddingFields } from '../../block-padding-fields';
 import { BorderField } from '../fields/border-field';
 import { ColumnWidthsField } from '../fields/column-widths-field';
 import { LoopKeyField } from '../fields/loop-key-field';
+import { ShowIfField } from '../fields/show-if-field';
 import { TableCellStyleField } from '../fields/table-cell-field';
 import { resizeTableArrays, type TableCellStyle, type TextAlign } from '../table-model';
 import { usePatchSelectedProps, useSelectedRecord } from '../use-puck-selected';
@@ -67,6 +68,7 @@ export function TableSettings() {
 
         <TabsContent value="data" className="mt-3 space-y-4">
           <LoopKeyField translationPrefix="templates.editor.components.table" emptyOptionKey="staticTable" />
+          <ShowIfField />
         </TabsContent>
 
         <TabsContent value="structure" className="mt-3 space-y-4">
