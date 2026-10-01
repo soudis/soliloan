@@ -66,7 +66,7 @@ export function SettingsPanel() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-white">
+    <div className="flex min-h-0 flex-1 flex-col bg-background text-foreground">
       <div className="flex shrink-0 items-center justify-between border-b bg-muted px-4 py-3">
         <h3 className="text-sm font-semibold text-foreground">
           {titleLabel} {t('title')}
@@ -81,7 +81,7 @@ export function SettingsPanel() {
           <div className="mt-4 border-t p-4">
             <button
               type="button"
-              className="w-full rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
+              className="w-full rounded-md bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/15"
               onClick={deleteSelected}
             >
               {t('delete')}

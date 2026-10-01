@@ -29,6 +29,7 @@ import { TableCellStyleField } from '@/components/templates/puck/fields/table-ce
 import { TemplateConditionMenuControl } from '@/components/templates/puck/fields/template-condition-menu';
 import { resizeTableArrays, type TableCellStyle, type TextAlign } from '@/components/templates/puck/table-model';
 import { TemplateCondition as TemplateConditionNode } from '@/components/templates/user-components/tiptap/template-condition-extension';
+import { paddingPropsToReactStyle } from '@/lib/templates/padding-utils';
 import {
   type BorderFieldProps,
   DEFAULT_BORDER,
@@ -79,7 +80,8 @@ export type TemplateComponentProps = {
     fontSize: number;
     color: string;
     textAlign: TextAlign;
-  } & DisplayNameProps &
+  } & PaddingProps &
+    DisplayNameProps &
     ShowIfProps;
   Button: {
     text: string;
@@ -89,14 +91,16 @@ export type TemplateComponentProps = {
     useSystemUrl: boolean;
     systemUrlKey: string;
     settings?: string;
-  } & DisplayNameProps &
+  } & PaddingProps &
+    DisplayNameProps &
     ShowIfProps;
   Image: {
     src: string;
     width: string;
     useLogoSource: boolean;
     source?: string;
-  } & DisplayNameProps &
+  } & PaddingProps &
+    DisplayNameProps &
     ShowIfProps;
   Table: {
     loopKey: string;
@@ -341,9 +345,10 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
         defaultProps: {
           displayName: '',
           text: `<p>${t('components.text.defaultText')}</p>`,
-          fontSize: 16,
+          fontSize: isDocument ? 13 : 16,
           color: '#000000',
           textAlign: 'left',
+          padding: 0,
           showIf: [],
         },
         render: (props: ComponentProps<typeof TextBlock> & ShowIfProps) => (
@@ -368,6 +373,7 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
           color: '#ffffff',
           useSystemUrl: false,
           systemUrlKey: '',
+          padding: 0,
           showIf: [],
         },
         render: ({
@@ -378,24 +384,36 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
           useSystemUrl,
           systemUrlKey,
           showIf,
+          padding,
+          paddingTop,
+          paddingRight,
+          paddingBottom,
+          paddingLeft,
         }: TemplateComponentProps['Button']) => (
           <WithConditionBadge showIf={showIf}>
-            <a
-              href={useSystemUrl && systemUrlKey ? `{{system.${systemUrlKey}}}` : url}
-              onClick={(event) => event.preventDefault()}
+            <span
               style={{
                 display: 'inline-block',
-                margin: '8px 0',
-                padding: '10px 20px',
-                background,
-                color,
-                textDecoration: 'none',
-                borderRadius: 4,
-                fontWeight: 'bold',
+                ...paddingPropsToReactStyle({ padding, paddingTop, paddingRight, paddingBottom, paddingLeft }),
               }}
             >
-              {text}
-            </a>
+              <a
+                href={useSystemUrl && systemUrlKey ? `{{system.${systemUrlKey}}}` : url}
+                onClick={(event) => event.preventDefault()}
+                style={{
+                  display: 'inline-block',
+                  margin: '8px 0',
+                  padding: '10px 20px',
+                  background,
+                  color,
+                  textDecoration: 'none',
+                  borderRadius: 4,
+                  fontWeight: 'bold',
+                }}
+              >
+                {text}
+              </a>
+            </span>
           </WithConditionBadge>
         ),
       },
@@ -411,6 +429,7 @@ export function getTemplateConfig(type: TemplateType, t: EditorTranslator): Temp
           src: '',
           width: '100%',
           useLogoSource: true,
+          padding: 0,
           showIf: [],
         },
         render: (props: ComponentProps<typeof ImageBlock> & ShowIfProps) => (

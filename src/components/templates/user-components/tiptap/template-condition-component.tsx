@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { type PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from 'react';
 
 import { TemplateConditionEditor } from '@/components/templates/conditions/template-condition-editor';
+import { useTemplateConditionSummary } from '@/components/templates/conditions/use-condition-summary';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { decodeConditionPayload, encodeConditionPayload } from '@/lib/templates/template-condition';
 import { buildTemplateConditionFields } from '@/lib/templates/template-condition-fields';
@@ -30,7 +31,9 @@ export function TemplateConditionComponent({ node, editor, getPos, selected, upd
     () => buildTemplateConditionFields(config, ancestorLoops, tCommon, t),
     [ancestorLoops, config, t, tCommon],
   );
-  const label = role === 'else' ? t('else') : role === 'end' ? t('end') : t('if');
+  const condition = decodeConditionPayload(typeof node.attrs.condition === 'string' ? node.attrs.condition : '');
+  const summary = useTemplateConditionSummary(condition);
+  const label = role === 'else' ? t('else') : role === 'end' ? t('end') : summary ? `${t('if')} ${summary}` : t('if');
 
   useEffect(() => {
     if (role !== 'if') return;
@@ -159,7 +162,7 @@ export function TemplateConditionComponent({ node, editor, getPos, selected, upd
           <div className="flex items-start gap-2">
             <div className="min-w-0 flex-1">
               <TemplateConditionEditor
-                value={decodeConditionPayload(typeof node.attrs.condition === 'string' ? node.attrs.condition : '')}
+                value={condition}
                 fields={fields}
                 onChange={(next) => updateAttributes({ condition: encodeConditionPayload(next) })}
               />

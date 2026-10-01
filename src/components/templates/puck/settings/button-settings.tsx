@@ -4,11 +4,13 @@ import { Link2, PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
+import { BlockPaddingFields } from '../../block-padding-fields';
 import { useEditorMetadata } from '../../editor-context';
 import { useMergeTagConfig } from '../../merge-tag-context';
 import { MergeTagDropdown } from '../../merge-tag-dropdown';
 import { ShowIfField } from '../fields/show-if-field';
 import { usePatchSelectedProps, usePuckAncestorLoops, useSelectedRecord } from '../use-puck-selected';
+import { usePaddingAdapter } from './use-padding-adapter';
 
 const SYSTEM_URL_KEYS = [
   'passwordReset',
@@ -38,6 +40,7 @@ export function ButtonSettings() {
   const editorMeta = useEditorMetadata();
   const config = useMergeTagConfig();
   const patch = usePatchSelectedProps();
+  const { paddingProps, setProp } = usePaddingAdapter();
   const ancestorLoops = usePuckAncestorLoops(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -71,7 +74,6 @@ export function ButtonSettings() {
 
   return (
     <div className="space-y-4 p-4">
-      <ShowIfField />
       <div className="space-y-2">
         <label className="text-xs font-medium" htmlFor="buttonText">
           {t('buttonText')}
@@ -94,7 +96,7 @@ export function ButtonSettings() {
               setDropdownOpen(true);
             }
           }}
-          className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-primary/90"
+          className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           <PlusCircle className="h-3 w-3" />
           {t('insertPlaceholder')}
@@ -183,6 +185,9 @@ export function ButtonSettings() {
           className="h-8 w-full rounded border p-0"
         />
       </div>
+
+      <BlockPaddingFields idPrefix="button" props={paddingProps} setProp={setProp} />
+      <ShowIfField />
 
       {config && (
         <MergeTagDropdown

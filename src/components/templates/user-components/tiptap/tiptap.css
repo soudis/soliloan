@@ -68,7 +68,7 @@
   cursor: pointer !important;
   font-size: max(12px, 0.92em) !important;
   font-weight: 600 !important;
-  white-space: nowrap !important;
+  white-space: normal !important;
   color: hsl(32 80% 28%) !important;
   border: 1px solid hsl(38 90% 72%) !important;
   border-radius: 999px !important;

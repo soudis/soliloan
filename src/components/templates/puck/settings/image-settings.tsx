@@ -4,9 +4,11 @@ import { Upload, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BlockPaddingFields } from '../../block-padding-fields';
 import { useLogo } from '../../logo-context';
 import { ShowIfField } from '../fields/show-if-field';
 import { usePatchSelectedProps, useSelectedRecord } from '../use-puck-selected';
+import { usePaddingAdapter } from './use-padding-adapter';
 
 export function ImageSettings() {
   const t = useTranslations('templates.editor.components.image');
@@ -14,6 +16,7 @@ export function ImageSettings() {
   const [fileName, setFileName] = useState<string | null>(null);
   const { projectLogo, appLogo } = useLogo();
   const patch = usePatchSelectedProps();
+  const { paddingProps, setProp } = usePaddingAdapter();
   const props = useSelectedRecord();
   const src = String(props.src ?? '');
   const width = String(props.width ?? '100px');
@@ -25,10 +28,10 @@ export function ImageSettings() {
 
   return (
     <div className="space-y-4 p-4">
-      <ShowIfField />
       <Tabs
         defaultValue={defaultTab}
         onValueChange={(value) => {
+          if (value === 'data') return;
           if (value === 'logo' && !useLogoSource) {
             patch({ useLogoSource: true, src: resolvedLogo });
           } else if (value !== 'logo' && useLogoSource) {
@@ -42,6 +45,9 @@ export function ImageSettings() {
           </TabsTrigger>
           <TabsTrigger variant="modern" size="sm" value="logo">
             {t('tabLogo')}
+          </TabsTrigger>
+          <TabsTrigger variant="modern" size="sm" value="data">
+            {t('tabData')}
           </TabsTrigger>
         </TabsList>
 
@@ -84,7 +90,7 @@ export function ImageSettings() {
                       patch({ src: '', useLogoSource: false });
                       if (fileInputRef.current) fileInputRef.current.value = '';
                     }}
-                    className="absolute top-1 right-1 rounded-full bg-white/80 p-1 shadow-sm hover:bg-white"
+                    className="absolute top-1 right-1 rounded-full bg-background/90 p-1 text-foreground shadow-sm hover:bg-background"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -116,6 +122,10 @@ export function ImageSettings() {
             </p>
           </div>
         </TabsContent>
+
+        <TabsContent value="data" className="mt-3">
+          <ShowIfField />
+        </TabsContent>
       </Tabs>
 
       <div className="space-y-2">
@@ -130,6 +140,7 @@ export function ImageSettings() {
           className="w-full rounded border px-2 py-1 font-mono text-sm"
         />
       </div>
+      <BlockPaddingFields idPrefix="image" props={paddingProps} setProp={setProp} />
     </div>
   );
 }

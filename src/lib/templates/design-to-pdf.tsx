@@ -572,7 +572,8 @@ export function renderDesignToPdfParts(
         const raw = processTiptapContent((props?.text as string) || '');
         const withData = processTemplate(raw, scopeData);
         const fontSize = pxToPdfPt(Number(props?.fontSize) || 16);
-        return estimateTextHeight(withData, fontSize, availableWidth);
+        const padSides = resolvePaddingPx(props ?? {});
+        return estimateTextHeight(withData, fontSize, availableWidth) + pxToPdfPt(padSides.top + padSides.bottom);
       }
 
       case 'Image': {
@@ -581,7 +582,8 @@ export function renderDesignToPdfParts(
         const rawSrc = props?.useLogoSource === true ? logoUrl || DEFAULT_APP_LOGO_SRC : (props?.src as string) || '';
         const src = resolveTemplateImageSrc(rawSrc, assetBaseUrl);
         const estimatedHeight = resolvedWidth * resolveImageAspectRatio(props, src);
-        return estimatedHeight + pxToPdfPt(16);
+        const padSides = resolvePaddingPx(props ?? {});
+        return estimatedHeight + pxToPdfPt(16) + pxToPdfPt(padSides.top + padSides.bottom);
       }
 
       case 'Table': {
@@ -806,7 +808,13 @@ export function renderDesignToPdfParts(
         const textAlign = (props?.textAlign as 'left' | 'center' | 'right' | 'justify') || 'left';
         const hasPagePlaceholder =
           context.isHeaderOrFooter && (withData.includes('{{pageNumber}}') || withData.includes('{{totalPages}}'));
-        const style = { fontSize, color, textAlign, fontFamily: 'Inter' as const };
+        const style = {
+          fontSize,
+          color,
+          textAlign,
+          fontFamily: 'Inter' as const,
+          ...paddingPropsToPdfPoints(props ?? {}, pxToPdfPt),
+        };
 
         if (hasPagePlaceholder) {
           return React.createElement(PdfText, {
@@ -853,11 +861,17 @@ export function renderDesignToPdfParts(
         } else if (absoluteWidthPt != null && !(typeof props?.width === 'string' && props.width.trim().endsWith('%'))) {
           imageStyle.height = absoluteWidthPt * aspect;
         }
-        return React.createElement(PdfImage, {
-          key: keyOverride ?? nodeId,
-          src,
-          style: imageStyle,
-        });
+        return React.createElement(
+          View,
+          {
+            key: keyOverride ?? nodeId,
+            style: paddingPropsToPdfPoints(props ?? {}, pxToPdfPt),
+          },
+          React.createElement(PdfImage, {
+            src,
+            style: imageStyle,
+          }),
+        );
       }
 
       case 'Table': {

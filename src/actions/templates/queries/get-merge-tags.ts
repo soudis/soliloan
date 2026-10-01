@@ -170,7 +170,7 @@ export async function getMergeTagConfigAction(
     // Loan notes loop (inside loans)
     loops.push({
       key: 'loanNotes',
-      label: `${t('loops.notes')} (Darlehen)`,
+      label: `${t('loops.notes')} (Kredit)`,
       startTag: '{{#notes}}',
       endTag: '{{/notes}}',
       childPrefix: 'note',

@@ -90,7 +90,7 @@ export function ButtonSettingsField() {
               setDropdownOpen(true);
             }
           }}
-          className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary/90"
+          className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
         >
           <PlusCircle className="h-3 w-3" />
           {t('insertPlaceholder')}

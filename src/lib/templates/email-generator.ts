@@ -274,20 +274,23 @@ const renderTableHtml = (props: Record<string, any>): string => {
 const renderTextHtml = (props: Record<string, any>): string => {
   const finalContent = processTiptapContent(props.text || '');
   const textAlign = props.textAlign || 'left';
-  return `<div style="font-family: ${EMAIL_FONT_FAMILY}; font-size: ${props.fontSize || 16}px; color: ${props.color || '#000000'}; margin: 0; line-height: 1.5; text-align: ${textAlign};">${finalContent}</div>`;
+  const padCss = paddingPropsToCssString(props);
+  return `<div style="font-family: ${EMAIL_FONT_FAMILY}; font-size: ${props.fontSize || 16}px; color: ${props.color || '#000000'}; margin: 0; padding: ${padCss}; line-height: 1.5; text-align: ${textAlign};">${finalContent}</div>`;
 };
 
 const renderButtonHtml = (props: Record<string, any>): string => {
   const btnUrl = props.useSystemUrl && props.systemUrlKey ? `{{system.${props.systemUrlKey}}}` : props.url || '#';
-  return `<div style="margin: 10px 0;"><a href="${btnUrl}" style="font-family: ${EMAIL_FONT_FAMILY}; background-color: ${props.background || '#2563eb'}; color: ${props.color || '#ffffff'}; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold;">${props.text || 'Button'}</a></div>`;
+  const padCss = paddingPropsToCssString(props);
+  return `<div style="margin: 10px 0; padding: ${padCss};"><a href="${btnUrl}" style="font-family: ${EMAIL_FONT_FAMILY}; background-color: ${props.background || '#2563eb'}; color: ${props.color || '#ffffff'}; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold;">${props.text || 'Button'}</a></div>`;
 };
 
 const renderImageHtml = (props: Record<string, any>, logoUrl?: string | null): string => {
-  return `<img src="${resolveTemplateImageSrc({
+  const padCss = paddingPropsToCssString(props);
+  return `<div style="padding: ${padCss};"><img src="${resolveTemplateImageSrc({
     src: props.src,
     useLogoSource: props.useLogoSource,
     logoUrl,
-  })}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" />`;
+  })}" style="width: ${props.width || '100%'}; height: auto; display: block; margin: 10px 0;" /></div>`;
 };
 
 const renderSlotHtml = (node: DesignComponent, options: HtmlRenderOptions): string => {

@@ -63,7 +63,7 @@ export function TemplateConditionEditor({
               <div className="min-w-0 flex-1 space-y-2">
                 <select
                   aria-label={t('field')}
-                  className="w-full rounded border bg-white px-2 py-1.5 text-sm"
+                  className="w-full rounded border bg-background px-2 py-1.5 text-sm text-foreground"
                   value={rule.field}
                   onChange={(event) => {
                     const next = fields.find((field) => field.field === event.target.value);

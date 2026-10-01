@@ -13,11 +13,11 @@ import { useTemplatePuck } from '../use-template-puck';
 
 const DATASET_LABELS: Record<string, string> = {
   USER: 'User',
-  LENDER: 'Kreditgeber',
-  LOAN: 'Darlehen',
+  LENDER: 'Kreditgeber*in',
+  LOAN: 'Kredit',
   PROJECT: 'Projekt',
   PROJECT_YEARLY: 'Projekt (jährlich)',
-  LENDER_YEARLY: 'Kreditgeber (jährlich)',
+  LENDER_YEARLY: 'Kreditgeber*in (jährlich)',
   TRANSACTION: 'Transaktion',
 };
 

@@ -92,7 +92,6 @@ export function ContainerSettings() {
 
   return (
     <div className="space-y-4 p-4">
-      <ShowIfField />
       <Tabs defaultValue="layout">
         <TabsList variant="modern" className="mt-0">
           <TabsTrigger variant="modern" size="sm" value="layout">
@@ -106,18 +105,15 @@ export function ContainerSettings() {
               {t('tabBlock')}
             </TabsTrigger>
           )}
-          {!isStructural && (
-            <TabsTrigger variant="modern" size="sm" value="data">
-              {t('tabData')}
-            </TabsTrigger>
-          )}
+          <TabsTrigger variant="modern" size="sm" value="data">
+            {t('tabData')}
+          </TabsTrigger>
         </TabsList>
 
-        {!isStructural && (
-          <TabsContent value="data" className="mt-3 space-y-4">
-            <LoopKeyField />
-          </TabsContent>
-        )}
+        <TabsContent value="data" className="mt-3 space-y-4">
+          {!isStructural && <LoopKeyField />}
+          <ShowIfField />
+        </TabsContent>
 
         <TabsContent value="layout" className="mt-3 space-y-4">
           <div className="space-y-2">

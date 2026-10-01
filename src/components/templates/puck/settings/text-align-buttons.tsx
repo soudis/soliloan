@@ -29,8 +29,8 @@ export function TextAlignButtons({
           onClick={() => onChange(option)}
           className={`flex items-center justify-center rounded-md border p-2 transition-colors disabled:opacity-50 ${
             value === option
-              ? 'border-primary bg-primary text-white'
-              : 'border-border bg-white text-muted-foreground hover:border-border hover:text-foreground'
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-border bg-background text-muted-foreground hover:border-border hover:text-foreground'
           }`}
         >
           <Icon className="h-4 w-4" />

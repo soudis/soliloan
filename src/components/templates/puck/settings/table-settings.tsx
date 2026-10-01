@@ -50,7 +50,6 @@ export function TableSettings() {
 
   return (
     <div className="space-y-4 p-4">
-      <ShowIfField />
       <Tabs defaultValue="structure">
         <TabsList variant="modern" className="mt-0">
           <TabsTrigger variant="modern" size="sm" value="structure">
@@ -69,6 +68,7 @@ export function TableSettings() {
 
         <TabsContent value="data" className="mt-3 space-y-4">
           <LoopKeyField translationPrefix="templates.editor.components.table" emptyOptionKey="staticTable" />
+          <ShowIfField />
         </TabsContent>
 
         <TabsContent value="structure" className="mt-3 space-y-4">

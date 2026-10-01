@@ -17,7 +17,6 @@ export function ZoneSettings({ translationPrefix }: { translationPrefix: string 
 
   return (
     <div className="space-y-4 p-4">
-      <ShowIfField />
       <BlockPaddingFields idPrefix="zone" props={paddingProps} setProp={setProp} />
       <div className="space-y-2">
         <label htmlFor="zoneBg" className="text-xs font-medium">
@@ -32,6 +31,7 @@ export function ZoneSettings({ translationPrefix }: { translationPrefix: string 
         />
       </div>
       <BorderField translationPrefix={translationPrefix} />
+      <ShowIfField />
     </div>
   );
 }
