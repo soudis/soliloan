@@ -22,6 +22,7 @@ import {
 } from '@/lib/dashboard/table-widget/loan-table-column-registry';
 import { buildLoanTableColumnFilters } from '@/lib/entity-filters/filter-definitions';
 import { useSelectedViewName } from '@/lib/hooks/use-selected-view-name';
+import { withProjectId } from '@/lib/project-href';
 import { TABLE_LIST_PATHS } from '@/lib/table-list-path';
 import type { LoanWithCalculations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -106,7 +107,7 @@ export function LoanTable({ loans, project, projectId, views, viewId }: LoanTabl
           density="header"
           icon={<Plus className="h-4 w-4" />}
           label={t('new.title')}
-          onClick={() => router.push('/loans/new')}
+          onClick={() => router.push(withProjectId('/loans/new', projectId))}
         />
       </div>
 
@@ -124,13 +125,13 @@ export function LoanTable({ loans, project, projectId, views, viewId }: LoanTabl
         showFilter={true}
         showExport
         exportPrefix="Darlehen"
-        onRowClick={(row) => router.push(`/lenders/${row.lender.id}?loanId=${row.id}`)}
+        onRowClick={(row) => router.push(withProjectId(`/lenders/${row.lender.id}?loanId=${row.id}`, projectId))}
         bulkActions={bulkActions}
         actions={(row) => (
           <>
             <DropdownMenuItem
               onClick={() => {
-                router.push(`/loans/${row.id}/edit`);
+                router.push(withProjectId(`/loans/${row.id}/edit`, projectId));
               }}
             >
               <Pencil className="h-4 w-4 mr-2" />

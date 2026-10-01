@@ -9,6 +9,7 @@ import { deleteLenderAction } from '@/actions/lenders/mutations/delete-lender';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { ActionButton } from '@/components/ui/action-button';
 import { useRouter } from '@/i18n/navigation';
+import { withProjectId } from '@/lib/project-href';
 import { getLenderName } from '@/lib/utils';
 import type { LenderWithCalculations } from '@/types/lenders';
 import { ConfirmDialog } from '../generic/confirm-dialog';
@@ -40,7 +41,7 @@ export function LenderPageHeader({ lender, onAddNote, onAddFile }: LenderPageHea
       } else {
         toast.success(t('delete.success'), { id: toastId });
         await queryClient.invalidateQueries({ queryKey: ['lender', lender.id] });
-        router.push('/lenders/list');
+        router.push(withProjectId('/lenders/list', lender.projectId));
       }
     } catch (e) {
       toast.error(t('delete.error'), { id: toastId });
@@ -64,7 +65,7 @@ export function LenderPageHeader({ lender, onAddNote, onAddFile }: LenderPageHea
             {
               id: 'loan',
               label: commonT('terms.loan'),
-              onSelect: () => router.push(`/loans/new?lenderId=${lender.id}`),
+              onSelect: () => router.push(withProjectId(`/loans/new?lenderId=${lender.id}`, lender.projectId)),
             },
             { id: 'note', label: notesT('text'), onSelect: onAddNote },
             { id: 'file', label: filesT('file'), onSelect: onAddFile },
@@ -75,7 +76,7 @@ export function LenderPageHeader({ lender, onAddNote, onAddFile }: LenderPageHea
           density="header"
           icon={<Pencil className="h-4 w-4" />}
           label={commonT('ui.actions.edit')}
-          onClick={() => router.push(`/lenders/${lender.id}/edit`)}
+          onClick={() => router.push(withProjectId(`/lenders/${lender.id}/edit`, lender.projectId))}
         />
         <ActionButton
           intent="delete"

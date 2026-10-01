@@ -25,6 +25,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
+import { withProjectId } from '@/lib/project-href';
 import { type CreateTemplateFormData, createTemplateSchema } from '@/lib/schemas/templates';
 import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
 import type { GlobalTemplateListItem } from '@/types/templates';
@@ -142,7 +143,7 @@ export function TemplateCreateFormContent({ projectId, isAdmin, onCreated }: Cre
       if (isAdmin && !projectId) {
         router.push(`/admin/templates/${result.data.id}`);
       } else if (currentProjectId) {
-        router.push(`/configuration/templates/${result.data.id}`);
+        router.push(withProjectId(`/configuration/templates/${result.data.id}`, currentProjectId));
       }
     }
   };

@@ -1,4 +1,4 @@
-import { PROJECT_ID_KEY } from '@/lib/params';
+import { withProjectId } from '@/lib/project-href';
 
 export const TABLE_LIST_PATHS = {
   lenders: '/lenders/list',
@@ -9,10 +9,7 @@ export const TABLE_LIST_PATHS = {
 
 export function buildTableListHref(listPath: string, viewId?: string | null, projectId?: string | null): string {
   const path = viewId ? `${listPath}/${viewId}` : listPath;
-  if (projectId) {
-    return `${path}?${PROJECT_ID_KEY}=${encodeURIComponent(projectId)}`;
-  }
-  return path;
+  return withProjectId(path, projectId);
 }
 
 /** next-intl `usePathname` (no locale prefix). */

@@ -7,6 +7,7 @@ import { getLenderAction } from '@/actions';
 import { createLoanAction } from '@/actions/loans';
 import { LoanForm, type LoanFormSubmitResult } from '@/components/loans/loan-form';
 import { useRouter } from '@/i18n/navigation';
+import { withProjectId } from '@/lib/project-href';
 import type { LoanFormData } from '@/lib/schemas/loan';
 import { getLenderName } from '@/lib/utils';
 import type { LenderWithCalculations } from '@/types/lenders';
@@ -60,7 +61,7 @@ export function NewLoanClient({ project, lender, lenderId }: NewLoanClientProps)
 
       toast.success(t('new.form.success'));
       if (loan) {
-        router.push(`/lenders/${loan.lenderId}?tab=loans&loanId=${loan.id}`);
+        router.push(withProjectId(`/lenders/${loan.lenderId}?tab=loans&loanId=${loan.id}`, project.id));
       }
     } catch (error) {
       console.error('Error submitting form:', error);

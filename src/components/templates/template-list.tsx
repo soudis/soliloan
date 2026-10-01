@@ -17,6 +17,7 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
+import { withProjectId } from '@/lib/project-href';
 import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import type { CommunicationTemplateWithProject } from '@/types/templates';
@@ -48,7 +49,7 @@ export function TemplateList({ project, templates: externalTemplates, isAdmin }:
       if (isAdmin && template.isGlobal) {
         router.push(`/admin/templates/${template.id}`);
       } else if (currentProjectId) {
-        router.push(`/configuration/templates/${template.id}`);
+        router.push(withProjectId(`/configuration/templates/${template.id}`, currentProjectId));
       }
     },
     [isAdmin, currentProjectId, router],

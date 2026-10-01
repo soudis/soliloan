@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { getTemplateAction } from '@/actions/templates/queries/get-template';
 import { TemplateEditor } from '@/components/templates/template-editor';
 import { searchParamsCache } from '@/lib/params';
+import { withProjectId } from '@/lib/project-href';
 import { loadTemplateEditorPageData } from '@/lib/templates/template-editor-page-data';
 
 interface PageProps {
@@ -28,7 +29,7 @@ export default async function ProjectTemplateEditorPage({ params, searchParams }
 
   // Redirect if template doesn't belong to this project and isn't global
   if (data.template.projectId !== projectId && !data.template.isGlobal) {
-    redirect(`/configuration?tab=templates`);
+    redirect(withProjectId('/configuration?tab=templates', projectId));
   }
 
   const pageData = await loadTemplateEditorPageData({
