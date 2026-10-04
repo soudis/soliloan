@@ -60,28 +60,23 @@ const getBaseDays = (method: InterestMethod, date: Moment) => {
   return Number.parseInt(method.split('_')[1] ?? '360', 10);
 };
 
+const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
+
+// Position of a calendar date on the method's day axis. A period [start, end) counts end - start days.
+const dayNumber = (date: Moment, interestMethod: InterestMethod) =>
+  interestMethod.startsWith('E30_360')
+    ? date.year() * 360 + date.month() * 30 + Math.min(date.date(), 30)
+    : Date.UTC(date.year(), date.month(), date.date()) / MILLISECONDS_PER_DAY;
+
 export const getInterestDays = (
   fromDateParameter: Moment | undefined,
   toDateParameter: Moment | undefined,
   interestMethod: InterestMethod,
 ) => {
-  const fromDate = fromDateParameter ? fromDateParameter : moment(toDateParameter).startOf('year');
-  const toDate = toDateParameter ? toDateParameter : moment(fromDateParameter).endOf('year');
-  const firstYear = !toDateParameter;
-  const lastYear = !fromDateParameter;
-  if (interestMethod.startsWith('E30_360')) {
-    if (toDate.isSameOrBefore(moment(fromDate).endOf('month'))) {
-      return moment(toDate).diff(fromDate, 'days');
-    }
-    let interestDays = Math.max(30 - fromDate.date() + 1, 0);
-    const months = moment(toDate).month() - fromDate.month() - 1;
-    interestDays += months * 30;
-    interestDays += Math.min(moment(toDate).date(), 30);
-    interestDays -= lastYear ? 1 : 0;
-    interestDays -= !lastYear && !firstYear ? 1 : 0;
-    return interestDays;
-  }
-  return toDate.diff(fromDate, 'days');
+  const start = fromDateParameter ?? moment(toDateParameter).startOf('year');
+  // The end is not counted. An open end is the next 1 January, where the next year's calculation starts.
+  const end = toDateParameter ?? moment(fromDateParameter).add(1, 'year').startOf('year');
+  return dayNumber(end, interestMethod) - dayNumber(start, interestMethod);
 };
 
 export const calculateInterestDaily = (
