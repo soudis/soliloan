@@ -24,6 +24,13 @@ describe('getInterestDays with ACT methods', () => {
       moment(end).startOf('day').diff(moment(deposit).startOf('day'), 'days'),
     );
   });
+
+  it('counts calendar days when a period starts in summer time and ends in winter time', () => {
+    assert.equal(
+      getInterestDays(storedDate('2019-04-01'), storedDate('2019-11-15'), method),
+      calendarDay('2019-11-15').diff(calendarDay('2019-04-01'), 'days'),
+    );
+  });
 });
 
 describe('getInterestDays with E30/360', () => {
