@@ -1,0 +1,58 @@
+name: App
+
+on:
+  # Branches with a pull request are checked through it. A push trigger for them would run the checks twice.
+  push:
+    branches: [main, staging]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  checks:
+    name: App Checks
+    runs-on: ubuntu-latest
+    env:
+      # prisma.config.ts requires a URL. Generating the client does not connect to it.
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: package.json
+          cache: pnpm
+
+      - name: Show Node.js version
+        run: node --version
+
+      - name: Show pnpm version
+        run: pnpm --version
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate the Prisma client
+        run: pnpm prisma:generate
+
+      # Production runs in Europe/Berlin. The run in UTC shows whether a result depends on the timezone.
+      - name: Run tests in Europe/Berlin
+        run: pnpm test
+        env:
+          TZ: Europe/Berlin
+
+      - name: Run tests in UTC
+        run: pnpm test
+        env:
+          TZ: UTC
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Check formatting
+        run: pnpm format
