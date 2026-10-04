@@ -82,6 +82,10 @@ export const getInterestDays = (
     interestDays -= !lastYear && !firstYear ? 1 : 0;
     return interestDays;
   }
+  if (firstYear && !lastYear) {
+    // The next year's calculation starts on 1 January, so this period runs until then.
+    return moment(fromDate).add(1, 'year').startOf('year').diff(moment(fromDate).startOf('day'), 'days');
+  }
   return toDate.diff(fromDate, 'days');
 };
 
