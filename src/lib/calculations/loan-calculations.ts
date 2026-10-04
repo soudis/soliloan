@@ -86,7 +86,8 @@ export const getInterestDays = (
     // The next year's calculation starts on 1 January, so this period runs until then.
     return moment(fromDate).add(1, 'year').startOf('year').diff(moment(fromDate).startOf('day'), 'days');
   }
-  return toDate.diff(fromDate, 'days');
+  // Calendar days, so a change of the UTC offset between the two dates does not shorten the period.
+  return moment(toDate).startOf('day').diff(moment(fromDate).startOf('day'), 'days');
 };
 
 export const calculateInterestDaily = (
