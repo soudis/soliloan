@@ -160,7 +160,8 @@ export const calculateSavingsDepositCountFromDates = (firstDepositDate: Date, la
 export const calculateSavingsMonthlyAmount = (loanAmount: number, depositCount: number) => {
   if (!Number.isFinite(loanAmount) || loanAmount <= 0) return null;
   if (!Number.isFinite(depositCount) || depositCount < 1) return null;
-  return round2(loanAmount / depositCount);
+  // Dividing whole cents keeps an exact half cent exact, so it rounds up.
+  return Math.round(Math.round(loanAmount * 100) / depositCount) / 100;
 };
 
 export const calculateSavingsDepositCountFromMonthlyAmount = (loanAmount: number, monthlyAmount: number) => {
