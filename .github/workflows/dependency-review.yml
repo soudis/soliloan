@@ -1,0 +1,23 @@
+name: Dependency Review
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      # Fails only for vulnerable dependencies that the pull request adds or changes.
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@v5
+        with:
+          # The production image installs the development dependencies and runs some of them at start.
+          fail-on-scopes: runtime, development
