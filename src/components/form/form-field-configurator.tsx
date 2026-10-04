@@ -110,99 +110,99 @@ export function FormFieldConfigurator({ name }: FormFieldConfiguratorProps) {
                       const isBoolean = fieldType === AdditionalFieldType.BOOLEAN;
 
                       return (
-                      <TableRow key={field.id}>
-                        <TableCell className="align-top">
-                          <EnforceBooleanFieldConstraints name={`${name}.${index}`} />
-                          <FormField
-                            name={`${name}.${index}.name`}
-                            placeholder={t('fieldNamePlaceholder')}
-                            required={false}
-                          />
-                        </TableCell>
-                        <TableCell className="align-top">
-                          <FormSelect
-                            name={`${name}.${index}.type`}
-                            placeholder={t('fieldType')}
-                            options={typeOptions}
-                          />
-                        </TableCell>
-                        <TableCell className="align-top">
-                          {fieldType === AdditionalFieldType.NUMBER && (
-                            <FormSelect
-                              name={`${name}.${index}.numberFormat`}
-                              placeholder={t('numberFormat')}
-                              options={numberFormatOptions}
-                            />
-                          )}
-                          {fieldType === AdditionalFieldType.SELECT && (
-                            <FormChipInput
-                              name={`${name}.${index}.selectOptions`}
-                              placeholder={t('addOptionPlaceholder')}
-                              noItems={t('noOptionsDefined')}
-                            />
-                          )}
-                        </TableCell>
-                        <TableCell className="align-top">
-                          {isBoolean && (
-                            <div className="flex h-10 items-center justify-center">
-                              <FormCheckbox name={`${name}.${index}.defaultValue`} className="justify-center" />
-                            </div>
-                          )}
-                          {fieldType === AdditionalFieldType.SELECT && (
-                            <FormSelect
-                              name={`${name}.${index}.defaultValue`}
-                              placeholder={t('selectOption')}
-                              options={watch(`${name}.${index}.selectOptions`).map((option) => ({
-                                value: option,
-                                label: option,
-                              }))}
-                              clearable={true}
+                        <TableRow key={field.id}>
+                          <TableCell className="align-top">
+                            <EnforceBooleanFieldConstraints name={`${name}.${index}`} />
+                            <FormField
+                              name={`${name}.${index}.name`}
+                              placeholder={t('fieldNamePlaceholder')}
                               required={false}
                             />
-                          )}
-                          {fieldType === AdditionalFieldType.DATE && (
-                            <FormDatePicker name={`${name}.${index}.defaultValue`} placeholder={t('selectDate')} />
-                          )}
-                          {fieldType === AdditionalFieldType.NUMBER && (
-                            <FormNumberInput
-                              name={`${name}.${index}.defaultValue`}
-                              placeholder={t('enterValue')}
-                              minimumFractionDigits={watch(`${name}.${index}.numberFormat`) === 'integer' ? 0 : 2}
-                              maximumFractionDigits={watch(`${name}.${index}.numberFormat`) === 'integer' ? 0 : 2}
-                              prefix={
-                                watch(`${name}.${index}.numberFormat`) === 'money'
-                                  ? '€'
-                                  : watch(`${name}.${index}.numberFormat`) === 'percent'
-                                    ? '%'
-                                    : undefined
-                              }
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <FormSelect
+                              name={`${name}.${index}.type`}
+                              placeholder={t('fieldType')}
+                              options={typeOptions}
                             />
-                          )}
-                          {fieldType === AdditionalFieldType.TEXT && (
-                            <FormField name={`${name}.${index}.defaultValue`} placeholder={t('enterValue')} />
-                          )}
-                        </TableCell>
-                        <TableCell className="align-top">
-                          <div className="flex h-10 items-center justify-center">
-                            <FormCheckbox
-                              name={`${name}.${index}.required`}
-                              className="justify-center"
-                              disabled={isBoolean}
-                            />
-                          </div>
-                        </TableCell>
-                        <TableCell className="align-top">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => remove(index)}
-                            className="text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            {fieldType === AdditionalFieldType.NUMBER && (
+                              <FormSelect
+                                name={`${name}.${index}.numberFormat`}
+                                placeholder={t('numberFormat')}
+                                options={numberFormatOptions}
+                              />
+                            )}
+                            {fieldType === AdditionalFieldType.SELECT && (
+                              <FormChipInput
+                                name={`${name}.${index}.selectOptions`}
+                                placeholder={t('addOptionPlaceholder')}
+                                noItems={t('noOptionsDefined')}
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell className="align-top">
+                            {isBoolean && (
+                              <div className="flex h-10 items-center justify-center">
+                                <FormCheckbox name={`${name}.${index}.defaultValue`} className="justify-center" />
+                              </div>
+                            )}
+                            {fieldType === AdditionalFieldType.SELECT && (
+                              <FormSelect
+                                name={`${name}.${index}.defaultValue`}
+                                placeholder={t('selectOption')}
+                                options={watch(`${name}.${index}.selectOptions`).map((option) => ({
+                                  value: option,
+                                  label: option,
+                                }))}
+                                clearable={true}
+                                required={false}
+                              />
+                            )}
+                            {fieldType === AdditionalFieldType.DATE && (
+                              <FormDatePicker name={`${name}.${index}.defaultValue`} placeholder={t('selectDate')} />
+                            )}
+                            {fieldType === AdditionalFieldType.NUMBER && (
+                              <FormNumberInput
+                                name={`${name}.${index}.defaultValue`}
+                                placeholder={t('enterValue')}
+                                minimumFractionDigits={watch(`${name}.${index}.numberFormat`) === 'integer' ? 0 : 2}
+                                maximumFractionDigits={watch(`${name}.${index}.numberFormat`) === 'integer' ? 0 : 2}
+                                prefix={
+                                  watch(`${name}.${index}.numberFormat`) === 'money'
+                                    ? '€'
+                                    : watch(`${name}.${index}.numberFormat`) === 'percent'
+                                      ? '%'
+                                      : undefined
+                                }
+                              />
+                            )}
+                            {fieldType === AdditionalFieldType.TEXT && (
+                              <FormField name={`${name}.${index}.defaultValue`} placeholder={t('enterValue')} />
+                            )}
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <div className="flex h-10 items-center justify-center">
+                              <FormCheckbox
+                                name={`${name}.${index}.required`}
+                                className="justify-center"
+                                disabled={isBoolean}
+                              />
+                            </div>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => remove(index)}
+                              className="text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
                       );
                     })
                   ) : (
