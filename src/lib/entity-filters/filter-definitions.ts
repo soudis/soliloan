@@ -145,7 +145,6 @@ export function buildLenderProfileColumnFiltersMap(
   },
 ): Record<string, DataTableColumnFilterDefinition> {
   const idPrefix = options?.idPrefix ?? '';
-  const additionalFieldsPrefix = idPrefix ? `${idPrefix}additionalFields` : 'additionalFields';
 
   const filters: Record<string, DataTableColumnFilterDefinition> = {
     lenderNumber: { type: 'number', label: t('table.lenderNumber'), defaultOperator: 'eq' },
@@ -194,7 +193,7 @@ export function buildLenderProfileColumnFiltersMap(
         value,
       })),
     },
-    ...createAdditionalFieldFilters(additionalFieldsPrefix, project.configuration.lenderAdditionalFields),
+    ...createAdditionalFieldFilters('additionalFields', project.configuration.lenderAdditionalFields),
   };
 
   if (options?.includeAggregates && options.tLoans) {
