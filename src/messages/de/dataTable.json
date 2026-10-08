@@ -81,6 +81,7 @@
     "deselect": "Auswahl aufheben"
   },
   "columnGroups": {
+    "shown": "Angezeigt",
     "transaction": "Transaktion",
     "loan": "Kredit",
     "lender": "Kreditgeber*in"
