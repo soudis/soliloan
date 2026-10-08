@@ -151,6 +151,8 @@ export function getLoanFilterValue(
       return loan.terminationType;
     case 'terminationModalities':
       return formatTerminationModalities(loan, commonT);
+    case 'totalRuntimeDays':
+      return loan.totalRuntimeDays;
     case 'repayDate':
       return loan.repayDate;
     case 'altInterestMethod':

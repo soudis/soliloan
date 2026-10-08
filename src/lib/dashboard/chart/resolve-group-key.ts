@@ -5,6 +5,7 @@ import { formatCurrency, formatNumber } from '@/lib/utils';
 import type {
   ChartDateGrouping,
   ChartDiscriminatorConfig,
+  ChartDurationGrouping,
   ChartTextTransform,
 } from '@/types/dashboard-widgets/chart-discriminator';
 
@@ -55,6 +56,26 @@ export function formatNumericBucketLabel(
   }
   const last = thresholds[thresholds.length - 1];
   return t('numericBucketAbove', { min: formatNumericValue(last, field) });
+}
+
+function durationGroupCount(days: number, grouping: ChartDurationGrouping): number {
+  const wholeDays = Math.max(0, Math.round(days));
+  if (grouping === 'years') {
+    return Math.floor(wholeDays / 365);
+  }
+  if (grouping === 'months') {
+    return Math.floor(wholeDays / 30);
+  }
+  return wholeDays;
+}
+
+function formatDurationGroupLabel(
+  commonT: (key: string, values?: Record<string, string>) => string,
+  grouping: ChartDurationGrouping,
+  count: number,
+): string {
+  const translate = commonT as (key: string, values?: Record<string, number>) => string;
+  return translate(`duration.${grouping}`, { count });
 }
 
 function getNumericBucketIndex(value: number, thresholds: number[]): number {
@@ -155,6 +176,19 @@ export function resolveGroupKey(
   }
 
   const field = config.groupBy.field;
+
+  if (fieldDefinition?.valueKind === 'duration') {
+    const num = Number(rawValue);
+    if (!Number.isFinite(num) || num < 0) {
+      return { key: CHART_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
+    }
+    const grouping = config.durationGrouping ?? 'years';
+    const count = durationGroupCount(num, grouping);
+    return {
+      key: `duration:${grouping}:${count}`,
+      label: formatDurationGroupLabel(formatters.commonT, grouping, count),
+    };
+  }
 
   if (fieldDefinition?.type === 'number' && config.numericBuckets?.length) {
     const num = Number(rawValue);

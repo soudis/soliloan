@@ -3,6 +3,7 @@ import type { EntityFilter } from '@/types/entity-filters';
 import {
   type ChartDateGrouping,
   type ChartDiscriminatorConfig,
+  type ChartDurationGrouping,
   type ChartGroupBy,
   type ChartTextTransform,
   chartDiscriminatorToFlatFields,
@@ -42,6 +43,7 @@ export type AggregationTableWidgetConfig = {
   groupBy: ChartGroupBy;
   numericBuckets?: number[];
   dateGrouping?: ChartDateGrouping;
+  durationGrouping?: ChartDurationGrouping;
   textTransform?: ChartTextTransform;
   filters: EntityFilter[];
   columns: AggregationTableColumnConfig[];
@@ -54,6 +56,7 @@ export function getAggregationTableDiscriminator(config: AggregationTableWidgetC
     groupBy: config.groupBy,
     numericBuckets: config.numericBuckets,
     dateGrouping: config.dateGrouping,
+    durationGrouping: config.durationGrouping,
     textTransform: config.textTransform,
     topNCategories: createDefaultChartDiscriminatorConfig().topNCategories,
     filters: config.filters,
@@ -62,12 +65,16 @@ export function getAggregationTableDiscriminator(config: AggregationTableWidgetC
 
 export function aggregationDiscriminatorToConfigFields(
   discriminator: ChartDiscriminatorConfig,
-): Pick<AggregationTableWidgetConfig, 'groupBy' | 'numericBuckets' | 'dateGrouping' | 'textTransform' | 'filters'> {
+): Pick<
+  AggregationTableWidgetConfig,
+  'groupBy' | 'numericBuckets' | 'dateGrouping' | 'durationGrouping' | 'textTransform' | 'filters'
+> {
   const flat = chartDiscriminatorToFlatFields(discriminator);
   return {
     groupBy: flat.groupBy,
     numericBuckets: flat.numericBuckets,
     dateGrouping: flat.dateGrouping,
+    durationGrouping: flat.durationGrouping,
     textTransform: flat.textTransform,
     filters: flat.filters,
   };

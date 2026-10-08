@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { PaymentType, TerminationType, TransactionType, type Transaction } from '@prisma/client';
+import { DurationType, PaymentType, TerminationType, TransactionType, type Transaction } from '@prisma/client';
 
-import { getLoanTimelineStart, loanStartedOnOrBefore } from './loan-duration-metrics';
+import {
+  formatTotalRuntime,
+  getLoanTimelineStart,
+  getTotalRuntimeDays,
+  loanStartedOnOrBefore,
+} from './loan-duration-metrics';
 
 const periodEnd = new Date(2026, 9, 1);
 
@@ -70,5 +75,70 @@ describe('getLoanTimelineStart', () => {
     });
 
     assert.equal(loanStartedOnOrBefore(loan, periodEnd), false);
+  });
+});
+
+const durationT = (key: string, values?: Record<string, number>) => {
+  const count = values?.count ?? 0;
+  if (key === 'zeroDays') return '0 Tage';
+  if (key === 'years') return count === 1 ? `${count} Jahr` : `${count} Jahre`;
+  if (key === 'months') return count === 1 ? `${count} Monat` : `${count} Monate`;
+  if (key === 'days') return count === 1 ? `${count} Tag` : `${count} Tage`;
+  return key;
+};
+
+describe('getTotalRuntimeDays', () => {
+  it('is empty for notice-period loans', () => {
+    assert.equal(
+      getTotalRuntimeDays({
+        terminationType: TerminationType.TERMINATION,
+        signDate: new Date('2020-01-15'),
+        endDate: new Date('2025-01-15'),
+        duration: 5,
+        durationType: DurationType.YEARS,
+      }),
+      null,
+    );
+    assert.equal(
+      formatTotalRuntime(
+        {
+          terminationType: TerminationType.TERMINATION,
+          signDate: new Date('2020-01-15'),
+        },
+        durationT,
+      ),
+      '–',
+    );
+  });
+
+  it('measures from the sign date to a fixed end date', () => {
+    const loan = {
+      terminationType: TerminationType.ENDDATE,
+      signDate: new Date('2020-01-15T12:00:00'),
+      endDate: new Date('2025-01-15T12:00:00'),
+    };
+
+    assert.equal(formatTotalRuntime(loan, durationT), '5 Jahre');
+    assert.ok((getTotalRuntimeDays(loan) ?? 0) > 0);
+  });
+
+  it('measures a duration from the sign date', () => {
+    const loan = {
+      terminationType: TerminationType.DURATION,
+      signDate: new Date('2020-01-15T12:00:00'),
+      duration: 18,
+      durationType: DurationType.MONTHS,
+    };
+
+    assert.equal(formatTotalRuntime(loan, durationT), '1 Jahr 6 Monate');
+    assert.equal(
+      getTotalRuntimeDays({
+        terminationType: TerminationType.DURATION,
+        signDate: new Date('2020-01-15T12:00:00'),
+        duration: null,
+        durationType: DurationType.MONTHS,
+      }),
+      null,
+    );
   });
 });

@@ -4,6 +4,10 @@ export const CHART_DATE_GROUPINGS = ['year', 'month', 'monthOfYear', 'weekOfYear
 
 export type ChartDateGrouping = (typeof CHART_DATE_GROUPINGS)[number];
 
+export const CHART_DURATION_GROUPINGS = ['years', 'months', 'days'] as const;
+
+export type ChartDurationGrouping = (typeof CHART_DURATION_GROUPINGS)[number];
+
 export type ChartTextTransform =
   | { kind: 'firstChars'; count: number }
   | { kind: 'lastChars'; count: number }
@@ -19,6 +23,7 @@ export type ChartDiscriminatorConfig = {
   groupBy: ChartGroupBy;
   numericBuckets?: number[];
   dateGrouping?: ChartDateGrouping;
+  durationGrouping?: ChartDurationGrouping;
   textTransform?: ChartTextTransform;
   topNCategories: number;
   filters: EntityFilter[];
@@ -88,6 +93,9 @@ export function parseChartDiscriminatorConfig(
       dateGrouping: CHART_DATE_GROUPINGS.includes(nested.dateGrouping as ChartDateGrouping)
         ? (nested.dateGrouping as ChartDateGrouping)
         : undefined,
+      durationGrouping: CHART_DURATION_GROUPINGS.includes(nested.durationGrouping as ChartDurationGrouping)
+        ? (nested.durationGrouping as ChartDurationGrouping)
+        : undefined,
       textTransform: parseChartTextTransform(nested.textTransform),
       topNCategories: Number.isFinite(topN) && topN >= 1 && topN <= 50 ? Math.floor(topN) : defaults.topNCategories,
       filters: Array.isArray(nested.filters) ? (nested.filters as EntityFilter[]) : [],
@@ -105,6 +113,9 @@ export function parseChartDiscriminatorConfig(
     dateGrouping: CHART_DATE_GROUPINGS.includes(raw.dateGrouping as ChartDateGrouping)
       ? (raw.dateGrouping as ChartDateGrouping)
       : undefined,
+    durationGrouping: CHART_DURATION_GROUPINGS.includes(raw.durationGrouping as ChartDurationGrouping)
+      ? (raw.durationGrouping as ChartDurationGrouping)
+      : undefined,
     textTransform: parseChartTextTransform(raw.textTransform),
     topNCategories: Number.isFinite(topN) && topN >= 1 && topN <= 50 ? Math.floor(topN) : defaults.topNCategories,
     filters: Array.isArray(raw.filters) ? (raw.filters as EntityFilter[]) : [],
@@ -115,12 +126,13 @@ export function chartDiscriminatorToFlatFields(
   discriminator: ChartDiscriminatorConfig,
 ): Pick<
   ChartDiscriminatorConfig,
-  'groupBy' | 'numericBuckets' | 'dateGrouping' | 'textTransform' | 'topNCategories' | 'filters'
+  'groupBy' | 'numericBuckets' | 'dateGrouping' | 'durationGrouping' | 'textTransform' | 'topNCategories' | 'filters'
 > {
   return {
     groupBy: discriminator.groupBy,
     numericBuckets: discriminator.numericBuckets,
     dateGrouping: discriminator.dateGrouping,
+    durationGrouping: discriminator.durationGrouping,
     textTransform: discriminator.textTransform,
     topNCategories: discriminator.topNCategories,
     filters: discriminator.filters,

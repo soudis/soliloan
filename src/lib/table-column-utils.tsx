@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import type { ColumnGroupMeta, DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+import { formatTotalRuntime } from '@/lib/calculations/loan-duration-metrics';
 import {
   matchesBooleanFilter,
   matchesDateFilter,
@@ -418,6 +419,24 @@ export function createDurationDaysColumn<T>(
   column.filterFn = 'inNumberRange';
   return mergeExportMeta(column, { type: 'integer' });
 }
+
+export function createTotalRuntimeColumn<
+  T extends Pick<Loan, 'terminationType' | 'signDate' | 'endDate' | 'duration' | 'durationType'>,
+>(t: (key: string) => string, durationT: (key: string, values?: Record<string, number>) => string): ColumnDef<T> {
+  const column = createColumn<T>(
+    {
+      id: 'totalRuntimeDays',
+      accessorKey: 'totalRuntimeDays',
+      header: 'table.totalRuntime',
+      cell: ({ row }) => <div className="tabular-nums">{formatTotalRuntime(row.original, durationT)}</div>,
+    },
+    t,
+  );
+
+  column.filterFn = 'inNumberRange';
+  return mergeExportMeta(column, { type: 'integer' });
+}
+
 export function createPercentageColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,

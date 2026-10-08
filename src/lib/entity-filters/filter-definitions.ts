@@ -24,6 +24,8 @@ export type DataTableColumnFilterDefinition = {
   options?: { label: string; value: string }[];
   allowEmpty?: boolean;
   defaultOperator?: NumberFilterOperator;
+  /** Day-count fields that group by year, month, or day instead of numeric limits. */
+  valueKind?: 'duration';
 };
 
 const LOAN_STATUS_OPTIONS = [
@@ -68,7 +70,11 @@ export function buildLoanColumnFiltersMap(
       label: t('table.outstandingDepositSinceDate'),
       allowEmpty: true,
     },
-    outstandingDepositSinceDays: { type: 'number', label: t('table.outstandingDepositSinceDays') },
+    outstandingDepositSinceDays: {
+      type: 'number',
+      label: t('table.outstandingDepositSinceDays'),
+      valueKind: 'duration',
+    },
     depositsCount: { type: 'number', label: t('table.depositsCount') },
     requiredDepositsCount: { type: 'number', label: t('table.requiredDepositsCount') },
     outstandingDepositsCount: { type: 'number', label: t('table.outstandingDepositsCount') },
@@ -98,9 +104,10 @@ export function buildLoanColumnFiltersMap(
       label: t('table.terminationModalities'),
       allowEmpty: true,
     },
+    totalRuntimeDays: { type: 'number', label: t('table.totalRuntime'), allowEmpty: true, valueKind: 'duration' },
     repayDate: { type: 'date', label: t('table.repayDate'), allowEmpty: true },
-    loanTermDays: { type: 'number', label: t('table.loanTerm'), allowEmpty: true },
-    repaymentPeriodDays: { type: 'number', label: t('table.repaymentPeriod'), allowEmpty: true },
+    loanTermDays: { type: 'number', label: t('table.loanTerm'), allowEmpty: true, valueKind: 'duration' },
+    repaymentPeriodDays: { type: 'number', label: t('table.repaymentPeriod'), allowEmpty: true, valueKind: 'duration' },
     status: {
       type: 'select',
       label: t('table.status'),

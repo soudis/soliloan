@@ -62,6 +62,12 @@
         "weekOfYear": "Kalenderwoche",
         "dayOfWeek": "Wochentag"
       },
+      "durationGrouping": "Zeitraumgruppierung",
+      "durationGroupingOptions": {
+        "years": "Jahre",
+        "months": "Monate",
+        "days": "Tage"
+      },
       "textTransform": "Textumwandlung",
       "textTransformNone": "Keine",
       "textTransformFirstChars": "Erste Zeichen",
@@ -300,6 +306,12 @@
         "monthOfYear": "Monat im Jahr",
         "weekOfYear": "Kalenderwoche",
         "dayOfWeek": "Wochentag"
+      },
+      "durationGrouping": "Zeitraumgruppierung",
+      "durationGroupingOptions": {
+        "years": "Jahre",
+        "months": "Monate",
+        "days": "Tage"
       },
       "textTransform": "Textumwandlung",
       "textTransformNone": "Keine",
@@ -973,6 +985,8 @@
       "repayDateShort": "Rückzahlung",
       "loanTerm": "Kreditlaufzeit",
       "loanTermShort": "Laufzeit",
+      "totalRuntime": "Gesamtlaufzeit",
+      "totalRuntimeDescription": "Vertragliche Laufzeit vom Vertragsdatum bis zum Ende. Bei Kündigungsfrist ohne Wert.",
       "repaymentPeriod": "Rückzahlungszeitraum",
       "repaymentPeriodShort": "Rückzahl.-ZR",
       "repaidDate": "Rückzahlungsdatum",
