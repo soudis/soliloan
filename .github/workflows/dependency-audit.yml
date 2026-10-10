@@ -32,3 +32,24 @@ jobs:
       # Reads the lockfile only. Advisories listed under auditConfig.ignoreGhsas in pnpm-workspace.yaml are skipped.
       - name: Audit dependencies
         run: pnpm audit --audit-level=high
+
+  image:
+    name: Image Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      # The base stage holds the operating system packages and the Node.js runtime. The audit job covers node_modules.
+      - name: Build the base stage of the app image
+        run: docker build --target base --tag soliloan-base --file docker/app/Dockerfile .
+
+      # Fails only for high or critical vulnerabilities that a newer package version fixes.
+      - name: Scan the image
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
+        with:
+          image: soliloan-base
+          severity-cutoff: high
+          only-fixed: true
+          output-format: table
