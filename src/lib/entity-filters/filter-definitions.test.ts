@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { InterestMethod } from '@prisma/client';
+
 import { AdditionalFieldType, type AdditionalFieldConfig } from '@/lib/schemas/common';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
@@ -14,12 +16,40 @@ const lenderField: AdditionalFieldConfig = {
   required: false,
 };
 
-const project = {
+const project: ProjectWithConfiguration = {
+  id: 'project-1',
+  slug: 'project-1',
+  configurationId: 'config-1',
+  hasHistoricTransactions: false,
+  managers: [],
+  templates: [],
   configuration: {
+    id: 'config-1',
+    name: 'Test',
+    logo: null,
+    email: null,
+    telNo: null,
+    website: null,
+    street: null,
+    addon: null,
+    zip: null,
+    place: null,
+    country: null,
+    iban: null,
+    bic: null,
+    userLanguage: null,
+    lenderRequiredFields: [],
+    lenderSalutation: null,
+    lenderCountry: null,
+    interestMethod: InterestMethod.ACT_360_COMPOUND,
+    altInterestMethods: [],
+    defaultLoanTemplateId: null,
     lenderAdditionalFields: [lenderField],
     loanAdditionalFields: [],
+    loanTemplates: [],
+    deInvestmentActCompliance: false,
   },
-} as ProjectWithConfiguration;
+};
 
 const t = (key: string) => key;
 
