@@ -11,6 +11,23 @@ import type {
 
 export const CHART_EMPTY_GROUP_KEY = '__empty__';
 
+/** Numeric order for duration and limit buckets. Labels such as "über 10 Jahre" are not used. */
+export function groupSortRank(key: string): number | null {
+  const durationBucket = /^duration:[^:]+:bucket:(\d+)$/.exec(key);
+  if (durationBucket?.[1]) {
+    return Number(durationBucket[1]);
+  }
+  const durationValue = /^duration:[^:]+:(\d+)$/.exec(key);
+  if (durationValue?.[1]) {
+    return Number(durationValue[1]);
+  }
+  const numericBucket = /^bucket:(\d+)$/.exec(key);
+  if (numericBucket?.[1]) {
+    return Number(numericBucket[1]);
+  }
+  return null;
+}
+
 /** @deprecated Use CHART_EMPTY_GROUP_KEY */
 export const PIE_EMPTY_GROUP_KEY = CHART_EMPTY_GROUP_KEY;
 
@@ -76,6 +93,26 @@ function formatDurationGroupLabel(
 ): string {
   const translate = commonT as (key: string, values?: Record<string, number>) => string;
   return translate(`duration.${grouping}`, { count });
+}
+
+function formatDurationBucketLabel(
+  thresholds: number[],
+  bucketIndex: number,
+  grouping: ChartDurationGrouping,
+  commonT: (key: string, values?: Record<string, string>) => string,
+  t: (key: string, values?: Record<string, string | number>) => string,
+): string {
+  const unit = (count: number) => formatDurationGroupLabel(commonT, grouping, count);
+  if (bucketIndex === 0) {
+    return t('numericBucketUpTo', { max: unit(thresholds[0] ?? 0) });
+  }
+  if (bucketIndex < thresholds.length) {
+    const prev = thresholds[bucketIndex - 1] ?? 0;
+    const max = thresholds[bucketIndex] ?? prev;
+    return t('numericBucketRange', { min: unit(prev + 1), max: unit(max) });
+  }
+  const last = thresholds[thresholds.length - 1] ?? 0;
+  return t('numericBucketAbove', { min: unit(last) });
 }
 
 function getNumericBucketIndex(value: number, thresholds: number[]): number {
@@ -184,6 +221,13 @@ export function resolveGroupKey(
     }
     const grouping = config.durationGrouping ?? 'years';
     const count = durationGroupCount(num, grouping);
+    if (config.numericBuckets?.length) {
+      const index = getNumericBucketIndex(count, config.numericBuckets);
+      return {
+        key: `duration:${grouping}:bucket:${index}`,
+        label: formatDurationBucketLabel(config.numericBuckets, index, grouping, formatters.commonT, formatters.t),
+      };
+    }
     return {
       key: `duration:${grouping}:${count}`,
       label: formatDurationGroupLabel(formatters.commonT, grouping, count),

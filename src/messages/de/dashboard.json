@@ -68,6 +68,7 @@
         "months": "Monate",
         "days": "Tage"
       },
+      "durationBucketsHint": "Obere Grenzen in der gewählten Einheit (z. B. 5, 10). Ohne Grenzen entsteht eine Gruppe je Jahr, Monat oder Tag.",
       "textTransform": "Textumwandlung",
       "textTransformNone": "Keine",
       "textTransformFirstChars": "Erste Zeichen",
@@ -313,6 +314,7 @@
         "months": "Monate",
         "days": "Tage"
       },
+      "durationBucketsHint": "Obere Grenzen in der gewählten Einheit (z. B. 5, 10). Ohne Grenzen entsteht eine Gruppe je Jahr, Monat oder Tag.",
       "textTransform": "Textumwandlung",
       "textTransformNone": "Keine",
       "textTransformFirstChars": "Erste Zeichen",

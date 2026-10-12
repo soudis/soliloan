@@ -15,7 +15,12 @@ const formatters = {
   emptyLabel: 'Ohne Wert',
   locale: 'de',
   commonT: durationT,
-  t: (key: string) => key,
+  t: (key: string, values?: Record<string, string | number>) => {
+    if (key === 'numericBucketUpTo') return `bis ${values?.max}`;
+    if (key === 'numericBucketRange') return `${values?.min} – ${values?.max}`;
+    if (key === 'numericBucketAbove') return `über ${values?.min}`;
+    return key;
+  },
 };
 
 const durationField = { type: 'number' as const, label: 'Gesamtlaufzeit', valueKind: 'duration' as const };
@@ -50,6 +55,20 @@ describe('resolveGroupKey duration grouping', () => {
       formatters,
     );
     assert.equal(result.label, '18 Monate');
+  });
+
+  it('applies year limits as ranges', () => {
+    const config = {
+      groupBy: { entity: 'loan' as const, field: 'totalRuntimeDays' },
+      durationGrouping: 'years' as const,
+      numericBuckets: [5, 10],
+      topNCategories: 8,
+      filters: [],
+    };
+
+    assert.equal(resolveGroupKey(1826, config, durationField, formatters).label, 'bis 5 Jahre');
+    assert.equal(resolveGroupKey(3650, config, durationField, formatters).label, '6 Jahre – 10 Jahre');
+    assert.equal(resolveGroupKey(4015, config, durationField, formatters).label, 'über 10 Jahre');
   });
 
   it('keeps notice-period loans without a value in the empty group', () => {

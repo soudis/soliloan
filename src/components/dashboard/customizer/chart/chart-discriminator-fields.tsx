@@ -79,24 +79,34 @@ export function ChartDiscriminatorFields({
       </div>
 
       {groupFieldDef?.valueKind === 'duration' ? (
-        <div className="space-y-2">
-          <Label className="text-xs">{t('durationGrouping')}</Label>
-          <Select
-            value={value.durationGrouping ?? 'years'}
-            onValueChange={(v) => patch({ durationGrouping: v as ChartDiscriminatorConfig['durationGrouping'] })}
-          >
-            <SelectTrigger className="h-8 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {CHART_DURATION_GROUPINGS.map((g) => (
-                <SelectItem key={g} value={g}>
-                  {t(`durationGroupingOptions.${g}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <>
+          <div className="space-y-2">
+            <Label className="text-xs">{t('durationGrouping')}</Label>
+            <Select
+              value={value.durationGrouping ?? 'years'}
+              onValueChange={(v) => patch({ durationGrouping: v as ChartDiscriminatorConfig['durationGrouping'] })}
+            >
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CHART_DURATION_GROUPINGS.map((g) => (
+                  <SelectItem key={g} value={g}>
+                    {t(`durationGroupingOptions.${g}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <NumericBucketEditor
+            thresholds={value.numericBuckets ?? []}
+            onChange={(numericBuckets) => patch({ numericBuckets: numericBuckets.length ? numericBuckets : undefined })}
+            translationNamespace={translationNamespace}
+            hintKey="durationBucketsHint"
+            seedThreshold={5}
+            step="1"
+          />
+        </>
       ) : groupFieldDef?.type === 'number' ? (
         <NumericBucketEditor
           thresholds={value.numericBuckets ?? []}
