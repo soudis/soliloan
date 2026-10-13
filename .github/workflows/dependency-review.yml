@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       # Fails only for vulnerable dependencies that the pull request adds or changes.
       - name: Review dependency changes
