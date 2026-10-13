@@ -255,7 +255,8 @@ export function DataTableHeader<TData>({
     );
   }, [views, tableState, defaultColumnVisibility, defaultSorting, isExtraViewDataDirty]);
 
-  const toolbarSpansHeader = toolbarAlign === 'start' && !showFilter && !showColumnVisibility && !viewType && !showExport;
+  const toolbarSpansHeader =
+    toolbarAlign === 'start' && !showFilter && !showColumnVisibility && !viewType && !showExport;
 
   return (
     <>

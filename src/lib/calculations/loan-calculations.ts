@@ -71,9 +71,10 @@ export const getInterestDays = (
   const lastYear = !fromDateParameter;
   if (interestMethod.startsWith('E30_360')) {
     if (toDate.isSameOrBefore(moment(fromDate).endOf('month'))) {
-      return moment(toDate).diff(fromDate, 'days');
+      // A period that runs to the end of the year also counts the night to 1 January.
+      return Math.min(toDate.date(), 30) - Math.min(fromDate.date(), 30) + (firstYear ? 1 : 0);
     }
-    let interestDays = Math.max(30 - fromDate.date() + 1, 0);
+    let interestDays = 30 - Math.min(fromDate.date(), 30) + 1;
     const months = moment(toDate).month() - fromDate.month() - 1;
     interestDays += months * 30;
     interestDays += Math.min(moment(toDate).date(), 30);
@@ -81,7 +82,12 @@ export const getInterestDays = (
     interestDays -= !lastYear && !firstYear ? 1 : 0;
     return interestDays;
   }
-  return toDate.diff(fromDate, 'days');
+  if (firstYear && !lastYear) {
+    // The next year's calculation starts on 1 January, so this period runs until then.
+    return moment(fromDate).add(1, 'year').startOf('year').diff(moment(fromDate).startOf('day'), 'days');
+  }
+  // Calendar days, so a change of the UTC offset between the two dates does not shorten the period.
+  return moment(toDate).startOf('day').diff(moment(fromDate).startOf('day'), 'days');
 };
 
 export const calculateInterestDaily = (
