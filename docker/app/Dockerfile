@@ -2,10 +2,10 @@
 #
 # Node.js base image
 #
-FROM node:24-slim AS base
+FROM node:26-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+RUN npm install -g pnpm@11.18.0
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends libssl-dev imagemagick poppler-utils openssl ca-certificates \
