@@ -1,7 +1,5 @@
-import moment from 'moment';
-
 import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
-import { hasFirstDepositOnOrBefore } from '@/lib/calculations/loan-duration-metrics';
+import { loanStartedOnOrBefore } from '@/lib/calculations/loan-duration-metrics';
 import { interestRateAverageWeight } from '@/lib/dashboard/interest-rate-average';
 import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';
 import { filtersNeedPeriodSnapshot } from '@/lib/entity-filters/filter-definitions';
@@ -72,10 +70,6 @@ function countsAsActiveLoanAtPeriodEnd(
   return loanActiveAtPeriodEnd(loan, periodEnd);
 }
 
-function isSignedAfterPeriodEnd(loan: DashboardLoan, periodEnd: Date): boolean {
-  return moment(loan.signDate).isAfter(periodEnd, 'day');
-}
-
 export function getOrBuildPeriodSnapshot(
   loan: DashboardLoan,
   period: HistoryPeriod,
@@ -102,13 +96,13 @@ export function filterLoansForHistoryColumn(
   cache: AggregateMetricCache | undefined,
 ): DashboardLoan[] {
   if (column.filters.length === 0) {
-    return loans.filter((loan) => hasFirstDepositOnOrBefore(loan, period.periodEnd));
+    return loans.filter((loan) => loanStartedOnOrBefore(loan, period.periodEnd));
   }
 
   const needsSnapshot = filtersNeedPeriodSnapshot(column.filters);
 
   return loans.filter((loan) => {
-    if (isSignedAfterPeriodEnd(loan, period.periodEnd)) {
+    if (!loanStartedOnOrBefore(loan, period.periodEnd)) {
       return false;
     }
 

@@ -2,11 +2,13 @@
 
 import type { ViewType } from '@prisma/client';
 import type { Table } from '@tanstack/react-table';
-import { X } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type KeyboardEvent, useEffect, useMemo, useRef } from 'react';
 
 import { FilterFieldGroup, filterOperatorSegmentClass } from '@/components/filters/filter-field-group';
+import { Button } from '@/components/ui/button';
+import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import {
   BooleanFilter,
   DateFilter,
@@ -15,17 +17,18 @@ import {
   SelectFilter,
   TextFilter,
 } from '@/components/ui/data-table-column-filters/index';
+import { DataTableFilterFieldMenu } from '@/components/ui/data-table-filter-field-menu';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { DataTableColumnFilters } from '@/components/ui/data-table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
 import {
+  createDefaultFilterValue,
   FILTER_REMOVE_VALUE,
   GLOBAL_SEARCH_ALL,
-  createDefaultFilterValue,
   getAvailableFilterTargets,
   getVisibleFilterColumnIds,
   removePresentFilter,
+  resolveColumnChooserLabel,
   resolveColumnFilterLabel,
   retargetPresentFilter,
   upsertPresentFilterValue,
@@ -352,10 +355,10 @@ export function DataTableFilterChip<TData>({
 
   const selectValue = selectedField || GLOBAL_SEARCH_ALL;
 
-  const fieldSelect = (
+  const fieldSelect = isQuickSearch ? (
     <Select value={selectValue} onValueChange={handleTargetChange}>
       <SelectTrigger
-        aria-label={isQuickSearch ? t('globalFilterField') : t('filterTarget')}
+        aria-label={t('globalFilterField')}
         className={cn(
           filterOperatorSegmentClass('default'),
           sharedSegmentClass,
@@ -365,22 +368,40 @@ export function DataTableFilterChip<TData>({
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {isQuickSearch ? <SelectItem value={GLOBAL_SEARCH_ALL}>{t('globalFilterAll')}</SelectItem> : null}
+        <SelectItem value={GLOBAL_SEARCH_ALL}>{t('globalFilterAll')}</SelectItem>
         {fieldOptions.map((field) => (
           <SelectItem key={field.id} value={field.id}>
             {field.label}
           </SelectItem>
         ))}
-        {!isQuickSearch ? (
-          <>
-            <SelectSeparator />
-            <SelectItem value={FILTER_REMOVE_VALUE} leadingIcon={<X className="size-3.5" />}>
-              {t('removeFilter')}
-            </SelectItem>
-          </>
-        ) : null}
       </SelectContent>
     </Select>
+  ) : (
+    <DataTableFilterFieldMenu
+      table={table}
+      columnFilters={columnFilters}
+      tableState={tableState}
+      includeColumnId={columnId}
+      onSelect={handleColumnTargetChange}
+      onRemove={() => handleColumnTargetChange(FILTER_REMOVE_VALUE)}
+      trigger={
+        <Button
+          type="button"
+          variant="outline"
+          aria-label={t('filterTarget')}
+          className={cn(
+            filterOperatorSegmentClass('default'),
+            sharedSegmentClass,
+            'max-w-[9rem] justify-between font-bold',
+          )}
+        >
+          <span className="truncate">
+            {columnId ? resolveColumnChooserLabel(table, columnId, columnFilters) : t('filterTarget')}
+          </span>
+          <ChevronDown className="size-4 shrink-0 opacity-50" />
+        </Button>
+      }
+    />
   );
 
   if (!selectedConfig || selectedField === GLOBAL_SEARCH_ALL) {

@@ -6,6 +6,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef } fr
 import type { DashboardLender, DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { useProject } from '@/components/providers/project-provider';
 import { buildCumulativeTimeline } from '@/lib/dashboard/history-table/cumulative-timeline';
+import { EMPTY_NOTIFICATION_EXTRAS, type NotificationExtras } from '@/lib/dashboard/notifications/notification-extras';
 import type { DashboardWidgetResultsByScope } from '@/lib/dashboard/widget-compute-result-types';
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
@@ -22,6 +23,7 @@ export type DashboardDataContextValue = {
   getOrComputeWidgetResult: <T>(key: string, compute: () => T) => T;
   hasFullDataset: boolean;
   widgetResults: DashboardWidgetResultsByScope;
+  notificationExtras: NotificationExtras;
 };
 
 const DashboardDataContext = createContext<DashboardDataContextValue | null>(null);
@@ -33,6 +35,7 @@ export function DashboardDataProvider({
   toDate,
   hasFullDataset,
   widgetResults = EMPTY_WIDGET_RESULTS,
+  notificationExtras = EMPTY_NOTIFICATION_EXTRAS,
 }: {
   children: React.ReactNode;
   loans: DashboardLoan[];
@@ -40,6 +43,7 @@ export function DashboardDataProvider({
   toDate: Date;
   hasFullDataset: boolean;
   widgetResults?: DashboardWidgetResultsByScope;
+  notificationExtras?: NotificationExtras;
 }) {
   const { project } = useProject();
   const tLoans = useTranslations('dashboard.loans');
@@ -97,6 +101,7 @@ export function DashboardDataProvider({
       getOrComputeWidgetResult,
       hasFullDataset,
       widgetResults,
+      notificationExtras,
     }),
     [
       loansWithTimeline,
@@ -107,6 +112,7 @@ export function DashboardDataProvider({
       getOrComputeWidgetResult,
       hasFullDataset,
       widgetResults,
+      notificationExtras,
     ],
   );
 

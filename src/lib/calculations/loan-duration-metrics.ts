@@ -41,6 +41,28 @@ export function hasFirstDepositOnOrBefore(loan: LoanWithTransactions, periodEnd:
   return firstDeposit != null && !moment(firstDeposit).isAfter(periodEnd, 'day');
 }
 
+type LoanTimelineSource = LoanWithTransactions & {
+  signDate?: Date | string | null;
+};
+
+/** First deposit when one exists, otherwise the contract date. */
+export function getLoanTimelineStart(loan: LoanTimelineSource): Date | null {
+  const firstDeposit = getFirstDepositDate(loan);
+  if (firstDeposit) {
+    return firstDeposit;
+  }
+  if (!loan.signDate) {
+    return null;
+  }
+  const signDate = loan.signDate instanceof Date ? loan.signDate : new Date(loan.signDate);
+  return Number.isNaN(signDate.getTime()) ? null : signDate;
+}
+
+export function loanStartedOnOrBefore(loan: LoanTimelineSource, periodEnd: Date): boolean {
+  const start = getLoanTimelineStart(loan);
+  return start != null && !moment(start).isAfter(periodEnd, 'day');
+}
+
 export function getLoanTermEndDate(loan: LoanWithTransactions, toDate: Date): Date {
   return isRepaid(asLoanWithRelations(loan), toDate) ?? toDate;
 }
