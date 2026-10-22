@@ -9,6 +9,8 @@ import { dashboardCustomizeParser } from '@/lib/dashboard/dashboard-url-params';
 import { createDefaultLayoutData } from '@/lib/dashboard/layout-utils';
 import { omitDashboardLoanTimelines } from '@/lib/dashboard/load-dashboard-stats';
 import { loadDashboardWidgetI18n } from '@/lib/dashboard/load-dashboard-widget-i18n';
+import { loadNotificationExtras } from '@/lib/dashboard/notifications/load-notification-extras';
+import { EMPTY_NOTIFICATION_EXTRAS } from '@/lib/dashboard/notifications/notification-extras';
 import type { DashboardWidgetResultsByScope } from '@/lib/dashboard/widget-compute-result-types';
 import {
   buildDashboardWidgetResultsCacheKey,
@@ -70,9 +72,11 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   let loans: DashboardLoan[] = [];
   let lenders: DashboardLender[] = [];
   let hasFullDataset = false;
+  let notificationExtras = EMPTY_NOTIFICATION_EXTRAS;
 
   if (isCustomizing) {
-    const statsResult = await statsPromise;
+    const [statsResult, extras] = await Promise.all([statsPromise, loadNotificationExtras(projectId)]);
+    notificationExtras = extras;
     if (!statsResult || 'error' in statsResult || !statsResult.loans || !statsResult.lenders || !statsResult.toDate) {
       return <DashboardLoadError />;
     }
@@ -89,11 +93,13 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       toDate = new Date(cached.toDate);
       widgetResults = cached.widgetResults;
     } else {
-      const [statsResult, project, i18n] = await Promise.all([
+      const [statsResult, project, i18n, extras] = await Promise.all([
         getDashboardStats(projectId),
         getProjectUnsafe(projectId),
         loadDashboardWidgetI18n(),
+        loadNotificationExtras(projectId),
       ]);
+      notificationExtras = extras;
       if ('error' in statsResult || !statsResult.loans || !statsResult.lenders || !statsResult.toDate) {
         return <DashboardLoadError />;
       }
@@ -105,6 +111,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           toDate,
           project,
           i18n,
+          notificationExtras,
         };
         widgetResults = {
           project: computeLayoutWidgetResults(projectLayout, computeCtx),
@@ -129,6 +136,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       toDate={toDate}
       hasFullDataset={hasFullDataset}
       widgetResults={widgetResults}
+      notificationExtras={notificationExtras}
     >
       <DashboardCustomizer
         key={projectId}

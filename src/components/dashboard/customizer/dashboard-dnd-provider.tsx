@@ -124,7 +124,7 @@ export function DashboardDndProvider({ children }: { children: React.ReactNode }
 
     if (activeData?.kind === 'toolbox' && activeData.widgetType) {
       const type = activeData.widgetType as DashboardWidgetType;
-      const title = '';
+      const title = type === 'notifications' ? t('widgetTypes.notifications') : '';
 
       if (overData?.kind === 'new-row') {
         setLayout(addWidgetFromTypeInNewRow(layout, type, title));
