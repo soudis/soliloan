@@ -96,9 +96,18 @@ function resolveCellValue<T>(row: Row<T>, column: Column<T, unknown>): ResolvedC
     }
     case 'integer':
     case 'duration': {
-      const num = typeof raw === 'number' ? raw : numberParser.parse(String(raw));
-      if (num === null || Number.isNaN(num)) return { value: undefined, type: exportType, wrapText };
-      return { value: Math.trunc(num), type: exportType, wrapText };
+      if (typeof raw === 'number' && Number.isFinite(raw)) {
+        return { value: Math.trunc(raw), type: exportType, wrapText };
+      }
+      if (typeof raw === 'string') {
+        const num = numberParser.parse(raw);
+        if (num !== null && !Number.isNaN(num)) {
+          return { value: Math.trunc(num), type: exportType, wrapText };
+        }
+        // Non-numeric labels (e.g. "Durch Kündigung" on Gesamtlaufzeit) export as text.
+        return { value: raw, type: 'text', wrapText };
+      }
+      return { value: undefined, type: exportType, wrapText };
     }
     case 'number': {
       const num = typeof raw === 'number' ? raw : numberParser.parse(String(raw));

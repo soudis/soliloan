@@ -16,7 +16,7 @@ import {
   getFirstDepositDateFromTransactions,
   getLoanTermDays,
   getRepaymentPeriodDays,
-  getTotalRuntimeDays,
+  getTotalRuntime,
 } from './loan-duration-metrics';
 
 export const isRepaid = (loan: LoanWithRelations, toDate: Date) => {
@@ -602,7 +602,7 @@ export function calculateLoanFieldsWithPerYear<T>(loan: LoanWithRelations & T, o
     interestError: numbers.toDate.interestError.toNumber(),
     loanTermDays: getLoanTermDays(loan, toDate),
     repaymentPeriodDays: getRepaymentPeriodDays(loan, toDate),
-    totalRuntimeDays: getTotalRuntimeDays(loan),
+    totalRuntime: getTotalRuntime(loan),
     ...calculateOutstandingDeposits(loan, toDate),
     // add interests per year as virtual transactions
     transactions: loan.transactions

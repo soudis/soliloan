@@ -16,16 +16,23 @@ import type { EntityFilterEntity, EntityFilterFieldOption } from '@/types/entity
 import type { NumberFilterOperator } from '@/types/number-filter-value';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
-export type DataTableColumnFilterType = 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
+export type DataTableColumnFilterType =
+  | 'text'
+  | 'select'
+  | 'multi-select'
+  | 'number'
+  | 'duration'
+  | 'date'
+  | 'boolean';
 
 export type DataTableColumnFilterDefinition = {
   type: DataTableColumnFilterType;
   label: string;
   options?: { label: string; value: string }[];
   allowEmpty?: boolean;
+  /** Offer the "Durch Kündigung" operator (Gesamtlaufzeit only). */
+  terminationValue?: boolean;
   defaultOperator?: NumberFilterOperator;
-  /** Day-count fields that group by year, month, or day instead of numeric limits. */
-  valueKind?: 'duration';
 };
 
 const LOAN_STATUS_OPTIONS = [
@@ -71,9 +78,9 @@ export function buildLoanColumnFiltersMap(
       allowEmpty: true,
     },
     outstandingDepositSinceDays: {
-      type: 'number',
+      type: 'duration',
       label: t('table.outstandingDepositSinceDays'),
-      valueKind: 'duration',
+      allowEmpty: true,
     },
     depositsCount: { type: 'number', label: t('table.depositsCount') },
     requiredDepositsCount: { type: 'number', label: t('table.requiredDepositsCount') },
@@ -104,10 +111,15 @@ export function buildLoanColumnFiltersMap(
       label: t('table.terminationModalities'),
       allowEmpty: true,
     },
-    totalRuntimeDays: { type: 'number', label: t('table.totalRuntime'), allowEmpty: true, valueKind: 'duration' },
+    totalRuntimeDays: {
+      type: 'duration',
+      label: t('table.totalRuntime'),
+      allowEmpty: true,
+      terminationValue: true,
+    },
     repayDate: { type: 'date', label: t('table.repayDate'), allowEmpty: true },
-    loanTermDays: { type: 'number', label: t('table.loanTerm'), allowEmpty: true, valueKind: 'duration' },
-    repaymentPeriodDays: { type: 'number', label: t('table.repaymentPeriod'), allowEmpty: true, valueKind: 'duration' },
+    loanTermDays: { type: 'duration', label: t('table.loanTerm'), allowEmpty: true },
+    repaymentPeriodDays: { type: 'duration', label: t('table.repaymentPeriod'), allowEmpty: true },
     status: {
       type: 'select',
       label: t('table.status'),

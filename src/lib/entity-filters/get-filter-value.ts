@@ -152,7 +152,13 @@ export function getLoanFilterValue(
     case 'terminationModalities':
       return formatTerminationModalities(loan, commonT);
     case 'totalRuntimeDays':
-      return loan.totalRuntimeDays;
+      return loan.totalRuntime;
+    case 'loanTermDays':
+      return loan.loanTermDays;
+    case 'repaymentPeriodDays':
+      return loan.repaymentPeriodDays;
+    case 'outstandingDepositSinceDays':
+      return loan.outstandingDepositSinceDays;
     case 'repayDate':
       return loan.repayDate;
     case 'altInterestMethod':

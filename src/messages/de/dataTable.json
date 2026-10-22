@@ -44,7 +44,24 @@
     "gte": "≥",
     "lte": "≤",
     "empty": "ist leer",
-    "notEmpty": "ist nicht leer"
+    "notEmpty": "ist nicht leer",
+    "termination": "Durch Kündigung"
+  },
+  "durationFilterOperators": {
+    "between": "zwischen",
+    "eq": "=",
+    "gt": ">",
+    "lt": "<",
+    "gte": "≥",
+    "lte": "≤",
+    "empty": "ist leer",
+    "notEmpty": "ist nicht leer",
+    "termination": "Durch Kündigung"
+  },
+  "durationFilterUnits": {
+    "days": "Tage",
+    "months": "Monate",
+    "years": "Jahre"
   },
   "numberFilterMin": "Min",
   "numberFilterMax": "Max",

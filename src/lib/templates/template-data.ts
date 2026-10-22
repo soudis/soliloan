@@ -17,6 +17,7 @@ import { withSystemMergeData } from '@/lib/templates/system-merge-links';
 import { withTemplateRaw } from '@/lib/templates/template-condition';
 import {
   type RawLoanDates,
+  formatLoanTotalRuntimeMergeValue,
   rawLenderFields,
   rawLoanFields,
   rawNoteScope,
@@ -588,6 +589,7 @@ function formatLoanFields(loan: TemplateLoanRecord, locale: string) {
     repaidDateLong: loan.repaidDate ? formatDateLong(loan.repaidDate, locale) : '',
     repayDate: loan.repayDate ? formatDateShort(loan.repayDate, locale) : '',
     repayDateLong: loan.repayDate ? formatDateLong(loan.repayDate, locale) : '',
+    totalRuntime: formatLoanTotalRuntimeMergeValue(loan),
     isTerminated: loan.isTerminated ? 'Ja' : 'Nein',
   };
 }

@@ -165,7 +165,8 @@
         "gte": "≥",
         "lte": "≤",
         "empty": "ist leer",
-        "notEmpty": "ist nicht leer"
+        "notEmpty": "ist nicht leer",
+        "termination": "Durch Kündigung"
       },
       "numberFilterMin": "Min",
       "numberFilterMax": "Max",
@@ -988,7 +989,7 @@
       "loanTerm": "Kreditlaufzeit",
       "loanTermShort": "Laufzeit",
       "totalRuntime": "Gesamtlaufzeit",
-      "totalRuntimeDescription": "Vertragliche Laufzeit vom Vertragsdatum bis zum Ende. Bei Kündigungsfrist ohne Wert.",
+      "totalRuntimeDescription": "Vertragliche Laufzeit vom Vertragsdatum bis zum Ende.",
       "repaymentPeriod": "Rückzahlungszeitraum",
       "repaymentPeriodShort": "Rückzahl.-ZR",
       "repaidDate": "Rückzahlungsdatum",
@@ -1004,7 +1005,7 @@
       "outstandingDepositSinceDate": "Ausstehender Geldeingang (Seit Datum)",
       "outstandingDepositSinceDateShort": "Ausstehend seit",
       "outstandingDepositSinceDateDescription": "Datum, seit dem ein erwarteter Geldeingang aussteht.",
-      "outstandingDepositSinceDays": "Ausstehender Geldeingang (Seit Tagen)",
+      "outstandingDepositSinceDays": "Ausstehender Geldeingang",
       "depositsCount": "Geldeingänge (Anzahl)",
       "depositsCountShort": "Eingänge",
       "requiredDepositsCount": "Benötigte Geldeingänge (Anzahl)",
@@ -1482,7 +1483,6 @@
       "downloadReport": "Report herunterladen"
     }
   },
-
   "myLoans": {
     "title": "Meine Kredite",
     "welcome": "Willkommen, {name}!",
@@ -1521,7 +1521,6 @@
       "next": "Weiter"
     }
   },
-
   "investmentTypes": {
     "title": "Anlagearten",
     "description": "Verwalten Sie Anlagearten zur Einhaltung der Bagatellgrenzen des deutschen Anlegerschutzes-Gesetzes.",

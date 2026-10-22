@@ -4,6 +4,10 @@ import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import type { TableUrlState } from '@/lib/hooks/use-table-url-state';
 import { isInactiveBooleanFilterValue } from '@/types/boolean-filter-value';
 import { createDefaultDateFilterValue, isInactiveDateFilterValue } from '@/types/date-filter-value';
+import {
+  createDefaultDurationFilterValue,
+  isInactiveDurationFilterValue,
+} from '@/types/duration-filter-value';
 import { createDefaultEnumFilterValue, isInactiveEnumFilterValue } from '@/types/enum-filter-value';
 import {
   createDefaultNumberFilterValue,
@@ -28,7 +32,7 @@ export function isInactiveFilterValue(
 
   if (value && typeof value === 'object' && !Array.isArray(value) && 'operator' in value) {
     const operator = (value as { operator: string }).operator;
-    if (operator === 'empty' || operator === 'notEmpty') {
+    if (operator === 'empty' || operator === 'notEmpty' || operator === 'termination') {
       return false;
     }
     switch (type) {
@@ -36,6 +40,8 @@ export function isInactiveFilterValue(
         return isInactiveDateFilterValue(value);
       case 'number':
         return isInactiveNumberFilterValue(value, defaultOperator);
+      case 'duration':
+        return isInactiveDurationFilterValue(value);
       case 'select':
         return isInactiveEnumFilterValue(value, 'eq');
       case 'multi-select':
@@ -48,6 +54,8 @@ export function isInactiveFilterValue(
   switch (type) {
     case 'number':
       return isInactiveNumberFilterValue(value, defaultOperator);
+    case 'duration':
+      return isInactiveDurationFilterValue(value);
     case 'select':
       return isInactiveEnumFilterValue(value, 'eq');
     case 'multi-select':
@@ -65,6 +73,8 @@ export function createDefaultFilterValue(config: ColumnFilterConfig): unknown {
       return '';
     case 'number':
       return createDefaultNumberFilterValue(config.defaultOperator ?? 'between');
+    case 'duration':
+      return createDefaultDurationFilterValue();
     case 'date':
       return createDefaultDateFilterValue();
     case 'select':

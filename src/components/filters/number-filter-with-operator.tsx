@@ -20,6 +20,7 @@ import {
   createDefaultNumberFilterValueForOperator,
   NUMBER_FILTER_EMPTY_OPERATORS,
   NUMBER_FILTER_OPERATORS,
+  NUMBER_FILTER_TERMINATION_OPERATORS,
   type NumberFilterOperator,
   type NumberFilterOperatorWithEmpty,
   type NumberFilterValue,
@@ -33,13 +34,14 @@ const NUMBER_OPERATOR_SHORTCUTS: Record<string, 'eq' | 'gt' | 'lt'> = {
 };
 
 function hasPayload(operator: NumberFilterOperatorWithEmpty): boolean {
-  return operator !== 'empty' && operator !== 'notEmpty';
+  return operator !== 'empty' && operator !== 'notEmpty' && operator !== 'termination';
 }
 
 export function NumberFilterWithOperator({
   value,
   onChange,
   allowEmpty = false,
+  terminationValue = false,
   defaultOperator = 'between',
   translationNamespace = 'dataTable',
   variant = 'row',
@@ -48,6 +50,7 @@ export function NumberFilterWithOperator({
   value: unknown;
   onChange: (value: NumberFilterValue) => void;
   allowEmpty?: boolean;
+  terminationValue?: boolean;
   defaultOperator?: NumberFilterOperator;
   translationNamespace?: string;
   variant?: FilterFieldVariant;
@@ -58,8 +61,9 @@ export function NumberFilterWithOperator({
 
   const availableOperators = useMemo(() => {
     const emptyOps = allowEmpty ? [...NUMBER_FILTER_EMPTY_OPERATORS] : [];
-    return [...NUMBER_FILTER_OPERATORS, ...emptyOps];
-  }, [allowEmpty]);
+    const terminationOps = terminationValue ? [...NUMBER_FILTER_TERMINATION_OPERATORS] : [];
+    return [...NUMBER_FILTER_OPERATORS, ...emptyOps, ...terminationOps];
+  }, [allowEmpty, terminationValue]);
 
   const setOperator = (operator: NumberFilterOperatorWithEmpty) => {
     if (operator === parsed.operator) {

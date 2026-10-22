@@ -4,10 +4,17 @@ import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import type { ColumnGroupMeta, DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { formatTotalRuntime } from '@/lib/calculations/loan-duration-metrics';
+import { TerminationType } from '@prisma/client';
+
+import {
+  formatTotalRuntime,
+  getTotalRuntime,
+  type TotalRuntime,
+} from '@/lib/calculations/loan-duration-metrics';
 import {
   matchesBooleanFilter,
   matchesDateFilter,
+  matchesDurationFilter,
   matchesEnumFilter,
   matchesTextFilter,
 } from '@/lib/entity-filters/filter-matchers';
@@ -36,6 +43,10 @@ export function enumFilter<T>(row: Row<T>, columnId: string, filterValue: unknow
 // Define the custom filter function for date fields
 export function dateRangeFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
   return matchesDateFilter(row.getValue(columnId), filterValue, new Date());
+}
+
+export function durationRangeFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
+  return matchesDurationFilter(row.getValue(columnId), filterValue);
 }
 
 // Define the custom filter function type
@@ -416,25 +427,55 @@ export function createDurationDaysColumn<T>(
     t,
   );
 
-  column.filterFn = 'inNumberRange';
+  column.filterFn = durationRangeFilter as ColumnDef<T>['filterFn'];
   return mergeExportMeta(column, { type: 'integer' });
 }
 
+export function totalRuntimeSortValue(runtime: TotalRuntime | null | undefined): number | null {
+  if (!runtime) {
+    return null;
+  }
+  if (runtime.terminationType === TerminationType.TERMINATION) {
+    return Number.POSITIVE_INFINITY;
+  }
+  return runtime.days;
+}
+
 export function createTotalRuntimeColumn<
-  T extends Pick<Loan, 'terminationType' | 'signDate' | 'endDate' | 'duration' | 'durationType'>,
+  T extends Pick<Loan, 'terminationType' | 'signDate' | 'endDate' | 'duration' | 'durationType'> & {
+    totalRuntime?: TotalRuntime;
+  },
 >(t: (key: string) => string, durationT: (key: string, values?: Record<string, number>) => string): ColumnDef<T> {
   const column = createColumn<T>(
     {
       id: 'totalRuntimeDays',
-      accessorKey: 'totalRuntimeDays',
+      accessorKey: 'totalRuntime',
       header: 'table.totalRuntime',
+      accessorFn: (row) => row.totalRuntime ?? getTotalRuntime(row),
       cell: ({ row }) => <div className="tabular-nums">{formatTotalRuntime(row.original, durationT)}</div>,
+      sortingFn: (rowA, rowB, columnId) => {
+        const a = totalRuntimeSortValue(rowA.getValue(columnId) as TotalRuntime | null | undefined);
+        const b = totalRuntimeSortValue(rowB.getValue(columnId) as TotalRuntime | null | undefined);
+        if (a === b) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+        return a < b ? -1 : 1;
+      },
     },
     t,
   );
 
-  column.filterFn = 'inNumberRange';
-  return mergeExportMeta(column, { type: 'integer' });
+  column.filterFn = durationRangeFilter as ColumnDef<T>['filterFn'];
+  return mergeExportMeta(column, {
+    type: 'integer',
+    getValue: (row) => {
+      const runtime = (row as T).totalRuntime ?? getTotalRuntime(row as T);
+      if (runtime.terminationType === TerminationType.TERMINATION) {
+        return durationT('byTermination');
+      }
+      return runtime.days;
+    },
+  });
 }
 
 export function createPercentageColumn<T>(

@@ -12,6 +12,7 @@ import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import {
   BooleanFilter,
   DateFilter,
+  DurationFilter,
   MultiSelectFilter,
   NumberFilter,
   SelectFilter,
@@ -462,7 +463,17 @@ export function DataTableFilterChip<TData>({
           <NumberFilter
             filterState={selectedFilterState}
             allowEmpty={selectedConfig.allowEmpty}
+            terminationValue={selectedConfig.terminationValue}
             defaultOperator={selectedConfig.defaultOperator}
+            onFilterChange={onChange}
+          />
+        );
+      case 'duration':
+        return (
+          <DurationFilter
+            filterState={selectedFilterState}
+            allowEmpty={selectedConfig.allowEmpty}
+            terminationValue={selectedConfig.terminationValue}
             onFilterChange={onChange}
           />
         );

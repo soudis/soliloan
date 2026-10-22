@@ -47,12 +47,13 @@ export function ChartDiscriminatorFields({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label className="text-xs">{t('groupBy')}</Label>
+        <Label className="text-sm">{t('groupBy')}</Label>
         <EntityFilterFieldPicker
           value={groupByValue}
           fieldOptions={fieldOptions}
           translationNamespace={translationNamespace}
           placeholderKey="groupByPlaceholder"
+          size="sm"
           onChange={(entity, field) => {
             if (entity === 'transaction') {
               return;
@@ -66,7 +67,7 @@ export function ChartDiscriminatorFields({
               durationGrouping: undefined,
               textTransform: undefined,
             };
-            if (def?.valueKind === 'duration') {
+            if (def?.type === 'duration') {
               next.durationGrouping = 'years';
             } else if (def?.type === 'number') {
               next.numericBuckets = value.numericBuckets ?? [1000, 5000];
@@ -78,7 +79,7 @@ export function ChartDiscriminatorFields({
         />
       </div>
 
-      {groupFieldDef?.valueKind === 'duration' ? (
+      {groupFieldDef?.type === 'duration' ? (
         <>
           <div className="space-y-2">
             <Label className="text-xs">{t('durationGrouping')}</Label>

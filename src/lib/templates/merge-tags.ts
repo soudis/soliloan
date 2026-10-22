@@ -79,6 +79,7 @@ export const LOAN_FIELDS = [
   'repaidDateLong',
   'repayDate',
   'repayDateLong',
+  'totalRuntime',
   'isTerminated',
 ] as const;
 
@@ -226,6 +227,7 @@ export const FIELD_TYPES: Record<string, FieldType> = {
   'loan.repaidDateLong': 'date',
   'loan.repayDate': 'date',
   'loan.repayDateLong': 'date',
+  'loan.totalRuntime': 'string',
   'loan.isTerminated': 'boolean',
   // Transaction
   'transaction.type': 'enum',

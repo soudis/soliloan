@@ -21,6 +21,7 @@ import {
   createTerminationModalitiesColumn,
   createTotalRuntimeColumn,
   formatTerminationModalities,
+  totalRuntimeSortValue,
   withColumnGroup,
 } from '@/lib/table-column-utils';
 import type { LoanWithCalculations } from '@/types/loans';
@@ -332,6 +333,8 @@ export function getLoanSortValue(
   switch (normalizedId) {
     case 'terminationModalities':
       return formatTerminationModalities(row, commonT);
+    case 'totalRuntimeDays':
+      return totalRuntimeSortValue(row.totalRuntime);
     case 'status':
       return commonT(`enums.loan.status.${row.status}`);
     case 'terminationType':

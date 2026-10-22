@@ -3,6 +3,7 @@
 import type { Country, Lender, Salutation, TemplateDataset } from '@prisma/client';
 import { db } from '@/lib/db';
 import { interestPaymentTypeLabel } from '@/lib/templates/interest-payment-type-label';
+import { formatLoanTotalRuntimeMergeValue } from '@/lib/templates/template-raw-scope';
 import { formatDateLong, formatDateShort } from '@/lib/utils';
 import type { LenderWithRelations } from '@/types/lenders';
 import type { LoanWithRelations } from '@/types/loans';
@@ -320,6 +321,7 @@ export function generateLoanMergeTagValues(loan: LoanWithRelations): Record<stri
       terminationDateLong: formatDateLong(loan.terminationDate, SAMPLE_LOCALE),
       interestPaymentType: interestPaymentTypeLabel(loan.interestPaymentType),
       contractStatus: loan.contractStatus === 'COMPLETED' ? 'Abgeschlossen' : 'Laufend',
+      totalRuntime: formatLoanTotalRuntimeMergeValue(loan),
       balance: formatCurrency(totalDeposits - totalWithdrawals + totalInterest),
       accruedInterest: formatCurrency(totalInterest),
       totalDeposits: formatCurrency(totalDeposits),

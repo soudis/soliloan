@@ -5,7 +5,7 @@ import { DurationType, PaymentType, TerminationType, TransactionType, type Trans
 import {
   formatTotalRuntime,
   getLoanTimelineStart,
-  getTotalRuntimeDays,
+  getTotalRuntime,
   loanStartedOnOrBefore,
 } from './loan-duration-metrics';
 
@@ -80,6 +80,7 @@ describe('getLoanTimelineStart', () => {
 
 const durationT = (key: string, values?: Record<string, number>) => {
   const count = values?.count ?? 0;
+  if (key === 'byTermination') return 'Durch Kündigung';
   if (key === 'zeroDays') return '0 Tage';
   if (key === 'years') return count === 1 ? `${count} Jahr` : `${count} Jahre`;
   if (key === 'months') return count === 1 ? `${count} Monat` : `${count} Monate`;
@@ -87,18 +88,16 @@ const durationT = (key: string, values?: Record<string, number>) => {
   return key;
 };
 
-describe('getTotalRuntimeDays', () => {
-  it('is empty for notice-period loans', () => {
-    assert.equal(
-      getTotalRuntimeDays({
-        terminationType: TerminationType.TERMINATION,
-        signDate: new Date('2020-01-15'),
-        endDate: new Date('2025-01-15'),
-        duration: 5,
-        durationType: DurationType.YEARS,
-      }),
-      null,
-    );
+describe('getTotalRuntime', () => {
+  it('marks notice-period loans as termination without days', () => {
+    const runtime = getTotalRuntime({
+      terminationType: TerminationType.TERMINATION,
+      signDate: new Date('2020-01-15'),
+      endDate: new Date('2025-01-15'),
+      duration: 5,
+      durationType: DurationType.YEARS,
+    });
+    assert.deepEqual(runtime, { terminationType: TerminationType.TERMINATION, days: null });
     assert.equal(
       formatTotalRuntime(
         {
@@ -107,7 +106,7 @@ describe('getTotalRuntimeDays', () => {
         },
         durationT,
       ),
-      '–',
+      'Durch Kündigung',
     );
   });
 
@@ -119,7 +118,7 @@ describe('getTotalRuntimeDays', () => {
     };
 
     assert.equal(formatTotalRuntime(loan, durationT), '5 Jahre');
-    assert.ok((getTotalRuntimeDays(loan) ?? 0) > 0);
+    assert.ok((getTotalRuntime(loan).days ?? 0) > 0);
   });
 
   it('measures a duration from the sign date', () => {
@@ -131,14 +130,26 @@ describe('getTotalRuntimeDays', () => {
     };
 
     assert.equal(formatTotalRuntime(loan, durationT), '1 Jahr 6 Monate');
-    assert.equal(
-      getTotalRuntimeDays({
+    assert.deepEqual(
+      getTotalRuntime({
         terminationType: TerminationType.DURATION,
         signDate: new Date('2020-01-15T12:00:00'),
         duration: null,
         durationType: DurationType.MONTHS,
       }),
-      null,
+      { terminationType: TerminationType.DURATION, days: null },
+    );
+    assert.equal(
+      formatTotalRuntime(
+        {
+          terminationType: TerminationType.DURATION,
+          signDate: new Date('2020-01-15T12:00:00'),
+          duration: null,
+          durationType: DurationType.MONTHS,
+        },
+        durationT,
+      ),
+      '–',
     );
   });
 });

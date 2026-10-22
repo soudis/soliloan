@@ -2,6 +2,7 @@ import { parseTemplateCondition, type TemplateConditionRule } from '@/lib/templa
 import type { TemplateConditionField } from '@/lib/templates/template-condition-fields';
 import { parseBooleanFilterValue } from '@/types/boolean-filter-value';
 import { parseDateFilterValue } from '@/types/date-filter-value';
+import { parseDurationFilterValue, type DurationFilterUnit } from '@/types/duration-filter-value';
 import { parseEnumFilterValue } from '@/types/enum-filter-value';
 import { parseNumberFilterValue } from '@/types/number-filter-value';
 import { parseTextFilterValue } from '@/types/text-filter-value';
@@ -12,6 +13,7 @@ export type ConditionSummaryLabels = {
   no: string;
   operators: {
     number: Record<string, string>;
+    duration: Record<string, string>;
     text: Record<string, string>;
     enum: Record<string, string>;
     date: Record<string, string>;
@@ -19,7 +21,7 @@ export type ConditionSummaryLabels = {
   between: (start: string, end: string) => string;
   from: (value: string) => string;
   until: (value: string) => string;
-  duration: (count: number, unit: 'days' | 'months') => string;
+  duration: (count: number, unit: 'days' | 'months' | 'years') => string;
   relative: {
     last: (span: string) => string;
     next: (span: string) => string;
@@ -27,7 +29,6 @@ export type ConditionSummaryLabels = {
     newerThan: (span: string) => string;
   };
 };
-
 const numberFormat = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 });
 
 function formatNumberValue(value: number): string {
@@ -57,6 +58,7 @@ function formatNumberRule(label: string, value: unknown, labels: ConditionSummar
   switch (parsed.operator) {
     case 'empty':
     case 'notEmpty':
+    case 'termination':
       return `${label} ${operator}`;
     case 'between':
       return joinBounds(
@@ -145,6 +147,29 @@ function formatBooleanRule(label: string, value: unknown, labels: ConditionSumma
   return `${label} = ${parsed === 'true' ? labels.yes : labels.no}`;
 }
 
+function formatDurationAmount(amount: number, unit: DurationFilterUnit, labels: ConditionSummaryLabels): string {
+  return labels.duration(amount, unit);
+}
+
+function formatDurationRule(label: string, value: unknown, labels: ConditionSummaryLabels): string {
+  const parsed = parseDurationFilterValue(value);
+  const operator = labels.operators.duration[parsed.operator] ?? parsed.operator;
+  switch (parsed.operator) {
+    case 'empty':
+    case 'notEmpty':
+    case 'termination':
+      return `${label} ${operator}`;
+    case 'between': {
+      const min = parsed.min == null ? null : formatDurationAmount(parsed.min, parsed.unit, labels);
+      const max = parsed.max == null ? null : formatDurationAmount(parsed.max, parsed.unit, labels);
+      return joinBounds(label, min, max, labels);
+    }
+    default:
+      if (parsed.amount == null) return label;
+      return `${label} ${operator} ${formatDurationAmount(parsed.amount, parsed.unit, labels)}`;
+  }
+}
+
 function formatRule(
   rule: TemplateConditionRule,
   field: TemplateConditionField | undefined,
@@ -154,6 +179,8 @@ function formatRule(
   switch (rule.type) {
     case 'number':
       return formatNumberRule(label, rule.value, labels);
+    case 'duration':
+      return formatDurationRule(label, rule.value, labels);
     case 'text':
       return formatTextRule(label, rule.value, labels);
     case 'select':

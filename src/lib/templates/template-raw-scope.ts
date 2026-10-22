@@ -1,11 +1,45 @@
+import { type DurationType, type TerminationType } from '@prisma/client';
+import { createTranslator } from 'next-intl';
+
+import { formatTotalRuntime } from '@/lib/calculations/loan-duration-metrics';
 import {
   type AdditionalFieldConfig,
   AdditionalFieldType,
   additionalFieldConfigArraySchema,
 } from '@/lib/schemas/common';
 import { NumberParser } from '@/lib/utils';
+import deCommonMessages from '@/messages/de/common.json';
 
 const numberParser = new NumberParser('de-DE');
+
+/** Same string as the {{loan.totalRuntime}} merge tag (empty when unresolved). */
+export function formatLoanTotalRuntimeMergeValue(loan: {
+  terminationType?: unknown;
+  signDate?: unknown;
+  endDate?: unknown;
+  duration?: unknown;
+  durationType?: unknown;
+}): string {
+  if (typeof loan.terminationType !== 'string' || loan.signDate == null || loan.signDate === '') {
+    return '';
+  }
+  const durationT = createTranslator({
+    locale: 'de',
+    messages: deCommonMessages,
+    namespace: 'duration',
+  });
+  const formatted = formatTotalRuntime(
+    {
+      terminationType: loan.terminationType as TerminationType,
+      signDate: loan.signDate as Date | string,
+      endDate: (loan.endDate as Date | string | null | undefined) ?? null,
+      duration: typeof loan.duration === 'number' ? loan.duration : null,
+      durationType: typeof loan.durationType === 'string' ? (loan.durationType as DurationType) : null,
+    },
+    (key, values) => durationT(key as 'byTermination' | 'zeroDays' | 'days' | 'months' | 'years', values),
+  );
+  return formatted === '–' ? '' : formatted;
+}
 
 export function readAdditionalFieldConfigs(value: unknown): AdditionalFieldConfig[] {
   const parsed = additionalFieldConfigArraySchema.safeParse(value);
@@ -199,6 +233,7 @@ export function rawLoanFields(
     notReclaimed: asConditionNumber(loan.notReclaimed),
     repaidDate: asConditionDate(dates.repaidDate),
     repayDate: asConditionDate(dates.repayDate),
+    totalRuntime: formatLoanTotalRuntimeMergeValue(loan),
     isTerminated: loan.isTerminated === true,
     additionalFields: rawAdditionalFields(loan.additionalFields, additionalConfigs),
   };

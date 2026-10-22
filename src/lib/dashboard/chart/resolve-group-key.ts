@@ -1,5 +1,7 @@
+import { TerminationType } from '@prisma/client';
 import moment from 'moment';
 
+import { isTotalRuntime } from '@/lib/calculations/loan-duration-metrics';
 import type { DataTableColumnFilterDefinition } from '@/lib/entity-filters/filter-definitions';
 import { formatCurrency, formatNumber } from '@/lib/utils';
 import type {
@@ -10,6 +12,7 @@ import type {
 } from '@/types/dashboard-widgets/chart-discriminator';
 
 export const CHART_EMPTY_GROUP_KEY = '__empty__';
+export const CHART_TERMINATION_GROUP_KEY = 'termination:TERMINATION';
 
 /** Numeric order for duration and limit buckets. Labels such as "über 10 Jahre" are not used. */
 export function groupSortRank(key: string): number | null {
@@ -214,10 +217,24 @@ export function resolveGroupKey(
 
   const field = config.groupBy.field;
 
-  if (fieldDefinition?.valueKind === 'duration') {
-    const num = Number(rawValue);
-    if (!Number.isFinite(num) || num < 0) {
-      return { key: CHART_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
+  if (fieldDefinition?.type === 'duration') {
+    let num: number;
+    if (isTotalRuntime(rawValue)) {
+      if (rawValue.terminationType === TerminationType.TERMINATION) {
+        return {
+          key: CHART_TERMINATION_GROUP_KEY,
+          label: formatters.commonT('duration.byTermination'),
+        };
+      }
+      if (rawValue.days == null || !Number.isFinite(rawValue.days) || rawValue.days < 0) {
+        return { key: CHART_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
+      }
+      num = rawValue.days;
+    } else {
+      num = Number(rawValue);
+      if (!Number.isFinite(num) || num < 0) {
+        return { key: CHART_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
+      }
     }
     const grouping = config.durationGrouping ?? 'years';
     const count = durationGroupCount(num, grouping);

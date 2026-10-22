@@ -8,6 +8,7 @@ interface NumberFilterProps {
   filterState?: ColumnFilter;
   onFilterChange: (value: unknown) => void;
   allowEmpty?: boolean;
+  terminationValue?: boolean;
   defaultOperator?: NumberFilterOperator;
   variant?: FilterFieldVariant;
   size?: FilterFieldSize;
@@ -17,6 +18,7 @@ export function NumberFilter({
   filterState,
   onFilterChange,
   allowEmpty = false,
+  terminationValue = false,
   defaultOperator = 'between',
   variant = 'row',
   size = 'default',
@@ -26,6 +28,7 @@ export function NumberFilter({
       value={filterState?.value}
       onChange={onFilterChange}
       allowEmpty={allowEmpty}
+      terminationValue={terminationValue}
       defaultOperator={defaultOperator}
       translationNamespace="dataTable"
       variant={variant}

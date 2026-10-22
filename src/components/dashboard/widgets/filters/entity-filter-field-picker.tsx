@@ -35,6 +35,7 @@ export function EntityFilterFieldPicker({
   className,
   translationNamespace = 'dashboard.customizer.historyTable',
   placeholderKey = 'filterField',
+  size = 'xs',
 }: {
   value: string;
   fieldOptions: EntityFilterFieldOption[];
@@ -42,6 +43,7 @@ export function EntityFilterFieldPicker({
   className?: string;
   translationNamespace?: string;
   placeholderKey?: string;
+  size?: 'xs' | 'sm';
 }) {
   const t = useTranslations(translationNamespace);
   const tCommon = useTranslations('common');
@@ -71,15 +73,24 @@ export function EntityFilterFieldPicker({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn('h-8 w-full justify-between px-2 text-xs font-normal', className)}
+          className={cn(
+            'w-full justify-between font-normal',
+            size === 'sm' ? 'h-9 px-3 text-sm' : 'h-8 px-2 text-xs',
+            className,
+          )}
         >
           <span className="truncate">{selected?.label ?? t(placeholderKey)}</span>
-          <ChevronsUpDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
+          <ChevronsUpDown
+            className={cn('ml-1 shrink-0 opacity-50', size === 'sm' ? 'h-4 w-4' : 'h-3.5 w-3.5')}
+          />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
         <Command shouldFilter>
-          <CommandInput placeholder={tCommon('ui.actions.search')} className="h-8 text-xs" />
+          <CommandInput
+            placeholder={tCommon('ui.actions.search')}
+            className={size === 'sm' ? 'h-9 text-sm' : 'h-8 text-xs'}
+          />
           <CommandList className="max-h-[min(280px,50dvh)]">
             <CommandEmpty>{tCommon('ui.actions.noResults')}</CommandEmpty>
             {groupedOptions.map((group) => (
@@ -90,7 +101,7 @@ export function EntityFilterFieldPicker({
                     <CommandItem
                       key={itemValue}
                       value={`${opt.label} ${opt.field}`}
-                      className="cursor-pointer text-xs"
+                      className={cn('cursor-pointer', size === 'sm' ? 'text-sm' : 'text-xs')}
                       onSelect={() => {
                         const parsed = parseFieldValue(itemValue);
                         onChange(parsed.entity, parsed.field);

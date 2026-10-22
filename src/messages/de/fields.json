@@ -70,6 +70,7 @@
     "repaidDateLong": "Rückzahlungsdatum (lang)",
     "repayDate": "Fälligkeitsdatum (kurz)",
     "repayDateLong": "Fälligkeitsdatum (lang)",
+    "totalRuntime": "Gesamtlaufzeit",
     "isTerminated": "Gekündigt"
   },
   "transaction": {

@@ -44,10 +44,11 @@ const EMPTY_SORTING: SortingState = [];
 
 type ColumnFiltersConfig = {
   [key: string]: {
-    type: 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
+    type: 'text' | 'select' | 'multi-select' | 'number' | 'duration' | 'date' | 'boolean';
     options?: { label: string; value: string }[];
     label?: string;
     allowEmpty?: boolean;
+    terminationValue?: boolean;
     defaultOperator?: NumberFilterOperator;
   };
 };
