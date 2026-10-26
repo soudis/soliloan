@@ -87,7 +87,8 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
   const createTypeOption = (type: TransactionType, disabled?: boolean) => ({
     value: type,
     label: commonT(`enums.transaction.type.${type}`),
-    disabled,
+    // Possibility check is off. Restore by removing `false &&`.
+    disabled: false && disabled,
   });
 
   const latestTransaction = useMemo(() => {
@@ -123,16 +124,12 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
         placeholder={commonT('ui.form.enterPlaceholder')}
         className="bg-white"
         disabled={(date) => {
-          if (date > new Date()) {
-            return true;
-          }
-          if (
-            latestTransaction &&
-            moment(date).startOf('day').isBefore(moment(latestTransaction.date).startOf('day'))
-          ) {
-            return true;
-          }
-          return false;
+          const inFuture = date > new Date();
+          const beforeLatest =
+            !!latestTransaction &&
+            moment(date).startOf('day').isBefore(moment(latestTransaction.date).startOf('day'));
+          // Possibility check is off. Restore by removing `false &&`.
+          return false && (inFuture || beforeLatest);
         }}
       />
 

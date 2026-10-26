@@ -98,7 +98,8 @@ export function LoanTransactions({
   const lastNonInterest = transactions.findLast((tx) => tx.type !== 'INTEREST');
 
   const addTransactionEnabled = !readOnly && showAddTransaction;
-  const addTransactionDisabled = loan.status === LoanStatus.REPAID;
+  // Possibility check is off. Restore by removing `false &&`.
+  const addTransactionDisabled = false && loan.status === LoanStatus.REPAID;
 
   const handleAddTransaction = () => {
     if (onAddTransaction) {

@@ -191,8 +191,10 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                 id: 'transaction',
                 label: commonT('terms.transaction'),
                 onSelect: () => openCreateFromMenu('transactions', () => setTransactionCreateOpen(true)),
-                disabled: loan.status === LoanStatus.REPAID,
-                disabledTooltip: loan.status === LoanStatus.REPAID ? t('transactions.addDisabledRepaid') : undefined,
+                // Possibility check is off. Restore by removing `false &&`.
+                disabled: false && loan.status === LoanStatus.REPAID,
+                disabledTooltip:
+                  false && loan.status === LoanStatus.REPAID ? t('transactions.addDisabledRepaid') : undefined,
               },
               {
                 id: 'note',
