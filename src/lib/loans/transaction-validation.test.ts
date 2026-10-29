@@ -134,7 +134,6 @@ describe('previewTransaction', () => {
     const result = preview(base, { date: day('2024-04-01'), type: TransactionType.DEPOSIT });
     assert.equal(result.types.DEPOSIT?.available, true);
     assert.equal(result.limits?.max, 400);
-    assert.equal(result.summary.freeCapacity, 400);
   });
 
   it('disables Einzahlung on a day with no free capacity and names the rule', () => {
@@ -158,6 +157,18 @@ describe('previewTransaction', () => {
     assert.equal(result.types.TERMINATION?.available, false);
     assert.equal(result.types.DEPOSIT?.available, true);
     assert.equal(result.limits?.max, 1000);
+  });
+
+  it('offers only Einzahlung on the day of a Rückzahlung: a new Zahlung is booked after it', () => {
+    const closed = [tx('DEPOSIT', '2024-01-01', 1000), tx('TERMINATION', '2024-03-01', 1000)];
+    const result = preview(closed, { date: day('2024-03-01') });
+    assert.deepEqual(result.summary, { balance: 0, einlagenstand: 0 });
+    assert.deepEqual(
+      Object.entries(result.types)
+        .filter(([, availability]) => availability.available)
+        .map(([type]) => type),
+      ['DEPOSIT'],
+    );
   });
 
   it('proposes the recalculated amount when the date of a Rückzahlung moves', () => {

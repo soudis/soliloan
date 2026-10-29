@@ -49,10 +49,9 @@ export function TransactionStateSummary({ preview, date }: { preview: Transactio
       <div className="mb-2 text-xs font-medium text-muted-foreground">
         {t('summaryTitle', { date: formatDateShort(date, locale) })}
       </div>
-      <dl className="grid grid-cols-3 gap-2 text-sm">
+      <dl className="grid grid-cols-2 gap-2 text-sm">
         <SummaryValue label={t('balance')} value={formatCurrency(summary.balance)} />
         <SummaryValue label={t('einlagenstand')} value={formatCurrency(summary.einlagenstand)} />
-        <SummaryValue label={t('freeCapacity')} value={formatCurrency(summary.freeCapacity)} />
       </dl>
     </div>
   );

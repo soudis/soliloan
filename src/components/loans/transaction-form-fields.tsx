@@ -7,7 +7,6 @@ import { useFormContext } from 'react-hook-form';
 
 import { FormDatePicker } from '@/components/form/form-date-picker';
 import { FormSelect } from '@/components/form/form-select';
-import { Button } from '@/components/ui/button';
 import { isClosingType } from '@/lib/loans/transaction-ledger';
 import { BOOKABLE_TYPES, DRAFT_TRANSACTION_ID, type TransactionPreview } from '@/lib/loans/transaction-validation';
 import type { TransactionFormData } from '@/lib/schemas/transaction';
@@ -171,38 +170,29 @@ export function TransactionFormFields({
           disabled={!selectedType || isClosingType(selectedType) || !validDate}
         />
         {limits && selectedType ? (
-          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            <span>
-              {isClosingType(selectedType) && validDate
-                ? modalT('closingAmountHint', { date: formatDateShort(validDate, locale) })
-                : modalT('amountRange', { min: formatCurrency(limits.min), max: formatCurrency(limits.max) })}
-              {limitNote ? ` · ${limitNote}` : null}
-            </span>
+          <p className="text-xs text-muted-foreground">
+            {isClosingType(selectedType) && validDate
+              ? modalT('closingAmountHint', { date: formatDateShort(validDate, locale) })
+              : modalT('amountRange', { min: formatCurrency(limits.min), max: formatCurrency(limits.max) })}
+            {limitNote ? ` · ${limitNote}` : null}
             {!isClosingType(selectedType) ? (
-              <Button
-                type="button"
-                variant="link"
-                size="sm"
-                className="h-auto p-0 text-xs"
-                onClick={() =>
-                  setValue('amount', formatter.format(limits.max) as unknown as number, {
-                    shouldValidate: true,
-                    shouldDirty: true,
-                  })
-                }
-              >
-                {modalT('useMax')}
-              </Button>
+              <>
+                {' · '}
+                <button
+                  type="button"
+                  className="underline underline-offset-2 hover:text-foreground"
+                  onClick={() =>
+                    setValue('amount', formatter.format(limits.max) as unknown as number, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    })
+                  }
+                >
+                  {modalT('useMax')}
+                </button>
+              </>
             ) : null}
-          </div>
-        ) : null}
-        {preview?.after ? (
-          <div className="text-xs text-muted-foreground">
-            {modalT('after', {
-              balance: formatCurrency(preview.after.balance),
-              einlagenstand: formatCurrency(preview.after.einlagenstand),
-            })}
-          </div>
+          </p>
         ) : null}
       </div>
 
