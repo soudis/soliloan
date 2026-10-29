@@ -136,27 +136,6 @@ export const calculateSavingsLastDepositDate = (firstDepositDate: Date, depositC
   return lastMoment.isValid() ? lastMoment.toDate() : null;
 };
 
-export const calculateSavingsFirstDepositDate = (lastDepositDate: Date, depositCount: number) => {
-  const lastMoment = moment(lastDepositDate);
-  if (!lastMoment.isValid()) return null;
-  if (!Number.isFinite(depositCount) || depositCount < 1) return null;
-
-  const firstMoment = lastMoment.clone().subtract(depositCount - 1, 'months');
-  return firstMoment.isValid() ? firstMoment.toDate() : null;
-};
-
-export const calculateSavingsDepositCountFromDates = (firstDepositDate: Date, lastDepositDate: Date) => {
-  const firstMoment = moment(firstDepositDate);
-  const lastMoment = moment(lastDepositDate);
-  if (!firstMoment.isValid() || !lastMoment.isValid()) return null;
-  if (lastMoment.isBefore(firstMoment, 'day')) return null;
-
-  if (lastMoment.isSame(firstMoment, 'day')) return 1;
-
-  const monthsBetween = Math.max(0, lastMoment.diff(firstMoment, 'months') - 1);
-  return 2 + monthsBetween;
-};
-
 export const calculateSavingsMonthlyAmount = (loanAmount: number, depositCount: number) => {
   if (!Number.isFinite(loanAmount) || loanAmount <= 0) return null;
   if (!Number.isFinite(depositCount) || depositCount < 1) return null;
