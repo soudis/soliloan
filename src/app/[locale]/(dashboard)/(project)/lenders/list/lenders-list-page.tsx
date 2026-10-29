@@ -1,6 +1,6 @@
 import { ViewType } from '@prisma/client';
-import { getLendersByProjectIdUnsafe } from '@/actions/lenders/queries/get-lenders-by-project';
 import { LenderTable } from '@/components/lenders/lender-table';
+import { getLendersByProjectIdUnsafe } from '@/lib/lenders/get-lenders-by-project';
 import { searchParamsCache } from '@/lib/params';
 import { resolveTableListViewId } from '@/lib/resolve-table-list-view';
 import { TABLE_LIST_PATHS } from '@/lib/table-list-path';

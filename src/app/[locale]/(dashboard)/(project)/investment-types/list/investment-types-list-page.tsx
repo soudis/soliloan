@@ -1,7 +1,7 @@
 import { ViewType } from '@prisma/client';
 import { notFound } from 'next/navigation';
-import { getInvestmentTypesByProjectUnsafe } from '@/actions/investment-types/queries/get-investment-types-by-project';
 import { InvestmentTypesPageContent } from '@/components/investment-types/investment-types-page-content';
+import { getInvestmentTypesByProjectUnsafe } from '@/lib/investment-types/get-investment-types-by-project';
 import { searchParamsCache } from '@/lib/params';
 import { getProjectUnsafe } from '@/lib/projects/get-project';
 import { resolveTableListViewId } from '@/lib/resolve-table-list-view';

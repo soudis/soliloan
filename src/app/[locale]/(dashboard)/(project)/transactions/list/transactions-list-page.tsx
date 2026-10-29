@@ -1,12 +1,12 @@
 import { ViewType } from '@prisma/client';
 import { getLinkedBankConnection } from '@/actions/gocardless/queries/get-import-batch';
-import { getTransactionsByProjectUnsafe } from '@/actions/transactions/queries/get-transactions-by-project';
 import { TransactionTable } from '@/components/transactions/transaction-table';
 import { db } from '@/lib/db';
 import { searchParamsCache } from '@/lib/params';
 import { getProjectUnsafe } from '@/lib/projects/get-project';
 import { resolveTableListViewId } from '@/lib/resolve-table-list-view';
 import { TABLE_LIST_PATHS } from '@/lib/table-list-path';
+import { getTransactionsByProjectUnsafe } from '@/lib/transactions/get-transactions-by-project';
 import { getViewsByType } from '@/lib/views/get-views';
 
 export async function TransactionsListPage({
