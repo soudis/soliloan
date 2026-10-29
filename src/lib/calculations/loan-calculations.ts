@@ -73,7 +73,7 @@ export const getInterestDays = (
     if (toDate.isSameOrBefore(moment(fromDate).endOf('month'))) {
       return moment(toDate).diff(fromDate, 'days');
     }
-    let interestDays = Math.max(30 - fromDate.date() + 1, 0);
+    let interestDays = 30 - Math.min(fromDate.date(), 30) + 1;
     const months = moment(toDate).month() - fromDate.month() - 1;
     interestDays += months * 30;
     interestDays += Math.min(moment(toDate).date(), 30);
