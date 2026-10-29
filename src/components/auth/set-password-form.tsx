@@ -9,7 +9,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-import { setPassword } from '@/actions/auth';
+import { setPasswordAction } from '@/actions/auth';
 import { FormField } from '@/components/form/form-field';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
@@ -64,8 +64,13 @@ export function SetPasswordForm({ token, requireName, email = null }: SetPasswor
   const onSubmit = async (data: SetPasswordFormValues) => {
     setIsLoading(true);
     try {
-      const result = await setPassword(token, data.password, requireName ? (data.name ?? undefined) : undefined);
-      if (result.success) {
+      const result = await setPasswordAction({
+        token,
+        password: data.password,
+        name: requireName ? (data.name ?? undefined) : undefined,
+      });
+      const outcome = result?.data;
+      if (outcome?.success) {
         if (requireName && email) {
           const signInResult = await signIn('credentials', {
             email,
@@ -82,9 +87,9 @@ export function SetPasswordForm({ token, requireName, email = null }: SetPasswor
         router.push('/auth/login');
       } else {
         toast.error(
-          result.error?.startsWith('validation.') || result.error?.startsWith('error.')
-            ? tRoot(result.error)
-            : result.error || t('setPassword.error'),
+          outcome?.error?.startsWith('validation.') || outcome?.error?.startsWith('error.')
+            ? tRoot(outcome.error)
+            : outcome?.error || result?.serverError || t('setPassword.error'),
         );
       }
     } catch (error) {
