@@ -33,4 +33,28 @@ describe('getInterestDays with E30/360', () => {
       'E30/360 treats the 31st as the 30th at the start and at the end of the period',
     );
   });
+
+  it('counts an end on the 31st like an end on the 30th within one month', () => {
+    assert.equal(
+      getInterestDays(calendarDay('2023-01-15'), calendarDay('2023-01-30'), method),
+      30 - 15,
+      'premise: from 15 to 30 January counts 15 days',
+    );
+    assert.equal(
+      getInterestDays(calendarDay('2023-01-15'), calendarDay('2023-01-31'), method),
+      getInterestDays(calendarDay('2023-01-15'), calendarDay('2023-01-30'), method),
+    );
+  });
+
+  it('counts a start on 31 December like a start on 30 December when the period runs to the end of the year', () => {
+    assert.equal(
+      getInterestDays(calendarDay('2023-12-30'), undefined, method),
+      1,
+      'premise: from 30 December the only interest day is the night to 1 January',
+    );
+    assert.equal(
+      getInterestDays(calendarDay('2023-12-31'), undefined, method),
+      getInterestDays(calendarDay('2023-12-30'), undefined, method),
+    );
+  });
 });
