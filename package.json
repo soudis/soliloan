@@ -9,6 +9,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
+    "script": "tsx scripts/run.ts",
     "lint": "biome lint",
     "lint:fix": "biome lint --write",
     "export:templates": "tsx scripts/export-email-templates.ts",
