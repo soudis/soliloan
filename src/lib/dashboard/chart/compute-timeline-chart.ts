@@ -1,5 +1,5 @@
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { computeHistoryTable } from '@/lib/dashboard/history-table/compute-history-table';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import type { BarChartTimelineConfig } from '@/types/dashboard-widgets/bar-chart';
 import type { ChartSeriesConfig } from '@/types/dashboard-widgets/chart-series';
 import type { HistoryTableWidgetConfig } from '@/types/dashboard-widgets/history-table';

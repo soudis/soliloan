@@ -1,4 +1,4 @@
-'use server';
+import 'server-only';
 
 import type { Prisma, ViewType } from '@prisma/client';
 

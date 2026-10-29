@@ -9,10 +9,11 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type MutableRefObject, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { getMergeTagConfigAction, type MergeTagConfig } from '@/actions/templates/queries/get-merge-tags';
+import { getMergeTagConfigAction } from '@/actions/templates/queries/get-merge-tags';
 import { getProjectLogoAction } from '@/actions/templates/queries/get-project-logo';
 import { getMergeTagValuesAction } from '@/actions/templates/queries/get-template-data';
 import { generateDocumentParts, generateEmailHtml } from '@/lib/templates/email-generator';
+import type { MergeTagConfig } from '@/lib/templates/merge-tag-config';
 import { canOpenTemplatePreview } from '@/lib/templates/merge-tags';
 import { getTemplateConfig } from '@/lib/templates/puck-config';
 import { type TemplateData, toPuckData, UnrecognizedTemplateDesignError } from '@/lib/templates/puck-data';
@@ -291,12 +292,12 @@ export function TemplateEditorView({
       return;
     }
     let cancelled = false;
-    void getMergeTagConfigAction(dataset, projectId, templateType).then((loaded) => {
-      if (!cancelled) setMergeTagConfig(loaded);
+    void getMergeTagConfigAction({ dataset, projectId, templateType }).then((result) => {
+      if (!cancelled && result?.data) setMergeTagConfig(result.data);
     });
     if (projectId) {
-      void getProjectLogoAction(projectId).then((logo) => {
-        if (!cancelled) setProjectLogo(logo);
+      void getProjectLogoAction({ projectId }).then((result) => {
+        if (!cancelled) setProjectLogo(result?.data ?? null);
       });
     } else {
       setProjectLogo(null);

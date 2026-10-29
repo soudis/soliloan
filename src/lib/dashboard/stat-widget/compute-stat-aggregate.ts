@@ -1,4 +1,3 @@
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import {
   type AggregateMetricCache,
   createAggregateMetricCache,
@@ -7,6 +6,7 @@ import {
 import type { LoanMetricCacheMap } from '@/lib/dashboard/history-table/loan-metric-cache';
 import type { HistoryPeriod } from '@/lib/dashboard/history-table/rollup-period';
 import { interestRateAverageWeight } from '@/lib/dashboard/interest-rate-average';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import type { HistoryTableColumnConfig, HistoryTableWidgetConfig } from '@/types/dashboard-widgets/history-table';
 import {
   type HistoryTableStatMetric,

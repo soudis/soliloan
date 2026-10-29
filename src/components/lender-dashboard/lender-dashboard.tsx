@@ -5,10 +5,9 @@ import { de, enUS } from 'date-fns/locale';
 import { Landmark, Percent, Table2, Wallet } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRef } from 'react';
-
-import type { LendersByUserAggregates } from '@/actions/lenders/queries/get-lenders-by-user';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import type { LendersByUserAggregates } from '@/lib/lenders/get-lenders-by-user';
 import { formatCurrency } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 

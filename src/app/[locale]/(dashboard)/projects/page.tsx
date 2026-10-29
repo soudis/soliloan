@@ -1,7 +1,7 @@
 import { ViewType } from '@prisma/client';
-import { getViewsByType } from '@/actions';
 import { getProjects } from '@/lib/projects/get-projects';
 import { requireSession } from '@/lib/require-session';
+import { getViewsByType } from '@/lib/views/get-views';
 import { ProjectsPageContent } from './projects-page-content';
 
 export default async function ProjectsPage() {

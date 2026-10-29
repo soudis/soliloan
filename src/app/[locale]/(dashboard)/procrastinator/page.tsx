@@ -1,9 +1,8 @@
 import { Clock } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
-
-import { getHighscores } from '@/actions/arcade/queries/get-highscores';
 import { HighscoreTable } from '@/components/arcade/highscore-table';
 import { LoanInvadersGame } from '@/components/arcade/loan-invaders-game';
+import { getHighscores } from '@/lib/arcade/get-highscores';
 import { requireManager } from '@/lib/require-session';
 
 export default async function ProcrastinatorPage() {

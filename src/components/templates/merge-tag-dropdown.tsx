@@ -5,10 +5,10 @@ import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { MergeTagConfig, MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { MergeTagConfig, MergeTagField, MergeTagLoop } from '@/lib/templates/merge-tag-config';
 import {
   canInsertLoopAtContext,
   loopChildFieldsGroupKey,

@@ -1,11 +1,10 @@
 import type { ColumnFiltersState } from '@tanstack/react-table';
-
+import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
+import { isInactiveBooleanFilterValue } from '@/types/boolean-filter-value';
 import { isInactiveDateFilterValue } from '@/types/date-filter-value';
 import { isInactiveEnumFilterValue } from '@/types/enum-filter-value';
 import { isInactiveNumberFilterValue, type NumberFilterOperator } from '@/types/number-filter-value';
 import { isInactiveTextFilterValue } from '@/types/text-filter-value';
-import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
-import { isInactiveBooleanFilterValue } from '@/types/boolean-filter-value';
 
 import {
   BooleanFilter,
@@ -32,7 +31,6 @@ interface DataTableColumnFiltersProps {
   controlled?: {
     columnFilters: ColumnFiltersState;
     onColumnFiltersChange: (filters: ColumnFiltersState) => void;
-    columnVisibility?: Record<string, boolean>;
   };
 }
 
@@ -110,9 +108,6 @@ export function DataTableColumnFilters({
     <div className="mb-4 grid grid-cols-1 gap-4 rounded-md border border-border bg-card p-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {Object.entries(columnFilters).map(([columnId, filterConfig]) => {
         const filterState = activeFilters.find((filter) => filter.id === columnId);
-
-        const visibility = controlled?.columnVisibility ?? tableState?.columnVisibility;
-        if (visibility?.[columnId] === false) return null;
 
         return (
           <div key={columnId} className="flex flex-col space-y-2">

@@ -1,12 +1,12 @@
 import { ViewType } from '@prisma/client';
-import { getViewsByType } from '@/actions';
-import { getLoansByProjectUnsafe } from '@/actions/loans/queries/get-loans-by-project';
-import { getProjectUnsafe } from '@/lib/projects/get-project';
 import { LoanTable } from '@/components/loans/loan-table';
 import { db } from '@/lib/db';
+import { getLoansByProjectUnsafe } from '@/lib/loans/get-loans-by-project';
 import { searchParamsCache } from '@/lib/params';
+import { getProjectUnsafe } from '@/lib/projects/get-project';
 import { resolveTableListViewId } from '@/lib/resolve-table-list-view';
 import { TABLE_LIST_PATHS } from '@/lib/table-list-path';
+import { getViewsByType } from '@/lib/views/get-views';
 
 export async function LoansListPage({
   viewId,

@@ -1,6 +1,6 @@
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { computeBarChart } from '@/lib/dashboard/bar-chart/compute-bar-chart';
 import type { ChartDataModel } from '@/lib/dashboard/chart/chart-data-model';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import type { BarChartWidgetConfig } from '@/types/dashboard-widgets/bar-chart';
 import type { LineChartWidgetConfig } from '@/types/dashboard-widgets/line-chart';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
