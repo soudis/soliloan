@@ -30,7 +30,7 @@ export type DataTableColumnFilterDefinition = {
   label: string;
   options?: { label: string; value: string }[];
   allowEmpty?: boolean;
-  /** Offer the "Durch Kündigung" operator (Gesamtlaufzeit only). */
+  /** Offer the "Durch Kündigung" operator (Kreditlaufzeit only). */
   terminationValue?: boolean;
   defaultOperator?: NumberFilterOperator;
 };

@@ -406,6 +406,83 @@ export function createDateColumn<T>(
   return mergeExportMeta(column, { type: 'date' });
 }
 
+function formatTableDate(value: unknown, locale?: string): string {
+  if (!value) return '';
+  try {
+    const date = value instanceof Date ? value : new Date(String(value));
+    return Number.isNaN(date.getTime())
+      ? ''
+      : date.toLocaleDateString(resolveIntlLocaleForDates(locale ?? 'de'), {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
+  } catch {
+    return '';
+  }
+}
+
+export function showsRepayDateAfterTermination(loan: {
+  terminationType: TerminationType | string | null | undefined;
+  terminationDate?: Date | string | null;
+}): boolean {
+  return loan.terminationType === TerminationType.TERMINATION && !loan.terminationDate;
+}
+
+export function createRepayDateColumn<
+  T extends {
+    terminationType: TerminationType;
+    terminationDate?: Date | string | null;
+    repayDate?: Date | string | null;
+  },
+>(t: (key: string) => string, locale?: string): ColumnDef<T> {
+  const afterTerminationLabel = t('table.repayDateAfterTermination');
+  const column = createColumn<T>(
+    {
+      accessorKey: 'repayDate',
+      header: 'table.repayDate',
+      cell: ({ row }) => {
+        if (showsRepayDateAfterTermination(row.original)) {
+          return afterTerminationLabel;
+        }
+        return formatTableDate(row.getValue('repayDate'), locale);
+      },
+      sortingFn: (rowA, rowB, columnId) => {
+        const aTermination = showsRepayDateAfterTermination(rowA.original);
+        const bTermination = showsRepayDateAfterTermination(rowB.original);
+        if (aTermination && bTermination) return 0;
+        if (aTermination) return 1;
+        if (bTermination) return -1;
+
+        const a = rowA.getValue(columnId) as string | Date | null | undefined;
+        const b = rowB.getValue(columnId) as string | Date | null | undefined;
+        const aTime = a ? new Date(a).getTime() : Number.NaN;
+        const bTime = b ? new Date(b).getTime() : Number.NaN;
+        const aMissing = Number.isNaN(aTime);
+        const bMissing = Number.isNaN(bTime);
+        if (aMissing && bMissing) return 0;
+        if (aMissing) return 1;
+        if (bMissing) return -1;
+        if (aTime === bTime) return 0;
+        return aTime < bTime ? -1 : 1;
+      },
+    },
+    t,
+  );
+  column.filterFn = dateRangeFilter as ColumnDef<T>['filterFn'];
+  return mergeExportMeta(column, {
+    type: 'date',
+    getValue: (row) => {
+      const loan = row as T;
+      if (showsRepayDateAfterTermination(loan)) {
+        return afterTerminationLabel;
+      }
+      if (!loan.repayDate) return '';
+      return loan.repayDate instanceof Date ? loan.repayDate : new Date(String(loan.repayDate));
+    },
+  });
+}
+
 type PercentageColumnFormattingOptions = {
   align?: 'left' | 'right' | 'center';
 };

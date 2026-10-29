@@ -26,7 +26,7 @@ const formatters = {
   },
 };
 
-const durationField = { type: 'duration' as const, label: 'Gesamtlaufzeit' };
+const durationField = { type: 'duration' as const, label: 'Kreditlaufzeit' };
 
 describe('resolveGroupKey duration grouping', () => {
   it('groups a five-year span into years', () => {

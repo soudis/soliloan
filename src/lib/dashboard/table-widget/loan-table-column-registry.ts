@@ -18,6 +18,7 @@ import {
   createNullableCurrencyColumn,
   createNumberColumn,
   createPercentageColumn,
+  createRepayDateColumn,
   createTotalRuntimeColumn,
   totalRuntimeSortValue,
   withColumnGroup,
@@ -180,7 +181,7 @@ export function buildLoanTableColumns(
       () => 'outline',
     ),
     createTotalRuntimeColumn<LoanWithCalculations>(t, durationT),
-    createDateColumn<LoanWithCalculations>('repayDate', 'table.repayDate', t, locale),
+    createRepayDateColumn<LoanWithCalculations>(t, locale),
     createDurationDaysColumn<LoanWithCalculations>('loanTermDays', 'table.loanTerm', t, durationT),
     createDurationDaysColumn<LoanWithCalculations>('repaymentPeriodDays', 'table.repaymentPeriod', t, durationT),
     createBooleanColumn<LoanWithCalculations>('isSavingsContract', 'table.isSavingsContract', t, commonT, {
