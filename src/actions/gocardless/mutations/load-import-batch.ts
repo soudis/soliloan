@@ -1,12 +1,11 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-
-import { getLoansByProjectUnsafe } from '@/actions/loans/queries/get-loans-by-project';
 import { db } from '@/lib/db';
 import { getAccountTransactions } from '@/lib/gocardless/client';
 import { defaultTransactionTypeForAmount, matchLender, matchLoanForDeposit } from '@/lib/gocardless/import-matching';
 import { parseBookedTransactions } from '@/lib/gocardless/parse-transactions';
+import { getLoansByProjectUnsafe } from '@/lib/loans/get-loans-by-project';
 import { loadImportBatchSchema } from '@/lib/schemas/gocardless';
 import { projectAction } from '@/lib/utils/safe-action';
 

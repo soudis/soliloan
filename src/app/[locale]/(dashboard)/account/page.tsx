@@ -1,8 +1,7 @@
 import { redirect } from 'next/navigation';
-
-import { getForumSubscriptionsUnsafe } from '@/actions/help';
 import { AccountPageContent } from '@/components/account/account-page-content';
 import { db } from '@/lib/db';
+import { getForumSubscriptionsUnsafe } from '@/lib/help/get-forum-subscriptions';
 import { requireSession } from '@/lib/require-session';
 
 export default async function AccountPage() {

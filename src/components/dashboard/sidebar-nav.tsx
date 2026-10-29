@@ -24,7 +24,7 @@ import type { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useQueryState } from 'nuqs';
-import { getSidebarViews } from '@/actions/views/queries/get-sidebar-views';
+import { getSidebarViewsAction } from '@/actions/views/queries/get-sidebar-views';
 import { ThemeModeSwitch } from '@/components/theme-mode-switch';
 import { Button } from '@/components/ui/button';
 import { PROJECT_ID_KEY, projectIdParser } from '@/lib/params';
@@ -52,7 +52,10 @@ export function SidebarNav({ isSidebarOpen, session, projects, sidebarViews: ini
   const [projectId] = useQueryState(PROJECT_ID_KEY, projectIdParser);
   const { data: sidebarViews = initialSidebarViews } = useQuery({
     queryKey: SIDEBAR_VIEWS_QUERY_KEY,
-    queryFn: () => getSidebarViews(),
+    queryFn: async () => {
+      const result = await getSidebarViewsAction();
+      return result?.data ?? [];
+    },
     initialData: initialSidebarViews,
     staleTime: Number.POSITIVE_INFINITY,
   });

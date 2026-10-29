@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
-import { getInvestmentTypeUnsafe } from '@/actions/investment-types/queries/get-investment-type';
 import { InvestmentTypeFormClient } from '@/components/investment-types/investment-type-form-client';
+import { getInvestmentTypeUnsafe } from '@/lib/investment-types/get-investment-type';
 import { searchParamsCache } from '@/lib/params';
 import { getProjectUnsafe } from '@/lib/projects/get-project';
 

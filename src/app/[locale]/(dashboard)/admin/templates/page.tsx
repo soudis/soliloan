@@ -1,10 +1,10 @@
 import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
-import { getGlobalTemplatesUnsafe } from '@/actions/templates/queries/get-templates';
 import { RestoreAllSystemTemplatesButton } from '@/components/templates/restore-all-system-templates-button';
 import { TemplateDialog } from '@/components/templates/template-dialog';
 import { TemplateList } from '@/components/templates/template-list';
 import { requireAdmin } from '@/lib/require-session';
+import { getGlobalTemplatesUnsafe } from '@/lib/templates/get-global-templates';
 
 export default async function AdminTemplatesPage() {
   await requireAdmin();

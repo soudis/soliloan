@@ -1,5 +1,5 @@
 import type { TemplateDataset } from '@prisma/client';
-import type { MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
+import type { MergeTagLoop } from '@/lib/templates/merge-tag-config';
 import { DATASET_CONFIGS, LOOP_DEFINITIONS } from '@/lib/templates/merge-tags';
 
 export type MergeTagInsertionContext = {

@@ -76,6 +76,13 @@ export function createDefaultFilterValue(config: ColumnFilterConfig): unknown {
   }
 }
 
+export function getFilterableColumnIds<TData>(table: Table<TData>, columnFilters: DataTableColumnFilters): string[] {
+  return table
+    .getAllLeafColumns()
+    .filter((column) => columnFilters[column.id])
+    .map((column) => column.id);
+}
+
 export function getVisibleFilterColumnIds<TData>(
   table: Table<TData>,
   columnFilters: DataTableColumnFilters,
@@ -88,6 +95,20 @@ export function getVisibleFilterColumnIds<TData>(
       return visibleInState && column.getIsVisible() && columnFilters[column.id];
     })
     .map((column) => column.id);
+}
+
+/** Filterable columns that are not already taken, including hidden ones. */
+export function getUntakenFilterColumnIds<TData>(
+  table: Table<TData>,
+  columnFilters: DataTableColumnFilters,
+  tableState: Pick<TableUrlState, 'columnFilters' | 'quickSearchField'>,
+  includeColumnId?: string,
+): string[] {
+  const taken = getTakenFilterTargets(tableState);
+  if (includeColumnId) {
+    taken.delete(includeColumnId);
+  }
+  return getFilterableColumnIds(table, columnFilters).filter((id) => !taken.has(id));
 }
 
 /** Targets already owned by QS (when not Alle) or by a present column filter. */
@@ -115,14 +136,6 @@ export function getAvailableFilterTargets<TData>(
   return getVisibleFilterColumnIds(table, columnFilters, tableState.columnVisibility).filter((id) => !taken.has(id));
 }
 
-export function getNextAvailableFilterTarget<TData>(
-  table: Table<TData>,
-  columnFilters: DataTableColumnFilters,
-  tableState: Pick<TableUrlState, 'columnFilters' | 'quickSearchField' | 'columnVisibility'>,
-): string | null {
-  return getAvailableFilterTargets(table, columnFilters, tableState)[0] ?? null;
-}
-
 export function resolveColumnFilterLabel<TData>(
   table: Table<TData>,
   columnId: string,
@@ -139,6 +152,17 @@ export function resolveColumnFilterLabel<TData>(
   );
 }
 
+/** Same label the Spalten menu uses. */
+export function resolveColumnChooserLabel<TData>(
+  table: Table<TData>,
+  columnId: string,
+  columnFilters: DataTableColumnFilters,
+): string {
+  const column = table.getColumn(columnId);
+  const config = columnFilters[columnId];
+  return config?.label ?? column?.columnDef.meta?.labelLong ?? column?.columnDef.meta?.export?.label ?? columnId;
+}
+
 export function isFilterPresent(
   columnId: string,
   tableState: Pick<TableUrlState, 'columnFilters' | 'quickSearchField'>,
@@ -149,21 +173,15 @@ export function isFilterPresent(
   return tableState.columnFilters.some((filter) => filter.id === columnId);
 }
 
-/** Column filter chips in the bar (excludes the column currently owned by QS). */
+/** Column filter chips in the bar, including filters on hidden columns. Excludes the column owned by QS. */
 export function getPresentColumnFilterIds(
   tableState: Pick<TableUrlState, 'columnFilters' | 'quickSearchField'>,
   columnFilters: DataTableColumnFilters,
-  columnVisibility: VisibilityState,
 ): string[] {
   const qsField = tableState.quickSearchField;
   return tableState.columnFilters
     .map((filter) => filter.id)
-    .filter((id) => {
-      if (id === qsField) return false;
-      if (!columnFilters[id]) return false;
-      if (columnVisibility[id] === false) return false;
-      return true;
-    });
+    .filter((id) => id !== qsField && Boolean(columnFilters[id]));
 }
 
 export function upsertPresentFilterValue(
@@ -217,41 +235,19 @@ export function retargetPresentFilter(
   return withoutTarget.map((filter, index) => (index === replaceIndex ? nextValue : filter));
 }
 
-/** Drop filters for columns that became hidden; reset QS if it targeted a hidden column. */
+/** Clear quick search when its column becomes hidden. Column filters stay. */
 export function cleanupFiltersForHiddenColumns(args: {
   nextVisibility: VisibilityState;
-  columnFilters: ColumnFiltersState;
   quickSearchField: string;
-  filterConfig: DataTableColumnFilters;
-}): Partial<Pick<TableUrlState, 'columnFilters' | 'quickSearchField' | 'globalFilter'>> | null {
-  const { nextVisibility, columnFilters, quickSearchField, filterConfig } = args;
-
-  const isHidden = (columnId: string) => nextVisibility[columnId] === false;
-
-  const nextColumnFilters = columnFilters.filter((filter) => {
-    if (!filterConfig[filter.id]) return true;
-    return !isHidden(filter.id);
-  });
-
-  let nextQuickSearchField = quickSearchField;
-  let nextGlobalFilter: string | undefined;
-
-  if (quickSearchField && isHidden(quickSearchField)) {
-    nextQuickSearchField = '';
-    nextGlobalFilter = '';
-  }
-
-  const filtersChanged = nextColumnFilters.length !== columnFilters.length;
-  const qsChanged = nextQuickSearchField !== quickSearchField;
-
-  if (!filtersChanged && !qsChanged) {
+}): Partial<Pick<TableUrlState, 'quickSearchField' | 'globalFilter'>> | null {
+  const { nextVisibility, quickSearchField } = args;
+  if (!quickSearchField || nextVisibility[quickSearchField] !== false) {
     return null;
   }
 
   return {
-    columnFilters: nextColumnFilters,
-    quickSearchField: nextQuickSearchField,
-    ...(nextGlobalFilter !== undefined ? { globalFilter: nextGlobalFilter } : {}),
+    quickSearchField: '',
+    globalFilter: '',
   };
 }
 

@@ -1,5 +1,5 @@
-import type { DashboardLender, DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { buildPeriodSnapshot } from '@/lib/dashboard/history-table/rollup-period';
+import type { DashboardLender, DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import type { CommonT } from '@/lib/dashboard/widget-i18n';
 import { lenderMatchesFilters } from '@/lib/entity-filters/apply-lender-filters';
 import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';

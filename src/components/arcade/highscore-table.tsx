@@ -2,10 +2,9 @@
 
 import { Crown, Mail, Trophy, User } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
-
-import type { HighscoreRow, HighscoresResult } from '@/actions/arcade/queries/get-highscores';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import type { HighscoreRow, HighscoresResult } from '@/lib/arcade/get-highscores';
 import { cn } from '@/lib/utils';
 
 interface HighscoreTableProps {

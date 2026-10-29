@@ -1,7 +1,7 @@
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
+import type { ChartDataModel } from '@/lib/dashboard/chart/chart-data-model';
 import { computeDiscriminatorChartData } from '@/lib/dashboard/chart/compute-discriminator-chart';
 import { computeTimelineChartData } from '@/lib/dashboard/chart/compute-timeline-chart';
-import type { ChartDataModel } from '@/lib/dashboard/chart/chart-data-model';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import { resolveMetricTitle } from '@/lib/dashboard/resolve-metric-title';
 import type { BarChartWidgetConfig } from '@/types/dashboard-widgets/bar-chart';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';

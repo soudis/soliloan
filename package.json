@@ -101,6 +101,7 @@
     "react-hook-form": "^7.91.0",
     "react-pdf-html": "^2.1.5",
     "sepa": "^3.1.0",
+    "server-only": "^0.0.1",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.7.0",
     "tailwindcss-animate": "^1.0.7",

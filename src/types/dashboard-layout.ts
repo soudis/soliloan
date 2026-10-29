@@ -9,6 +9,7 @@ export const DASHBOARD_WIDGET_TYPES = [
   'loan_table_view',
   'lender_table_view',
   'transaction_table_view',
+  'notifications',
 ] as const;
 
 export type DashboardWidgetType = (typeof DASHBOARD_WIDGET_TYPES)[number];

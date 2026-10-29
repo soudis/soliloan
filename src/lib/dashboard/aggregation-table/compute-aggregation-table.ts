@@ -1,10 +1,10 @@
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { resolveGroupKey } from '@/lib/dashboard/chart/resolve-group-key';
 import {
   createAggregateMetricCache,
   getOrBuildPeriodSnapshot,
 } from '@/lib/dashboard/history-table/compute-history-table';
 import type { HistoryPeriod } from '@/lib/dashboard/history-table/rollup-period';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import { computeAllStatValues } from '@/lib/dashboard/stat-widget/compute-stat-value';
 import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';
 import { filtersNeedPeriodSnapshot, getFilterDefinitionForField } from '@/lib/entity-filters/filter-definitions';

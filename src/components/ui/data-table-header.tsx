@@ -24,18 +24,19 @@ import {
 import { Input } from '@/components/ui/input';
 import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
-import { cn } from '@/lib/utils';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
 import {
   addPresentFilter,
   countActiveFilters,
-  getNextAvailableFilterTarget,
   getPresentColumnFilterIds,
+  getUntakenFilterColumnIds,
 } from '@/lib/table-filter-presence';
+import { cn } from '@/lib/utils';
 import { SIDEBAR_VIEWS_QUERY_KEY } from '@/lib/views/sidebar-views-query';
 import type { NumberFilterOperator } from '@/types/number-filter-value';
 import { DataTableExportDialog } from './data-table-export-dialog';
 import { DataTableFilterChip } from './data-table-filter-chip';
+import { DataTableFilterFieldMenu } from './data-table-filter-field-menu';
 import { SaveViewDialog } from './save-view-dialog';
 import { ViewManager } from './view-manager';
 
@@ -114,26 +115,16 @@ export function DataTableHeader<TData>({
   const hasColumnFilterConfig = Object.keys(columnFilters).length > 0;
 
   const presentColumnFilterIds = useMemo(
-    () => getPresentColumnFilterIds(tableState, columnFilters, tableState.columnVisibility),
+    () => getPresentColumnFilterIds(tableState, columnFilters),
     [tableState, columnFilters],
   );
 
   const activeFilterCount = useMemo(() => countActiveFilters(tableState, columnFilters), [tableState, columnFilters]);
 
-  const nextAvailableTarget = useMemo(
-    () => (hasColumnFilterConfig ? getNextAvailableFilterTarget(table, columnFilters, tableState) : null),
+  const canAddFilter = useMemo(
+    () => hasColumnFilterConfig && getUntakenFilterColumnIds(table, columnFilters, tableState).length > 0,
     [hasColumnFilterConfig, table, columnFilters, tableState],
   );
-
-  const handleAddFilter = () => {
-    if (!nextAvailableTarget) return;
-    const config = columnFilters[nextAvailableTarget];
-    if (!config) return;
-    setTableState({
-      columnFilters: addPresentFilter(tableState.columnFilters, nextAvailableTarget, config),
-      filtersExpanded: true,
-    });
-  };
 
   const buildViewDataPayload = () => ({
     sorting: tableState.sorting,
@@ -255,7 +246,8 @@ export function DataTableHeader<TData>({
     );
   }, [views, tableState, defaultColumnVisibility, defaultSorting, isExtraViewDataDirty]);
 
-  const toolbarSpansHeader = toolbarAlign === 'start' && !showFilter && !showColumnVisibility && !viewType && !showExport;
+  const toolbarSpansHeader =
+    toolbarAlign === 'start' && !showFilter && !showColumnVisibility && !viewType && !showExport;
 
   return (
     <>
@@ -453,19 +445,33 @@ export function DataTableHeader<TData>({
                 onRowClick={onRowClick}
               />
             ))}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-9 shrink-0 gap-1.5 text-muted-foreground hover:text-foreground"
-              disabled={!nextAvailableTarget}
-              onClick={handleAddFilter}
-              aria-label={t('addFilter')}
-              title={t('addFilter')}
-            >
-              <Plus className="size-4" />
-              {t('addFilter')}
-            </Button>
+            <DataTableFilterFieldMenu
+              table={table}
+              columnFilters={columnFilters}
+              tableState={tableState}
+              onSelect={(columnId) => {
+                const config = columnFilters[columnId];
+                if (!config) return;
+                setTableState({
+                  columnFilters: addPresentFilter(tableState.columnFilters, columnId, config),
+                  filtersExpanded: true,
+                });
+              }}
+              trigger={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 shrink-0 gap-1.5 text-muted-foreground hover:text-foreground"
+                  disabled={!canAddFilter}
+                  aria-label={t('addFilter')}
+                  title={t('addFilter')}
+                >
+                  <Plus className="size-4" />
+                  {t('addFilter')}
+                </Button>
+              }
+            />
           </div>
           <Button
             type="button"
