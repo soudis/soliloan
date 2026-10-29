@@ -9,6 +9,23 @@ import { getInterestDays } from './loan-calculations';
 // Local calendar dates keep the day count independent of the process timezone.
 const calendarDay = (date: string) => moment(date, 'YYYY-MM-DD', true);
 
+// A date as Prisma returns it: midnight UTC, which is 01:00 or 02:00 in Berlin.
+const storedDate = (date: string) => moment(new Date(date));
+
+describe('getInterestDays with ACT methods', () => {
+  // All ACT methods count days the same way. They differ only in the base.
+  const method = InterestMethod.ACT_365_NOCOMPOUND;
+
+  it('splits a period at the year boundary without losing a day', () => {
+    const deposit = storedDate('2023-01-15');
+    const end = storedDate('2024-03-10');
+    assert.equal(
+      getInterestDays(deposit, undefined, method) + getInterestDays(undefined, end, method),
+      moment(end).startOf('day').diff(moment(deposit).startOf('day'), 'days'),
+    );
+  });
+});
+
 describe('getInterestDays with E30/360', () => {
   const method = InterestMethod.E30_360_NOCOMPOUND;
 
