@@ -2,6 +2,7 @@ import { type Loan, type Transaction, TransactionType } from '@prisma/client';
 import moment from 'moment';
 
 import { calculateLoanPerYear, type LoanForPerYear } from '@/lib/calculations/loan-calculations';
+import { sortTransactions } from '@/lib/utils/sorters';
 
 /** The parts of a Kredit the ledger replay needs; the Zahlungen are passed separately. */
 export type LedgerLoan = Pick<Loan, 'amount'> & Omit<LoanForPerYear, 'transactions'>;
@@ -67,22 +68,13 @@ export type LedgerEntry = {
 
 const dayOf = (date: Date) => moment(date).startOf('day');
 
-const typeOrder = (type: TransactionType) => {
-  if (type === TransactionType.DEPOSIT) return 0;
-  if (isClosingType(type)) return 2;
-  return 1;
-};
-
-/** Canonical order: by day, then Einzahlungen, then the other types, then closing Zahlungen; ties by id. */
-export const ledgerSorter = (a: Transaction, b: Transaction) =>
-  a.date.getTime() - b.date.getTime() || typeOrder(a.type) - typeOrder(b.type) || a.id.localeCompare(b.id);
-
 /** Real Zahlungen only (no synthetic interest rows), normalised to the start of their day and in canonical order. */
 export const toLedger = (transactions: Transaction[]) =>
-  transactions
-    .filter((transaction) => transaction.type !== TransactionType.INTEREST)
-    .map((transaction) => ({ ...transaction, date: dayOf(transaction.date).toDate() }))
-    .sort(ledgerSorter);
+  sortTransactions(
+    transactions
+      .filter((transaction) => transaction.type !== TransactionType.INTEREST)
+      .map((transaction) => ({ ...transaction, date: dayOf(transaction.date).toDate() })),
+  );
 
 /** Plain ledger Kontostand (with interest) at the end of `date`, without the closing correction. */
 const rawBalance = (loan: LedgerLoan, transactions: Transaction[], date: Date) => {

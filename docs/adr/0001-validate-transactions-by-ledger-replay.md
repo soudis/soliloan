@@ -9,3 +9,4 @@ We rejected an append-only ledger (new Zahlungen only after the latest one). It 
 - A change is only blocked for violations it introduces. Kredite that already violate a rule stay editable.
 - Future dates are allowed and only warned about, so a Rückzahlung can be booked before the bank transfer happens.
 - Changes that alter the interest or the year-end Kontostand of an earlier calendar year show a warning, they are not blocked.
+- On one day, Einzahlungen are replayed first, then the other types, then a closing Zahlung. A Zahlung created after a Rückzahlung or Erlassung of the same day (its id sorts after) is replayed after it, so a new Einzahlung on the day of a Rückzahlung reopens the Kredit instead of changing the repaid amount. The calculation uses the same order (`sortTransactions`).

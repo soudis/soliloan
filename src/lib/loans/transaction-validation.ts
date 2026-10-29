@@ -25,8 +25,8 @@ export const BOOKABLE_TYPES: TransactionType[] = [
   TransactionType.NOTRECLAIMED,
 ];
 
-/** Id of the Zahlung being checked when it is not stored yet. */
-export const DRAFT_TRANSACTION_ID = 'draft';
+/** Id of the Zahlung being checked when it is not stored yet; it sorts after every stored id, i.e. as the newest. */
+export const DRAFT_TRANSACTION_ID = '~draft';
 const DRAFT_ID = DRAFT_TRANSACTION_ID;
 
 /** A Zahlung as entered in the modal. `transactionId` is set when an existing Zahlung is edited. */
@@ -68,7 +68,7 @@ export type AmountLimits = {
 
 export type TransactionPreview = {
   /** State at the end of the chosen day, without the Zahlung being edited. */
-  summary: { balance: number; einlagenstand: number; freeCapacity: number };
+  summary: { balance: number; einlagenstand: number };
   types: Record<string, TypeAvailability>;
   /** Limits for the selected type. */
   limits?: AmountLimits;
@@ -77,8 +77,6 @@ export type TransactionPreview = {
   /** Violations the draft would introduce (block saving). */
   errors: Violation[];
   warnings: TransactionWarning[];
-  /** State after the draft, when type and amount are set. */
-  after?: { balance: number; einlagenstand: number };
 };
 
 const round2 = (value: number) => Math.round(value * 100) / 100;
@@ -226,11 +224,7 @@ export const previewTransaction = ({
   const baseline = replayLedger(loan, existing);
 
   const state = stateAt(loan, others, draft.date);
-  const summary = {
-    balance: state.balance,
-    einlagenstand: state.einlagenstand,
-    freeCapacity: Math.max(round2(loan.amount - state.einlagenstand), 0),
-  };
+  const summary = { balance: state.balance, einlagenstand: state.einlagenstand };
 
   const introduced = (list: Transaction[]) =>
     introducedViolations(baseline.violations, replayLedger(loan, list, { fromDate }).violations);
@@ -275,20 +269,11 @@ export const previewTransaction = ({
 
   const errors: Violation[] = [];
   const warnings: TransactionWarning[] = [];
-  let after: TransactionPreview['after'];
 
   if (selected && draft.amount !== undefined) {
     const proposed = [...others, candidate(selected, draft.amount)];
     const result = checkChange(loan, existing, proposed, fromDate);
     errors.push(...result.errors);
-
-    const entry = result.after.entries.find((item) => item.transaction.id === candidateId);
-    if (entry) {
-      after = {
-        balance: isClosingType(selected) ? 0 : entry.balanceAfter,
-        einlagenstand: entry.einlagenstandAfter,
-      };
-    }
 
     // Closing Zahlungen that no longer match the Kontostand of their day
     const beforeDifferences = new Map(result.before.closingDifferences.map((item) => [item.transactionId, item]));
@@ -324,5 +309,5 @@ export const previewTransaction = ({
     warnings.push({ kind: 'EXISTING_VIOLATIONS', count: baseline.violations.length });
   }
 
-  return { summary, types, limits, closingAmount, errors, warnings, after };
+  return { summary, types, limits, closingAmount, errors, warnings };
 };

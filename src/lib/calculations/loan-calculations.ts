@@ -11,7 +11,7 @@ import moment, { type Moment } from 'moment';
 import { calculateOutstandingDeposits } from '@/lib/loans/savings-contract';
 import type { CalculationOptions } from '@/types/calculation';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
-import { createdAtDescSorter, transactionSorter } from '../utils/sorters';
+import { createdAtDescSorter, sortTransactions } from '../utils/sorters';
 import { getFirstDepositDateFromTransactions, getLoanTermDays, getRepaymentPeriodDays } from './loan-duration-metrics';
 
 export const isRepaid = (loan: Pick<LoanWithRelations, 'transactions'>, toDate: Date) => {
@@ -19,7 +19,7 @@ export const isRepaid = (loan: Pick<LoanWithRelations, 'transactions'>, toDate: 
   if (loan.transactions.length <= 1) {
     return undefined;
   }
-  const transactions = [...loan.transactions].sort(transactionSorter);
+  const transactions = sortTransactions(loan.transactions);
   const lastTransaction = transactions[transactions.length - 1];
   if (!lastTransaction) {
     return undefined;
@@ -203,7 +203,7 @@ export const calculateLoanPerYear = (
   }
 
   const compound = method.split('_')[2] === 'COMPOUND';
-  const transactions = [...loan.transactions].sort(transactionSorter);
+  const transactions = sortTransactions(loan.transactions);
   const firstTransaction = transactions[0];
   if (!firstTransaction) {
     return [];
@@ -382,7 +382,7 @@ export const calculateLoanPerMonth = (
   }
 
   const compound = method.split('_')[2] === 'COMPOUND';
-  const transactions = [...loan.transactions].sort(transactionSorter);
+  const transactions = sortTransactions(loan.transactions);
   const firstTransaction = transactions[0];
   if (!firstTransaction) {
     return [];
@@ -619,25 +619,26 @@ export function calculateLoanFieldsWithPerYear<T>(loan: LoanWithRelations & T, o
     repaymentPeriodDays: getRepaymentPeriodDays(loan, toDate),
     ...calculateOutstandingDeposits(loan, toDate),
     // add interests per year as virtual transactions
-    transactions: loan.transactions
-      .map((transaction) => ({
-        ...transaction,
-        amount: transaction.amount,
-      }))
-      .concat(
-        numbers.perYear
-          .filter((yearNumbers) => yearNumbers.interest.toNumber() > 0)
-          .map((yearNumbers) => ({
-            id: `${yearNumbers.year}-interest`,
-            type: TransactionType.INTEREST,
-            date: getInterestBookingDate(yearNumbers.year, toDate, repaidDate),
-            amount: yearNumbers.interest.toNumber(),
-            paymentType: PaymentType.OTHER,
-            loanId: loan.id,
-            lenderNotifiedAt: null,
-          })),
-      )
-      .sort(transactionSorter),
+    transactions: sortTransactions(
+      loan.transactions
+        .map((transaction) => ({
+          ...transaction,
+          amount: transaction.amount,
+        }))
+        .concat(
+          numbers.perYear
+            .filter((yearNumbers) => yearNumbers.interest.toNumber() > 0)
+            .map((yearNumbers) => ({
+              id: `${yearNumbers.year}-interest`,
+              type: TransactionType.INTEREST,
+              date: getInterestBookingDate(yearNumbers.year, toDate, repaidDate),
+              amount: yearNumbers.interest.toNumber(),
+              paymentType: PaymentType.OTHER,
+              loanId: loan.id,
+              lenderNotifiedAt: null,
+            })),
+        ),
+    ),
   };
 
   return { calculated, perYear: numbers.perYear };
