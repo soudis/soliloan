@@ -29,6 +29,7 @@ export function TransactionTableSettings({
       return {
         id: meta.id,
         label: meta.customLabel ?? (meta.labelKey ? labelSource(meta.labelKey) : meta.id),
+        columnGroup: meta.columnGroup,
       };
     });
   }, [project, tTransactions, tLoans, tLenders]);

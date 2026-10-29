@@ -6,8 +6,10 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
+import type { ColumnGroupKey } from '@/components/ui/data-table';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { COLUMN_GROUP_KEYS_IN_ORDER, columnGroupForId } from '@/lib/table-column-groups';
 import type { MergeTagConfig, MergeTagField, MergeTagLoop } from '@/lib/templates/merge-tag-config';
 import {
   canInsertLoopAtContext,
@@ -24,9 +26,23 @@ type MergeTagGroup = {
   /** Hint shown under the title in the group select (translations). */
   description: string;
   items: MergeTagItem[];
+  /** When true, the field dropdown shows loan column subcategories as section headings. */
+  groupFieldsByLoanSubcategory?: boolean;
 };
 
+type MergeTagFieldOption = {
+  value: string;
+  label: string;
+  columnGroupKey?: ColumnGroupKey;
+};
+
+const LOAN_COLUMN_GROUP_KEYS = COLUMN_GROUP_KEYS_IN_ORDER.filter((key) => key.startsWith('loan')) as ColumnGroupKey[];
+
 const isLoop = (item: MergeTagItem): item is MergeTagLoop => 'startTag' in item;
+
+function isMergeTagField(item: MergeTagItem): item is MergeTagField {
+  return !isLoop(item);
+}
 
 export type MergeTagDropdownInsertionContext = {
   ancestorLoopsInnermostFirst: string[];
@@ -77,6 +93,7 @@ export function MergeTagDropdown({
         label: tFields(`categories.${entity}`),
         description: tMergeTags(`groupDescriptions.entity.${entity}` as Parameters<typeof tMergeTags>[0]),
         items: entityMap.get(entity) ?? [],
+        groupFieldsByLoanSubcategory: entity === 'loan',
       }))
       .filter((group) => group.items.length > 0);
 
@@ -120,6 +137,7 @@ export function MergeTagDropdown({
           label: `${loop.label} ${tMergeTags('childFieldsSuffix')}`,
           description: tMergeTags(`groupDescriptions.loopChild.${loop.key}` as Parameters<typeof tMergeTags>[0]),
           items: loop.childFields,
+          groupFieldsByLoanSubcategory: loop.childPrefix === 'loan',
         });
       }
     }
@@ -256,6 +274,7 @@ export function MergeTagDropdown({
               disabled={!selectedGroup || selectedGroup.items.length === 0}
               placeholder={tMergeTags('fieldPlaceholder')}
               loopSuffix={tMergeTags('loopSuffix')}
+              groupByLoanSubcategory={selectedGroup?.groupFieldsByLoanSubcategory === true}
             />
           </div>
 
@@ -288,6 +307,7 @@ function MergeTagFieldSelect({
   disabled,
   placeholder,
   loopSuffix,
+  groupByLoanSubcategory = false,
 }: {
   items: MergeTagItem[];
   value: string;
@@ -295,31 +315,85 @@ function MergeTagFieldSelect({
   disabled?: boolean;
   placeholder: string;
   loopSuffix: string;
+  groupByLoanSubcategory?: boolean;
 }) {
   const tCommon = useTranslations('common');
+  const tColumnGroups = useTranslations('dataTable.columnGroups');
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const options = useMemo(
+  const options = useMemo<MergeTagFieldOption[]>(
     () =>
       items.map((item) => ({
         value: item.key,
         label: isLoop(item) ? `${item.label} (${loopSuffix})` : item.label,
+        columnGroupKey:
+          groupByLoanSubcategory && isMergeTagField(item)
+            ? (columnGroupForId(item.key, 'loan')?.key ?? 'loanGeneral')
+            : undefined,
       })),
-    [items, loopSuffix],
+    [items, loopSuffix, groupByLoanSubcategory],
   );
 
   const filteredOptions = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return options;
-    return options.filter((option) => option.label.toLowerCase().includes(query));
-  }, [options, searchQuery]);
+    return options.filter((option) => {
+      const categoryLabel = option.columnGroupKey ? tColumnGroups(option.columnGroupKey).toLowerCase() : '';
+      return option.label.toLowerCase().includes(query) || categoryLabel.includes(query);
+    });
+  }, [options, searchQuery, tColumnGroups]);
+
+  const groupedFilteredOptions = useMemo(() => {
+    if (!groupByLoanSubcategory) {
+      return { flat: filteredOptions, groups: [] as { key: ColumnGroupKey; options: MergeTagFieldOption[] }[] };
+    }
+
+    const byGroup = new Map<ColumnGroupKey, MergeTagFieldOption[]>();
+    for (const key of LOAN_COLUMN_GROUP_KEYS) {
+      byGroup.set(key, []);
+    }
+    for (const option of filteredOptions) {
+      const key = option.columnGroupKey ?? 'loanGeneral';
+      const bucket = byGroup.get(key) ?? byGroup.get('loanGeneral');
+      bucket?.push(option);
+    }
+
+    return {
+      flat: [] as MergeTagFieldOption[],
+      groups: LOAN_COLUMN_GROUP_KEYS.filter((key) => (byGroup.get(key)?.length ?? 0) > 0).map((key) => ({
+        key,
+        options: byGroup.get(key) ?? [],
+      })),
+    };
+  }, [filteredOptions, groupByLoanSubcategory]);
 
   const currentOption = options.find((option) => option.value === value);
+  const hasResults =
+    groupedFilteredOptions.flat.length > 0 || groupedFilteredOptions.groups.some((group) => group.options.length > 0);
 
   useEffect(() => {
     if (!open) setSearchQuery('');
   }, [open]);
+
+  const renderOptionButton = (option: MergeTagFieldOption) => (
+    <button
+      key={option.value}
+      type="button"
+      className={cn(
+        'relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground',
+        value === option.value && 'bg-accent text-accent-foreground',
+      )}
+      onClick={() => {
+        onValueChange(option.value);
+        setOpen(false);
+        setSearchQuery('');
+      }}
+    >
+      <Check className={cn('mr-2 h-4 w-4 shrink-0', value === option.value ? 'opacity-100' : 'opacity-0')} />
+      <span className="truncate">{option.label}</span>
+    </button>
+  );
 
   return (
     <Popover
@@ -359,27 +433,21 @@ function MergeTagFieldSelect({
           />
         </div>
         <div className="max-h-[min(24rem,70vh)] overflow-y-auto p-1">
-          {filteredOptions.length === 0 ? (
+          {!hasResults ? (
             <div className="py-6 text-center text-sm text-muted-foreground">{tCommon('ui.actions.noResults')}</div>
           ) : (
-            filteredOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={cn(
-                  'relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground',
-                  value === option.value && 'bg-accent text-accent-foreground',
-                )}
-                onClick={() => {
-                  onValueChange(option.value);
-                  setOpen(false);
-                  setSearchQuery('');
-                }}
-              >
-                <Check className={cn('mr-2 h-4 w-4 shrink-0', value === option.value ? 'opacity-100' : 'opacity-0')} />
-                <span className="truncate">{option.label}</span>
-              </button>
-            ))
+            <>
+              {groupedFilteredOptions.flat.map(renderOptionButton)}
+              {groupedFilteredOptions.groups.map(({ key, options: groupOptions }, groupIndex) => (
+                <div key={key}>
+                  <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{tColumnGroups(key)}</div>
+                  {groupOptions.map(renderOptionButton)}
+                  {groupIndex < groupedFilteredOptions.groups.length - 1 ? (
+                    <div className="my-1 h-px bg-border" role="separator" />
+                  ) : null}
+                </div>
+              ))}
+            </>
           )}
         </div>
       </PopoverContent>

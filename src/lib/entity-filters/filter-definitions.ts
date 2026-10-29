@@ -11,6 +11,7 @@ import {
 } from '@prisma/client';
 
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
+import { columnGroupForId } from '@/lib/table-column-groups';
 import { createAdditionalFieldFilters } from '@/lib/table-column-utils';
 import type { EntityFilterEntity, EntityFilterFieldOption } from '@/types/entity-filters';
 import type { NumberFilterOperator } from '@/types/number-filter-value';
@@ -304,10 +305,11 @@ export function buildLoanFilterFieldOptions(
   const loanFilters = buildLoanColumnFiltersMap(project, t, commonT);
 
   return Object.entries(loanFilters).map(([field, def]) => ({
+    ...def,
     field,
     entity: 'loan' as const,
     group: 'loan' as const,
-    ...def,
+    columnGroup: columnGroupForId(field, 'loan'),
   }));
 }
 
@@ -323,10 +325,11 @@ export function buildLenderFilterFieldOptions(
   });
 
   return Object.entries(lenderFilters).map(([field, def]) => ({
+    ...def,
     field,
     entity: 'lender' as const,
     group: 'lender' as const,
-    ...def,
+    columnGroup: columnGroupForId(field, 'lender'),
   }));
 }
 
@@ -346,22 +349,25 @@ export function buildTransactionFilterFieldOptions(
 
   return [
     ...Object.entries(transactionFilters).map(([field, def]) => ({
+      ...def,
       field,
       entity: 'transaction' as const,
       group: 'transaction' as const,
-      ...def,
+      columnGroup: columnGroupForId(field, 'transaction'),
     })),
     ...Object.entries(loanFilters).map(([field, def]) => ({
+      ...def,
       field,
       entity: 'loan' as const,
       group: 'loan' as const,
-      ...def,
+      columnGroup: columnGroupForId(field, 'loan'),
     })),
     ...Object.entries(lenderFilters).map(([field, def]) => ({
+      ...def,
       field,
       entity: 'lender' as const,
       group: 'lender' as const,
-      ...def,
+      columnGroup: columnGroupForId(field, 'lender'),
     })),
   ];
 }

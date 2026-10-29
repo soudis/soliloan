@@ -551,10 +551,16 @@ function ColumnVisibilityMenu<TData>({ table, columnFilters }: ColumnVisibilityM
     return {
       flatColumns: groupedHideableColumns.flatColumns.filter(matches),
       groupedColumns: groupedHideableColumns.groupedColumns
-        .map(({ key, columns }) => ({ key, columns: columns.filter(matches) }))
+        .map(({ key, columns }) => {
+          const categoryLabel = t(`columnGroups.${key}`).toLowerCase();
+          if (categoryLabel.includes(query)) {
+            return { key, columns };
+          }
+          return { key, columns: columns.filter(matches) };
+        })
         .filter(({ columns }) => columns.length > 0),
     };
-  }, [groupedHideableColumns, searchQuery, columnFilters]);
+  }, [groupedHideableColumns, searchQuery, columnFilters, t]);
 
   const hasResults = filteredColumns.flatColumns.length > 0 || filteredColumns.groupedColumns.length > 0;
 
@@ -571,7 +577,7 @@ function ColumnVisibilityMenu<TData>({ table, columnFilters }: ColumnVisibilityM
           {t('columns')}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 p-0">
+      <DropdownMenuContent align="end" className="w-64 p-0">
         <div className="flex items-center border-b px-3 py-2">
           <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
           <input

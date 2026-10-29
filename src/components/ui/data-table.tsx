@@ -57,7 +57,13 @@ export type ColumnExportMeta = {
   wrapText?: boolean;
 };
 
-export type ColumnGroupKey = 'transaction' | 'loan' | 'lender';
+export type ColumnGroupKey =
+  | 'transaction'
+  | 'loanGeneral'
+  | 'loanInterest'
+  | 'loanSavings'
+  | 'loanTerm'
+  | 'lender';
 
 export type ColumnGroupMeta = {
   /** Translation key under dataTable.columnGroups */

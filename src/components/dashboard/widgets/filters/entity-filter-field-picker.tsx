@@ -7,14 +7,10 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { COLUMN_GROUP_KEYS_IN_ORDER } from '@/lib/table-column-groups';
 import { cn } from '@/lib/utils';
+import type { ColumnGroupKey } from '@/components/ui/data-table';
 import type { EntityFilterEntity, EntityFilterFieldOption } from '@/types/entity-filters';
-
-const FILTER_GROUP_LABELS: Record<EntityFilterEntity, string> = {
-  transaction: 'filterGroupTransaction',
-  loan: 'filterGroupLoan',
-  lender: 'filterGroupLender',
-};
 
 function toFieldValue(entity: string, field: string): string {
   return `${entity}:${field}`;
@@ -46,6 +42,7 @@ export function EntityFilterFieldPicker({
   size?: 'xs' | 'sm';
 }) {
   const t = useTranslations(translationNamespace);
+  const tColumnGroups = useTranslations('dataTable.columnGroups');
   const tCommon = useTranslations('common');
   const [open, setOpen] = useState(false);
 
@@ -55,14 +52,27 @@ export function EntityFilterFieldPicker({
   );
 
   const groupedOptions = useMemo(() => {
-    const groupOrder: EntityFilterEntity[] = ['transaction', 'loan', 'lender'];
-    return groupOrder
-      .map((groupId) => ({
-        id: groupId,
-        labelKey: FILTER_GROUP_LABELS[groupId],
-        options: fieldOptions.filter((opt) => opt.group === groupId),
-      }))
-      .filter((group) => group.options.length > 0);
+    const byGroup = new Map<ColumnGroupKey, EntityFilterFieldOption[]>();
+    const ungrouped: EntityFilterFieldOption[] = [];
+
+    for (const opt of fieldOptions) {
+      const key = opt.columnGroup?.key;
+      if (!key) {
+        ungrouped.push(opt);
+        continue;
+      }
+      const existing = byGroup.get(key) ?? [];
+      existing.push(opt);
+      byGroup.set(key, existing);
+    }
+
+    return {
+      ungrouped,
+      groups: COLUMN_GROUP_KEYS_IN_ORDER.filter((key) => (byGroup.get(key)?.length ?? 0) > 0).map((key) => ({
+        id: key,
+        options: byGroup.get(key) ?? [],
+      })),
+    };
   }, [fieldOptions]);
 
   return (
@@ -93,14 +103,38 @@ export function EntityFilterFieldPicker({
           />
           <CommandList className="max-h-[min(280px,50dvh)]">
             <CommandEmpty>{tCommon('ui.actions.noResults')}</CommandEmpty>
-            {groupedOptions.map((group) => (
-              <CommandGroup key={group.id} heading={t(group.labelKey)}>
-                {group.options.map((opt) => {
+            {groupedOptions.ungrouped.length > 0 ? (
+              <CommandGroup>
+                {groupedOptions.ungrouped.map((opt) => {
                   const itemValue = toFieldValue(opt.entity, opt.field);
                   return (
                     <CommandItem
                       key={itemValue}
                       value={`${opt.label} ${opt.field}`}
+                      className={cn('cursor-pointer', size === 'sm' ? 'text-sm' : 'text-xs')}
+                      onSelect={() => {
+                        const parsed = parseFieldValue(itemValue);
+                        onChange(parsed.entity, parsed.field);
+                        setOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn('mr-2 h-3.5 w-3.5 shrink-0', value === itemValue ? 'opacity-100' : 'opacity-0')}
+                      />
+                      {opt.label}
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            ) : null}
+            {groupedOptions.groups.map((group) => (
+              <CommandGroup key={group.id} heading={tColumnGroups(group.id)}>
+                {group.options.map((opt) => {
+                  const itemValue = toFieldValue(opt.entity, opt.field);
+                  return (
+                    <CommandItem
+                      key={itemValue}
+                      value={`${opt.label} ${opt.field} ${tColumnGroups(group.id)}`}
                       className={cn('cursor-pointer', size === 'sm' ? 'text-sm' : 'text-xs')}
                       onSelect={() => {
                         const parsed = parseFieldValue(itemValue);

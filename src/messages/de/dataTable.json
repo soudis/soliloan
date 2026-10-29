@@ -100,7 +100,10 @@
   "columnGroups": {
     "shown": "Angezeigt",
     "transaction": "Transaktion",
-    "loan": "Kredit",
+    "loanGeneral": "Kredit - Allgemein",
+    "loanInterest": "Kredit - Zinsen",
+    "loanSavings": "Kredit - Ansparvertrag",
+    "loanTerm": "Kredit - Laufzeit",
     "lender": "Kreditgeber*in"
   },
   "columnMenu": {
