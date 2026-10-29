@@ -166,8 +166,10 @@ export const calculateSavingsMonthlyAmount = (loanAmount: number, depositCount: 
 
 export const calculateSavingsDepositCountFromMonthlyAmount = (loanAmount: number, monthlyAmount: number) => {
   if (!Number.isFinite(loanAmount) || loanAmount <= 0) return null;
-  if (!Number.isFinite(monthlyAmount) || monthlyAmount <= 0) return null;
-  return Math.ceil(loanAmount / monthlyAmount);
+  const monthlyCents = Math.round(monthlyAmount * 100);
+  if (!Number.isFinite(monthlyCents) || monthlyCents < 1) return null;
+  // Whole cents divide exactly, so an amount that is a multiple of the monthly amount needs no extra deposit.
+  return Math.ceil(Math.round(loanAmount * 100) / monthlyCents);
 };
 
 export const resolveSavingsLastDepositDate = (
