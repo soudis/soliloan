@@ -34,13 +34,13 @@ A Zahlung where the Kreditgeber*in pays money into the Kredit.
 A Zahlung where part of the Kontostand is paid back to the Kreditgeber*in. It is always smaller than the Kontostand on its day.
 
 **Rückzahlung**:
-A Zahlung that pays back the whole Kontostand and closes the Kredit.
+A Zahlung that pays back the whole Kontostand and closes the Kredit. No Zahlung can follow it.
 
 **Teilerlassung**:
 A Zahlung where the Kreditgeber*in waives part of the Kontostand. It is always smaller than the Kontostand on its day.
 
 **Erlassung**:
-A Zahlung where the Kreditgeber*in waives the whole Kontostand and closes the Kredit.
+A Zahlung where the Kreditgeber*in waives the whole Kontostand and closes the Kredit. No Zahlung can follow it.
 
 **Zinsauszahlung**:
 A Zahlung that pays out accrued interest without touching the paid-in capital.

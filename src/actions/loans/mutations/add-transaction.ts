@@ -14,7 +14,7 @@ import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-re
 import { db } from '@/lib/db';
 import { notifyLenderAboutTransaction } from '@/lib/email';
 import { toStoredAmount } from '@/lib/loans/transaction-ledger';
-import { checkNewTransaction } from '@/lib/loans/transaction-validation';
+import { checkNewTransaction, rejectionErrorKey } from '@/lib/loans/transaction-validation';
 import { transactionFormSchema } from '@/lib/schemas/transaction';
 import { loanAction } from '@/lib/utils/safe-action';
 
@@ -59,7 +59,7 @@ export const addTransactionAction = loanAction
       amount: data.amount,
     });
     if (errors.length > 0) {
-      throw new Error('error.transaction.invalid');
+      throw new Error(rejectionErrorKey(errors));
     }
 
     const amount = toStoredAmount(data.type, data.amount);

@@ -880,12 +880,14 @@
         "closingAmountHint": "Der Betrag entspricht dem Kontostand am {date}.",
         "recalculate": "Neu berechnen",
         "noTypeAvailable": "An diesem Tag ist keine Zahlung möglich.",
+      "closedLoan": "Der Kredit wurde zurückgezahlt oder erlassen. Danach können keine Zahlungen mehr erfasst werden. Für einen Neustart bitte einen neuen Kredit anlegen.",
         "unavailable": {
           "CAP_EXCEEDED": "Kreditbetrag bereits eingezahlt",
           "BALANCE_NEGATIVE": "Kontostand reicht nicht",
           "PARTIAL_TOO_LARGE": "Kontostand reicht nicht",
           "INTEREST_EXCEEDS_ACCRUED": "keine offenen Zinsen",
           "NOTHING_TO_CLOSE": "kein Kontostand",
+        "AFTER_CLOSING": "Kredit bereits zurückgezahlt",
           "later": "spätere Zahlungen würden ungültig"
         },
         "errors": {
@@ -893,7 +895,8 @@
           "BALANCE_NEGATIVE": "{type} am {date}: Der Kontostand würde auf {value} fallen.",
           "PARTIAL_TOO_LARGE": "{type} am {date}: Nach der Zahlung müssen mehr als {limit} Kontostand übrig bleiben (wären {value}).",
           "INTEREST_EXCEEDS_ACCRUED": "{type} am {date}: Die Zinsauszahlung von {value} übersteigt die offenen Zinsen von {limit}.",
-          "NOTHING_TO_CLOSE": "{type} am {date}: Es gibt keinen Kontostand, der zurückgezahlt oder erlassen werden könnte."
+          "NOTHING_TO_CLOSE": "{type} am {date}: Es gibt keinen Kontostand, der zurückgezahlt oder erlassen werden könnte.",
+        "AFTER_CLOSING": "{type} am {date}: Nach einer Rückzahlung oder Erlassung können keine Zahlungen mehr erfasst werden."
         },
         "warnings": {
           "futureTitle": "Datum in der Zukunft",

@@ -88,7 +88,8 @@ export function TransactionDialog({
 
   const selectedType = form.watch('type') as TransactionType | '';
   const typeUnavailable = !!selectedType && preview?.types[selectedType]?.available === false;
-  const canSubmit = !!preview && !isPending && preview.errors.length === 0 && !typeUnavailable;
+  const nothingPossible = !!preview && Object.values(preview.types).every((availability) => !availability.available);
+  const canSubmit = !!preview && !isPending && preview.errors.length === 0 && !typeUnavailable && !nothingPossible;
 
   const handleSubmit = form.handleSubmit(async (data) => {
     if (submitLock.current) return;
