@@ -3,8 +3,7 @@ export const ADD_ACTION_BUTTON_CLASS =
   'border-success-foreground text-success-foreground hover:bg-success/10 hover:text-success-foreground';
 
 /** Outline edit actions — info/blue-purple, same token as withdrawals. */
-export const EDIT_ACTION_BUTTON_CLASS =
-  'border-info text-info-foreground hover:bg-info/10 hover:text-info-foreground';
+export const EDIT_ACTION_BUTTON_CLASS = 'border-info text-info-foreground hover:bg-info/10 hover:text-info-foreground';
 
 /** Outline delete actions — destructive, same border weight as add/edit. */
 export const DELETE_ACTION_BUTTON_CLASS =

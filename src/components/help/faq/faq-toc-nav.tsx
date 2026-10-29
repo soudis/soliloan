@@ -126,7 +126,12 @@ export function FaqTocNav({ toc, isAdmin }: FaqTocNavProps) {
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <nav className="min-h-0 flex-1 space-y-5 overflow-y-auto pt-1 text-sm md:pb-8">
           {localToc.uncategorized.length > 0 ? (
-            <ArticleList articles={localToc.uncategorized} activeSlug={activeSlug} isAdmin={isAdmin} canDrag={isAdmin} />
+            <ArticleList
+              articles={localToc.uncategorized}
+              activeSlug={activeSlug}
+              isAdmin={isAdmin}
+              canDrag={isAdmin}
+            />
           ) : null}
           <SortableContext
             items={localToc.categories.map((category) => `category:${category.id}`)}
@@ -134,7 +139,12 @@ export function FaqTocNav({ toc, isAdmin }: FaqTocNavProps) {
           >
             {localToc.categories.map((category) => (
               <SortableItem key={category.id} id={`category:${category.id}`} disabled={!isAdmin}>
-                <CategoryBlock category={category} activeSlug={activeSlug} isAdmin={isAdmin} canDragArticles={isAdmin} />
+                <CategoryBlock
+                  category={category}
+                  activeSlug={activeSlug}
+                  isAdmin={isAdmin}
+                  canDragArticles={isAdmin}
+                />
               </SortableItem>
             ))}
           </SortableContext>
