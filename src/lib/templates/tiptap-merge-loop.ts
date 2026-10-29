@@ -1,4 +1,4 @@
-import type { MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
+import type { MergeTagLoop } from '@/lib/templates/merge-tag-config';
 
 /** Default when `MergeTag` option / translation is not configured (aligned with `templates.editor.mergeTags.loopBodyPlaceholder` in `de`). */
 export const DEFAULT_LOOP_BODY_PLACEHOLDER_VISIBLE = 'Schleifeninhalt eingeben …';

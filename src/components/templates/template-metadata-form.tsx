@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { createGlobalTemplateAction, createTemplateAction } from '@/actions/templates/mutations/create-template';
 import { updateTemplateAction } from '@/actions/templates/mutations/update-template';
-import type { MergeTagConfig, MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
 import { getMergeTagConfigAction } from '@/actions/templates/queries/get-merge-tags';
 import { getTemplatesAction } from '@/actions/templates/queries/get-templates';
 import { MergeTagDropdown } from '@/components/templates/merge-tag-dropdown';
@@ -27,6 +26,7 @@ import { useRouter } from '@/i18n/navigation';
 import { useProjectId } from '@/lib/hooks/use-project-id';
 import { withProjectId } from '@/lib/project-href';
 import { type CreateTemplateFormData, createTemplateSchema } from '@/lib/schemas/templates';
+import type { MergeTagConfig, MergeTagField, MergeTagLoop } from '@/lib/templates/merge-tag-config';
 import { getDatasetDisplayName } from '@/lib/templates/merge-tags';
 import type { GlobalTemplateListItem } from '@/types/templates';
 
@@ -323,9 +323,9 @@ function SubjectOrFilenameField<TFieldValues extends FieldValues & { subjectOrFi
 
   useEffect(() => {
     let cancelled = false;
-    getMergeTagConfigAction(dataset, projectId, templateType).then((config) => {
-      if (!cancelled) {
-        setMergeTagConfig(config);
+    getMergeTagConfigAction({ dataset, projectId, templateType }).then((result) => {
+      if (!cancelled && result?.data) {
+        setMergeTagConfig(result.data);
       }
     });
     return () => {

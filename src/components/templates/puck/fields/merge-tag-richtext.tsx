@@ -5,7 +5,7 @@ import type { Editor } from '@tiptap/core';
 import { PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
+import type { MergeTagField, MergeTagLoop } from '@/lib/templates/merge-tag-config';
 import { buildLoopMergeTagFallbackHtml } from '@/lib/templates/tiptap-merge-loop';
 import { useEditorMetadata } from '../../editor-context';
 import { useMergeTagConfig } from '../../merge-tag-context';

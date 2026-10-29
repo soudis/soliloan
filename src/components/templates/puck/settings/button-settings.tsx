@@ -3,7 +3,7 @@
 import { Link2, PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { MergeTagField, MergeTagLoop } from '@/actions/templates/queries/get-merge-tags';
+import type { MergeTagField, MergeTagLoop } from '@/lib/templates/merge-tag-config';
 import { BlockPaddingFields } from '../../block-padding-fields';
 import { useEditorMetadata } from '../../editor-context';
 import { useMergeTagConfig } from '../../merge-tag-context';
