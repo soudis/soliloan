@@ -46,7 +46,7 @@ export const updateTransactionAction = transactionAction
       item.id === transactionId ? { ...item, type: data.type, date, amount, paymentType: data.paymentType } : item,
     );
     const earliest = new Date(Math.min(transaction.date.getTime(), date.getTime()));
-    const { errors } = checkChange(loan, loan.transactions, proposed, earliest);
+    const { errors } = checkChange(loan, loan.transactions, proposed, earliest, { exemptTransactionId: transactionId });
     if (errors.length > 0) {
       throw new Error(rejectionErrorKey(errors));
     }

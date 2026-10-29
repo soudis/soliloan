@@ -104,7 +104,12 @@ export function TransactionFormFields({
   });
 
   // After a Rückzahlung / Erlassung nothing is possible any more: say so once instead of per type
-  const loanClosed = !!preview && BOOKABLE_TYPES.every((item) => preview.types[item]?.reason?.rule === 'AFTER_CLOSING');
+  const loanClosed =
+    !!preview &&
+    BOOKABLE_TYPES.every((item) => {
+      const rule = preview.types[item]?.reason?.rule;
+      return rule === 'AFTER_CLOSING' || rule === 'CLOSING_CHANGED';
+    });
   const selectedAvailability = selectedType ? preview?.types[selectedType] : undefined;
   let unavailableMessage: string | undefined;
   if (loanClosed) {

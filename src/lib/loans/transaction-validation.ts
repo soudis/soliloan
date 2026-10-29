@@ -48,7 +48,7 @@ export type YearChange = {
 
 export type TransactionWarning =
   | { kind: 'FUTURE_DATE' }
-  | { kind: 'CLOSING_DIFFERENCE'; difference: ClosingDifference; own: boolean }
+  | { kind: 'CLOSING_DIFFERENCE'; difference: ClosingDifference }
   | { kind: 'PAST_YEARS'; years: YearChange[] }
   | { kind: 'NOTIFIED'; notifiedAt: Date }
   | { kind: 'EXISTING_VIOLATIONS'; count: number };
@@ -146,17 +146,53 @@ export const changedPastYears = (
 };
 
 /** Translation key of the error for a rejected change. */
-export const rejectionErrorKey = (errors: Violation[]) =>
-  errors.some((error) => error.rule === 'AFTER_CLOSING')
-    ? 'error.transaction.afterClosing'
-    : 'error.transaction.invalid';
+export const rejectionErrorKey = (errors: Violation[], fallback = 'error.transaction.invalid') => {
+  if (errors.some((error) => error.rule === 'AFTER_CLOSING')) return 'error.transaction.afterClosing';
+  if (errors.some((error) => error.rule === 'CLOSING_CHANGED')) return 'error.transaction.frozen';
+  return fallback;
+};
 
-/** Violations a change introduces: `proposed` is checked, anything `existing` already violated is ignored. */
-export const checkChange = (loan: LedgerLoan, existing: Transaction[], proposed: Transaction[], fromDate?: Date) => {
+type Replay = ReturnType<typeof replayLedger>;
+
+/**
+ * What a change breaks: violations `before` did not have, plus every Rückzahlung / Erlassung whose
+ * Abschlussdifferenz it alters. The Zahlung being edited (`exemptTransactionId`) may change its own.
+ */
+const changeErrors = (before: Replay, after: Replay, exemptTransactionId?: string): Violation[] => {
+  const previousDifferences = new Map(before.closingDifferences.map((item) => [item.transactionId, item]));
+  const changedClosings: Violation[] = [];
+  for (const difference of after.closingDifferences) {
+    const previous = previousDifferences.get(difference.transactionId);
+    if (
+      difference.transactionId !== exemptTransactionId &&
+      previous &&
+      toCents(previous.difference) !== toCents(difference.difference)
+    ) {
+      changedClosings.push({
+        rule: 'CLOSING_CHANGED',
+        transactionId: difference.transactionId,
+        type: difference.type,
+        date: difference.date,
+        value: difference.difference,
+        limit: previous.difference,
+      });
+    }
+  }
+  return [...introducedViolations(before.violations, after.violations), ...changedClosings];
+};
+
+/** What a change breaks, see `changeErrors`. `existing` is the stored ledger, `proposed` the ledger after the change. */
+export const checkChange = (
+  loan: LedgerLoan,
+  existing: Transaction[],
+  proposed: Transaction[],
+  fromDate?: Date,
+  options: { exemptTransactionId?: string } = {},
+) => {
   const before = replayLedger(loan, existing, { fromDate });
   const after = replayLedger(loan, proposed, { fromDate });
   return {
-    errors: introducedViolations(before.violations, after.violations),
+    errors: changeErrors(before, after, options.exemptTransactionId),
     existingViolations: before.violations,
     before,
     after,
@@ -233,7 +269,7 @@ export const previewTransaction = ({
   const summary = { balance: state.balance, einlagenstand: state.einlagenstand };
 
   const introduced = (list: Transaction[]) =>
-    introducedViolations(baseline.violations, replayLedger(loan, list, { fromDate }).violations);
+    changeErrors(baseline, replayLedger(loan, list, { fromDate }), draft.transactionId);
 
   // Kontostand before a closing Zahlung on that day: independent of its own amount
   const closingProbe = replayLedger(loan, [...others, candidate(TransactionType.TERMINATION, 0)], {
@@ -278,19 +314,13 @@ export const previewTransaction = ({
 
   if (selected && draft.amount !== undefined) {
     const proposed = [...others, candidate(selected, draft.amount)];
-    const result = checkChange(loan, existing, proposed, fromDate);
+    const result = checkChange(loan, existing, proposed, fromDate, { exemptTransactionId: draft.transactionId });
     errors.push(...result.errors);
 
-    // Closing Zahlungen that no longer match the Kontostand of their day
-    const beforeDifferences = new Map(result.before.closingDifferences.map((item) => [item.transactionId, item]));
-    for (const difference of result.after.closingDifferences) {
-      const previous = beforeDifferences.get(difference.transactionId);
-      const own = difference.transactionId === candidateId;
-      // The edited closing Zahlung always shows its difference (it offers "Neu berechnen"); others only when it changed
-      const changed = own || !previous || toCents(previous.difference) !== toCents(difference.difference);
-      if (Math.abs(difference.difference) > 0.01 && changed) {
-        warnings.push({ kind: 'CLOSING_DIFFERENCE', difference, own });
-      }
+    // The edited Rückzahlung / Erlassung may differ from the Kontostand of its day: warn, offer "Neu berechnen"
+    const own = result.after.closingDifferences.find((item) => item.transactionId === candidateId);
+    if (own && Math.abs(own.difference) > 0.01) {
+      warnings.push({ kind: 'CLOSING_DIFFERENCE', difference: own });
     }
 
     const years = changedPastYears(loan, existing, proposed, now);

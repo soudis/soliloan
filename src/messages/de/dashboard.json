@@ -790,7 +790,7 @@
       "skippedTitle": "Nicht gelöschte Transaktionen",
       "skippedDescription": "Eine Buchung kann nur gelöscht werden, wenn die übrigen Buchungen des Kredits danach gültig bleiben. Berechnete Zinszeilen können nicht gelöscht werden.",
       "reasons": {
-        "invalid": "Spätere Buchungen des Kredits würden ungültig",
+        "invalid": "Kredit abgeschlossen oder spätere Buchungen würden ungültig",
         "interest": "Berechnete Zinszeile",
         "notFound": "Buchung wurde nicht gefunden"
       }
@@ -894,6 +894,8 @@
       "deleteSuccess": "Zahlung erfolgreich gelöscht",
       "deleteError": "Fehler beim Löschen der Zahlung",
       "noTransactions": "Noch keine Zahlungen",
+      "addDisabledClosed": "Der Kredit ist abgeschlossen. Zahlungen können nur noch nach dem Löschen der Rückzahlung bzw. Erlassung erfasst werden.",
+      "editDisabledClosed": "Der Kredit ist abgeschlossen. Zuerst die Rückzahlung bzw. Erlassung löschen.",
       "createTitle": "Neue Zahlung",
       "createSuccess": "Zahlung erfolgreich erstellt",
       "createError": "Fehler beim Erstellen der Zahlung",
@@ -922,14 +924,14 @@
         "closingAmountHint": "Der Betrag entspricht dem Kontostand am {date}.",
         "recalculate": "Neu berechnen",
         "noTypeAvailable": "An diesem Tag ist keine Zahlung möglich.",
-      "closedLoan": "Der Kredit wurde zurückgezahlt oder erlassen. Danach können keine Zahlungen mehr erfasst werden. Für einen Neustart bitte einen neuen Kredit anlegen.",
+      "closedLoan": "Der Kredit wurde zurückgezahlt oder erlassen. Zahlungen können nicht mehr erfasst oder geändert werden. Zum Ändern zuerst die Rückzahlung bzw. Erlassung löschen, für einen Neustart einen neuen Kredit anlegen.",
         "unavailable": {
           "CAP_EXCEEDED": "Kreditbetrag bereits eingezahlt",
           "BALANCE_NEGATIVE": "Kontostand reicht nicht",
           "PARTIAL_TOO_LARGE": "Kontostand reicht nicht",
           "INTEREST_EXCEEDS_ACCRUED": "keine offenen Zinsen",
           "NOTHING_TO_CLOSE": "kein Kontostand",
-        "AFTER_CLOSING": "Kredit bereits zurückgezahlt",
+        "CLOSED": "Kredit abgeschlossen",
           "later": "spätere Zahlungen würden ungültig"
         },
         "errors": {
@@ -938,15 +940,14 @@
           "PARTIAL_TOO_LARGE": "{type} am {date}: Nach der Zahlung müssen mehr als {limit} Kontostand übrig bleiben (wären {value}).",
           "INTEREST_EXCEEDS_ACCRUED": "{type} am {date}: Die Zinsauszahlung von {value} übersteigt die offenen Zinsen von {limit}.",
           "NOTHING_TO_CLOSE": "{type} am {date}: Es gibt keinen Kontostand, der zurückgezahlt oder erlassen werden könnte.",
-        "AFTER_CLOSING": "{type} am {date}: Nach einer Rückzahlung oder Erlassung können keine Zahlungen mehr erfasst werden."
+        "AFTER_CLOSING": "{type} am {date}: Nach einer Rückzahlung oder Erlassung können keine Zahlungen mehr erfasst werden.",
+        "CLOSING_CHANGED": "Der Kredit ist abgeschlossen: Die {type} am {date} würde danach nicht mehr zum Kontostand passen. Bitte zuerst die {type} löschen."
         },
         "warnings": {
           "futureTitle": "Datum in der Zukunft",
           "futureDescription": "Die Zahlung liegt nach heute. Zinsen werden bis zu diesem Datum gerechnet.",
           "closingOwnTitle": "Betrag weicht vom Kontostand ab",
           "closingOwnDescription": "Am {date} beträgt der Kontostand {balance}, der Betrag ist {amount}. Der Betrag liegt {difference} {direction, select, higher {über} other {unter}} dem Kontostand. Wird trotzdem gespeichert, wird sie den Zinsen des Abschlussjahres zugerechnet (Zinskorrektur).",
-          "closingOtherTitle": "{type} stimmt danach nicht mehr mit dem Kontostand überein",
-          "closingOtherDescription": "Die {type} vom {date} weicht danach um {difference} vom Kontostand ab ({direction, select, higher {Betrag über dem Kontostand} other {Betrag unter dem Kontostand}}). Sie kann anschließend bearbeitet und neu berechnet werden.",
           "pastYearsTitle": "Frühere Jahre ändern sich",
           "pastYearsRow": "{year}: Zinsen {interestBefore} → {interestAfter}, Kontostand zum Jahresende {balanceBefore} → {balanceAfter}",
           "notifiedTitle": "Kreditgeber*in wurde bereits benachrichtigt",
@@ -963,7 +964,8 @@
         "success": "Zahlung erfolgreich gelöscht.",
         "error": "Fehler beim Löschen der Zahlung.",
         "loading": "Zahlung wird gelöscht...",
-        "interestRow": "Berechnete Zinszeilen können nicht gelöscht werden."
+        "interestRow": "Berechnete Zinszeilen können nicht gelöscht werden.",
+        "closed": "Der Kredit ist abgeschlossen. Zuerst die Rückzahlung bzw. Erlassung löschen."
       },
       "errors": {
         "deleteFailed": "Konnte Zahlung nicht löschen."

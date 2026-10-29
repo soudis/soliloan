@@ -36,6 +36,9 @@ export function useUnavailableReason(candidateId: string) {
     if (!reason) {
       return undefined;
     }
+    if (reason.rule === 'AFTER_CLOSING' || reason.rule === 'CLOSING_CHANGED') {
+      return t('unavailable.CLOSED');
+    }
     return reason.transactionId === candidateId ? t(`unavailable.${reason.rule}`) : t('unavailable.later');
   };
 }
@@ -110,7 +113,6 @@ export function TransactionAlerts({
   onRecalculate?: () => void;
 }) {
   const t = useTranslations(MODAL);
-  const commonT = useTranslations('common');
   const locale = useLocale();
   const violationMessage = useViolationMessage();
 
@@ -128,16 +130,15 @@ export function TransactionAlerts({
           </Notice>
         );
       case 'CLOSING_DIFFERENCE': {
-        const { difference, own } = warning;
+        const { difference } = warning;
         const values = {
-          type: commonT(`enums.transaction.type.${difference.type}`),
           date: formatDateShort(difference.date, locale),
           balance: formatCurrency(difference.balance),
           amount: formatCurrency(difference.amount),
           difference: formatCurrency(Math.abs(difference.difference)),
           direction: difference.difference > 0 ? 'higher' : 'lower',
         };
-        return own ? (
+        return (
           <Notice
             key={`${warning.kind}-${index}`}
             icon={<AlertTriangle />}
@@ -152,15 +153,6 @@ export function TransactionAlerts({
             }
           >
             {t('warnings.closingOwnDescription', values)}
-          </Notice>
-        ) : (
-          <Notice
-            key={`${warning.kind}-${index}`}
-            icon={<AlertTriangle />}
-            className={WARNING_CLASS}
-            title={t('warnings.closingOtherTitle', values)}
-          >
-            {t('warnings.closingOtherDescription', values)}
           </Notice>
         );
       }

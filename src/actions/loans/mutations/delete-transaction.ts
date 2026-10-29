@@ -12,7 +12,7 @@ import {
 } from '@/lib/audit-trail';
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
-import { checkChange } from '@/lib/loans/transaction-validation';
+import { checkChange, rejectionErrorKey } from '@/lib/loans/transaction-validation';
 import { transactionIdSchema } from '@/lib/schemas/common';
 import { transactionAction } from '@/lib/utils/safe-action';
 
@@ -54,7 +54,7 @@ export const deleteTransactionAction = transactionAction
       transaction.date,
     );
     if (errors.length > 0) {
-      throw new Error('error.transaction.deleteInvalid');
+      throw new Error(rejectionErrorKey(errors, 'error.transaction.deleteInvalid'));
     }
 
     // Create audit trail entry before deletion

@@ -70,6 +70,9 @@ export type TemplateQuickActionsProps = {
   rowMenu?: {
     /** Shows an "edit" item above delete. */
     onEdit?: () => void;
+    /** When true, the edit item stays visible but cannot be selected. */
+    editDisabled?: boolean;
+    editDisabledTooltip?: string;
     showDelete: boolean;
     /** When true, the delete item stays visible but cannot be selected. */
     deleteDisabled?: boolean;
@@ -350,10 +353,14 @@ export function TemplateQuickActions({
             )}
             {showSeparatorBeforeDelete ? <DropdownMenuSeparator /> : null}
             {rowMenu.onEdit ? (
-              <DropdownMenuItem onSelect={rowMenu.onEdit}>
-                <Pencil className="mr-2 h-4 w-4" />
-                {commonT('ui.actions.edit')}
-              </DropdownMenuItem>
+              <TooltipProvider>
+                <EditMenuItem
+                  disabled={rowMenu.editDisabled}
+                  tooltip={rowMenu.editDisabled ? rowMenu.editDisabledTooltip : undefined}
+                  label={commonT('ui.actions.edit')}
+                  onEdit={rowMenu.onEdit}
+                />
+              </TooltipProvider>
             ) : null}
             {rowMenu.showDelete ? (
               <TooltipProvider>
@@ -668,6 +675,48 @@ function DeleteMenuItem({
 
   // The menu item itself cannot be the tooltip trigger: focusing it on hover
   // (and painting the tooltip under the z-[200] menu) dismisses the hint immediately.
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="block">{item}</span>
+      </TooltipTrigger>
+      <TooltipContent className="z-[250]">{tooltip}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+function EditMenuItem({
+  disabled,
+  tooltip,
+  label,
+  onEdit,
+}: {
+  disabled?: boolean;
+  tooltip?: string;
+  label: string;
+  onEdit: () => void;
+}) {
+  const item = (
+    <DropdownMenuItem
+      disabled={disabled}
+      onSelect={(event) => {
+        if (disabled) {
+          event.preventDefault();
+          return;
+        }
+        onEdit();
+      }}
+    >
+      <Pencil className="mr-2 h-4 w-4" />
+      {label}
+    </DropdownMenuItem>
+  );
+
+  if (!disabled || !tooltip) {
+    return item;
+  }
+
+  // Same tooltip wrapper as the delete item, see DeleteMenuItem
   return (
     <Tooltip>
       <TooltipTrigger asChild>
