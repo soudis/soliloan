@@ -145,6 +145,12 @@ export const changedPastYears = (
     });
 };
 
+/** Translation key of the error for a rejected change. */
+export const rejectionErrorKey = (errors: Violation[]) =>
+  errors.some((error) => error.rule === 'AFTER_CLOSING')
+    ? 'error.transaction.afterClosing'
+    : 'error.transaction.invalid';
+
 /** Violations a change introduces: `proposed` is checked, anything `existing` already violated is ignored. */
 export const checkChange = (loan: LedgerLoan, existing: Transaction[], proposed: Transaction[], fromDate?: Date) => {
   const before = replayLedger(loan, existing, { fromDate });

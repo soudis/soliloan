@@ -103,13 +103,17 @@ export function TransactionFormFields({
     };
   });
 
+  // After a Rückzahlung / Erlassung nothing is possible any more: say so once instead of per type
+  const loanClosed = !!preview && BOOKABLE_TYPES.every((item) => preview.types[item]?.reason?.rule === 'AFTER_CLOSING');
   const selectedAvailability = selectedType ? preview?.types[selectedType] : undefined;
-  const unavailableMessage =
-    selectedAvailability && !selectedAvailability.available
-      ? selectedAvailability.reason
-        ? violationMessage(selectedAvailability.reason)
-        : modalT('noTypeAvailable')
-      : undefined;
+  let unavailableMessage: string | undefined;
+  if (loanClosed) {
+    unavailableMessage = modalT('closedLoan');
+  } else if (selectedAvailability && !selectedAvailability.available) {
+    unavailableMessage = selectedAvailability.reason
+      ? violationMessage(selectedAvailability.reason)
+      : modalT('noTypeAvailable');
+  }
 
   const limits = preview?.limits;
   const binding = limits?.binding;

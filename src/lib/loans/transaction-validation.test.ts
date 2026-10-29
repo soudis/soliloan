@@ -80,25 +80,15 @@ describe('replayLedger rules', () => {
     assert.deepEqual(rules([...base, tx('INTERESTPAYMENT', '2023-12-31', 500)], l), ['INTEREST_EXCEEDS_ACCRUED']);
   });
 
-  it('starts a new ledger after a closing Zahlung', () => {
-    const list = [
-      tx('DEPOSIT', '2024-01-01', 1000),
-      tx('TERMINATION', '2024-06-01', 1000),
-      tx('DEPOSIT', '2024-07-01', 1000),
-    ];
-    assert.deepEqual(rules(list), []);
-    assert.deepEqual(rules([...list, tx('WITHDRAWAL', '2024-07-02', 1100)]), ['BALANCE_NEGATIVE']);
+  it('rejects every Zahlung after a closing Zahlung', () => {
+    const closed = [tx('DEPOSIT', '2024-01-01', 1000), tx('TERMINATION', '2024-06-01', 1000)];
+    assert.deepEqual(rules([...closed, tx('DEPOSIT', '2024-07-01', 1000)]), ['AFTER_CLOSING']);
+    assert.deepEqual(rules([...closed, tx('WITHDRAWAL', '2024-07-01', 100)]), ['AFTER_CLOSING']);
+    assert.deepEqual(rules([...closed, tx('NOTRECLAIMED', '2024-07-01', 100)]), ['AFTER_CLOSING']);
   });
 
   it('flags a closing Zahlung without a Kontostand', () => {
-    assert.deepEqual(
-      rules([
-        tx('DEPOSIT', '2024-01-01', 1000),
-        tx('TERMINATION', '2024-06-01', 1000),
-        tx('NOTRECLAIMED', '2024-07-01', 0),
-      ]),
-      ['NOTHING_TO_CLOSE'],
-    );
+    assert.deepEqual(rules([tx('TERMINATION', '2024-06-01', 100)]), ['NOTHING_TO_CLOSE']);
   });
 });
 
@@ -150,16 +140,24 @@ describe('previewTransaction', () => {
     assert.equal(result.limits?.binding?.date.getTime(), day('2024-03-01').getTime());
   });
 
-  it('offers the Kontostand as Rückzahlung amount and no other types on a closed day', () => {
+  it('offers no type after a Rückzahlung and names the reason', () => {
     const closed = [tx('DEPOSIT', '2024-01-01', 1000), tx('TERMINATION', '2024-03-01', 1000)];
-    const result = preview(closed, { date: day('2024-05-01'), type: TransactionType.DEPOSIT });
-    assert.equal(result.types.WITHDRAWAL?.available, false);
-    assert.equal(result.types.TERMINATION?.available, false);
-    assert.equal(result.types.DEPOSIT?.available, true);
-    assert.equal(result.limits?.max, 1000);
+    const result = preview(closed, { date: day('2024-05-01') });
+    for (const availability of Object.values(result.types)) {
+      assert.equal(availability.available, false);
+      assert.equal(availability.reason?.rule, 'AFTER_CLOSING');
+    }
   });
 
-  it('offers only Einzahlung on the day of a Rückzahlung: a new Zahlung is booked after it', () => {
+  it('still allows a payment before the Rückzahlung, with an Abschlussdifferenz warning', () => {
+    const closed = [tx('DEPOSIT', '2024-01-01', 1000), tx('TERMINATION', '2024-03-01', 1000, 'closing')];
+    const result = preview(closed, { date: day('2024-02-01'), type: TransactionType.WITHDRAWAL, amount: 100 });
+    assert.equal(result.types.WITHDRAWAL?.available, true);
+    assert.deepEqual(result.errors, []);
+    assert.ok(result.warnings.some((w) => w.kind === 'CLOSING_DIFFERENCE'));
+  });
+
+  it('offers no type on the day of a Rückzahlung either: a new Zahlung is booked after it', () => {
     const closed = [tx('DEPOSIT', '2024-01-01', 1000), tx('TERMINATION', '2024-03-01', 1000)];
     const result = preview(closed, { date: day('2024-03-01') });
     assert.deepEqual(result.summary, { balance: 0, einlagenstand: 0 });
@@ -167,7 +165,7 @@ describe('previewTransaction', () => {
       Object.entries(result.types)
         .filter(([, availability]) => availability.available)
         .map(([type]) => type),
-      ['DEPOSIT'],
+      [],
     );
   });
 
@@ -215,7 +213,7 @@ describe('previewTransaction', () => {
     });
     assert.deepEqual(
       result.errors.map((e) => e.rule),
-      ['BALANCE_NEGATIVE'],
+      ['AFTER_CLOSING'],
     );
   });
 

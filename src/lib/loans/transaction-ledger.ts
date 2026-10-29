@@ -36,7 +36,12 @@ export type ViolationRule =
   /** Zinsauszahlung above the unpaid interest (`value` = amount, `limit` = unpaid interest). */
   | 'INTEREST_EXCEEDS_ACCRUED'
   /** Rückzahlung / Erlassung without a Kontostand to close (`value` = Kontostand). */
-  | 'NOTHING_TO_CLOSE';
+  | 'NOTHING_TO_CLOSE'
+  /**
+   * Any Zahlung after a Rückzahlung / Erlassung. A closed Kredit is final: the interest calculation
+   * does not support a Kredit that is funded again, a new Kredit has to be created instead.
+   */
+  | 'AFTER_CLOSING';
 
 export type Violation = {
   rule: ViolationRule;
@@ -112,8 +117,8 @@ export const stateAt = (loan: LedgerLoan, transactions: Transaction[], date: Dat
 };
 
 /**
- * Replays the Zahlungen in canonical order and checks them against the rules. Each closing Zahlung
- * starts a new segment, so a Kredit that was repaid and then funded again is validated as two ledgers.
+ * Replays the Zahlungen in canonical order and checks them against the rules. A closing Zahlung is
+ * final: every Zahlung after it is a violation (`AFTER_CLOSING`) and is not checked further.
  * With `fromDate`, Zahlungen before that day are only counted, not checked (they cannot be affected
  * by a change on or after it).
  */
@@ -125,8 +130,10 @@ export const replayLedger = (loan: LedgerLoan, transactions: Transaction[], opti
 
   let segment: Transaction[] = [];
   let einlagenstand = 0;
+  let closed = false;
 
   for (const transaction of toLedger(transactions)) {
+    const afterClosing = closed;
     const checked = !fromDay || !dayOf(transaction.date).isBefore(fromDay, 'day');
     const closing = isClosingType(transaction.type);
     const balanceBefore = checked ? rawBalance(loan, segment, transaction.date) : 0;
@@ -145,7 +152,9 @@ export const replayLedger = (loan: LedgerLoan, transactions: Transaction[], opti
           limit,
         });
 
-      if (closing) {
+      if (afterClosing) {
+        violate('AFTER_CLOSING', 0, 0);
+      } else if (closing) {
         const amount = Math.abs(transaction.amount);
         if (toCents(balanceBefore) <= 1) {
           violate('NOTHING_TO_CLOSE', balanceBefore, 0);
@@ -175,6 +184,7 @@ export const replayLedger = (loan: LedgerLoan, transactions: Transaction[], opti
     }
 
     if (closing) {
+      closed = true;
       segment = [];
     } else {
       segment.push(transaction);

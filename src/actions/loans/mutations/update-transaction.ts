@@ -14,7 +14,7 @@ import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-re
 import { db } from '@/lib/db';
 import { notifyLenderAboutTransaction } from '@/lib/email';
 import { toStoredAmount } from '@/lib/loans/transaction-ledger';
-import { checkChange } from '@/lib/loans/transaction-validation';
+import { checkChange, rejectionErrorKey } from '@/lib/loans/transaction-validation';
 import { transactionFormSchema } from '@/lib/schemas/transaction';
 import { transactionAction } from '@/lib/utils/safe-action';
 
@@ -48,7 +48,7 @@ export const updateTransactionAction = transactionAction
     const earliest = new Date(Math.min(transaction.date.getTime(), date.getTime()));
     const { errors } = checkChange(loan, loan.transactions, proposed, earliest);
     if (errors.length > 0) {
-      throw new Error('error.transaction.invalid');
+      throw new Error(rejectionErrorKey(errors));
     }
 
     const updated = await db.transaction.update({
