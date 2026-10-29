@@ -3,26 +3,30 @@
  *
  * Usage (from repo root, after `pnpm prisma:generate`):
  *
- *   pnpm exec tsx scripts/backfill-after-migration.ts interestPaymentType
- *   pnpm exec tsx scripts/backfill-after-migration.ts interestPaymentType --dry-run
- *   pnpm exec tsx scripts/backfill-after-migration.ts interestPaymentType --slug my-project
+ *   pnpm script backfill-after-migration interestPaymentType
+ *   pnpm script backfill-after-migration interestPaymentType --dry-run
+ *   pnpm script backfill-after-migration interestPaymentType --slug my-project
  *
- * Env (default file `scripts/.backfill-after-migration.env`, override with `--env path`):
+ * Env (later overrides earlier):
+ *
+ *   .env
+ *   scripts/.env
+ *   scripts/.backfill-after-migration.env
+ *   --env <path>
  *
  *   TARGET_DATABASE_URL=postgresql://...
  *   MIGRATION_BASE_URL=https://old-dkp.example.com
  *   MIGRATION_ACCESS_TOKEN=...
  */
 import { rm } from 'node:fs/promises';
-import { resolve } from 'node:path';
 
-import { config as loadEnvFile } from 'dotenv';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { InterestPaymentType, PrismaClient } from '@prisma/client';
 
 import { fetchAndExtractDataPackage } from '@/lib/migration/import';
 import { mapInterestPaymentType, parseInterestPaymentType } from '@/lib/migration/mapping';
 import type { MigrationWarning } from '@/lib/migration/types';
+import { loadScriptEnv, scriptNameFromImportMeta } from './script-env';
 
 const TRANSACTION_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -30,7 +34,6 @@ type GlobalOptions = {
   command: string | null;
   dryRun: boolean;
   slug: string | null;
-  envPath: string;
   help: boolean;
 };
 
@@ -45,7 +48,7 @@ function printHelp() {
   console.info(`Backfill fields on already-migrated projects from a dkp-v1 data package.
 
 Usage:
-  pnpm exec tsx scripts/backfill-after-migration.ts <command> [options]
+  pnpm script backfill-after-migration <command> [options]
 
 Commands:
   interestPaymentType     Set Loan.interestPaymentType from dkp contract.interest_payment_type
@@ -53,20 +56,17 @@ Commands:
 Options:
   --slug <slug>           Target project slug (default: projectid from the data package)
   --dry-run               Print planned updates; do not write
-  --env <path>            Env file with TARGET_DATABASE_URL, MIGRATION_BASE_URL,
-                          MIGRATION_ACCESS_TOKEN (default: scripts/.backfill-after-migration.env)
+  --env <path>            Env file applied after .env, scripts/.env, and
+                          scripts/.backfill-after-migration.env
   --help                  Show this help
 `);
 }
-
-const DEFAULT_ENV_PATH = 'scripts/.backfill-after-migration.env';
 
 function parseArgs(argv: string[]): GlobalOptions {
   const options: GlobalOptions = {
     command: null,
     dryRun: false,
     slug: null,
-    envPath: DEFAULT_ENV_PATH,
     help: false,
   };
 
@@ -79,7 +79,10 @@ function parseArgs(argv: string[]): GlobalOptions {
     } else if (arg === '--slug') {
       options.slug = argv[++i] ?? '';
     } else if (arg === '--env') {
-      options.envPath = argv[++i] ?? DEFAULT_ENV_PATH;
+      const value = argv[++i];
+      if (!value || value.startsWith('-')) {
+        throw new Error('--env requires a path');
+      }
     } else if (arg.startsWith('-')) {
       throw new Error(`Unknown argument: ${arg}`);
     } else if (options.command === null) {
@@ -98,30 +101,20 @@ function createClient(connectionString: string) {
   });
 }
 
-function loadEnv(envPath: string) {
-  const resolved = resolve(process.cwd(), envPath);
-  const envResult = loadEnvFile({ path: resolved, quiet: true });
-  if (envResult.error && (envResult.error as NodeJS.ErrnoException).code !== 'ENOENT') {
-    throw envResult.error;
-  }
-  return resolved;
-}
-
-function requireEnv(name: string, envPath: string): string {
+function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
-    throw new Error(`${name} is required (loaded from ${envPath})`);
+    throw new Error(`${name} is required`);
   }
   return value;
 }
 
 async function runInterestPaymentTypeBackfill(options: GlobalOptions) {
-  const envPath = loadEnv(options.envPath);
-  const targetUrl = requireEnv('TARGET_DATABASE_URL', options.envPath);
-  const baseUrl = requireEnv('MIGRATION_BASE_URL', options.envPath);
-  const accessToken = requireEnv('MIGRATION_ACCESS_TOKEN', options.envPath);
+  loadScriptEnv(scriptNameFromImportMeta(import.meta.url));
+  const targetUrl = requireEnv('TARGET_DATABASE_URL');
+  const baseUrl = requireEnv('MIGRATION_BASE_URL');
+  const accessToken = requireEnv('MIGRATION_ACCESS_TOKEN');
 
-  console.info(`Loaded env from ${envPath}`);
   console.info(`Fetching data package from ${baseUrl} ...`);
 
   const { tempDir, data, projectInfo } = await fetchAndExtractDataPackage(baseUrl, accessToken);

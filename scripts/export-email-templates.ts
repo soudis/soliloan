@@ -1,9 +1,12 @@
-import 'dotenv/config';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
+
+import { loadScriptEnv, scriptNameFromImportMeta } from './script-env';
+
+loadScriptEnv(scriptNameFromImportMeta(import.meta.url));
 
 /** Writes one JSON per global `systemKey` (including starter keys `defaultEmail` / `defaultDocument`). */
 const OUTPUT_DIR = path.join(process.cwd(), 'prisma', 'system-template-designs');
