@@ -1100,28 +1100,3 @@ export function formatTerminationModalities(
   }
 }
 
-// Create a termination modalities column
-export function createTerminationModalitiesColumn<
-  T extends Pick<
-    Loan,
-    | 'terminationType'
-    | 'signDate'
-    | 'endDate'
-    | 'duration'
-    | 'durationType'
-    | 'terminationPeriod'
-    | 'terminationPeriodType'
-  >,
->(t: (key: string) => string, commonT: (key: string) => string): ColumnDef<T> {
-  return createColumn<T>(
-    {
-      id: 'terminationModalities',
-      accessorKey: 'terminationModalities',
-      header: 'table.terminationModalities',
-      accessorFn: (row: T) => formatTerminationModalities(row, commonT),
-      cell: ({ row }) => formatTerminationModalities(row.original, commonT),
-      filterFn: compoundTextFilter,
-    },
-    t,
-  );
-}

@@ -176,7 +176,6 @@ export function computeAggregationTable(
       discriminator.groupBy.entity,
       discriminator.groupBy.field,
       filterContext.snapshot,
-      commonT,
     );
     const { key, label } = resolveGroupKey(rawGroupValue, discriminator, fieldDef, {
       emptyLabel,

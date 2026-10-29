@@ -18,9 +18,7 @@ import {
   createNullableCurrencyColumn,
   createNumberColumn,
   createPercentageColumn,
-  createTerminationModalitiesColumn,
   createTotalRuntimeColumn,
-  formatTerminationModalities,
   totalRuntimeSortValue,
   withColumnGroup,
 } from '@/lib/table-column-utils';
@@ -54,7 +52,6 @@ export const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] =
   { id: 'interestPaid', labelKey: 'table.interestPaid' },
   { id: 'interestPaymentType', labelKey: 'table.interestPaymentType' },
   { id: 'terminationType', labelKey: 'table.terminationType' },
-  { id: 'terminationModalities', labelKey: 'table.terminationModalities' },
   { id: 'totalRuntimeDays', labelKey: 'table.totalRuntime' },
   { id: 'repayDate', labelKey: 'table.repayDate' },
   { id: 'loanTermDays', labelKey: 'table.loanTerm' },
@@ -182,7 +179,6 @@ export function buildLoanTableColumns(
       commonT,
       () => 'outline',
     ),
-    createTerminationModalitiesColumn<LoanWithCalculations>(t, commonT),
     createTotalRuntimeColumn<LoanWithCalculations>(t, durationT),
     createDateColumn<LoanWithCalculations>('repayDate', 'table.repayDate', t, locale),
     createDurationDaysColumn<LoanWithCalculations>('loanTermDays', 'table.loanTerm', t, durationT),
@@ -331,8 +327,6 @@ export function getLoanSortValue(
   }
 
   switch (normalizedId) {
-    case 'terminationModalities':
-      return formatTerminationModalities(row, commonT);
     case 'totalRuntimeDays':
       return totalRuntimeSortValue(row.totalRuntime);
     case 'status':
@@ -386,7 +380,6 @@ export const LOAN_TABLE_COLUMN_IDS = [
   'interestPaid',
   'interestPaymentType',
   'terminationType',
-  'terminationModalities',
   'totalRuntimeDays',
   'repayDate',
   'loanTermDays',

@@ -36,7 +36,7 @@ export function loanMatchesFilters(
     const useSnapshot = filter.entity === 'loan' && isDynamicLoanFilterField(filter.field);
 
     const snapshot = useSnapshot ? context.snapshot : null;
-    const value = getLoanFilterValue(loan, filter.entity, filter.field, snapshot, context.commonT);
+    const value = getLoanFilterValue(loan, filter.entity, filter.field, snapshot);
 
     if (!matchesFilterByType(value, filter.value, definition.type, { referenceDate: context.referenceDate })) {
       return false;

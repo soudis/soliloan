@@ -969,8 +969,6 @@
       "defaultAmount": "Verzugsbetrag",
       "defaultReason": "Verzugsgrund",
       "terminationModalities": "Kündigungsmodalitäten",
-      "terminationModalitiesShort": "Kündigung",
-      "terminationModalitiesDescription": "Enddatum, Laufzeit oder Kündigungsfrist je nach Kündigungstyp.",
       "terminationType": "Kündigungstyp",
       "terminationDate": "Kündigungsdatum",
       "terminationPeriod": "Kündigungsfrist",

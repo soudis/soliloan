@@ -106,11 +106,6 @@ export function buildLoanColumnFiltersMap(
         value,
       })),
     },
-    terminationModalities: {
-      type: 'text',
-      label: t('table.terminationModalities'),
-      allowEmpty: true,
-    },
     totalRuntimeDays: {
       type: 'duration',
       label: t('table.totalRuntime'),
