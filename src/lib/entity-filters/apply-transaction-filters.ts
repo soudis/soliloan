@@ -1,6 +1,6 @@
 import { TransactionType } from '@prisma/client';
 
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import { getTransactionSortValue } from '@/lib/dashboard/table-widget/transaction-table-column-registry';
 import { buildTransactionListItemsFromLoans } from '@/lib/transactions/build-transaction-list-items';
 import type { EntityFilter, EntityFilterFieldOption } from '@/types/entity-filters';

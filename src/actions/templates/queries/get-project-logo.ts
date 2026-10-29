@@ -1,20 +1,8 @@
 'use server';
 
-import { db } from '@/lib/db';
+import { getProjectLogoUnsafe } from '@/lib/templates/get-project-logo';
+import { projectAction } from '@/lib/utils/safe-action';
 
-/**
- * Fetch the logo for a project. Returns the base64 logo string from the
- * project configuration, or null if not found.
- */
-export async function getProjectLogoAction(projectId: string): Promise<string | null> {
-  const project = await db.project.findUnique({
-    where: { id: projectId },
-    select: {
-      configuration: {
-        select: { logo: true },
-      },
-    },
-  });
-
-  return project?.configuration?.logo ?? null;
-}
+export const getProjectLogoAction = projectAction.action(async ({ ctx }) => {
+  return getProjectLogoUnsafe(ctx.projectId);
+});

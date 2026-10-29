@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
-
-import { getFaqArticleBySlugUnsafe, getFaqTocUnsafe } from '@/actions/help';
 import { FaqArticleView } from '@/components/help/faq/faq-article-view';
+import { findFaqArticleBySlug } from '@/lib/help/find-faq-article';
+import { findFaqToc } from '@/lib/help/find-faq-toc';
 import { requireManager } from '@/lib/require-session';
 import { flattenFaqTocArticles } from '@/types/faq';
 
@@ -13,7 +13,7 @@ export default async function FaqArticlePage({ params }: FaqArticlePageProps) {
   const { slug } = await params;
   const session = await requireManager();
   const isAdmin = Boolean(session.user.isAdmin);
-  const [article, toc] = await Promise.all([getFaqArticleBySlugUnsafe(slug, isAdmin), getFaqTocUnsafe(isAdmin)]);
+  const [article, toc] = await Promise.all([findFaqArticleBySlug(slug, isAdmin), findFaqToc(isAdmin)]);
 
   if (!article) {
     notFound();

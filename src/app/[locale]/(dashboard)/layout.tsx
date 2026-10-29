@@ -1,5 +1,3 @@
-'use server';
-
 import DashboardNavigation from '@/components/dashboard/dashboard-navigation';
 import { getProjects } from '@/lib/projects/get-projects';
 import { requireSession } from '@/lib/require-session';

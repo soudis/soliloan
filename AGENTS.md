@@ -16,3 +16,7 @@ The documented workflow is `pnpm docker:dev up`, not host `pnpm dev`. Next.js ru
 - **Next.js MCP** (`/_next/mcp`, `next-devtools-mcp`, `next-dev-loop` probes): `http://localhost:3000/_next/mcp`. Compose publishes container port 3000 to host loopback so auto-discovery works. If the probe is unreachable, Docker is not up (or port 3000 is taken) — do not assume Next.js is below 16.3.
 - **Workspace paths:** MCP tools such as `get_logs` and `get_project_metadata` return container paths under `/app`. Map `/app/...` to the same path under this repository root. `.next` is bind-mounted; `node_modules` is not (anonymous volume).
 - **Bundled docs:** Agents read `node_modules/next/dist/docs/` on the host. Run `pnpm install` on the host so that tree exists; the container's `node_modules` is not visible here.
+
+## Server actions vs server-only code
+
+`src/actions` holds only `'use server'` safe-actions that client components call; server-only code lives in `src/lib/<domain>/` with `import 'server-only'`. Functions that trust their caller to have checked access end in `Unsafe`. See [ADR 0001](docs/adr/0001-actions-are-client-callable-safe-actions.md).

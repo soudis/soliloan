@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-
-import { getFaqTocUnsafe, getForumBoardBySlugUnsafe } from '@/actions/help';
 import { ForumShell } from '@/components/help/forum/forum-shell';
 import { ForumThreadForm } from '@/components/help/forum/forum-thread-form';
+import { findFaqToc } from '@/lib/help/find-faq-toc';
+import { findForumBoardBySlug } from '@/lib/help/find-forum';
 import { forumUserFromSession } from '@/lib/help/forum-permissions';
 import { isForumBoardSubscribed } from '@/lib/help/forum-subscriptions';
 import { requireManager } from '@/lib/require-session';
@@ -19,8 +19,8 @@ export default async function NewForumThreadPage({ params }: NewForumThreadPageP
   const user = forumUserFromSession(session.user);
   const { boardSlug } = await params;
   const [board, toc, t] = await Promise.all([
-    getForumBoardBySlugUnsafe(boardSlug),
-    getFaqTocUnsafe(isAdmin),
+    findForumBoardBySlug(boardSlug),
+    findFaqToc(isAdmin),
     getTranslations('help.threadForm'),
   ]);
 
