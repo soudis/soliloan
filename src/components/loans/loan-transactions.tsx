@@ -11,6 +11,7 @@ import { deleteTransactionAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { ActionButton } from '@/components/ui/action-button';
+import { getClosingTransaction } from '@/lib/loans/transaction-ledger';
 import { cn, formatCurrency, formatDateLong } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { Button } from '../ui/button';
@@ -96,7 +97,10 @@ export function LoanTransactions({
     setTransactionToDelete(null);
   };
 
+  // A closed Kredit is frozen: only its Abschlusszahlung can be edited or deleted
+  const closing = getClosingTransaction(transactions);
   const addTransactionEnabled = !readOnly && showAddTransaction;
+  const addTransactionDisabled = !!closing;
 
   const handleAddTransaction = () => {
     if (onAddTransaction) {
@@ -133,6 +137,8 @@ export function LoanTransactions({
               icon={<Plus className="size-3" />}
               label={commonT('terms.transaction')}
               onClick={handleAddTransaction}
+              disabled={addTransactionDisabled}
+              tooltip={addTransactionDisabled ? t('transactions.addDisabledClosed') : undefined}
             />
           )}
         </div>
@@ -164,8 +170,13 @@ export function LoanTransactions({
                     rowMenu={{
                       showDelete: true,
                       onEdit: transaction.type === 'INTEREST' ? undefined : () => setTransactionToEdit(transaction),
-                      deleteDisabled: transaction.type === 'INTEREST',
-                      deleteDisabledTooltip: t('transactions.delete.interestRow'),
+                      editDisabled: !!closing && transaction.id !== closing.id,
+                      editDisabledTooltip: t('transactions.editDisabledClosed'),
+                      deleteDisabled: transaction.type === 'INTEREST' || (!!closing && transaction.id !== closing.id),
+                      deleteDisabledTooltip:
+                        transaction.type === 'INTEREST'
+                          ? t('transactions.delete.interestRow')
+                          : t('transactions.delete.closed'),
                       onDelete: () => handleDeleteClick(transaction.id),
                     }}
                   />

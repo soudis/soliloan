@@ -17,6 +17,7 @@ import { withProjectId } from '@/lib/project-href';
 import { formatTerminationModalities } from '@/lib/table-column-utils';
 import { cn, formatCurrency, formatDateLong, formatDateShort, formatPercentage } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
+import { getClosingTransaction } from '@/lib/loans/transaction-ledger';
 import { LoanStatus } from '@/types/loans';
 import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-items';
 import { LoanBalanceSummary } from '../loans/loan-balance-summary';
@@ -191,6 +192,10 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                 id: 'transaction',
                 label: commonT('terms.transaction'),
                 onSelect: () => openCreateFromMenu('transactions', () => setTransactionCreateOpen(true)),
+                disabled: !!getClosingTransaction(loan.transactions),
+                disabledTooltip: getClosingTransaction(loan.transactions)
+                  ? t('transactions.addDisabledClosed')
+                  : undefined,
               },
               {
                 id: 'note',

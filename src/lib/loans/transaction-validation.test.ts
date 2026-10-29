@@ -98,11 +98,14 @@ describe('closing differences', () => {
     assert.equal(result.closingDifferences[0]?.difference, 0);
   });
 
-  it('is negative when a deposit is backdated before the Rückzahlung', () => {
+  it('is negative when a deposit is backdated before the Rückzahlung, and that change is rejected', () => {
     const existing = [tx('DEPOSIT', '2023-01-01', 500), tx('TERMINATION', '2023-06-01', 500)];
     const proposed = [...existing, tx('DEPOSIT', '2023-02-01', 100)];
     const result = checkChange(loan(), existing, proposed);
-    assert.deepEqual(result.errors, []);
+    assert.deepEqual(
+      result.errors.map((e) => e.rule),
+      ['CLOSING_CHANGED'],
+    );
     assert.equal(result.after.closingDifferences[0]?.difference, -100);
   });
 });
@@ -149,12 +152,15 @@ describe('previewTransaction', () => {
     }
   });
 
-  it('still allows a payment before the Rückzahlung, with an Abschlussdifferenz warning', () => {
+  it('blocks a payment before a Rückzahlung: a closed Kredit is frozen', () => {
     const closed = [tx('DEPOSIT', '2024-01-01', 1000), tx('TERMINATION', '2024-03-01', 1000, 'closing')];
     const result = preview(closed, { date: day('2024-02-01'), type: TransactionType.WITHDRAWAL, amount: 100 });
-    assert.equal(result.types.WITHDRAWAL?.available, true);
-    assert.deepEqual(result.errors, []);
-    assert.ok(result.warnings.some((w) => w.kind === 'CLOSING_DIFFERENCE'));
+    assert.equal(result.types.WITHDRAWAL?.available, false);
+    assert.equal(result.types.WITHDRAWAL?.reason?.rule, 'CLOSING_CHANGED');
+    assert.deepEqual(
+      result.errors.map((e) => e.rule),
+      ['CLOSING_CHANGED'],
+    );
   });
 
   it('offers no type on the day of a Rückzahlung either: a new Zahlung is booked after it', () => {
@@ -181,7 +187,7 @@ describe('previewTransaction', () => {
     });
     assert.ok((result.closingAmount ?? 0) > 1003.3);
     const warning = result.warnings.find((w) => w.kind === 'CLOSING_DIFFERENCE');
-    assert.ok(warning?.kind === 'CLOSING_DIFFERENCE' && warning.own && warning.difference.difference < 0);
+    assert.ok(warning?.kind === 'CLOSING_DIFFERENCE' && warning.difference.difference < 0);
     assert.deepEqual(result.errors, []);
   });
 
@@ -196,7 +202,7 @@ describe('previewTransaction', () => {
       now: day('2025-06-01'),
     });
     const warning = result.warnings.find((w) => w.kind === 'CLOSING_DIFFERENCE');
-    assert.ok(warning?.kind === 'CLOSING_DIFFERENCE' && warning.own && warning.difference.difference < 0);
+    assert.ok(warning?.kind === 'CLOSING_DIFFERENCE' && warning.difference.difference < 0);
   });
 
   it('blocks moving a Rückzahlung before a later withdrawal', () => {
@@ -228,6 +234,68 @@ describe('previewTransaction', () => {
     const result = preview(broken, { date: day('2024-04-01'), type: TransactionType.WITHDRAWAL, amount: 100 });
     assert.deepEqual(result.errors, []);
     assert.ok(result.warnings.some((w) => w.kind === 'EXISTING_VIOLATIONS'));
+  });
+});
+
+describe('a closed Kredit is frozen', () => {
+  // 1.000 € deposited, 300 € partial withdrawal, Rückzahlung of the remaining 700 €
+  const stored = [
+    tx('DEPOSIT', '2024-01-01', 1000, 'dep'),
+    tx('WITHDRAWAL', '2024-03-01', 300, 'wd'),
+    tx('TERMINATION', '2024-06-01', 700, 'term'),
+  ];
+  const errorsOf = (proposed: Transaction[], exemptTransactionId?: string) =>
+    checkChange(loan(), stored, proposed, day('2024-01-01'), { exemptTransactionId }).errors.map((e) => e.rule);
+
+  it('rejects deleting the partial withdrawal before the Rückzahlung', () => {
+    assert.deepEqual(errorsOf(stored.filter((t) => t.id !== 'wd')), ['CLOSING_CHANGED']);
+  });
+
+  it('rejects changing the amount of the partial withdrawal', () => {
+    assert.deepEqual(errorsOf(stored.map((t) => (t.id === 'wd' ? { ...t, amount: -100 } : t))), ['CLOSING_CHANGED']);
+  });
+
+  it('rejects a backdated payment before the Rückzahlung', () => {
+    assert.deepEqual(errorsOf([...stored, tx('WITHDRAWAL', '2024-02-01', 50)]), ['CLOSING_CHANGED']);
+    assert.deepEqual(errorsOf([...stored, tx('DEPOSIT', '2024-04-01', 50)]), ['CLOSING_CHANGED']);
+  });
+
+  it('rejects moving a payment when interest makes the Rückzahlung stale', () => {
+    const l = loan({ interestRate: 2 });
+    const withInterest = [
+      tx('DEPOSIT', '2024-01-01', 1000, 'dep'),
+      tx('WITHDRAWAL', '2024-03-01', 300, 'wd'),
+      tx('TERMINATION', '2024-12-31', 700 + 12, 'term'),
+    ];
+    const moved = withInterest.map((t) => (t.id === 'wd' ? { ...t, date: day('2024-09-01') } : t));
+    const result = checkChange(l, withInterest, moved, day('2024-01-01'));
+    assert.deepEqual(
+      result.errors.map((e) => e.rule),
+      ['CLOSING_CHANGED'],
+    );
+  });
+
+  it('allows the Rückzahlung itself to change, and deleting it', () => {
+    const edited = stored.map((t) => (t.id === 'term' ? { ...t, date: day('2024-07-01') } : t));
+    assert.deepEqual(errorsOf(edited, 'term'), []);
+    assert.deepEqual(errorsOf(stored.filter((t) => t.id !== 'term')), []);
+  });
+
+  it('allows deleting the Rückzahlung first and then fixing the payment', () => {
+    const reopened = stored.filter((t) => t.id !== 'term');
+    const fixed = reopened.map((t) => (t.id === 'wd' ? { ...t, amount: -100 } : t));
+    const result = checkChange(loan(), reopened, fixed, day('2024-01-01'));
+    assert.deepEqual(result.errors, []);
+  });
+
+  it('does not touch a legacy Rückzahlung whose difference stays the same', () => {
+    const legacy = [tx('DEPOSIT', '2024-01-01', 1000, 'dep'), tx('TERMINATION', '2024-06-01', 990, 'term')];
+    const changedElsewhere = [...legacy, tx('DEPOSIT', '2024-07-01', 10)];
+    const result = checkChange(loan(), legacy, changedElsewhere, day('2024-07-01'));
+    assert.deepEqual(
+      result.errors.map((e) => e.rule),
+      ['AFTER_CLOSING'],
+    );
   });
 });
 

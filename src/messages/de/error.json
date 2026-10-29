@@ -128,6 +128,7 @@
     "notFound": "Zahlung nicht gefunden.",
     "invalid": "Diese Zahlung ist für den Kredit nicht zulässig. Bitte Datum, Art und Betrag prüfen.",
     "deleteInvalid": "Die Zahlung kann nicht gelöscht werden, weil spätere Zahlungen dadurch ungültig würden.",
-    "afterClosing": "Nach einer Rückzahlung oder Erlassung können keine Zahlungen mehr erfasst werden. Bitte einen neuen Kredit anlegen."
+    "afterClosing": "Nach einer Rückzahlung oder Erlassung können keine Zahlungen mehr erfasst werden. Bitte einen neuen Kredit anlegen.",
+    "frozen": "Der Kredit ist abgeschlossen. Bitte zuerst die Rückzahlung bzw. Erlassung löschen."
   }
 }

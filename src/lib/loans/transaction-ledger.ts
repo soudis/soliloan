@@ -41,7 +41,13 @@ export type ViolationRule =
    * Any Zahlung after a Rückzahlung / Erlassung. A closed Kredit is final: the interest calculation
    * does not support a Kredit that is funded again, a new Kredit has to be created instead.
    */
-  | 'AFTER_CLOSING';
+  | 'AFTER_CLOSING'
+  /**
+   * A change to another Zahlung alters the Abschlussdifferenz of a Rückzahlung / Erlassung
+   * (`value` = new difference, `limit` = difference before). The Zahlungen of a closed Kredit are frozen:
+   * to change one, the Abschlusszahlung has to be deleted first.
+   */
+  | 'CLOSING_CHANGED';
 
 export type Violation = {
   rule: ViolationRule;
@@ -80,6 +86,15 @@ export const toLedger = (transactions: Transaction[]) =>
       .filter((transaction) => transaction.type !== TransactionType.INTEREST)
       .map((transaction) => ({ ...transaction, date: dayOf(transaction.date).toDate() })),
   );
+
+/**
+ * The Abschlusszahlung of a closed Kredit: the latest real Zahlung, if it is a Rückzahlung or Erlassung.
+ * Every other Zahlung of a closed Kredit is frozen.
+ */
+export const getClosingTransaction = (transactions: Transaction[]) => {
+  const latest = toLedger(transactions).at(-1);
+  return latest && isClosingType(latest.type) ? latest : undefined;
+};
 
 /** Plain ledger Kontostand (with interest) at the end of `date`, without the closing correction. */
 const rawBalance = (loan: LedgerLoan, transactions: Transaction[], date: Date) => {
