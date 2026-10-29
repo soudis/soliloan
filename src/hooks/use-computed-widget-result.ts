@@ -11,8 +11,16 @@ import type { WidgetComputeResult } from '@/lib/dashboard/widget-compute-result-
 import type { DashboardWidget } from '@/types/dashboard-layout';
 
 export function useComputedWidgetResult(widget: DashboardWidget): WidgetComputeResult | null {
-  const { loans, lenders, toDate, project, getOrComputeWidgetResult, widgetResults, hasFullDataset } =
-    useDashboardData();
+  const {
+    loans,
+    lenders,
+    toDate,
+    project,
+    getOrComputeWidgetResult,
+    widgetResults,
+    hasFullDataset,
+    notificationExtras,
+  } = useDashboardData();
   const { scope } = useDashboardLayoutData();
   const i18n = useDashboardWidgetI18n();
 
@@ -27,9 +35,26 @@ export function useComputedWidgetResult(widget: DashboardWidget): WidgetComputeR
       loanCount: loans.length,
       compute: () =>
         getOrComputeWidgetResult(
-          buildWidgetComputeCacheKey(widget.type, widget.config, loans.length, toDate.getTime()),
-          () => computeWidgetResult(widget, { loans, lenders, toDate, project, i18n }),
+          buildWidgetComputeCacheKey(
+            widget.type,
+            widget.type === 'notifications' ? { ...widget.config, notificationExtras } : widget.config,
+            loans.length,
+            toDate.getTime(),
+          ),
+          () => computeWidgetResult(widget, { loans, lenders, toDate, project, i18n, notificationExtras }),
         ),
     });
-  }, [widget, hasFullDataset, widgetResults, scope, loans, lenders, toDate, project, i18n, getOrComputeWidgetResult]);
+  }, [
+    widget,
+    hasFullDataset,
+    widgetResults,
+    scope,
+    loans,
+    lenders,
+    toDate,
+    project,
+    i18n,
+    getOrComputeWidgetResult,
+    notificationExtras,
+  ]);
 }

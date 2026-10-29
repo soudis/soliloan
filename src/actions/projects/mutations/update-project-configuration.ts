@@ -11,7 +11,7 @@ import { loadProject } from '@/lib/projects/get-project';
 import { type ConfigurationFormData, configurationFormSchema } from '@/lib/schemas/configuration';
 import { projectAction } from '@/lib/utils/safe-action';
 
-export async function updateConfiguration(projectId: string, data: ConfigurationFormData) {
+async function updateConfiguration(projectId: string, data: ConfigurationFormData) {
   const session = await auth();
   if (!session) {
     throw new Error('error.unauthorized');

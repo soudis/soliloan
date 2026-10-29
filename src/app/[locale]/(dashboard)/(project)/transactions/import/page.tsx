@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation';
 import { getImportBatch, getLinkedBankConnection } from '@/actions/gocardless/queries/get-import-batch';
-import { getLendersByProjectIdUnsafe } from '@/actions/lenders/queries/get-lenders-by-project';
-import { getLoansByProjectUnsafe } from '@/actions/loans/queries/get-loans-by-project';
 import { type BankImportAccountOption, BankImportClient } from '@/components/transactions/bank-import-client';
 import { getAccountDetails } from '@/lib/gocardless/client';
+import { getLendersByProjectIdUnsafe } from '@/lib/lenders/get-lenders-by-project';
+import { getLoansByProjectUnsafe } from '@/lib/loans/get-loans-by-project';
 import { searchParamsCache } from '@/lib/params';
 
 interface PageProps {

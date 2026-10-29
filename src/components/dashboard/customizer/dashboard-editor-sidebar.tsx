@@ -1,6 +1,6 @@
 'use client';
 
-import { Copy, Globe, Plus, RotateCcw, Settings } from 'lucide-react';
+import { Copy, FolderDown, Globe, Plus, RotateCcw, Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -20,17 +20,20 @@ export function DashboardEditorSidebar({
   isTargetScopeDirty = false,
   onCopyLayout,
   onSaveAsGlobalDefault,
+  onLoadSeedLayout,
   onResetToGlobalDefault,
 }: {
   isAdmin?: boolean;
   isTargetScopeDirty?: boolean;
   onCopyLayout: (layout: DashboardLayoutData) => void;
   onSaveAsGlobalDefault: (layout: DashboardLayoutData) => void | Promise<void>;
+  onLoadSeedLayout: () => void | Promise<void>;
   onResetToGlobalDefault: () => void | Promise<void>;
 }) {
   const t = useTranslations('dashboard.customizer');
   const [tab, setTab] = useState('toolbox');
   const [globalDefaultDialogOpen, setGlobalDefaultDialogOpen] = useState(false);
+  const [loadSeedDialogOpen, setLoadSeedDialogOpen] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [copyConfirmOpen, setCopyConfirmOpen] = useState(false);
   const prevSelectedIdRef = useRef<string | undefined>(undefined);
@@ -73,16 +76,28 @@ export function DashboardEditorSidebar({
             {t('resetToGlobalDefault')}
           </Button>
           {isAdmin ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={() => setGlobalDefaultDialogOpen(true)}
-            >
-              <Globe className="mr-2 h-4 w-4" />
-              {t('saveAsGlobalDefault')}
-            </Button>
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => setLoadSeedDialogOpen(true)}
+              >
+                <FolderDown className="mr-2 h-4 w-4" />
+                {t('loadSeedLayout')}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => setGlobalDefaultDialogOpen(true)}
+              >
+                <Globe className="mr-2 h-4 w-4" />
+                {t('saveAsGlobalDefault')}
+              </Button>
+            </>
           ) : null}
         </div>
 
@@ -104,6 +119,17 @@ export function DashboardEditorSidebar({
           })}
           confirmText={t('resetToGlobalDefault')}
           onConfirm={onResetToGlobalDefault}
+        />
+
+        <ConfirmDialog
+          open={loadSeedDialogOpen}
+          onOpenChange={setLoadSeedDialogOpen}
+          title={t('loadSeedLayoutConfirmTitle')}
+          description={t('loadSeedLayoutConfirmDescription', {
+            scope: scope === 'project' ? t('scopeProject') : t('scopeUser'),
+          })}
+          confirmText={t('loadSeedLayout')}
+          onConfirm={onLoadSeedLayout}
         />
 
         <ConfirmDialog

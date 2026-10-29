@@ -1,7 +1,7 @@
 import { TerminationType, TransactionType } from '@prisma/client';
 import moment from 'moment';
 
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import type { LoanWithRelations } from '@/types/loans';
 
 import { isRepaid } from './loan-calculations';
@@ -39,6 +39,28 @@ export function getFirstDepositDate(loan: LoanWithTransactions): Date | null {
 export function hasFirstDepositOnOrBefore(loan: LoanWithTransactions, periodEnd: Date): boolean {
   const firstDeposit = getFirstDepositDate(loan);
   return firstDeposit != null && !moment(firstDeposit).isAfter(periodEnd, 'day');
+}
+
+type LoanTimelineSource = LoanWithTransactions & {
+  signDate?: Date | string | null;
+};
+
+/** First deposit when one exists, otherwise the contract date. */
+export function getLoanTimelineStart(loan: LoanTimelineSource): Date | null {
+  const firstDeposit = getFirstDepositDate(loan);
+  if (firstDeposit) {
+    return firstDeposit;
+  }
+  if (!loan.signDate) {
+    return null;
+  }
+  const signDate = loan.signDate instanceof Date ? loan.signDate : new Date(loan.signDate);
+  return Number.isNaN(signDate.getTime()) ? null : signDate;
+}
+
+export function loanStartedOnOrBefore(loan: LoanTimelineSource, periodEnd: Date): boolean {
+  const start = getLoanTimelineStart(loan);
+  return start != null && !moment(start).isAfter(periodEnd, 'day');
 }
 
 export function getLoanTermEndDate(loan: LoanWithTransactions, toDate: Date): Date {

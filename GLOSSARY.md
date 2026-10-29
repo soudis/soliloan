@@ -22,6 +22,24 @@ _Avoid_: Darlehensvertrag
 The principal amount of a Kredit.
 _Avoid_: Darlehensbetrag
 
+**Anlageart**:
+A category of Kredite grouped for compliance with the Bagatellgrenze, identified by its interest rate.
+_Avoid_: Anlageform
+
+**Bagatellgrenze**:
+The limit under § 2 VermAnlG (at most 20 units, or €100,000 within twelve months) up to which an Anlageart needs no prospectus.
+_Avoid_: VermAnlG-Limit
+
+### Dashboard
+
+**Benachrichtigung**:
+A condition in a Direktkredit project that the person running the project should look at. Plural: Benachrichtigungen.
+_Avoid_: Benachrichtigungsart
+
+**Benachrichtigungsart**:
+How a Kreditgeber*in is contacted: online, email, or post.
+_Avoid_: Benachrichtigung
+
 ### Template blocks
 
 **Bedingung**:

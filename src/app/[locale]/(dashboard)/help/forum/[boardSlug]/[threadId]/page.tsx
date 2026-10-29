@@ -1,14 +1,8 @@
 import { notFound } from 'next/navigation';
-
-import {
-  getFaqTocUnsafe,
-  getForumBoardBySlugUnsafe,
-  getForumBoardOptionsUnsafe,
-  getForumThreadUnsafe,
-  markForumThreadReadUnsafe,
-} from '@/actions/help';
 import { ForumShell } from '@/components/help/forum/forum-shell';
 import { ForumThreadView } from '@/components/help/forum/forum-thread-view';
+import { findFaqToc } from '@/lib/help/find-faq-toc';
+import { findForumBoardBySlug, findForumBoardOptions, findForumThread, markThreadRead } from '@/lib/help/find-forum';
 import { forumUserFromSession } from '@/lib/help/forum-permissions';
 import { getForumThreadWatchState } from '@/lib/help/forum-subscriptions';
 import { requireManager } from '@/lib/require-session';
@@ -27,19 +21,19 @@ export default async function ForumThreadPage({ params, searchParams }: ForumThr
   const { page = '1' } = await searchParams;
 
   const [board, thread] = await Promise.all([
-    getForumBoardBySlugUnsafe(boardSlug),
-    getForumThreadUnsafe(threadId, user, Number(page) || 1),
+    findForumBoardBySlug(boardSlug),
+    findForumThread(threadId, user, Number(page) || 1),
   ]);
 
   if (!board || !thread || thread.board.id !== board.id) {
     notFound();
   }
 
-  await markForumThreadReadUnsafe(thread.id, user.id);
+  await markThreadRead(thread.id, user.id);
 
   const [boards, toc, watch] = await Promise.all([
-    getForumBoardOptionsUnsafe(),
-    getFaqTocUnsafe(isAdmin),
+    findForumBoardOptions(),
+    findFaqToc(isAdmin),
     getForumThreadWatchState(user.id, thread.id, board.id),
   ]);
 

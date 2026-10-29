@@ -1,4 +1,4 @@
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import { loanActiveAtPeriodEnd } from '@/lib/entity-filters/get-filter-value';
 import type { HistoryTableMetric } from '@/types/dashboard-widgets/history-table';
 

@@ -1,8 +1,8 @@
 import type { Transaction } from '@prisma/client';
 import moment from 'moment';
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { getLoanStatus } from '@/lib/calculations/loan-calculations';
 import { hasFirstDepositOnOrBefore } from '@/lib/calculations/loan-duration-metrics';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import { formatTerminationModalities } from '@/lib/table-column-utils';
 import type { LoanMonthlyNumbers } from '@/types/dashboard';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';

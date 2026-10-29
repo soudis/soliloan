@@ -3,12 +3,11 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
-
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { WidgetResultUnavailable } from '@/components/dashboard/widgets/widget-result-unavailable';
 import { useComputedWidgetResult } from '@/hooks/use-computed-widget-result';
 import { useRouter } from '@/i18n/navigation';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import { buildAllLoanTableColumns, getLoanSortValue } from '@/lib/dashboard/table-widget/loan-table-column-registry';
 import { withProjectId } from '@/lib/project-href';
 import type { DashboardWidget } from '@/types/dashboard-layout';

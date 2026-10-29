@@ -1,10 +1,8 @@
-'use server';
+import 'server-only';
 
 import { loadDashboardStats } from '@/lib/dashboard/load-dashboard-stats';
 import { requireSession } from '@/lib/require-session';
 import { assertCanManageProject } from '@/lib/views/access';
-
-export type { DashboardLender, DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 
 export async function getDashboardStats(projectId: string, toDate: Date = new Date()) {
   try {

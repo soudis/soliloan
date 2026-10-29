@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
-
-import { getLendersByUser } from '@/actions/lenders/queries/get-lenders-by-user';
 import { LenderDashboard } from '@/components/lender-dashboard/lender-dashboard';
+import { getLendersByUser } from '@/lib/lenders/get-lenders-by-user';
 import { requireSession } from '@/lib/require-session';
 
 export default async function MyLoansPage() {

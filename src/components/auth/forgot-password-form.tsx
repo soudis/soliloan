@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-import { requestPasswordReset } from '@/actions/auth';
+import { requestPasswordResetAction } from '@/actions/auth';
 import { FormField } from '@/components/form/form-field';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
@@ -36,8 +36,8 @@ export function ForgotPasswordForm() {
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
     try {
-      const result = await requestPasswordReset(data.email);
-      if (result.success) {
+      const result = await requestPasswordResetAction({ email: data.email });
+      if (result?.data?.success) {
         toast.success(t('forgotPassword.success'));
       } else {
         toast.error(t('forgotPassword.error'));

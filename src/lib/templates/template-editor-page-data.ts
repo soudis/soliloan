@@ -1,7 +1,4 @@
 import type { TemplateDataset, TemplateType } from '@prisma/client';
-
-import { getMergeTagConfigAction, type MergeTagConfig } from '@/actions/templates/queries/get-merge-tags';
-import { getProjectLogoAction } from '@/actions/templates/queries/get-project-logo';
 import {
   getProjectsForTemplateSampleAction,
   getSampleLendersAction,
@@ -12,6 +9,8 @@ import {
   type SampleLoanRow,
   type SampleTransactionRow,
 } from '@/actions/templates/queries/get-template-data';
+import { getProjectLogoUnsafe } from '@/lib/templates/get-project-logo';
+import { getMergeTagConfigUnsafe, type MergeTagConfig } from '@/lib/templates/merge-tag-config';
 
 export type { SampleLenderRow, SampleLoanRow, SampleTransactionRow };
 
@@ -57,13 +56,13 @@ export async function loadTemplateEditorPageData(params: {
     effectivePreviewProjectId = sampleProjects[0]?.id ?? null;
   }
 
-  const mergeTagConfig = await getMergeTagConfigAction(
+  const mergeTagConfig = await getMergeTagConfigUnsafe(
     template.dataset,
     effectivePreviewProjectId ?? undefined,
     template.type,
   );
 
-  const projectLogo = effectivePreviewProjectId != null ? await getProjectLogoAction(effectivePreviewProjectId) : null;
+  const projectLogo = effectivePreviewProjectId != null ? await getProjectLogoUnsafe(effectivePreviewProjectId) : null;
 
   let sampleLenders: SampleLenderRow[] = [];
   let sampleLoans: SampleLoanRow[] = [];

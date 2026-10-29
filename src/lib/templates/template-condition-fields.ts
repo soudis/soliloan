@@ -9,12 +9,11 @@ import {
   TerminationType,
   TransactionType,
 } from '@prisma/client';
-
-import type { MergeTagConfig, MergeTagField } from '@/actions/templates/queries/get-merge-tags';
 import type {
   DataTableColumnFilterDefinition,
   DataTableColumnFilterType,
 } from '@/lib/entity-filters/filter-definitions';
+import type { MergeTagConfig, MergeTagField } from '@/lib/templates/merge-tag-config';
 import { conditionFilterType } from '@/lib/templates/template-condition';
 import { LoanStatus } from '@/types/loans';
 import type { NumberFilterOperator } from '@/types/number-filter-value';
