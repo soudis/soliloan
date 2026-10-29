@@ -217,7 +217,7 @@
         "loanCount": "Anzahl Kredite",
         "interestRateAvg": "Ø Zinssatz (gewichtet)",
         "lenderCount": "Anzahl Kreditgeber*innen",
-        "loanTerm": "Kreditlaufzeit",
+        "loanTerm": "Bisherige Kreditlaufzeit",
         "repaymentPeriod": "Rückzahlungszeitraum"
       }
     },
@@ -246,7 +246,7 @@
       "defaultTitleWithMedianByLender": "Median {metric} je Kreditgeber*in",
       "metrics": {
         "lenderCount": "Anzahl Kreditgeber*innen",
-        "loanTerm": "Kreditlaufzeit",
+        "loanTerm": "Bisherige Kreditlaufzeit",
         "repaymentPeriod": "Rückzahlungszeitraum"
       },
       "deltaRange": "Zeitraum",
@@ -986,8 +986,9 @@
       "firstDepositDate": "Einzahlungsdatum",
       "repayDate": "Rückzahlungsfrist",
       "repayDateShort": "Rückzahlung",
-      "loanTerm": "Kreditlaufzeit",
-      "loanTermShort": "Laufzeit",
+      "loanTerm": "Bisherige Kreditlaufzeit",
+      "loanTermShort": "Bisherige Laufzeit",
+      "loanTermDescription": "Von der ersten Einzahlung bis zur Rückzahlung, bei laufenden Krediten bis heute.",
       "totalRuntime": "Gesamtlaufzeit",
       "totalRuntimeDescription": "Vertragliche Laufzeit vom Vertragsdatum bis zum Ende.",
       "repaymentPeriod": "Rückzahlungszeitraum",
