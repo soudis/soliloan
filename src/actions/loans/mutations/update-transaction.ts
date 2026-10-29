@@ -45,7 +45,7 @@ export const updateTransactionAction = transactionAction
     const proposed = loan.transactions.map((item) =>
       item.id === transactionId ? { ...item, type: data.type, date, amount, paymentType: data.paymentType } : item,
     );
-    const earliest = transaction.date < date ? transaction.date : date;
+    const earliest = new Date(Math.min(transaction.date.getTime(), date.getTime()));
     const { errors } = checkChange(loan, loan.transactions, proposed, earliest);
     if (errors.length > 0) {
       throw new Error('error.transaction.invalid');
