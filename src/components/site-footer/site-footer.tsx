@@ -1,4 +1,4 @@
-import { Github } from 'lucide-react';
+import { FileBraces } from 'lucide-react';
 import { getLocale, getTranslations } from 'next-intl/server';
 
 import { AgplMark } from '@/components/legal/agpl-mark';
@@ -51,7 +51,7 @@ export async function SiteFooter() {
           className="inline-flex shrink-0 items-center gap-1 text-primary underline-offset-2 hover:underline sm:gap-1.5"
           aria-label={t('githubAria')}
         >
-          <Github className="size-3 shrink-0 text-foreground/70 sm:size-3.5" aria-hidden />
+          <FileBraces className="size-3 shrink-0 text-foreground/70 sm:size-3.5" aria-hidden />
           <span className="hidden whitespace-nowrap sm:inline">{t('github')}</span>
         </a>
       </div>

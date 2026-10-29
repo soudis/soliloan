@@ -1,6 +1,6 @@
 'use client';
 
-import { Github, Info, Scale } from 'lucide-react';
+import { FileBraces, Info, Scale } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { AgplMark } from '@/components/legal/agpl-mark';
@@ -68,7 +68,7 @@ export function AboutMenu() {
             className="flex cursor-pointer items-center gap-2"
             aria-label={tLegal('githubAria')}
           >
-            <Github className="h-4 w-4 opacity-70" />
+            <FileBraces className="h-4 w-4 opacity-70" />
             {tLegal('github')}
           </a>
         </DropdownMenuItem>
