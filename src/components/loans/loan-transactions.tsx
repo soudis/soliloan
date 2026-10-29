@@ -12,7 +12,7 @@ import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { ActionButton } from '@/components/ui/action-button';
 import { cn, formatCurrency, formatDateLong } from '@/lib/utils';
-import { type LoanDetailsWithCalculations, LoanStatus } from '@/types/loans';
+import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { Button } from '../ui/button';
 import { Switch } from '../ui/switch';
 import {
@@ -62,6 +62,7 @@ export function LoanTransactions({
   const [showBookings, setShowBookings] = useState(defaultShowBookings);
   const [page, setPage] = useState(0);
   const [internalAddOpen, setInternalAddOpen] = useState(false);
+  const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
   const queryClient = useQueryClient();
 
   const filtered = useMemo(() => {
@@ -87,7 +88,7 @@ export function LoanTransactions({
     const result = await deleteTransactionAction({ transactionId: transactionToDelete });
 
     if (result?.serverError || result?.validationErrors) {
-      toast.error(t('transactions.delete.error'), { id: toastId });
+      toast.error(result.serverError ?? t('transactions.delete.error'), { id: toastId });
     } else {
       toast.success(t('transactions.delete.success'), { id: toastId });
       queryClient.invalidateQueries({ queryKey: ['lender'] });
@@ -95,11 +96,7 @@ export function LoanTransactions({
     setTransactionToDelete(null);
   };
 
-  const lastNonInterest = transactions.findLast((tx) => tx.type !== 'INTEREST');
-
   const addTransactionEnabled = !readOnly && showAddTransaction;
-  // Possibility check is off. Restore by removing `false &&`.
-  const addTransactionDisabled = false && loan.status === LoanStatus.REPAID;
 
   const handleAddTransaction = () => {
     if (onAddTransaction) {
@@ -136,8 +133,6 @@ export function LoanTransactions({
               icon={<Plus className="size-3" />}
               label={commonT('terms.transaction')}
               onClick={handleAddTransaction}
-              disabled={addTransactionDisabled}
-              tooltip={addTransactionDisabled ? t('transactions.addDisabledRepaid') : undefined}
             />
           )}
         </div>
@@ -168,8 +163,9 @@ export function LoanTransactions({
                     transactionId={transaction.id}
                     rowMenu={{
                       showDelete: true,
-                      deleteDisabled: transaction.id !== lastNonInterest?.id,
-                      deleteDisabledTooltip: t('transactions.delete.onlyLatest'),
+                      onEdit: transaction.type === 'INTEREST' ? undefined : () => setTransactionToEdit(transaction),
+                      deleteDisabled: transaction.type === 'INTEREST',
+                      deleteDisabledTooltip: t('transactions.delete.interestRow'),
                       onDelete: () => handleDeleteClick(transaction.id),
                     }}
                   />
@@ -220,6 +216,18 @@ export function LoanTransactions({
           title={t('transactions.delete.confirmTitle')}
           description={t('transactions.delete.confirmDescription')}
           confirmText={commonT('ui.actions.delete')}
+        />
+      )}
+
+      {!readOnly && (
+        <TransactionDialog
+          loanId={loanId}
+          loan={loan}
+          transaction={transactionToEdit ?? undefined}
+          open={!!transactionToEdit}
+          onOpenChange={(open) => {
+            if (!open) setTransactionToEdit(null);
+          }}
         />
       )}
 

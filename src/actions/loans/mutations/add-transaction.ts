@@ -1,6 +1,6 @@
 'use server';
 
-import { Entity, Operation, TransactionType } from '@prisma/client';
+import { Entity, Operation } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import {
@@ -13,6 +13,8 @@ import {
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { notifyLenderAboutTransaction } from '@/lib/email';
+import { toStoredAmount } from '@/lib/loans/transaction-ledger';
+import { checkNewTransaction } from '@/lib/loans/transaction-validation';
 import { transactionFormSchema } from '@/lib/schemas/transaction';
 import { loanAction } from '@/lib/utils/safe-action';
 
@@ -31,6 +33,7 @@ export const addTransactionAction = loanAction
         id: loanId,
       },
       include: {
+        transactions: true,
         lender: {
           include: {
             project: {
@@ -47,20 +50,25 @@ export const addTransactionAction = loanAction
       throw new Error('Loan not found');
     }
 
-    const amount =
-      data.type === TransactionType.WITHDRAWAL ||
-      data.type === TransactionType.TERMINATION ||
-      data.type === TransactionType.INTERESTPAYMENT ||
-      data.type === TransactionType.NOTRECLAIMEDPARTIAL ||
-      data.type === TransactionType.NOTRECLAIMED
-        ? -Math.abs(data.amount)
-        : data.amount;
+    const date = data.date ?? new Date();
+
+    // Authoritative check: the ledger with the new Zahlung must not break any rule
+    const { errors } = checkNewTransaction(loan, loanId, loan.transactions, {
+      type: data.type,
+      date,
+      amount: data.amount,
+    });
+    if (errors.length > 0) {
+      throw new Error('error.transaction.invalid');
+    }
+
+    const amount = toStoredAmount(data.type, data.amount);
 
     // Create the transaction
     const transaction = await db.transaction.create({
       data: {
         type: data.type,
-        date: data.date ?? new Date(),
+        date,
         amount,
         paymentType: data.paymentType,
         loan: {

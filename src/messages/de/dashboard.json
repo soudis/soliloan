@@ -746,9 +746,9 @@
       "partialSuccess": "{deleted} Transaktionen gelöscht, {skipped} übersprungen.",
       "error": "Fehler beim Löschen der Transaktionen.",
       "skippedTitle": "Nicht gelöschte Transaktionen",
-      "skippedDescription": "Gelöscht werden kann nur die jeweils letzte echte Buchung eines Kredits. Berechnete Zinszeilen können nicht gelöscht werden.",
+      "skippedDescription": "Eine Buchung kann nur gelöscht werden, wenn die übrigen Buchungen des Kredits danach gültig bleiben. Berechnete Zinszeilen können nicht gelöscht werden.",
       "reasons": {
-        "notLatest": "Nicht die letzte Buchung dieses Kredits",
+        "invalid": "Spätere Buchungen des Kredits würden ungültig",
         "interest": "Berechnete Zinszeile",
         "notFound": "Buchung wurde nicht gefunden"
       }
@@ -852,7 +852,6 @@
       "deleteSuccess": "Zahlung erfolgreich gelöscht",
       "deleteError": "Fehler beim Löschen der Zahlung",
       "noTransactions": "Noch keine Zahlungen",
-      "addDisabledRepaid": "Für zurückgezahlte Kredite können keine Zahlungen erfasst werden.",
       "createTitle": "Neue Zahlung",
       "createSuccess": "Zahlung erfolgreich erstellt",
       "createError": "Fehler beim Erstellen der Zahlung",
@@ -866,6 +865,53 @@
       "paymentTypePlaceholder": "Zahlungsart auswählen",
       "notifyLender": "Benachrichtigung senden",
       "notifyLenderHint": "Kreditgeber*in per E-Mail über Eintragung der Zahlung informieren?",
+      "editTitle": "Zahlung bearbeiten",
+      "editSuccess": "Zahlung erfolgreich gespeichert",
+      "editError": "Fehler beim Speichern der Zahlung",
+      "modal": {
+        "summaryTitle": "Stand am {date}",
+        "balance": "Kontostand",
+        "einlagenstand": "Einlagenstand",
+        "freeCapacity": "Frei bis Kreditbetrag",
+        "amountRange": "Zulässig: {min} bis {max}",
+        "useMax": "Maximum übernehmen",
+        "limitedByLoanAmount": "Begrenzt durch den Kreditbetrag",
+        "limitedByBalance": "Begrenzt durch den Kontostand",
+        "limitedByTransaction": "Begrenzt durch {type} am {date}",
+        "closingAmountHint": "Der Betrag entspricht dem Kontostand am {date}.",
+        "after": "Nach der Buchung: Kontostand {balance}, Einlagenstand {einlagenstand}",
+        "recalculate": "Neu berechnen",
+        "noTypeAvailable": "An diesem Tag ist keine Zahlung möglich.",
+        "unavailable": {
+          "CAP_EXCEEDED": "Kreditbetrag bereits eingezahlt",
+          "BALANCE_NEGATIVE": "Kontostand reicht nicht",
+          "PARTIAL_TOO_LARGE": "Kontostand reicht nicht",
+          "INTEREST_EXCEEDS_ACCRUED": "keine offenen Zinsen",
+          "NOTHING_TO_CLOSE": "kein Kontostand",
+          "later": "spätere Zahlungen würden ungültig"
+        },
+        "errors": {
+          "CAP_EXCEEDED": "{type} am {date}: Der Einlagenstand würde {value} betragen und den Kreditbetrag von {limit} überschreiten.",
+          "BALANCE_NEGATIVE": "{type} am {date}: Der Kontostand würde auf {value} fallen.",
+          "PARTIAL_TOO_LARGE": "{type} am {date}: Nach der Zahlung müssen mehr als {limit} Kontostand übrig bleiben (wären {value}).",
+          "INTEREST_EXCEEDS_ACCRUED": "{type} am {date}: Die Zinsauszahlung von {value} übersteigt die offenen Zinsen von {limit}.",
+          "NOTHING_TO_CLOSE": "{type} am {date}: Es gibt keinen Kontostand, der zurückgezahlt oder erlassen werden könnte."
+        },
+        "warnings": {
+          "futureTitle": "Datum in der Zukunft",
+          "futureDescription": "Die Zahlung liegt nach heute. Zinsen werden bis zu diesem Datum gerechnet.",
+          "closingOwnTitle": "Betrag weicht vom Kontostand ab",
+          "closingOwnDescription": "Am {date} beträgt der Kontostand {balance}, der Betrag ist {amount}. Der Betrag liegt {difference} {direction, select, higher {über} other {unter}} dem Kontostand. Wird trotzdem gespeichert, wird sie den Zinsen des Abschlussjahres zugerechnet (Zinskorrektur).",
+          "closingOtherTitle": "{type} stimmt danach nicht mehr mit dem Kontostand überein",
+          "closingOtherDescription": "Die {type} vom {date} weicht danach um {difference} vom Kontostand ab ({direction, select, higher {Betrag über dem Kontostand} other {Betrag unter dem Kontostand}}). Sie kann anschließend bearbeitet und neu berechnet werden.",
+          "pastYearsTitle": "Frühere Jahre ändern sich",
+          "pastYearsRow": "{year}: Zinsen {interestBefore} → {interestAfter}, Kontostand zum Jahresende {balanceBefore} → {balanceAfter}",
+          "notifiedTitle": "Kreditgeber*in wurde bereits benachrichtigt",
+          "notifiedDescription": "Über diese Zahlung wurde am {date} benachrichtigt. Mit der Option unten kann erneut benachrichtigt werden.",
+          "existingTitle": "Bestehende Regelverstöße",
+          "existingDescription": "{count, plural, one {Dieser Kredit enthält bereits # Regelverstoß} other {Dieser Kredit enthält bereits # Regelverstöße}} ab diesem Datum. Sie blockieren das Speichern nicht."
+        }
+      },
       "note": "Notiz",
       "notePlaceholder": "Optionale Notiz eingeben",
       "delete": {
@@ -874,7 +920,7 @@
         "success": "Zahlung erfolgreich gelöscht.",
         "error": "Fehler beim Löschen der Zahlung.",
         "loading": "Zahlung wird gelöscht...",
-        "onlyLatest": "Nur die neueste Zahlung kann gelöscht werden."
+        "interestRow": "Berechnete Zinszeilen können nicht gelöscht werden."
       },
       "errors": {
         "deleteFailed": "Konnte Zahlung nicht löschen."

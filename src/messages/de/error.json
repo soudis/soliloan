@@ -28,7 +28,8 @@
   "loan": {
     "notFound": "Kredit nicht gefunden.",
     "numberAlreadyExists": "Diese Kreditnummer ist in diesem Projekt bereits vergeben.",
-    "investmentTypeRequired": "Für deutsche Kreditgeber*innen muss bei aktivem Anlagearten-Modul zuerst eine passende Anlageart für diesen Zinssatz erstellt werden."
+    "investmentTypeRequired": "Für deutsche Kreditgeber*innen muss bei aktivem Anlagearten-Modul zuerst eine passende Anlageart für diesen Zinssatz erstellt werden.",
+    "amountBelowDeposits": "Der Kreditbetrag darf nicht unter dem höchsten bisher eingezahlten Betrag liegen."
   },
   "note": {
     "notFound": "Notiz nicht gefunden."
@@ -118,5 +119,10 @@
   },
   "auth": {
     "invalidCredentials": "E-Mail-Adresse oder Passwort ist falsch."
+  },
+  "transaction": {
+    "notFound": "Zahlung nicht gefunden.",
+    "invalid": "Diese Zahlung ist für den Kredit nicht zulässig. Bitte Datum, Art und Betrag prüfen.",
+    "deleteInvalid": "Die Zahlung kann nicht gelöscht werden, weil spätere Zahlungen dadurch ungültig würden."
   }
 }

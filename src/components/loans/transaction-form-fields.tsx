@@ -1,154 +1,210 @@
 'use client';
 
 import { TransactionType } from '@prisma/client';
-import { useQuery } from '@tanstack/react-query';
-import moment from 'moment';
-import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useEffect, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { toast } from 'sonner';
-import { getLoanAction } from '@/actions';
+
 import { FormDatePicker } from '@/components/form/form-date-picker';
 import { FormSelect } from '@/components/form/form-select';
+import { Button } from '@/components/ui/button';
+import { isClosingType } from '@/lib/loans/transaction-ledger';
+import { BOOKABLE_TYPES, DRAFT_TRANSACTION_ID, type TransactionPreview } from '@/lib/loans/transaction-validation';
 import type { TransactionFormData } from '@/lib/schemas/transaction';
+import { cn, formatCurrency, formatDateShort } from '@/lib/utils';
 import { FormNumberInput } from '../form/form-number-input';
+import {
+  TransactionAlerts,
+  TransactionStateSummary,
+  useUnavailableReason,
+  useViolationMessage,
+} from './transaction-preview-panels';
 
 const formatter = new Intl.NumberFormat('de-DE', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
 
-export function TransactionFormFields({ loanId }: { loanId: string }) {
+const TYPE_ORDER: (TransactionType | 'divider')[] = [
+  TransactionType.DEPOSIT,
+  'divider',
+  TransactionType.WITHDRAWAL,
+  TransactionType.TERMINATION,
+  'divider',
+  TransactionType.INTERESTPAYMENT,
+  'divider',
+  TransactionType.NOTRECLAIMEDPARTIAL,
+  TransactionType.NOTRECLAIMED,
+];
+
+export function TransactionFormFields({
+  preview,
+  isPending = false,
+  transactionId,
+  originalType,
+}: {
+  /** Validated preview for the current form input, see `useTransactionPreview`. */
+  preview: TransactionPreview | null;
+  /** The preview belongs to older input; it is dimmed until the new one arrives. */
+  isPending?: boolean;
+  /** Set when an existing Zahlung is edited. */
+  transactionId?: string;
+  originalType?: TransactionType;
+}) {
   const t = useTranslations('dashboard.loans');
+  const modalT = useTranslations('dashboard.loans.transactions.modal');
   const commonT = useTranslations('common');
   const { watch, setValue } = useFormContext<TransactionFormData>();
-  const [amountCalculated, setAmountCalculated] = useState(false);
-  const [minAmount, setMinAmount] = useState(0);
-  const [maxAmount, setMaxAmount] = useState(0);
+  const locale = useLocale();
+  const autoFilled = useRef(false);
 
   const date = watch('date');
-  const type = watch('type');
+  const type = watch('type') as TransactionType | '';
+  const selectedType = type === '' ? undefined : type;
+  const candidateId = transactionId ?? DRAFT_TRANSACTION_ID;
+  const validDate = date instanceof Date && !Number.isNaN(date.getTime()) ? date : undefined;
 
-  const { data: loanToDate, isLoading: isLoadingLoanToDate } = useQuery({
-    queryKey: ['loan', loanId, date],
-    queryFn: async () => {
-      const result = await getLoanAction({ loanId, date: (date ?? '') === '' ? new Date() : (date ?? new Date()) });
-      if (result?.serverError || result?.validationErrors) {
-        toast.error(result.serverError);
-      }
-      return result.data?.loan ?? null;
-    },
-  });
+  const unavailableReason = useUnavailableReason(candidateId);
+  const violationMessage = useViolationMessage();
 
+  // Rückzahlung / Erlassung always take the Kontostand of the day. An edit keeps the stored amount
+  // until the user chooses "Neu berechnen", unless the type was changed to a closing type.
+  const closingAmount = preview?.closingAmount;
+  const keepStoredAmount = !!transactionId && selectedType === originalType;
   useEffect(() => {
-    if (loanToDate?.transactions.length === 0 && (type as string) === '') {
-      setValue('type', TransactionType.DEPOSIT);
-    }
-  }, [loanToDate, type, setValue]);
-
-  useEffect(() => {
-    if (loanToDate && !isLoadingLoanToDate) {
-      if (type === TransactionType.DEPOSIT) {
-        setMinAmount(0.01);
-        setMaxAmount(loanToDate.amount);
-      }
-      if (type === TransactionType.WITHDRAWAL || type === TransactionType.NOTRECLAIMEDPARTIAL) {
-        setMaxAmount(loanToDate.balance - 0.01);
-        setMinAmount(0.01);
-      }
-      if (type === TransactionType.INTERESTPAYMENT) {
-        setMaxAmount(Math.min(loanToDate.interest + loanToDate.interestPaid, loanToDate.balance - 0.01));
-        setMinAmount(0.01);
-      }
-    }
-  }, [type, loanToDate, isLoadingLoanToDate]);
-
-  useEffect(() => {
-    if (
-      loanToDate &&
-      !isLoadingLoanToDate &&
-      date &&
-      (type === TransactionType.TERMINATION || type === TransactionType.NOTRECLAIMED)
-    ) {
-      setValue('amount', formatter.format(loanToDate.balance) as unknown as number);
-      setAmountCalculated(true);
-    }
-    if (
-      loanToDate &&
-      amountCalculated &&
-      type !== TransactionType.TERMINATION &&
-      type !== TransactionType.NOTRECLAIMED
-    ) {
+    if (selectedType && isClosingType(selectedType) && closingAmount != null && !keepStoredAmount) {
+      setValue('amount', formatter.format(closingAmount) as unknown as number, { shouldValidate: true });
+      autoFilled.current = true;
+    } else if (selectedType && !isClosingType(selectedType) && autoFilled.current) {
       setValue('amount', '' as unknown as number);
-      setAmountCalculated(false);
+      autoFilled.current = false;
     }
-  }, [type, loanToDate, setValue, isLoadingLoanToDate, date, amountCalculated]);
+  }, [selectedType, closingAmount, keepStoredAmount, setValue]);
 
-  const createTypeOption = (type: TransactionType, disabled?: boolean) => ({
-    value: type,
-    label: commonT(`enums.transaction.type.${type}`),
-    // Possibility check is off. Restore by removing `false &&`.
-    disabled: false && disabled,
+  // Nothing to choose from: preselect the only possible type (e.g. the first Einzahlung)
+  const availableTypes = preview ? BOOKABLE_TYPES.filter((item) => preview.types[item]?.available) : [];
+  const onlyAvailableType = availableTypes.length === 1 ? availableTypes[0] : undefined;
+  useEffect(() => {
+    if (!selectedType && onlyAvailableType) {
+      setValue('type', onlyAvailableType);
+    }
+  }, [selectedType, onlyAvailableType, setValue]);
+
+  const options = TYPE_ORDER.map((item) => {
+    if (item === 'divider') {
+      return item;
+    }
+    const availability = preview?.types[item];
+    const reason = availability && !availability.available ? unavailableReason(availability.reason) : undefined;
+    const label = commonT(`enums.transaction.type.${item}`);
+    return {
+      value: item,
+      label: reason ? `${label} (${reason})` : label,
+      disabled: !!availability && !availability.available,
+    };
   });
 
-  const latestTransaction = useMemo(() => {
-    return loanToDate?.transactions.sort((a, b) => a.date.getTime() - b.date.getTime())[0];
-  }, [loanToDate]);
+  const selectedAvailability = selectedType ? preview?.types[selectedType] : undefined;
+  const unavailableMessage =
+    selectedAvailability && !selectedAvailability.available
+      ? selectedAvailability.reason
+        ? violationMessage(selectedAvailability.reason)
+        : modalT('noTypeAvailable')
+      : undefined;
+
+  const limits = preview?.limits;
+  const binding = limits?.binding;
+  let limitNote: string | undefined;
+  if (binding) {
+    if (binding.transactionId !== candidateId) {
+      limitNote = modalT('limitedByTransaction', {
+        type: commonT(`enums.transaction.type.${binding.type}`),
+        date: formatDateShort(binding.date, locale),
+      });
+    } else {
+      limitNote = binding.rule === 'CAP_EXCEEDED' ? modalT('limitedByLoanAmount') : modalT('limitedByBalance');
+    }
+  }
+
+  const recalculate = () => {
+    if (closingAmount != null) {
+      setValue('amount', formatter.format(closingAmount) as unknown as number, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+  };
+  const canRecalculate = !!transactionId && !!selectedType && isClosingType(selectedType);
 
   return (
     <>
-      <FormSelect
-        name="type"
-        label={t('transactions.type')}
-        placeholder={commonT('ui.form.selectPlaceholder')}
-        className="bg-white"
-        options={[
-          createTypeOption(TransactionType.DEPOSIT, !!loanToDate && loanToDate?.deposits >= loanToDate.amount),
-          'divider',
-          createTypeOption(TransactionType.WITHDRAWAL, !loanToDate || loanToDate?.balance <= 0),
-          createTypeOption(TransactionType.TERMINATION, !loanToDate || loanToDate?.balance <= 0),
-          'divider',
-          createTypeOption(
-            TransactionType.INTERESTPAYMENT,
-            !loanToDate || loanToDate.interest + loanToDate.interestPaid <= 0 || !loanToDate || loanToDate.balance <= 0,
-          ),
-          'divider',
-          createTypeOption(TransactionType.NOTRECLAIMEDPARTIAL, !loanToDate || loanToDate.balance <= 0),
-          createTypeOption(TransactionType.NOTRECLAIMED, !loanToDate || loanToDate.balance <= 0),
-        ]}
-      />
-
       <FormDatePicker
         name="date"
         label={t('transactions.date')}
         placeholder={commonT('ui.form.enterPlaceholder')}
         className="bg-white"
-        disabled={(date) => {
-          const inFuture = date > new Date();
-          const beforeLatest =
-            !!latestTransaction &&
-            moment(date).startOf('day').isBefore(moment(latestTransaction.date).startOf('day'));
-          // Possibility check is off. Restore by removing `false &&`.
-          return false && (inFuture || beforeLatest);
-        }}
       />
 
-      <FormNumberInput
-        name="amount"
-        label={t('transactions.amount')}
-        placeholder={commonT('ui.form.enterPlaceholder')}
-        min={minAmount}
-        max={maxAmount}
-        prefix="€"
+      {preview && validDate ? (
+        <div className={cn('transition-opacity', isPending && 'opacity-50')} aria-busy={isPending}>
+          <TransactionStateSummary preview={preview} date={validDate} />
+        </div>
+      ) : null}
+
+      <FormSelect
+        name="type"
+        label={t('transactions.type')}
+        placeholder={commonT('ui.form.selectPlaceholder')}
         className="bg-white"
-        disabled={
-          !type ||
-          type === TransactionType.TERMINATION ||
-          type === TransactionType.NOTRECLAIMED ||
-          isLoadingLoanToDate ||
-          !date
-        }
+        options={options}
       />
+
+      <div className="space-y-1.5">
+        <FormNumberInput
+          name="amount"
+          label={t('transactions.amount')}
+          placeholder={commonT('ui.form.enterPlaceholder')}
+          min={limits?.min}
+          max={limits?.max}
+          prefix="€"
+          className="bg-white"
+          disabled={!selectedType || isClosingType(selectedType) || !validDate}
+        />
+        {limits && selectedType ? (
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span>
+              {isClosingType(selectedType) && validDate
+                ? modalT('closingAmountHint', { date: formatDateShort(validDate, locale) })
+                : modalT('amountRange', { min: formatCurrency(limits.min), max: formatCurrency(limits.max) })}
+              {limitNote ? ` · ${limitNote}` : null}
+            </span>
+            {!isClosingType(selectedType) ? (
+              <Button
+                type="button"
+                variant="link"
+                size="sm"
+                className="h-auto p-0 text-xs"
+                onClick={() =>
+                  setValue('amount', formatter.format(limits.max) as unknown as number, {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  })
+                }
+              >
+                {modalT('useMax')}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+        {preview?.after ? (
+          <div className="text-xs text-muted-foreground">
+            {modalT('after', {
+              balance: formatCurrency(preview.after.balance),
+              einlagenstand: formatCurrency(preview.after.einlagenstand),
+            })}
+          </div>
+        ) : null}
+      </div>
 
       <FormSelect
         name="paymentType"
@@ -170,6 +226,16 @@ export function TransactionFormFields({ loanId }: { loanId: string }) {
           },
         ]}
       />
+
+      {preview ? (
+        <div className={cn('transition-opacity', isPending && 'opacity-50')} aria-busy={isPending}>
+          <TransactionAlerts
+            preview={preview}
+            unavailableMessage={unavailableMessage}
+            onRecalculate={canRecalculate ? recalculate : undefined}
+          />
+        </div>
+      ) : null}
     </>
   );
 }

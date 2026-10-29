@@ -47,6 +47,7 @@
       "name": "Name fehlt",
       "iban": "IBAN fehlt oder ist ungültig",
       "bic": "BIC ist ungültig",
+      "ledger": "Zinsauszahlung ist im Kredit nicht zulässig (spätere Buchungen)",
       "bicCountry": "BIC passt nicht zum Land der IBAN",
       "amount": "Betrag ist ungültig",
       "unknown": "SEPA-Prüfung fehlgeschlagen"

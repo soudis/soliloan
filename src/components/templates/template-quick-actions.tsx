@@ -2,7 +2,7 @@
 
 import type { TemplateDataset, TemplateType } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Mail, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Download, Mail, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { useEffect, useState } from 'react';
@@ -68,6 +68,8 @@ export type TemplateQuickActionsProps = {
    * When set, `density` is ignored.
    */
   rowMenu?: {
+    /** Shows an "edit" item above delete. */
+    onEdit?: () => void;
     showDelete: boolean;
     /** When true, the delete item stays visible but cannot be selected. */
     deleteDisabled?: boolean;
@@ -290,13 +292,14 @@ export function TemplateQuickActions({
 
   if (rowMenu) {
     const hasTemplates = docTemplates.length > 0 || emailTemplates.length > 0;
-    const showTrigger = rowMenu.showDelete || hasTemplates || isLoading;
+    const showTrigger = rowMenu.showDelete || !!rowMenu.onEdit || hasTemplates || isLoading;
     if (!showTrigger) {
       return null;
     }
 
     const showLoadingPlaceholder = isLoading && !hasTemplates;
-    const showSeparatorBeforeDelete = rowMenu.showDelete && (hasTemplates || showLoadingPlaceholder);
+    const showSeparatorBeforeDelete =
+      (rowMenu.showDelete || !!rowMenu.onEdit) && (hasTemplates || showLoadingPlaceholder);
 
     return (
       <>
@@ -346,6 +349,12 @@ export function TemplateQuickActions({
               </>
             )}
             {showSeparatorBeforeDelete ? <DropdownMenuSeparator /> : null}
+            {rowMenu.onEdit ? (
+              <DropdownMenuItem onSelect={rowMenu.onEdit}>
+                <Pencil className="mr-2 h-4 w-4" />
+                {commonT('ui.actions.edit')}
+              </DropdownMenuItem>
+            ) : null}
             {rowMenu.showDelete ? (
               <TooltipProvider>
                 <DeleteMenuItem

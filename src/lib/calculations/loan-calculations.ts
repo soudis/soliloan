@@ -14,7 +14,7 @@ import { LoanStatus, type LoanWithRelations } from '@/types/loans';
 import { createdAtDescSorter, transactionSorter } from '../utils/sorters';
 import { getFirstDepositDateFromTransactions, getLoanTermDays, getRepaymentPeriodDays } from './loan-duration-metrics';
 
-export const isRepaid = (loan: LoanWithRelations, toDate: Date) => {
+export const isRepaid = (loan: Pick<LoanWithRelations, 'transactions'>, toDate: Date) => {
   // check if all money was paid back until given date
   if (loan.transactions.length <= 1) {
     return undefined;
@@ -169,15 +169,30 @@ const allocateYearlyInterestToMonths = (
   return allocations;
 };
 
+/** The parts of a loan the yearly interest calculation needs. */
+export type LoanForPerYear = Pick<LoanWithRelations, 'altInterestMethod' | 'interestRate' | 'transactions'> & {
+  lender: { project: { configuration: { interestMethod: InterestMethod } } };
+};
+
+export type PerYearOptions = {
+  /**
+   * Skip the closing handling: do not stop at the repayment date and do not push the last year's interest
+   * so that a closed loan ends at exactly 0. The result is the plain ledger balance, which is what
+   * transaction validation needs to see a closing amount that does not match.
+   */
+  raw?: boolean;
+};
+
 export const calculateLoanPerYear = (
-  loan: LoanWithRelations,
+  loan: LoanForPerYear,
   toDateParameter?: Date,
   currentTransactionId?: string,
+  { raw = false }: PerYearOptions = {},
 ) => {
   let toDate = moment(toDateParameter);
   const terminationDate = isRepaid(loan, toDate.toDate());
   // if contract is terminated and the current transaction ID is not the termination transaction only calculate until termination date
-  if (terminationDate && loan.transactions[loan.transactions.length - 1]?.id !== currentTransactionId) {
+  if (!raw && terminationDate && loan.transactions[loan.transactions.length - 1]?.id !== currentTransactionId) {
     toDate = moment(terminationDate);
   }
 
@@ -292,7 +307,12 @@ export const calculateLoanPerYear = (
         interestBaseAmount: interestBaseAmount.plus(compound ? currentYear.interest : 0),
         interestError: new Prisma.Decimal(0),
       });
-    } else if (terminationDate && loan.transactions.at(-1)?.id !== currentTransactionId && !currentYear.end.equals(0)) {
+    } else if (
+      !raw &&
+      terminationDate &&
+      loan.transactions.at(-1)?.id !== currentTransactionId &&
+      !currentYear.end.equals(0)
+    ) {
       // if contract is terminated and there are small rounding numbers from the past correct interest to adjust to a zero end value
       currentYear.interestError = currentYear.interest.minus(currentYear.end);
       currentYear.interest = currentYear.interest.minus(currentYear.end);
