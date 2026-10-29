@@ -11,8 +11,9 @@ import { deleteTransactionAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { ActionButton } from '@/components/ui/action-button';
+import { getClosingTransaction } from '@/lib/loans/transaction-ledger';
 import { cn, formatCurrency, formatDateLong } from '@/lib/utils';
-import { type LoanDetailsWithCalculations, LoanStatus } from '@/types/loans';
+import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { Button } from '../ui/button';
 import { Switch } from '../ui/switch';
 import {
@@ -62,6 +63,7 @@ export function LoanTransactions({
   const [showBookings, setShowBookings] = useState(defaultShowBookings);
   const [page, setPage] = useState(0);
   const [internalAddOpen, setInternalAddOpen] = useState(false);
+  const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
   const queryClient = useQueryClient();
 
   const filtered = useMemo(() => {
@@ -87,7 +89,7 @@ export function LoanTransactions({
     const result = await deleteTransactionAction({ transactionId: transactionToDelete });
 
     if (result?.serverError || result?.validationErrors) {
-      toast.error(t('transactions.delete.error'), { id: toastId });
+      toast.error(result.serverError ?? t('transactions.delete.error'), { id: toastId });
     } else {
       toast.success(t('transactions.delete.success'), { id: toastId });
       queryClient.invalidateQueries({ queryKey: ['lender'] });
@@ -95,10 +97,10 @@ export function LoanTransactions({
     setTransactionToDelete(null);
   };
 
-  const lastNonInterest = transactions.findLast((tx) => tx.type !== 'INTEREST');
-
+  // A closed Kredit is frozen: only its Abschlusszahlung can be edited or deleted
+  const closing = getClosingTransaction(transactions);
   const addTransactionEnabled = !readOnly && showAddTransaction;
-  const addTransactionDisabled = loan.status === LoanStatus.REPAID;
+  const addTransactionDisabled = !!closing;
 
   const handleAddTransaction = () => {
     if (onAddTransaction) {
@@ -136,7 +138,7 @@ export function LoanTransactions({
               label={commonT('terms.transaction')}
               onClick={handleAddTransaction}
               disabled={addTransactionDisabled}
-              tooltip={addTransactionDisabled ? t('transactions.addDisabledRepaid') : undefined}
+              tooltip={addTransactionDisabled ? t('transactions.addDisabledClosed') : undefined}
             />
           )}
         </div>
@@ -167,8 +169,14 @@ export function LoanTransactions({
                     transactionId={transaction.id}
                     rowMenu={{
                       showDelete: true,
-                      deleteDisabled: transaction.id !== lastNonInterest?.id,
-                      deleteDisabledTooltip: t('transactions.delete.onlyLatest'),
+                      onEdit: transaction.type === 'INTEREST' ? undefined : () => setTransactionToEdit(transaction),
+                      editDisabled: !!closing && transaction.id !== closing.id,
+                      editDisabledTooltip: t('transactions.editDisabledClosed'),
+                      deleteDisabled: transaction.type === 'INTEREST' || (!!closing && transaction.id !== closing.id),
+                      deleteDisabledTooltip:
+                        transaction.type === 'INTEREST'
+                          ? t('transactions.delete.interestRow')
+                          : t('transactions.delete.closed'),
                       onDelete: () => handleDeleteClick(transaction.id),
                     }}
                   />
@@ -219,6 +227,18 @@ export function LoanTransactions({
           title={t('transactions.delete.confirmTitle')}
           description={t('transactions.delete.confirmDescription')}
           confirmText={commonT('ui.actions.delete')}
+        />
+      )}
+
+      {!readOnly && (
+        <TransactionDialog
+          loanId={loanId}
+          loan={loan}
+          transaction={transactionToEdit ?? undefined}
+          open={!!transactionToEdit}
+          onOpenChange={(open) => {
+            if (!open) setTransactionToEdit(null);
+          }}
         />
       )}
 

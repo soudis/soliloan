@@ -10,10 +10,8 @@ import {
   getTransactionContext,
   removeNullFields,
 } from '@/lib/audit-trail';
-import { calculateLoanFields } from '@/lib/calculations/loan-calculations';
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
-import { isLoanEligibleForTransaction } from '@/lib/gocardless/import-matching';
 import type {
   BankImportProtocol,
   BankImportProtocolImportedRow,
@@ -22,10 +20,18 @@ import type {
   BankImportSkipReason,
 } from '@/lib/gocardless/import-protocol';
 import { BANK_IMPORT_PAYMENT_TYPE, getSignedTransactionAmount } from '@/lib/gocardless/import-transaction-utils';
+import { DRAFT_TRANSACTION_ID, checkNewTransaction } from '@/lib/loans/transaction-validation';
 import { finalizeImportBatchSchema } from '@/lib/schemas/gocardless';
 import { getLenderName } from '@/lib/utils';
-import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { projectAction } from '@/lib/utils/safe-action';
+
+/** Zahlungen a bank import can create. */
+const IMPORTABLE_TYPES: TransactionType[] = [
+  TransactionType.DEPOSIT,
+  TransactionType.WITHDRAWAL,
+  TransactionType.INTERESTPAYMENT,
+  TransactionType.TERMINATION,
+];
 
 function toProtocolRow(row: {
   id: string;
@@ -114,23 +120,26 @@ export const finalizeImportBatchAction = projectAction
         continue;
       }
 
-      const calculated = calculateLoanFields(
-        parseAdditionalFields({
-          ...loan,
-          notes: [],
-          files: [],
-          lender: parseAdditionalFields({ ...loan.lender, notes: [], files: [] }),
-        }),
-        { toDate: row.bookingDate },
-      );
-
       const amountMagnitude = Math.abs(row.amount);
-      if (!isLoanEligibleForTransaction(calculated, type, amountMagnitude)) {
-        skip(
-          skipped,
-          row,
-          type === TransactionType.TERMINATION && calculated.balance > 0 ? 'terminationBalanceMismatch' : 'notEligible',
-        );
+      if (amountMagnitude <= 0 || !IMPORTABLE_TYPES.includes(type)) {
+        skip(skipped, row, 'notEligible');
+        continue;
+      }
+
+      const { errors, after } = checkNewTransaction(loan, loan.id, loan.transactions, {
+        type,
+        date: row.bookingDate,
+        amount: amountMagnitude,
+      });
+      if (errors.length > 0) {
+        skip(skipped, row, 'notEligible');
+        continue;
+      }
+
+      // A Rückzahlung from the bank has to match the Kontostand on its day
+      const closing = after.closingDifferences.find((item) => item.transactionId === DRAFT_TRANSACTION_ID);
+      if (closing && Math.abs(closing.difference) > 0.001) {
+        skip(skipped, row, 'terminationBalanceMismatch');
         continue;
       }
 

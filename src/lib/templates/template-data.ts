@@ -27,7 +27,7 @@ import {
 } from '@/lib/templates/template-raw-scope';
 import { formatCurrency, formatDateLong, formatDateShort, formatPercentage, getLenderName } from '@/lib/utils';
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
-import { transactionSorter } from '@/lib/utils/sorters';
+import { sortTransactions } from '@/lib/utils/sorters';
 import deDashboardMessages from '@/messages/de/dashboard.json';
 import type { LenderWithRelations } from '@/types/lenders';
 import type { LoanWithRelations } from '@/types/loans';
@@ -386,9 +386,9 @@ function buildTransactionsYearlyList(
   const opening = formatYearlyBalanceBoundaryRow('opening', begin, year, locale);
   const closing = formatYearlyBalanceBoundaryRow('closing', end, year, locale);
 
-  const inYear = [...(loan.transactions ?? [])]
-    .filter((t) => new Date(t.date as Date | string).getFullYear() === year)
-    .sort((a, b) => transactionSorter(a as Transaction, b as Transaction));
+  const inYear = sortTransactions(
+    (loan.transactions ?? []).filter((t) => new Date(t.date as Date | string).getFullYear() === year) as Transaction[],
+  );
 
   const middle = inYear.map((t) => formatTransaction(t as TemplateTransactionRecord, locale));
 
@@ -411,9 +411,11 @@ function buildRawTransactionsYearlyList(loan: TemplateLoanRecord, year: number, 
   const end = yearRow ? yearRow.end.toNumber() : 0;
   const opening = rawYearlyBoundaryRow('opening', begin, year);
   const closing = rawYearlyBoundaryRow('closing', end, year);
-  const inYear = [...(loan.transactions ?? [])]
-    .filter((transaction) => new Date(transaction.date as Date | string).getFullYear() === year)
-    .sort((a, b) => transactionSorter(a as Transaction, b as Transaction));
+  const inYear = sortTransactions(
+    (loan.transactions ?? []).filter(
+      (transaction) => new Date(transaction.date as Date | string).getFullYear() === year,
+    ) as Transaction[],
+  );
   const middle = inYear.map((transaction) => rawTransactionScope(transaction));
   return [opening, ...middle, closing];
 }

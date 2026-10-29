@@ -11,15 +11,15 @@ import moment, { type Moment } from 'moment';
 import { calculateOutstandingDeposits } from '@/lib/loans/savings-contract';
 import type { CalculationOptions } from '@/types/calculation';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
-import { createdAtDescSorter, transactionSorter } from '../utils/sorters';
+import { createdAtDescSorter, sortTransactions } from '../utils/sorters';
 import { getFirstDepositDateFromTransactions, getLoanTermDays, getRepaymentPeriodDays } from './loan-duration-metrics';
 
-export const isRepaid = (loan: LoanWithRelations, toDate: Date) => {
+export const isRepaid = (loan: Pick<LoanWithRelations, 'transactions'>, toDate: Date) => {
   // check if all money was paid back until given date
   if (loan.transactions.length <= 1) {
     return undefined;
   }
-  const transactions = [...loan.transactions].sort(transactionSorter);
+  const transactions = sortTransactions(loan.transactions);
   const lastTransaction = transactions[transactions.length - 1];
   if (!lastTransaction) {
     return undefined;
@@ -169,15 +169,30 @@ const allocateYearlyInterestToMonths = (
   return allocations;
 };
 
+/** The parts of a loan the yearly interest calculation needs. */
+export type LoanForPerYear = Pick<LoanWithRelations, 'altInterestMethod' | 'interestRate' | 'transactions'> & {
+  lender: { project: { configuration: { interestMethod: InterestMethod } } };
+};
+
+export type PerYearOptions = {
+  /**
+   * Skip the closing handling: do not stop at the repayment date and do not push the last year's interest
+   * so that a closed loan ends at exactly 0. The result is the plain ledger balance, which is what
+   * transaction validation needs to see a closing amount that does not match.
+   */
+  raw?: boolean;
+};
+
 export const calculateLoanPerYear = (
-  loan: LoanWithRelations,
+  loan: LoanForPerYear,
   toDateParameter?: Date,
   currentTransactionId?: string,
+  { raw = false }: PerYearOptions = {},
 ) => {
   let toDate = moment(toDateParameter);
   const terminationDate = isRepaid(loan, toDate.toDate());
   // if contract is terminated and the current transaction ID is not the termination transaction only calculate until termination date
-  if (terminationDate && loan.transactions[loan.transactions.length - 1]?.id !== currentTransactionId) {
+  if (!raw && terminationDate && loan.transactions[loan.transactions.length - 1]?.id !== currentTransactionId) {
     toDate = moment(terminationDate);
   }
 
@@ -188,7 +203,7 @@ export const calculateLoanPerYear = (
   }
 
   const compound = method.split('_')[2] === 'COMPOUND';
-  const transactions = [...loan.transactions].sort(transactionSorter);
+  const transactions = sortTransactions(loan.transactions);
   const firstTransaction = transactions[0];
   if (!firstTransaction) {
     return [];
@@ -292,7 +307,12 @@ export const calculateLoanPerYear = (
         interestBaseAmount: interestBaseAmount.plus(compound ? currentYear.interest : 0),
         interestError: new Prisma.Decimal(0),
       });
-    } else if (terminationDate && loan.transactions.at(-1)?.id !== currentTransactionId && !currentYear.end.equals(0)) {
+    } else if (
+      !raw &&
+      terminationDate &&
+      loan.transactions.at(-1)?.id !== currentTransactionId &&
+      !currentYear.end.equals(0)
+    ) {
       // if contract is terminated and there are small rounding numbers from the past correct interest to adjust to a zero end value
       currentYear.interestError = currentYear.interest.minus(currentYear.end);
       currentYear.interest = currentYear.interest.minus(currentYear.end);
@@ -362,7 +382,7 @@ export const calculateLoanPerMonth = (
   }
 
   const compound = method.split('_')[2] === 'COMPOUND';
-  const transactions = [...loan.transactions].sort(transactionSorter);
+  const transactions = sortTransactions(loan.transactions);
   const firstTransaction = transactions[0];
   if (!firstTransaction) {
     return [];
@@ -599,25 +619,26 @@ export function calculateLoanFieldsWithPerYear<T>(loan: LoanWithRelations & T, o
     repaymentPeriodDays: getRepaymentPeriodDays(loan, toDate),
     ...calculateOutstandingDeposits(loan, toDate),
     // add interests per year as virtual transactions
-    transactions: loan.transactions
-      .map((transaction) => ({
-        ...transaction,
-        amount: transaction.amount,
-      }))
-      .concat(
-        numbers.perYear
-          .filter((yearNumbers) => yearNumbers.interest.toNumber() > 0)
-          .map((yearNumbers) => ({
-            id: `${yearNumbers.year}-interest`,
-            type: TransactionType.INTEREST,
-            date: getInterestBookingDate(yearNumbers.year, toDate, repaidDate),
-            amount: yearNumbers.interest.toNumber(),
-            paymentType: PaymentType.OTHER,
-            loanId: loan.id,
-            lenderNotifiedAt: null,
-          })),
-      )
-      .sort(transactionSorter),
+    transactions: sortTransactions(
+      loan.transactions
+        .map((transaction) => ({
+          ...transaction,
+          amount: transaction.amount,
+        }))
+        .concat(
+          numbers.perYear
+            .filter((yearNumbers) => yearNumbers.interest.toNumber() > 0)
+            .map((yearNumbers) => ({
+              id: `${yearNumbers.year}-interest`,
+              type: TransactionType.INTEREST,
+              date: getInterestBookingDate(yearNumbers.year, toDate, repaidDate),
+              amount: yearNumbers.interest.toNumber(),
+              paymentType: PaymentType.OTHER,
+              loanId: loan.id,
+              lenderNotifiedAt: null,
+            })),
+        ),
+    ),
   };
 
   return { calculated, perYear: numbers.perYear };

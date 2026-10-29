@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { createAuditEntry, getChangedFields, getLenderContext, getLoanContext } from '@/lib/audit-trail';
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
+import { peakEinlagenstand, toCents } from '@/lib/loans/transaction-ledger';
 import { normalizeLoanInterestRate } from '@/lib/schemas/investment-type';
 import { loanFormSchema } from '@/lib/schemas/loan';
 import { loanAction } from '@/lib/utils/safe-action';
@@ -25,6 +26,7 @@ export const updateLoanAction = loanAction
         id: loanId,
       },
       include: {
+        transactions: true,
         lender: {
           include: {
             project: {
@@ -39,6 +41,11 @@ export const updateLoanAction = loanAction
 
     if (!loan) {
       throw new Error('Loan not found');
+    }
+
+    // The Kreditbetrag cannot drop below what was once paid in
+    if (toCents(data.amount) < toCents(peakEinlagenstand(loan.transactions))) {
+      throw new Error('error.loan.amountBelowDeposits');
     }
 
     // DEInvestmentActCompliance: German lenders must use an existing matching InvestmentType.
