@@ -1,7 +1,7 @@
-import type { DashboardLender, DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import type { AggregationTableResult } from '@/lib/dashboard/aggregation-table/compute-aggregation-table';
 import type { ChartDataModel } from '@/lib/dashboard/chart/chart-data-model';
 import type { HistoryTableResult } from '@/lib/dashboard/history-table/compute-history-table';
+import type { DashboardLender, DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import type { NotificationLine } from '@/lib/dashboard/notifications/compute-notifications';
 import type { PieChartResult } from '@/lib/dashboard/pie-chart/compute-pie-chart';
 import type { DashboardLayoutScopeKey } from '@/types/dashboard-layout';

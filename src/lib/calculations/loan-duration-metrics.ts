@@ -1,7 +1,7 @@
 import { TerminationType, TransactionType } from '@prisma/client';
 import moment from 'moment';
 
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import type { LoanWithRelations } from '@/types/loans';
 
 import { isRepaid } from './loan-calculations';

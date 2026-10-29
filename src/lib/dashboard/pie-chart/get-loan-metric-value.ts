@@ -1,9 +1,8 @@
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import { loanActiveAtPeriodEnd } from '@/lib/entity-filters/get-filter-value';
 import type { HistoryTableMetric } from '@/types/dashboard-widgets/history-table';
-
-import { buildStatPeriodAtDate } from '../stat-widget/build-stat-period';
 import { getCumulativeNumbers, getPeriodNumbers } from '../history-table/rollup-period';
+import { buildStatPeriodAtDate } from '../stat-widget/build-stat-period';
 
 export function getLoanMetricValue(loan: DashboardLoan, metric: HistoryTableMetric, toDate: Date): number | null {
   const period = buildStatPeriodAtDate(toDate);

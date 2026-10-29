@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { TerminationType, TransactionType } from '@prisma/client';
 
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import type { LoanMonthlyNumbers } from '@/types/dashboard';
 import type { HistoryTableWidgetConfig } from '@/types/dashboard-widgets/history-table';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';

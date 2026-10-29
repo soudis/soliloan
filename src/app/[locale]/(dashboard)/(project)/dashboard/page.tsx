@@ -1,13 +1,16 @@
 import { getLocale, getTranslations } from 'next-intl/server';
-
-import { type DashboardLender, type DashboardLoan, getDashboardStats } from '@/actions/dashboard/get-dashboard-stats';
-import { getDashboardLayoutsForPage } from '@/actions/dashboard/queries/get-dashboard-layouts';
 import { DashboardCustomizer } from '@/components/dashboard/customizer/dashboard-customizer';
 import { DashboardDataProvider } from '@/components/dashboard/dashboard-data-provider';
 import { computeLayoutWidgetResults } from '@/lib/dashboard/compute-widget-result';
 import { dashboardCustomizeParser } from '@/lib/dashboard/dashboard-url-params';
+import { getDashboardLayoutsForPage } from '@/lib/dashboard/get-dashboard-layouts';
+import { getDashboardStats } from '@/lib/dashboard/get-dashboard-stats';
 import { createDefaultLayoutData } from '@/lib/dashboard/layout-utils';
-import { omitDashboardLoanTimelines } from '@/lib/dashboard/load-dashboard-stats';
+import {
+  type DashboardLender,
+  type DashboardLoan,
+  omitDashboardLoanTimelines,
+} from '@/lib/dashboard/load-dashboard-stats';
 import { loadDashboardWidgetI18n } from '@/lib/dashboard/load-dashboard-widget-i18n';
 import { loadNotificationExtras } from '@/lib/dashboard/notifications/load-notification-extras';
 import { EMPTY_NOTIFICATION_EXTRAS } from '@/lib/dashboard/notifications/notification-extras';

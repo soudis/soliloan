@@ -1,5 +1,5 @@
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { loanStartedOnOrBefore } from '@/lib/calculations/loan-duration-metrics';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import type { EntityFilter, EntityFilterFieldOption } from '@/types/entity-filters';
 
 import { getFilterDefinitionForField, isDynamicLoanFilterField } from './filter-definitions';

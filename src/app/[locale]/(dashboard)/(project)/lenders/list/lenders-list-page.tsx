@@ -1,10 +1,10 @@
 import { ViewType } from '@prisma/client';
-import { getViewsByType } from '@/actions';
 import { getLendersByProjectIdUnsafe } from '@/actions/lenders/queries/get-lenders-by-project';
 import { LenderTable } from '@/components/lenders/lender-table';
 import { searchParamsCache } from '@/lib/params';
 import { resolveTableListViewId } from '@/lib/resolve-table-list-view';
 import { TABLE_LIST_PATHS } from '@/lib/table-list-path';
+import { getViewsByType } from '@/lib/views/get-views';
 
 export async function LendersListPage({
   viewId,

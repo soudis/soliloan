@@ -1,4 +1,3 @@
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { resolveGroupKey } from '@/lib/dashboard/chart/resolve-group-key';
 import {
   createAggregateMetricCache,
@@ -6,6 +5,7 @@ import {
 } from '@/lib/dashboard/history-table/compute-history-table';
 import { getPeriodNumbers, type HistoryPeriod } from '@/lib/dashboard/history-table/rollup-period';
 import { interestRateAverageWeight } from '@/lib/dashboard/interest-rate-average';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';
 import { filtersNeedPeriodSnapshot, getFilterDefinitionForField } from '@/lib/entity-filters/filter-definitions';
 import { getLoanFilterValue } from '@/lib/entity-filters/get-filter-value';

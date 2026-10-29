@@ -1,4 +1,4 @@
-import type { DashboardLender } from '@/actions/dashboard/get-dashboard-stats';
+import type { DashboardLender } from '@/lib/dashboard/load-dashboard-stats';
 import type { EntityFilter, EntityFilterFieldOption } from '@/types/entity-filters';
 
 import { getFilterDefinitionForField } from './filter-definitions';

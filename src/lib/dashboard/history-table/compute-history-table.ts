@@ -1,6 +1,6 @@
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { loanStartedOnOrBefore } from '@/lib/calculations/loan-duration-metrics';
 import { interestRateAverageWeight } from '@/lib/dashboard/interest-rate-average';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import { loanMatchesFilters } from '@/lib/entity-filters/apply-loan-filters';
 import { filtersNeedPeriodSnapshot } from '@/lib/entity-filters/filter-definitions';
 import { loanActiveAtPeriodEnd, type PeriodSnapshot } from '@/lib/entity-filters/get-filter-value';

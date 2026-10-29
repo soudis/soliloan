@@ -1,5 +1,5 @@
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
-import { aggregateMetric, type AggregateMetricCache } from '@/lib/dashboard/history-table/compute-history-table';
+import { type AggregateMetricCache, aggregateMetric } from '@/lib/dashboard/history-table/compute-history-table';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import { buildStatPeriodAtDate } from '@/lib/dashboard/stat-widget/build-stat-period';
 import type { ChartSeriesConfig } from '@/types/dashboard-widgets/chart-series';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';

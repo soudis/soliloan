@@ -1,4 +1,4 @@
-'use server';
+import 'server-only';
 
 import { getGlobalDefaultLayout, resolveScopedLayout } from '@/lib/dashboard/layout-db';
 import { requireSession } from '@/lib/require-session';

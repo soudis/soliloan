@@ -1,10 +1,10 @@
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import {
+  type AggregateMetricCache,
   aggregateMetric,
   createAggregateMetricCache,
-  type AggregateMetricCache,
 } from '@/lib/dashboard/history-table/compute-history-table';
 import { buildAllLoanMetricCaches } from '@/lib/dashboard/history-table/loan-metric-cache';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import type { HistoryTableColumnConfig, HistoryTableWidgetConfig } from '@/types/dashboard-widgets/history-table';
 import {
   createDefaultStatDeltaRange,
@@ -14,8 +14,8 @@ import {
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
 
 import { buildStatBaselinePeriodBefore, buildStatPeriodAtDate, getStatDeltaRangeStart } from './build-stat-period';
-import { computeStatAggregateValue, computeStatByLenderAggregateValue } from './compute-stat-aggregate';
 import { median } from './collect-per-loan-stat-values';
+import { computeStatAggregateValue, computeStatByLenderAggregateValue } from './compute-stat-aggregate';
 import { collectStatDurationValues, computeLenderCountStat } from './stat-only-metrics';
 
 const STAT_HISTORY_CONFIG: HistoryTableWidgetConfig = {

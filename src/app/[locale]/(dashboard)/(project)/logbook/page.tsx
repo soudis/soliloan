@@ -1,10 +1,10 @@
 import { ViewType } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
-import { getViewsByType } from '@/actions';
 import { LogbookTable } from '@/components/dashboard/logbook/logbook-table';
 import { db } from '@/lib/db';
 import { searchParamsCache } from '@/lib/params';
 import { requireSession } from '@/lib/require-session';
+import { getViewsByType } from '@/lib/views/get-views';
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

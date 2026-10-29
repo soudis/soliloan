@@ -1,8 +1,8 @@
-import type { DashboardLender, DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { computeAggregationTable } from '@/lib/dashboard/aggregation-table/compute-aggregation-table';
 import { computeBarChart } from '@/lib/dashboard/bar-chart/compute-bar-chart';
 import { computeHistoryTable } from '@/lib/dashboard/history-table/compute-history-table';
 import { computeLineChart } from '@/lib/dashboard/line-chart/compute-line-chart';
+import type { DashboardLender, DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import { computeNotifications } from '@/lib/dashboard/notifications/compute-notifications';
 import type { NotificationExtras } from '@/lib/dashboard/notifications/notification-extras';
 import { computePieChart } from '@/lib/dashboard/pie-chart/compute-pie-chart';

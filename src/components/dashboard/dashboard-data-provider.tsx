@@ -2,10 +2,9 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
-
-import type { DashboardLender, DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import { useProject } from '@/components/providers/project-provider';
 import { buildCumulativeTimeline } from '@/lib/dashboard/history-table/cumulative-timeline';
+import type { DashboardLender, DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import { EMPTY_NOTIFICATION_EXTRAS, type NotificationExtras } from '@/lib/dashboard/notifications/notification-extras';
 import type { DashboardWidgetResultsByScope } from '@/lib/dashboard/widget-compute-result-types';
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';

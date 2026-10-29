@@ -2,12 +2,11 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
-
-import type { DashboardLender } from '@/actions/dashboard/get-dashboard-stats';
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { WidgetResultUnavailable } from '@/components/dashboard/widgets/widget-result-unavailable';
 import { useComputedWidgetResult } from '@/hooks/use-computed-widget-result';
 import { useRouter } from '@/i18n/navigation';
+import type { DashboardLender } from '@/lib/dashboard/load-dashboard-stats';
 import {
   buildAllLenderTableColumns,
   getLenderSortValue,

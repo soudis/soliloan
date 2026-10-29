@@ -1,15 +1,15 @@
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
 import {
   getLoanTermDaysForDashboard,
   getRepaymentPeriodDaysForDashboard,
 } from '@/lib/calculations/loan-duration-metrics';
 import {
+  type AggregateMetricCache,
   createAggregateMetricCache,
   filterLoansForHistoryColumn,
-  type AggregateMetricCache,
 } from '@/lib/dashboard/history-table/compute-history-table';
 import type { LoanMetricCacheMap } from '@/lib/dashboard/history-table/loan-metric-cache';
 import type { HistoryPeriod } from '@/lib/dashboard/history-table/rollup-period';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import type { HistoryTableWidgetConfig } from '@/types/dashboard-widgets/history-table';
 import type { StatItemConfig } from '@/types/dashboard-widgets/stat-widget';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';

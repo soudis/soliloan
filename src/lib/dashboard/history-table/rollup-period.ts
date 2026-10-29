@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-import type { DashboardLoan } from '@/actions/dashboard/get-dashboard-stats';
+import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
 import { getLoanStatusAtPeriod, type PeriodSnapshot } from '@/lib/entity-filters/get-filter-value';
 import type { LoanMonthlyHistory, LoanMonthlyNumbers } from '@/types/dashboard';
 
