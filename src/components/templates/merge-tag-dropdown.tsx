@@ -20,14 +20,15 @@ import {
 import { cn } from '@/lib/utils';
 
 type MergeTagItem = MergeTagField | MergeTagLoop;
+type ColumnSubcategoryEntity = 'loan' | 'lender';
 type MergeTagGroup = {
   key: string;
   label: string;
   /** Hint shown under the title in the group select (translations). */
   description: string;
   items: MergeTagItem[];
-  /** When true, the field dropdown shows loan column subcategories as section headings. */
-  groupFieldsByLoanSubcategory?: boolean;
+  /** When set, the field dropdown shows column subcategories as section headings. */
+  columnSubcategoryEntity?: ColumnSubcategoryEntity;
 };
 
 type MergeTagFieldOption = {
@@ -37,6 +38,17 @@ type MergeTagFieldOption = {
 };
 
 const LOAN_COLUMN_GROUP_KEYS = COLUMN_GROUP_KEYS_IN_ORDER.filter((key) => key.startsWith('loan')) as ColumnGroupKey[];
+const LENDER_COLUMN_GROUP_KEYS = COLUMN_GROUP_KEYS_IN_ORDER.filter((key) =>
+  key.startsWith('lender'),
+) as ColumnGroupKey[];
+
+function columnGroupKeysForEntity(entity: ColumnSubcategoryEntity): ColumnGroupKey[] {
+  return entity === 'loan' ? LOAN_COLUMN_GROUP_KEYS : LENDER_COLUMN_GROUP_KEYS;
+}
+
+function defaultColumnGroupKeyForEntity(entity: ColumnSubcategoryEntity): ColumnGroupKey {
+  return entity === 'loan' ? 'loanGeneral' : 'lenderGeneral';
+}
 
 const isLoop = (item: MergeTagItem): item is MergeTagLoop => 'startTag' in item;
 
@@ -93,7 +105,8 @@ export function MergeTagDropdown({
         label: tFields(`categories.${entity}`),
         description: tMergeTags(`groupDescriptions.entity.${entity}` as Parameters<typeof tMergeTags>[0]),
         items: entityMap.get(entity) ?? [],
-        groupFieldsByLoanSubcategory: entity === 'loan',
+        columnSubcategoryEntity:
+          entity === 'loan' || entity === 'lender' ? (entity as ColumnSubcategoryEntity) : undefined,
       }))
       .filter((group) => group.items.length > 0);
 
@@ -137,7 +150,10 @@ export function MergeTagDropdown({
           label: `${loop.label} ${tMergeTags('childFieldsSuffix')}`,
           description: tMergeTags(`groupDescriptions.loopChild.${loop.key}` as Parameters<typeof tMergeTags>[0]),
           items: loop.childFields,
-          groupFieldsByLoanSubcategory: loop.childPrefix === 'loan',
+          columnSubcategoryEntity:
+            loop.childPrefix === 'loan' || loop.childPrefix === 'lender'
+              ? (loop.childPrefix as ColumnSubcategoryEntity)
+              : undefined,
         });
       }
     }
@@ -274,7 +290,7 @@ export function MergeTagDropdown({
               disabled={!selectedGroup || selectedGroup.items.length === 0}
               placeholder={tMergeTags('fieldPlaceholder')}
               loopSuffix={tMergeTags('loopSuffix')}
-              groupByLoanSubcategory={selectedGroup?.groupFieldsByLoanSubcategory === true}
+              columnSubcategoryEntity={selectedGroup?.columnSubcategoryEntity}
             />
           </div>
 
@@ -307,7 +323,7 @@ function MergeTagFieldSelect({
   disabled,
   placeholder,
   loopSuffix,
-  groupByLoanSubcategory = false,
+  columnSubcategoryEntity,
 }: {
   items: MergeTagItem[];
   value: string;
@@ -315,12 +331,16 @@ function MergeTagFieldSelect({
   disabled?: boolean;
   placeholder: string;
   loopSuffix: string;
-  groupByLoanSubcategory?: boolean;
+  columnSubcategoryEntity?: ColumnSubcategoryEntity;
 }) {
   const tCommon = useTranslations('common');
   const tColumnGroups = useTranslations('dataTable.columnGroups');
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const subcategoryKeys = columnSubcategoryEntity ? columnGroupKeysForEntity(columnSubcategoryEntity) : [];
+  const defaultSubcategoryKey = columnSubcategoryEntity
+    ? defaultColumnGroupKeyForEntity(columnSubcategoryEntity)
+    : undefined;
 
   const options = useMemo<MergeTagFieldOption[]>(
     () =>
@@ -328,11 +348,11 @@ function MergeTagFieldSelect({
         value: item.key,
         label: isLoop(item) ? `${item.label} (${loopSuffix})` : item.label,
         columnGroupKey:
-          groupByLoanSubcategory && isMergeTagField(item)
-            ? (columnGroupForId(item.key, 'loan')?.key ?? 'loanGeneral')
+          columnSubcategoryEntity && isMergeTagField(item)
+            ? (columnGroupForId(item.key, columnSubcategoryEntity)?.key ?? defaultSubcategoryKey)
             : undefined,
       })),
-    [items, loopSuffix, groupByLoanSubcategory],
+    [items, loopSuffix, columnSubcategoryEntity, defaultSubcategoryKey],
   );
 
   const filteredOptions = useMemo(() => {
@@ -345,28 +365,28 @@ function MergeTagFieldSelect({
   }, [options, searchQuery, tColumnGroups]);
 
   const groupedFilteredOptions = useMemo(() => {
-    if (!groupByLoanSubcategory) {
+    if (!columnSubcategoryEntity || !defaultSubcategoryKey) {
       return { flat: filteredOptions, groups: [] as { key: ColumnGroupKey; options: MergeTagFieldOption[] }[] };
     }
 
     const byGroup = new Map<ColumnGroupKey, MergeTagFieldOption[]>();
-    for (const key of LOAN_COLUMN_GROUP_KEYS) {
+    for (const key of subcategoryKeys) {
       byGroup.set(key, []);
     }
     for (const option of filteredOptions) {
-      const key = option.columnGroupKey ?? 'loanGeneral';
-      const bucket = byGroup.get(key) ?? byGroup.get('loanGeneral');
+      const key = option.columnGroupKey ?? defaultSubcategoryKey;
+      const bucket = byGroup.get(key) ?? byGroup.get(defaultSubcategoryKey);
       bucket?.push(option);
     }
 
     return {
       flat: [] as MergeTagFieldOption[],
-      groups: LOAN_COLUMN_GROUP_KEYS.filter((key) => (byGroup.get(key)?.length ?? 0) > 0).map((key) => ({
+      groups: subcategoryKeys.filter((key) => (byGroup.get(key)?.length ?? 0) > 0).map((key) => ({
         key,
         options: byGroup.get(key) ?? [],
       })),
     };
-  }, [filteredOptions, groupByLoanSubcategory]);
+  }, [filteredOptions, columnSubcategoryEntity, defaultSubcategoryKey, subcategoryKeys]);
 
   const currentOption = options.find((option) => option.value === value);
   const hasResults =

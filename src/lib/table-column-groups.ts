@@ -6,7 +6,12 @@ export const COLUMN_GROUP_ORDER: Record<ColumnGroupKey, number> = {
   loanInterest: 2,
   loanSavings: 3,
   loanTerm: 4,
-  lender: 5,
+  lenderGeneral: 5,
+  lenderContact: 6,
+  lenderAddress: 7,
+  lenderBanking: 8,
+  lenderAccount: 9,
+  lenderAdditional: 10,
 };
 
 export const COLUMN_GROUP_KEYS_IN_ORDER: ColumnGroupKey[] = [
@@ -15,7 +20,12 @@ export const COLUMN_GROUP_KEYS_IN_ORDER: ColumnGroupKey[] = [
   'loanInterest',
   'loanSavings',
   'loanTerm',
-  'lender',
+  'lenderGeneral',
+  'lenderContact',
+  'lenderAddress',
+  'lenderBanking',
+  'lenderAccount',
+  'lenderAdditional',
 ];
 
 const LOAN_GENERAL_COLUMN_GROUP: ColumnGroupMeta = {
@@ -43,9 +53,34 @@ const TRANSACTION_COLUMN_GROUP: ColumnGroupMeta = {
   order: COLUMN_GROUP_ORDER.transaction,
 };
 
-const LENDER_COLUMN_GROUP: ColumnGroupMeta = {
-  key: 'lender',
-  order: COLUMN_GROUP_ORDER.lender,
+const LENDER_GENERAL_COLUMN_GROUP: ColumnGroupMeta = {
+  key: 'lenderGeneral',
+  order: COLUMN_GROUP_ORDER.lenderGeneral,
+};
+
+const LENDER_CONTACT_COLUMN_GROUP: ColumnGroupMeta = {
+  key: 'lenderContact',
+  order: COLUMN_GROUP_ORDER.lenderContact,
+};
+
+const LENDER_ADDRESS_COLUMN_GROUP: ColumnGroupMeta = {
+  key: 'lenderAddress',
+  order: COLUMN_GROUP_ORDER.lenderAddress,
+};
+
+const LENDER_BANKING_COLUMN_GROUP: ColumnGroupMeta = {
+  key: 'lenderBanking',
+  order: COLUMN_GROUP_ORDER.lenderBanking,
+};
+
+const LENDER_ACCOUNT_COLUMN_GROUP: ColumnGroupMeta = {
+  key: 'lenderAccount',
+  order: COLUMN_GROUP_ORDER.lenderAccount,
+};
+
+const LENDER_ADDITIONAL_COLUMN_GROUP: ColumnGroupMeta = {
+  key: 'lenderAdditional',
+  order: COLUMN_GROUP_ORDER.lenderAdditional,
 };
 
 /** Loan column ids in the interest subcategory (table + template field aliases). */
@@ -90,6 +125,39 @@ const LOAN_TERM_COLUMN_IDS = new Set([
   'isTerminated',
 ]);
 
+/** Lender column ids in the contact subcategory. */
+const LENDER_CONTACT_COLUMN_IDS = new Set(['email', 'telNo', 'notificationType']);
+
+/** Lender column ids in the address subcategory. */
+const LENDER_ADDRESS_COLUMN_IDS = new Set([
+  'address',
+  'street',
+  'addon',
+  'zip',
+  'place',
+  'country',
+  'fullAddress',
+]);
+
+/** Lender column ids in the banking subcategory. */
+const LENDER_BANKING_COLUMN_IDS = new Set(['banking', 'iban', 'bic']);
+
+/** Lender column ids in the account (Kreditkonto) subcategory. */
+const LENDER_ACCOUNT_COLUMN_IDS = new Set([
+  'amount',
+  'balance',
+  'deposits',
+  'withdrawals',
+  'notReclaimed',
+  'interest',
+  'interestPaid',
+  'interestError',
+  'interestRate',
+  'balanceInterestRate',
+  'totalLoans',
+  'activeLoans',
+]);
+
 export function loanColumnGroupFor(columnId: string): ColumnGroupMeta {
   const normalized = columnId.endsWith('Long') ? columnId.slice(0, -4) : columnId;
   if (LOAN_INTEREST_COLUMN_IDS.has(normalized) || LOAN_INTEREST_COLUMN_IDS.has(columnId)) {
@@ -104,12 +172,30 @@ export function loanColumnGroupFor(columnId: string): ColumnGroupMeta {
   return LOAN_GENERAL_COLUMN_GROUP;
 }
 
-export function transactionColumnGroup(): ColumnGroupMeta {
-  return TRANSACTION_COLUMN_GROUP;
+export function lenderColumnGroupFor(columnId: string): ColumnGroupMeta {
+  const withoutPrefix = columnId.startsWith('lender.') ? columnId.slice('lender.'.length) : columnId;
+  const normalized = withoutPrefix.endsWith('Long') ? withoutPrefix.slice(0, -4) : withoutPrefix;
+
+  if (normalized.startsWith('additionalFields.')) {
+    return LENDER_ADDITIONAL_COLUMN_GROUP;
+  }
+  if (LENDER_CONTACT_COLUMN_IDS.has(normalized) || LENDER_CONTACT_COLUMN_IDS.has(withoutPrefix)) {
+    return LENDER_CONTACT_COLUMN_GROUP;
+  }
+  if (LENDER_ADDRESS_COLUMN_IDS.has(normalized) || LENDER_ADDRESS_COLUMN_IDS.has(withoutPrefix)) {
+    return LENDER_ADDRESS_COLUMN_GROUP;
+  }
+  if (LENDER_BANKING_COLUMN_IDS.has(normalized) || LENDER_BANKING_COLUMN_IDS.has(withoutPrefix)) {
+    return LENDER_BANKING_COLUMN_GROUP;
+  }
+  if (LENDER_ACCOUNT_COLUMN_IDS.has(normalized) || LENDER_ACCOUNT_COLUMN_IDS.has(withoutPrefix)) {
+    return LENDER_ACCOUNT_COLUMN_GROUP;
+  }
+  return LENDER_GENERAL_COLUMN_GROUP;
 }
 
-export function lenderColumnGroup(order = COLUMN_GROUP_ORDER.lender): ColumnGroupMeta {
-  return { ...LENDER_COLUMN_GROUP, order };
+export function transactionColumnGroup(): ColumnGroupMeta {
+  return TRANSACTION_COLUMN_GROUP;
 }
 
 /**
@@ -122,7 +208,8 @@ export function columnGroupForId(
   entity?: 'loan' | 'lender' | 'transaction' | string,
 ): ColumnGroupMeta | undefined {
   if (entity === 'lender' || id === 'lender' || id.startsWith('lender.')) {
-    return lenderColumnGroup();
+    const lenderField = id.startsWith('lender.') ? id.slice('lender.'.length) : id;
+    return lenderColumnGroupFor(lenderField);
   }
   if (entity === 'transaction' || id === 'transaction' || id.startsWith('transaction.')) {
     return transactionColumnGroup();
@@ -138,11 +225,11 @@ export function columnGroupForId(
 
 /**
  * Column group for a loan-table column id.
- * Bare loan fields use loan subcategories; `lender.*` uses the lender group.
+ * Bare loan fields use loan subcategories; `lender.*` uses lender subcategories.
  */
 export function loanTableColumnGroupFor(columnId: string): ColumnGroupMeta {
   if (columnId.startsWith('lender.')) {
-    return lenderColumnGroup();
+    return lenderColumnGroupFor(columnId);
   }
   return loanColumnGroupFor(columnId);
 }

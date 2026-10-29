@@ -7,7 +7,7 @@ import {
   buildLenderProfileDefaultColumnVisibility,
 } from '@/lib/dashboard/table-widget/lender-profile-columns';
 import { getLenderSortValue } from '@/lib/dashboard/table-widget/lender-table-column-registry';
-import { lenderColumnGroup, loanTableColumnGroupFor } from '@/lib/table-column-groups';
+import { loanTableColumnGroupFor } from '@/lib/table-column-groups';
 import {
   createAdditionalFieldDefaultColumnVisibility,
   createAdditionalFieldsColumns,
@@ -262,7 +262,6 @@ export function buildAllLoanTableColumns(
   const lenderProfileColumns = buildLenderProfileColumns<LoanWithCalculations>({
     getLender: (row) => row.lender,
     idPrefix: 'lender.',
-    columnGroup: lenderColumnGroup(),
     mode: 'full',
     project,
     t: tLenders,

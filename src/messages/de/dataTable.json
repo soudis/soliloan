@@ -104,7 +104,12 @@
     "loanInterest": "Kredit - Zinsen",
     "loanSavings": "Kredit - Ansparvertrag",
     "loanTerm": "Kredit - Laufzeit",
-    "lender": "Kreditgeber*in"
+    "lenderGeneral": "Kreditgeber*in - Allgemein",
+    "lenderContact": "Kreditgeber*in - Kontakt",
+    "lenderAddress": "Kreditgeber*in - Adresse",
+    "lenderBanking": "Kreditgeber*in - Bank",
+    "lenderAccount": "Kreditgeber*in - Konto",
+    "lenderAdditional": "Kreditgeber*in - Zusatz"
   },
   "columnMenu": {
     "sort": "Spalte sortieren",

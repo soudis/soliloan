@@ -123,7 +123,10 @@ function toConditionField(
   const type: DataTableColumnFilterType | null = field.filterType ?? conditionFilterType(field.key);
   if (!type) return null;
   const selectOptions = field.selectOptions?.map((option) => ({ label: option, value: option }));
-  const columnGroup = field.entity === 'loan' ? columnGroupForId(field.key, 'loan') : undefined;
+  const columnGroup =
+    field.entity === 'loan' || field.entity === 'lender'
+      ? columnGroupForId(field.key, field.entity)
+      : undefined;
   return {
     field: field.key,
     label: field.label,

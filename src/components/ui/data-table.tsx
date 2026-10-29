@@ -63,7 +63,12 @@ export type ColumnGroupKey =
   | 'loanInterest'
   | 'loanSavings'
   | 'loanTerm'
-  | 'lender';
+  | 'lenderGeneral'
+  | 'lenderContact'
+  | 'lenderAddress'
+  | 'lenderBanking'
+  | 'lenderAccount'
+  | 'lenderAdditional';
 
 export type ColumnGroupMeta = {
   /** Translation key under dataTable.columnGroups */

@@ -18,7 +18,7 @@ import {
   getLoanSortValue,
   LOAN_TABLE_STATIC_COLUMN_META,
 } from '@/lib/dashboard/table-widget/loan-table-column-registry';
-import { columnGroupForId, lenderColumnGroup, transactionColumnGroup } from '@/lib/table-column-groups';
+import { columnGroupForId, transactionColumnGroup } from '@/lib/table-column-groups';
 import {
   createAdditionalFieldDefaultColumnVisibility,
   createColumn,
@@ -271,7 +271,6 @@ export function buildAllTransactionTableColumns(
   const lenderProfileColumns = buildLenderProfileColumns<TransactionListItem>({
     getLender: (row) => row.loan.lender,
     idPrefix: 'lender.',
-    columnGroup: lenderColumnGroup(),
     mode: 'full',
     project,
     t: tLenders,
