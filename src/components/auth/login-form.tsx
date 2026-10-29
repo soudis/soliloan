@@ -70,13 +70,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          name="email"
-          label={t('email')}
-          placeholder={t('email')}
-          type="email"
-          autoComplete="username"
-        />
+        <FormField name="email" label={t('email')} placeholder={t('email')} type="email" autoComplete="username" />
         <FormField
           name="password"
           label={t('password')}
