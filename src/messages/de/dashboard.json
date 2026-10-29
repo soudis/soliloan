@@ -361,7 +361,7 @@
         "savingsRateOpen": "Rate im Ansparvertrag offen",
         "repaySoon": "Rückzahlung steht bald an",
         "bankImport": "Bankimport nicht abgeschlossen",
-        "investmentTypeCapacity": "Anlageform über dem VermAnlG-Limit",
+        "investmentTypeCapacity": "Anlageart über Bagatellgrenze",
         "requiredFields": "Pflichtfelder fehlen"
       }
     },
@@ -539,7 +539,7 @@
         "savingsRateOpen": "{count, plural, one {# Ansparvertrag hat noch offene Raten.} other {# Ansparverträge haben noch offene Raten.}}",
         "repaySoon": "{count, plural, one {# Kredit steht {days, plural, one {im nächsten Tag} other {in den nächsten # Tagen}} zur Rückzahlung an.} other {# Kredite stehen {days, plural, one {im nächsten Tag} other {in den nächsten # Tagen}} zur Rückzahlung an.}}",
         "bankImport": "{count, plural, one {# Zeile im Bankimport ist noch nicht abgeschlossen.} other {# Zeilen im Bankimport sind noch nicht abgeschlossen.}}",
-        "investmentTypeCapacity": "{count, plural, one {# Anlageform liegt über dem VermAnlG-Limit.} other {# Anlageformen liegen über dem VermAnlG-Limit.}}",
+        "investmentTypeCapacity": "{count, plural, one {# Anlageart liegt über der Bagatellgrenze.} other {# Anlagearten liegen über der Bagatellgrenze.}}",
         "requiredFields": "{count, plural, one {Bei # Kreditgeber*in fehlen Pflichtfelder.} other {Bei # Kreditgeber*innen fehlen Pflichtfelder.}}"
       },
       "missingFields": {
