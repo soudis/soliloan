@@ -2,7 +2,7 @@
 
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon } from 'lucide-react';
 import type * as React from 'react';
-import { type ChevronProps, DayFlag, DayPicker, SelectionState, UI } from 'react-day-picker';
+import { DayFlag, DayPicker, SelectionState, UI } from 'react-day-picker';
 
 import { cn } from '@/lib/utils';
 
@@ -53,13 +53,15 @@ export const Calendar = ({ className, classNames, showOutsideDays = true, ...pro
         [DayFlag.hidden]: 'invisible',
         ...classNames,
       }}
-      components={{ Chevron }}
+      components={{
+        Chevron: ({ ...props }) => <Chevron {...props} />,
+      }}
       {...props}
     />
   );
 };
 
-const Chevron = ({ orientation = 'left' }: ChevronProps) => {
+const Chevron = ({ orientation = 'left' }) => {
   switch (orientation) {
     case 'left':
       return <ChevronLeftIcon className="h-4 w-4" />;
@@ -69,5 +71,7 @@ const Chevron = ({ orientation = 'left' }: ChevronProps) => {
       return <ChevronUpIcon className="h-4 w-4" />;
     case 'down':
       return <ChevronDownIcon className="h-4 w-4" />;
+    default:
+      return null;
   }
 };
