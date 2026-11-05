@@ -1,6 +1,6 @@
 import type { Transaction } from '@prisma/client';
 
-import { transactionSorter } from '@/lib/utils/sorters';
+import { sortTransactions } from '@/lib/utils/sorters';
 import type { LoanWithCalculations } from '@/types/loans';
 import type { TransactionListItem } from '@/types/transactions';
 
@@ -20,7 +20,7 @@ export function buildTransactionListItemsFromLoans(loans: CalculatedLoanWithTran
     }
   }
 
-  return [...rows].sort((a, b) => transactionSorter(b, a));
+  return sortTransactions(rows).reverse();
 }
 
 /** Stable table row id — virtual interest ids like `2026-interest` are only unique per loan. */
