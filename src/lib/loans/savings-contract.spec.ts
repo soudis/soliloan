@@ -15,4 +15,8 @@ describe('calculateSavingsDepositCountFromMonthlyAmount', () => {
     assert.equal(37 * 11130, 411810, 'premise: 4118.10 euros are exactly 37 deposits of 111.30 euros');
     assert.equal(calculateSavingsDepositCountFromMonthlyAmount(4118.1, 111.3), 37);
   });
+
+  it('returns null for a monthly amount below one cent', () => {
+    assert.equal(calculateSavingsDepositCountFromMonthlyAmount(4118.1, 0.001), null);
+  });
 });
