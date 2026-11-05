@@ -76,7 +76,13 @@ export function FaqImageAltDialog({
         </div>
         <DialogFooter>
           {mode === 'edit' && onDelete ? (
-            <Button type="button" variant="destructive" className="sm:mr-auto" disabled={submitting} onClick={onDelete}>
+            <Button
+              type="button"
+              variant="destructive"
+              className="sm:mr-auto"
+              disabled={submitting}
+              onClick={onDelete}
+            >
               {tUi('delete')}
             </Button>
           ) : null}

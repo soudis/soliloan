@@ -75,23 +75,6 @@ export type LoanBalanceSummaryProps = {
   readOnly: boolean;
 };
 
-function SummaryAmount({
-  className,
-  readOnly,
-  children,
-}: {
-  className?: string;
-  readOnly: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <div className="flex shrink-0 items-center gap-2">
-      <div className={cn(TRANSACTION_AMOUNT_CLASS, className)}>{children}</div>
-      {!readOnly && <div className={TRANSACTION_ACTIONS_SLOT_CLASS} aria-hidden />}
-    </div>
-  );
-}
-
 export function LoanBalanceSummary({ loan, readOnly }: LoanBalanceSummaryProps) {
   const t = useTranslations('dashboard.loans');
   const { deposits, withdrawals, notReclaimed, interest, interestPaid, interestError, balance } = loan;
@@ -100,6 +83,15 @@ export function LoanBalanceSummary({ loan, readOnly }: LoanBalanceSummaryProps) 
     deposits !== 0 || withdrawals > 0 || interest > 0 || interestPaid !== 0 || notReclaimed > 0 || interestError > 0;
 
   const rowClass = 'flex items-center justify-between border-t px-2 py-1.5 first:border-t-0';
+
+  function SummaryAmount({ className, children }: { className?: string; children: ReactNode }) {
+    return (
+      <div className="flex shrink-0 items-center gap-2">
+        <div className={cn(TRANSACTION_AMOUNT_CLASS, className)}>{children}</div>
+        {!readOnly && <div className={TRANSACTION_ACTIONS_SLOT_CLASS} aria-hidden />}
+      </div>
+    );
+  }
 
   return (
     <div className="pt-0">
@@ -113,9 +105,7 @@ export function LoanBalanceSummary({ loan, readOnly }: LoanBalanceSummaryProps) 
               </div>
               <span className="text-sm font-medium">{t('table.deposits')}</span>
             </div>
-            <SummaryAmount readOnly={readOnly} className="text-success-foreground">
-              +{formatCurrency(deposits)}
-            </SummaryAmount>
+            <SummaryAmount className="text-success-foreground">+{formatCurrency(deposits)}</SummaryAmount>
           </div>
         )}
         {interest !== 0 && (
@@ -126,9 +116,7 @@ export function LoanBalanceSummary({ loan, readOnly }: LoanBalanceSummaryProps) 
               </div>
               <span className="text-sm font-medium">{t('table.interest')}</span>
             </div>
-            <SummaryAmount readOnly={readOnly} className="text-success-foreground">
-              +{formatCurrency(interest)}
-            </SummaryAmount>
+            <SummaryAmount className="text-success-foreground">+{formatCurrency(interest)}</SummaryAmount>
           </div>
         )}
         {interestPaid !== 0 && (
@@ -139,9 +127,7 @@ export function LoanBalanceSummary({ loan, readOnly }: LoanBalanceSummaryProps) 
               </div>
               <span className="text-sm font-medium">{t('table.interestPaid')}</span>
             </div>
-            <SummaryAmount readOnly={readOnly} className="text-info-foreground">
-              {formatCurrency(interestPaid)}
-            </SummaryAmount>
+            <SummaryAmount className="text-info-foreground">{formatCurrency(interestPaid)}</SummaryAmount>
           </div>
         )}
         {interestError !== 0 && (
@@ -152,7 +138,7 @@ export function LoanBalanceSummary({ loan, readOnly }: LoanBalanceSummaryProps) 
               </div>
               <span className="text-sm font-medium">{t('table.interestError')}</span>
             </div>
-            <SummaryAmount readOnly={readOnly} className="text-warning-foreground">
+            <SummaryAmount className="text-warning-foreground">
               {interestError < 0 ? '-' : ''}
               {formatCurrency(interestError)}
             </SummaryAmount>
@@ -166,9 +152,7 @@ export function LoanBalanceSummary({ loan, readOnly }: LoanBalanceSummaryProps) 
               </div>
               <span className="text-sm font-medium">{t('table.withdrawals')}</span>
             </div>
-            <SummaryAmount readOnly={readOnly} className="text-info-foreground">
-              {formatCurrency(withdrawals)}
-            </SummaryAmount>
+            <SummaryAmount className="text-info-foreground">{formatCurrency(withdrawals)}</SummaryAmount>
           </div>
         )}
         {notReclaimed !== 0 && (
@@ -179,9 +163,7 @@ export function LoanBalanceSummary({ loan, readOnly }: LoanBalanceSummaryProps) 
               </div>
               <span className="text-sm font-medium">{t('table.notReclaimed')}</span>
             </div>
-            <SummaryAmount readOnly={readOnly} className="text-info-foreground">
-              {formatCurrency(notReclaimed)}
-            </SummaryAmount>
+            <SummaryAmount className="text-info-foreground">{formatCurrency(notReclaimed)}</SummaryAmount>
           </div>
         )}
         <div
@@ -196,9 +178,7 @@ export function LoanBalanceSummary({ loan, readOnly }: LoanBalanceSummaryProps) 
             </div>
             <span className="text-sm font-bold">{t('table.balance')}</span>
           </div>
-          <SummaryAmount readOnly={readOnly} className="font-bold text-sm text-foreground">
-            {formatCurrency(balance ?? 0)}
-          </SummaryAmount>
+          <SummaryAmount className="font-bold text-sm text-foreground">{formatCurrency(balance ?? 0)}</SummaryAmount>
         </div>
       </div>
     </div>
