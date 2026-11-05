@@ -1,0 +1,34 @@
+name: Dependency Audit
+
+on:
+  schedule:
+    # Mondays at 06:00 UTC. GitHub runs scheduled workflows on the default branch only.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: package.json
+
+      - name: Show pnpm version
+        run: pnpm --version
+
+      # Reads the lockfile only. Advisories listed under auditConfig.ignoreGhsas in pnpm-workspace.yaml are skipped.
+      - name: Audit dependencies
+        run: pnpm audit --audit-level=high
