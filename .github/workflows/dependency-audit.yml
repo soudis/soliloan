@@ -2,7 +2,7 @@ name: Dependency Audit
 
 on:
   schedule:
-    # Mondays at 06:00 UTC. GitHub runs scheduled workflows on the default branch only.
+    # Daily at 06:00 UTC. GitHub runs scheduled workflows on the default branch only.
     - cron: '0 6 * * *'
   workflow_dispatch:
 
