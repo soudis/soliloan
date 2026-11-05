@@ -24,10 +24,18 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
 
+      # pnpm runs on the Node.js version of the app image.
+      - name: Read the Node.js version of the app image
+        id: node
+        run: |
+          version=$(sed -nE 's/^FROM node:([0-9.]+).* AS base$/\1/p' docker/app/Dockerfile)
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Install Node.js
         uses: actions/setup-node@v5
         with:
-          node-version-file: package.json
+          node-version: ${{ steps.node.outputs.version }}
 
       - name: Show pnpm version
         run: pnpm --version
