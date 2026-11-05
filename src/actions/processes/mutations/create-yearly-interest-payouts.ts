@@ -140,7 +140,11 @@ export const createYearlyInterestPayoutsAction = projectAction
       project.configuration.bic &&
       project.configuration.name
     ) {
-      const groups = groupPayoutRows(prepared.map((entry) => entry.row), sepa.grouping as PayoutGrouping, false);
+      const groups = groupPayoutRows(
+        prepared.map((entry) => entry.row),
+        sepa.grouping as PayoutGrouping,
+        false,
+      );
       const credits = groups
         .filter((group) => group.missing.length === 0 && group.iban)
         .map((group) => ({

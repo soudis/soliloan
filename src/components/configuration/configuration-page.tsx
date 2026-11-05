@@ -41,9 +41,15 @@ export const ConfigurationPage = ({
   const t = useTranslations('dashboard.configuration');
   const [activeTab, setActiveTab] = useQueryState(
     'tab',
-    parseAsStringLiteral(['general', 'managers', 'lender', 'loans', 'legal', 'templates', 'files'] as const).withDefault(
+    parseAsStringLiteral([
       'general',
-    ),
+      'managers',
+      'lender',
+      'loans',
+      'legal',
+      'templates',
+      'files',
+    ] as const).withDefault('general'),
   );
   const [error, setError] = useState<string | null>(null);
 
