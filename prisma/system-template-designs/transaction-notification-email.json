@@ -114,17 +114,9 @@
                 "borderRight": true,
                 "borderStyle": "solid",
                 "borderWidth": 1,
-                "headerTexts": [
-                  "<p>Datum</p>",
-                  "<p>Zahlungsart</p>",
-                  "<p>Betrag</p>"
-                ],
+                "headerTexts": ["<p>Datum</p>", "<p>Zahlungsart</p>", "<p>Betrag</p>"],
                 "borderBottom": true,
-                "columnWidths": [
-                  1,
-                  1,
-                  1
-                ],
+                "columnWidths": [1, 1, 1],
                 "headerStyles": [
                   {
                     "color": "#000000",

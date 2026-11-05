@@ -159,11 +159,7 @@
                   "id": "default-filter-open-status",
                   "field": "status",
                   "value": {
-                    "values": [
-                      "ACTIVE",
-                      "TERMINATED",
-                      "NOTDEPOSITED"
-                    ],
+                    "values": ["ACTIVE", "TERMINATED", "NOTDEPOSITED"],
                     "operator": "in"
                   },
                   "entity": "loan"

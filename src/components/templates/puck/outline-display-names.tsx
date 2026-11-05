@@ -35,7 +35,10 @@ function applyOutlineLabels(root: Element, names: Map<string, string>) {
 }
 
 function zoneTitleTextNode(el: Element): Text | null {
-  return [...el.childNodes].find((node): node is Text => node.nodeType === Node.TEXT_NODE && !!node.textContent?.trim()) ?? null;
+  return (
+    [...el.childNodes].find((node): node is Text => node.nodeType === Node.TEXT_NODE && !!node.textContent?.trim()) ??
+    null
+  );
 }
 
 function applyZoneLabels(root: Element, labels: Record<string, string>) {
