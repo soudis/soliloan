@@ -6,6 +6,7 @@ on:
     - cron: '0 6 * * 1'
   workflow_dispatch:
 
+# Third-party actions run in these jobs. Do not give them secrets or write permissions.
 permissions:
   contents: read
 
@@ -17,6 +18,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -40,6 +43,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       # The base stage holds the operating system packages and the Node.js runtime. The audit job covers node_modules.
       - name: Build the base stage of the app image
