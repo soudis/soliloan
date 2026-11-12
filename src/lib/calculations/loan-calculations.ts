@@ -293,8 +293,9 @@ export const calculateLoanPerYear = (
         interestError: new Prisma.Decimal(0),
       });
     } else if (terminationDate && loan.transactions.at(-1)?.id !== currentTransactionId && !currentYear.end.equals(0)) {
-      // if contract is terminated and there are small rounding numbers from the past correct interest to adjust to a zero end value
-      currentYear.interestError = currentYear.interest.minus(currentYear.end);
+      // Zinskorrektur: a closed Kredit can keep a few cents from rounding (the Abschlussdifferenz). Book them
+      // against the closing year's interest so the Kontostand ends at 0.
+      currentYear.interestError = currentYear.end.negated();
       currentYear.interest = currentYear.interest.minus(currentYear.end);
       currentYear.end = new Prisma.Decimal(0);
     }
@@ -467,7 +468,7 @@ export const calculateLoanPerMonth = (
       terminationDate &&
       loan.transactions.at(-1)?.id !== currentTransactionId
     ) {
-      currentMonth.interestError = currentMonth.interestError.plus(currentMonth.end);
+      currentMonth.interestError = currentMonth.interestError.minus(currentMonth.end);
       currentMonth.interest = currentMonth.interest.minus(currentMonth.end);
       currentMonth.end = new Prisma.Decimal(0);
     }
