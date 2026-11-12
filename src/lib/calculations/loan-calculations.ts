@@ -12,6 +12,7 @@ import { calculateOutstandingDeposits } from '@/lib/loans/savings-contract';
 import type { CalculationOptions } from '@/types/calculation';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
 import { createdAtDescSorter, transactionSorter } from '../utils/sorters';
+import { getLegacyInterestDays } from './legacy-interest-days';
 import { getFirstDepositDateFromTransactions, getLoanTermDays, getRepaymentPeriodDays } from './loan-duration-metrics';
 
 export const isRepaid = (loan: LoanWithRelations, toDate: Date) => {
@@ -60,29 +61,30 @@ const getBaseDays = (method: InterestMethod, date: Moment) => {
   return Number.parseInt(method.split('_')[1] ?? '360', 10);
 };
 
+const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
+
+// Position of a calendar date on the method's day axis. A period [start, end) counts end - start days.
+const dayNumber = (date: Moment, interestMethod: InterestMethod) =>
+  interestMethod.startsWith('E30_360')
+    ? date.year() * 360 + date.month() * 30 + Math.min(date.date(), 30)
+    : Date.UTC(date.year(), date.month(), date.date()) / MILLISECONDS_PER_DAY;
+
 export const getInterestDays = (
   fromDateParameter: Moment | undefined,
   toDateParameter: Moment | undefined,
   interestMethod: InterestMethod,
 ) => {
-  const fromDate = fromDateParameter ? fromDateParameter : moment(toDateParameter).startOf('year');
-  const toDate = toDateParameter ? toDateParameter : moment(fromDateParameter).endOf('year');
-  const firstYear = !toDateParameter;
-  const lastYear = !fromDateParameter;
-  if (interestMethod.startsWith('E30_360')) {
-    if (toDate.isSameOrBefore(moment(fromDate).endOf('month'))) {
-      return moment(toDate).diff(fromDate, 'days');
-    }
-    let interestDays = Math.max(30 - fromDate.date() + 1, 0);
-    const months = moment(toDate).month() - fromDate.month() - 1;
-    interestDays += months * 30;
-    interestDays += Math.min(moment(toDate).date(), 30);
-    interestDays -= lastYear ? 1 : 0;
-    interestDays -= !lastYear && !firstYear ? 1 : 0;
-    return interestDays;
-  }
-  return toDate.diff(fromDate, 'days');
+  const start = fromDateParameter ?? moment(toDateParameter).startOf('year');
+  // The end is not counted. An open end is the next 1 January, where the next year's calculation starts.
+  const end = toDateParameter ?? moment(fromDateParameter).add(1, 'year').startOf('year');
+  return dayNumber(end, interestMethod) - dayNumber(start, interestMethod);
 };
+
+/** Which rules a Zinsjahr is calculated with: the old ones before the project's Umstellungsjahr (ADR 0005). */
+export type InterestRules = 'legacy' | 'corrected';
+
+export const getInterestRules = (year: number, changeoverYear: number | null | undefined): InterestRules =>
+  changeoverYear != null && year < changeoverYear ? 'legacy' : 'corrected';
 
 export const calculateInterestDaily = (
   fromDateParameter: Moment | undefined,
@@ -90,22 +92,25 @@ export const calculateInterestDaily = (
   amount: Prisma.Decimal,
   rate: Prisma.Decimal,
   interestMethod: InterestMethod,
+  rules: InterestRules = 'corrected',
 ) => {
   const toDate = toDateParameter ? toDateParameter : moment(fromDateParameter).endOf('year');
-  const interestDays = getInterestDays(fromDateParameter, toDateParameter, interestMethod);
-  return new Prisma.Decimal(amount)
-    .times(rate)
-    .dividedBy(100)
-    .times(interestDays)
-    .dividedBy(getBaseDays(interestMethod, toDate));
+  const baseDays = getBaseDays(interestMethod, toDate);
+  const interestDays =
+    rules === 'legacy'
+      ? getLegacyInterestDays(fromDateParameter, toDateParameter, interestMethod)
+      : // Part of a Zinsjahr never earns more than a full one, which earns exactly the rate (ADR 0005).
+        Math.min(getInterestDays(fromDateParameter, toDateParameter, interestMethod), baseDays);
+  return new Prisma.Decimal(amount).times(rate).dividedBy(100).times(interestDays).dividedBy(baseDays);
 };
 
+// The part of a year that earns interest, as [start, end): the end is the first day that no longer counts.
 const getYearInterestPeriodBounds = (year: number, firstTransactionDate: Moment, toDate: Moment) => {
   const yearStart = moment({ year }).startOf('year');
-  const yearEnd = moment({ year }).endOf('year');
+  const nextYearStart = moment({ year: year + 1 }).startOf('year');
   return {
     start: moment.max(firstTransactionDate.clone().startOf('day'), yearStart),
-    end: moment.min(toDate.clone().endOf('day'), yearEnd),
+    end: moment.min(toDate.clone().startOf('day'), nextYearStart),
   };
 };
 
@@ -122,12 +127,10 @@ const allocateYearlyInterestToMonths = (
 
   for (const { year, month } of monthsInYear) {
     const monthStart = moment({ year, month: month - 1 }).startOf('month');
-    const monthEnd = moment({ year, month: month - 1 }).endOf('month');
+    const nextMonthStart = monthStart.clone().add(1, 'month');
     const effectiveStart = moment.max(monthStart, periodStart);
-    const effectiveEnd = moment.min(monthEnd, periodEnd);
-    if (effectiveStart.isAfter(effectiveEnd, 'day')) {
-      continue;
-    }
+    const effectiveEnd = moment.min(nextMonthStart, periodEnd);
+    // Weights only spread the Zinsjahr's interest over its months, so they always use the corrected count.
     const days = getInterestDays(effectiveStart, effectiveEnd, method);
     if (days <= 0) {
       continue;
@@ -188,6 +191,7 @@ export const calculateLoanPerYear = (
   }
 
   const compound = method.split('_')[2] === 'COMPOUND';
+  const { interestChangeoverYear } = loan.lender.project.configuration;
   const transactions = [...loan.transactions].sort(transactionSorter);
   const firstTransaction = transactions[0];
   if (!firstTransaction) {
@@ -219,6 +223,7 @@ export const calculateLoanPerYear = (
     }
     let amount = new Prisma.Decimal(currentYear.begin);
     let interestBaseAmount = currentYear.interestBaseAmount;
+    const rules = getInterestRules(year, interestChangeoverYear);
     // calculate interest for new transactions of year
     let interest = new Prisma.Decimal(0);
     let terminationDate: Moment | undefined;
@@ -240,6 +245,7 @@ export const calculateLoanPerYear = (
                   new Prisma.Decimal(transaction.amount),
                   new Prisma.Decimal(loan.interestRate),
                   method,
+                  rules,
                 ),
               );
             }
@@ -272,6 +278,7 @@ export const calculateLoanPerYear = (
           currentYear.interestBaseAmount,
           new Prisma.Decimal(loan.interestRate),
           method,
+          rules,
         ),
       );
     } else {

@@ -113,7 +113,7 @@ export async function getLenderForTemplate(lenderId: string): Promise<LenderWith
       project: {
         include: {
           configuration: {
-            select: { interestMethod: true },
+            select: { interestMethod: true, interestChangeoverYear: true },
           },
         },
       },
@@ -134,7 +134,7 @@ export async function getLoanForTemplate(loanId: string): Promise<LoanWithRelati
           project: {
             include: {
               configuration: {
-                select: { interestMethod: true },
+                select: { interestMethod: true, interestChangeoverYear: true },
               },
             },
           },
