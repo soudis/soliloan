@@ -22,6 +22,7 @@ import {
   projectSepaGaps,
 } from '@/lib/processes/payout-groups';
 import { buildPain001Xml, type SepaRejectReason } from '@/lib/processes/sepa-credit-transfer';
+import { checkNewTransaction } from '@/lib/loans/transaction-validation';
 import { payoutBookingDate, unpaidYearlyInterest } from '@/lib/processes/yearly-interest';
 import { getLenderName } from '@/lib/utils';
 import { projectAction } from '@/lib/utils/safe-action';
@@ -79,7 +80,7 @@ export const createYearlyInterestPayoutsAction = projectAction
       loanId: string;
       loanNumber: number;
       lenderName: string;
-      reasons: ('iban' | 'name' | SepaRejectReason)[];
+      reasons: ('iban' | 'name' | 'ledger' | SepaRejectReason)[];
     }[] = [];
     let emailsSent = 0;
     let emailsFailed = 0;
@@ -113,6 +114,18 @@ export const createYearlyInterestPayoutsAction = projectAction
       }
 
       const lenderName = getLenderName(loan.lender);
+
+      // The payout is booked on a fixed date; later Zahlungen can make it invalid
+      const { errors } = checkNewTransaction(forCalculation, loan.id, loan.transactions, {
+        type: TransactionType.INTERESTPAYMENT,
+        date: payoutBookingDate(year),
+        amount: unpaid,
+      });
+      if (errors.length > 0) {
+        skipped.push({ loanId: loan.id, loanNumber: loan.loanNumber, lenderName, reasons: ['ledger'] });
+        continue;
+      }
+
       const missing = creditorGaps({ iban: loan.lender.iban, lenderName });
       if (sepa && missing.length > 0) {
         skipped.push({ loanId: loan.id, loanNumber: loan.loanNumber, lenderName, reasons: missing });
