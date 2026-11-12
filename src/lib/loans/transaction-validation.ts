@@ -2,10 +2,10 @@ import { type Transaction, TransactionType } from '@prisma/client';
 import moment from 'moment';
 
 import { calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
+import { isClosingType } from '@/lib/transactions/closing-types';
 import {
   type ClosingDifference,
   introducedViolations,
-  isClosingType,
   type LedgerLoan,
   replayLedger,
   stateAt,
@@ -27,7 +27,6 @@ export const BOOKABLE_TYPES: TransactionType[] = [
 
 /** Id of the Zahlung being checked when it is not stored yet; it sorts after every stored id, i.e. as the newest. */
 export const DRAFT_TRANSACTION_ID = '~draft';
-const DRAFT_ID = DRAFT_TRANSACTION_ID;
 
 /** A Zahlung as entered in the modal. `transactionId` is set when an existing Zahlung is edited. */
 export type TransactionDraft = {
@@ -209,7 +208,7 @@ export const checkNewTransaction = (
   checkChange(
     loan,
     existing,
-    [...existing, buildTransaction(loanId, DRAFT_ID, draft.type, draft.date, draft.amount)],
+    [...existing, buildTransaction(loanId, DRAFT_TRANSACTION_ID, draft.type, draft.date, draft.amount)],
     draft.date,
   );
 
@@ -257,7 +256,7 @@ export const previewTransaction = ({
     ? existing.find((transaction) => transaction.id === draft.transactionId)
     : undefined;
   const others = existing.filter((transaction) => transaction.id !== draft.transactionId);
-  const candidateId = draft.transactionId ?? DRAFT_ID;
+  const candidateId = draft.transactionId ?? DRAFT_TRANSACTION_ID;
   const candidate = (type: TransactionType, amount: number) =>
     buildTransaction(loanId, candidateId, type, draft.date, amount);
 

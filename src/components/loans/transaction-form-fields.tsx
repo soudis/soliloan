@@ -7,7 +7,7 @@ import { useFormContext } from 'react-hook-form';
 
 import { FormDatePicker } from '@/components/form/form-date-picker';
 import { FormSelect } from '@/components/form/form-select';
-import { isClosingType } from '@/lib/loans/transaction-ledger';
+import { isClosingType } from '@/lib/transactions/closing-types';
 import { BOOKABLE_TYPES, DRAFT_TRANSACTION_ID, type TransactionPreview } from '@/lib/loans/transaction-validation';
 import type { TransactionFormData } from '@/lib/schemas/transaction';
 import { cn, formatCurrency, formatDateShort } from '@/lib/utils';

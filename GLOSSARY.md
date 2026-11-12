@@ -22,6 +22,18 @@ _Avoid_: Darlehensvertrag
 The principal amount of a Kredit.
 _Avoid_: Darlehensbetrag
 
+**Anlageart**:
+A category of Kredite grouped for compliance with the Bagatellgrenze, identified by its interest rate.
+_Avoid_: Anlageform
+
+**Kontomitteilung**:
+A yearly document for one Kreditgeber*in listing their Kredite, Zahlungen and interest for one year.
+_Avoid_: Kontoauszug, loan statement
+
+**Bagatellgrenze**:
+The limit under § 2 VermAnlG (at most 20 units, or €100,000 within twelve months) up to which an Anlageart needs no prospectus.
+_Avoid_: VermAnlG-Limit
+
 ### Payments
 
 **Zahlung**:
@@ -60,13 +72,9 @@ The amount of a Rückzahlung or Erlassung minus the Kontostand on its day. A dif
 
 **Zinskorrektur**:
 The Abschlussdifferenz added to the interest of the closing year, so that the Kontostand ends at zero.
-**Anlageart**:
-A category of Kredite grouped for compliance with the Bagatellgrenze, identified by its interest rate.
-_Avoid_: Anlageform
 
-**Bagatellgrenze**:
-The limit under § 2 VermAnlG (at most 20 units, or €100,000 within twelve months) up to which an Anlageart needs no prospectus.
-_Avoid_: VermAnlG-Limit
+**Regelverstoß**:
+A Zahlung that breaks one of the rules for the Zahlungen of a Kredit: the Einlagenstand never exceeds the Kreditbetrag, the Kontostand never goes below zero, a Teilrückzahlung or Teilerlassung stays below the Kontostand, and nothing follows an Abschlusszahlung.
 
 ### Dashboard
 

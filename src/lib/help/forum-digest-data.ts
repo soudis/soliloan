@@ -85,7 +85,11 @@ export async function collectForumDigestThreads(userId: string, asOf = new Date(
   const subscribeAtByThread = new Map<string, Date>();
 
   if (followedBoardIds.length > 0) {
-    const minBoardAt = [...boardSubscribeAt.values()].reduce((earliest, date) => (date < earliest ? date : earliest));
+    const earlierDate: (earliest: Date, date: Date) => Date = (earliest, date) => {
+      // biome-ignore lint/complexity/useMathMinMax: Math.min() returns a number; Prisma needs a Date here.
+      return date < earliest ? date : earliest;
+    };
+    const minBoardAt = [...boardSubscribeAt.values()].reduce(earlierDate);
     const boardThreads = await db.forumThread.findMany({
       where: {
         boardId: { in: followedBoardIds },

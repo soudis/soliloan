@@ -1,15 +1,13 @@
 import { type Transaction, TransactionType } from '@prisma/client';
 
+import { isClosingType } from '@/lib/transactions/closing-types';
 import { LoanStatus } from '@/types/loans';
 
 type SortableTransaction = Pick<Transaction, 'id' | 'type' | 'date'> & { loanId?: string };
 
-const isClosingTransaction = (transaction: SortableTransaction) =>
-  transaction.type === TransactionType.TERMINATION || transaction.type === TransactionType.NOTRECLAIMED;
-
 const sameDayRank = (transaction: SortableTransaction) => {
   if (transaction.type === TransactionType.DEPOSIT) return 0;
-  if (isClosingTransaction(transaction)) return 2;
+  if (isClosingType(transaction.type)) return 2;
   return 1;
 };
 
@@ -24,7 +22,7 @@ export const sortTransactions = <T extends SortableTransaction>(transactions: T[
   const dayKey = (transaction: T) => `${transaction.loanId ?? ''}|${transaction.date.getTime()}`;
   const firstClosingId = new Map<string, string>();
   for (const transaction of transactions) {
-    if (!isClosingTransaction(transaction)) continue;
+    if (!isClosingType(transaction.type)) continue;
     const key = dayKey(transaction);
     const current = firstClosingId.get(key);
     if (current === undefined || transaction.id < current) {

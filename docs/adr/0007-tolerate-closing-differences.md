@@ -1,5 +1,5 @@
 ---
-status: partly superseded by ADR-0004
+status: partly superseded by ADR-0009
 ---
 
 # Tolerate the Abschlussdifferenz instead of blocking or rewriting it
@@ -12,4 +12,4 @@ We rejected blocking the change, because legacy data already contains such diffe
 
 - The "never below zero" rule does not apply to closing Zahlungen; their difference is reported instead.
 - A large Abschlussdifferenz distorts the interest shown for the closing year, so it is always surfaced to the user.
-- Since ADR 0004, only the Abschlusszahlung being edited may differ from the Kontostand. A change to any other Zahlung of a closed Kredit that alters the Abschlussdifferenz is rejected instead of warned about.
+- Since ADR 0009, only the Abschlusszahlung being edited may differ from the Kontostand. A change to any other Zahlung of a closed Kredit that alters the Abschlussdifferenz is rejected instead of warned about.

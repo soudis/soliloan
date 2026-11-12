@@ -3,12 +3,17 @@
  *
  * Usage (from repo root, after `pnpm prisma:generate`):
  *
- *   pnpm exec tsx scripts/copy-project.ts --slug source-slug
- *   pnpm exec tsx scripts/copy-project.ts --slug source-slug --target-slug copied-slug
- *   pnpm exec tsx scripts/copy-project.ts --slug source-slug --include-bank
- *   pnpm exec tsx scripts/copy-project.ts --slug source-slug --dry-run
+ *   pnpm script copy-project --slug source-slug
+ *   pnpm script copy-project --slug source-slug --target-slug copied-slug
+ *   pnpm script copy-project --slug source-slug --include-bank
+ *   pnpm script copy-project --slug source-slug --dry-run
  *
- * Env (default file `scripts/.copy-project.env`, override with `--env path`):
+ * Env (later overrides earlier):
+ *
+ *   .env
+ *   scripts/.env
+ *   scripts/.copy-project.env
+ *   --env <path>
  *
  *   SOURCE_DATABASE_URL=postgresql://...
  *   TARGET_DATABASE_URL=postgresql://...
@@ -18,11 +23,11 @@
  *   ssh -N -L 15432:127.0.0.1:5432 -L 15433:127.0.0.1:5433 user@server
  */
 import { randomBytes } from 'node:crypto';
-import { resolve } from 'node:path';
 
-import { config as loadEnvFile } from 'dotenv';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, type Prisma } from '@prisma/client';
+import { type Prisma, PrismaClient } from '@prisma/client';
+
+import { loadScriptEnv, scriptNameFromImportMeta } from './script-env';
 
 const TRANSACTION_TIMEOUT_MS = 10 * 60 * 1000;
 const FILE_BATCH_SIZE = 5;
@@ -33,7 +38,6 @@ type CliOptions = {
   targetSlug: string | null;
   includeBank: boolean;
   dryRun: boolean;
-  envPath: string;
   help: boolean;
 };
 
@@ -47,20 +51,18 @@ function printHelp() {
   console.info(`Copy one Soliloan project between two Postgres databases.
 
 Usage:
-  pnpm exec tsx scripts/copy-project.ts --slug <source-slug> [options]
+  pnpm script copy-project --slug <source-slug> [options]
 
 Options:
   --slug <slug>           Source project slug (required)
   --target-slug <slug>    Slug to write on the target (default: keep source slug)
   --include-bank          Also copy GoCardless bank connection / import rows
   --dry-run               Print plan and counts; do not write
-  --env <path>            Env file with SOURCE_DATABASE_URL and TARGET_DATABASE_URL
-                          (default: scripts/.copy-project.env)
+  --env <path>            Env file applied after .env, scripts/.env, and
+                          scripts/.copy-project.env
   --help                  Show this help
 `);
 }
-
-const DEFAULT_ENV_PATH = 'scripts/.copy-project.env';
 
 function parseArgs(argv: string[]): CliOptions {
   const options: CliOptions = {
@@ -68,7 +70,6 @@ function parseArgs(argv: string[]): CliOptions {
     targetSlug: null,
     includeBank: false,
     dryRun: false,
-    envPath: DEFAULT_ENV_PATH,
     help: false,
   };
 
@@ -85,7 +86,10 @@ function parseArgs(argv: string[]): CliOptions {
     } else if (arg === '--target-slug') {
       options.targetSlug = argv[++i] ?? '';
     } else if (arg === '--env') {
-      options.envPath = argv[++i] ?? DEFAULT_ENV_PATH;
+      const value = argv[++i];
+      if (!value || value.startsWith('-')) {
+        throw new Error('--env requires a path');
+      }
     } else {
       throw new Error(`Unknown argument: ${arg}`);
     }
@@ -300,18 +304,12 @@ async function main() {
     return;
   }
 
-  const envPath = resolve(process.cwd(), options.envPath);
-  const envResult = loadEnvFile({ path: envPath, quiet: true });
-  if (envResult.error && (envResult.error as NodeJS.ErrnoException).code !== 'ENOENT') {
-    throw envResult.error;
-  }
+  loadScriptEnv(scriptNameFromImportMeta(import.meta.url));
 
   const sourceUrl = process.env.SOURCE_DATABASE_URL;
   const targetUrl = process.env.TARGET_DATABASE_URL;
   if (!sourceUrl || !targetUrl) {
-    throw new Error(
-      `SOURCE_DATABASE_URL and TARGET_DATABASE_URL are required (loaded from ${options.envPath})`,
-    );
+    throw new Error('SOURCE_DATABASE_URL and TARGET_DATABASE_URL are required');
   }
 
   const source = createClient(sourceUrl);

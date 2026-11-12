@@ -1,9 +1,12 @@
-import 'dotenv/config';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { PrismaPg } from '@prisma/adapter-pg';
 import { DashboardLayoutScope, PrismaClient } from '@prisma/client';
+
+import { loadScriptEnv, scriptNameFromImportMeta } from './script-env';
+
+loadScriptEnv(scriptNameFromImportMeta(import.meta.url));
 
 /** Writes `prisma/global-dashboard-layout.json` for `prisma/seed.ts`. */
 const OUTPUT_FILE = path.join(process.cwd(), 'prisma', 'global-dashboard-layout.json');

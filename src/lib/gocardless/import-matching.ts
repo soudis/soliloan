@@ -73,11 +73,10 @@ export function isDepositEligible(loan: LoanWithCalculations, depositAmount: num
   if (loan.status === LoanStatus.REPAID || loan.status === LoanStatus.TERMINATED) {
     return false;
   }
-  if (loan.deposits >= loan.amount) {
-    return false;
-  }
-  const remaining = loan.amount - loan.deposits;
-  return absAmount > 0 && absAmount <= remaining + 0.001;
+  // Free amount under the Kreditbetrag: withdrawals and waivers are stored negative and free it up again
+  const einlagenstand = loan.deposits + loan.withdrawals + loan.notReclaimed;
+  const remaining = loan.amount - einlagenstand;
+  return absAmount > 0 && remaining > 0 && absAmount <= remaining + 0.001;
 }
 
 /** Auto-select loan only when exactly one deposit-eligible loan exists for the lender. */

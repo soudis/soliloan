@@ -1,0 +1,21 @@
+#
+# Worktree override: free loopback ports instead of the fixed 3000 / 1025 / 8025.
+#
+# `127.0.0.1::<port>` lets Docker pick a free host port;
+# scripts/worktree-dev.sh url prints it (`docker compose port`).
+#
+
+services:
+  app:
+    # A fresh worktree has no generated Prisma client (prisma/generated is gitignored and
+    # `prisma db push` does not generate it), so the seed would fail without this step.
+    command: /bin/sh -c "pnpm install && pnpm prisma generate && pnpm prisma db push --accept-data-loss && pnpm prisma db seed && pnpm dev"
+    ports: !override
+      # next-devtools-mcp / next-dev-loop probe /_next/mcp here. Loopback only:
+      # MCP is a privileged dev endpoint.
+      - "127.0.0.1::3000"
+
+  mailpit:
+    ports: !override
+      # Web UI only; SMTP (1025) stays inside the project network.
+      - "127.0.0.1::8025"

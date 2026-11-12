@@ -1,10 +1,12 @@
 import { spawn } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import React from 'react';
+import { PUBLIC_DIR } from '@/lib/templates/pdf-image-src';
 import { measureRasterSrc } from '@/lib/templates/raster-image-size';
 
-const FONTS_DIR = path.join(process.cwd(), 'public', 'fonts');
-const DEFAULT_APP_LOGO_PATH = '/soliloan-logo.webp';
+const FONTS_DIR = path.join(PUBLIC_DIR, 'fonts');
+const DEFAULT_APP_LOGO_FILE = path.join(PUBLIC_DIR, 'soliloan-logo.webp');
 
 function convertWebpToPngDataUrl(webpBytes: Buffer): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -38,7 +40,12 @@ function convertWebpToPngDataUrl(webpBytes: Buffer): Promise<string> {
   });
 }
 
-async function resolvePdfLogoUrl(logoUrl: string | undefined, assetBaseUrl: string): Promise<string | undefined> {
+/**
+ * Returns the logo as a data URL react-pdf can render (it has no WebP support).
+ * Without a project logo the app logo is read from `public/`, never fetched over
+ * HTTP (#205).
+ */
+export async function resolvePdfLogoUrl(logoUrl: string | null | undefined): Promise<string> {
   if (logoUrl?.startsWith('data:image/webp;base64,')) {
     const webpBytes = Buffer.from(logoUrl.replace('data:image/webp;base64,', ''), 'base64');
     return convertWebpToPngDataUrl(webpBytes);
@@ -48,27 +55,13 @@ async function resolvePdfLogoUrl(logoUrl: string | undefined, assetBaseUrl: stri
     return logoUrl;
   }
 
-  const appLogoUrl = `${assetBaseUrl}${DEFAULT_APP_LOGO_PATH}`;
-  const response = await fetch(appLogoUrl);
-  if (!response.ok) {
-    throw new Error(`Failed to load app logo for PDF (${response.status})`);
-  }
-
-  const logoBytes = Buffer.from(await response.arrayBuffer());
-  const contentType = response.headers.get('content-type') || 'image/webp';
-  if (contentType.includes('image/webp')) {
-    return convertWebpToPngDataUrl(logoBytes);
-  }
-
-  return `data:${contentType};base64,${logoBytes.toString('base64')}`;
+  return convertWebpToPngDataUrl(await readFile(DEFAULT_APP_LOGO_FILE));
 }
 
 export type GenerateTemplatePdfParams = {
   design: Record<string, unknown>;
   sampleData: Record<string, unknown>;
   logoUrl?: string | null;
-  /** e.g. `http://localhost:3000` or `new URL(request.url).origin` */
-  assetBaseUrl: string;
 };
 
 /**
@@ -86,8 +79,8 @@ export async function generateTemplatePdfBuffer(params: GenerateTemplatePdfParam
   } = await import('@react-pdf/renderer');
   const { renderDesignToPdfParts } = await import('@/lib/templates/design-to-pdf');
 
-  const resolvedLogoUrl = await resolvePdfLogoUrl(params.logoUrl as string | undefined, params.assetBaseUrl);
-  const logoDimensions = resolvedLogoUrl ? await measureRasterSrc(resolvedLogoUrl) : null;
+  const resolvedLogoUrl = await resolvePdfLogoUrl(params.logoUrl);
+  const logoDimensions = await measureRasterSrc(resolvedLogoUrl);
 
   Font.register({
     family: 'Inter',
@@ -105,7 +98,6 @@ export async function generateTemplatePdfBuffer(params: GenerateTemplatePdfParam
       sampleData: params.sampleData,
       logoUrl: resolvedLogoUrl,
       logoDimensions,
-      assetBaseUrl: params.assetBaseUrl,
     },
     { Document, Page, View, Text: PdfText, Image: PdfImage },
   );

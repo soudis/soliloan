@@ -83,6 +83,7 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
 
   const canTerminateLoan =
     loan.terminationType === 'TERMINATION' && loan.status === LoanStatus.ACTIVE && !loan.isTerminated;
+  const isClosed = !!getClosingTransaction(loan.transactions);
   const canRevertTermination = loan.terminationType === 'TERMINATION' && loan.isTerminated;
 
   const getTerminationModalities = () => formatTerminationModalities(loan, commonT, (d) => formatDateShort(d, locale));
@@ -192,10 +193,8 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                 id: 'transaction',
                 label: commonT('terms.transaction'),
                 onSelect: () => openCreateFromMenu('transactions', () => setTransactionCreateOpen(true)),
-                disabled: !!getClosingTransaction(loan.transactions),
-                disabledTooltip: getClosingTransaction(loan.transactions)
-                  ? t('transactions.addDisabledClosed')
-                  : undefined,
+                disabled: isClosed,
+                disabledTooltip: isClosed ? t('transactions.addDisabledClosed') : undefined,
               },
               {
                 id: 'note',
