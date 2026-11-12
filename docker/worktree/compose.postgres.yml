@@ -1,0 +1,8 @@
+#
+# Worktree override: Postgres is only reachable from inside the project network.
+#
+
+services:
+  postgres:
+    restart: "no"
+    ports: !reset null

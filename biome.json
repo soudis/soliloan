@@ -17,6 +17,7 @@
       "!orga",
       "!prisma/generated",
       "!.pnpm-store",
+      "!.claude",
       "!public"
     ]
   },

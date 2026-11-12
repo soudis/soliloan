@@ -1,0 +1,30 @@
+# Isolated dev stack for ONE git worktree (see docs/agents/worktree-dev.md).
+#
+# Differences to docker/compose.dev.yml:
+#   - no Traefik service: one shared Traefik (project `soliloan-traefik`) routes every
+#     worktree by Host(`<slug>.soliloan.localhost`), see scripts/worktree-dev.sh
+#   - no fixed host ports: Postgres is not published, the app (/_next/mcp) and Mailpit
+#     are published on a free 127.0.0.1 port
+#   - everything else (network, DB volume, containers) is namespaced by the compose
+#     project name, so worktrees and the primary checkout never collide
+#
+# Do not call this file directly, use scripts/worktree-dev.sh: it generates the
+# per-worktree `.env` (COMPOSE_PROJECT_NAME, TRAEFIK_HOST, TRAEFIK_ROUTER_NAME, ...).
+
+include:
+  - path:
+      - "./docker/postgres/compose.base.yml"
+      - "./docker/postgres/compose.override.dev.yml"
+      - "./docker/worktree/compose.postgres.yml"
+
+  - path:
+      - "./docker/app/compose.base.yml"
+      - "./docker/app/compose.override.dev.yml"
+      - "./docker/worktree/compose.app.yml"
+    project_directory: "."
+
+networks:
+  backend_network:
+  traefik_network:
+    external: true
+    name: soliloan_traefik_network
