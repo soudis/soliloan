@@ -23,7 +23,7 @@ Every change starts from a ticket and ends in a PR to `main`. Skills named here 
 - Scope in parentheses is optional; lowercase, imperative summary, no trailing period.
 - One ticket, one branch, one PR.
 - **A PR is always linked to its ticket**, even when it must not close it. Put `#<n>` in the title and one line in the body: `Closes #<n>` if the PR finishes the ticket, `Refs #<n>` if it is only part of it (the ticket then stays open for the next PR). Never open a PR without one of the two.
-- `Refs` shows the PR in the ticket's timeline as a cross-reference, but GitHub only fills the "Development" link and the board's "Linked pull requests" for closing keywords. If a PR must be linked formally without closing the ticket, add it in the PR's Development sidebar in the GitHub UI and tell the user.
+- `Refs` shows the PR in the ticket's timeline as a cross-reference, but GitHub only fills the "Development" link and the board's "Linked pull requests" for closing references. The manual link of the Development sidebar is available through `gh` too (`addCloseIssueReferences` / `removeCloseIssueReferences` GraphQL mutations, with the node ids from `gh issue view <n> --json id` and `gh pr view --json id`), but it is a closing reference as well: it shows up in `closingIssuesReferences`, so merging closes the ticket. Do not use it for a partial PR; `Refs #<n>` is the link there.
 - After `gh pr create`, check the link: `gh api repos/soudis/soliloan/issues/<n>/timeline --jq '.[] | select(.event=="cross-referenced") | .source.issue.number'` lists the PR number.
 
 ## Git rules
