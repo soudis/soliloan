@@ -7,7 +7,7 @@ import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-re
 import { deleteImportUnsafe } from '@/lib/import/delete-import';
 import { projectAction } from '@/lib/utils/safe-action';
 
-/** Deletes everything an Import created (ADR 0006). */
+/** Deletes everything an Import created (ADR 0011). */
 export const deleteImportAction = projectAction
   .inputSchema(z.object({ projectId: z.string(), importId: z.string() }))
   .action(async ({ parsedInput: { projectId, importId }, ctx }) => {

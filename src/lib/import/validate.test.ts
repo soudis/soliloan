@@ -187,6 +187,14 @@ describe('validateImport', () => {
     assert.ok(result.rows[0]?.loan, 'warnings do not block the row');
   });
 
+  it('accepts 31 Dec and 1 Jan as Stichtag without a warning', () => {
+    for (const stichtag of ['2025-12-31', '2026-01-01']) {
+      const ctx = context();
+      const result = run([ada], ctx, { defaults: { ...settings(ctx).defaults, 'opening.stichtag': stichtag } });
+      assert.deepEqual(codes(result), [], stichtag);
+    }
+  });
+
   it('requires an Anlageart for German Kreditgeber*innen when the compliance setting is on', () => {
     const ctx = context({ deInvestmentActCompliance: true, lenderCountry: 'DE', investmentTypeRates: [2] });
     assert.ok(codes(run([ada], ctx)).includes('noInvestmentType'));

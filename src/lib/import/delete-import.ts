@@ -57,7 +57,7 @@ export async function getImportDeletionPreviewUnsafe(
 
 /**
  * Deletes everything an Import created, including data added to its Kreditgeber*innen later, and marks the Import
- * as deleted (ADR 0006). User accounts it created are deleted only when nothing uses them. The caller must have
+ * as deleted (ADR 0011). User accounts it created are deleted only when nothing uses them. The caller must have
  * checked that the user manages the project.
  */
 export async function deleteImportUnsafe(projectId: string, importId: string, user: { id: string; name: string }) {

@@ -11,6 +11,6 @@ The Zinsübertrag raises the Kontostand. With a compounding Zinsmethode it earns
 
 ## Consequences
 
-- A Stichtag other than 31 December leaves the interest between 1 January and the Stichtag out of that year's figures. The Import warns about it but does not block.
+- The Stichtag is 31 December or 1 January, so the next Zinsjahr starts from the full Kontostand and gets the yearly interest. With 1 January the Zinsübertrag is a Zahlung of the new year: it appears in that year's Jahresliste and is paid out with that year's interest. Any other Stichtag leaves the interest between 1 January and the Stichtag out of that year's figures; the Import warns about it but does not block.
 - The Zinsübertrag is not offered in the manual Zahlung form. It can be deleted like any other Zahlung.
 - The yearly interest payout pays out an unpaid Zinsübertrag together with the interest of its Stichtag year, and the Benachrichtigung for open interest counts it there too. A Kredit whose last year's interest was still owed on the Stichtag therefore gets it with the regular payout, without a manual Zinsauszahlung.

@@ -21,7 +21,7 @@ export function transactionCalendarYear(date: Date): number {
 /**
  * What a yearly payout settles for one year entry: the year's interest plus a Zinsübertrag booked in that year, minus
  * the Zinsauszahlungen of the year (stored negative). The Zinsübertrag is never interest of a year in statements, but
- * interest carried over from an old system is still owed and is paid out with its Stichtag year (ADR 0005).
+ * interest carried over from an old system is still owed and is paid out with its Stichtag year (ADR 0010).
  */
 export function unpaidInterestOfYear(entry: {
   interest: Prisma.Decimal.Value;
