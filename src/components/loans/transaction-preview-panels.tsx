@@ -69,6 +69,20 @@ function SummaryValue({ label, value }: { label: string; value: string }) {
   );
 }
 
+/** An amount that changes: the old one struck through, the new one bold; an unchanged one plain. */
+function ValueChange({ before, after }: { before: number; after: number }) {
+  if (Math.round(before * 100) === Math.round(after * 100)) {
+    return <span>{formatCurrency(after)}</span>;
+  }
+  return (
+    <span className="inline-flex flex-wrap justify-end gap-x-1">
+      <del className="text-amber-900/60">{formatCurrency(before)}</del>
+      <span aria-hidden="true">→</span>
+      <ins className="font-semibold no-underline">{formatCurrency(after)}</ins>
+    </span>
+  );
+}
+
 function Notice({
   icon,
   className,
@@ -164,19 +178,36 @@ export function TransactionAlerts({
             className={WARNING_CLASS}
             title={t('warnings.pastYearsTitle')}
           >
-            <ul className="space-y-0.5">
-              {warning.years.map((year) => (
-                <li key={year.year} className="tabular-nums">
-                  {t('warnings.pastYearsRow', {
-                    year: year.year,
-                    interestBefore: formatCurrency(year.interestBefore),
-                    interestAfter: formatCurrency(year.interestAfter),
-                    balanceBefore: formatCurrency(year.balanceBefore),
-                    balanceAfter: formatCurrency(year.balanceAfter),
-                  })}
-                </li>
-              ))}
-            </ul>
+            <table className="w-full text-sm tabular-nums">
+              <thead>
+                <tr className="text-xs text-amber-900/70">
+                  <th scope="col" className="pr-3 pb-1 text-left font-medium">
+                    {t('warnings.pastYearsYear')}
+                  </th>
+                  <th scope="col" className="pr-3 pb-1 text-right font-medium">
+                    {t('warnings.pastYearsInterest')}
+                  </th>
+                  <th scope="col" className="pb-1 text-right font-medium">
+                    {t('warnings.pastYearsBalance')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {warning.years.map((year) => (
+                  <tr key={year.year} className="border-t border-amber-200 align-top">
+                    <th scope="row" className="py-1 pr-3 text-left font-medium">
+                      {year.year}
+                    </th>
+                    <td className="py-1 pr-3 text-right">
+                      <ValueChange before={year.interestBefore} after={year.interestAfter} />
+                    </td>
+                    <td className="py-1 text-right">
+                      <ValueChange before={year.balanceBefore} after={year.balanceAfter} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </Notice>
         );
       case 'NOTIFIED':
