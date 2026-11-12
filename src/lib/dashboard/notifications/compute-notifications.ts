@@ -1,10 +1,10 @@
-import { type InterestMethod, InterestPaymentType, Prisma, type Transaction } from '@prisma/client';
+import { type InterestMethod, InterestPaymentType, type Transaction } from '@prisma/client';
 import moment from 'moment';
 
 import { calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
 import { matchesDateFilter } from '@/lib/entity-filters/filter-matchers';
 import { calcInvestmentTypeMetrics } from '@/lib/investment-types/calc-investment-type-metrics';
-import { payoutAsOfDate } from '@/lib/processes/yearly-interest';
+import { payoutAsOfDate, unpaidInterestOfYear } from '@/lib/processes/yearly-interest';
 import { type AdditionalFieldConfig, AdditionalFieldType, type AdditionalFieldValues } from '@/lib/schemas/common';
 import { getLenderName } from '@/lib/utils';
 import type { NotificationsWidgetConfig } from '@/types/dashboard-widgets/notifications';
@@ -145,7 +145,7 @@ function unpaidInterestByYear(loan: NotificationLoan, currentYear: number): Map<
     if (entry.year > currentYear) {
       continue;
     }
-    const unpaid = new Prisma.Decimal(entry.interest).plus(entry.interestPaid).toDecimalPlaces(2);
+    const unpaid = unpaidInterestOfYear(entry);
     open.set(entry.year, unpaid.greaterThan(0));
   }
   return open;

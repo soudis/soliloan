@@ -19,6 +19,19 @@ export function transactionCalendarYear(date: Date): number {
 }
 
 /**
+ * What a yearly payout settles for one year entry: the year's interest plus a Zinsübertrag booked in that year, minus
+ * the Zinsauszahlungen of the year (stored negative). The Zinsübertrag is never interest of a year in statements, but
+ * interest carried over from an old system is still owed and is paid out with its Stichtag year (ADR 0005).
+ */
+export function unpaidInterestOfYear(entry: {
+  interest: Prisma.Decimal.Value;
+  interestCarryover: Prisma.Decimal.Value;
+  interestPaid: Prisma.Decimal.Value;
+}): Prisma.Decimal {
+  return new Prisma.Decimal(entry.interest).plus(entry.interestCarryover).plus(entry.interestPaid).toDecimalPlaces(2);
+}
+
+/**
  * Unpaid interest for one calendar year, in euros, rounded to cents.
  * `interestPaid` is the sum of INTERESTPAYMENT amounts, which are stored negative.
  */
@@ -29,6 +42,6 @@ export function unpaidYearlyInterest(loan: LoanWithRelations, year: number): num
     return 0;
   }
 
-  const unpaid = new Prisma.Decimal(entry.interest).plus(entry.interestPaid).toDecimalPlaces(2);
+  const unpaid = unpaidInterestOfYear(entry);
   return unpaid.greaterThan(0) ? unpaid.toNumber() : 0;
 }

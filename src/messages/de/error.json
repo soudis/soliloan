@@ -122,5 +122,14 @@
   },
   "auth": {
     "invalidCredentials": "E-Mail-Adresse oder Passwort ist falsch."
+  },
+  "import": {
+    "fileTooLarge": "Die Datei ist zu groß. Maximal 10 MB sind erlaubt.",
+    "unsupportedFile": "Dieses Dateiformat wird nicht unterstützt. Bitte die Datei als .xlsx oder .csv speichern.",
+    "emptyFile": "Die Datei enthält keine Daten.",
+    "unreadableFile": "Die Datei konnte nicht gelesen werden.",
+    "numbersTaken": "Inzwischen wurden Kreditgeber*innen oder Kredite mit denselben Nummern angelegt. Bitte erneut prüfen.",
+    "notFound": "Import nicht gefunden.",
+    "alreadyDeleted": "Dieser Import wurde bereits gelöscht."
   }
 }
