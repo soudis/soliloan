@@ -19,7 +19,7 @@ import { formatCurrency, formatDateShort, formatPercentage } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 
 import { LoanStatusBadge } from './loan-status-badge';
-import { TransactionFormFields } from './transaction-form-fields';
+import { onlyAvailableType, TransactionFormFields } from './transaction-form-fields';
 import { useTransactionPreview } from './use-transaction-preview';
 
 interface TransactionDialogProps {
@@ -76,17 +76,35 @@ export function TransactionDialog({
     form.reset(defaultValues);
   }, [open, transaction?.id]);
 
-  const { preview, isPending } = useTransactionPreview({
+  const selectedType = form.watch('type') as TransactionType | '';
+
+  const { preview, isPending, ready, failed } = useTransactionPreview({
     loanId,
     transactionId: transaction?.id,
     control: form.control as unknown as Control<TransactionFormData>,
     enabled: open,
+    // the modal opens with the preselected type already applied
+    settled: (loaded) => !!selectedType || !onlyAvailableType(loaded),
   });
+
+  // Nothing to choose from: preselect the only possible type (e.g. the first Einzahlung)
+  const preselect = preview && !selectedType ? onlyAvailableType(preview) : undefined;
+  useEffect(() => {
+    if (preselect) {
+      form.setValue('type', preselect);
+    }
+  }, [preselect, form]);
+
+  // Without the first check the modal cannot save: close it again (the error is already toasted)
+  useEffect(() => {
+    if (open && failed) {
+      onOpenChange(false);
+    }
+  }, [open, failed, onOpenChange]);
 
   const { isSubmitting } = form.formState;
   const submitLock = useRef(false);
 
-  const selectedType = form.watch('type') as TransactionType | '';
   const typeUnavailable = !!selectedType && preview?.types[selectedType]?.available === false;
   const nothingPossible = !!preview && Object.values(preview.types).every((availability) => !availability.available);
   const canSubmit = !!preview && !isPending && preview.errors.length === 0 && !typeUnavailable && !nothingPossible;
@@ -114,7 +132,8 @@ export function TransactionDialog({
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    // Shown only once the first check has loaded, so the content does not jump (docs/agents/ui.md)
+    <Dialog open={open && ready} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader className="space-y-3">
           <DialogTitle>{isEdit ? t('transactions.editTitle') : t('transactions.createTitle')}</DialogTitle>

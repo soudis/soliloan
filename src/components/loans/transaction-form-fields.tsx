@@ -36,6 +36,12 @@ const TYPE_ORDER: (TransactionType | 'divider')[] = [
   TransactionType.NOTRECLAIMED,
 ];
 
+/** The only type possible on the chosen day (e.g. the first Einzahlung), preselected by the modal. */
+export const onlyAvailableType = (preview: TransactionPreview) => {
+  const available = BOOKABLE_TYPES.filter((item) => preview.types[item]?.available);
+  return available.length === 1 ? available[0] : undefined;
+};
+
 export function TransactionFormFields({
   preview,
   isPending = false,
@@ -79,15 +85,6 @@ export function TransactionFormFields({
       autoFilled.current = false;
     }
   }, [selectedType, closingAmount, keepStoredAmount, setValue]);
-
-  // Nothing to choose from: preselect the only possible type (e.g. the first Einzahlung)
-  const availableTypes = preview ? BOOKABLE_TYPES.filter((item) => preview.types[item]?.available) : [];
-  const onlyAvailableType = availableTypes.length === 1 ? availableTypes[0] : undefined;
-  useEffect(() => {
-    if (!selectedType && onlyAvailableType) {
-      setValue('type', onlyAvailableType);
-    }
-  }, [selectedType, onlyAvailableType, setValue]);
 
   const options = TYPE_ORDER.map((item) => {
     if (item === 'divider') {
