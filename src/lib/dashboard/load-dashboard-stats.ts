@@ -23,6 +23,8 @@ export type DashboardLoan = LoanWithCalculations & {
   transactions: Transaction[];
   /** Alt method when set, otherwise the project default. */
   interestMethod: InterestMethod;
+  /** The project's Umstellungsjahr (ADR 0005). */
+  interestChangeoverYear: number | null;
 };
 
 export function omitDashboardLoanTimelines(loans: DashboardLoan[]): DashboardLoan[] {
@@ -75,7 +77,7 @@ export async function loadDashboardStats(projectId: string, toDate: Date = new D
       },
       project: {
         include: {
-          configuration: { select: { interestMethod: true } },
+          configuration: { select: { interestMethod: true, interestChangeoverYear: true } },
         },
       },
     },
@@ -110,6 +112,7 @@ export async function loadDashboardStats(projectId: string, toDate: Date = new D
         cumulativeTimeline: buildCumulativeTimeline(history),
         transactions: parsedLoan.transactions,
         interestMethod,
+        interestChangeoverYear: parsedLoan.lender.project.configuration.interestChangeoverYear,
       });
     }
 

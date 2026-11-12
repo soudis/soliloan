@@ -16,6 +16,7 @@ export type LenderWithRelations = Lender & {
   project: Project & {
     configuration: {
       interestMethod: Configuration['interestMethod'];
+      interestChangeoverYear: Configuration['interestChangeoverYear'];
       /** Present when selected in queries (e.g. my-loans) */
       name?: Configuration['name'];
       logo?: Configuration['logo'] | null;

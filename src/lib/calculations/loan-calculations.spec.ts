@@ -1,10 +1,16 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { InterestMethod } from '@prisma/client';
+import { InterestMethod, Prisma, TransactionType } from '@prisma/client';
 import moment from 'moment';
 
-import { getInterestDays } from './loan-calculations';
+import {
+  calculateInterestDaily,
+  calculateLoanPerMonth,
+  calculateLoanPerYear,
+  getInterestDays,
+  getInterestRules,
+} from './loan-calculations';
 
 // Local calendar dates keep the day count independent of the process timezone.
 const calendarDay = (date: string) => moment(date, 'YYYY-MM-DD', true);
@@ -80,5 +86,102 @@ describe('getInterestDays with E30/360', () => {
       getInterestDays(calendarDay('2023-12-31'), undefined, method),
       getInterestDays(calendarDay('2023-12-30'), undefined, method),
     );
+  });
+});
+
+describe('getInterestRules', () => {
+  it('keeps the old rules for Zinsjahre before the Umstellungsjahr', () => {
+    assert.equal(getInterestRules(2026, 2027), 'legacy');
+    assert.equal(getInterestRules(2027, 2027), 'corrected');
+    assert.equal(getInterestRules(2028, 2027), 'corrected');
+  });
+
+  it('uses the corrected rules for every Zinsjahr of a project without an Umstellungsjahr', () => {
+    assert.equal(getInterestRules(2010, null), 'corrected');
+  });
+});
+
+describe('calculateInterestDaily', () => {
+  const amount = new Prisma.Decimal(10_000);
+  const rate = new Prisma.Decimal(2);
+  const interest = (
+    from: string,
+    to: string | undefined,
+    method: InterestMethod,
+    rules: 'legacy' | 'corrected' = 'corrected',
+  ) =>
+    calculateInterestDaily(storedDate(from), to ? storedDate(to) : undefined, amount, rate, method, rules)
+      .toDecimalPlaces(2)
+      .toNumber();
+
+  it('keeps the lost day at the year end under the old rules', () => {
+    assert.equal(interest('2025-12-31', undefined, InterestMethod.ACT_360_COMPOUND, 'legacy'), 0);
+    assert.equal(interest('2025-12-31', undefined, InterestMethod.ACT_360_COMPOUND), 0.56);
+  });
+
+  it('pays a part of a Zinsjahr at most the interest of a full Zinsjahr under ACT/360', () => {
+    assert.equal(interest('2025-01-01', undefined, InterestMethod.ACT_360_COMPOUND), 200);
+    assert.equal(interest('2025-01-06', undefined, InterestMethod.ACT_360_COMPOUND), 200);
+    assert.equal(interest('2025-01-07', undefined, InterestMethod.ACT_360_COMPOUND), 199.44);
+  });
+
+  it('pays a part of a leap year at most the interest of a full Zinsjahr under ACT/365', () => {
+    assert.equal(interest('2024-01-01', undefined, InterestMethod.ACT_365_NOCOMPOUND), 200);
+  });
+
+  it('does not cap the old rules', () => {
+    assert.equal(interest('2025-01-01', undefined, InterestMethod.ACT_360_COMPOUND, 'legacy'), 202.22);
+  });
+});
+
+const loanWith = (
+  method: InterestMethod,
+  interestChangeoverYear: number | null,
+  transactions: { date: string; amount: number; type?: TransactionType }[],
+) =>
+  ({
+    interestRate: 2,
+    altInterestMethod: null,
+    transactions: transactions.map((transaction, index) => ({
+      id: `transaction-${index}`,
+      type: transaction.type ?? TransactionType.DEPOSIT,
+      date: new Date(transaction.date),
+      amount: transaction.amount,
+    })),
+    lender: { project: { configuration: { interestMethod: method, interestChangeoverYear } } },
+  }) as unknown as Parameters<typeof calculateLoanPerYear>[0];
+
+describe('calculateLoanPerYear with an Umstellungsjahr', () => {
+  const interestOf = (loan: Parameters<typeof calculateLoanPerYear>[0], year: number) =>
+    calculateLoanPerYear(loan, new Date('2028-06-30'))
+      .find((entry) => entry.year === year)
+      ?.interest.toNumber();
+
+  it('calculates Zinsjahre before the Umstellungsjahr with the old rules and later ones with the corrected rules', () => {
+    const transactions = [
+      { date: '2025-03-15', amount: 10_000 },
+      { date: '2027-03-15', amount: 10_000 },
+    ];
+    const legacy = loanWith(InterestMethod.ACT_360_NOCOMPOUND, 2027, transactions);
+    const corrected = loanWith(InterestMethod.ACT_360_NOCOMPOUND, null, transactions);
+
+    // 291 of 292 days under the old rules, 292 under the corrected ones.
+    assert.equal(interestOf(legacy, 2025), 161.67);
+    assert.equal(interestOf(corrected, 2025), 162.22);
+    // From the Umstellungsjahr on both use the corrected rules.
+    assert.equal(interestOf(legacy, 2027), interestOf(corrected, 2027));
+    assert.equal(interestOf(legacy, 2027), 362.22);
+  });
+});
+
+describe('calculateLoanPerMonth', () => {
+  it('weighs each month by all of its days', () => {
+    const loan = loanWith(InterestMethod.ACT_365_NOCOMPOUND, null, [{ date: '2025-01-01', amount: 10_000 }]);
+    const months = calculateLoanPerMonth(loan as Parameters<typeof calculateLoanPerMonth>[0], new Date('2026-06-30'));
+    const interestOf = (month: number) =>
+      months.find((entry) => entry.year === 2025 && entry.month === month)?.interest.toNumber();
+
+    assert.equal(interestOf(1), 16.99, '200 × 31 / 365');
+    assert.equal(interestOf(2), 15.34, '200 × 28 / 365');
   });
 });

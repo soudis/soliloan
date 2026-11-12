@@ -136,6 +136,8 @@ model Configuration {
   lenderCountry          Country?
   interestMethod         InterestMethod
   altInterestMethods     InterestMethod[]
+  /// Umstellungsjahr: first Zinsjahr calculated with the corrected interest rules (ADR 0005). Null: corrected from the start.
+  interestChangeoverYear Int?
   defaultLoanTemplateId  String?
   loanTemplates          LoanTemplate[]
   project                Project?
