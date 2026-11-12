@@ -63,6 +63,8 @@ export type AmountLimits = {
   max: number;
   /** The rule that stops a higher amount. Undefined when the max is only the natural limit. */
   binding?: Violation;
+  /** The rule that stops a lower amount (a later Zahlung that relies on this Einzahlung). Undefined at one cent. */
+  minBinding?: Violation;
 };
 
 export type TransactionPreview = {
@@ -213,25 +215,19 @@ export const checkNewTransaction = (
     draft.date,
   );
 
-/** Largest amount in cents in [1, hi] for which `isValid` holds, or 0 if even one cent is invalid. */
-const largestValidCents = (hi: number, isValid: (cents: number) => boolean) => {
-  if (hi < 1 || !isValid(1)) {
-    return 0;
-  }
-  if (isValid(hi)) {
-    return hi;
-  }
-  let low = 1;
-  let high = hi;
-  while (high - low > 1) {
-    const middle = Math.floor((low + high) / 2);
-    if (isValid(middle)) {
-      low = middle;
+/** Smallest amount in cents in [low, high] for which `holds` is true; `holds(high)` must be true and stay true above its threshold. */
+const smallestCents = (low: number, high: number, holds: (cents: number) => boolean) => {
+  let from = low;
+  let to = high;
+  while (from < to) {
+    const middle = Math.floor((from + to) / 2);
+    if (holds(middle)) {
+      to = middle;
     } else {
-      high = middle;
+      from = middle + 1;
     }
   }
-  return low;
+  return from;
 };
 
 /**
@@ -277,34 +273,70 @@ export const previewTransaction = ({
   }).entries.find((entry) => entry.transaction.id === candidateId);
   const closingAmount = closingProbe ? round2(closingProbe.balanceBefore) : undefined;
 
-  const amountForAvailability = (type: TransactionType) =>
-    isClosingType(type) ? Math.max(closingAmount ?? 0, 0.01) : 0.01;
+  // The searches below probe the same amounts repeatedly
+  const probes = new Map<string, Violation[]>();
+  const probe = (type: TransactionType, cents: number) => {
+    const key = `${type}|${cents}`;
+    let errors = probes.get(key);
+    if (!errors) {
+      errors = introduced([...others, candidate(type, cents / 100)]);
+      probes.set(key, errors);
+    }
+    return errors;
+  };
+  const isValid = (type: TransactionType, cents: number) => probe(type, cents).length === 0;
+  const reasonOf = (errors: Violation[]) => errors.find((error) => error.transactionId === candidateId) ?? errors[0];
+  const notCap = (error: Violation) => error.rule !== 'CAP_EXCEEDED';
 
+  /**
+   * Smallest amount in cents a non-closing Zahlung of `type` can have on the day, or why none works.
+   * Every rule gets stricter as the amount grows, so this is usually one cent. The exception is an
+   * Einzahlung that later Zahlungen rely on (one being edited or moved): only the Kreditbetrag gets
+   * stricter as it grows, the rules on the later Zahlungen need a minimum.
+   */
+  const lowest = (
+    type: TransactionType,
+  ): { cents: number; binding?: Violation } | { reason: Violation | undefined } => {
+    if (isValid(type, 1)) {
+      return { cents: 1 };
+    }
+    const coversLater = (cents: number) => !probe(type, cents).some(notCap);
+    if (type !== TransactionType.DEPOSIT || coversLater(1)) {
+      return { reason: reasonOf(probe(type, 1)) };
+    }
+    const hi = toCents(loan.amount);
+    if (!coversLater(hi)) {
+      // not even the Kreditbetrag covers the later Zahlungen: name them, not the cap
+      return { reason: reasonOf(probe(type, hi).filter(notCap)) };
+    }
+    const cents = smallestCents(1, hi, coversLater);
+    return isValid(type, cents)
+      ? { cents, binding: probe(type, cents - 1).find(notCap) }
+      : { reason: reasonOf(probe(type, cents)) };
+  };
+
+  const closingCents = toCents(Math.max(closingAmount ?? 0, 0.01));
   const types: Record<string, TypeAvailability> = {};
   for (const type of BOOKABLE_TYPES) {
-    const errors = introduced([...others, candidate(type, amountForAvailability(type))]);
-    const reason = errors.find((error) => error.transactionId === candidateId) ?? errors[0];
-    types[type] = reason ? { available: false, reason } : { available: true };
+    const low = isClosingType(type) ? { reason: reasonOf(probe(type, closingCents)) } : lowest(type);
+    types[type] = 'cents' in low || !low.reason ? { available: true } : { available: false, reason: low.reason };
   }
 
   const selected = draft.type;
   let limits: AmountLimits | undefined;
   if (selected && types[selected]?.available) {
     if (isClosingType(selected)) {
-      const amount = Math.max(closingAmount ?? 0, 0.01);
-      limits = { min: amount, max: amount };
+      limits = { min: closingCents / 100, max: closingCents / 100 };
     } else {
+      const low = lowest(selected);
       const hi = selected === TransactionType.DEPOSIT ? toCents(loan.amount) : toCents(Math.max(state.balance, 0));
-      const maxCents = largestValidCents(
-        hi,
-        (cents) => introduced([...others, candidate(selected, cents / 100)]).length === 0,
-      );
-      if (maxCents > 0) {
+      if ('cents' in low && hi >= low.cents) {
+        const maxCents = isValid(selected, hi)
+          ? hi
+          : smallestCents(low.cents, hi, (cents) => !isValid(selected, cents)) - 1;
         const binding =
-          maxCents < hi || selected === TransactionType.DEPOSIT
-            ? introduced([...others, candidate(selected, (maxCents + 1) / 100)])[0]
-            : undefined;
-        limits = { min: 0.01, max: maxCents / 100, binding };
+          maxCents < hi || selected === TransactionType.DEPOSIT ? probe(selected, maxCents + 1)[0] : undefined;
+        limits = { min: low.cents / 100, max: maxCents / 100, binding, minBinding: low.binding };
       }
     }
   }

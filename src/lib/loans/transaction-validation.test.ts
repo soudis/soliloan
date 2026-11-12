@@ -276,6 +276,106 @@ describe('previewTransaction', () => {
   });
 });
 
+describe('editing an Einzahlung that later Zahlungen rely on', () => {
+  const stored = [tx('DEPOSIT', '2024-01-01', 1000, 'dep'), tx('WITHDRAWAL', '2024-03-01', 400, 'wd')];
+  const edit = (
+    draft: Omit<Parameters<typeof previewTransaction>[0]['draft'], 'transactionId'>,
+    transactions = stored,
+    l = loan(),
+    transactionId: string | undefined = 'dep',
+  ) =>
+    previewTransaction({
+      loan: l,
+      loanId: 'loan',
+      transactions,
+      draft: { transactionId, ...draft },
+      now: day('2025-06-01'),
+    });
+
+  it('keeps Einzahlung possible while the amount is unchanged', () => {
+    const result = edit({ date: day('2024-01-01'), type: TransactionType.DEPOSIT, amount: 1000 });
+    assert.deepEqual(result.types.DEPOSIT, { available: true });
+    assert.deepEqual(result.errors, []);
+  });
+
+  it('keeps Einzahlung possible before a type is chosen', () => {
+    assert.deepEqual(edit({ date: day('2024-01-01') }).types.DEPOSIT, { available: true });
+  });
+
+  it('allows lowering it as long as the later Teilrückzahlung still fits', () => {
+    const result = edit({ date: day('2024-01-01'), type: TransactionType.DEPOSIT, amount: 600 });
+    assert.deepEqual(result.types.DEPOSIT, { available: true });
+    assert.deepEqual(result.errors, []);
+  });
+
+  it('rejects lowering it below what the later Teilrückzahlung needs', () => {
+    const result = edit({ date: day('2024-01-01'), type: TransactionType.DEPOSIT, amount: 300 });
+    assert.deepEqual(
+      result.errors.map((e) => `${e.rule}@${e.transactionId}`),
+      ['BALANCE_NEGATIVE@wd'],
+    );
+  });
+
+  it('names the later Teilrückzahlung as the reason for the minimum', () => {
+    const { limits } = edit({ date: day('2024-01-01'), type: TransactionType.DEPOSIT, amount: 1000 });
+    // the Teilrückzahlung of 400 € has to leave more than 1 €
+    assert.equal(limits?.min, 401.01);
+    assert.equal(limits?.max, 1000);
+    assert.equal(limits?.minBinding?.rule, 'PARTIAL_TOO_LARGE');
+    assert.equal(limits?.minBinding?.transactionId, 'wd');
+  });
+
+  it('allows moving it to another day before the Teilrückzahlung', () => {
+    const result = edit({ date: day('2024-02-01'), type: TransactionType.DEPOSIT, amount: 1000 });
+    assert.deepEqual(result.types.DEPOSIT, { available: true });
+    assert.deepEqual(result.errors, []);
+  });
+
+  it('disables Einzahlung when moved after the Teilrückzahlung, naming it', () => {
+    const result = edit({ date: day('2024-04-01'), type: TransactionType.DEPOSIT, amount: 1000 });
+    assert.equal(result.types.DEPOSIT?.available, false);
+    assert.equal(result.types.DEPOSIT?.reason?.transactionId, 'wd');
+  });
+
+  it('keeps Einzahlung possible before a Zinsauszahlung that relies on its interest', () => {
+    const list = [tx('DEPOSIT', '2024-01-01', 1000, 'dep'), tx('INTERESTPAYMENT', '2024-12-31', 15, 'ip')];
+    const result = edit(
+      { date: day('2024-01-01'), type: TransactionType.DEPOSIT, amount: 1000 },
+      list,
+      loan({ interestRate: 2 }),
+    );
+    assert.deepEqual(result.types.DEPOSIT, { available: true });
+    assert.deepEqual(result.errors, []);
+    assert.ok((result.limits?.min ?? 0) > 700);
+    assert.equal(result.limits?.minBinding?.rule, 'INTEREST_EXCEEDS_ACCRUED');
+  });
+
+  it('limits the second of two Einzahlungen from both sides', () => {
+    const list = [
+      tx('DEPOSIT', '2024-01-01', 500, 'd1'),
+      tx('DEPOSIT', '2024-02-01', 500, 'd2'),
+      tx('WITHDRAWAL', '2024-03-01', 800, 'wd'),
+    ];
+    const result = edit({ date: day('2024-02-01'), type: TransactionType.DEPOSIT, amount: 500 }, list, loan(), 'd2');
+    assert.deepEqual(result.types.DEPOSIT, { available: true });
+    assert.equal(result.limits?.min, 301.01);
+    assert.equal(result.limits?.max, 500);
+    assert.equal(result.limits?.binding?.rule, 'CAP_EXCEEDED');
+  });
+
+  it('keeps a new Einzahlung at a minimum of one cent', () => {
+    const result = previewTransaction({
+      loan: loan(),
+      loanId: 'loan',
+      transactions: stored,
+      draft: { date: day('2024-04-01'), type: TransactionType.DEPOSIT },
+      now: day('2025-06-01'),
+    });
+    assert.equal(result.limits?.min, 0.01);
+    assert.equal(result.limits?.minBinding, undefined);
+  });
+});
+
 describe('a closed Kredit is frozen', () => {
   // 1.000 € deposited, 300 € partial withdrawal, Rückzahlung of the remaining 700 €
   const stored = [

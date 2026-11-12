@@ -122,6 +122,15 @@ export function TransactionFormFields({
 
   const limits = preview?.limits;
   const binding = limits?.binding;
+  const minBinding = limits?.minBinding;
+  // A later Zahlung relies on this Einzahlung: say which one sets the minimum
+  const minimumNote =
+    minBinding && minBinding.transactionId !== candidateId
+      ? modalT('minimumByTransaction', {
+          type: commonT(`enums.transaction.type.${minBinding.type}`),
+          date: formatDateShort(minBinding.date, locale),
+        })
+      : undefined;
   let limitNote: string | undefined;
   if (binding) {
     if (binding.transactionId !== candidateId) {
@@ -183,6 +192,7 @@ export function TransactionFormFields({
             {isClosingType(selectedType) && validDate
               ? modalT('closingAmountHint', { date: formatDateShort(validDate, locale) })
               : modalT('amountRange', { min: formatCurrency(limits.min), max: formatCurrency(limits.max) })}
+            {minimumNote ? ` · ${minimumNote}` : null}
             {limitNote ? ` · ${limitNote}` : null}
             {!isClosingType(selectedType) ? (
               <>

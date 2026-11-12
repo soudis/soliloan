@@ -921,6 +921,7 @@
         "limitedByLoanAmount": "Begrenzt durch den Kreditbetrag",
         "limitedByBalance": "Begrenzt durch den Kontostand",
         "limitedByTransaction": "Begrenzt durch {type} am {date}",
+        "minimumByTransaction": "Mindestbetrag wegen {type} am {date}",
         "closingAmountHint": "Der Betrag entspricht dem Kontostand am {date}.",
         "recalculate": "Neu berechnen",
         "noTypeAvailable": "An diesem Tag ist keine Zahlung möglich.",
