@@ -1609,7 +1609,7 @@
         "einlagenstandAboveAmount": "Einlagenstand ist höher als der Kreditbetrag ({amount})",
         "noKontostand": "Kontostand 0: der Kredit wird ohne Zahlungen angelegt",
         "stichtagBeforeSignDate": "Stichtag liegt vor dem Vertragsdatum",
-        "stichtagNotYearEnd": "Stichtag ist nicht der 31.12.: die Zinsen vom Jahresanfang bis zum Stichtag fehlen in den Jahreswerten",
+        "stichtagNotYearEnd": "Stichtag ist weder der 31.12. noch der 01.01.: die Zinsen vom Jahresanfang bis zum Stichtag fehlen in den Jahreswerten",
         "stichtagInFuture": "Stichtag liegt in der Zukunft",
         "lenderDataDiffers": "Weicht von Zeile {row} ab (gleiche Kreditgeber*innen-Nummer {number})",
         "lenderNumberExists": "Kreditgeber*innen-Nummer {number} gibt es im Projekt schon",

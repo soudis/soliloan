@@ -30,7 +30,7 @@ export type CommitImportResult =
 
 /**
  * Validates the file again against the current project and, if nothing blocks it, creates the Import with all its
- * Kreditgeber*innen, Kredite, opening Zahlungen and notes in one transaction (ADR 0006). The caller must have checked
+ * Kreditgeber*innen, Kredite, opening Zahlungen and notes in one transaction (ADR 0011). The caller must have checked
  * that the user manages the project.
  */
 export async function commitImportUnsafe(input: {

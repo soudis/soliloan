@@ -168,7 +168,7 @@ model Project {
   imports          Import[]
 }
 
-/// One run that created Kreditgeber*innen, Kredite and their opening Zahlungen from a file (ADR 0006).
+/// One run that created Kreditgeber*innen, Kredite and their opening Zahlungen from a file (ADR 0011).
 model Import {
   id             String        @id @default(cuid())
   projectId      String
@@ -806,7 +806,7 @@ enum TransactionType {
   INTERESTPAYMENT
   NOTRECLAIMEDPARTIAL
   NOTRECLAIMED
-  /// Zinsübertrag: interest accrued before an Import's Stichtag (ADR 0005)
+  /// Zinsübertrag: interest accrued before an Import's Stichtag (ADR 0010)
   INTERESTCARRYOVER
 }
 

@@ -17,7 +17,7 @@ import { getFirstDepositDateFromTransactions, getLoanTermDays, getRepaymentPerio
 
 /**
  * Whether a Zahlung changes the amount interest is calculated on. Non-compounding methods leave interest out of
- * that base: an Zinsauszahlung does not reduce it and a Zinsübertrag does not raise it (ADR 0005).
+ * that base: an Zinsauszahlung does not reduce it and a Zinsübertrag does not raise it (ADR 0010).
  */
 const affectsInterestBase = (type: TransactionType, compound: boolean) =>
   compound || (type !== TransactionType.INTERESTPAYMENT && type !== TransactionType.INTERESTCARRYOVER);
@@ -568,7 +568,7 @@ const calculateNumbersToDate = (
         deposits: total.deposits.plus(entry.deposits),
         notReclaimed: total.notReclaimed.plus(entry.notReclaimed),
         interestPaid: total.interestPaid.plus(entry.interestPaid),
-        // Lifetime interest includes the Zinsübertrag; the interest of a year never does (ADR 0005).
+        // Lifetime interest includes the Zinsübertrag; the interest of a year never does (ADR 0010).
         interest: total.interest.plus(entry.interest).plus(entry.interestCarryover),
         interestCarryover: total.interestCarryover.plus(entry.interestCarryover),
         interestOfYear: entry.year === interestYear ? entry.interest : total.interestOfYear,
