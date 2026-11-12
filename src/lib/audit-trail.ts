@@ -47,6 +47,10 @@ export interface AuditContext {
     name: string;
   };
   managerAction?: 'added' | 'removed';
+  import?: {
+    id: string;
+    fileName: string;
+  };
 }
 
 export async function createAuditEntry(

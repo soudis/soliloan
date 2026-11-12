@@ -1225,7 +1225,8 @@
       "loans": "Kredite",
       "legal": "Rechtliches",
       "templates": "Vorlagen",
-      "files": "Downloads"
+      "files": "Downloads",
+      "import": "Import"
     },
     "table": {
       "name": "Name",
@@ -1410,6 +1411,216 @@
       "removeManagerSuccess": "Verwalter*in entfernt.",
       "cannotUnlinkLastManagerTooltip": "Es muss mindestens eine Verwalter*in im Projekt bleiben.",
       "userNotFound": "Benutzer*in nicht gefunden."
+    },
+    "import": {
+      "title": "Importe",
+      "description": "Kreditgeber*innen, Kredite und ihren Stand an einem Stichtag aus einer Excel- oder CSV-Datei übernehmen. Ein Import legt nur neue Datensätze an und lässt sich als Ganzes wieder löschen.",
+      "new": "Neuer Import",
+      "empty": "Noch keine Importe.",
+      "list": {
+        "file": "Datei",
+        "createdAt": "Importiert am",
+        "createdBy": "Von",
+        "lenders": "Kreditgeber*innen",
+        "loans": "Kredite",
+        "kontostand": "Kontostand",
+        "state": "Status",
+        "active": "Importiert",
+        "deleted": "Gelöscht am {date} von {name}",
+        "download": "Datei herunterladen",
+        "delete": "Import löschen"
+      },
+      "deleteDialog": {
+        "title": "Import „{fileName}“ löschen?",
+        "loading": "Wird geprüft …",
+        "created": "Gelöscht werden {lenders, plural, one {# Kreditgeber*in} other {# Kreditgeber*innen}}, {loans, plural, one {# Kredit} other {# Kredite}}, {transactions, plural, one {# Zahlung} other {# Zahlungen}} und {notes, plural, one {# Notiz} other {# Notizen}} aus diesem Import.",
+        "later": "Seit dem Import hinzugekommen und ebenfalls gelöscht: {loans, plural, one {# Kredit} other {# Kredite}}, {transactions, plural, one {# Zahlung} other {# Zahlungen}}, {notes, plural, one {# Notiz} other {# Notizen}} und {files, plural, one {# Datei} other {# Dateien}}.",
+        "notified": "Über {count, plural, one {# Zahlung} other {# Zahlungen}} wurden Kreditgeber*innen bereits benachrichtigt. Versendete E-Mails lassen sich nicht zurückholen.",
+        "usedAccounts": "{count, plural, one {# Benutzerkonto aus diesem Import wurde schon zur Anmeldung verwendet und bleibt bestehen.} other {# Benutzerkonten aus diesem Import wurden schon zur Anmeldung verwendet und bleiben bestehen.}}",
+        "irreversible": "Das lässt sich nicht rückgängig machen.",
+        "confirm": "Import löschen",
+        "cancel": "Abbrechen",
+        "success": "Import gelöscht"
+      },
+      "wizard": {
+        "title": "Neuer Import",
+        "back": "Zurück",
+        "next": "Weiter zur Vorschau",
+        "cancel": "Abbrechen",
+        "otherFile": "Andere Datei",
+        "steps": {
+          "upload": "Datei",
+          "mapping": "Zuordnung",
+          "preview": "Vorschau"
+        },
+        "upload": {
+          "title": "Datei auswählen",
+          "hint": "Excel (.xlsx) oder CSV, höchstens 10 MB. Eine Zeile pro Kredit, die erste Zeile enthält die Spaltennamen. Ältere Formate (.xls, .ods) bitte in Excel oder LibreOffice als .xlsx speichern.",
+          "choose": "Datei auswählen",
+          "reading": "Datei wird gelesen …",
+          "rows": "{rows, plural, one {# Zeile} other {# Zeilen}}, {columns, plural, one {# Spalte} other {# Spalten}}",
+          "restored": "Zuordnung und Standardwerte vom letzten Import übernommen."
+        },
+        "file": {
+          "sheet": "Tabellenblatt",
+          "delimiter": "Trennzeichen",
+          "encoding": "Zeichensatz",
+          "semicolon": "Semikolon (;)",
+          "comma": "Komma (,)",
+          "tab": "Tabulator"
+        },
+        "format": {
+          "decimalSeparator": "Dezimaltrennzeichen",
+          "comma": "Komma (1.234,56)",
+          "point": "Punkt (1,234.56)",
+          "dateOrder": "Datumsformat",
+          "DMY": "Tag.Monat.Jahr",
+          "YMD": "Jahr-Monat-Tag",
+          "MDY": "Monat/Tag/Jahr",
+          "loanTemplate": "Kreditvorlage für Standardwerte",
+          "noTemplate": "Keine"
+        },
+        "mapping": {
+          "systemColumn": "Feld",
+          "fileColumn": "Spalte in der Datei",
+          "notAssigned": "Nicht zugeordnet",
+          "default": "Standardwert",
+          "defaultHint": "Gilt, wenn keine Spalte zugeordnet ist oder die Zelle leer ist.",
+          "status": "Prüfung",
+          "example": "z. B. „{value}“",
+          "ok": "OK",
+          "notUsed": "–"
+        },
+        "groups": {
+          "lender": "Kreditgeber*in",
+          "loan": "Kredit",
+          "opening": "Stand am Stichtag"
+        },
+        "openingHint": "Der Import bucht am Stichtag eine Einzahlung über den Einlagenstand und einen Zinsübertrag über die Differenz zum Kontostand. Ohne Einlagenstand wird der ganze Kontostand als Einzahlung gebucht.",
+        "values": {
+          "title": "Werte zuordnen",
+          "hint": "Diese Werte aus der Datei wurden nicht erkannt. Einmal zuordnen – gilt für alle Zeilen.",
+          "fileValue": "Wert in der Datei",
+          "systemValue": "Bedeutet",
+          "choose": "Auswählen"
+        },
+        "rows": {
+          "title": "Zeilen",
+          "onlyProblems": "Nur Zeilen mit Hinweisen",
+          "row": "Zeile",
+          "lender": "Kreditgeber*in",
+          "loan": "Kredit",
+          "kontostand": "Kontostand",
+          "issues": "Hinweise",
+          "none": "Keine Fehler oder Warnungen.",
+          "more": "… und {count, plural, one {# weitere Zeile} other {# weitere Zeilen}}"
+        },
+        "status": {
+          "errors": "{count, plural, =0 {Keine Fehler} other {# Fehler}}",
+          "warnings": "{count, plural, =0 {keine Warnungen} one {# Warnung} other {# Warnungen}}",
+          "rows": "{rows, plural, one {# Zeile} other {# Zeilen}} · {lenders, plural, one {# Kreditgeber*in} other {# Kreditgeber*innen}}"
+        },
+        "preview": {
+          "blocked": "Importieren ist erst möglich, wenn keine Fehler mehr vorliegen.",
+          "lenders": "Kreditgeber*innen",
+          "loans": "Kredite",
+          "amount": "Kreditbetrag",
+          "kontostand": "Kontostand",
+          "einlagenstand": "Einlagenstand",
+          "zinsuebertrag": "Zinsübertrag",
+          "stichtag": "Stichtag",
+          "total": "Summe",
+          "warnings": "Warnungen",
+          "acknowledge": "Ich habe die Warnungen geprüft und möchte trotzdem importieren.",
+          "import": "Importieren",
+          "importing": "Wird importiert …",
+          "noEmails": "Es werden keine E-Mails oder Einladungen versendet. Ein Import lässt sich in der Importliste als Ganzes wieder löschen."
+        },
+        "done": {
+          "title": "Import abgeschlossen",
+          "text": "{lenders, plural, one {# Kreditgeber*in} other {# Kreditgeber*innen}} und {loans, plural, one {# Kredit} other {# Kredite}} wurden angelegt.",
+          "toLenders": "Zu den Kreditgeber*innen",
+          "toImports": "Zur Importliste"
+        },
+        "rejected": "Beim Import wurden neue Fehler gefunden, vermutlich hat sich das Projekt inzwischen geändert. Bitte die Zuordnung prüfen."
+      },
+      "columns": {
+        "lender": {
+          "lenderNumber": "Kreditgeber*innen-Nummer",
+          "type": "Typ",
+          "salutation": "Anrede",
+          "titlePrefix": "Titel (vorangestellt)",
+          "firstName": "Vorname",
+          "lastName": "Nachname",
+          "titleSuffix": "Titel (nachgestellt)",
+          "organisationName": "Organisation",
+          "email": "E-Mail",
+          "telNo": "Telefon",
+          "street": "Straße",
+          "addon": "Adresszusatz",
+          "zip": "PLZ",
+          "place": "Ort",
+          "country": "Land",
+          "iban": "IBAN",
+          "bic": "BIC",
+          "notificationType": "Benachrichtigungsart",
+          "note": "Notiz Kreditgeber*in"
+        },
+        "loan": {
+          "loanNumber": "Kreditnummer",
+          "signDate": "Vertragsdatum",
+          "amount": "Kreditbetrag",
+          "interestRate": "Zinssatz (%)",
+          "interestPaymentType": "Zinsauszahlung",
+          "interestMethod": "Zinsmethode",
+          "contractStatus": "Vertragsstatus",
+          "terminationType": "Kündigungsart",
+          "terminationDate": "Kündigungsdatum",
+          "terminationPeriod": "Kündigungsfrist",
+          "terminationPeriodType": "Einheit der Kündigungsfrist",
+          "endDate": "Enddatum",
+          "duration": "Laufzeit",
+          "durationType": "Einheit der Laufzeit",
+          "note": "Notiz Kredit"
+        },
+        "opening": {
+          "stichtag": "Stichtag",
+          "kontostand": "Kontostand",
+          "einlagenstand": "Einlagenstand"
+        }
+      },
+      "issues": {
+        "required": "Pflichtfeld fehlt",
+        "invalidNumber": "„{value}“ ist keine Zahl",
+        "invalidInteger": "„{value}“ ist keine ganze Zahl größer als 0",
+        "invalidDate": "„{value}“ ist kein gültiges Datum",
+        "invalidEmail": "„{value}“ ist keine gültige E-Mail-Adresse",
+        "invalidIban": "„{value}“ ist keine gültige IBAN",
+        "invalidBic": "„{value}“ ist kein gültiger BIC",
+        "unknownValue": "„{value}“ ist keinem Wert zugeordnet",
+        "addressIncomplete": "Adresse unvollständig",
+        "notPositive": "Muss größer als 0 sein",
+        "negative": "Darf nicht negativ sein",
+        "interestRateUnusual": "Ungewöhnlicher Zinssatz: {value} %",
+        "interestMethodNotAllowed": "Diese Zinsmethode ist im Projekt nicht erlaubt",
+        "terminationDateIgnored": "Kündigungsdatum gilt nur bei Kündigungsart „Kündigung“ und wird nicht übernommen",
+        "noInvestmentType": "Keine Anlageart mit {value} %: für Kreditgeber*innen in Deutschland erforderlich",
+        "einlagenstandAboveKontostand": "Einlagenstand ist höher als der Kontostand",
+        "einlagenstandAboveAmount": "Einlagenstand ist höher als der Kreditbetrag ({amount})",
+        "noKontostand": "Kontostand 0: der Kredit wird ohne Zahlungen angelegt",
+        "stichtagBeforeSignDate": "Stichtag liegt vor dem Vertragsdatum",
+        "stichtagNotYearEnd": "Stichtag ist nicht der 31.12.: die Zinsen vom Jahresanfang bis zum Stichtag fehlen in den Jahreswerten",
+        "stichtagInFuture": "Stichtag liegt in der Zukunft",
+        "lenderDataDiffers": "Weicht von Zeile {row} ab (gleiche Kreditgeber*innen-Nummer {number})",
+        "lenderNumberExists": "Kreditgeber*innen-Nummer {number} gibt es im Projekt schon",
+        "loanNumberExists": "Kreditnummer {number} gibt es im Projekt schon",
+        "loanNumberDuplicate": "Kreditnummer {number} steht auch in Zeile {rows}",
+        "lenderExists": "Sieht aus wie eine bestehende Kreditgeber*in (gleiche E-Mail oder gleicher Name und gleiche Adresse)",
+        "lenderDuplicateInFile": "Sieht aus wie die Kreditgeber*in aus Zeile {rows}",
+        "noRows": "Die Datei enthält keine Datenzeilen",
+        "tooManyRows": "Höchstens {max} Zeilen pro Import",
+        "interestMethodLocks": "Nach dem Import lässt sich die Zinsmethode des Projekts nicht mehr ändern, weil es dann Zahlungen aus früheren Jahren gibt."
+      }
     }
   },
   "notes": {
@@ -1515,7 +1726,6 @@
       "downloadReport": "Report herunterladen"
     }
   },
-
   "myLoans": {
     "title": "Meine Kredite",
     "welcome": "Willkommen, {name}!",
@@ -1554,7 +1764,6 @@
       "next": "Weiter"
     }
   },
-
   "investmentTypes": {
     "title": "Anlagearten",
     "description": "Verwalten Sie Anlagearten zur Einhaltung der Bagatellgrenzen des deutschen Anlegerschutzes-Gesetzes.",

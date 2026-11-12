@@ -130,5 +130,14 @@
     "deleteInvalid": "Die Zahlung kann nicht gelöscht werden, weil spätere Zahlungen dadurch ungültig würden.",
     "afterClosing": "Nach einer Rückzahlung oder Erlassung können keine Zahlungen mehr erfasst werden. Bitte einen neuen Kredit anlegen.",
     "frozen": "Der Kredit ist abgeschlossen. Bitte zuerst die Rückzahlung bzw. Erlassung löschen."
+  },
+  "import": {
+    "fileTooLarge": "Die Datei ist zu groß. Maximal 10 MB sind erlaubt.",
+    "unsupportedFile": "Dieses Dateiformat wird nicht unterstützt. Bitte die Datei als .xlsx oder .csv speichern.",
+    "emptyFile": "Die Datei enthält keine Daten.",
+    "unreadableFile": "Die Datei konnte nicht gelesen werden.",
+    "numbersTaken": "Inzwischen wurden Kreditgeber*innen oder Kredite mit denselben Nummern angelegt. Bitte erneut prüfen.",
+    "notFound": "Import nicht gefunden.",
+    "alreadyDeleted": "Dieser Import wurde bereits gelöscht."
   }
 }

@@ -27,6 +27,7 @@ const tx = (type: TransactionType, date: string, amount: number, id = `t${++coun
   amount: toStoredAmount(type, amount),
   paymentType: 'BANK',
   lenderNotifiedAt: null,
+  importId: null,
 });
 
 const rules = (transactions: Transaction[], l = loan()) => replayLedger(l, transactions).violations.map((v) => v.rule);

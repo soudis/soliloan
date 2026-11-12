@@ -95,6 +95,7 @@ export const buildTransaction = (
   amount: toStoredAmount(type, amount),
   paymentType: 'BANK',
   lenderNotifiedAt: null,
+  importId: null,
 });
 
 const realTransactions = (transactions: Transaction[]) =>

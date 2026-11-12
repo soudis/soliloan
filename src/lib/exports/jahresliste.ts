@@ -9,6 +9,7 @@ import type { LoanWithRelations } from '@/types/loans';
 export const JAHRESLISTE_VORGAENGE = [
   'OPENING_BALANCE',
   TransactionType.DEPOSIT,
+  TransactionType.INTERESTCARRYOVER,
   TransactionType.INTEREST,
   TransactionType.INTERESTPAYMENT,
   TransactionType.WITHDRAWAL,
@@ -23,6 +24,7 @@ export type JahreslisteVorgang = (typeof JAHRESLISTE_VORGAENGE)[number];
 export const JAHRESLISTE_VORGANG_LABELS: Record<JahreslisteVorgang, string> = {
   OPENING_BALANCE: 'Kontostand Jahresbeginn',
   DEPOSIT: 'Einzahlung',
+  INTERESTCARRYOVER: 'Zinsübertrag',
   INTEREST: 'Zinsertrag',
   INTERESTPAYMENT: 'Zinsauszahlung',
   WITHDRAWAL: 'Teilrückzahlung',
@@ -150,7 +152,10 @@ export function buildJahresliste(loans: LoanWithRelations[], year: number): Jahr
   const lenderIds = new Set(rows.map((row) => row.lenderId));
   return {
     rows,
-    sums: JAHRESLISTE_VORGAENGE.map((vorgang) => ({
+    // A Zinsübertrag only exists in the Stichtag year of an Import; other years keep the usual Summen.
+    sums: JAHRESLISTE_VORGAENGE.filter(
+      (vorgang) => vorgang !== TransactionType.INTERESTCARRYOVER || rows.some((row) => row.vorgang === vorgang),
+    ).map((vorgang) => ({
       vorgang,
       amount: (totals.get(vorgang) ?? new Prisma.Decimal(0)).toDecimalPlaces(2).toNumber(),
     })),

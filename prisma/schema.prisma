@@ -80,6 +80,8 @@ model User {
   forumThreadMutes            ForumThreadMute[]
   forumThreadMailCursors      ForumThreadMailCursor[]
   exports                     Export[]
+  importsCreated              Import[]                @relation("ImportCreatedBy")
+  importsDeleted              Import[]                @relation("ImportDeletedBy")
 
   @@index([forumDigestDueAt])
 }
@@ -163,6 +165,35 @@ model Project {
   bankConnections  BankConnection[]
   bankImportBatch  BankImportBatch?
   exports          Export[]
+  imports          Import[]
+}
+
+/// One run that created Kreditgeber*innen, Kredite and their opening Zahlungen from a file (ADR 0006).
+model Import {
+  id             String        @id @default(cuid())
+  projectId      String
+  fileName       String
+  fileMimeType   String
+  fileData       Bytes
+  /// Column mapping, default values, value assignments and parse settings used for this Import.
+  settings       Json
+  /// Counts and totals shown in the list of Imports.
+  summary        Json
+  /// User accounts this Import created; deleting the Import deletes those nothing else uses.
+  createdUserIds String[]
+  createdAt      DateTime      @default(now())
+  createdById    String
+  deletedAt      DateTime?
+  deletedById    String?
+  project        Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy      User          @relation("ImportCreatedBy", fields: [createdById], references: [id])
+  deletedBy      User?         @relation("ImportDeletedBy", fields: [deletedById], references: [id])
+  lenders        Lender[]
+  loans          Loan[]
+  transactions   Transaction[]
+  notes          Note[]
+
+  @@index([projectId])
 }
 
 model BankConnection {
@@ -278,6 +309,10 @@ model Lender {
   loans            Loan[]
   notes            Note[]
   additionalFields Json?
+  importId         String?
+  import           Import?          @relation(fields: [importId], references: [id], onDelete: SetNull)
+
+  @@index([importId])
 }
 
 model Loan {
@@ -310,6 +345,10 @@ model Loan {
   notes                 Note[]
   transactions          Transaction[]
   additionalFields      Json?
+  importId              String?
+  import                Import?         @relation(fields: [importId], references: [id], onDelete: SetNull)
+
+  @@index([importId])
 }
 
 model Transaction {
@@ -321,6 +360,10 @@ model Transaction {
   paymentType      PaymentType
   lenderNotifiedAt DateTime?
   loan             Loan            @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  importId         String?
+  import           Import?         @relation(fields: [importId], references: [id], onDelete: SetNull)
+
+  @@index([importId])
 }
 
 model File {
@@ -370,6 +413,10 @@ model Note {
   createdBy   User     @relation(fields: [createdById], references: [id])
   lender      Lender   @relation(fields: [lenderId], references: [id])
   loan        Loan?    @relation(fields: [loanId], references: [id])
+  importId    String?
+  import      Import?  @relation(fields: [importId], references: [id], onDelete: SetNull)
+
+  @@index([importId])
 }
 
 model FaqCategory {
@@ -631,6 +678,7 @@ enum Entity {
   file
   note
   investment_type
+  import
 }
 
 enum LimitationType {
@@ -758,6 +806,8 @@ enum TransactionType {
   INTERESTPAYMENT
   NOTRECLAIMEDPARTIAL
   NOTRECLAIMED
+  /// Zinsübertrag: interest accrued before an Import's Stichtag (ADR 0005)
+  INTERESTCARRYOVER
 }
 
 enum PaymentType {

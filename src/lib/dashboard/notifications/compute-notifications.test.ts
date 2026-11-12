@@ -77,6 +77,7 @@ function deposit(date: Date): Transaction {
     amount: 10_000,
     paymentType: PaymentType.BANK,
     lenderNotifiedAt: null,
+    importId: null,
   };
 }
 

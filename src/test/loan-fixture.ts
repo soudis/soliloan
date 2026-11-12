@@ -44,6 +44,7 @@ export function fixtureLoan(options: {
     amount: transaction.amount,
     paymentType: PaymentType.BANK,
     lenderNotifiedAt: null,
+    importId: null,
   }));
   return {
     id,
