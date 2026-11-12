@@ -407,7 +407,10 @@ export function validateImport(
     }
     if (kontostand === 0) warning('opening.kontostand', 'noKontostand');
     if (stichtag && signDate && stichtag < signDate) error('opening.stichtag', 'stichtagBeforeSignDate');
-    if (stichtag && !stichtag.endsWith('-12-31')) warning('opening.stichtag', 'stichtagNotYearEnd');
+    // 31 Dec and 1 Jan both start the next Zinsjahr from the full Kontostand; any other day splits a year.
+    if (stichtag && !stichtag.endsWith('-12-31') && !stichtag.endsWith('-01-01')) {
+      warning('opening.stichtag', 'stichtagNotYearEnd');
+    }
     if (stichtag && stichtag > context.today) warning('opening.stichtag', 'stichtagInFuture');
 
     const lenderNote = text('lender.note');
