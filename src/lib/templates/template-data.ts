@@ -51,6 +51,7 @@ const TRANSACTION_TYPE_LABELS_DE: Record<string, string> = {
   INTERESTPAYMENT: 'Zinsauszahlung',
   NOTRECLAIMEDPARTIAL: 'Teilerlassung',
   NOTRECLAIMED: 'Erlassung',
+  INTERESTCARRYOVER: 'Zinsübertrag',
   YEAR_OPENING_BALANCE: 'Kontostand Jahresbeginn',
   YEAR_CLOSING_BALANCE: 'Kontostand Jahresende',
 };
@@ -63,6 +64,7 @@ const TRANSACTION_TYPE_LABELS_EN: Record<string, string> = {
   INTERESTPAYMENT: 'Interest payment',
   NOTRECLAIMEDPARTIAL: 'Partial write-off',
   NOTRECLAIMED: 'Write-off',
+  INTERESTCARRYOVER: 'Interest carried over',
   YEAR_OPENING_BALANCE: 'Opening balance',
   YEAR_CLOSING_BALANCE: 'Closing balance',
 };

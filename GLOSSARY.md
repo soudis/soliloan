@@ -51,6 +51,7 @@ _Avoid_: Abrechnungsjahr
 **Umstellungsjahr**:
 The first Zinsjahr in which a project's interest follows the corrected calculation rules; earlier Zinsjahre keep the rules they were booked with.
 _Avoid_: Stichtag, Cutoff
+
 ### Accounting
 
 **Jahresliste**:
@@ -68,6 +69,20 @@ _Avoid_: Jahreskontomitteilung, Kontoauszug, Jahresmitteilung
 **Export**:
 A file generated from a project's data for one calendar year, either a Jahresliste or the Kontomitteilungen of all its Kreditgeber*innen, and kept unchanged as a record of what was handed out. Plural: Exporte.
 _Avoid_: Download, Bericht, Auswertung
+
+### Import
+
+**Import**:
+One run that creates Kreditgeber*innen, Kredite and their opening Zahlungen from a file. An Import owns everything it created and can be deleted as a whole.
+_Avoid_: Import-Lauf, Upload
+
+**Importstichtag**:
+The day of an imported Kredit's opening Kontostand and Einlagenstand.
+_Avoid_: Stichtag, Importdatum, cut-off date
+
+**Zinsübertrag**:
+A Zahlung, created by an Import, that carries the interest accrued before the Importstichtag into a Kredit. It raises the Kontostand but not the Einlagenstand. It is no Zinsertrag; it is paid out with the yearly interest of its Importstichtag's year.
+_Avoid_: Anfangszinsen, initial interest
 
 ### Dashboard
 

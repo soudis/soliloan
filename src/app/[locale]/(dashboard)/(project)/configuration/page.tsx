@@ -2,6 +2,7 @@ import { getBankConnections } from '@/actions/gocardless/queries/get-bank-connec
 import { ConfigurationPage } from '@/components/configuration/configuration-page';
 import { db } from '@/lib/db';
 import { getInviteValidDays } from '@/lib/env';
+import { listImportsUnsafe } from '@/lib/import/list-imports';
 import { countGermanLoans } from '@/lib/investment-types/count-german-loans';
 import { searchParamsCache } from '@/lib/params';
 import { getProjectUnsafe } from '@/lib/projects/get-project';
@@ -14,7 +15,7 @@ interface PageProps {
 export default async function ConfigPage({ searchParams }: PageProps) {
   const { projectId } = searchParamsCache.parse(await searchParams);
 
-  const [result, projectWithManagers, systemTemplatesOverviewRows, germanLoansCount, bankConnections] =
+  const [result, projectWithManagers, systemTemplatesOverviewRows, germanLoansCount, bankConnections, imports] =
     await Promise.all([
       getProjectUnsafe(projectId),
       db.project.findUnique({
@@ -24,6 +25,7 @@ export default async function ConfigPage({ searchParams }: PageProps) {
       getProjectSystemTemplatesOverviewRows(projectId),
       countGermanLoans(db, projectId),
       getBankConnections(projectId),
+      listImportsUnsafe(projectId),
     ]);
 
   const project = {
@@ -38,6 +40,7 @@ export default async function ConfigPage({ searchParams }: PageProps) {
       inviteValidDays={getInviteValidDays()}
       systemTemplatesOverviewRows={systemTemplatesOverviewRows}
       bankConnections={bankConnections}
+      imports={imports}
     />
   );
 }
