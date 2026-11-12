@@ -19,7 +19,6 @@ import {
   mapCountry,
   mapInterestMethod,
   mapInterestPaymentType,
-  parseInterestPaymentType,
   mapLenderNames,
   mapLenderType,
   mapLoanPeriodFields,
@@ -29,6 +28,7 @@ import {
   mapSalutation,
   mapTerminationType,
   mapTransactionType,
+  parseInterestPaymentType,
 } from './mapping';
 import type {
   Dkpv1DataPackage,
@@ -197,7 +197,8 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
 
         const interestMethod =
           mapInterestMethodOrWarn(defaults?.interest_method ?? null, warnings, 'project', null) ??
-          InterestMethod.ACT_360_COMPOUND;
+          // habidat-direktkredit falls back to 365_compound when no method is set.
+          InterestMethod.ACT_365_COMPOUND;
 
         const altInterestMethods = (defaults?.interest_methods_alternative ?? [])
           .filter((m): m is string => m !== null && m !== undefined)
@@ -237,6 +238,8 @@ export async function runMigration(db: PrismaClient, input: MigrationInput): Pro
                 country: projectDefaultCountry,
                 interestMethod,
                 altInterestMethods,
+                // The imported Zinsjahre are already booked: keep their rules until the next Zinsjahr (ADR 0005).
+                interestChangeoverYear: new Date().getFullYear() + 1,
                 lenderAdditionalFields,
                 deInvestmentActCompliance: false,
               },

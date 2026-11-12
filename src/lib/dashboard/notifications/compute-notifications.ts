@@ -35,6 +35,7 @@ export type NotificationLoan = {
   interestRate: number;
   altInterestMethod: InterestMethod | null;
   interestMethod: InterestMethod;
+  interestChangeoverYear: number | null;
   signDate: Date | string;
   amount: number;
   investmentTypeId: string | null;
@@ -133,7 +134,7 @@ function unpaidInterestByYear(loan: NotificationLoan, currentYear: number): Map<
       altInterestMethod: loan.altInterestMethod,
       lender: {
         project: {
-          configuration: { interestMethod: loan.interestMethod },
+          configuration: { interestMethod: loan.interestMethod, interestChangeoverYear: loan.interestChangeoverYear },
         },
       },
     } as Parameters<typeof calculateLoanPerYear>[0],

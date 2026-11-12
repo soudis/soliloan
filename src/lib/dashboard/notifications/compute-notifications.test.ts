@@ -38,6 +38,7 @@ function loan(overrides: Partial<NotificationLoan> = {}): NotificationLoan {
     interestRate: 4,
     altInterestMethod: InterestMethod.ACT_365_NOCOMPOUND,
     interestMethod: InterestMethod.ACT_365_NOCOMPOUND,
+    interestChangeoverYear: null,
     signDate: new Date(2024, 0, 1),
     amount: 10_000,
     investmentTypeId: null,

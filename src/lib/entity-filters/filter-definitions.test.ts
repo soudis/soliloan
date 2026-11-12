@@ -42,6 +42,7 @@ const project: ProjectWithConfiguration = {
     lenderSalutation: null,
     lenderCountry: null,
     interestMethod: InterestMethod.ACT_360_COMPOUND,
+    interestChangeoverYear: null,
     altInterestMethods: [],
     defaultLoanTemplateId: null,
     lenderAdditionalFields: [lenderField],
