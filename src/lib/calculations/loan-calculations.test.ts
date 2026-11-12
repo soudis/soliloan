@@ -13,10 +13,7 @@ describe('Zinskorrektur', () => {
   const loan = fixtureLoan({
     interestRate: 2,
     interestMethod: 'ACT_365_NOCOMPOUND',
-    transactions: [
-      tx(DEPOSIT, new Date(2024, 0, 1), 10000),
-      tx(TERMINATION, new Date(2025, 6, 1), -10299.15),
-    ],
+    transactions: [tx(DEPOSIT, new Date(2024, 0, 1), 10000), tx(TERMINATION, new Date(2025, 6, 1), -10299.15)],
   });
 
   it('equals the Abschlussdifferenz and leaves the Kontostand at 0', () => {

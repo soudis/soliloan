@@ -3,6 +3,7 @@ import { createTranslator } from 'next-intl';
 
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFields, calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
+import { payoutAsOfDate } from '@/lib/processes/yearly-interest';
 import { db } from '@/lib/db';
 import { sampleForumDigestMergeData } from '@/lib/help/forum-digest-data';
 import { resolveSavingsFirstDepositDate, resolveSavingsLastDepositDate } from '@/lib/loans/savings-contract';
@@ -29,6 +30,7 @@ import { formatCurrency, formatDateLong, formatDateShort, formatPercentage, getL
 import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { transactionSorter } from '@/lib/utils/sorters';
 import deDashboardMessages from '@/messages/de/dashboard.json';
+import type { CalculationOptions } from '@/types/calculation';
 import type { LenderWithRelations } from '@/types/lenders';
 import type { LoanWithRelations } from '@/types/loans';
 import { interestPaymentTypeLabel } from './interest-payment-type-label';
@@ -49,8 +51,8 @@ const TRANSACTION_TYPE_LABELS_DE: Record<string, string> = {
   INTERESTPAYMENT: 'Zinsauszahlung',
   NOTRECLAIMEDPARTIAL: 'Teilerlassung',
   NOTRECLAIMED: 'Erlassung',
-  YEAR_OPENING_BALANCE: 'Anfangssaldo',
-  YEAR_CLOSING_BALANCE: 'Endsaldo',
+  YEAR_OPENING_BALANCE: 'Kontostand Jahresbeginn',
+  YEAR_CLOSING_BALANCE: 'Kontostand Jahresende',
 };
 
 const TRANSACTION_TYPE_LABELS_EN: Record<string, string> = {
@@ -210,6 +212,18 @@ async function getConfigData(projectId: string): Promise<Record<string, string>>
   };
 }
 
+type TemplateLenderRow = Prisma.LenderGetPayload<{ include: typeof lenderTemplateInclude }>;
+
+function calculateTemplateLender(lender: TemplateLenderRow, options?: CalculationOptions) {
+  return calculateLenderFields(
+    parseAdditionalFields({
+      ...lender,
+      loans: lender.loans.map((loan) => parseAdditionalFields(loan)),
+    }),
+    options,
+  );
+}
+
 async function getCalculatedLender(lenderId: string) {
   const lender = await db.lender.findUnique({
     where: { id: lenderId },
@@ -218,12 +232,7 @@ async function getCalculatedLender(lenderId: string) {
 
   if (!lender) return null;
 
-  return calculateLenderFields(
-    parseAdditionalFields({
-      ...lender,
-      loans: lender.loans.map((loan) => parseAdditionalFields(loan)),
-    }),
-  );
+  return calculateTemplateLender(lender);
 }
 
 async function getCalculatedLoan(loanId: string) {
@@ -1017,4 +1026,31 @@ export async function getTemplateData(
   }
 
   return null;
+}
+
+/**
+ * `LENDER_YEARLY` merge data of several Kreditgeber*innen of one project, loaded in one query, for the
+ * Kontomitteilungen Export. Unlike `getTemplateData`, the current year is allowed: its figures are computed
+ * as of 31 Dec, so the Zinsertrag covers the whole year.
+ */
+export async function getLendersYearlyTemplateData(
+  projectId: string,
+  lenderIds: string[],
+  year: number,
+  locale = 'de',
+): Promise<Map<string, Record<string, unknown>>> {
+  const lenders = await db.lender.findMany({
+    where: { projectId, id: { in: lenderIds } },
+    include: lenderTemplateInclude,
+  });
+  const now = new Date();
+  const config = await getConfigData(projectId);
+  const calculationOptions = year >= now.getFullYear() ? { toDate: payoutAsOfDate(year) } : undefined;
+
+  return new Map(
+    lenders.map((lender) => {
+      const yearly = buildLenderYearlyTemplateData(calculateTemplateLender(lender, calculationOptions), year, locale);
+      return [lender.id, withMergeScopes(now, locale, config, yearly.display, yearly.raw)];
+    }),
+  );
 }

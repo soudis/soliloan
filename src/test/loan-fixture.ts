@@ -66,5 +66,4 @@ export function fixtureLoan(options: {
 }
 
 export const tx = (type: TransactionType, date: Date, amount: number): FixtureTransaction => ({ type, date, amount });
-export const { DEPOSIT, WITHDRAWAL, TERMINATION, INTERESTPAYMENT, NOTRECLAIMED, NOTRECLAIMEDPARTIAL } =
-  TransactionType;
+export const { DEPOSIT, WITHDRAWAL, TERMINATION, INTERESTPAYMENT, NOTRECLAIMED, NOTRECLAIMEDPARTIAL } = TransactionType;
