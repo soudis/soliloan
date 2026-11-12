@@ -94,6 +94,24 @@ _Avoid_: Abrechnungsjahr
 The first Zinsjahr in which a project's interest follows the corrected calculation rules; earlier Zinsjahre keep the rules they were booked with.
 _Avoid_: Stichtag, Cutoff
 
+### Accounting
+
+**Jahresliste**:
+The list of all Zahlungen and Zinserträge of all Kredite in a project for one calendar year, with totals, prepared for the accountant.
+_Avoid_: Buchhaltungsexport, XLS-Export, Jahresabschluss
+
+**Zinsertrag**:
+The interest a Kredit earns in one Zinsjahr, including any Zinskorrektur.
+_Avoid_: Zinsgutschrift, Zinsen
+
+**Kontomitteilung**:
+The yearly statement to one Kreditgeber*in of the balances, Zahlungen and Zinserträge of their Kredite for one calendar year. Plural: Kontomitteilungen.
+_Avoid_: Jahreskontomitteilung, Kontoauszug, Jahresmitteilung
+
+**Export**:
+A file generated from a project's data for one calendar year, either a Jahresliste or the Kontomitteilungen of all its Kreditgeber*innen, and kept unchanged as a record of what was handed out. Plural: Exporte.
+_Avoid_: Download, Bericht, Auswertung
+
 ### Dashboard
 
 **Benachrichtigung**:

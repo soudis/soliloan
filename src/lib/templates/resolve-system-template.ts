@@ -1,18 +1,24 @@
+import type { TemplateType } from '@prisma/client';
+
 import { db } from '@/lib/db';
 import { generateEmailHtml } from '@/lib/templates/email-generator';
 import { processTemplate } from '@/lib/templates/template-processor';
 
 /**
- * Resolve a system email template by systemKey, preferring a project-specific
- * override over the global row. Returns null if no template is found or the
+ * Resolve a system template (an email unless `type` says otherwise) by systemKey, preferring a
+ * project-specific override over the global row. Returns null if no template is found or the
  * design is empty.
  */
-export async function resolveSystemTemplate(systemKey: string, projectId?: string | null) {
+export async function resolveSystemTemplate(
+  systemKey: string,
+  projectId?: string | null,
+  type: TemplateType = 'EMAIL',
+) {
   const rows = await db.communicationTemplate.findMany({
     where: {
       systemKey,
       isSystem: true,
-      type: 'EMAIL',
+      type,
       ...(projectId ? { OR: [{ projectId }, { projectId: null }] } : { projectId: null }),
     },
     select: {
@@ -21,6 +27,7 @@ export async function resolveSystemTemplate(systemKey: string, projectId?: strin
       dataset: true,
       projectId: true,
       subjectOrFilename: true,
+      name: true,
     },
     orderBy: { projectId: 'asc' },
   });

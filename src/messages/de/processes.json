@@ -1,7 +1,8 @@
 {
   "title": "Prozesse",
   "tabs": {
-    "yearlyInterest": "Jährliche Zinsauszahlung"
+    "yearlyInterest": "Jährliche Zinsauszahlung",
+    "downloads": "Downloads"
   },
   "yearlyInterest": {
     "description": "Wähle die Kredite in der Tabelle aus und starte den Assistenten, um die offenen Zinsen auszuzahlen. Du kannst eine SEPA-Datei herunterladen und sie im Online-Banking importieren, oder die Überweisungen Schritt für Schritt selbst anlegen.",
@@ -20,6 +21,39 @@
     "nothingCreated": "Es wurde keine Zinsauszahlung gebucht.",
     "emailsSent": "{count, plural, one {# E-Mail wurde gesendet.} other {# E-Mails wurden gesendet.}}",
     "emailsFailed": "{count, plural, one {# E-Mail konnte nicht gesendet werden.} other {# E-Mails konnten nicht gesendet werden.}}"
+  },
+  "downloads": {
+    "description": "Erzeuge die Jahresliste für die Buchhaltung oder die Kontomitteilungen aller Kreditgeber*innen für ein Jahr. Jede Datei wird als Export gespeichert und danach nicht mehr verändert. Wenn du ein Jahr erneut generierst, kommt ein neuer Export dazu.",
+    "type": "Art",
+    "year": "Jahr",
+    "types": {
+      "YEARLY_LIST": "Jahresliste",
+      "ACCOUNT_NOTIFICATIONS": "Kontomitteilungen"
+    },
+    "generate": "Generieren",
+    "generating": "Wird generiert…",
+    "generated": "{fileName} wurde gespeichert.",
+    "generateError": "Der Export konnte nicht generiert werden.",
+    "currentYearWarning": {
+      "title": "Das Jahr ist noch nicht abgeschlossen",
+      "description": "Die Zahlen werden zum 31.12.{year} berechnet. Der Export wird als vorläufig markiert."
+    },
+    "openInterestWarning": {
+      "title": "Offene Zinsauszahlungen {year}",
+      "description": "{count, plural, one {Bei # Kredit mit jährlicher Zinsauszahlung sind die Zinsen {year} noch nicht ausbezahlt.} other {Bei # Krediten mit jährlicher Zinsauszahlung sind die Zinsen {year} noch nicht ausbezahlt.}}",
+      "link": "Zur jährlichen Zinsauszahlung"
+    },
+    "preliminary": "vorläufig",
+    "columns": {
+      "type": "Art",
+      "year": "Jahr",
+      "preliminary": "Vorläufig",
+      "createdBy": "Erstellt von",
+      "createdAt": "Erstellt am",
+      "download": "Download"
+    },
+    "empty": "Es gibt noch keine Exporte.",
+    "error": "Die Exporte konnten nicht geladen werden."
   },
   "grouping": {
     "byLender": "Auszahlungen pro Kreditgeber*in gruppieren",
