@@ -129,6 +129,14 @@ export function LogbookTable({ changes, views }: LogbookTableProps) {
           });
         }
         break;
+      case 'import':
+        if (change.operation === 'CREATE') {
+          return t('import.created', { fileName: context.import?.fileName ?? '' });
+        }
+        if (change.operation === 'DELETE') {
+          return t('import.deleted', { fileName: context.import?.fileName ?? '' });
+        }
+        break;
       case 'project':
         if (change.operation === 'CREATE') {
           return t('project.created');

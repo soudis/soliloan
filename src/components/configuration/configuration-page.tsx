@@ -1,13 +1,14 @@
 'use client';
 
 import type { BankConnection } from '@prisma/client';
-import { Files as FilesIcon, FileText, Scale, Settings2, User, UserCog, Wallet } from 'lucide-react';
+import { FileUp, Files as FilesIcon, FileText, Scale, Settings2, User, UserCog, Wallet } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { updateConfigurationAction } from '@/actions/projects/mutations/update-project-configuration';
+import type { ImportListEntry } from '@/lib/import/list-imports';
 import type { ConfigurationFormData } from '@/lib/schemas/configuration';
 import type { ProjectSystemTemplateOverviewRow } from '@/lib/templates/project-system-templates-overview';
 import { convertEmptyToNull } from '@/lib/utils/form';
@@ -19,9 +20,18 @@ import { ConfigurationFormLegal } from './configuration-form-legal';
 import { ConfigurationFormLender } from './configuration-form-lender';
 import { ConfigurationFormLoans } from './configuration-form-loans';
 import { ConfigurationFormManagers } from './configuration-form-managers';
+import { ImportTab } from './import/import-tab';
 import { ProjectTemplatesTab } from './project-templates-tab';
 
-export type ConfigurationTabValue = 'general' | 'managers' | 'lender' | 'loans' | 'legal' | 'templates' | 'files';
+export type ConfigurationTabValue =
+  | 'general'
+  | 'managers'
+  | 'lender'
+  | 'loans'
+  | 'legal'
+  | 'templates'
+  | 'import'
+  | 'files';
 
 type Props = {
   project: ProjectWithConfiguration;
@@ -29,6 +39,7 @@ type Props = {
   inviteValidDays: number;
   systemTemplatesOverviewRows: ProjectSystemTemplateOverviewRow[];
   bankConnections: BankConnection[];
+  imports: ImportListEntry[];
 };
 
 export const ConfigurationPage = ({
@@ -37,6 +48,7 @@ export const ConfigurationPage = ({
   inviteValidDays,
   systemTemplatesOverviewRows,
   bankConnections,
+  imports,
 }: Props) => {
   const t = useTranslations('dashboard.configuration');
   const [activeTab, setActiveTab] = useQueryState(
@@ -48,6 +60,7 @@ export const ConfigurationPage = ({
       'loans',
       'legal',
       'templates',
+      'import',
       'files',
     ] as const).withDefault('general'),
   );
@@ -102,6 +115,10 @@ export const ConfigurationPage = ({
           <FileText className="h-5 w-5 md:h-4 md:w-4" />
           <span>{t('tabs.templates')}</span>
         </TabsTrigger>
+        <TabsTrigger value="import" variant="modern">
+          <FileUp className="h-5 w-5 md:h-4 md:w-4" />
+          <span>{t('tabs.import')}</span>
+        </TabsTrigger>
         <TabsTrigger value="files" variant="modern">
           <FilesIcon className="h-5 w-5 md:h-4 md:w-4" />
           <span>{t('tabs.files')}</span>
@@ -147,6 +164,9 @@ export const ConfigurationPage = ({
       </TabsContent>
       <TabsContent value="templates">
         <ProjectTemplatesTab project={project} systemTemplatesOverviewRows={systemTemplatesOverviewRows} />
+      </TabsContent>
+      <TabsContent value="import">
+        <ImportTab projectId={project.id} imports={imports} />
       </TabsContent>
       <TabsContent value="files">Files</TabsContent>
     </Tabs>
