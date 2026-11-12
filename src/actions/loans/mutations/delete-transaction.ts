@@ -12,6 +12,7 @@ import {
 } from '@/lib/audit-trail';
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
+import { checkChange, rejectionErrorKey } from '@/lib/loans/transaction-validation';
 import { transactionIdSchema } from '@/lib/schemas/common';
 import { transactionAction } from '@/lib/utils/safe-action';
 
@@ -25,6 +26,7 @@ export const deleteTransactionAction = transactionAction
       include: {
         loan: {
           include: {
+            transactions: true,
             lender: {
               include: {
                 project: {
@@ -41,6 +43,18 @@ export const deleteTransactionAction = transactionAction
 
     if (!transaction) {
       throw new Error('Transaction not found');
+    }
+
+    // Any Zahlung can be deleted as long as the remaining ledger stays valid
+    const { transactions } = transaction.loan;
+    const { errors } = checkChange(
+      transaction.loan,
+      transactions,
+      transactions.filter((item) => item.id !== transactionId),
+      transaction.date,
+    );
+    if (errors.length > 0) {
+      throw new Error(rejectionErrorKey(errors, 'error.transaction.deleteInvalid'));
     }
 
     // Create audit trail entry before deletion

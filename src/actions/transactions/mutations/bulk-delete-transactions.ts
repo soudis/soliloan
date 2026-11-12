@@ -1,6 +1,6 @@
 'use server';
 
-import { Entity, Operation, TransactionType } from '@prisma/client';
+import { Entity, Operation, type Transaction, TransactionType } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
@@ -13,7 +13,9 @@ import {
 } from '@/lib/audit-trail';
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
+import { checkChange } from '@/lib/loans/transaction-validation';
 import { getLenderName } from '@/lib/utils';
+import { sortTransactions } from '@/lib/utils/sorters';
 import { projectAction } from '@/lib/utils/safe-action';
 
 const bulkDeleteTransactionsSchema = z.object({
@@ -32,7 +34,7 @@ export const bulkDeleteTransactionsAction = projectAction
       include: {
         loan: {
           include: {
-            transactions: { orderBy: { date: 'asc' } },
+            transactions: true,
             lender: {
               include: {
                 project: { include: { configuration: true } },
@@ -49,12 +51,16 @@ export const bulkDeleteTransactionsAction = projectAction
       id: string;
       loanNumber: number | null;
       lenderName: string | null;
-      reason: 'notFound' | 'interest' | 'notLatest';
+      reason: 'notFound' | 'interest' | 'invalid';
     }[] = transactionIds
       .filter((id) => !foundIds.has(id))
       .map((id) => ({ id, loanNumber: null, lenderName: null, reason: 'notFound' as const }));
 
-    for (const transaction of transactions) {
+    const ledgers = new Map<string, Transaction[]>();
+
+    // Latest first: a Zahlung that relies on an earlier one (a Teilrückzahlung on its Einzahlung) is
+    // deleted before it, so selecting both deletes both whatever order the database returns
+    for (const transaction of sortTransactions(transactions).reverse()) {
       const loanNumber = transaction.loan.loanNumber;
       const lenderName = getLenderName(transaction.loan.lender);
 
@@ -63,14 +69,15 @@ export const bulkDeleteTransactionsAction = projectAction
         continue;
       }
 
-      const lastNonInterest = [...transaction.loan.transactions]
-        .reverse()
-        .find((tx) => tx.type !== TransactionType.INTEREST);
-
-      if (lastNonInterest?.id !== transaction.id) {
-        skipped.push({ id: transaction.id, loanNumber, lenderName, reason: 'notLatest' });
+      // Each deletion is checked against the ledger as left by the previous ones
+      const remaining = ledgers.get(transaction.loanId) ?? transaction.loan.transactions;
+      const proposed = remaining.filter((item) => item.id !== transaction.id);
+      const { errors } = checkChange(transaction.loan, remaining, proposed, transaction.date);
+      if (errors.length > 0) {
+        skipped.push({ id: transaction.id, loanNumber, lenderName, reason: 'invalid' });
         continue;
       }
+      ledgers.set(transaction.loanId, proposed);
 
       await createAuditEntry(db, {
         entity: Entity.transaction,

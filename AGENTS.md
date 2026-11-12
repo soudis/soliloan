@@ -13,6 +13,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 Soliloan manages direct-credit projects (crowdinvesting): Kreditgeber\*innen, Kredite, Zahlungen, notes and files, multi-tenant per project with admin / manager / lender roles. Stack: Next.js (App Router), TypeScript, Prisma + PostgreSQL, Tailwind, shadcn/ui, next-intl.
 
 - Language: read [GLOSSARY.md](GLOSSARY.md) and the relevant [ADRs](docs/adr/) before naming or changing domain behaviour. Use the glossary terms in code, tickets and PRs.
+- UI that loads data (dialogs, panels, previews): follow [ui.md](docs/agents/ui.md) so the layout holds still.
 - Before a PR: `pnpm verify` (typecheck, lint, format, test). Never commit `.env` or other secrets.
 - The predecessor app [habidat-direktkredit](https://github.com/soudis/habidat-direktkredit) is a read-only reference: look it up only when a ticket or the user refers to legacy behaviour, never copy code ([workflow.md](docs/agents/workflow.md#legacy-app)).
 

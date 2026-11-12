@@ -73,55 +73,16 @@ export function isDepositEligible(loan: LoanWithCalculations, depositAmount: num
   if (loan.status === LoanStatus.REPAID || loan.status === LoanStatus.TERMINATED) {
     return false;
   }
-  if (loan.deposits >= loan.amount) {
-    return false;
-  }
-  const remaining = loan.amount - loan.deposits;
-  return absAmount > 0 && absAmount <= remaining + 0.001;
+  // Free amount under the Kreditbetrag: withdrawals and waivers are stored negative and free it up again
+  const einlagenstand = loan.deposits + loan.withdrawals + loan.notReclaimed;
+  const remaining = loan.amount - einlagenstand;
+  return absAmount > 0 && remaining > 0 && absAmount <= remaining + 0.001;
 }
 
 /** Auto-select loan only when exactly one deposit-eligible loan exists for the lender. */
 export function matchLoanForDeposit(lenderLoans: LoanWithCalculations[], depositAmount: number): string | null {
   const eligible = lenderLoans.filter((loan) => isDepositEligible(loan, depositAmount));
   return eligible.length === 1 ? eligible[0].id : null;
-}
-
-const AMOUNT_TOLERANCE = 0.001;
-
-/** TERMINATION must match the loan balance on the transaction date (see transaction form). */
-export function isTerminationAmountMatchingBalance(amountMagnitude: number, balance: number): boolean {
-  const absAmount = Math.abs(amountMagnitude);
-  if (balance <= 0 || absAmount <= 0) {
-    return false;
-  }
-  return Math.abs(absAmount - balance) <= AMOUNT_TOLERANCE;
-}
-
-/** Server-side eligibility check mirroring transaction-form-fields rules. */
-export function isLoanEligibleForTransaction(
-  loan: LoanWithCalculations,
-  type: TransactionType,
-  amountMagnitude: number,
-): boolean {
-  const absAmount = Math.abs(amountMagnitude);
-  if (absAmount <= 0) {
-    return false;
-  }
-
-  switch (type) {
-    case TransactionType.DEPOSIT:
-      return isDepositEligible(loan, absAmount);
-    case TransactionType.WITHDRAWAL:
-      return loan.balance > 0 && absAmount <= loan.balance - 0.01 + 0.001;
-    case TransactionType.INTERESTPAYMENT: {
-      const maxInterest = loan.interest + loan.interestPaid;
-      return loan.balance > 0 && maxInterest > 0 && absAmount <= Math.min(maxInterest, loan.balance - 0.01) + 0.001;
-    }
-    case TransactionType.TERMINATION:
-      return isTerminationAmountMatchingBalance(absAmount, loan.balance);
-    default:
-      return false;
-  }
 }
 
 export function defaultTransactionTypeForAmount(amount: number): TransactionType | null {
