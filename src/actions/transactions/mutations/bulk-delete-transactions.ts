@@ -15,6 +15,7 @@ import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-re
 import { db } from '@/lib/db';
 import { checkChange } from '@/lib/loans/transaction-validation';
 import { getLenderName } from '@/lib/utils';
+import { sortTransactions } from '@/lib/utils/sorters';
 import { projectAction } from '@/lib/utils/safe-action';
 
 const bulkDeleteTransactionsSchema = z.object({
@@ -57,7 +58,9 @@ export const bulkDeleteTransactionsAction = projectAction
 
     const ledgers = new Map<string, Transaction[]>();
 
-    for (const transaction of transactions) {
+    // Latest first: a Zahlung that relies on an earlier one (a Teilrückzahlung on its Einzahlung) is
+    // deleted before it, so selecting both deletes both whatever order the database returns
+    for (const transaction of sortTransactions(transactions).reverse()) {
       const loanNumber = transaction.loan.loanNumber;
       const lenderName = getLenderName(transaction.loan.lender);
 
