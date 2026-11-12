@@ -26,6 +26,10 @@ _Avoid_: Darlehensbetrag
 A category of Kredite grouped for compliance with the Bagatellgrenze, identified by its interest rate.
 _Avoid_: Anlageform
 
+**Kontomitteilung**:
+A yearly document for one Kreditgeber*in listing their Kredite, Zahlungen and interest for one year.
+_Avoid_: Kontoauszug, loan statement
+
 **Bagatellgrenze**:
 The limit under § 2 VermAnlG (at most 20 units, or €100,000 within twelve months) up to which an Anlageart needs no prospectus.
 _Avoid_: VermAnlG-Limit

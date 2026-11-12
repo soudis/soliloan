@@ -1,7 +1,7 @@
 /**
- * Template images are rendered server-side (PDF) and rewritten for email.
+ * Rewrites template image sources for email, where the mail client loads them.
  * Only inline data URLs and same-app relative paths are allowed so a design
- * cannot make the server request arbitrary addresses.
+ * cannot point at arbitrary addresses. PDFs use `resolvePdfImageSrc` instead.
  */
 export function resolveTemplateImageSrc(src: string, assetBaseUrl?: string): string {
   if (!src) return src;
