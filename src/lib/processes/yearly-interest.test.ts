@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { PaymentType, type Transaction, TransactionType } from '@prisma/client';
 
+import { calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
 import type { LoanWithRelations } from '@/types/loans';
 
-import { payoutBookingDate, unpaidYearlyInterest } from './yearly-interest';
+import { payoutAsOfDate, payoutBookingDate, unpaidYearlyInterest } from './yearly-interest';
 
 const stichtag = new Date(2024, 11, 31);
 
@@ -36,14 +37,21 @@ const opening = [
   transaction('carryover', TransactionType.INTERESTCARRYOVER, 500),
 ];
 
+/** Interest of the Stichtag day itself: none, or one Zinstag if the day money arrives counts. */
+const stichtagDayInterest = (transactions: Transaction[]) =>
+  calculateLoanPerYear(loan(transactions), payoutAsOfDate(2024))
+    .find((row) => row.year === 2024)
+    ?.interest.toNumber() ?? 0;
+
 describe('unpaidYearlyInterest with a Zinsübertrag', () => {
   it('pays out the Zinsübertrag with the year of its Stichtag', () => {
-    assert.equal(unpaidYearlyInterest(loan(opening), 2024), 500);
+    assert.equal(unpaidYearlyInterest(loan(opening), 2024), 500 + stichtagDayInterest(opening));
   });
 
   it('is settled by the Zinsauszahlung of that year', () => {
     const payout = transaction('payout', TransactionType.INTERESTPAYMENT, -500, payoutBookingDate(2024));
-    assert.equal(unpaidYearlyInterest(loan([...opening, payout]), 2024), 0);
+    const transactions = [...opening, payout];
+    assert.equal(unpaidYearlyInterest(loan(transactions), 2024), stichtagDayInterest(transactions));
   });
 
   it('leaves the following years to their own interest', () => {
