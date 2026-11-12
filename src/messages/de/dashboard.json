@@ -788,9 +788,9 @@
       "partialSuccess": "{deleted} Transaktionen gelöscht, {skipped} übersprungen.",
       "error": "Fehler beim Löschen der Transaktionen.",
       "skippedTitle": "Nicht gelöschte Transaktionen",
-      "skippedDescription": "Eine Buchung kann nur gelöscht werden, wenn die übrigen Buchungen des Kredits danach gültig bleiben. Berechnete Zinszeilen können nicht gelöscht werden.",
+      "skippedDescription": "Eine Zahlung kann nur gelöscht werden, wenn die übrigen Zahlungen des Kredits danach gültig bleiben. Berechnete Zinszeilen können nicht gelöscht werden.",
       "reasons": {
-        "invalid": "Kredit abgeschlossen oder spätere Buchungen würden ungültig",
+        "invalid": "Kredit abgeschlossen oder spätere Zahlungen würden ungültig",
         "interest": "Berechnete Zinszeile",
         "notFound": "Buchung wurde nicht gefunden"
       }
@@ -947,7 +947,7 @@
           "futureTitle": "Datum in der Zukunft",
           "futureDescription": "Die Zahlung liegt nach heute. Zinsen werden bis zu diesem Datum gerechnet.",
           "closingOwnTitle": "Betrag weicht vom Kontostand ab",
-          "closingOwnDescription": "Am {date} beträgt der Kontostand {balance}, der Betrag ist {amount}. Der Betrag liegt {difference} {direction, select, higher {über} other {unter}} dem Kontostand. Wird trotzdem gespeichert, wird sie den Zinsen des Abschlussjahres zugerechnet (Zinskorrektur).",
+          "closingOwnDescription": "Am {date} beträgt der Kontostand {balance}, der Betrag ist {amount}. Der Betrag liegt {difference} {direction, select, higher {über} other {unter}} dem Kontostand. Wird trotzdem gespeichert, wird sie den Zinsen des Jahres der Abschlusszahlung zugerechnet (Zinskorrektur).",
           "pastYearsTitle": "Frühere Jahre ändern sich",
           "pastYearsRow": "{year}: Zinsen {interestBefore} → {interestAfter}, Kontostand zum Jahresende {balanceBefore} → {balanceAfter}",
           "notifiedTitle": "Kreditgeber*in wurde bereits benachrichtigt",

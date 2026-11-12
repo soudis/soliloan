@@ -92,6 +92,44 @@ describe('replayLedger rules', () => {
   });
 });
 
+describe('cap at the end of the day and existing violations', () => {
+  const full = [tx('DEPOSIT', '2024-01-01', 1000, 'a')];
+
+  it('accepts a same-day Teilrückzahlung and Einzahlung that end at the Kreditbetrag', () => {
+    assert.deepEqual(
+      rules([...full, tx('WITHDRAWAL', '2024-03-01', 100, 'b'), tx('DEPOSIT', '2024-03-01', 100, 'c')]),
+      [],
+    );
+  });
+
+  it('rejects a same-day pair that ends above the Kreditbetrag, on the last Einzahlung of the day', () => {
+    const result = replayLedger(loan(), [
+      ...full,
+      tx('WITHDRAWAL', '2024-03-01', 100, 'b'),
+      tx('DEPOSIT', '2024-03-01', 200, 'c'),
+    ]);
+    assert.deepEqual(
+      result.violations.map((v) => [v.rule, v.transactionId]),
+      [['CAP_EXCEEDED', 'c']],
+    );
+  });
+
+  it('flags a second violation of the same rule on a day that already has one', () => {
+    const legacy = [tx('DEPOSIT', '2024-01-01', 500, 'a'), tx('WITHDRAWAL', '2024-02-01', 600, 'b')];
+    const withSecond = [...legacy, tx('WITHDRAWAL', '2024-02-01', 50, 'c')];
+    const result = checkChange(loan(), legacy, withSecond);
+    assert.deepEqual(
+      result.errors.map((e) => [e.rule, e.transactionId]),
+      [['BALANCE_NEGATIVE', 'c']],
+    );
+  });
+
+  it('keeps tolerating the violation of the Zahlung that already had it', () => {
+    const legacy = [tx('DEPOSIT', '2024-01-01', 500, 'a'), tx('WITHDRAWAL', '2024-02-01', 600, 'b')];
+    assert.deepEqual(checkChange(loan(), legacy, legacy).errors, []);
+  });
+});
+
 describe('closing differences', () => {
   it('is zero for a matching Rückzahlung', () => {
     const result = replayLedger(loan(), [tx('DEPOSIT', '2024-01-01', 1000), tx('TERMINATION', '2024-06-01', 1000)]);

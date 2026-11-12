@@ -2,17 +2,15 @@ import { type Loan, type Transaction, TransactionType } from '@prisma/client';
 import moment from 'moment';
 
 import { calculateLoanPerYear, type LoanForPerYear } from '@/lib/calculations/loan-calculations';
+import { CLOSING_TYPES, isClosingType } from '@/lib/transactions/closing-types';
 import { sortTransactions } from '@/lib/utils/sorters';
 
 /** The parts of a Kredit the ledger replay needs; the Zahlungen are passed separately. */
 export type LedgerLoan = Pick<Loan, 'amount'> & Omit<LoanForPerYear, 'transactions'>;
 
-export const CLOSING_TYPES: TransactionType[] = [TransactionType.TERMINATION, TransactionType.NOTRECLAIMED];
 export const PARTIAL_TYPES: TransactionType[] = [TransactionType.WITHDRAWAL, TransactionType.NOTRECLAIMEDPARTIAL];
 /** Types that reduce the Kontostand (stored with a negative amount). */
 export const OUTFLOW_TYPES: TransactionType[] = [...CLOSING_TYPES, ...PARTIAL_TYPES, TransactionType.INTERESTPAYMENT];
-
-export const isClosingType = (type: TransactionType) => CLOSING_TYPES.includes(type);
 
 /** Amount as stored: outflows are negative. */
 export const toStoredAmount = (type: TransactionType, amount: number) =>
@@ -147,7 +145,29 @@ export const replayLedger = (loan: LedgerLoan, transactions: Transaction[], opti
   let einlagenstand = 0;
   let closed = false;
 
+  // The Kreditbetrag cap is checked on the Einlagenstand at the end of a day, because the order of
+  // the Zahlungen within a day is not known (a same-day Einzahlung and Teilrückzahlung are fine).
+  let currentDay: number | undefined;
+  let lastDepositOfDay: Transaction | undefined;
+  const closeDay = () => {
+    if (lastDepositOfDay && toCents(einlagenstand) > toCents(loan.amount)) {
+      violations.push({
+        rule: 'CAP_EXCEEDED',
+        transactionId: lastDepositOfDay.id,
+        type: lastDepositOfDay.type,
+        date: lastDepositOfDay.date,
+        value: einlagenstand,
+        limit: loan.amount,
+      });
+    }
+    lastDepositOfDay = undefined;
+  };
+
   for (const transaction of toLedger(transactions)) {
+    if (currentDay !== undefined && transaction.date.getTime() !== currentDay) {
+      closeDay();
+    }
+    currentDay = transaction.date.getTime();
     const afterClosing = closed;
     const checked = !fromDay || !dayOf(transaction.date).isBefore(fromDay, 'day');
     const closing = isClosingType(transaction.type);
@@ -191,8 +211,10 @@ export const replayLedger = (loan: LedgerLoan, transactions: Transaction[], opti
         if (toCents(Math.abs(transaction.amount)) > toCents(unpaidInterest)) {
           violate('INTEREST_EXCEEDS_ACCRUED', Math.abs(transaction.amount), Math.max(unpaidInterest, 0));
         }
-      } else if (transaction.type === TransactionType.DEPOSIT && toCents(einlagenstand) > toCents(loan.amount)) {
-        violate('CAP_EXCEEDED', einlagenstand, loan.amount);
+      }
+
+      if (!afterClosing && transaction.type === TransactionType.DEPOSIT) {
+        lastDepositOfDay = transaction;
       }
 
       entries.push({ transaction, balanceBefore, balanceAfter, einlagenstandAfter: einlagenstand });
@@ -205,13 +227,17 @@ export const replayLedger = (loan: LedgerLoan, transactions: Transaction[], opti
       segment.push(transaction);
     }
   }
+  closeDay();
 
   return { entries, violations, closingDifferences };
 };
 
-const violationKey = (violation: Violation) => `${violation.rule}|${dayOf(violation.date).format('YYYY-MM-DD')}`;
+const violationKey = (violation: Violation) => `${violation.rule}|${violation.transactionId}`;
 
-/** Violations in `after` that `before` did not already have (matched by rule and day). */
+/**
+ * Violations in `after` that `before` did not already have (matched by rule and Zahlung), so an
+ * existing violation stays tolerated only on the Zahlung that already had it.
+ */
 export const introducedViolations = (before: Violation[], after: Violation[]) => {
   const existing = new Set(before.map(violationKey));
   return after.filter((violation) => !existing.has(violationKey(violation)));
