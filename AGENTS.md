@@ -22,7 +22,7 @@ Ticket → board → branch → develop → verify → review → PR to `main`. 
 
 - **Ticket** (only when asked, show the draft first): `gh issue create`, imperative English title, label `bug|enhancement|documentation` (+ `discuss`), body Problem / Desired behaviour / Acceptance criteria. It must land on the project board at least in **Ready**: `scripts/board-status.sh <n> ready|in-progress|in-review|done`. See [issue-tracker.md](docs/agents/issue-tracker.md).
 - **Branch**: `<type>/<issue>-<slug>` off `main`, type `feat|fix|chore|docs|refactor|ci`, e.g. `fix/222-payment-checks`.
-- **Commit / PR title**: Conventional Commit with the issue number, e.g. `fix(savings): #232 correct the monthly amount`. PR body from the template, always linked to its ticket: `Closes #<n>`, or `Refs #<n>` when it only does part of it. Base is `main`.
+- **Commit / PR title**: Conventional Commit with the issue number, e.g. `fix(savings): #232 correct the monthly amount`. PR body from the template, always ending with `Closes #<n>`, even if the PR only does part of the ticket (reopening it is then a manual duty). Base is `main`.
 - **Git**: never push to `main`. Merging into `staging` (which deploys on push) only when the user asks, and say so first.
 - **Schema change** in `prisma/schema.prisma` needs a migration in `prisma/migrations`.
 

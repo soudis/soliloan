@@ -17,14 +17,14 @@ Every change starts from a ticket and ends in a PR to `main`. Skills named here 
 | Branch | `<type>/<issue>-<kebab-slug>` | `fix/222-payment-checks` |
 | Commit | Conventional Commit, issue number after the colon | `fix(savings): #232 correct the monthly amount` |
 | PR title | same shape as the commit | `chore: #257 bump dependencies and upgrade Faker` |
-| PR body | filled `.github/pull_request_template.md`, ends with `Closes #<n>` (or `Refs #<n>`, see below) | |
+| PR body | filled `.github/pull_request_template.md`, ends with `Closes #<n>` | |
 
 - `<type>` is one of `feat`, `fix`, `chore`, `docs`, `refactor`, `ci`. Use `feat/`, not `feature/` (older branches do).
 - Scope in parentheses is optional; lowercase, imperative summary, no trailing period.
 - One ticket, one branch, one PR.
-- **A PR is always linked to its ticket**, even when it must not close it. Put `#<n>` in the title and one line in the body: `Closes #<n>` if the PR finishes the ticket, `Refs #<n>` if it is only part of it (the ticket then stays open for the next PR). Never open a PR without one of the two.
-- `Refs` shows the PR in the ticket's timeline as a cross-reference, but GitHub only fills the "Development" link and the board's "Linked pull requests" for closing references. The manual link of the Development sidebar is available through `gh` too (`addCloseIssueReferences` / `removeCloseIssueReferences` GraphQL mutations, with the node ids from `gh issue view <n> --json id` and `gh pr view --json id`), but it is a closing reference as well: it shows up in `closingIssuesReferences`, so merging closes the ticket. Do not use it for a partial PR; `Refs #<n>` is the link there.
-- After `gh pr create`, check the link: `gh api repos/soudis/soliloan/issues/<n>/timeline --jq '.[] | select(.event=="cross-referenced") | .source.issue.number'` lists the PR number.
+- **A PR is always linked to its ticket, and always with `Closes #<n>`.** Put `#<n>` in the title and `Closes #<n>` in the body, also when the PR only does part of the ticket. Never use `Refs`: it only creates a cross-reference in the timeline, while a closing reference fills the "Development" link and the board's "Linked pull requests". (The manual link of the Development sidebar, or the `addCloseIssueReferences` GraphQL mutation, is a closing reference as well, so it gains nothing.)
+- Merging closes the ticket even if work is left. Reopening it, or filing a follow-up ticket, is a manual duty of the humans; do not work around it. If a PR is only part of a ticket, say so in the PR description (e.g. "Partial: the `sol-*` skills are still open") so the reviewer reopens the ticket after the merge.
+- After `gh pr create`, check the link: `gh pr view --json closingIssuesReferences --jq '[.closingIssuesReferences[].number]'` must contain the ticket number.
 
 ## Git rules
 

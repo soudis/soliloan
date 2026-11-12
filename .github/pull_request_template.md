@@ -10,5 +10,5 @@
 
 <!-- Migrations, data changes, deploy order, anything hard to roll back. "None" is a valid answer. -->
 
-<!-- Ticket link is required. Finishes the ticket: "Closes #<n>". Only part of it: "Refs #<n>". Replace the line below, never leave it empty. -->
+<!-- Ticket link is required: always "Closes #<n>", also if the PR only does part of the ticket (a human reopens it then). Never leave it empty. -->
 Closes #
