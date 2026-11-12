@@ -17,11 +17,14 @@ Every change starts from a ticket and ends in a PR to `main`. Skills named here 
 | Branch | `<type>/<issue>-<kebab-slug>` | `fix/222-payment-checks` |
 | Commit | Conventional Commit, issue number after the colon | `fix(savings): #232 correct the monthly amount` |
 | PR title | same shape as the commit | `chore: #257 bump dependencies and upgrade Faker` |
-| PR body | filled `.github/pull_request_template.md`, ends with `Closes #<n>` | |
+| PR body | filled `.github/pull_request_template.md`, ends with `Closes #<n>` (or `Refs #<n>`, see below) | |
 
 - `<type>` is one of `feat`, `fix`, `chore`, `docs`, `refactor`, `ci`. Use `feat/`, not `feature/` (older branches do).
 - Scope in parentheses is optional; lowercase, imperative summary, no trailing period.
-- One ticket, one branch, one PR. Reference the ticket with `#<n>` in the title; use `Closes #<n>` only in the body. If the PR is only part of a ticket, write `Refs #<n>` instead.
+- One ticket, one branch, one PR.
+- **A PR is always linked to its ticket**, even when it must not close it. Put `#<n>` in the title and one line in the body: `Closes #<n>` if the PR finishes the ticket, `Refs #<n>` if it is only part of it (the ticket then stays open for the next PR). Never open a PR without one of the two.
+- `Refs` shows the PR in the ticket's timeline as a cross-reference, but GitHub only fills the "Development" link and the board's "Linked pull requests" for closing keywords. If a PR must be linked formally without closing the ticket, add it in the PR's Development sidebar in the GitHub UI and tell the user.
+- After `gh pr create`, check the link: `gh api repos/soudis/soliloan/issues/<n>/timeline --jq '.[] | select(.event=="cross-referenced") | .source.issue.number'` lists the PR number.
 
 ## Git rules
 
