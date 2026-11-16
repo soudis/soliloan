@@ -48,11 +48,9 @@
   },
   "durationFilterOperators": {
     "between": "zwischen",
-    "eq": "=",
-    "gt": ">",
-    "lt": "<",
-    "gte": "≥",
-    "lte": "≤",
+    "eq": "entspricht",
+    "gte": "ab",
+    "lt": "bis",
     "empty": "ist leer",
     "notEmpty": "ist nicht leer",
     "termination": "Durch Kündigung"
@@ -102,7 +100,7 @@
     "loanGeneral": "Kredit - Allgemein",
     "loanInterest": "Kredit - Zinsen",
     "loanSavings": "Kredit - Ansparvertrag",
-    "loanTerm": "Kredit - Laufzeit",
+    "loanTerm": "Kredit - Laufzeit und Kündigung",
     "lenderGeneral": "Kreditgeber*in - Allgemein",
     "lenderContact": "Kreditgeber*in - Kontakt",
     "lenderAddress": "Kreditgeber*in - Adresse",

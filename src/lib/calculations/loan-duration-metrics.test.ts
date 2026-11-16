@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { DurationType, PaymentType, TerminationType, TransactionType, type Transaction } from '@prisma/client';
+import { DurationType, PaymentType, TerminationType, type Transaction, TransactionType } from '@prisma/client';
 
 import {
   formatTotalRuntime,
@@ -97,7 +97,13 @@ describe('getTotalRuntime', () => {
       duration: 5,
       durationType: DurationType.YEARS,
     });
-    assert.deepEqual(runtime, { terminationType: TerminationType.TERMINATION, days: null });
+    assert.deepEqual(runtime, {
+      terminationType: TerminationType.TERMINATION,
+      days: null,
+      years: null,
+      months: null,
+      remainderDays: null,
+    });
     assert.equal(
       formatTotalRuntime(
         {
@@ -118,7 +124,11 @@ describe('getTotalRuntime', () => {
     };
 
     assert.equal(formatTotalRuntime(loan, durationT), '5 Jahre');
-    assert.ok((getTotalRuntime(loan).days ?? 0) > 0);
+    const runtime = getTotalRuntime(loan);
+    assert.equal(runtime.years, 5);
+    assert.equal(runtime.months, 60);
+    assert.equal(runtime.remainderDays, 0);
+    assert.ok((runtime.days ?? 0) > 5 * 365);
   });
 
   it('measures a duration from the sign date', () => {
@@ -137,7 +147,13 @@ describe('getTotalRuntime', () => {
         duration: null,
         durationType: DurationType.MONTHS,
       }),
-      { terminationType: TerminationType.DURATION, days: null },
+      {
+        terminationType: TerminationType.DURATION,
+        days: null,
+        years: null,
+        months: null,
+        remainderDays: null,
+      },
     );
     assert.equal(
       formatTotalRuntime(

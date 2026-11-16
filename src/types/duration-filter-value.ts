@@ -1,7 +1,9 @@
-import { DAYS_PER_MONTH, DAYS_PER_YEAR } from '@/lib/duration-day-length';
 import type { FilterOperatorValue } from '@/types/filter-operators';
 
-export const DURATION_FILTER_OPERATORS = ['between', 'eq', 'gt', 'lt', 'gte', 'lte'] as const;
+/** Selectable duration operators. `gt` and `lte` are retired and rewritten on read. */
+export const DURATION_FILTER_OPERATORS = ['eq', 'gte', 'lt', 'between'] as const;
+
+const RETIRED_DURATION_OPERATORS = ['gt', 'lte'] as const;
 
 export const DURATION_FILTER_EMPTY_OPERATORS = ['empty', 'notEmpty'] as const;
 
@@ -22,28 +24,15 @@ export type DurationFilterUnit = (typeof DURATION_FILTER_UNITS)[number];
 export type DurationFilterValue =
   | FilterOperatorValue<'between', { min: number | null; max: number | null; unit: DurationFilterUnit }>
   | FilterOperatorValue<'eq', { amount: number | null; unit: DurationFilterUnit }>
-  | FilterOperatorValue<'gt', { amount: number | null; unit: DurationFilterUnit }>
   | FilterOperatorValue<'lt', { amount: number | null; unit: DurationFilterUnit }>
   | FilterOperatorValue<'gte', { amount: number | null; unit: DurationFilterUnit }>
-  | FilterOperatorValue<'lte', { amount: number | null; unit: DurationFilterUnit }>
   | FilterOperatorValue<'empty'>
   | FilterOperatorValue<'notEmpty'>
   | FilterOperatorValue<'termination'>;
 
-export function durationAmountToDays(amount: number, unit: DurationFilterUnit): number {
-  switch (unit) {
-    case 'years':
-      return amount * DAYS_PER_YEAR;
-    case 'months':
-      return amount * DAYS_PER_MONTH;
-    case 'days':
-      return amount;
-  }
-}
+type RetiredDurationOperator = (typeof RETIRED_DURATION_OPERATORS)[number];
 
-export function createDefaultDurationFilterValue(
-  defaultOperator: DurationFilterOperator = 'between',
-): DurationFilterValue {
+export function createDefaultDurationFilterValue(defaultOperator: DurationFilterOperator = 'eq'): DurationFilterValue {
   return createDefaultDurationFilterValueForOperator(defaultOperator);
 }
 
@@ -54,10 +43,8 @@ export function createDefaultDurationFilterValueForOperator(
     case 'between':
       return { operator: 'between', min: null, max: null, unit: 'years' };
     case 'eq':
-    case 'gt':
     case 'lt':
     case 'gte':
-    case 'lte':
       return { operator, amount: null, unit: 'years' };
     case 'empty':
       return { operator: 'empty' };
@@ -68,7 +55,9 @@ export function createDefaultDurationFilterValueForOperator(
   }
 }
 
-function isDurationFilterOperator(value: unknown): value is DurationFilterOperatorWithEmpty {
+function isParsableDurationOperator(
+  value: unknown,
+): value is DurationFilterOperatorWithEmpty | RetiredDurationOperator {
   return (
     typeof value === 'string' &&
     (
@@ -76,9 +65,28 @@ function isDurationFilterOperator(value: unknown): value is DurationFilterOperat
         ...DURATION_FILTER_OPERATORS,
         ...DURATION_FILTER_EMPTY_OPERATORS,
         ...DURATION_FILTER_TERMINATION_OPERATORS,
+        ...RETIRED_DURATION_OPERATORS,
       ] as readonly string[]
     ).includes(value)
   );
+}
+
+/**
+ * `>` N is the same set as `ab` N+1, and `≤` N is the same set as `bis` N+1,
+ * because the compared units are whole numbers.
+ */
+function canonicalAmountOperator(
+  operator: 'eq' | 'lt' | 'gte' | RetiredDurationOperator,
+  amount: number | null,
+  unit: DurationFilterUnit,
+): DurationFilterValue {
+  if (operator === 'gt') {
+    return { operator: 'gte', amount: amount == null ? null : Math.floor(amount) + 1, unit };
+  }
+  if (operator === 'lte') {
+    return { operator: 'lt', amount: amount == null ? null : Math.floor(amount) + 1, unit };
+  }
+  return { operator, amount, unit };
 }
 
 function parseNullableNumber(value: unknown): number | null {
@@ -128,7 +136,7 @@ function parseLegacyNumberAsDays(raw: unknown): DurationFilterValue | null {
     return null;
   }
 
-  if (!isDurationFilterOperator(value.operator)) {
+  if (!isParsableDurationOperator(value.operator)) {
     return null;
   }
 
@@ -145,11 +153,7 @@ function parseLegacyNumberAsDays(raw: unknown): DurationFilterValue | null {
     case 'lt':
     case 'gte':
     case 'lte':
-      return {
-        operator: value.operator,
-        amount: parseNullableNumber(value.value),
-        unit: 'days',
-      };
+      return canonicalAmountOperator(value.operator, parseNullableNumber(value.value), 'days');
     case 'empty':
       return { operator: 'empty' };
     case 'notEmpty':
@@ -161,7 +165,7 @@ function parseLegacyNumberAsDays(raw: unknown): DurationFilterValue | null {
 
 export function parseDurationFilterValue(
   raw: unknown,
-  defaultOperator: DurationFilterOperator = 'between',
+  defaultOperator: DurationFilterOperator = 'eq',
 ): DurationFilterValue {
   const legacy = parseLegacyNumberAsDays(raw);
   if (legacy) {
@@ -172,8 +176,8 @@ export function parseDurationFilterValue(
     return createDefaultDurationFilterValue(defaultOperator);
   }
 
-  const value = raw as { operator?: DurationFilterOperatorWithEmpty };
-  if (!isDurationFilterOperator(value.operator)) {
+  const value = raw as { operator?: DurationFilterOperatorWithEmpty | RetiredDurationOperator };
+  if (!isParsableDurationOperator(value.operator)) {
     return createDefaultDurationFilterValue(defaultOperator);
   }
 
@@ -197,11 +201,7 @@ export function parseDurationFilterValue(
     case 'gte':
     case 'lte': {
       const { amount, unit } = value as { amount?: number | null; unit?: DurationFilterUnit };
-      return {
-        operator: value.operator,
-        amount: parseNullableNumber(amount),
-        unit: parseUnit(unit),
-      };
+      return canonicalAmountOperator(value.operator, parseNullableNumber(amount), parseUnit(unit));
     }
     case 'empty':
       return { operator: 'empty' };
@@ -217,10 +217,8 @@ function hasEmptyPayload(parsed: DurationFilterValue): boolean {
     case 'between':
       return parsed.min == null && parsed.max == null;
     case 'eq':
-    case 'gt':
     case 'lt':
     case 'gte':
-    case 'lte':
       return parsed.amount == null;
     case 'empty':
     case 'notEmpty':
@@ -229,10 +227,7 @@ function hasEmptyPayload(parsed: DurationFilterValue): boolean {
   }
 }
 
-export function isInactiveDurationFilterValue(
-  raw: unknown,
-  defaultOperator: DurationFilterOperator = 'between',
-): boolean {
+export function isInactiveDurationFilterValue(raw: unknown, defaultOperator: DurationFilterOperator = 'eq'): boolean {
   const parsed = parseDurationFilterValue(raw, defaultOperator);
   if (parsed.operator !== defaultOperator) {
     return false;

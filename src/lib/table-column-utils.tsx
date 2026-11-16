@@ -7,6 +7,7 @@ import type { ColumnGroupMeta, DataTableColumnFilters } from '@/components/ui/da
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 
 import { formatTotalRuntime, getTotalRuntime, type TotalRuntime } from '@/lib/calculations/loan-duration-metrics';
+import { formatCalendarSpan, isCalendarSpan } from '@/lib/calendar-span';
 import {
   matchesBooleanFilter,
   matchesDateFilter,
@@ -493,15 +494,39 @@ export function createDurationDaysColumn<T>(
       accessorKey,
       header: headerKey,
       cell: ({ row }) => {
-        const value = row.getValue(accessorKey) as number | null | undefined;
-        return <div className="tabular-nums">{formatDurationDays(value, durationT)}</div>;
+        const value = row.getValue(accessorKey);
+        const label = isCalendarSpan(value)
+          ? formatCalendarSpan(value, durationT)
+          : formatDurationDays(value as number | null, durationT);
+        return <div className="tabular-nums">{label}</div>;
+      },
+      sortingFn: (rowA, rowB, columnId) => {
+        const a = calendarSpanSortDays(rowA.getValue(columnId));
+        const b = calendarSpanSortDays(rowB.getValue(columnId));
+        if (a === b) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+        return a < b ? -1 : 1;
       },
     },
     t,
   );
 
   column.filterFn = durationRangeFilter as ColumnDef<T>['filterFn'];
-  return mergeExportMeta(column, { type: 'integer' });
+  return mergeExportMeta(column, {
+    type: 'integer',
+    getValue: (row) => calendarSpanSortDays((row as Record<string, unknown>)[accessorKey]),
+  });
+}
+
+function calendarSpanSortDays(value: unknown): number | null {
+  if (isCalendarSpan(value)) {
+    return value.totalDays;
+  }
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  return null;
 }
 
 export function totalRuntimeSortValue(runtime: TotalRuntime | null | undefined): number | null {

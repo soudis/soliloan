@@ -3,7 +3,16 @@ import { describe, it } from 'node:test';
 
 import { TerminationType } from '@prisma/client';
 
+import type { CalendarSpan } from '@/lib/calendar-span';
+
 import { CHART_TERMINATION_GROUP_KEY, resolveGroupKey } from './resolve-group-key';
+
+const span = (years: number, months = years * 12): CalendarSpan => ({
+  totalDays: years * 365,
+  years,
+  months,
+  remainderDays: 0,
+});
 
 const durationT = (key: string, values?: Record<string, string>) => {
   const count = Number(values?.count ?? 0);
@@ -31,7 +40,7 @@ const durationField = { type: 'duration' as const, label: 'Kreditlaufzeit' };
 describe('resolveGroupKey duration grouping', () => {
   it('groups a five-year span into years', () => {
     const result = resolveGroupKey(
-      1826,
+      span(5),
       {
         groupBy: { entity: 'loan', field: 'totalRuntime' },
         durationGrouping: 'years',
@@ -47,7 +56,7 @@ describe('resolveGroupKey duration grouping', () => {
 
   it('groups the same span into months', () => {
     const result = resolveGroupKey(
-      547,
+      span(1, 18),
       {
         groupBy: { entity: 'loan', field: 'totalRuntime' },
         durationGrouping: 'months',
@@ -69,9 +78,9 @@ describe('resolveGroupKey duration grouping', () => {
       filters: [],
     };
 
-    assert.equal(resolveGroupKey(1826, config, durationField, formatters).label, 'bis 5 Jahre');
-    assert.equal(resolveGroupKey(3650, config, durationField, formatters).label, '6 Jahre – 10 Jahre');
-    assert.equal(resolveGroupKey(4015, config, durationField, formatters).label, 'über 10 Jahre');
+    assert.equal(resolveGroupKey(span(5), config, durationField, formatters).label, 'bis 5 Jahre');
+    assert.equal(resolveGroupKey(span(6), config, durationField, formatters).label, '6 Jahre – 10 Jahre');
+    assert.equal(resolveGroupKey(span(11), config, durationField, formatters).label, 'über 10 Jahre');
   });
 
   it('keeps a measured loan without days in the empty group', () => {
@@ -107,7 +116,7 @@ describe('resolveGroupKey duration grouping', () => {
 
   it('groups a TotalRuntime day count into years', () => {
     const result = resolveGroupKey(
-      { terminationType: TerminationType.ENDDATE, days: 1826 },
+      { terminationType: TerminationType.ENDDATE, days: 1827, years: 5, months: 60, remainderDays: 0 },
       {
         groupBy: { entity: 'loan', field: 'totalRuntime' },
         durationGrouping: 'years',

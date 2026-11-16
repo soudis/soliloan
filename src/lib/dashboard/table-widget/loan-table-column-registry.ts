@@ -1,6 +1,7 @@
 import { ContractStatus } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
 import type { ColumnGroupMeta } from '@/components/ui/data-table';
+import { isCalendarSpan } from '@/lib/calendar-span';
 import {
   buildLenderProfileColumnMeta,
   buildLenderProfileColumns,
@@ -343,6 +344,15 @@ export function getLoanSortValue(
   switch (normalizedId) {
     case 'totalRuntime':
       return totalRuntimeSortValue(row.totalRuntime);
+    case 'loanTermDays':
+    case 'repaymentPeriodDays':
+    case 'outstandingDepositSinceDays': {
+      const span = row[normalizedId];
+      if (isCalendarSpan(span)) {
+        return span.totalDays;
+      }
+      return typeof span === 'number' ? span : null;
+    }
     case 'status':
       return commonT(`enums.loan.status.${row.status}`);
     case 'terminationType':

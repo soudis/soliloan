@@ -2,7 +2,7 @@ import { TerminationType } from '@prisma/client';
 import moment from 'moment';
 
 import { isTotalRuntime } from '@/lib/calculations/loan-duration-metrics';
-import { DAYS_PER_MONTH, DAYS_PER_YEAR } from '@/lib/duration-day-length';
+import { isCalendarSpan } from '@/lib/calendar-span';
 import type { DataTableColumnFilterDefinition } from '@/lib/entity-filters/filter-definitions';
 import { formatCurrency, formatNumber } from '@/lib/utils';
 import type {
@@ -96,15 +96,17 @@ export function formatNumericBucketLabel(
   );
 }
 
-function durationGroupCount(days: number, grouping: ChartDurationGrouping): number {
-  const wholeDays = Math.max(0, Math.round(days));
+function durationGroupCount(
+  value: { totalDays: number; years: number | null; months: number | null },
+  grouping: ChartDurationGrouping,
+): number | null {
   if (grouping === 'years') {
-    return Math.floor(wholeDays / DAYS_PER_YEAR);
+    return value.years;
   }
   if (grouping === 'months') {
-    return Math.floor(wholeDays / DAYS_PER_MONTH);
+    return value.months;
   }
-  return wholeDays;
+  return value.totalDays;
 }
 
 function formatDurationGroupLabel(
@@ -227,7 +229,7 @@ export function resolveGroupKey(
   const field = config.groupBy.field;
 
   if (fieldDefinition?.type === 'duration') {
-    let num: number;
+    let units: { totalDays: number; years: number | null; months: number | null } | null = null;
     if (isTotalRuntime(rawValue)) {
       if (rawValue.terminationType === TerminationType.TERMINATION) {
         return {
@@ -238,15 +240,25 @@ export function resolveGroupKey(
       if (rawValue.days == null || !Number.isFinite(rawValue.days) || rawValue.days < 0) {
         return { key: CHART_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
       }
-      num = rawValue.days;
+      units = {
+        totalDays: rawValue.days,
+        years: rawValue.years ?? null,
+        months: rawValue.months ?? null,
+      };
+    } else if (isCalendarSpan(rawValue)) {
+      units = rawValue;
     } else {
-      num = Number(rawValue);
+      const num = Number(rawValue);
       if (!Number.isFinite(num) || num < 0) {
         return { key: CHART_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
       }
+      units = { totalDays: num, years: null, months: null };
     }
     const grouping = config.durationGrouping ?? 'years';
-    const count = durationGroupCount(num, grouping);
+    const count = durationGroupCount(units, grouping);
+    if (count == null) {
+      return { key: CHART_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
+    }
     if (config.numericBuckets?.length) {
       const index = getNumericBucketIndex(count, config.numericBuckets);
       return {

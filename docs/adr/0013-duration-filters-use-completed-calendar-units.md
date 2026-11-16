@@ -1,0 +1,5 @@
+# A Jahr or Monat in a filter is a completed calendar band
+
+Duration filters and chart groups compare Jahre and Monate as completed calendar units taken from the two dates of that span. Dividing the day count by 365 or 30 made a contractual 5 Jahre match `>` 5 Jahre and miss `=`. Comparing the exact anniversary made `=` useless for Bisherige Kreditlaufzeit, which is almost never an exact number of years.
+
+**entspricht** 5 Jahre is the fifth year: from the anniversary up to, but not including, 6 Jahre, so extra months and days stay inside it. **ab** 5 Jahre is the anniversary and everything older. **bis** 5 Jahre is not yet the anniversary, so the two meet and share no Kredit. **zwischen** 5 und 7 Jahre is the bands 5, 6, and 7. The old `>` 5 Jahre is **ab** 6 Jahre, and the old `≤` 5 Jahre is **bis** 6 Jahre, so those two operators are not offered. Monate use the same bands. Tage stay an exact day count. A chart slice labeled 5 Jahre is the same band as **entspricht**. An average across many Kredite has no shared anniversary, so it stays a count of days.

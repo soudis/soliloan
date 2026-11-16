@@ -1,17 +1,15 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useMemo, type KeyboardEvent, type ReactNode } from 'react';
+import { type KeyboardEvent, type ReactNode, useMemo } from 'react';
 
 import {
   FilterFieldGroup,
+  type FilterFieldSize,
+  type FilterFieldVariant,
   FilterStackedFields,
   filterNumberValueSegmentClass,
   filterOperatorSegmentClass,
-  filterSymbolOperatorLabelClass,
-  filterSymbolOperatorTriggerClass,
-  type FilterFieldSize,
-  type FilterFieldVariant,
 } from '@/components/filters/filter-field-group';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -29,11 +27,16 @@ import {
   parseDurationFilterValue,
 } from '@/types/duration-filter-value';
 
-const DURATION_OPERATOR_SHORTCUTS: Record<string, 'eq' | 'gt' | 'lt'> = {
+const DURATION_OPERATOR_SHORTCUTS: Record<string, 'eq' | 'lt'> = {
   '=': 'eq',
-  '>': 'gt',
   '<': 'lt',
 };
+
+function isAmountFilter(
+  value: DurationFilterValue,
+): value is Extract<DurationFilterValue, { operator: 'eq' | 'gte' | 'lt' }> {
+  return value.operator === 'eq' || value.operator === 'gte' || value.operator === 'lt';
+}
 
 function hasPayload(operator: DurationFilterOperatorWithEmpty): boolean {
   return operator !== 'empty' && operator !== 'notEmpty' && operator !== 'termination';
@@ -44,7 +47,7 @@ export function DurationFilterWithOperator({
   onChange,
   allowEmpty = false,
   terminationValue = false,
-  defaultOperator = 'between',
+  defaultOperator = 'eq',
   translationNamespace = 'dataTable',
   variant = 'row',
   size = 'default',
@@ -75,14 +78,7 @@ export function DurationFilterWithOperator({
   };
 
   const currentUnit: DurationFilterUnit =
-    parsed.operator === 'between' ||
-    parsed.operator === 'eq' ||
-    parsed.operator === 'gt' ||
-    parsed.operator === 'lt' ||
-    parsed.operator === 'gte' ||
-    parsed.operator === 'lte'
-      ? parsed.unit
-      : 'years';
+    parsed.operator === 'between' || isAmountFilter(parsed) ? parsed.unit : 'years';
 
   const handleOperatorShortcut = (event: KeyboardEvent<HTMLInputElement>, fieldValue: number | null) => {
     const operator = DURATION_OPERATOR_SHORTCUTS[event.key];
@@ -105,13 +101,7 @@ export function DurationFilterWithOperator({
           onChange({ operator: 'between', min: parsed.min, max: parsed.max, unit: nextUnit });
           return;
         }
-        if (
-          parsed.operator === 'eq' ||
-          parsed.operator === 'gt' ||
-          parsed.operator === 'lt' ||
-          parsed.operator === 'gte' ||
-          parsed.operator === 'lte'
-        ) {
+        if (isAmountFilter(parsed)) {
           onChange({ operator: parsed.operator, amount: parsed.amount, unit: nextUnit });
         }
       }}
@@ -134,20 +124,13 @@ export function DurationFilterWithOperator({
 
   const operatorSelect = (
     <Select value={parsed.operator} onValueChange={(op) => setOperator(op as DurationFilterOperatorWithEmpty)}>
-      <SelectTrigger
-        className={cn(
-          filterOperatorSegmentClass(size, useStackedLayout),
-          filterSymbolOperatorTriggerClass(parsed.operator, size),
-        )}
-      >
+      <SelectTrigger className={filterOperatorSegmentClass(size, useStackedLayout)}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         {availableOperators.map((operator) => (
           <SelectItem key={operator} value={operator} className={size === 'sm' ? 'text-xs' : undefined}>
-            <span className={filterSymbolOperatorLabelClass(operator, size)}>
-              {t(`durationFilterOperators.${operator}`)}
-            </span>
+            {t(`durationFilterOperators.${operator}`)}
           </SelectItem>
         ))}
       </SelectContent>
@@ -193,13 +176,7 @@ export function DurationFilterWithOperator({
         {unitSelect}
       </>
     );
-  } else if (
-    parsed.operator === 'eq' ||
-    parsed.operator === 'gt' ||
-    parsed.operator === 'lt' ||
-    parsed.operator === 'gte' ||
-    parsed.operator === 'lte'
-  ) {
+  } else if (isAmountFilter(parsed)) {
     payload = (
       <>
         <Input

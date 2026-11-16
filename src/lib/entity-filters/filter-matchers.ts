@@ -1,6 +1,7 @@
 import { TerminationType } from '@prisma/client';
 
 import { isTotalRuntime } from '@/lib/calculations/loan-duration-metrics';
+import { isCalendarSpan } from '@/lib/calendar-span';
 import type { DataTableColumnFilterType } from '@/lib/entity-filters/filter-definitions';
 import { resolveDateFilterBounds } from '@/lib/entity-filters/resolve-date-filter-range';
 import { formatCurrency, formatNumber, NumberParser } from '@/lib/utils';
@@ -8,8 +9,8 @@ import deCommonMessages from '@/messages/de/common.json';
 import { parseBooleanFilterValue } from '@/types/boolean-filter-value';
 import { parseDateFilterValue } from '@/types/date-filter-value';
 import {
+  type DurationFilterUnit,
   type DurationFilterValue,
-  durationAmountToDays,
   parseDurationFilterValue,
 } from '@/types/duration-filter-value';
 import { parseEnumFilterValue } from '@/types/enum-filter-value';
@@ -214,50 +215,66 @@ export function matchesNumberRangeFilter(value: unknown, filterValue: unknown): 
   }
 }
 
-function compareDurationDays(rowDays: number, parsed: DurationFilterValue): boolean {
+function completedUnits(
+  totalDays: number,
+  years: number | null,
+  months: number | null,
+  unit: DurationFilterUnit,
+): number | null {
+  if (unit === 'days') {
+    return totalDays;
+  }
+  if (unit === 'years') {
+    return years;
+  }
+  return months;
+}
+
+/** Jahre and Monate compare completed calendar units. Tage compare the day count. */
+function compareDurationUnits(
+  totalDays: number,
+  years: number | null,
+  months: number | null,
+  parsed: DurationFilterValue,
+): boolean {
   switch (parsed.operator) {
     case 'between': {
       if (parsed.min == null && parsed.max == null) {
         return true;
       }
-      const minDays = parsed.min == null ? null : durationAmountToDays(parsed.min, parsed.unit);
-      const maxDays = parsed.max == null ? null : durationAmountToDays(parsed.max, parsed.unit);
-      if (minDays !== null && maxDays !== null) {
-        return rowDays >= minDays && rowDays <= maxDays;
+      const row = completedUnits(totalDays, years, months, parsed.unit);
+      if (row == null) {
+        return false;
       }
-      if (minDays !== null) {
-        return rowDays >= minDays;
+      if (parsed.min !== null && parsed.max !== null) {
+        return row >= parsed.min && row <= parsed.max;
       }
-      if (maxDays !== null) {
-        return rowDays <= maxDays;
+      if (parsed.min !== null) {
+        return row >= parsed.min;
+      }
+      if (parsed.max !== null) {
+        return row <= parsed.max;
       }
       return true;
     }
     case 'eq':
-      if (parsed.amount == null) {
-        return true;
-      }
-      return rowDays === durationAmountToDays(parsed.amount, parsed.unit);
-    case 'gt':
-      if (parsed.amount == null) {
-        return true;
-      }
-      return rowDays > durationAmountToDays(parsed.amount, parsed.unit);
     case 'lt':
+    case 'gte': {
       if (parsed.amount == null) {
         return true;
       }
-      return rowDays < durationAmountToDays(parsed.amount, parsed.unit);
-    case 'gte':
-      if (parsed.amount == null) {
-        return true;
+      const row = completedUnits(totalDays, years, months, parsed.unit);
+      if (row == null) {
+        return false;
       }
-      return rowDays >= durationAmountToDays(parsed.amount, parsed.unit);
-    case 'lte':
-      if (parsed.amount == null) {
-        return true;
+      if (parsed.operator === 'eq') {
+        return row === parsed.amount;
       }
-      return rowDays <= durationAmountToDays(parsed.amount, parsed.unit);
+      if (parsed.operator === 'lt') {
+        return row < parsed.amount;
+      }
+      return row >= parsed.amount;
+    }
     default:
       return false;
   }
@@ -278,11 +295,7 @@ export function matchesDurationFilter(value: unknown, filterValue: unknown): boo
     }
     if (value.terminationType === TerminationType.TERMINATION || value.days == null) {
       if (
-        (parsed.operator === 'eq' ||
-          parsed.operator === 'gt' ||
-          parsed.operator === 'lt' ||
-          parsed.operator === 'gte' ||
-          parsed.operator === 'lte') &&
+        (parsed.operator === 'eq' || parsed.operator === 'lt' || parsed.operator === 'gte') &&
         parsed.amount == null
       ) {
         return true;
@@ -292,7 +305,7 @@ export function matchesDurationFilter(value: unknown, filterValue: unknown): boo
       }
       return false;
     }
-    return compareDurationDays(value.days, parsed);
+    return compareDurationUnits(value.days, value.years ?? null, value.months ?? null, parsed);
   }
 
   if (parsed.operator === 'termination') {
@@ -305,14 +318,7 @@ export function matchesDurationFilter(value: unknown, filterValue: unknown): boo
     return value !== null && value !== undefined;
   }
 
-  if (
-    (parsed.operator === 'eq' ||
-      parsed.operator === 'gt' ||
-      parsed.operator === 'lt' ||
-      parsed.operator === 'gte' ||
-      parsed.operator === 'lte') &&
-    parsed.amount == null
-  ) {
+  if ((parsed.operator === 'eq' || parsed.operator === 'lt' || parsed.operator === 'gte') && parsed.amount == null) {
     return true;
   }
 
@@ -320,12 +326,16 @@ export function matchesDurationFilter(value: unknown, filterValue: unknown): boo
     return false;
   }
 
+  if (isCalendarSpan(value)) {
+    return compareDurationUnits(value.totalDays, value.years, value.months, parsed);
+  }
+
   const rowValue = Number(value);
   if (Number.isNaN(rowValue)) {
     return false;
   }
 
-  return compareDurationDays(rowValue, parsed);
+  return compareDurationUnits(rowValue, null, null, parsed);
 }
 
 export function matchesDateFilter(value: unknown, filterValue: unknown, referenceDate: Date = new Date()): boolean {

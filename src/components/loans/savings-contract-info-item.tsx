@@ -24,7 +24,8 @@ export function SavingsContractInfoItem({ loan, className }: SavingsContractInfo
     loan.signDate,
   );
 
-  const outstandingSinceDays = loan.outstandingDepositsCount > 0 ? loan.outstandingDepositSinceDays : null;
+  const outstandingSinceDays =
+    loan.outstandingDepositsCount > 0 ? (loan.outstandingDepositSinceDays?.totalDays ?? null) : null;
   const isOutstanding = outstandingSinceDays !== null;
   const paymentStatus = isOutstanding
     ? outstandingSinceDays > 0

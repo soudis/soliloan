@@ -14,6 +14,10 @@ _Avoid_: Darlehen
 A person or organization that provides a Kredit. Plural: Kreditgeber*innen.
 _Avoid_: Darlehensgeber, Kreditgeber
 
+**Kreditkonto**:
+A Kreditgeber*in's combined position in the project across their Kredite.
+_Avoid_: Konto, Bankkonto
+
 **Kreditvertrag**:
 The contract for one Kredit.
 _Avoid_: Darlehensvertrag
@@ -45,6 +49,10 @@ _Avoid_: Rückzahlungsfrist, Endedatum
 **Rückzahlungsdatum**:
 The date a Kredit was actually repaid.
 _Avoid_: Fälligkeitsdatum
+
+**Ansparvertrag**:
+A Kredit whose Kreditbetrag is paid in scheduled rates.
+_Avoid_: Sparvertrag
 
 **Anlageart**:
 A category of Kredite grouped for compliance with the Bagatellgrenze, identified by its interest rate.

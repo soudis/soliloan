@@ -1,7 +1,6 @@
 import type { ColumnFilter } from '@tanstack/react-table';
-
-import type { FilterFieldSize, FilterFieldVariant } from '@/components/filters/filter-field-group';
 import { DurationFilterWithOperator } from '@/components/filters/duration-filter-with-operator';
+import type { FilterFieldSize, FilterFieldVariant } from '@/components/filters/filter-field-group';
 import type { DurationFilterOperator } from '@/types/duration-filter-value';
 
 interface DurationFilterProps {
@@ -19,7 +18,7 @@ export function DurationFilter({
   onFilterChange,
   allowEmpty = false,
   terminationValue = false,
-  defaultOperator = 'between',
+  defaultOperator = 'eq',
   variant = 'row',
   size = 'default',
 }: DurationFilterProps) {

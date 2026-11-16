@@ -41,10 +41,8 @@ export function useTemplateConditionSummary(showIf: unknown): string {
         duration: {
           between: tDuration('between'),
           eq: tDuration('eq'),
-          gt: tDuration('gt'),
-          lt: tDuration('lt'),
           gte: tDuration('gte'),
-          lte: tDuration('lte'),
+          lt: tDuration('lt'),
           empty: tDuration('empty'),
           notEmpty: tDuration('notEmpty'),
           termination: tDuration('termination'),
