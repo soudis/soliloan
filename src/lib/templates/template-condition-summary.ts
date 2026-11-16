@@ -2,7 +2,7 @@ import { parseTemplateCondition, type TemplateConditionRule } from '@/lib/templa
 import type { TemplateConditionField } from '@/lib/templates/template-condition-fields';
 import { parseBooleanFilterValue } from '@/types/boolean-filter-value';
 import { parseDateFilterValue } from '@/types/date-filter-value';
-import { parseDurationFilterValue, type DurationFilterUnit } from '@/types/duration-filter-value';
+import { type DurationFilterUnit, parseDurationFilterValue } from '@/types/duration-filter-value';
 import { parseEnumFilterValue } from '@/types/enum-filter-value';
 import { parseNumberFilterValue } from '@/types/number-filter-value';
 import { parseTextFilterValue } from '@/types/text-filter-value';
@@ -58,7 +58,6 @@ function formatNumberRule(label: string, value: unknown, labels: ConditionSummar
   switch (parsed.operator) {
     case 'empty':
     case 'notEmpty':
-    case 'termination':
       return `${label} ${operator}`;
     case 'between':
       return joinBounds(

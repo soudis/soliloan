@@ -8,7 +8,7 @@ import { type KeyboardEvent, useEffect, useMemo, useRef } from 'react';
 
 import { FilterFieldGroup, filterOperatorSegmentClass } from '@/components/filters/filter-field-group';
 import { Button } from '@/components/ui/button';
-import type { ColumnGroupKey, DataTableColumnFilters } from '@/components/ui/data-table';
+import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import {
   BooleanFilter,
   DateFilter,
@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
-import { COLUMN_GROUP_KEYS_IN_ORDER } from '@/lib/table-column-groups';
+import { groupByColumnGroup } from '@/lib/table-column-groups';
 import {
   createDefaultFilterValue,
   FILTER_REMOVE_VALUE,
@@ -172,29 +172,10 @@ export function DataTableFilterChip<TData>({
     euroShortcutColumnId,
   ]);
 
-  const groupedFieldOptions = useMemo(() => {
-    const flat: typeof fieldOptions = [];
-    const byGroup = new Map<ColumnGroupKey, typeof fieldOptions>();
-
-    for (const field of fieldOptions) {
-      const key = field.columnGroup?.key;
-      if (!key) {
-        flat.push(field);
-        continue;
-      }
-      const existing = byGroup.get(key) ?? [];
-      existing.push(field);
-      byGroup.set(key, existing);
-    }
-
-    return {
-      flat,
-      grouped: COLUMN_GROUP_KEYS_IN_ORDER.filter((key) => (byGroup.get(key)?.length ?? 0) > 0).map((key) => ({
-        key,
-        fields: byGroup.get(key) ?? [],
-      })),
-    };
-  }, [fieldOptions]);
+  const groupedFieldOptions = useMemo(
+    () => groupByColumnGroup(fieldOptions, (field) => field.columnGroup?.key),
+    [fieldOptions],
+  );
 
   const selectedConfig = selectedField === GLOBAL_SEARCH_ALL ? null : (columnFilters[selectedField] ?? null);
   const selectedFilterState = tableState.columnFilters.find((filter) => filter.id === selectedField);
@@ -405,15 +386,15 @@ export function DataTableFilterChip<TData>({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={GLOBAL_SEARCH_ALL}>{t('globalFilterAll')}</SelectItem>
-        {groupedFieldOptions.flat.map((field) => (
+        {groupedFieldOptions.ungrouped.map((field) => (
           <SelectItem key={field.id} value={field.id}>
             {field.label}
           </SelectItem>
         ))}
-        {groupedFieldOptions.grouped.map(({ key, fields }) => (
+        {groupedFieldOptions.groups.map(({ key, items }) => (
           <SelectGroup key={key}>
             <SelectLabel>{t(`columnGroups.${key}`)}</SelectLabel>
-            {fields.map((field) => (
+            {items.map((field) => (
               <SelectItem key={field.id} value={field.id}>
                 {field.label}
               </SelectItem>
@@ -508,7 +489,6 @@ export function DataTableFilterChip<TData>({
           <NumberFilter
             filterState={selectedFilterState}
             allowEmpty={selectedConfig.allowEmpty}
-            terminationValue={selectedConfig.terminationValue}
             defaultOperator={selectedConfig.defaultOperator}
             onFilterChange={onChange}
           />

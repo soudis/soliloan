@@ -44,8 +44,7 @@
     "gte": "≥",
     "lte": "≤",
     "empty": "ist leer",
-    "notEmpty": "ist nicht leer",
-    "termination": "Durch Kündigung"
+    "notEmpty": "ist nicht leer"
   },
   "durationFilterOperators": {
     "between": "zwischen",

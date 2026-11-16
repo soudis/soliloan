@@ -158,7 +158,6 @@ export function DataTableColumnFilters({
                       <NumberFilter
                         filterState={filterState}
                         allowEmpty={filterConfig.allowEmpty}
-                        terminationValue={filterConfig.terminationValue}
                         defaultOperator={filterConfig.defaultOperator}
                         onFilterChange={(value) => {
                           handleFilterChange(columnId, value, 'number', filterConfig.defaultOperator);

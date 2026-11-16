@@ -2,7 +2,7 @@ import { type DurationType, TerminationType, TransactionType } from '@prisma/cli
 import moment from 'moment';
 
 import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
-import { formatCalendarDuration, formatDurationDays } from '@/lib/format-duration';
+import { formatCalendarDuration } from '@/lib/format-duration';
 import { resolveContractEndDate } from '@/lib/loans/loan-end-date-sanity-check';
 import type { LoanWithRelations } from '@/types/loans';
 
@@ -139,28 +139,22 @@ export function getTotalRuntime(loan: TotalRuntimeLoan): TotalRuntime {
   };
 }
 
+/** Calendar length of a loan's Kreditlaufzeit, or the notice label when it ends by Kündigung. */
 export function formatTotalRuntime(
-  runtime: TotalRuntime | TotalRuntimeLoan,
+  loan: TotalRuntimeLoan,
   t: (key: string, values?: Record<string, number>) => string,
 ): string {
-  if (isTotalRuntime(runtime)) {
-    if (runtime.terminationType === TerminationType.TERMINATION) {
-      return t('byTermination');
-    }
-    return formatDurationDays(runtime.days, t);
-  }
-
-  const value = getTotalRuntime(runtime);
+  const value = getTotalRuntime(loan);
   if (value.terminationType === TerminationType.TERMINATION) {
     return t('byTermination');
   }
 
-  const end = getContractEndDate(runtime);
+  const end = getContractEndDate(loan);
   if (!end) {
     return '–';
   }
 
-  return formatCalendarDuration(runtime.signDate, end, t);
+  return formatCalendarDuration(loan.signDate, end, t);
 }
 
 export function getRepaymentPeriodDays(loan: LoanWithTransactions, toDate: Date): number | null {

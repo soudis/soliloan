@@ -17,21 +17,14 @@ import type { EntityFilterEntity, EntityFilterFieldOption } from '@/types/entity
 import type { NumberFilterOperator } from '@/types/number-filter-value';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
-export type DataTableColumnFilterType =
-  | 'text'
-  | 'select'
-  | 'multi-select'
-  | 'number'
-  | 'duration'
-  | 'date'
-  | 'boolean';
+export type DataTableColumnFilterType = 'text' | 'select' | 'multi-select' | 'number' | 'duration' | 'date' | 'boolean';
 
 export type DataTableColumnFilterDefinition = {
   type: DataTableColumnFilterType;
   label: string;
   options?: { label: string; value: string }[];
   allowEmpty?: boolean;
-  /** Offer the "Durch Kündigung" operator (Kreditlaufzeit only). */
+  /** Offer the notice-period operator. Used by Kreditlaufzeit. */
   terminationValue?: boolean;
   defaultOperator?: NumberFilterOperator;
 };
@@ -107,7 +100,7 @@ export function buildLoanColumnFiltersMap(
         value,
       })),
     },
-    totalRuntimeDays: {
+    totalRuntime: {
       type: 'duration',
       label: t('table.totalRuntime'),
       allowEmpty: true,

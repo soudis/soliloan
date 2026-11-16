@@ -33,7 +33,7 @@ describe('resolveGroupKey duration grouping', () => {
     const result = resolveGroupKey(
       1826,
       {
-        groupBy: { entity: 'loan', field: 'totalRuntimeDays' },
+        groupBy: { entity: 'loan', field: 'totalRuntime' },
         durationGrouping: 'years',
         topNCategories: 8,
         filters: [],
@@ -49,7 +49,7 @@ describe('resolveGroupKey duration grouping', () => {
     const result = resolveGroupKey(
       547,
       {
-        groupBy: { entity: 'loan', field: 'totalRuntimeDays' },
+        groupBy: { entity: 'loan', field: 'totalRuntime' },
         durationGrouping: 'months',
         topNCategories: 8,
         filters: [],
@@ -62,7 +62,7 @@ describe('resolveGroupKey duration grouping', () => {
 
   it('applies year limits as ranges', () => {
     const config = {
-      groupBy: { entity: 'loan' as const, field: 'totalRuntimeDays' },
+      groupBy: { entity: 'loan' as const, field: 'totalRuntime' },
       durationGrouping: 'years' as const,
       numericBuckets: [5, 10],
       topNCategories: 8,
@@ -78,7 +78,7 @@ describe('resolveGroupKey duration grouping', () => {
     const result = resolveGroupKey(
       { terminationType: TerminationType.ENDDATE, days: null },
       {
-        groupBy: { entity: 'loan', field: 'totalRuntimeDays' },
+        groupBy: { entity: 'loan', field: 'totalRuntime' },
         durationGrouping: 'years',
         topNCategories: 8,
         filters: [],
@@ -93,7 +93,7 @@ describe('resolveGroupKey duration grouping', () => {
     const result = resolveGroupKey(
       { terminationType: TerminationType.TERMINATION, days: null },
       {
-        groupBy: { entity: 'loan', field: 'totalRuntimeDays' },
+        groupBy: { entity: 'loan', field: 'totalRuntime' },
         durationGrouping: 'years',
         topNCategories: 8,
         filters: [],
@@ -109,7 +109,7 @@ describe('resolveGroupKey duration grouping', () => {
     const result = resolveGroupKey(
       { terminationType: TerminationType.ENDDATE, days: 1826 },
       {
-        groupBy: { entity: 'loan', field: 'totalRuntimeDays' },
+        groupBy: { entity: 'loan', field: 'totalRuntime' },
         durationGrouping: 'years',
         topNCategories: 8,
         filters: [],

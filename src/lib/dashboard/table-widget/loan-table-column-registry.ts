@@ -1,6 +1,6 @@
 import { ContractStatus } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
-
+import type { ColumnGroupMeta } from '@/components/ui/data-table';
 import {
   buildLenderProfileColumnMeta,
   buildLenderProfileColumns,
@@ -23,7 +23,6 @@ import {
   createTotalRuntimeColumn,
   totalRuntimeSortValue,
 } from '@/lib/table-column-utils';
-import type { ColumnGroupMeta } from '@/components/ui/data-table';
 import type { LoanWithCalculations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
@@ -55,7 +54,7 @@ export const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] =
   { id: 'interestPaid', labelKey: 'table.interestPaid' },
   { id: 'interestPaymentType', labelKey: 'table.interestPaymentType' },
   { id: 'terminationType', labelKey: 'table.terminationType' },
-  { id: 'totalRuntimeDays', labelKey: 'table.totalRuntime' },
+  { id: 'totalRuntime', labelKey: 'table.totalRuntime' },
   { id: 'repayDate', labelKey: 'table.repayDate' },
   { id: 'loanTermDays', labelKey: 'table.loanTerm' },
   { id: 'repaymentPeriodDays', labelKey: 'table.repaymentPeriod' },
@@ -342,7 +341,7 @@ export function getLoanSortValue(
   }
 
   switch (normalizedId) {
-    case 'totalRuntimeDays':
+    case 'totalRuntime':
       return totalRuntimeSortValue(row.totalRuntime);
     case 'status':
       return commonT(`enums.loan.status.${row.status}`);
@@ -395,7 +394,7 @@ export const LOAN_TABLE_COLUMN_IDS = [
   'interestPaid',
   'interestPaymentType',
   'terminationType',
-  'totalRuntimeDays',
+  'totalRuntime',
   'repayDate',
   'loanTermDays',
   'repaymentPeriodDays',

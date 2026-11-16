@@ -1,5 +1,7 @@
 import moment from 'moment';
 
+import { DAYS_PER_MONTH, DAYS_PER_YEAR } from '@/lib/duration-day-length';
+
 export function formatCalendarDuration(
   start: Date | string,
   end: Date | string,
@@ -47,10 +49,10 @@ export function formatDurationDays(
     return t('zeroDays');
   }
 
-  const years = Math.floor(wholeDays / 365);
-  const afterYears = wholeDays % 365;
-  const months = Math.floor(afterYears / 30);
-  const remDays = afterYears % 30;
+  const years = Math.floor(wholeDays / DAYS_PER_YEAR);
+  const afterYears = wholeDays % DAYS_PER_YEAR;
+  const months = Math.floor(afterYears / DAYS_PER_MONTH);
+  const remDays = afterYears % DAYS_PER_MONTH;
 
   const parts: string[] = [];
   if (years > 0) {

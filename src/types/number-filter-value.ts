@@ -4,15 +4,9 @@ export const NUMBER_FILTER_OPERATORS = ['between', 'eq', 'gt', 'lt', 'gte', 'lte
 
 export const NUMBER_FILTER_EMPTY_OPERATORS = ['empty', 'notEmpty'] as const;
 
-export const NUMBER_FILTER_TERMINATION_OPERATORS = ['termination'] as const;
-
 export type NumberFilterOperator = (typeof NUMBER_FILTER_OPERATORS)[number];
 export type NumberFilterEmptyOperator = (typeof NUMBER_FILTER_EMPTY_OPERATORS)[number];
-export type NumberFilterTerminationOperator = (typeof NUMBER_FILTER_TERMINATION_OPERATORS)[number];
-export type NumberFilterOperatorWithEmpty =
-  | NumberFilterOperator
-  | NumberFilterEmptyOperator
-  | NumberFilterTerminationOperator;
+export type NumberFilterOperatorWithEmpty = NumberFilterOperator | NumberFilterEmptyOperator;
 
 export type NumberFilterValue =
   | FilterOperatorValue<'between', { min: number | null; max: number | null }>
@@ -22,8 +16,7 @@ export type NumberFilterValue =
   | FilterOperatorValue<'gte', { value: number | null }>
   | FilterOperatorValue<'lte', { value: number | null }>
   | FilterOperatorValue<'empty'>
-  | FilterOperatorValue<'notEmpty'>
-  | FilterOperatorValue<'termination'>;
+  | FilterOperatorValue<'notEmpty'>;
 
 export function createDefaultNumberFilterValue(defaultOperator: NumberFilterOperator = 'between'): NumberFilterValue {
   return createDefaultNumberFilterValueForOperator(defaultOperator);
@@ -43,19 +36,13 @@ export function createDefaultNumberFilterValueForOperator(operator: NumberFilter
       return { operator: 'empty' };
     case 'notEmpty':
       return { operator: 'notEmpty' };
-    case 'termination':
-      return { operator: 'termination' };
   }
 }
 
 function isNumberFilterOperator(value: unknown): value is NumberFilterOperatorWithEmpty {
   return (
     typeof value === 'string' &&
-    ([
-      ...NUMBER_FILTER_OPERATORS,
-      ...NUMBER_FILTER_EMPTY_OPERATORS,
-      ...NUMBER_FILTER_TERMINATION_OPERATORS,
-    ] as readonly string[]).includes(value)
+    ([...NUMBER_FILTER_OPERATORS, ...NUMBER_FILTER_EMPTY_OPERATORS] as readonly string[]).includes(value)
   );
 }
 
@@ -120,8 +107,6 @@ export function parseNumberFilterValue(
       return { operator: 'empty' };
     case 'notEmpty':
       return { operator: 'notEmpty' };
-    case 'termination':
-      return { operator: 'termination' };
   }
 }
 
@@ -137,7 +122,6 @@ function hasEmptyPayload(parsed: NumberFilterValue): boolean {
       return parsed.value == null;
     case 'empty':
     case 'notEmpty':
-    case 'termination':
       return false;
   }
 }

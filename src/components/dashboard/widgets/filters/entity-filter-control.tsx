@@ -54,7 +54,6 @@ export function EntityFilterControl({
         <NumberFilter
           filterState={filterState}
           allowEmpty={definition.allowEmpty}
-          terminationValue={definition.terminationValue}
           defaultOperator={definition.defaultOperator}
           onFilterChange={(v) => onChange(v)}
           variant="stacked"

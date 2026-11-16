@@ -114,7 +114,6 @@ const LOAN_SAVINGS_COLUMN_IDS = new Set([
 /** Loan column ids in the term subcategory (table + template field aliases). */
 const LOAN_TERM_COLUMN_IDS = new Set([
   'terminationType',
-  'totalRuntimeDays',
   'totalRuntime',
   'repayDate',
   'loanTermDays',
@@ -129,15 +128,7 @@ const LOAN_TERM_COLUMN_IDS = new Set([
 const LENDER_CONTACT_COLUMN_IDS = new Set(['email', 'telNo', 'notificationType']);
 
 /** Lender column ids in the address subcategory. */
-const LENDER_ADDRESS_COLUMN_IDS = new Set([
-  'address',
-  'street',
-  'addon',
-  'zip',
-  'place',
-  'country',
-  'fullAddress',
-]);
+const LENDER_ADDRESS_COLUMN_IDS = new Set(['address', 'street', 'addon', 'zip', 'place', 'country', 'fullAddress']);
 
 /** Lender column ids in the banking subcategory. */
 const LENDER_BANKING_COLUMN_IDS = new Set(['banking', 'iban', 'bic']);
@@ -232,4 +223,31 @@ export function loanTableColumnGroupFor(columnId: string): ColumnGroupMeta {
     return lenderColumnGroupFor(columnId);
   }
   return loanColumnGroupFor(columnId);
+}
+
+export function groupByColumnGroup<T>(
+  items: readonly T[],
+  columnGroupKey: (item: T) => ColumnGroupKey | undefined,
+): { ungrouped: T[]; groups: { key: ColumnGroupKey; items: T[] }[] } {
+  const byGroup = new Map<ColumnGroupKey, T[]>();
+  const ungrouped: T[] = [];
+
+  for (const item of items) {
+    const key = columnGroupKey(item);
+    if (!key) {
+      ungrouped.push(item);
+      continue;
+    }
+    const existing = byGroup.get(key) ?? [];
+    existing.push(item);
+    byGroup.set(key, existing);
+  }
+
+  return {
+    ungrouped,
+    groups: COLUMN_GROUP_KEYS_IN_ORDER.filter((key) => (byGroup.get(key)?.length ?? 0) > 0).map((key) => ({
+      key,
+      items: byGroup.get(key) ?? [],
+    })),
+  };
 }

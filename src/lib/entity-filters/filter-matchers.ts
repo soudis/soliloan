@@ -4,12 +4,13 @@ import { isTotalRuntime } from '@/lib/calculations/loan-duration-metrics';
 import type { DataTableColumnFilterType } from '@/lib/entity-filters/filter-definitions';
 import { resolveDateFilterBounds } from '@/lib/entity-filters/resolve-date-filter-range';
 import { formatCurrency, formatNumber, NumberParser } from '@/lib/utils';
+import deCommonMessages from '@/messages/de/common.json';
 import { parseBooleanFilterValue } from '@/types/boolean-filter-value';
 import { parseDateFilterValue } from '@/types/date-filter-value';
 import {
+  type DurationFilterValue,
   durationAmountToDays,
   parseDurationFilterValue,
-  type DurationFilterValue,
 } from '@/types/duration-filter-value';
 import { parseEnumFilterValue } from '@/types/enum-filter-value';
 import { parseNumberFilterValue } from '@/types/number-filter-value';
@@ -70,6 +71,9 @@ function normalizeSearchText(value: string): string {
   return value.toLowerCase().replace(/\u00a0/g, ' ');
 }
 
+const terminationSearchLabel = normalizeSearchText(deCommonMessages.duration.byTermination);
+const terminationSearchStem = terminationSearchLabel.split(' ').at(-1) ?? terminationSearchLabel;
+
 /**
  * Global “search all” matcher: substring match, plus German/currency number parsing
  * so queries like `3000,00`, `3.000,00`, or `3000€` hit numeric cell values.
@@ -87,7 +91,7 @@ export function matchesGlobalFilter(value: unknown, filterValue: unknown): boole
 
   if (isTotalRuntime(value)) {
     if (value.terminationType === TerminationType.TERMINATION) {
-      return normalizeSearchText('Durch Kündigung').includes(searchFilter) || searchFilter.includes('kündigung');
+      return terminationSearchLabel.includes(searchFilter) || searchFilter.includes(terminationSearchStem);
     }
     if (value.days == null) {
       return false;
@@ -154,41 +158,6 @@ export function matchesTextFilter(value: unknown, filterValue: unknown): boolean
 export function matchesNumberRangeFilter(value: unknown, filterValue: unknown): boolean {
   const parsed = parseNumberFilterValue(filterValue);
 
-  if (isTotalRuntime(value)) {
-    if (parsed.operator === 'termination') {
-      return value.terminationType === TerminationType.TERMINATION;
-    }
-    if (parsed.operator === 'empty') {
-      return (
-        value.terminationType !== TerminationType.TERMINATION &&
-        (value.days === null || value.days === undefined)
-      );
-    }
-    if (parsed.operator === 'notEmpty') {
-      return value.terminationType === TerminationType.TERMINATION || value.days != null;
-    }
-    if (value.terminationType === TerminationType.TERMINATION || value.days == null) {
-      if (
-        (parsed.operator === 'eq' ||
-          parsed.operator === 'gt' ||
-          parsed.operator === 'lt' ||
-          parsed.operator === 'gte' ||
-          parsed.operator === 'lte') &&
-        parsed.value == null
-      ) {
-        return true;
-      }
-      if (parsed.operator === 'between' && parsed.min == null && parsed.max == null) {
-        return true;
-      }
-      return false;
-    }
-    return matchesNumberRangeFilter(value.days, filterValue);
-  }
-
-  if (parsed.operator === 'termination') {
-    return false;
-  }
   if (parsed.operator === 'empty') {
     return value === null || value === undefined;
   }
@@ -302,10 +271,7 @@ export function matchesDurationFilter(value: unknown, filterValue: unknown): boo
       return value.terminationType === TerminationType.TERMINATION;
     }
     if (parsed.operator === 'empty') {
-      return (
-        value.terminationType !== TerminationType.TERMINATION &&
-        (value.days === null || value.days === undefined)
-      );
+      return value.terminationType !== TerminationType.TERMINATION && (value.days === null || value.days === undefined);
     }
     if (parsed.operator === 'notEmpty') {
       return value.terminationType === TerminationType.TERMINATION || value.days != null;

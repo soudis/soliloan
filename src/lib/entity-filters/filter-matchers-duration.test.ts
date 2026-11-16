@@ -25,6 +25,8 @@ describe('matchesDurationFilter', () => {
     assert.equal(matchesDurationFilter(1000, { operator: 'gte', value: 1000 }), true);
     assert.equal(matchesDurationFilter(999, { operator: 'gte', value: 1000 }), false);
     assert.equal(matchesDurationFilter(1500, { operator: 'between', min: 1000, max: 2000 }), true);
+    assert.equal(matchesDurationFilter(measured, { operator: 'gte', value: 1000 }), true);
+    assert.equal(matchesDurationFilter(termination, { operator: 'gte', value: 1000 }), false);
   });
 
   it('treats null as empty only', () => {
@@ -56,10 +58,7 @@ describe('matchesDurationFilter', () => {
     assert.equal(matchesDurationFilter(measured, { operator: 'gte', amount: 1000, unit: 'days' }), true);
     assert.equal(matchesDurationFilter(measured, { operator: 'lt', amount: 1000, unit: 'days' }), false);
     assert.equal(matchesDurationFilter(termination, { operator: 'gte', amount: 1000, unit: 'days' }), false);
-    assert.equal(
-      matchesDurationFilter(unresolved, { operator: 'between', min: 0, max: 5000, unit: 'days' }),
-      false,
-    );
+    assert.equal(matchesDurationFilter(unresolved, { operator: 'between', min: 0, max: 5000, unit: 'days' }), false);
   });
 
   it('matches TotalRuntime against year units', () => {

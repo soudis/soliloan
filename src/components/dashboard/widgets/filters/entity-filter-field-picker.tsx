@@ -7,9 +7,8 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { COLUMN_GROUP_KEYS_IN_ORDER } from '@/lib/table-column-groups';
+import { groupByColumnGroup } from '@/lib/table-column-groups';
 import { cn } from '@/lib/utils';
-import type { ColumnGroupKey } from '@/components/ui/data-table';
 import type { EntityFilterEntity, EntityFilterFieldOption } from '@/types/entity-filters';
 
 function toFieldValue(entity: string, field: string): string {
@@ -51,29 +50,7 @@ export function EntityFilterFieldPicker({
     [fieldOptions, value],
   );
 
-  const groupedOptions = useMemo(() => {
-    const byGroup = new Map<ColumnGroupKey, EntityFilterFieldOption[]>();
-    const ungrouped: EntityFilterFieldOption[] = [];
-
-    for (const opt of fieldOptions) {
-      const key = opt.columnGroup?.key;
-      if (!key) {
-        ungrouped.push(opt);
-        continue;
-      }
-      const existing = byGroup.get(key) ?? [];
-      existing.push(opt);
-      byGroup.set(key, existing);
-    }
-
-    return {
-      ungrouped,
-      groups: COLUMN_GROUP_KEYS_IN_ORDER.filter((key) => (byGroup.get(key)?.length ?? 0) > 0).map((key) => ({
-        id: key,
-        options: byGroup.get(key) ?? [],
-      })),
-    };
-  }, [fieldOptions]);
+  const groupedOptions = useMemo(() => groupByColumnGroup(fieldOptions, (opt) => opt.columnGroup?.key), [fieldOptions]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -90,9 +67,7 @@ export function EntityFilterFieldPicker({
           )}
         >
           <span className="truncate">{selected?.label ?? t(placeholderKey)}</span>
-          <ChevronsUpDown
-            className={cn('ml-1 shrink-0 opacity-50', size === 'sm' ? 'h-4 w-4' : 'h-3.5 w-3.5')}
-          />
+          <ChevronsUpDown className={cn('ml-1 shrink-0 opacity-50', size === 'sm' ? 'h-4 w-4' : 'h-3.5 w-3.5')} />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
@@ -128,13 +103,13 @@ export function EntityFilterFieldPicker({
               </CommandGroup>
             ) : null}
             {groupedOptions.groups.map((group) => (
-              <CommandGroup key={group.id} heading={tColumnGroups(group.id)}>
-                {group.options.map((opt) => {
+              <CommandGroup key={group.key} heading={tColumnGroups(group.key)}>
+                {group.items.map((opt) => {
                   const itemValue = toFieldValue(opt.entity, opt.field);
                   return (
                     <CommandItem
                       key={itemValue}
-                      value={`${opt.label} ${opt.field} ${tColumnGroups(group.id)}`}
+                      value={`${opt.label} ${opt.field} ${tColumnGroups(group.key)}`}
                       className={cn('cursor-pointer', size === 'sm' ? 'text-sm' : 'text-xs')}
                       onSelect={() => {
                         const parsed = parseFieldValue(itemValue);

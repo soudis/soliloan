@@ -1,3 +1,4 @@
+import { DAYS_PER_MONTH, DAYS_PER_YEAR } from '@/lib/duration-day-length';
 import type { FilterOperatorValue } from '@/types/filter-operators';
 
 export const DURATION_FILTER_OPERATORS = ['between', 'eq', 'gt', 'lt', 'gte', 'lte'] as const;
@@ -28,10 +29,6 @@ export type DurationFilterValue =
   | FilterOperatorValue<'empty'>
   | FilterOperatorValue<'notEmpty'>
   | FilterOperatorValue<'termination'>;
-
-/** Same constants as formatDurationDays / durationGroupCount. */
-export const DAYS_PER_YEAR = 365;
-export const DAYS_PER_MONTH = 30;
 
 export function durationAmountToDays(amount: number, unit: DurationFilterUnit): number {
   switch (unit) {
@@ -74,11 +71,13 @@ export function createDefaultDurationFilterValueForOperator(
 function isDurationFilterOperator(value: unknown): value is DurationFilterOperatorWithEmpty {
   return (
     typeof value === 'string' &&
-    ([
-      ...DURATION_FILTER_OPERATORS,
-      ...DURATION_FILTER_EMPTY_OPERATORS,
-      ...DURATION_FILTER_TERMINATION_OPERATORS,
-    ] as readonly string[]).includes(value)
+    (
+      [
+        ...DURATION_FILTER_OPERATORS,
+        ...DURATION_FILTER_EMPTY_OPERATORS,
+        ...DURATION_FILTER_TERMINATION_OPERATORS,
+      ] as readonly string[]
+    ).includes(value)
   );
 }
 

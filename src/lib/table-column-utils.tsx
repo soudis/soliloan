@@ -1,16 +1,12 @@
 import type { Lender, Loan } from '@prisma/client';
+import { TerminationType } from '@prisma/client';
 import type { CellContext, ColumnDef, Row, VisibilityState } from '@tanstack/react-table';
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import type { ColumnGroupMeta, DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { TerminationType } from '@prisma/client';
 
-import {
-  formatTotalRuntime,
-  getTotalRuntime,
-  type TotalRuntime,
-} from '@/lib/calculations/loan-duration-metrics';
+import { formatTotalRuntime, getTotalRuntime, type TotalRuntime } from '@/lib/calculations/loan-duration-metrics';
 import {
   matchesBooleanFilter,
   matchesDateFilter,
@@ -525,7 +521,7 @@ export function createTotalRuntimeColumn<
 >(t: (key: string) => string, durationT: (key: string, values?: Record<string, number>) => string): ColumnDef<T> {
   const column = createColumn<T>(
     {
-      id: 'totalRuntimeDays',
+      id: 'totalRuntime',
       accessorKey: 'totalRuntime',
       header: 'table.totalRuntime',
       accessorFn: (row) => row.totalRuntime ?? getTotalRuntime(row),
@@ -1176,4 +1172,3 @@ export function formatTerminationModalities(
       return '-';
   }
 }
-

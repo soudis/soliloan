@@ -2,6 +2,7 @@ import { TerminationType } from '@prisma/client';
 import moment from 'moment';
 
 import { isTotalRuntime } from '@/lib/calculations/loan-duration-metrics';
+import { DAYS_PER_MONTH, DAYS_PER_YEAR } from '@/lib/duration-day-length';
 import type { DataTableColumnFilterDefinition } from '@/lib/entity-filters/filter-definitions';
 import { formatCurrency, formatNumber } from '@/lib/utils';
 import type {
@@ -57,34 +58,51 @@ function formatNumericValue(value: number, field: string): string {
   return formatNumber(value, 0, 2);
 }
 
+function formatThresholdBucketLabel(
+  thresholds: number[],
+  bucketIndex: number,
+  t: (key: string, values?: Record<string, string | number>) => string,
+  formatBound: (value: number) => string,
+  formatRangeMin: (previous: number) => string,
+): string {
+  if (bucketIndex === 0) {
+    return t('numericBucketUpTo', { max: formatBound(thresholds[0] ?? 0) });
+  }
+  if (bucketIndex < thresholds.length) {
+    const previous = thresholds[bucketIndex - 1] ?? 0;
+    const max = thresholds[bucketIndex] ?? previous;
+    return t('numericBucketRange', {
+      min: formatRangeMin(previous),
+      max: formatBound(max),
+    });
+  }
+  const last = thresholds[thresholds.length - 1] ?? 0;
+  return t('numericBucketAbove', { min: formatBound(last) });
+}
+
 export function formatNumericBucketLabel(
   thresholds: number[],
   bucketIndex: number,
   field: string,
   t: (key: string, values?: Record<string, string | number>) => string,
 ): string {
-  if (bucketIndex === 0) {
-    return t('numericBucketUpTo', { max: formatNumericValue(thresholds[0], field) });
-  }
-  if (bucketIndex < thresholds.length) {
-    const prev = thresholds[bucketIndex - 1];
-    const max = thresholds[bucketIndex];
-    return t('numericBucketRange', {
-      min: formatNumericValue(prev + (CURRENCY_GROUP_FIELDS.has(field) ? 0.01 : 1), field),
-      max: formatNumericValue(max, field),
-    });
-  }
-  const last = thresholds[thresholds.length - 1];
-  return t('numericBucketAbove', { min: formatNumericValue(last, field) });
+  const step = CURRENCY_GROUP_FIELDS.has(field) ? 0.01 : 1;
+  return formatThresholdBucketLabel(
+    thresholds,
+    bucketIndex,
+    t,
+    (value) => formatNumericValue(value, field),
+    (previous) => formatNumericValue(previous + step, field),
+  );
 }
 
 function durationGroupCount(days: number, grouping: ChartDurationGrouping): number {
   const wholeDays = Math.max(0, Math.round(days));
   if (grouping === 'years') {
-    return Math.floor(wholeDays / 365);
+    return Math.floor(wholeDays / DAYS_PER_YEAR);
   }
   if (grouping === 'months') {
-    return Math.floor(wholeDays / 30);
+    return Math.floor(wholeDays / DAYS_PER_MONTH);
   }
   return wholeDays;
 }
@@ -106,16 +124,7 @@ function formatDurationBucketLabel(
   t: (key: string, values?: Record<string, string | number>) => string,
 ): string {
   const unit = (count: number) => formatDurationGroupLabel(commonT, grouping, count);
-  if (bucketIndex === 0) {
-    return t('numericBucketUpTo', { max: unit(thresholds[0] ?? 0) });
-  }
-  if (bucketIndex < thresholds.length) {
-    const prev = thresholds[bucketIndex - 1] ?? 0;
-    const max = thresholds[bucketIndex] ?? prev;
-    return t('numericBucketRange', { min: unit(prev + 1), max: unit(max) });
-  }
-  const last = thresholds[thresholds.length - 1] ?? 0;
-  return t('numericBucketAbove', { min: unit(last) });
+  return formatThresholdBucketLabel(thresholds, bucketIndex, t, unit, (previous) => unit(previous + 1));
 }
 
 function getNumericBucketIndex(value: number, thresholds: number[]): number {

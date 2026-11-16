@@ -1,17 +1,17 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useMemo, type KeyboardEvent, type ReactNode } from 'react';
+import { type KeyboardEvent, type ReactNode, useMemo } from 'react';
 
 import {
   FilterFieldGroup,
+  type FilterFieldSize,
+  type FilterFieldVariant,
   FilterStackedFields,
   filterNumberValueSegmentClass,
   filterOperatorSegmentClass,
   filterSymbolOperatorLabelClass,
   filterSymbolOperatorTriggerClass,
-  type FilterFieldSize,
-  type FilterFieldVariant,
 } from '@/components/filters/filter-field-group';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -20,7 +20,6 @@ import {
   createDefaultNumberFilterValueForOperator,
   NUMBER_FILTER_EMPTY_OPERATORS,
   NUMBER_FILTER_OPERATORS,
-  NUMBER_FILTER_TERMINATION_OPERATORS,
   type NumberFilterOperator,
   type NumberFilterOperatorWithEmpty,
   type NumberFilterValue,
@@ -34,14 +33,13 @@ const NUMBER_OPERATOR_SHORTCUTS: Record<string, 'eq' | 'gt' | 'lt'> = {
 };
 
 function hasPayload(operator: NumberFilterOperatorWithEmpty): boolean {
-  return operator !== 'empty' && operator !== 'notEmpty' && operator !== 'termination';
+  return operator !== 'empty' && operator !== 'notEmpty';
 }
 
 export function NumberFilterWithOperator({
   value,
   onChange,
   allowEmpty = false,
-  terminationValue = false,
   defaultOperator = 'between',
   translationNamespace = 'dataTable',
   variant = 'row',
@@ -50,7 +48,6 @@ export function NumberFilterWithOperator({
   value: unknown;
   onChange: (value: NumberFilterValue) => void;
   allowEmpty?: boolean;
-  terminationValue?: boolean;
   defaultOperator?: NumberFilterOperator;
   translationNamespace?: string;
   variant?: FilterFieldVariant;
@@ -61,9 +58,8 @@ export function NumberFilterWithOperator({
 
   const availableOperators = useMemo(() => {
     const emptyOps = allowEmpty ? [...NUMBER_FILTER_EMPTY_OPERATORS] : [];
-    const terminationOps = terminationValue ? [...NUMBER_FILTER_TERMINATION_OPERATORS] : [];
-    return [...NUMBER_FILTER_OPERATORS, ...emptyOps, ...terminationOps];
-  }, [allowEmpty, terminationValue]);
+    return [...NUMBER_FILTER_OPERATORS, ...emptyOps];
+  }, [allowEmpty]);
 
   const setOperator = (operator: NumberFilterOperatorWithEmpty) => {
     if (operator === parsed.operator) {

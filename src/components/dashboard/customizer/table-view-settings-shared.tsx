@@ -16,13 +16,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { COLUMN_GROUP_KEYS_IN_ORDER } from '@/lib/table-column-groups';
-import type { EntityFilterFieldOption } from '@/types/entity-filters';
+import { groupByColumnGroup } from '@/lib/table-column-groups';
 import {
   TABLE_VIEW_ROW_LIMIT_MAX,
   TABLE_VIEW_ROW_LIMIT_MIN,
   type TableViewWidgetConfigBase,
 } from '@/types/dashboard-widgets/table-view';
+import type { EntityFilterFieldOption } from '@/types/entity-filters';
 
 import { TableViewColumnEditor, type TableViewColumnMeta } from './table-view-column-editor';
 
@@ -81,28 +81,10 @@ export function TableViewSettingsShared({
 
   const sortColumnOptions = columnMeta.filter((meta) => draftConfig.columns.some((col) => col.id === meta.id));
 
-  const groupedSortColumnOptions = useMemo(() => {
-    const flat: TableViewColumnMeta[] = [];
-    const byGroup = new Map<string, TableViewColumnMeta[]>();
-
-    for (const meta of sortColumnOptions) {
-      const groupKey = meta.columnGroup?.key;
-      if (!groupKey) {
-        flat.push(meta);
-        continue;
-      }
-      const existing = byGroup.get(groupKey) ?? [];
-      existing.push(meta);
-      byGroup.set(groupKey, existing);
-    }
-
-    const grouped = COLUMN_GROUP_KEYS_IN_ORDER.filter((key) => (byGroup.get(key)?.length ?? 0) > 0).map((key) => ({
-      key,
-      columns: byGroup.get(key) ?? [],
-    }));
-
-    return { flat, grouped };
-  }, [sortColumnOptions]);
+  const groupedSortColumnOptions = useMemo(
+    () => groupByColumnGroup(sortColumnOptions, (meta) => meta.columnGroup?.key),
+    [sortColumnOptions],
+  );
 
   return (
     <div className="mt-6 space-y-4 border-t pt-4">
@@ -145,15 +127,15 @@ export function TableViewSettingsShared({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__none__">{t('sortNone')}</SelectItem>
-              {groupedSortColumnOptions.flat.map((meta) => (
+              {groupedSortColumnOptions.ungrouped.map((meta) => (
                 <SelectItem key={meta.id} value={meta.id}>
                   {meta.label}
                 </SelectItem>
               ))}
-              {groupedSortColumnOptions.grouped.map(({ key, columns }) => (
+              {groupedSortColumnOptions.groups.map(({ key, items }) => (
                 <SelectGroup key={key}>
                   <SelectLabel>{tColumnGroups(key)}</SelectLabel>
-                  {columns.map((meta) => (
+                  {items.map((meta) => (
                     <SelectItem key={meta.id} value={meta.id}>
                       {meta.label}
                     </SelectItem>
