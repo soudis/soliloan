@@ -1,4 +1,9 @@
-import { CHART_EMPTY_GROUP_KEY, groupSortRank, resolveGroupKey } from '@/lib/dashboard/chart/resolve-group-key';
+import {
+  CHART_EMPTY_GROUP_KEY,
+  CHART_TERMINATION_GROUP_KEY,
+  groupSortRank,
+  resolveGroupKey,
+} from '@/lib/dashboard/chart/resolve-group-key';
 import {
   createAggregateMetricCache,
   getOrBuildPeriodSnapshot,
@@ -58,8 +63,15 @@ function isMissingNumber(value: number | null | undefined): value is null | unde
 }
 
 function compareGroupsByLimit(a: AggregationTableRow, b: AggregationTableRow, locale: string): number {
-  if (a.key === CHART_EMPTY_GROUP_KEY && b.key === CHART_EMPTY_GROUP_KEY) {
+  if (a.key === b.key) {
     return 0;
+  }
+  // A notice period has no completed length, so it precedes every measured span.
+  if (a.key === CHART_TERMINATION_GROUP_KEY) {
+    return -1;
+  }
+  if (b.key === CHART_TERMINATION_GROUP_KEY) {
+    return 1;
   }
   if (a.key === CHART_EMPTY_GROUP_KEY) {
     return 1;
@@ -94,9 +106,7 @@ export function sortAggregationTableRows(
   const sorted = [...rows];
   sorted.sort((a, b) => {
     if (sortColumnId === AGGREGATION_TABLE_GROUP_SORT_ID) {
-      const aEmpty = a.key === CHART_EMPTY_GROUP_KEY;
-      const bEmpty = b.key === CHART_EMPTY_GROUP_KEY;
-      if (aEmpty || bEmpty) {
+      if (a.key === CHART_EMPTY_GROUP_KEY || b.key === CHART_EMPTY_GROUP_KEY) {
         return compareGroupsByLimit(a, b, locale);
       }
       const cmp = compareGroupsByLimit(a, b, locale);

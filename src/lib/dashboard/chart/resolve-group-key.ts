@@ -15,7 +15,10 @@ import type {
 export const CHART_EMPTY_GROUP_KEY = '__empty__';
 export const CHART_TERMINATION_GROUP_KEY = 'termination:TERMINATION';
 
-/** Numeric order for duration and limit buckets. Labels such as "über 10 Jahre" are not used. */
+/**
+ * Sequence encoded in the group key. Labels are not used.
+ * Null means the label is the order, as for free text.
+ */
 export function groupSortRank(key: string): number | null {
   const durationBucket = /^duration:[^:]+:bucket:(\d+)$/.exec(key);
   if (durationBucket?.[1]) {
@@ -28,6 +31,35 @@ export function groupSortRank(key: string): number | null {
   const numericBucket = /^bucket:(\d+)$/.exec(key);
   if (numericBucket?.[1]) {
     return Number(numericBucket[1]);
+  }
+  if (key.startsWith('num:')) {
+    const value = Number(key.slice(4));
+    return Number.isFinite(value) ? value : null;
+  }
+  const year = /^year:(\d+)$/.exec(key);
+  if (year?.[1]) {
+    return Number(year[1]);
+  }
+  const month = /^month:(\d{4})-(\d{2})$/.exec(key);
+  if (month?.[1] && month[2]) {
+    return Number(month[1]) * 100 + Number(month[2]);
+  }
+  const monthOfYear = /^monthOfYear:(\d+)$/.exec(key);
+  if (monthOfYear?.[1]) {
+    return Number(monthOfYear[1]);
+  }
+  const week = /^week:(\d+)-W(\d+)$/.exec(key);
+  if (week?.[1] && week[2]) {
+    return Number(week[1]) * 100 + Number(week[2]);
+  }
+  const dayOfWeek = /^dow:(\d+)$/.exec(key);
+  if (dayOfWeek?.[1]) {
+    // moment day() is Sunday = 0. Monday is the first day of the week.
+    return (Number(dayOfWeek[1]) + 6) % 7;
+  }
+  const date = /^date:(\d{4})-(\d{2})-(\d{2})$/.exec(key);
+  if (date?.[1] && date[2] && date[3]) {
+    return Number(date[1]) * 10000 + Number(date[2]) * 100 + Number(date[3]);
   }
   return null;
 }

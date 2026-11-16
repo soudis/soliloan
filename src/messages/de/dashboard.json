@@ -496,7 +496,7 @@
       "charCountLabel": "{count} Zeichen",
       "numericBucketUpTo": "bis {max}",
       "numericBucketRange": "{min} – {max}",
-      "numericBucketAbove": "über {min}",
+      "numericBucketAbove": "{min} und mehr",
       "numericBucketFrom": "ab {min}"
     },
     "aggregationTable": {
@@ -509,7 +509,7 @@
       "charCountLabel": "{count} Zeichen",
       "numericBucketUpTo": "bis {max}",
       "numericBucketRange": "{min} – {max}",
-      "numericBucketAbove": "über {min}",
+      "numericBucketAbove": "{min} und mehr",
       "numericBucketFrom": "ab {min}"
     },
     "barChart": {
@@ -520,7 +520,7 @@
       "charCountLabel": "{count} Zeichen",
       "numericBucketUpTo": "bis {max}",
       "numericBucketRange": "{min} – {max}",
-      "numericBucketAbove": "über {min}",
+      "numericBucketAbove": "{min} und mehr",
       "numericBucketFrom": "ab {min}"
     },
     "lineChart": {
@@ -531,7 +531,7 @@
       "charCountLabel": "{count} Zeichen",
       "numericBucketUpTo": "bis {max}",
       "numericBucketRange": "{min} – {max}",
-      "numericBucketAbove": "über {min}",
+      "numericBucketAbove": "{min} und mehr",
       "numericBucketFrom": "ab {min}"
     },
     "tableView": {

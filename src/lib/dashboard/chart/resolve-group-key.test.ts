@@ -30,7 +30,7 @@ const formatters = {
   t: (key: string, values?: Record<string, string | number>) => {
     if (key === 'numericBucketUpTo') return `bis ${values?.max}`;
     if (key === 'numericBucketRange') return `${values?.min} – ${values?.max}`;
-    if (key === 'numericBucketAbove') return `über ${values?.min}`;
+    if (key === 'numericBucketAbove') return `${values?.min} und mehr`;
     if (key === 'numericBucketFrom') return `ab ${values?.min}`;
     return key;
   },
@@ -83,7 +83,7 @@ describe('resolveGroupKey duration grouping', () => {
     assert.equal(resolveGroupKey(span(5), config, durationField, formatters).label, '5 Jahre – 10 Jahre');
     assert.equal(resolveGroupKey(span(5, 65), config, durationField, formatters).label, '5 Jahre – 10 Jahre');
     assert.equal(resolveGroupKey(span(10), config, durationField, formatters).label, '5 Jahre – 10 Jahre');
-    assert.equal(resolveGroupKey(span(11), config, durationField, formatters).label, 'über 10 Jahre');
+    assert.equal(resolveGroupKey(span(11), config, durationField, formatters).label, '10 Jahre und mehr');
   });
 
   it('keeps a later range inclusive of its own limit', () => {
@@ -98,7 +98,7 @@ describe('resolveGroupKey duration grouping', () => {
     assert.equal(resolveGroupKey(span(10), config, durationField, formatters).label, '5 Jahre – 10 Jahre');
     assert.equal(resolveGroupKey(span(11), config, durationField, formatters).label, '11 Jahre – 20 Jahre');
     assert.equal(resolveGroupKey(span(20), config, durationField, formatters).label, '11 Jahre – 20 Jahre');
-    assert.equal(resolveGroupKey(span(21), config, durationField, formatters).label, 'über 20 Jahre');
+    assert.equal(resolveGroupKey(span(21), config, durationField, formatters).label, '20 Jahre und mehr');
   });
 
   it('labels the only open group as ab, including the limit', () => {
