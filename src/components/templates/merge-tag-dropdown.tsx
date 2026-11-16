@@ -381,10 +381,12 @@ function MergeTagFieldSelect({
 
     return {
       flat: [] as MergeTagFieldOption[],
-      groups: subcategoryKeys.filter((key) => (byGroup.get(key)?.length ?? 0) > 0).map((key) => ({
-        key,
-        options: byGroup.get(key) ?? [],
-      })),
+      groups: subcategoryKeys
+        .filter((key) => (byGroup.get(key)?.length ?? 0) > 0)
+        .map((key) => ({
+          key,
+          options: byGroup.get(key) ?? [],
+        })),
     };
   }, [filteredOptions, columnSubcategoryEntity, defaultSubcategoryKey, subcategoryKeys]);
 
@@ -463,7 +465,7 @@ function MergeTagFieldSelect({
                   <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{tColumnGroups(key)}</div>
                   {groupOptions.map(renderOptionButton)}
                   {groupIndex < groupedFilteredOptions.groups.length - 1 ? (
-                    <div className="my-1 h-px bg-border" role="separator" />
+                    <hr className="my-1 h-px border-0 bg-border" />
                   ) : null}
                 </div>
               ))}

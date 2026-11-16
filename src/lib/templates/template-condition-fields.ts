@@ -124,9 +124,7 @@ function toConditionField(
   if (!type) return null;
   const selectOptions = field.selectOptions?.map((option) => ({ label: option, value: option }));
   const columnGroup =
-    field.entity === 'loan' || field.entity === 'lender'
-      ? columnGroupForId(field.key, field.entity)
-      : undefined;
+    field.entity === 'loan' || field.entity === 'lender' ? columnGroupForId(field.key, field.entity) : undefined;
   return {
     field: field.key,
     label: field.label,

@@ -1,4 +1,4 @@
-import { type DurationType, type TerminationType } from '@prisma/client';
+import type { DurationType, TerminationType } from '@prisma/client';
 import { createTranslator } from 'next-intl';
 
 import { formatTotalRuntime } from '@/lib/calculations/loan-duration-metrics';

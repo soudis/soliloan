@@ -4,10 +4,7 @@ import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import type { TableUrlState } from '@/lib/hooks/use-table-url-state';
 import { isInactiveBooleanFilterValue } from '@/types/boolean-filter-value';
 import { createDefaultDateFilterValue, isInactiveDateFilterValue } from '@/types/date-filter-value';
-import {
-  createDefaultDurationFilterValue,
-  isInactiveDurationFilterValue,
-} from '@/types/duration-filter-value';
+import { createDefaultDurationFilterValue, isInactiveDurationFilterValue } from '@/types/duration-filter-value';
 import { createDefaultEnumFilterValue, isInactiveEnumFilterValue } from '@/types/enum-filter-value';
 import {
   createDefaultNumberFilterValue,
