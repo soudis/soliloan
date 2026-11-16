@@ -31,6 +31,7 @@ const formatters = {
     if (key === 'numericBucketUpTo') return `bis ${values?.max}`;
     if (key === 'numericBucketRange') return `${values?.min} – ${values?.max}`;
     if (key === 'numericBucketAbove') return `über ${values?.min}`;
+    if (key === 'numericBucketFrom') return `ab ${values?.min}`;
     return key;
   },
 };
@@ -78,9 +79,39 @@ describe('resolveGroupKey duration grouping', () => {
       filters: [],
     };
 
-    assert.equal(resolveGroupKey(span(5), config, durationField, formatters).label, 'bis 5 Jahre');
-    assert.equal(resolveGroupKey(span(6), config, durationField, formatters).label, '6 Jahre – 10 Jahre');
+    assert.equal(resolveGroupKey(span(4), config, durationField, formatters).label, 'bis 5 Jahre');
+    assert.equal(resolveGroupKey(span(5), config, durationField, formatters).label, '5 Jahre – 10 Jahre');
+    assert.equal(resolveGroupKey(span(5, 65), config, durationField, formatters).label, '5 Jahre – 10 Jahre');
+    assert.equal(resolveGroupKey(span(10), config, durationField, formatters).label, '5 Jahre – 10 Jahre');
     assert.equal(resolveGroupKey(span(11), config, durationField, formatters).label, 'über 10 Jahre');
+  });
+
+  it('keeps a later range inclusive of its own limit', () => {
+    const config = {
+      groupBy: { entity: 'loan' as const, field: 'totalRuntime' },
+      durationGrouping: 'years' as const,
+      numericBuckets: [5, 10, 20],
+      topNCategories: 8,
+      filters: [],
+    };
+
+    assert.equal(resolveGroupKey(span(10), config, durationField, formatters).label, '5 Jahre – 10 Jahre');
+    assert.equal(resolveGroupKey(span(11), config, durationField, formatters).label, '11 Jahre – 20 Jahre');
+    assert.equal(resolveGroupKey(span(20), config, durationField, formatters).label, '11 Jahre – 20 Jahre');
+    assert.equal(resolveGroupKey(span(21), config, durationField, formatters).label, 'über 20 Jahre');
+  });
+
+  it('labels the only open group as ab, including the limit', () => {
+    const config = {
+      groupBy: { entity: 'loan' as const, field: 'totalRuntime' },
+      durationGrouping: 'years' as const,
+      numericBuckets: [5],
+      topNCategories: 8,
+      filters: [],
+    };
+
+    assert.equal(resolveGroupKey(span(4), config, durationField, formatters).label, 'bis 5 Jahre');
+    assert.equal(resolveGroupKey(span(5), config, durationField, formatters).label, 'ab 5 Jahre');
   });
 
   it('keeps a measured loan without days in the empty group', () => {

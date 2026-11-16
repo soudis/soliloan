@@ -64,6 +64,7 @@ function formatThresholdBucketLabel(
   t: (key: string, values?: Record<string, string | number>) => string,
   formatBound: (value: number) => string,
   formatRangeMin: (previous: number) => string,
+  firstExclusive = false,
 ): string {
   if (bucketIndex === 0) {
     return t('numericBucketUpTo', { max: formatBound(thresholds[0] ?? 0) });
@@ -71,12 +72,17 @@ function formatThresholdBucketLabel(
   if (bucketIndex < thresholds.length) {
     const previous = thresholds[bucketIndex - 1] ?? 0;
     const max = thresholds[bucketIndex] ?? previous;
+    // The first duration limit is not in "bis", so the next range starts on that limit.
+    const min = firstExclusive && bucketIndex === 1 ? formatBound(previous) : formatRangeMin(previous);
     return t('numericBucketRange', {
-      min: formatRangeMin(previous),
+      min,
       max: formatBound(max),
     });
   }
   const last = thresholds[thresholds.length - 1] ?? 0;
+  if (firstExclusive && thresholds.length === 1) {
+    return t('numericBucketFrom', { min: formatBound(last) });
+  }
   return t('numericBucketAbove', { min: formatBound(last) });
 }
 
@@ -126,12 +132,17 @@ function formatDurationBucketLabel(
   t: (key: string, values?: Record<string, string | number>) => string,
 ): string {
   const unit = (count: number) => formatDurationGroupLabel(commonT, grouping, count);
-  return formatThresholdBucketLabel(thresholds, bucketIndex, t, unit, (previous) => unit(previous + 1));
+  return formatThresholdBucketLabel(thresholds, bucketIndex, t, unit, (previous) => unit(previous + 1), true);
 }
 
-function getNumericBucketIndex(value: number, thresholds: number[]): number {
+/**
+ * `firstExclusive` matches the duration filter: "bis" N is every completed unit below N.
+ * Later limits stay inclusive, so a range is the same band as "zwischen".
+ */
+function getNumericBucketIndex(value: number, thresholds: number[], firstExclusive = false): number {
   for (let i = 0; i < thresholds.length; i++) {
-    if (value <= thresholds[i]) {
+    const threshold = thresholds[i] ?? 0;
+    if (firstExclusive && i === 0 ? value < threshold : value <= threshold) {
       return i;
     }
   }
@@ -260,7 +271,7 @@ export function resolveGroupKey(
       return { key: CHART_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
     }
     if (config.numericBuckets?.length) {
-      const index = getNumericBucketIndex(count, config.numericBuckets);
+      const index = getNumericBucketIndex(count, config.numericBuckets, true);
       return {
         key: `duration:${grouping}:bucket:${index}`,
         label: formatDurationBucketLabel(config.numericBuckets, index, grouping, formatters.commonT, formatters.t),

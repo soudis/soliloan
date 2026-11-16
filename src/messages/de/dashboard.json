@@ -68,7 +68,7 @@
         "months": "Monate",
         "days": "Tage"
       },
-      "durationBucketsHint": "Obere Grenzen in der gewählten Einheit (z. B. 5, 10). Ohne Grenzen entsteht eine Gruppe je Jahr, Monat oder Tag.",
+      "durationBucketsHint": "Obere Grenzen in der gewählten Einheit (z. B. 5, 10). „bis 5“ enthält die Grenze nicht. Ohne Grenzen entsteht eine Gruppe je Jahr, Monat oder Tag.",
       "textTransform": "Textumwandlung",
       "textTransformNone": "Keine",
       "textTransformFirstChars": "Erste Zeichen",
@@ -314,7 +314,7 @@
         "months": "Monate",
         "days": "Tage"
       },
-      "durationBucketsHint": "Obere Grenzen in der gewählten Einheit (z. B. 5, 10). Ohne Grenzen entsteht eine Gruppe je Jahr, Monat oder Tag.",
+      "durationBucketsHint": "Obere Grenzen in der gewählten Einheit (z. B. 5, 10). „bis 5“ enthält die Grenze nicht. Ohne Grenzen entsteht eine Gruppe je Jahr, Monat oder Tag.",
       "textTransform": "Textumwandlung",
       "textTransformNone": "Keine",
       "textTransformFirstChars": "Erste Zeichen",
@@ -496,7 +496,8 @@
       "charCountLabel": "{count} Zeichen",
       "numericBucketUpTo": "bis {max}",
       "numericBucketRange": "{min} – {max}",
-      "numericBucketAbove": "über {min}"
+      "numericBucketAbove": "über {min}",
+      "numericBucketFrom": "ab {min}"
     },
     "aggregationTable": {
       "groupColumn": "Gruppe",
@@ -508,7 +509,8 @@
       "charCountLabel": "{count} Zeichen",
       "numericBucketUpTo": "bis {max}",
       "numericBucketRange": "{min} – {max}",
-      "numericBucketAbove": "über {min}"
+      "numericBucketAbove": "über {min}",
+      "numericBucketFrom": "ab {min}"
     },
     "barChart": {
       "emptySeries": "Keine Serien konfiguriert.",
@@ -518,7 +520,8 @@
       "charCountLabel": "{count} Zeichen",
       "numericBucketUpTo": "bis {max}",
       "numericBucketRange": "{min} – {max}",
-      "numericBucketAbove": "über {min}"
+      "numericBucketAbove": "über {min}",
+      "numericBucketFrom": "ab {min}"
     },
     "lineChart": {
       "emptySeries": "Keine Serien konfiguriert.",
@@ -528,7 +531,8 @@
       "charCountLabel": "{count} Zeichen",
       "numericBucketUpTo": "bis {max}",
       "numericBucketRange": "{min} – {max}",
-      "numericBucketAbove": "über {min}"
+      "numericBucketAbove": "über {min}",
+      "numericBucketFrom": "ab {min}"
     },
     "tableView": {
       "fixedLimitHint": "Es werden maximal {count} Zeilen angezeigt."

@@ -10,14 +10,14 @@ describe('sortAggregationTableRows duration limits', () => {
     row('duration:years:bucket:2', 'über 10 Jahre'),
     row('__empty__', 'Ohne Wert'),
     row('duration:years:bucket:0', 'bis 5 Jahre'),
-    row('duration:years:bucket:1', '6 Jahre – 10 Jahre'),
+    row('duration:years:bucket:1', '5 Jahre – 10 Jahre'),
   ];
 
   it('orders groups by the limit, with empty last', () => {
     const sorted = sortAggregationTableRows(rows, '__group__', 'asc', 'de');
     assert.deepEqual(
       sorted.map((entry) => entry.label),
-      ['bis 5 Jahre', '6 Jahre – 10 Jahre', 'über 10 Jahre', 'Ohne Wert'],
+      ['bis 5 Jahre', '5 Jahre – 10 Jahre', 'über 10 Jahre', 'Ohne Wert'],
     );
   });
 
@@ -25,7 +25,7 @@ describe('sortAggregationTableRows duration limits', () => {
     const sorted = sortAggregationTableRows(rows, '__group__', 'desc', 'de');
     assert.deepEqual(
       sorted.map((entry) => entry.label),
-      ['über 10 Jahre', '6 Jahre – 10 Jahre', 'bis 5 Jahre', 'Ohne Wert'],
+      ['über 10 Jahre', '5 Jahre – 10 Jahre', 'bis 5 Jahre', 'Ohne Wert'],
     );
   });
 });
