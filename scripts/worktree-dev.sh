@@ -103,7 +103,7 @@ slugify() {
   printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//' | cut -c1-40 | sed -E 's/-+$//'
 }
 
-env_value() { grep -E "^$1=" .env 2>/dev/null | tail -n1 | cut -d= -f2- | sed -E 's/^"(.*)"$/\1/'; }
+env_value() { { grep -E "^$1=" .env 2>/dev/null || true; } | tail -n1 | cut -d= -f2- | sed -E 's/^"(.*)"$/\1/'; }
 
 # Slug: explicit arg > already generated .env > branch name > directory name
 resolve_slug() {
@@ -231,17 +231,20 @@ hand_back_files() {
 }
 
 print_info() {
-  local host port mport admin
+  local host port mport admin agent
   host="$(env_value TRAEFIK_HOST)"
   port="$(compose port app 3000 2>/dev/null | sed -E 's/.*://' || true)"
   mport="$(compose port mailpit 8025 2>/dev/null | sed -E 's/.*://' || true)"
   admin="$(env_value SOLILOAN_ADMIN_EMAIL)"
+  agent="$(env_value SOLILOAN_DEV_AGENT_EMAIL)"
   echo
   echo "Project:   $PROJECT"
   echo "App:       https://$host"
   echo "MCP:       http://127.0.0.1:${port:-?}/_next/mcp"
   echo "Mailpit:   http://127.0.0.1:${mport:-?}"
   echo "Admin:     ${admin:-see .env} (password: SOLILOAN_ADMIN_PASSWORD in .env)"
+  # Defaults as in prisma/seed.ts (src/lib/seed/dev-seed.ts) when .env lacks the keys.
+  echo "Agent:     ${agent:-agent@dev.local} (password: SOLILOAN_DEV_AGENT_PASSWORD in .env, default agent-dev-password)"
 }
 
 http_code() { curl -ks -o /dev/null -m "${2:-10}" -w '%{http_code}' "${@:3}" "$1" || true; }
