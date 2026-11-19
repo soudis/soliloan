@@ -37,4 +37,21 @@ describe('Zinskorrektur', () => {
     assert.equal(sum(perMonth.map((month) => month.interest)).toFixed(2), '299.15');
     assert.equal(perMonth.at(-1)?.end.toFixed(2), '0.00');
   });
+
+  it('is skipped with `raw`: the closing year keeps the Abschlussdifferenz in its Kontostand', () => {
+    const closingYear = calculateLoanPerYear(loan, new Date(2026, 0, 1), undefined, { raw: true }).find(
+      (year) => year.year === 2025,
+    );
+
+    assert.equal(closingYear?.interestError.toFixed(2), '0.00');
+    assert.equal(closingYear?.interest.toFixed(2), '99.18');
+    assert.equal(closingYear?.end.toFixed(2), '0.03');
+  });
+
+  it('does not stop at the Rückzahlung with `raw`: the Kontostand keeps earning after it', () => {
+    const lastYear = calculateLoanPerYear(loan, new Date(2026, 11, 31), undefined, { raw: true }).at(-1);
+
+    assert.equal(lastYear?.year, 2026);
+    assert.equal(calculateLoanPerYear(loan, new Date(2026, 11, 31)).at(-1)?.year, 2025);
+  });
 });

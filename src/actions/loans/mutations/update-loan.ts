@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { createAuditEntry, getChangedFields, getLenderContext, getLoanContext } from '@/lib/audit-trail';
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
-import { peakEinlagenstand, toCents } from '@/lib/loans/transaction-ledger';
+import { peakEinlagenstand, toCents } from '@/lib/calculations/transaction-ledger';
 import { normalizeLoanInterestRate } from '@/lib/schemas/investment-type';
 import { loanFormSchema } from '@/lib/schemas/loan';
 import { loanAction } from '@/lib/utils/safe-action';

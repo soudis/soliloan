@@ -13,7 +13,7 @@ import {
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { notifyLenderAboutTransaction } from '@/lib/email';
-import { toStoredAmount } from '@/lib/loans/transaction-ledger';
+import { toStoredAmount } from '@/lib/calculations/transaction-ledger';
 import { checkNewTransaction, rejectionErrorKey } from '@/lib/loans/transaction-validation';
 import { transactionFormSchema } from '@/lib/schemas/transaction';
 import { loanAction } from '@/lib/utils/safe-action';

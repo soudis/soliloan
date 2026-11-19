@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import type { TransactionPreview, TransactionWarning } from '@/lib/loans/transaction-validation';
-import type { Violation } from '@/lib/loans/transaction-ledger';
+import type { Violation } from '@/lib/calculations/transaction-ledger';
 import { cn, formatCurrency, formatDateShort } from '@/lib/utils';
 
 const WARNING_CLASS = 'border-amber-300 bg-amber-50 text-amber-900 [&_[data-slot=alert-description]]:text-amber-900';

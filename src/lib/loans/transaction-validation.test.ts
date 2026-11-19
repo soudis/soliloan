@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { type Transaction, TransactionType } from '@prisma/client';
 
-import { replayLedger, stateAt, toStoredAmount, type LedgerLoan } from './transaction-ledger';
+import { replayLedger, stateAt, toStoredAmount, type LedgerLoan } from '@/lib/calculations/transaction-ledger';
 import { changedPastYears, checkChange, previewTransaction } from './transaction-validation';
 
 const loan = (overrides: Partial<LedgerLoan> = {}): LedgerLoan => ({
@@ -121,6 +121,30 @@ describe('cap at the end of the day and existing violations', () => {
     assert.deepEqual(
       result.errors.map((e) => [e.rule, e.transactionId]),
       [['BALANCE_NEGATIVE', 'c']],
+    );
+  });
+
+  it('tolerates removing one of the Einzahlungen of a day that is already over the Kreditbetrag', () => {
+    // 1.000 € Kreditbetrag reached, then 300 € + 200 € on one day: the excess hangs on the later one
+    const stored = [
+      tx('DEPOSIT', '2024-01-01', 1000, 'base'),
+      tx('DEPOSIT', '2024-02-01', 300, 'a'),
+      tx('DEPOSIT', '2024-02-01', 200, 'b'),
+    ];
+    const { errors } = checkChange(
+      loan(),
+      stored,
+      stored.filter((item) => item.id !== 'b'),
+    );
+    assert.deepEqual(errors, []);
+  });
+
+  it('still blocks an excess on another day', () => {
+    const stored = [tx('DEPOSIT', '2024-01-01', 1000, 'base'), tx('DEPOSIT', '2024-02-01', 300, 'a')];
+    const { errors } = checkChange(loan(), stored, [...stored, tx('DEPOSIT', '2024-03-01', 1, 'c')]);
+    assert.deepEqual(
+      errors.map((error) => `${error.rule}@${error.transactionId}`),
+      ['CAP_EXCEEDED@c'],
     );
   });
 

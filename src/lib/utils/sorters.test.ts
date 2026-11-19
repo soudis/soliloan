@@ -69,6 +69,13 @@ describe('sortTransactions', () => {
     assert.deepEqual(ids(list), ['2024-interest', 'c1']);
   });
 
+  it('ranks a form Zahlung (local midnight, 23:00Z) and a bank import (00:00Z) of the same day by type', () => {
+    // in Europe/Berlin the form stores 2025-03-13T23:00Z, the bank import 2025-03-14T00:00Z
+    const fromForm = { ...tx('a-withdrawal', 'WITHDRAWAL', '2025-03-14'), date: new Date(2025, 2, 14) };
+    const fromImport = { ...tx('b-deposit', 'DEPOSIT', '2025-03-14'), date: new Date('2025-03-14') };
+    assert.deepEqual(ids([fromForm, fromImport]), ['b-deposit', 'a-withdrawal']);
+  });
+
   it('does not change the input', () => {
     const list = [tx('b', 'DEPOSIT', '2024-02-01'), tx('a', 'DEPOSIT', '2024-01-01')];
     sortTransactions(list);

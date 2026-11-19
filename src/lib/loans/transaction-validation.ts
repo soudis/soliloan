@@ -13,7 +13,7 @@ import {
   toLedger,
   toStoredAmount,
   type Violation,
-} from './transaction-ledger';
+} from '@/lib/calculations/transaction-ledger';
 
 /** Types a user can book. `INTEREST` rows are synthetic and never stored. */
 export const BOOKABLE_TYPES: TransactionType[] = [
