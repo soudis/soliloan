@@ -32,6 +32,8 @@ export function fixtureLoan(options: {
   loanNumber?: number;
   interestRate: number;
   interestMethod: InterestMethod;
+  /** The project's Umstellungsjahr (ADR 0005); none by default. */
+  interestChangeoverYear?: number | null;
   interestPaymentType?: InterestPaymentType;
   transactions: FixtureTransaction[];
   lender?: FixtureLender;
@@ -62,7 +64,12 @@ export function fixtureLoan(options: {
       organisationName: options.lender?.organisationName ?? null,
       type: options.lender?.type ?? 'PERSON',
       notificationType: options.lender?.notificationType ?? 'EMAIL',
-      project: { configuration: { interestMethod: options.interestMethod } },
+      project: {
+        configuration: {
+          interestMethod: options.interestMethod,
+          interestChangeoverYear: options.interestChangeoverYear ?? null,
+        },
+      },
     },
   } as unknown as LoanWithRelations;
 }

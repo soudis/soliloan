@@ -23,7 +23,11 @@ esac
 
 root=$(git -C "$(dirname "$file_path")" rev-parse --show-toplevel 2>/dev/null) || exit 0
 biome="$root/node_modules/.bin/biome"
-[[ -x "$biome" ]] || exit 0
+if [[ ! -x "$biome" ]]; then
+  echo "Biome is not installed in $root, so $file_path was not checked or formatted." >&2
+  echo "Run 'pnpm install' there (in a worktree, 'scripts/worktree-dev.sh up' does it)." >&2
+  exit 2
+fi
 
 # Files that biome.json excludes are skipped, not reported.
 if ! out=$(cd "$root" && "$biome" check --write --no-errors-on-unmatched \
