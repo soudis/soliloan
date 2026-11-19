@@ -95,8 +95,18 @@ Several agents can work at once, each in its own git worktree with its own dev s
 ## Git rules
 
 - Base of every PR is `main`. Agents never push to `main`.
-- `staging` deploys on every push (`.github/workflows/staging.yml`). An agent merges a branch into `staging` and pushes **only when the user asks**, and says that this deploys before doing it.
-- Never force-push a shared branch, never skip hooks, never commit `.env` or other secrets.
+- `staging` deploys on every push (`.github/workflows/staging.yml`). It is rebuilt, never merged into, see [Staging](#staging). An agent runs `scripts/staging-rebuild.sh` without `--dry-run` **only when the user asks**, and says that this deploys before doing it.
+- Never force-push a shared branch (the one exception is the rebuild script's lease-protected push of `staging`), never skip hooks, never commit `.env` or other secrets.
+
+## Staging
+
+`staging` is `main` plus every open PR labelled `on-staging`, rebuilt from scratch by `scripts/staging-rebuild.sh`. Do not merge a branch into `staging` by hand: the next rebuild drops it.
+
+- **Put a PR on staging**: `gh pr edit <n> --add-label on-staging`, then rebuild. Remove the label to take it off; merged or closed PRs drop out by themselves. The first pushing run creates the label.
+- **Rebuild**: `scripts/staging-rebuild.sh --dry-run` shows the result and pushes nothing; without the flag it pushes, which deploys. In a temporary worktree (your checkout stays as it is) it starts from `origin/main`, merges the labelled PRs oldest first with `--no-ff`, runs `pnpm verify`, and warns about migrations the old staging applied that are now removed, renamed or changed. Then one atomic push: the old staging to `backup/staging-<UTC time>` (the newest 5 are kept) and the new one with `--force-with-lease`. It prints the deploy run. When someone pushed `staging` in between, the push is refused: run it again.
+- **A PR conflicts with `main`**: the run stops. Merge `main` into the PR's branch, then rebuild.
+- **Two labelled PRs conflict**: the run stops in its worktree and prints the path. Resolve the files there, `git add` them, run `scripts/staging-rebuild.sh --continue` (or `--abort`). The merge commit gets a `Staging-Resolved:` trailer, and both PRs get a comment naming that commit and the files. Later rebuilds replay the resolution on any machine (git rerere, learned from the old staging's trailers). **The PR that merges into `main` second repeats the resolution** when it merges `main` into its branch: `git show <commit>` shows it.
+- **Migration warning**: Prisma records applied migrations by folder name, so the staging database keeps a removed migration, runs a renamed one again and does not rerun a changed one. Check the staging database after the deploy.
 
 ## Database changes
 

@@ -26,7 +26,7 @@ Ticket → lane → branch → develop → verify → PR → review → merge, a
 - **Branch**: `<type>/<issue>-<slug>` off `main`, type `feat|fix|chore|docs|refactor|ci`, e.g. `fix/222-payment-checks`. Rename a `claude/…` worktree branch before the first commit.
 - **Commit / PR title**: Conventional Commit with the issue number, e.g. `fix(savings): #232 correct the monthly amount`. PR body from the template, always ending with `Closes #<n>`, even if the PR only does part of the ticket (reopening it is then a manual duty). Base is `main`.
 - **Review**: after the PR is open, `/soliloan-review` (fresh-context reviewers, one PR comment). Never review your own work in the authoring context.
-- **Git**: never push to `main`. Merging into `staging` (which deploys on push) only when the user asks, and say so first.
+- **Git**: never push to `main`. Rebuilding `staging` with `scripts/staging-rebuild.sh` (a push deploys) only when the user asks, and say so first; never merge into `staging` by hand.
 - **Schema change** in `prisma/schema.prisma` needs a migration in `prisma/migrations`.
 
 ## Agent skills
