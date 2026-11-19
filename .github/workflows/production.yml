@@ -63,7 +63,9 @@ jobs:
           context: .
           file: docker/app/Dockerfile
           push: true
-          tags: ${{ vars.DOCKERHUB_REPOSITORY }}:${{ env.TAG }}
+          tags: |
+            ${{ vars.DOCKERHUB_REPOSITORY }}:${{ env.TAG }}
+            ${{ vars.DOCKERHUB_REPOSITORY }}:latest
           platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
