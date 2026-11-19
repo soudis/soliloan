@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     if (!session?.user) {
       return NextResponse.json({ error: 'error.unauthorized' }, { status: 401 });
     }
-    if (!session.user.isAdmin) {
+    if (!session.user.isManager) {
       return NextResponse.json({ error: 'error.unauthorized' }, { status: 403 });
     }
 
