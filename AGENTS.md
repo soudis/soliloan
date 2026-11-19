@@ -14,7 +14,7 @@ Soliloan manages direct-credit projects (crowdinvesting): Kreditgeber\*innen, Kr
 
 - Language: read [GLOSSARY.md](GLOSSARY.md) and the relevant [ADRs](docs/adr/) before naming or changing domain behaviour. Use the glossary terms in tickets, PRs, tests and UI copy; code keeps the English Prisma model names.
 - Code: follow [CODING_STANDARDS.md](CODING_STANDARDS.md). Changes on the [risk list](docs/agents/risk-list.md) (calculations, Zahlungen, access, schema, documents, deploy) need a teammate's approval.
-- Before a PR: `pnpm verify` (typecheck, lint, format, test). In Claude Code, hooks run Biome on every edit and `pnpm typecheck` when a turn ends (`.claude/settings.json`). Never commit `.env` or other secrets.
+- Before a PR: `pnpm verify` (typecheck, lint, format, test). In Claude Code, hooks run Biome on every edit, `pnpm typecheck` when a turn ends and `pnpm lint` + `pnpm format` before a `git push` (`.claude/settings.json`). Never commit `.env` or other secrets.
 - The predecessor app [habidat-direktkredit](https://github.com/soudis/habidat-direktkredit) is a read-only reference: look it up only when a ticket or the user refers to legacy behaviour, never copy code ([workflow.md](docs/agents/workflow.md#legacy-app)).
 
 ## Workflow

@@ -9,7 +9,9 @@ services:
   app:
     # A fresh worktree has no generated Prisma client (prisma/generated is gitignored and
     # `prisma db push` does not generate it), so the seed would fail without this step.
-    command: /bin/sh -c "pnpm install && pnpm prisma generate && pnpm prisma db push --accept-data-loss && pnpm prisma db seed && pnpm dev"
+    # CI=true: the container has no TTY, and pnpm aborts instead of asking when a pnpm or
+    # store change makes it reinstall the kept node_modules volume.
+    command: /bin/sh -c "CI=true pnpm install && pnpm prisma generate && pnpm prisma db push --accept-data-loss && pnpm prisma db seed && pnpm dev"
     ports: !override
       # next-devtools-mcp / next-dev-loop probe /_next/mcp here. Loopback only:
       # MCP is a privileged dev endpoint.

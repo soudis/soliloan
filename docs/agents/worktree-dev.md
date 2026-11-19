@@ -7,7 +7,7 @@ Run and test your branch in its own docker stack, without touching the primary c
 ```bash
 git worktree add .claude/worktrees/<name> -b <type>/<issue>-<slug> main
 cd .claude/worktrees/<name>
-scripts/worktree-dev.sh up        # first start takes minutes: pnpm install, db push, seed, next dev
+scripts/worktree-dev.sh up        # first start takes minutes: host pnpm install, then in the container install, db push, seed, next dev
 scripts/worktree-dev.sh url       # print URLs again later
 ```
 
@@ -26,13 +26,15 @@ Drive the browser (`agent-browser`) at the app URL, never at the MCP port: auth 
 
 | Command | Does |
 | --- | --- |
-| `up [slug]` | write `.env`, ensure shared Traefik, `docker compose up -d --build`, wait until the app answers |
+| `up [slug]` | write `.env`, ensure shared Traefik (recreated when it runs without ports 80/443), install host dependencies, `docker compose up -d --build`, wait until the app answers through Traefik |
 | `url` | print app, MCP, Mailpit, admin |
 | `logs [service]` | follow logs, default `app` |
-| `exec <cmd...>` | run in the app container: `exec pnpm test`, `exec pnpm typecheck`, `exec pnpm prisma migrate dev --name <slug>` |
+| `exec <cmd...>` | run in the app container (no TTY, `CI=true`): `exec pnpm verify`, `exec pnpm test`, `exec pnpm prisma migrate dev --name <slug>` |
 | `down` | remove containers, network, **database volume**, and the root-owned `.next`, `.pnpm-store`, `prisma/generated` |
 
-Always `down` before `git worktree remove` (the container runs as root and writes those directories into the worktree, which blocks deleting it).
+| `prune [--yes] [project...]` | remove the stacks of worktrees that are gone (no `.git` left), with their database volumes and root-owned leftovers; lists them and asks first. Runs anywhere; skips running stacks |
+
+Always `down` before `git worktree remove` (the container runs as root and writes those directories into the worktree, which blocks deleting it). Forgot it? `prune` cleans up afterwards.
 
 ## What is isolated, what is shared
 
@@ -45,5 +47,7 @@ Always `down` before `git worktree remove` (the container runs as root and write
 - **Ports 80/443 busy**: another reverse proxy owns them. Stop it, or use the stack that already runs Traefik. If the primary stack (`pnpm docker:dev up`) is running, its Traefik is reused. The reverse (starting the primary stack while the shared Traefik runs) fails on the ports: stop the shared one first with `docker compose -p soliloan-traefik down`.
 - **Primary stack and 5432**: the primary stack publishes Postgres on 5432; worktree stacks do not, so they never clash with it or with other local databases.
 - **Start timeout**: `up` waits 10 minutes (`WORKTREE_DEV_WAIT_SECONDS`). On timeout it prints the app log; `scripts/worktree-dev.sh logs` follows it.
-- **Host tools** (`pnpm typecheck` on the host) need `pnpm install` in the worktree; or use `exec` and skip host `node_modules`.
+- **Host tools**: `up` runs `pnpm install --frozen-lockfile --prefer-offline` in the worktree and generates the Prisma client when there is none, so the Claude hooks (Biome on edit, typecheck at turn end, lint and format before `git push`) and host `pnpm test` work. Without host `node_modules` the hooks block with a message instead of passing. `prisma generate` needs no `DATABASE_URL` (`prisma.config.ts` falls back to a placeholder that never connects).
+- **Root-owned files**: the container runs as root. `up` and `exec` hand `prisma/generated` and `tsconfig.tsbuildinfo` back to your user, so host `pnpm typecheck` and `prisma generate` can rewrite them.
+- **Traefik**: `up` recreates a shared Traefik that runs without host ports 80/443 (e.g. after a Docker restart while the ports were busy), and fails at once when Traefik cannot start. When the app answers on its own port but Traefik does not route to it, `up` stops after about a minute and says so instead of waiting for the timeout.
 - **Compose files**: `docker/compose.worktree.yml` reuses the base/dev modules of `docker/postgres` and `docker/app` and layers `docker/worktree/*.yml` on top (published ports dropped or made dynamic). Change shared behaviour in the base/dev modules, not there.
