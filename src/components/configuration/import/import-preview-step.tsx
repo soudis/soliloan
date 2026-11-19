@@ -81,11 +81,11 @@ export function ImportPreviewStep({ context, validation, isImporting, onBack, on
             <Figure label={t('preview.zinsuebertrag')} value={formatCurrency(summary.totals.zinsuebertrag, locale)} />
           </dl>
         )}
-        {!hasErrors && summary.byStichtag.length > 0 && (
+        {!hasErrors && summary.byImportstichtag.length > 0 && (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t('preview.stichtag')}</TableHead>
+                <TableHead>{t('preview.importstichtag')}</TableHead>
                 <TableHead className="text-right">{t('preview.loans')}</TableHead>
                 <TableHead className="text-right">{t('preview.amount')}</TableHead>
                 <TableHead className="text-right">{t('preview.einlagenstand')}</TableHead>
@@ -94,14 +94,14 @@ export function ImportPreviewStep({ context, validation, isImporting, onBack, on
               </TableRow>
             </TableHeader>
             <TableBody>
-              {summary.byStichtag.map((entry) => (
-                <TableRow key={entry.stichtag}>
-                  <TableCell>{formatDateLong(entry.stichtag, locale)}</TableCell>
+              {summary.byImportstichtag.map((entry) => (
+                <TableRow key={entry.importstichtag}>
+                  <TableCell>{formatDateLong(entry.importstichtag, locale)}</TableCell>
                   {totalsCells(entry)}
                 </TableRow>
               ))}
             </TableBody>
-            {summary.byStichtag.length > 1 && (
+            {summary.byImportstichtag.length > 1 && (
               <TableFooter>
                 <TableRow>
                   <TableCell>{t('preview.total')}</TableCell>

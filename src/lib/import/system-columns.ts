@@ -280,7 +280,14 @@ export const BASE_COLUMNS: ImportSystemColumn[] = [
   ),
   column('loan', 'note', 'text', ['Notiz Kredit', 'Notiz Vertrag', 'Anmerkung Kredit', 'Loan note', 'contract_notes']),
 
-  column('opening', 'stichtag', 'date', ['Stichtag', 'Datum Stand', 'Stand am', 'Cut-off date', 'Balance date']),
+  column('opening', 'importstichtag', 'date', [
+    'Importstichtag',
+    'Stichtag',
+    'Datum Stand',
+    'Stand am',
+    'Cut-off date',
+    'Balance date',
+  ]),
   column('opening', 'kontostand', 'money', [
     'Kontostand',
     'Stand',

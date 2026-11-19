@@ -72,7 +72,7 @@ const settings = (ctx: ImportContext, overrides: Partial<ImportSettings> = {}): 
   file: {},
   format: DEFAULT_IMPORT_FORMAT,
   columns: COLUMNS,
-  defaults: { ...getInitialDefaults(ctx, null), 'opening.stichtag': '2025-12-31' },
+  defaults: { ...getInitialDefaults(ctx, null), 'opening.importstichtag': '2025-12-31' },
   valueAssignments: {},
   loanTemplateId: null,
   ...overrides,
@@ -99,7 +99,7 @@ describe('validateImport', () => {
     assert.equal(row?.loan?.terminationType, 'TERMINATION');
     assert.equal(row?.loan?.terminationPeriod, 6);
     assert.deepEqual(row?.opening, {
-      stichtag: '2025-12-31',
+      importstichtag: '2025-12-31',
       kontostand: 10_450,
       einlagenstand: 10_000,
       zinsuebertrag: 450,
@@ -174,24 +174,26 @@ describe('validateImport', () => {
     assert.ok(codes(run([ada], ctx)).includes('lenderNumberExists'));
   });
 
-  it('warns about likely duplicates, unusual rates, a Kontostand of 0 and a mid-year Stichtag', () => {
+  it('warns about likely duplicates, unusual rates, a Kontostand of 0 and a mid-year Importstichtag', () => {
     const ctx = context({ existingLenderEmails: ['ada@example.org'] });
     const row = [...ada.slice(0, 6), '12', '0', '0'];
-    const result = run([row], ctx, { defaults: { ...settings(ctx).defaults, 'opening.stichtag': '2025-06-30' } });
+    const result = run([row], ctx, { defaults: { ...settings(ctx).defaults, 'opening.importstichtag': '2025-06-30' } });
     assert.deepEqual(codes(result).sort(), [
+      'importstichtagNotYearEnd',
       'interestRateUnusual',
       'lenderExists',
       'noKontostand',
-      'stichtagNotYearEnd',
     ]);
     assert.ok(result.rows[0]?.loan, 'warnings do not block the row');
   });
 
-  it('accepts 31 Dec and 1 Jan as Stichtag without a warning', () => {
-    for (const stichtag of ['2025-12-31', '2026-01-01']) {
+  it('accepts 31 Dec and 1 Jan as Importstichtag without a warning', () => {
+    for (const importstichtag of ['2025-12-31', '2026-01-01']) {
       const ctx = context();
-      const result = run([ada], ctx, { defaults: { ...settings(ctx).defaults, 'opening.stichtag': stichtag } });
-      assert.deepEqual(codes(result), [], stichtag);
+      const result = run([ada], ctx, {
+        defaults: { ...settings(ctx).defaults, 'opening.importstichtag': importstichtag },
+      });
+      assert.deepEqual(codes(result), [], importstichtag);
     }
   });
 

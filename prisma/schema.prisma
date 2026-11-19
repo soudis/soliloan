@@ -806,7 +806,7 @@ enum TransactionType {
   INTERESTPAYMENT
   NOTRECLAIMEDPARTIAL
   NOTRECLAIMED
-  /// Zinsübertrag: interest accrued before an Import's Stichtag (ADR 0010)
+  /// Zinsübertrag: interest accrued before an Import's Importstichtag (ADR 0010)
   INTERESTCARRYOVER
 }
 

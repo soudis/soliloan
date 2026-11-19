@@ -1,6 +1,6 @@
 # The Zinsübertrag is a stored Zahlung, not calculated interest
 
-An Import opens each Kredit on its Stichtag with two Zahlungen: an Einzahlung of the Einlagenstand and a Zinsübertrag of the Kontostand minus the Einlagenstand. All other interest in SoliLoan is calculated from the Zahlungen and never stored, so the Zinsübertrag is the only stored interest. It gets its own Zahlungsart instead of reusing `INTEREST`, which marks the calculated yearly rows: those are hidden by the Zahlungen filters, cannot be deleted, and a stored `INTEREST` row would be counted on top of the calculated interest.
+An Import opens each Kredit on its Importstichtag with two Zahlungen: an Einzahlung of the Einlagenstand and a Zinsübertrag of the Kontostand minus the Einlagenstand. All other interest in SoliLoan is calculated from the Zahlungen and never stored, so the Zinsübertrag is the only stored interest. It gets its own Zahlungsart instead of reusing `INTEREST`, which marks the calculated yearly rows: those are hidden by the Zahlungen filters, cannot be deleted, and a stored `INTEREST` row would be counted on top of the calculated interest.
 
 The Zinsübertrag raises the Kontostand. With a compounding Zinsmethode it earns interest; with a non-compounding one it does not, just like interest that stays in a Kredit under that method. It counts towards the lifetime interest of a Kredit, so the lifetime figures add up to the Kontostand, but never towards the interest of a year: the previous system already reported that interest in its Kontomitteilungen and Zinsbescheinigungen.
 
@@ -11,6 +11,6 @@ The Zinsübertrag raises the Kontostand. With a compounding Zinsmethode it earns
 
 ## Consequences
 
-- The Stichtag is 31 December or 1 January, so the next Zinsjahr starts from the full Kontostand and gets the yearly interest. With 1 January the Zinsübertrag is a Zahlung of the new year: it appears in that year's Jahresliste and is paid out with that year's interest. Any other Stichtag leaves the interest between 1 January and the Stichtag out of that year's figures; the Import warns about it but does not block.
+- The Importstichtag is 31 December or 1 January, so the next Zinsjahr starts from the full Kontostand and gets the yearly interest. With 1 January the Zinsübertrag is a Zahlung of the new year: it appears in that year's Jahresliste and is paid out with that year's interest. Any other Importstichtag leaves the interest between 1 January and the Importstichtag out of that year's figures; the Import warns about it but does not block.
 - The Zinsübertrag is not offered in the manual Zahlung form. It can be deleted like any other Zahlung.
-- The yearly interest payout pays out an unpaid Zinsübertrag together with the interest of its Stichtag year, and the Benachrichtigung for open interest counts it there too. A Kredit whose last year's interest was still owed on the Stichtag therefore gets it with the regular payout, without a manual Zinsauszahlung.
+- The yearly interest payout pays out an unpaid Zinsübertrag together with the interest of its Importstichtag year, and the Benachrichtigung for open interest counts it there too. A Kredit whose last year's interest was still owed on the Importstichtag therefore gets it with the regular payout, without a manual Zinsauszahlung.

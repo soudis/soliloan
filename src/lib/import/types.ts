@@ -160,7 +160,7 @@ export type ImportLoanData = {
 };
 
 export type ImportOpening = {
-  stichtag: string;
+  importstichtag: string;
   kontostand: number;
   einlagenstand: number;
   zinsuebertrag: number;
@@ -195,8 +195,8 @@ export type ImportSummary = {
   errors: number;
   warnings: number;
   totals: ImportTotals;
-  /** Totals per Stichtag (`yyyy-mm-dd`), sorted by date. */
-  byStichtag: (ImportTotals & { stichtag: string })[];
+  /** Totals per Importstichtag (`yyyy-mm-dd`), sorted by date. */
+  byImportstichtag: (ImportTotals & { importstichtag: string })[];
 };
 
 export type ImportValidationResult = {

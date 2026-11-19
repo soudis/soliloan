@@ -154,7 +154,7 @@ export async function commitImportUnsafe(input: {
       await tx.transaction.createMany({
         data: rows.flatMap((row) => {
           const opening = row.opening as NonNullable<ImportRowResult['opening']>;
-          const base = { loanId: loanIdOf(row), date: toDate(opening.stichtag), paymentType: PaymentType.OTHER };
+          const base = { loanId: loanIdOf(row), date: toDate(opening.importstichtag), paymentType: PaymentType.OTHER };
           return [
             ...(opening.einlagenstand > 0
               ? [{ ...base, type: TransactionType.DEPOSIT, amount: opening.einlagenstand, importId: created.id }]

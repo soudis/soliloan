@@ -41,10 +41,10 @@ describe('Zinskorrektur', () => {
   });
 });
 
-const stichtag = new Date(2024, 11, 31);
+const importstichtag = new Date(2024, 11, 31);
 const asOf = new Date(2026, 0, 1, 12);
 
-function transaction(id: string, type: TransactionType, amount: number, date = stichtag): Transaction {
+function transaction(id: string, type: TransactionType, amount: number, date = importstichtag): Transaction {
   return {
     id,
     loanId: 'loan-1',
@@ -80,30 +80,30 @@ const opening = [
   transaction('carryover', TransactionType.INTERESTCARRYOVER, 500),
 ];
 
-/** Interest booked in the Stichtag year itself: none, or one Zinstag if the day money arrives counts. */
-const stichtagYear = (interestMethod: InterestMethod, transactions = opening) => {
+/** Interest booked in the Importstichtag year itself: none, or one Zinstag if the day money arrives counts. */
+const importstichtagYear = (interestMethod: InterestMethod, transactions = opening) => {
   const [first] = calculateLoanPerYear(loan(interestMethod, transactions), asOf);
   assert.equal(first?.year, 2024);
-  assert.ok((first?.interest.toNumber() ?? 1) < 1, 'at most one Zinstag of interest in the Stichtag year');
+  assert.ok((first?.interest.toNumber() ?? 1) < 1, 'at most one Zinstag of interest in the Importstichtag year');
   return first as NonNullable<typeof first>;
 };
 
 describe('Zinsübertrag in the interest calculation', () => {
-  it('raises the Kontostand on the Stichtag without counting as interest of that year', () => {
-    const year2024 = stichtagYear('ACT_365_COMPOUND');
+  it('raises the Kontostand on the Importstichtag without counting as interest of that year', () => {
+    const year2024 = importstichtagYear('ACT_365_COMPOUND');
     assert.equal(year2024.interestCarryover.toNumber(), 500);
     assert.equal(year2024.deposits.toNumber(), 10_000);
     assert.equal(year2024.end.minus(year2024.interest).toNumber(), 10_500);
   });
 
   it('earns interest with a compounding Zinsmethode', () => {
-    const begin = stichtagYear('ACT_365_COMPOUND').end;
+    const begin = importstichtagYear('ACT_365_COMPOUND').end;
     const year2025 = calculateLoanPerYear(loan('ACT_365_COMPOUND', opening), asOf).find((row) => row.year === 2025);
     assert.equal(year2025?.interest.toNumber(), begin.times(0.02).toDecimalPlaces(2).toNumber());
   });
 
   it('earns no interest with a non-compounding Zinsmethode', () => {
-    const begin = stichtagYear('ACT_365_NOCOMPOUND').end;
+    const begin = importstichtagYear('ACT_365_NOCOMPOUND').end;
     const year2025 = calculateLoanPerYear(loan('ACT_365_NOCOMPOUND', opening), asOf).find((row) => row.year === 2025);
     assert.equal(year2025?.interest.toNumber(), 200);
     assert.equal(year2025?.end.toNumber(), begin.plus(200).toNumber());
@@ -125,7 +125,7 @@ describe('Zinsübertrag in the interest calculation', () => {
   it('a non-compounding Zinsauszahlung of the carried-over interest leaves the interest base untouched', () => {
     const payout = transaction('payout', TransactionType.INTERESTPAYMENT, -500, new Date(2025, 2, 31));
     const transactions = [...opening, payout];
-    const begin = stichtagYear('ACT_365_NOCOMPOUND', transactions).end;
+    const begin = importstichtagYear('ACT_365_NOCOMPOUND', transactions).end;
     const year2025 = calculateLoanPerYear(loan('ACT_365_NOCOMPOUND', transactions), asOf).find(
       (row) => row.year === 2025,
     );

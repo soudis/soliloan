@@ -7,9 +7,9 @@ import type { LoanWithRelations } from '@/types/loans';
 
 import { payoutAsOfDate, payoutBookingDate, unpaidYearlyInterest } from './yearly-interest';
 
-const stichtag = new Date(2024, 11, 31);
+const importstichtag = new Date(2024, 11, 31);
 
-function transaction(id: string, type: TransactionType, amount: number, date = stichtag): Transaction {
+function transaction(id: string, type: TransactionType, amount: number, date = importstichtag): Transaction {
   return {
     id,
     loanId: 'loan-1',
@@ -37,21 +37,21 @@ const opening = [
   transaction('carryover', TransactionType.INTERESTCARRYOVER, 500),
 ];
 
-/** Interest of the Stichtag day itself: none, or one Zinstag if the day money arrives counts. */
-const stichtagDayInterest = (transactions: Transaction[]) =>
+/** Interest of the Importstichtag day itself: none, or one Zinstag if the day money arrives counts. */
+const importstichtagDayInterest = (transactions: Transaction[]) =>
   calculateLoanPerYear(loan(transactions), payoutAsOfDate(2024))
     .find((row) => row.year === 2024)
     ?.interest.toNumber() ?? 0;
 
 describe('unpaidYearlyInterest with a Zinsübertrag', () => {
-  it('pays out the Zinsübertrag with the year of its Stichtag', () => {
-    assert.equal(unpaidYearlyInterest(loan(opening), 2024), 500 + stichtagDayInterest(opening));
+  it('pays out the Zinsübertrag with the year of its Importstichtag', () => {
+    assert.equal(unpaidYearlyInterest(loan(opening), 2024), 500 + importstichtagDayInterest(opening));
   });
 
   it('is settled by the Zinsauszahlung of that year', () => {
     const payout = transaction('payout', TransactionType.INTERESTPAYMENT, -500, payoutBookingDate(2024));
     const transactions = [...opening, payout];
-    assert.equal(unpaidYearlyInterest(loan(transactions), 2024), stichtagDayInterest(transactions));
+    assert.equal(unpaidYearlyInterest(loan(transactions), 2024), importstichtagDayInterest(transactions));
   });
 
   it('leaves the following years to their own interest', () => {

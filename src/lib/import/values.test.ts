@@ -100,7 +100,7 @@ describe('column mapping', () => {
       'lender.lastName': 1,
       'lender.email': 2,
       'loan.interestRate': 3,
-      'opening.stichtag': 4,
+      'opening.importstichtag': 4,
     });
   });
 

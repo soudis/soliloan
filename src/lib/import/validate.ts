@@ -390,11 +390,11 @@ export function validateImport(
       }
     }
 
-    // Opening state on the Stichtag
-    const stichtag = date('opening.stichtag');
+    // Opening state on the Importstichtag
+    const importstichtag = date('opening.importstichtag');
     const kontostand = number('opening.kontostand', 'money');
     const einlagenstandValue = number('opening.einlagenstand', 'money');
-    required('opening.stichtag', stichtag);
+    required('opening.importstichtag', importstichtag);
     required('opening.kontostand', kontostand);
     const einlagenstand = einlagenstandValue ?? kontostand;
     if (kontostand !== null && kontostand < 0) error('opening.kontostand', 'negative');
@@ -406,12 +406,13 @@ export function validateImport(
       error('opening.einlagenstand', 'einlagenstandAboveAmount', { amount });
     }
     if (kontostand === 0) warning('opening.kontostand', 'noKontostand');
-    if (stichtag && signDate && stichtag < signDate) error('opening.stichtag', 'stichtagBeforeSignDate');
+    if (importstichtag && signDate && importstichtag < signDate)
+      error('opening.importstichtag', 'importstichtagBeforeSignDate');
     // 31 Dec and 1 Jan both start the next Zinsjahr from the full Kontostand; any other day splits a year.
-    if (stichtag && !stichtag.endsWith('-12-31') && !stichtag.endsWith('-01-01')) {
-      warning('opening.stichtag', 'stichtagNotYearEnd');
+    if (importstichtag && !importstichtag.endsWith('-12-31') && !importstichtag.endsWith('-01-01')) {
+      warning('opening.importstichtag', 'importstichtagNotYearEnd');
     }
-    if (stichtag && stichtag > context.today) warning('opening.stichtag', 'stichtagInFuture');
+    if (importstichtag && importstichtag > context.today) warning('opening.importstichtag', 'importstichtagInFuture');
 
     const lenderNote = text('lender.note');
     const loanNote = text('loan.note');
@@ -457,9 +458,9 @@ export function validateImport(
         };
 
     const opening: ImportOpening | null =
-      hasErrors || kontostand === null || einlagenstand === null || stichtag === null
+      hasErrors || kontostand === null || einlagenstand === null || importstichtag === null
         ? null
-        : { stichtag, kontostand, einlagenstand, zinsuebertrag: round(kontostand - einlagenstand) };
+        : { importstichtag, kontostand, einlagenstand, zinsuebertrag: round(kontostand - einlagenstand) };
 
     return {
       index,
@@ -489,7 +490,7 @@ export function validateImport(
     issues.push({ severity: 'error', code: 'tooManyRows', params: { max: MAX_IMPORT_ROWS } });
   }
   const startOfYear = `${context.today.slice(0, 4)}-01-01`;
-  if (!context.hasHistoricTransactions && rows.some((row) => row.opening && row.opening.stichtag < startOfYear)) {
+  if (!context.hasHistoricTransactions && rows.some((row) => row.opening && row.opening.importstichtag < startOfYear)) {
     issues.push({ severity: 'warning', code: 'interestMethodLocks' });
   }
 
@@ -666,7 +667,7 @@ function countByColumn(rows: ImportRowResult[]) {
 
 function summarize(rows: ImportRowResult[], issues: ImportIssue[]): ImportSummary {
   const totals = emptyTotals();
-  const byStichtag = new Map<string, ImportTotals>();
+  const byImportstichtag = new Map<string, ImportTotals>();
   const lenders = new Set<string>();
   let errors = issues.filter((issue) => issue.severity === 'error').length;
   let warnings = issues.filter((issue) => issue.severity === 'warning').length;
@@ -676,9 +677,9 @@ function summarize(rows: ImportRowResult[], issues: ImportIssue[]): ImportSummar
     lenders.add(row.lenderGroup);
     if (!row.loan || !row.opening) continue;
     addToTotals(totals, row.loan, row.opening);
-    const entry = byStichtag.get(row.opening.stichtag) ?? emptyTotals();
+    const entry = byImportstichtag.get(row.opening.importstichtag) ?? emptyTotals();
     addToTotals(entry, row.loan, row.opening);
-    byStichtag.set(row.opening.stichtag, entry);
+    byImportstichtag.set(row.opening.importstichtag, entry);
   }
   return {
     lenders: lenders.size,
@@ -687,8 +688,8 @@ function summarize(rows: ImportRowResult[], issues: ImportIssue[]): ImportSummar
     errors,
     warnings,
     totals,
-    byStichtag: [...byStichtag.entries()]
+    byImportstichtag: [...byImportstichtag.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([stichtag, entry]) => ({ stichtag, ...entry })),
+      .map(([importstichtag, entry]) => ({ importstichtag, ...entry })),
   };
 }
