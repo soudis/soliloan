@@ -164,6 +164,40 @@ describe('Benachrichtigungen', () => {
     assert.equal(december[0] && 'href' in december[0] ? december[0].href.includes('filters=') : false, false);
   });
 
+  it('does not count open yearly interest of a Kredit whose Rückzahlung paid out the Kontostand', () => {
+    const repaid = loan({
+      id: 'loan-repaid',
+      interestPaymentType: InterestPaymentType.YEARLY,
+      transactions: [
+        deposit(new Date(2024, 0, 1)),
+        { ...deposit(new Date(2025, 6, 1)), id: 'tx-2', type: TransactionType.TERMINATION, amount: -10_597.26 },
+      ],
+    });
+    const open = loan({
+      id: 'loan-open',
+      interestPaymentType: InterestPaymentType.YEARLY,
+      transactions: [deposit(new Date(2024, 0, 1))],
+    });
+
+    const lines = computeNotifications({
+      config: createDefaultNotificationsConfig(),
+      toDate: new Date(2026, 0, 15, 12, 0, 0),
+      projectId,
+      project,
+      extras: emptyExtras,
+      lenders: [],
+      loans: [repaid, open],
+    }).filter((line) => line.kind === 'openInterest');
+
+    assert.deepEqual(
+      lines.map((line) => (line.kind === 'openInterest' ? [line.year, line.count] : null)),
+      [
+        [2024, 1],
+        [2025, 1],
+      ],
+    );
+  });
+
   it('lists lenders that are missing a required field and skips the kind when none are configured', () => {
     assert.equal(projectHasPflichtfelder(project), false);
 
