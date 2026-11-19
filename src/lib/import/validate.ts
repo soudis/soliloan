@@ -9,6 +9,7 @@ import type {
   Salutation,
   TerminationType,
 } from '@prisma/client';
+import { importOpeningZahlungen } from '@/lib/calculations/import-opening';
 import { AdditionalFieldType, AdditionalNumberFormat } from '@/lib/schemas/common';
 import { normalizeLoanInterestRate } from '@/lib/schemas/investment-type';
 import { isValidIban, normalizeIban } from '@/lib/utils/iban';
@@ -132,6 +133,11 @@ function storedAdditionalValue(column: ImportSystemColumn, value: string | numbe
   }
   return String(value);
 }
+
+const openingAmounts = (kontostand: number, einlagenstand: number) => {
+  const { einzahlung, zinsuebertrag } = importOpeningZahlungen(kontostand, einlagenstand);
+  return { einlagenstand: einzahlung, zinsuebertrag };
+};
 
 const emptyTotals = (): ImportTotals => ({ loans: 0, amount: 0, kontostand: 0, einlagenstand: 0, zinsuebertrag: 0 });
 
@@ -460,7 +466,7 @@ export function validateImport(
     const opening: ImportOpening | null =
       hasErrors || kontostand === null || einlagenstand === null || importstichtag === null
         ? null
-        : { importstichtag, kontostand, einlagenstand, zinsuebertrag: round(kontostand - einlagenstand) };
+        : { importstichtag, kontostand, ...openingAmounts(kontostand, einlagenstand) };
 
     return {
       index,

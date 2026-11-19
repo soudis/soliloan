@@ -25,9 +25,16 @@ export const round = (value: number, digits = 2) => {
 
 const NUMBER_NOISE = /[\s  €$£]|EUR|CHF/gi;
 
+/** Digits, optionally grouped by a thousands separator in threes, and an optional decimal part. */
+const NUMBER_PATTERN = {
+  ',': /^(\d+|\d{1,3}([.']\d{3})+)(,\d+)?$/,
+  '.': /^(\d+|\d{1,3}([,']\d{3})+)(\.\d+)?$/,
+} as const;
+
 /**
- * Parses a number. Text uses the given decimal separator; the other separator and apostrophes are taken as
- * thousands separators. A `%` sign is dropped, the number stays as written ("1,5 %" is 1.5).
+ * Parses a number. Text uses the given decimal separator; the other separator and apostrophes are thousands
+ * separators and must group the digits in threes, so a number written with the other decimal separator ("10500.5"
+ * with `,`) is rejected rather than misread. A `%` sign is dropped, the number stays as written ("1,5 %" is 1.5).
  */
 export function parseNumber(cell: ImportCell | undefined, decimalSeparator: DecimalSeparator): number | null {
   if (!cell) return null;
@@ -37,10 +44,9 @@ export function parseNumber(cell: ImportCell | undefined, decimalSeparator: Deci
   if (text === '') return null;
   const negative = /^\(.*\)$/.test(text) || text.startsWith('-') || text.endsWith('-');
   text = text.replace(/^\(|\)$/g, '').replace(/^-|-$/g, '');
-  const thousands = decimalSeparator === ',' ? /[.']/g : /[,']/g;
-  text = text.replace(thousands, '');
+  if (!NUMBER_PATTERN[decimalSeparator].test(text)) return null;
+  text = text.replace(decimalSeparator === ',' ? /[.']/g : /[,']/g, '');
   if (decimalSeparator === ',') text = text.replace(',', '.');
-  if (!/^\d+(\.\d+)?$/.test(text)) return null;
   const value = Number(text);
   return negative ? -value : value;
 }

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { AdditionalFieldType, type AdditionalFieldConfig } from '@/lib/schemas/common';
+import { type AdditionalFieldConfig, AdditionalFieldType } from '@/lib/schemas/common';
 
 import type { ImportContext, ImportSettings, ImportTable } from './types';
 import { getInitialDefaults, validateImport } from './validate';

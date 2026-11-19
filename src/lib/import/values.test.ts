@@ -21,6 +21,16 @@ describe('parseNumber', () => {
     assert.equal(parseNumber(text('zehn'), ','), null);
     assert.equal(parseNumber(text('1,2,3'), ','), null);
   });
+
+  it('rejects a thousands separator that does not group the digits in threes', () => {
+    assert.equal(parseNumber(text('10500.5'), ','), null);
+    assert.equal(parseNumber(text('0.5'), ','), null);
+    assert.equal(parseNumber(text('1.5'), ','), null);
+    assert.equal(parseNumber(text('10,5'), '.'), null);
+    assert.equal(parseNumber(text('1.23.456'), ','), null);
+    assert.equal(parseNumber(text('12.345.678,9'), ','), 12345678.9);
+    assert.equal(parseNumber(text('10500'), ','), 10500);
+  });
 });
 
 describe('parsePercent', () => {

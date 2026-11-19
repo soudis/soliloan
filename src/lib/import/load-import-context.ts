@@ -3,8 +3,8 @@ import 'server-only';
 import moment from 'moment';
 
 import { db } from '@/lib/db';
-import { normalizeStoredEmail } from '@/lib/utils/email';
 import { parseAdditionalFieldConfig } from '@/lib/utils/additional-fields';
+import { normalizeStoredEmail } from '@/lib/utils/email';
 
 import type { ImportContext } from './types';
 import { lenderNameKey } from './validate';
