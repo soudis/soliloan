@@ -23,6 +23,19 @@ export function exportFileName(type: ExportType, year: number, preliminary: bool
   return `${base}_${year}${preliminary ? '_vorlaeufig' : ''}.${extension}`;
 }
 
+type InterestConfiguration = LoanWithRelations['lender']['project']['configuration'];
+type RequiredKeys<T> = { [K in keyof T]-?: object extends Pick<T, K> ? never : K }[keyof T];
+
+/**
+ * Every configuration field the interest engine reads. The `satisfies` fails the typecheck when one is
+ * left out, which the cast below would otherwise hide: without the Umstellungsjahr every Zinsjahr would
+ * silently follow the corrected rules (ADR 0005).
+ */
+const interestConfigurationSelect = {
+  interestMethod: true,
+  interestChangeoverYear: true,
+} satisfies Record<RequiredKeys<InterestConfiguration>, true>;
+
 /** The Kredite of a project with just what the interest engine and the Exporte read. Caller must enforce access. */
 export async function loadExportLoansUnsafe(projectId: string): Promise<LoanWithRelations[]> {
   const loans = await db.loan.findMany({
@@ -38,7 +51,7 @@ export async function loadExportLoansUnsafe(projectId: string): Promise<LoanWith
           lastName: true,
           organisationName: true,
           notificationType: true,
-          project: { select: { configuration: { select: { interestMethod: true } } } },
+          project: { select: { configuration: { select: interestConfigurationSelect } } },
         },
       },
     },
