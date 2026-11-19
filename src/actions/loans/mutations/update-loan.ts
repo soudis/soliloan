@@ -43,8 +43,10 @@ export const updateLoanAction = loanAction
       throw new Error('Loan not found');
     }
 
-    // The Kreditbetrag cannot drop below what was once paid in
-    if (toCents(data.amount) < toCents(peakEinlagenstand(loan.transactions))) {
+    // A lowered Kreditbetrag cannot drop below what was once paid in. Only checked when it is lowered,
+    // so a legacy Kredit that is already over its Kreditbetrag stays saveable.
+    const lowered = toCents(data.amount) < toCents(loan.amount);
+    if (lowered && toCents(data.amount) < toCents(peakEinlagenstand(loan.transactions))) {
       throw new Error('error.loan.amountBelowDeposits');
     }
 

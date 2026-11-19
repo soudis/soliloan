@@ -1,6 +1,6 @@
 'use server';
 
-import { Entity, Operation, type Transaction, TransactionType } from '@prisma/client';
+import { Entity, Operation, TransactionType } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
@@ -13,6 +13,7 @@ import {
 } from '@/lib/audit-trail';
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
+import { lockLoan } from '@/lib/loans/loan-lock';
 import { checkChange } from '@/lib/loans/transaction-validation';
 import { getLenderName } from '@/lib/utils';
 import { sortTransactions } from '@/lib/utils/sorters';
@@ -34,7 +35,6 @@ export const bulkDeleteTransactionsAction = projectAction
       include: {
         loan: {
           include: {
-            transactions: true,
             lender: {
               include: {
                 project: { include: { configuration: true } },
@@ -56,8 +56,6 @@ export const bulkDeleteTransactionsAction = projectAction
       .filter((id) => !foundIds.has(id))
       .map((id) => ({ id, loanNumber: null, lenderName: null, reason: 'notFound' as const }));
 
-    const ledgers = new Map<string, Transaction[]>();
-
     // Latest first: a Zahlung that relies on an earlier one (a Teilrückzahlung on its Einzahlung) is
     // deleted before it, so selecting both deletes both whatever order the database returns
     for (const transaction of sortTransactions(transactions).reverse()) {
@@ -69,15 +67,32 @@ export const bulkDeleteTransactionsAction = projectAction
         continue;
       }
 
-      // Each deletion is checked against the ledger as left by the previous ones
-      const remaining = ledgers.get(transaction.loanId) ?? transaction.loan.transactions;
-      const proposed = remaining.filter((item) => item.id !== transaction.id);
-      const { errors } = checkChange(transaction.loan, remaining, proposed, transaction.date);
-      if (errors.length > 0) {
-        skipped.push({ id: transaction.id, loanNumber, lenderName, reason: 'invalid' });
+      // Check and delete in one DB transaction that locks the Kredit: each deletion is checked against
+      // the ledger as left by the previous ones (and by parallel saves)
+      const outcome = await db.$transaction(async (tx) => {
+        await lockLoan(tx, transaction.loanId);
+        const loan = await tx.loan.findUnique({
+          where: { id: transaction.loanId },
+          include: {
+            transactions: true,
+            lender: { include: { project: { include: { configuration: true } } } },
+          },
+        });
+        if (!loan?.transactions.some((item) => item.id === transaction.id)) {
+          return 'notFound' as const;
+        }
+        const remaining = loan.transactions.filter((item) => item.id !== transaction.id);
+        const { errors } = checkChange(loan, loan.transactions, remaining, transaction.date);
+        if (errors.length > 0) {
+          return 'invalid' as const;
+        }
+        await tx.transaction.delete({ where: { id: transaction.id } });
+        return 'deleted' as const;
+      });
+      if (outcome !== 'deleted') {
+        skipped.push({ id: transaction.id, loanNumber, lenderName, reason: outcome });
         continue;
       }
-      ledgers.set(transaction.loanId, proposed);
 
       await createAuditEntry(db, {
         entity: Entity.transaction,
@@ -93,7 +108,6 @@ export const bulkDeleteTransactionsAction = projectAction
         projectId,
       });
 
-      await db.transaction.delete({ where: { id: transaction.id } });
       deletedCount += 1;
       revalidatePath(`/lenders/${transaction.loan.lenderId}`);
     }

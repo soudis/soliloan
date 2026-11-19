@@ -2,7 +2,13 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { type Transaction, TransactionType } from '@prisma/client';
 
-import { replayLedger, stateAt, toStoredAmount, type LedgerLoan } from '@/lib/calculations/transaction-ledger';
+import {
+  type LedgerLoan,
+  peakEinlagenstand,
+  replayLedger,
+  stateAt,
+  toStoredAmount,
+} from '@/lib/calculations/transaction-ledger';
 import { changedPastYears, checkChange, previewTransaction } from './transaction-validation';
 
 const loan = (overrides: Partial<LedgerLoan> = {}): LedgerLoan => ({
@@ -177,6 +183,21 @@ describe('stateAt', () => {
     const list = [tx('DEPOSIT', '2024-01-01', 1000), tx('WITHDRAWAL', '2024-03-01', 400)];
     assert.deepEqual(stateAt(loan(), list, day('2024-02-01')), { balance: 1000, einlagenstand: 1000 });
     assert.deepEqual(stateAt(loan(), list, day('2024-03-01')), { balance: 600, einlagenstand: 600 });
+  });
+});
+
+describe('peakEinlagenstand', () => {
+  it('nets a same-day Einzahlung and Teilrückzahlung', () => {
+    assert.equal(peakEinlagenstand([tx('DEPOSIT', '2024-01-01', 800), tx('WITHDRAWAL', '2024-01-01', 300)]), 500);
+  });
+
+  it('keeps the highest end-of-day Einlagenstand', () => {
+    const list = [
+      tx('DEPOSIT', '2024-01-01', 800),
+      tx('WITHDRAWAL', '2024-02-01', 300),
+      tx('DEPOSIT', '2024-03-01', 100),
+    ];
+    assert.equal(peakEinlagenstand(list), 800);
   });
 });
 

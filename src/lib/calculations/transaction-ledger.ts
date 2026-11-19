@@ -251,13 +251,21 @@ export const introducedViolations = (before: Violation[], after: Violation[]) =>
   return after.filter((violation) => !existing.has(violationKey(violation)));
 };
 
-/** The highest Einlagenstand the Kredit ever reached; the Kreditbetrag cannot be lowered below it. */
+/**
+ * The highest Einlagenstand the Kredit had at the end of a day; the Kreditbetrag cannot be lowered
+ * below it. End of day like the cap check in `replayLedger`: a same-day Einzahlung and
+ * Teilrückzahlung only count with their net amount.
+ */
 export const peakEinlagenstand = (transactions: Transaction[]) => {
   let einlagenstand = 0;
   let peak = 0;
+  let currentDay: number | undefined;
   for (const transaction of toLedger(transactions)) {
+    if (currentDay !== undefined && transaction.date.getTime() !== currentDay) {
+      peak = Math.max(peak, einlagenstand);
+    }
+    currentDay = transaction.date.getTime();
     einlagenstand = isClosingType(transaction.type) ? 0 : einlagenstand + einlagenstandDelta(transaction);
-    peak = Math.max(peak, einlagenstand);
   }
-  return peak;
+  return Math.max(peak, einlagenstand);
 };
