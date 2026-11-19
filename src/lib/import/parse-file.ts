@@ -4,9 +4,8 @@ import ExcelJS from 'exceljs';
 
 import { parseCsv } from './csv';
 import type { ImportCell, ImportFileKind, ImportFileOptions, ParsedImportFile } from './types';
+import { MAX_IMPORT_FILE_BYTES } from './validate';
 import { toIsoDate } from './values';
-
-export const MAX_IMPORT_FILE_BYTES = 10 * 1024 * 1024;
 
 export const XLSX_MIME_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 

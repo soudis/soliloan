@@ -8,8 +8,7 @@ import { normalizeStoredEmail } from '@/lib/utils/email';
 
 import type { ImportContext } from './types';
 import { lenderNameKey } from './validate';
-
-const localIsoDate = (date: Date) => moment(date).format('YYYY-MM-DD');
+import { localIsoDate } from './values';
 
 /** Loads what validation needs to know about a project. The caller must have checked access to the project. */
 export async function loadImportContextUnsafe(projectId: string): Promise<ImportContext> {

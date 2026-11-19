@@ -130,6 +130,7 @@
     "unreadableFile": "Die Datei konnte nicht gelesen werden.",
     "numbersTaken": "Inzwischen wurden Kreditgeber*innen oder Kredite mit denselben Nummern angelegt. Bitte erneut prüfen.",
     "notFound": "Import nicht gefunden.",
-    "alreadyDeleted": "Dieser Import wurde bereits gelöscht."
+    "alreadyDeleted": "Dieser Import wurde bereits gelöscht.",
+    "failed": "Der Import ist fehlgeschlagen. Es wurde nichts angelegt."
   }
 }

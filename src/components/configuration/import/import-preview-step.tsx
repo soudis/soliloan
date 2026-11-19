@@ -24,14 +24,15 @@ type Props = {
   onImport: (acknowledgeWarnings: boolean) => void;
 };
 
-/** Warnings of all rows, grouped by message and column, with how many rows they concern. */
+/** Warnings of all rows, grouped by message, column and values, with how many rows they concern. */
 function groupWarnings(validation: ImportValidationResult) {
-  const groups = new Map<string, { issue: ImportIssue; rows: number[] }>();
+  const groups = new Map<string, { key: string; issue: ImportIssue; rows: number[] }>();
   for (const row of validation.rows) {
     for (const issue of row.issues) {
       if (issue.severity !== 'warning') continue;
-      const key = `${issue.code}|${issue.column ?? ''}`;
-      const group = groups.get(key) ?? { issue: { ...issue, params: undefined }, rows: [] };
+      // The values are part of the message ("Ungewöhnlicher Zinssatz: {value} %"), so they are part of the group.
+      const key = `${issue.code}|${issue.column ?? ''}|${JSON.stringify(issue.params ?? {})}`;
+      const group = groups.get(key) ?? { key, issue, rows: [] };
       group.rows.push(row.rowNumber);
       groups.set(key, group);
     }
@@ -117,8 +118,8 @@ export function ImportPreviewStep({ context, validation, isImporting, onBack, on
         <FormSection title={t('preview.warnings')} icon={null}>
           <IssueList issues={validation.issues} issueText={labels.issueText} />
           <ul className="space-y-1 text-sm">
-            {warnings.map(({ issue, rows }) => (
-              <li key={`${issue.code}-${issue.column}`} className="text-amber-700 dark:text-amber-400">
+            {warnings.map(({ key, issue, rows }) => (
+              <li key={key} className="text-amber-700 dark:text-amber-400">
                 <span className="font-medium tabular-nums">{rows.length}×</span> {labels.issueText(issue)}{' '}
                 <span className="text-muted-foreground">
                   ({t('rows.row')} {rows.slice(0, 10).join(', ')}

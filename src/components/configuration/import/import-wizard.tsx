@@ -10,7 +10,7 @@ import { commitImportAction } from '@/actions/imports/mutations/commit-import';
 import { readImportFileAction } from '@/actions/imports/queries/read-import-file';
 import { Button } from '@/components/ui/button';
 import { FormSection } from '@/components/ui/form-section';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import type { StoredImportSettings } from '@/lib/import/commit-import';
 import { getImportColumns, guessColumnMapping, restoreColumnMapping } from '@/lib/import/system-columns';
 import type {
@@ -20,7 +20,7 @@ import type {
   ImportSummary,
   ParsedImportFile,
 } from '@/lib/import/types';
-import { getInitialDefaults, validateImport } from '@/lib/import/validate';
+import { getInitialDefaults, MAX_IMPORT_FILE_BYTES, validateImport } from '@/lib/import/validate';
 import { DEFAULT_IMPORT_FORMAT, detectDateOrder, detectDecimalSeparator } from '@/lib/import/values';
 import { withProjectId } from '@/lib/project-href';
 import { cn } from '@/lib/utils';
@@ -96,6 +96,8 @@ function initialSettings(parsed: ParsedImportFile, context: ImportContext, last:
 
 export function ImportWizard({ projectId, context, lastSettings }: Props) {
   const t = useTranslations('dashboard.configuration.import.wizard');
+  const tError = useTranslations('error.import');
+  const router = useRouter();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<ImportFileState | null>(null);
   const [settings, setSettings] = useState<ImportSettings | null>(null);
@@ -113,17 +115,29 @@ export function ImportWizard({ projectId, context, lastSettings }: Props) {
   );
 
   const read = async (name: string, base64: string, options: ImportFileOptions) => {
-    const response = await readFile({ projectId, fileName: name, base64Data: base64, options });
-    if (response?.serverError) {
+    const response = await readFile({ projectId, fileName: name, base64Data: base64, options }).catch(() => null);
+    if (!response) {
+      toast.error(tError('unreadableFile'));
+      return null;
+    }
+    if (response.serverError) {
       toast.error(response.serverError);
       return null;
     }
-    return response?.data ?? null;
+    return response.data ?? null;
   };
 
   const handleFile = async (selected: File | undefined) => {
     if (!selected) return;
-    const base64 = await readAsBase64(selected);
+    if (selected.size > MAX_IMPORT_FILE_BYTES) {
+      toast.error(tError('fileTooLarge'));
+      return;
+    }
+    const base64 = await readAsBase64(selected).catch(() => null);
+    if (base64 === null) {
+      toast.error(tError('unreadableFile'));
+      return;
+    }
     const parsed = await read(selected.name, base64, {});
     if (!parsed) return;
     setFile({ name: selected.name, base64, parsed });
@@ -155,15 +169,23 @@ export function ImportWizard({ projectId, context, lastSettings }: Props) {
       base64Data: file.base64,
       settings,
       acknowledgeWarnings,
-    });
-    if (response?.serverError) {
-      toast.error(response.serverError);
+    }).catch(() => null);
+    if (!response) {
+      toast.error(tError('failed'));
       return;
     }
-    const data = response?.data;
+    if (response.serverError) {
+      toast.error(response.serverError);
+      router.refresh();
+      return;
+    }
+    const data = response.data;
     if (!data) return;
     if (!data.ok) {
+      // The project changed since the page loaded (e.g. a number was taken): reload the context, so the mapping
+      // step validates against the same data as the server and shows what it found.
       toast.error(t('rejected'));
+      router.refresh();
       setStep('mapping');
       return;
     }

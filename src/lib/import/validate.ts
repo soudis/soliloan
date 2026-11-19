@@ -13,6 +13,7 @@ import { importOpeningZahlungen } from '@/lib/calculations/import-opening';
 import { getInterestRules } from '@/lib/calculations/interest-rules';
 import { AdditionalFieldType, AdditionalNumberFormat } from '@/lib/schemas/common';
 import { normalizeLoanInterestRate } from '@/lib/schemas/investment-type';
+import { normalizeStoredEmail } from '@/lib/utils/email';
 import { isValidIban, normalizeIban } from '@/lib/utils/iban';
 
 import { getImportColumns, type ImportSystemColumn, normalizeKey } from './system-columns';
@@ -31,9 +32,11 @@ import type {
   ImportTotals,
   ImportValidationResult,
 } from './types';
-import { cellText, matchOption, parseDate, parseNumber, parsePercent, round, valueKey } from './values';
+import { cellText, localIsoDate, matchOption, parseDate, parseNumber, parsePercent, round, valueKey } from './values';
 
 export const MAX_IMPORT_ROWS = 5000;
+/** Larger files exceed the server action body limit (20 MB) once base64-encoded. */
+export const MAX_IMPORT_FILE_BYTES = 10 * 1024 * 1024;
 const UNUSUAL_INTEREST_RATE = 10;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const BIC_PATTERN = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/;
@@ -81,9 +84,6 @@ export function loanTemplateDefaults(template: ImportLoanTemplate | undefined): 
   ];
   return Object.fromEntries(entries.map(([key, value]) => [key, value === null ? '' : String(value)]));
 }
-
-const localIsoDate = (date: Date) =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
 /** Converts an additional field's configured default to a canonical default value. */
 function additionalDefault(column: ImportSystemColumn): string {
@@ -297,7 +297,7 @@ export function validateImport(
     const country = choice<Country>('lender.country');
     const notificationType = choice<NotificationType>('lender.notificationType');
     const rawEmail = text('lender.email');
-    const email = rawEmail ? rawEmail.toLowerCase() : null;
+    const email = rawEmail ? normalizeStoredEmail(rawEmail) : null;
     if (email && !EMAIL_PATTERN.test(email)) error('lender.email', 'invalidEmail', { value: rawEmail ?? '' });
     const rawIban = text('lender.iban');
     const iban = rawIban ? normalizeIban(rawIban) : null;

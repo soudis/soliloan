@@ -16,8 +16,6 @@ export function cellText(cell: ImportCell | undefined): string {
   }
 }
 
-export const isEmptyCell = (cell: ImportCell | undefined) => cellText(cell) === '';
-
 export const round = (value: number, digits = 2) => {
   const factor = 10 ** digits;
   return Math.round((value + Number.EPSILON) * factor) / factor;
@@ -63,6 +61,9 @@ export function parsePercent(cell: ImportCell | undefined, decimalSeparator: Dec
 const pad = (value: number) => String(value).padStart(2, '0');
 
 export const toIsoDate = (year: number, month: number, day: number) => `${year}-${pad(month)}-${pad(day)}`;
+
+/** The calendar day of a date in local time as `yyyy-mm-dd`. */
+export const localIsoDate = (date: Date) => toIsoDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
 
 const validDate = (year: number, month: number, day: number) => {
   if (month < 1 || month > 12 || day < 1 || day > 31) return false;

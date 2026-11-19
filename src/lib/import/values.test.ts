@@ -92,6 +92,7 @@ describe('parseCsv', () => {
     assert.equal(parsed.table.rows.length, 2);
     assert.deepEqual(parsed.table.rows[0]?.[2], { t: 's', v: 'Hallo; "Welt"\nzweite Zeile' });
     assert.equal(parsed.table.rows[1]?.[2], null);
+    assert.deepEqual(parsed.table.rowNumbers, [2, 5], 'row numbers are the lines a row starts on');
   });
 
   it('reads UTF-8 with a byte order mark', () => {

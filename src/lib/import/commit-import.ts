@@ -11,7 +11,7 @@ import { importFileKind, parseImportFile, XLSX_MIME_TYPE } from './parse-file';
 import type { ImportRowResult, ImportSettings, ImportSummary } from './types';
 import { validateImport } from './validate';
 
-const IMPORT_TRANSACTION_TIMEOUT_MS = 300_000;
+export const IMPORT_TRANSACTION_TIMEOUT_MS = 300_000;
 
 /** A calendar date as the forms store it: local midnight. */
 const toDate = (isoDate: string) => {

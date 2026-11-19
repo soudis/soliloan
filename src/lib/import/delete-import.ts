@@ -4,6 +4,8 @@ import { Entity, Operation } from '@prisma/client';
 
 import { db } from '@/lib/db';
 
+import { IMPORT_TRANSACTION_TIMEOUT_MS } from './commit-import';
+
 export type ImportDeletionPreview = {
   fileName: string;
   /** Records the Import created that still exist. */
@@ -65,6 +67,15 @@ export async function deleteImportUnsafe(projectId: string, importId: string, us
 
   await db.$transaction(
     async (tx) => {
+      // Mark first and only if still active: a second delete running at the same time waits for this row and then
+      // finds it deleted, instead of logging the deletion twice.
+      const now = new Date();
+      const marked = await tx.import.updateMany({
+        where: { id: importId, projectId, deletedAt: null },
+        data: { deletedAt: now, deletedById: user.id },
+      });
+      if (marked.count === 0) throw new Error('error.import.alreadyDeleted');
+
       const lenderIds = (await tx.lender.findMany({ where: { importId }, select: { id: true } })).map(
         (lender) => lender.id,
       );
@@ -75,8 +86,6 @@ export async function deleteImportUnsafe(projectId: string, importId: string, us
       // Kredite and Zahlungen cascade from the Kreditgeber*in.
       await tx.lender.deleteMany({ where: { id: { in: lenderIds } } });
 
-      const now = new Date();
-      await tx.import.update({ where: { id: importId }, data: { deletedAt: now, deletedById: user.id } });
       await tx.change.create({
         data: {
           entity: Entity.import,
@@ -90,7 +99,7 @@ export async function deleteImportUnsafe(projectId: string, importId: string, us
         },
       });
     },
-    { timeout: 300_000, maxWait: 10_000 },
+    { timeout: IMPORT_TRANSACTION_TIMEOUT_MS, maxWait: 10_000 },
   );
 
   // Best effort, outside the transaction: an account someone started using stays.

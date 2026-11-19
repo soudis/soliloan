@@ -21,14 +21,21 @@ export function decodeCsv(
   }
 }
 
+/** A CSV record and the line it starts on (1-based), which differs from its index once a field spans lines. */
+type CsvRecord = { fields: string[]; line: number };
+
 /** Splits CSV text into records (RFC 4180: quoted fields may contain delimiters, quotes and line breaks). */
-export function splitCsv(text: string, delimiter: ImportDelimiter): string[][] {
-  const records: string[][] = [];
+function splitCsvRecords(text: string, delimiter: ImportDelimiter): CsvRecord[] {
+  const records: CsvRecord[] = [];
   let record: string[] = [];
   let field = '';
   let quoted = false;
+  let line = 1;
+  let recordLine = 1;
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
+    const lineBreak = char === '\n' || char === '\r';
+    if (lineBreak && char === '\r' && text[i + 1] === '\n') i++;
     if (quoted) {
       if (char === '"') {
         if (text[i + 1] === '"') {
@@ -38,28 +45,34 @@ export function splitCsv(text: string, delimiter: ImportDelimiter): string[][] {
           quoted = false;
         }
       } else {
-        field += char;
+        field += lineBreak ? '\n' : char;
       }
     } else if (char === '"' && field === '') {
       quoted = true;
     } else if (char === delimiter) {
       record.push(field);
       field = '';
-    } else if (char === '\n' || char === '\r') {
-      if (char === '\r' && text[i + 1] === '\n') i++;
+    } else if (lineBreak) {
       record.push(field);
-      records.push(record);
+      records.push({ fields: record, line: recordLine });
       record = [];
       field = '';
+      recordLine = line + 1;
     } else {
       field += char;
     }
+    if (lineBreak) line++;
   }
   if (field !== '' || record.length > 0) {
     record.push(field);
-    records.push(record);
+    records.push({ fields: record, line: recordLine });
   }
   return records;
+}
+
+/** Splits CSV text into records (RFC 4180: quoted fields may contain delimiters, quotes and line breaks). */
+export function splitCsv(text: string, delimiter: ImportDelimiter): string[][] {
+  return splitCsvRecords(text, delimiter).map((record) => record.fields);
 }
 
 /**
@@ -85,21 +98,21 @@ export function detectDelimiter(text: string): ImportDelimiter {
 export function parseCsv(bytes: Uint8Array, options: ImportFileOptions = {}): ParsedImportFile {
   const { text, encoding } = decodeCsv(bytes, options.encoding);
   const delimiter = options.delimiter ?? detectDelimiter(text);
-  const records = splitCsv(text, delimiter);
+  const records = splitCsvRecords(text, delimiter);
   const headers: string[] = [];
   const rows: ImportCell[][] = [];
   const rowNumbers: number[] = [];
   let headerFound = false;
-  records.forEach((record, index) => {
-    if (!record.some((field) => field.trim() !== '')) return;
+  for (const { fields, line } of records) {
+    if (!fields.some((field) => field.trim() !== '')) continue;
     if (!headerFound) {
-      headers.push(...record.map((field) => field.trim()));
+      headers.push(...fields.map((field) => field.trim()));
       headerFound = true;
-      return;
+      continue;
     }
-    rows.push(record.map((field) => (field.trim() === '' ? null : { t: 's', v: field })));
-    rowNumbers.push(index + 1);
-  });
+    rows.push(fields.map((field) => (field.trim() === '' ? null : { t: 's', v: field })));
+    rowNumbers.push(line);
+  }
   return {
     kind: 'csv',
     sheets: [],

@@ -167,6 +167,7 @@ function DeleteImportDialog({
                   <p>{t('created', preview.created)}</p>
                   {hasLater && <p className="font-medium text-destructive">{t('later', preview.later)}</p>}
                   {preview.notifiedTransactions > 0 && <p>{t('notified', { count: preview.notifiedTransactions })}</p>}
+                  <p>{t('emails')}</p>
                   {preview.usedAccounts > 0 && <p>{t('usedAccounts', { count: preview.usedAccounts })}</p>}
                   <p>{t('irreversible')}</p>
                 </>
