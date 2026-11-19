@@ -9,11 +9,11 @@ import type { LoanWithRelations } from '@/types/loans';
 export const JAHRESLISTE_VORGAENGE = [
   'OPENING_BALANCE',
   TransactionType.DEPOSIT,
+  TransactionType.NOTRECLAIMEDPARTIAL,
   TransactionType.INTEREST,
   TransactionType.INTERESTPAYMENT,
   TransactionType.WITHDRAWAL,
   TransactionType.TERMINATION,
-  TransactionType.NOTRECLAIMEDPARTIAL,
   TransactionType.NOTRECLAIMED,
   'CLOSING_BALANCE',
 ] as const;

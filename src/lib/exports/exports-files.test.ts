@@ -76,11 +76,11 @@ describe('jahreslisteXlsx', () => {
       'Vorgang',
       'Kontostand Jahresbeginn',
       'Einzahlung',
+      'Teilerlassung',
       'Zinsertrag',
       'Zinsauszahlung',
       'Teilrückzahlung',
       'Rückzahlung',
-      'Teilerlassung',
       'Erlassung',
       'Kontostand Jahresende',
     ]);
