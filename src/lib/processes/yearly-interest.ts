@@ -26,8 +26,9 @@ const END_OF_TIME = new Date(8_640_000_000_000_000);
  * Zinsertrag of `year`. That Zahlung covers the whole Kontostand, so it takes along the Zinsertrag of its own year
  * and any earlier one not paid out yet. A Kündigung alone settles nothing.
  */
-export function isInterestSettledByClosing(loan: LoanWithRelations, year: number): boolean {
-  const closingDate = isRepaid(loan, END_OF_TIME);
+export function isInterestSettledByClosing(loan: Pick<LoanWithRelations, 'transactions'>, year: number): boolean {
+  // isRepaid reads only the Zahlungen.
+  const closingDate = isRepaid(loan as LoanWithRelations, END_OF_TIME);
   return closingDate !== undefined && year <= moment(closingDate).year();
 }
 
