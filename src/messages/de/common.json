@@ -214,7 +214,8 @@
         "INTERESTPAYMENT": "Zinsauszahlung",
         "TERMINATION": "Rückzahlung",
         "NOTRECLAIMEDPARTIAL": "Teilerlassung",
-        "NOTRECLAIMED": "Erlassung"
+        "NOTRECLAIMED": "Erlassung",
+        "INTERESTCARRYOVER": "Zinsübertrag"
       },
       "paymentType": {
         "BANK": "Banküberweisung",

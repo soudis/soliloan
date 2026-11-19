@@ -4,8 +4,8 @@ import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
 import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
-import { buildLenderFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import { buildLenderTableColumnMeta } from '@/lib/dashboard/table-widget/lender-table-column-registry';
+import { buildLenderFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import type { LenderTableWidgetConfig } from '@/types/dashboard-widgets/table-view';
 
 import { TableViewSettingsShared } from './table-view-settings-shared';

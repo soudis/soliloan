@@ -7,9 +7,9 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { Button } from '@/components/ui/button';
+import { useFilterPresence } from '@/components/ui/data-table-filter-presence-context';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
-import { useFilterPresence } from '@/components/ui/data-table-filter-presence-context';
 import { cn } from '@/lib/utils';
 
 /** Set to true when column reordering via header arrows is implemented. */

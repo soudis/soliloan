@@ -27,9 +27,9 @@ import {
   STAT_METRICS_TOTAL_ONLY,
   STAT_ONLY_METRICS,
   STAT_WIDGET_METRICS,
-  supportsStatByLenderAggregation,
   type StatItemConfig,
   type StatWidgetConfig,
+  supportsStatByLenderAggregation,
 } from '@/types/dashboard-widgets/stat-widget';
 
 const CONFIG_COMMIT_DEBOUNCE_MS = 400;

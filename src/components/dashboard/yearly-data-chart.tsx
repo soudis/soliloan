@@ -16,9 +16,8 @@ import {
 } from 'chart.js';
 import { useTranslations } from 'next-intl';
 import { Chart } from 'react-chartjs-2';
-
-import { chartColorAtIndex, chartColorWithAlpha } from '@/lib/dashboard/chart/chart-dataset-colors';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { chartColorAtIndex, chartColorWithAlpha } from '@/lib/dashboard/chart/chart-dataset-colors';
 import { formatCurrency } from '@/lib/utils';
 
 // Register ChartJS components

@@ -2,9 +2,8 @@
 
 import { AlertTriangle } from 'lucide-react';
 import type { ReactNode } from 'react';
-
-import { FormWarningMessage } from '@/components/form/form-warning-message';
 import { useFormSanityChecksOptional } from '@/components/form/form-sanity-checks-provider';
+import { FormWarningMessage } from '@/components/form/form-warning-message';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import type { FormWarning } from '@/types/form-warnings';

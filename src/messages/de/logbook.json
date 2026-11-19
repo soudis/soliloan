@@ -44,5 +44,9 @@
     "deleted": "Ein Projekt wurde gelöscht",
     "managerAdded": "Ein Projektmanager {email} wurde hinzugefügt",
     "managerRemoved": "Ein Projektmanager {email} wurde entfernt"
+  },
+  "import": {
+    "created": "Die Datei {fileName} wurde importiert",
+    "deleted": "Der Import der Datei {fileName} wurde gelöscht"
   }
 }

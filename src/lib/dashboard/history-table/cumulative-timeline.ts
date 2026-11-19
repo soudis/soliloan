@@ -17,6 +17,7 @@ const emptyNumbers = (): LoanMonthlyNumbers => ({
   notReclaimed: 0,
   interestPaid: 0,
   interest: 0,
+  interestCarryover: 0,
   interestError: 0,
   interestBaseAmount: 0,
 });
@@ -52,6 +53,7 @@ export function buildCumulativeTimeline(history: LoanMonthlyHistory): Cumulative
       running.notReclaimed += entry.notReclaimed;
       running.interestPaid += entry.interestPaid;
       running.interest += entry.interest;
+      running.interestCarryover += entry.interestCarryover;
       running.interestError += entry.interestError;
       running.end = entry.end;
       running.interestBaseAmount = entry.interestBaseAmount;

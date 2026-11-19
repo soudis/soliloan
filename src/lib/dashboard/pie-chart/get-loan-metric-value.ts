@@ -26,6 +26,7 @@ export function getLoanMetricValue(loan: DashboardLoan, metric: HistoryTableMetr
     case 'withdrawals':
     case 'notReclaimed':
     case 'interest':
+    case 'interestCarryover':
     case 'interestPaid':
     case 'interestError':
       return cumulative[metric];

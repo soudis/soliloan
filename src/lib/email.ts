@@ -1,7 +1,7 @@
-import { render } from 'react-email';
 import nodemailer, { type SendMailOptions } from 'nodemailer';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 import React from 'react';
+import { render } from 'react-email';
 import { db } from '@/lib/db';
 import { absoluteAppUrl } from '@/lib/help/forum-urls';
 import { renderSystemEmailTemplate, resolveSystemTemplate } from '@/lib/templates/resolve-system-template';

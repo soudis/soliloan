@@ -10,7 +10,10 @@ export const transactionTypeEnum = selectEnumRequired(TransactionType);
 export const paymentTypeEnum = selectEnumRequired(PaymentType);
 
 export const transactionFormSchema = z.object({
-  type: transactionTypeEnum,
+  // A Zinsübertrag is only booked by an Import (ADR 0010), never entered by hand.
+  type: transactionTypeEnum.refine((type) => type !== TransactionType.INTERESTCARRYOVER, {
+    message: 'validation.transaction.importOnly',
+  }),
   date: createDateSchema(true),
   amount: createNumberSchemaRequired(),
   paymentType: paymentTypeEnum,

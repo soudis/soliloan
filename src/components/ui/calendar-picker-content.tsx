@@ -2,7 +2,7 @@
 
 import { ChevronDown } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useState, type KeyboardEvent } from 'react';
+import { type KeyboardEvent, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
+  cn,
   formatDateInput,
   getDateFnsLocale,
   getMonthEndDate,
@@ -24,7 +25,6 @@ import {
   getYearStartDate,
   parseDateInput,
   toUTCDate,
-  cn,
 } from '@/lib/utils';
 
 interface CalendarPickerContentProps {

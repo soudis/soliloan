@@ -3,10 +3,9 @@
 import debounce from 'lodash.debounce';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
-import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { ChartDiscriminatorFields } from '@/components/dashboard/customizer/chart/chart-discriminator-fields';
 import { ChartTimelineFields } from '@/components/dashboard/customizer/chart/chart-timeline-fields';
+import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

@@ -43,6 +43,7 @@ function buildLoanMonthlyHistory(perMonth: ReturnType<typeof calculateLoanPerMon
       notReclaimed: entry.notReclaimed.toNumber(),
       interestPaid: entry.interestPaid.toNumber(),
       interest: entry.interest.toNumber(),
+      interestCarryover: entry.interestCarryover.toNumber(),
       interestError: entry.interestError.toNumber(),
       interestBaseAmount: entry.interestBaseAmount.toNumber(),
     };

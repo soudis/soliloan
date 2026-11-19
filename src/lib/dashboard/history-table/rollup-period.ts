@@ -54,6 +54,7 @@ const emptyNumbers = (): LoanMonthlyNumbers => ({
   notReclaimed: 0,
   interestPaid: 0,
   interest: 0,
+  interestCarryover: 0,
   interestError: 0,
   interestBaseAmount: 0,
 });
@@ -230,6 +231,7 @@ export function rollupYearFromHistory(
   let notReclaimed = 0;
   let interestPaid = 0;
   let interest = 0;
+  let interestCarryover = 0;
   let interestError = 0;
 
   for (const m of monthKeys) {
@@ -242,6 +244,7 @@ export function rollupYearFromHistory(
     notReclaimed += entry.notReclaimed;
     interestPaid += entry.interestPaid;
     interest += entry.interest;
+    interestCarryover += entry.interestCarryover;
     interestError += entry.interestError;
   }
 
@@ -253,6 +256,7 @@ export function rollupYearFromHistory(
     notReclaimed,
     interestPaid,
     interest,
+    interestCarryover,
     interestError,
     interestBaseAmount: last.interestBaseAmount,
   };
@@ -323,6 +327,7 @@ export function getCumulativeNumbers(loan: DashboardLoan, period: HistoryPeriod)
       result.notReclaimed += entry.notReclaimed;
       result.interestPaid += entry.interestPaid;
       result.interest += entry.interest;
+      result.interestCarryover += entry.interestCarryover;
       result.interestError += entry.interestError;
       result.end = entry.end;
       result.interestBaseAmount = entry.interestBaseAmount;

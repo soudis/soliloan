@@ -107,6 +107,7 @@ export function rawYearlyFields(
     deposits: number;
     withdrawals: number;
     interest: number;
+    interestCarryover: number;
     interestPaid: number;
     notReclaimed: number;
     interestError: number;

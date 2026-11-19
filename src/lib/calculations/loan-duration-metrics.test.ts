@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { PaymentType, TerminationType, TransactionType, type Transaction } from '@prisma/client';
+import { PaymentType, TerminationType, type Transaction, TransactionType } from '@prisma/client';
 
 import { getLoanTimelineStart, loanStartedOnOrBefore } from './loan-duration-metrics';
 
@@ -15,6 +15,7 @@ function deposit(date: Date): Transaction {
     amount: 1000,
     paymentType: PaymentType.BANK,
     lenderNotifiedAt: null,
+    importId: null,
   };
 }
 
