@@ -13,7 +13,8 @@ import {
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
 import { notifyLenderAboutTransaction } from '@/lib/email';
-import { toStoredAmount } from '@/lib/loans/transaction-ledger';
+import { toStoredAmount } from '@/lib/calculations/transaction-ledger';
+import { lockLoan } from '@/lib/loans/loan-lock';
 import { checkChange, rejectionErrorKey } from '@/lib/loans/transaction-validation';
 import { transactionFormSchema } from '@/lib/schemas/transaction';
 import { transactionAction } from '@/lib/utils/safe-action';
@@ -21,39 +22,50 @@ import { transactionAction } from '@/lib/utils/safe-action';
 export const updateTransactionAction = transactionAction
   .inputSchema(z.object({ transactionId: z.string(), data: transactionFormSchema }))
   .action(async ({ parsedInput: { transactionId, data } }) => {
-    const transaction = await db.transaction.findUnique({
-      where: { id: transactionId },
-      include: {
-        loan: {
-          include: {
-            transactions: true,
-            lender: { include: { project: { include: { configuration: true } } } },
-          },
-        },
-      },
-    });
-
-    if (!transaction) {
+    const stored = await db.transaction.findUnique({ where: { id: transactionId }, select: { loanId: true } });
+    if (!stored) {
       throw new Error('error.transaction.notFound');
     }
 
-    const { loan } = transaction;
-    const date = data.date ?? transaction.date;
-    const amount = toStoredAmount(data.type, data.amount);
+    // Check and write in one DB transaction that locks the Kredit, so parallel saves cannot both pass
+    const { transaction, loan, updated } = await db.$transaction(async (tx) => {
+      await lockLoan(tx, stored.loanId);
+      const transaction = await tx.transaction.findUnique({
+        where: { id: transactionId },
+        include: {
+          loan: {
+            include: {
+              transactions: true,
+              lender: { include: { project: { include: { configuration: true } } } },
+            },
+          },
+        },
+      });
+      if (!transaction) {
+        throw new Error('error.transaction.notFound');
+      }
 
-    // Authoritative check: the ledger without the old version but with the new one must not break any rule
-    const proposed = loan.transactions.map((item) =>
-      item.id === transactionId ? { ...item, type: data.type, date, amount, paymentType: data.paymentType } : item,
-    );
-    const earliest = new Date(Math.min(transaction.date.getTime(), date.getTime()));
-    const { errors } = checkChange(loan, loan.transactions, proposed, earliest, { exemptTransactionId: transactionId });
-    if (errors.length > 0) {
-      throw new Error(rejectionErrorKey(errors));
-    }
+      const { loan } = transaction;
+      const date = data.date ?? transaction.date;
+      const amount = toStoredAmount(data.type, data.amount);
 
-    const updated = await db.transaction.update({
-      where: { id: transactionId },
-      data: { type: data.type, date, amount, paymentType: data.paymentType },
+      // Authoritative check: the ledger without the old version but with the new one must not break any rule
+      const proposed = loan.transactions.map((item) =>
+        item.id === transactionId ? { ...item, type: data.type, date, amount, paymentType: data.paymentType } : item,
+      );
+      const earliest = new Date(Math.min(transaction.date.getTime(), date.getTime()));
+      const { errors } = checkChange(loan, loan.transactions, proposed, earliest, {
+        exemptTransactionId: transactionId,
+      });
+      if (errors.length > 0) {
+        throw new Error(rejectionErrorKey(errors));
+      }
+
+      const updated = await tx.transaction.update({
+        where: { id: transactionId },
+        data: { type: data.type, date, amount, paymentType: data.paymentType },
+      });
+      return { transaction, loan, updated };
     });
 
     await createAuditEntry(db, {

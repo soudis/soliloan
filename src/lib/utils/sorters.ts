@@ -1,4 +1,5 @@
 import { type Transaction, TransactionType } from '@prisma/client';
+import moment from 'moment';
 
 import { isClosingType } from '@/lib/transactions/closing-types';
 import { LoanStatus } from '@/types/loans';
@@ -12,14 +13,20 @@ const sameDayRank = (transaction: SortableTransaction) => {
 };
 
 /**
- * Oldest first. On the same day Einzahlungen come first, then the other types, and a closing
- * Zahlung (Rückzahlung / Erlassung) last. A Zahlung that was created after a closing Zahlung of
- * the same Kredit and day (its id sorts after) comes after it, so a new Einzahlung on the day of a
- * Rückzahlung is booked after the repayment. Works on a list because that order depends on the
- * closing Zahlung of the same day.
+ * Oldest first, by calendar day (Europe/Berlin in production, like the validator's `toLedger`): the
+ * time of day only reflects where a Zahlung came from (the form stores local midnight, the bank
+ * import UTC midnight), not when it happened. On the same day Einzahlungen come first, then the
+ * other types, and a closing Zahlung (Rückzahlung / Erlassung) last. A Zahlung that was created after
+ * a closing Zahlung of the same Kredit and day (its id sorts after) comes after it, so a new
+ * Einzahlung on the day of a Rückzahlung is booked after the repayment. Works on a list because that
+ * order depends on the closing Zahlung of the same day.
  */
 export const sortTransactions = <T extends SortableTransaction>(transactions: T[]): T[] => {
-  const dayKey = (transaction: T) => `${transaction.loanId ?? ''}|${transaction.date.getTime()}`;
+  const days = new Map<T, number>(
+    transactions.map((transaction) => [transaction, moment(transaction.date).startOf('day').valueOf()]),
+  );
+  const dayOf = (transaction: T) => days.get(transaction) ?? 0;
+  const dayKey = (transaction: T) => `${transaction.loanId ?? ''}|${dayOf(transaction)}`;
   const firstClosingId = new Map<string, string>();
   for (const transaction of transactions) {
     if (!isClosingType(transaction.type)) continue;
@@ -36,7 +43,8 @@ export const sortTransactions = <T extends SortableTransaction>(transactions: T[
     return closingId !== undefined && transaction.id > closingId ? 1 : 0;
   };
   return [...transactions].sort((a, b) => {
-    if (a.date.getTime() !== b.date.getTime()) return a.date.getTime() - b.date.getTime();
+    const day = dayOf(a) - dayOf(b);
+    if (day !== 0) return day;
     const late = createdAfterClosing(a) - createdAfterClosing(b);
     if (late !== 0) return late;
     const rank = sameDayRank(a) - sameDayRank(b);

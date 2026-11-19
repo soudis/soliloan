@@ -1,7 +1,7 @@
 import { type Loan, type Transaction, TransactionType } from '@prisma/client';
 import moment from 'moment';
 
-import { calculateLoanPerYear, type LoanForPerYear } from '@/lib/calculations/loan-calculations';
+import { calculateLoanPerYear, type LoanForPerYear } from './loan-calculations';
 import { CLOSING_TYPES, isClosingType } from '@/lib/transactions/closing-types';
 import { sortTransactions } from '@/lib/utils/sorters';
 
@@ -232,24 +232,40 @@ export const replayLedger = (loan: LedgerLoan, transactions: Transaction[], opti
   return { entries, violations, closingDifferences };
 };
 
-const violationKey = (violation: Violation) => `${violation.rule}|${violation.transactionId}`;
+/**
+ * A violation is matched by rule and Zahlung, except `CAP_EXCEEDED`: it belongs to the day (the cap is
+ * checked on the Einlagenstand at the end of it) and only hangs on the day's last Einzahlung. Removing
+ * or reducing that Einzahlung moves it to another one of the same day without making it worse.
+ */
+const violationKey = (violation: Violation) =>
+  violation.rule === 'CAP_EXCEEDED'
+    ? `${violation.rule}|day:${dayOf(violation.date).valueOf()}`
+    : `${violation.rule}|${violation.transactionId}`;
 
 /**
- * Violations in `after` that `before` did not already have (matched by rule and Zahlung), so an
- * existing violation stays tolerated only on the Zahlung that already had it.
+ * Violations in `after` that `before` did not already have, so an existing violation stays tolerated
+ * only where it already was (see `violationKey`).
  */
 export const introducedViolations = (before: Violation[], after: Violation[]) => {
   const existing = new Set(before.map(violationKey));
   return after.filter((violation) => !existing.has(violationKey(violation)));
 };
 
-/** The highest Einlagenstand the Kredit ever reached; the Kreditbetrag cannot be lowered below it. */
+/**
+ * The highest Einlagenstand the Kredit had at the end of a day; the Kreditbetrag cannot be lowered
+ * below it. End of day like the cap check in `replayLedger`: a same-day Einzahlung and
+ * Teilrückzahlung only count with their net amount.
+ */
 export const peakEinlagenstand = (transactions: Transaction[]) => {
   let einlagenstand = 0;
   let peak = 0;
+  let currentDay: number | undefined;
   for (const transaction of toLedger(transactions)) {
+    if (currentDay !== undefined && transaction.date.getTime() !== currentDay) {
+      peak = Math.max(peak, einlagenstand);
+    }
+    currentDay = transaction.date.getTime();
     einlagenstand = isClosingType(transaction.type) ? 0 : einlagenstand + einlagenstandDelta(transaction);
-    peak = Math.max(peak, einlagenstand);
   }
-  return peak;
+  return Math.max(peak, einlagenstand);
 };

@@ -2,7 +2,13 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { type Transaction, TransactionType } from '@prisma/client';
 
-import { replayLedger, stateAt, toStoredAmount, type LedgerLoan } from './transaction-ledger';
+import {
+  type LedgerLoan,
+  peakEinlagenstand,
+  replayLedger,
+  stateAt,
+  toStoredAmount,
+} from '@/lib/calculations/transaction-ledger';
 import { changedPastYears, checkChange, previewTransaction } from './transaction-validation';
 
 const loan = (overrides: Partial<LedgerLoan> = {}): LedgerLoan => ({
@@ -125,6 +131,30 @@ describe('cap at the end of the day and existing violations', () => {
     );
   });
 
+  it('tolerates removing one of the Einzahlungen of a day that is already over the Kreditbetrag', () => {
+    // 1.000 € Kreditbetrag reached, then 300 € + 200 € on one day: the excess hangs on the later one
+    const stored = [
+      tx('DEPOSIT', '2024-01-01', 1000, 'base'),
+      tx('DEPOSIT', '2024-02-01', 300, 'a'),
+      tx('DEPOSIT', '2024-02-01', 200, 'b'),
+    ];
+    const { errors } = checkChange(
+      loan(),
+      stored,
+      stored.filter((item) => item.id !== 'b'),
+    );
+    assert.deepEqual(errors, []);
+  });
+
+  it('still blocks an excess on another day', () => {
+    const stored = [tx('DEPOSIT', '2024-01-01', 1000, 'base'), tx('DEPOSIT', '2024-02-01', 300, 'a')];
+    const { errors } = checkChange(loan(), stored, [...stored, tx('DEPOSIT', '2024-03-01', 1, 'c')]);
+    assert.deepEqual(
+      errors.map((error) => `${error.rule}@${error.transactionId}`),
+      ['CAP_EXCEEDED@c'],
+    );
+  });
+
   it('keeps tolerating the violation of the Zahlung that already had it', () => {
     const legacy = [tx('DEPOSIT', '2024-01-01', 500, 'a'), tx('WITHDRAWAL', '2024-02-01', 600, 'b')];
     assert.deepEqual(checkChange(loan(), legacy, legacy).errors, []);
@@ -154,6 +184,21 @@ describe('stateAt', () => {
     const list = [tx('DEPOSIT', '2024-01-01', 1000), tx('WITHDRAWAL', '2024-03-01', 400)];
     assert.deepEqual(stateAt(loan(), list, day('2024-02-01')), { balance: 1000, einlagenstand: 1000 });
     assert.deepEqual(stateAt(loan(), list, day('2024-03-01')), { balance: 600, einlagenstand: 600 });
+  });
+});
+
+describe('peakEinlagenstand', () => {
+  it('nets a same-day Einzahlung and Teilrückzahlung', () => {
+    assert.equal(peakEinlagenstand([tx('DEPOSIT', '2024-01-01', 800), tx('WITHDRAWAL', '2024-01-01', 300)]), 500);
+  });
+
+  it('keeps the highest end-of-day Einlagenstand', () => {
+    const list = [
+      tx('DEPOSIT', '2024-01-01', 800),
+      tx('WITHDRAWAL', '2024-02-01', 300),
+      tx('DEPOSIT', '2024-03-01', 100),
+    ];
+    assert.equal(peakEinlagenstand(list), 800);
   });
 });
 

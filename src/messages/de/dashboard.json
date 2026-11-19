@@ -952,12 +952,12 @@
           "closingOwnDescription": "Am {date} beträgt der Kontostand {balance}, der Betrag ist {amount}. Der Betrag liegt {difference} {direction, select, higher {über} other {unter}} dem Kontostand. Wird trotzdem gespeichert, wird sie den Zinsen des Jahres der Abschlusszahlung zugerechnet (Zinskorrektur).",
           "pastYearsTitle": "Frühere Jahre ändern sich",
           "pastYearsYear": "Jahr",
-          "pastYearsInterest": "Zinsen",
+          "pastYearsInterest": "Zinsertrag",
           "pastYearsBalance": "Kontostand 31.12.",
           "notifiedTitle": "Kreditgeber*in wurde bereits benachrichtigt",
           "notifiedDescription": "Über diese Zahlung wurde am {date} benachrichtigt. Mit der Option unten kann erneut benachrichtigt werden.",
           "existingTitle": "Bestehende Regelverstöße",
-          "existingDescription": "{count, plural, one {Dieser Kredit enthält bereits # Regelverstoß} other {Dieser Kredit enthält bereits # Regelverstöße}} ab diesem Datum. Sie blockieren das Speichern nicht."
+          "existingDescription": "{count, plural, one {Dieser Kredit enthält bereits # Regelverstoß} other {Dieser Kredit enthält bereits # Regelverstöße}}. Sie blockieren das Speichern nicht."
         }
       },
       "note": "Notiz",

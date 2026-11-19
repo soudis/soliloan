@@ -6,5 +6,5 @@ The ledger validator could handle a Kredit that is funded again, but the interes
 
 ## Consequences
 
-- The modal shows one notice for a closed Kredit and disables every type; payments before the Rückzahlung can still be booked (the Abschlussdifferenz warning applies).
+- The modal shows one notice for a closed Kredit and disables every type. The Zahlungen before the Rückzahlung or Erlassung are frozen as well (ADR 0010).
 - Deleting the Rückzahlung or Erlassung makes the Kredit bookable again.

@@ -11,7 +11,7 @@ import { deleteTransactionAction } from '@/actions/loans';
 import { ConfirmDialog } from '@/components/generic/confirm-dialog';
 import { TemplateQuickActions } from '@/components/templates/template-quick-actions';
 import { ActionButton } from '@/components/ui/action-button';
-import { getClosingTransaction } from '@/lib/loans/transaction-ledger';
+import { getClosingTransaction } from '@/lib/calculations/transaction-ledger';
 import { cn, formatCurrency, formatDateLong } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { Button } from '../ui/button';

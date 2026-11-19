@@ -17,7 +17,7 @@ import { withProjectId } from '@/lib/project-href';
 import { formatTerminationModalities } from '@/lib/table-column-utils';
 import { cn, formatCurrency, formatDateLong, formatDateShort, formatPercentage } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
-import { getClosingTransaction } from '@/lib/loans/transaction-ledger';
+import { getClosingTransaction } from '@/lib/calculations/transaction-ledger';
 import { LoanStatus } from '@/types/loans';
 import { AdditionalFieldInfoItems } from '../dashboard/additional-field-info-items';
 import { LoanBalanceSummary } from '../loans/loan-balance-summary';

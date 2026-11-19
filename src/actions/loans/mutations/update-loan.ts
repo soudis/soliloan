@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { createAuditEntry, getChangedFields, getLenderContext, getLoanContext } from '@/lib/audit-trail';
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
-import { peakEinlagenstand, toCents } from '@/lib/loans/transaction-ledger';
+import { peakEinlagenstand, toCents } from '@/lib/calculations/transaction-ledger';
 import { normalizeLoanInterestRate } from '@/lib/schemas/investment-type';
 import { loanFormSchema } from '@/lib/schemas/loan';
 import { loanAction } from '@/lib/utils/safe-action';
@@ -43,8 +43,10 @@ export const updateLoanAction = loanAction
       throw new Error('Loan not found');
     }
 
-    // The Kreditbetrag cannot drop below what was once paid in
-    if (toCents(data.amount) < toCents(peakEinlagenstand(loan.transactions))) {
+    // A lowered Kreditbetrag cannot drop below what was once paid in. Only checked when it is lowered,
+    // so a legacy Kredit that is already over its Kreditbetrag stays saveable.
+    const lowered = toCents(data.amount) < toCents(loan.amount);
+    if (lowered && toCents(data.amount) < toCents(peakEinlagenstand(loan.transactions))) {
       throw new Error('error.loan.amountBelowDeposits');
     }
 
