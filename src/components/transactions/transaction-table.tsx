@@ -98,7 +98,7 @@ export function TransactionTable({
     id: string;
     loanNumber: number | null;
     lenderName: string | null;
-    reason: 'notFound' | 'interest' | 'notLatest';
+    reason: 'notFound' | 'interest' | 'invalid';
   };
 
   const [deleteState, setDeleteState] = useState<DeleteState>(null);
