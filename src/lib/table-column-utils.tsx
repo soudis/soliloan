@@ -1,12 +1,17 @@
 import type { Lender, Loan } from '@prisma/client';
+import { TerminationType } from '@prisma/client';
 import type { CellContext, ColumnDef, Row, VisibilityState } from '@tanstack/react-table';
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import type { ColumnGroupMeta, DataTableColumnFilters } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+
+import { formatTotalRuntime, getTotalRuntime, type TotalRuntime } from '@/lib/calculations/loan-duration-metrics';
+import { formatCalendarSpan, isCalendarSpan } from '@/lib/calendar-span';
 import {
   matchesBooleanFilter,
   matchesDateFilter,
+  matchesDurationFilter,
   matchesEnumFilter,
   matchesTextFilter,
 } from '@/lib/entity-filters/filter-matchers';
@@ -35,6 +40,10 @@ export function enumFilter<T>(row: Row<T>, columnId: string, filterValue: unknow
 // Define the custom filter function for date fields
 export function dateRangeFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
   return matchesDateFilter(row.getValue(columnId), filterValue, new Date());
+}
+
+export function durationRangeFilter<T>(row: Row<T>, columnId: string, filterValue: unknown) {
+  return matchesDurationFilter(row.getValue(columnId), filterValue);
 }
 
 // Define the custom filter function type
@@ -394,6 +403,83 @@ export function createDateColumn<T>(
   return mergeExportMeta(column, { type: 'date' });
 }
 
+function formatTableDate(value: unknown, locale?: string): string {
+  if (!value) return '';
+  try {
+    const date = value instanceof Date ? value : new Date(String(value));
+    return Number.isNaN(date.getTime())
+      ? ''
+      : date.toLocaleDateString(resolveIntlLocaleForDates(locale ?? 'de'), {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
+  } catch {
+    return '';
+  }
+}
+
+export function showsRepayDateAfterTermination(loan: {
+  terminationType: TerminationType | string | null | undefined;
+  terminationDate?: Date | string | null;
+}): boolean {
+  return loan.terminationType === TerminationType.TERMINATION && !loan.terminationDate;
+}
+
+export function createRepayDateColumn<
+  T extends {
+    terminationType: TerminationType;
+    terminationDate?: Date | string | null;
+    repayDate?: Date | string | null;
+  },
+>(t: (key: string) => string, locale?: string): ColumnDef<T> {
+  const afterTerminationLabel = t('table.repayDateAfterTermination');
+  const column = createColumn<T>(
+    {
+      accessorKey: 'repayDate',
+      header: 'table.repayDate',
+      cell: ({ row }) => {
+        if (showsRepayDateAfterTermination(row.original)) {
+          return afterTerminationLabel;
+        }
+        return formatTableDate(row.getValue('repayDate'), locale);
+      },
+      sortingFn: (rowA, rowB, columnId) => {
+        const aTermination = showsRepayDateAfterTermination(rowA.original);
+        const bTermination = showsRepayDateAfterTermination(rowB.original);
+        if (aTermination && bTermination) return 0;
+        if (aTermination) return 1;
+        if (bTermination) return -1;
+
+        const a = rowA.getValue(columnId) as string | Date | null | undefined;
+        const b = rowB.getValue(columnId) as string | Date | null | undefined;
+        const aTime = a ? new Date(a).getTime() : Number.NaN;
+        const bTime = b ? new Date(b).getTime() : Number.NaN;
+        const aMissing = Number.isNaN(aTime);
+        const bMissing = Number.isNaN(bTime);
+        if (aMissing && bMissing) return 0;
+        if (aMissing) return 1;
+        if (bMissing) return -1;
+        if (aTime === bTime) return 0;
+        return aTime < bTime ? -1 : 1;
+      },
+    },
+    t,
+  );
+  column.filterFn = dateRangeFilter as ColumnDef<T>['filterFn'];
+  return mergeExportMeta(column, {
+    type: 'date',
+    getValue: (row) => {
+      const loan = row as T;
+      if (showsRepayDateAfterTermination(loan)) {
+        return afterTerminationLabel;
+      }
+      if (!loan.repayDate) return '';
+      return loan.repayDate instanceof Date ? loan.repayDate : new Date(String(loan.repayDate));
+    },
+  });
+}
+
 type PercentageColumnFormattingOptions = {
   align?: 'left' | 'right' | 'center';
 };
@@ -408,16 +494,88 @@ export function createDurationDaysColumn<T>(
       accessorKey,
       header: headerKey,
       cell: ({ row }) => {
-        const value = row.getValue(accessorKey) as number | null | undefined;
-        return <div className="tabular-nums">{formatDurationDays(value, durationT)}</div>;
+        const value = row.getValue(accessorKey);
+        const label = isCalendarSpan(value)
+          ? formatCalendarSpan(value, durationT)
+          : formatDurationDays(value as number | null, durationT);
+        return <div className="tabular-nums">{label}</div>;
+      },
+      sortingFn: (rowA, rowB, columnId) => {
+        const a = calendarSpanSortDays(rowA.getValue(columnId));
+        const b = calendarSpanSortDays(rowB.getValue(columnId));
+        if (a === b) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+        return a < b ? -1 : 1;
       },
     },
     t,
   );
 
-  column.filterFn = 'inNumberRange';
-  return mergeExportMeta(column, { type: 'integer' });
+  column.filterFn = durationRangeFilter as ColumnDef<T>['filterFn'];
+  return mergeExportMeta(column, {
+    type: 'integer',
+    getValue: (row) => calendarSpanSortDays((row as Record<string, unknown>)[accessorKey]),
+  });
 }
+
+function calendarSpanSortDays(value: unknown): number | null {
+  if (isCalendarSpan(value)) {
+    return value.totalDays;
+  }
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  return null;
+}
+
+export function totalRuntimeSortValue(runtime: TotalRuntime | null | undefined): number | null {
+  if (!runtime) {
+    return null;
+  }
+  if (runtime.terminationType === TerminationType.TERMINATION) {
+    return Number.POSITIVE_INFINITY;
+  }
+  return runtime.days;
+}
+
+export function createTotalRuntimeColumn<
+  T extends Pick<Loan, 'terminationType' | 'signDate' | 'endDate' | 'duration' | 'durationType'> & {
+    totalRuntime?: TotalRuntime;
+  },
+>(t: (key: string) => string, durationT: (key: string, values?: Record<string, number>) => string): ColumnDef<T> {
+  const column = createColumn<T>(
+    {
+      id: 'totalRuntime',
+      accessorKey: 'totalRuntime',
+      header: 'table.totalRuntime',
+      accessorFn: (row) => row.totalRuntime ?? getTotalRuntime(row),
+      cell: ({ row }) => <div className="tabular-nums">{formatTotalRuntime(row.original, durationT)}</div>,
+      sortingFn: (rowA, rowB, columnId) => {
+        const a = totalRuntimeSortValue(rowA.getValue(columnId) as TotalRuntime | null | undefined);
+        const b = totalRuntimeSortValue(rowB.getValue(columnId) as TotalRuntime | null | undefined);
+        if (a === b) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+        return a < b ? -1 : 1;
+      },
+    },
+    t,
+  );
+
+  column.filterFn = durationRangeFilter as ColumnDef<T>['filterFn'];
+  return mergeExportMeta(column, {
+    type: 'integer',
+    getValue: (row) => {
+      const runtime = (row as T).totalRuntime ?? getTotalRuntime(row as T);
+      if (runtime.terminationType === TerminationType.TERMINATION) {
+        return durationT('byTermination');
+      }
+      return runtime.days;
+    },
+  });
+}
+
 export function createPercentageColumn<T>(
   accessorKey: string,
   headerKey: string | undefined,
@@ -1038,30 +1196,4 @@ export function formatTerminationModalities(
     default:
       return '-';
   }
-}
-
-// Create a termination modalities column
-export function createTerminationModalitiesColumn<
-  T extends Pick<
-    Loan,
-    | 'terminationType'
-    | 'signDate'
-    | 'endDate'
-    | 'duration'
-    | 'durationType'
-    | 'terminationPeriod'
-    | 'terminationPeriodType'
-  >,
->(t: (key: string) => string, commonT: (key: string) => string): ColumnDef<T> {
-  return createColumn<T>(
-    {
-      id: 'terminationModalities',
-      accessorKey: 'terminationModalities',
-      header: 'table.terminationModalities',
-      accessorFn: (row: T) => formatTerminationModalities(row, commonT),
-      cell: ({ row }) => formatTerminationModalities(row.original, commonT),
-      filterFn: compoundTextFilter,
-    },
-    t,
-  );
 }

@@ -2,6 +2,7 @@ import type { ColumnFiltersState } from '@tanstack/react-table';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
 import { isInactiveBooleanFilterValue } from '@/types/boolean-filter-value';
 import { isInactiveDateFilterValue } from '@/types/date-filter-value';
+import { isInactiveDurationFilterValue } from '@/types/duration-filter-value';
 import { isInactiveEnumFilterValue } from '@/types/enum-filter-value';
 import { isInactiveNumberFilterValue, type NumberFilterOperator } from '@/types/number-filter-value';
 import { isInactiveTextFilterValue } from '@/types/text-filter-value';
@@ -9,6 +10,7 @@ import { isInactiveTextFilterValue } from '@/types/text-filter-value';
 import {
   BooleanFilter,
   DateFilter,
+  DurationFilter,
   MultiSelectFilter,
   NumberFilter,
   SelectFilter,
@@ -16,10 +18,11 @@ import {
 } from './data-table-column-filters/index';
 
 type ColumnFilterConfig = {
-  type: 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
+  type: 'text' | 'select' | 'multi-select' | 'number' | 'duration' | 'date' | 'boolean';
   options?: { label: string; value: string }[];
   label?: string;
   allowEmpty?: boolean;
+  terminationValue?: boolean;
   defaultOperator?: NumberFilterOperator;
 };
 
@@ -45,7 +48,7 @@ function isEmptyFilterValue(
 
   if (value && typeof value === 'object' && !Array.isArray(value) && 'operator' in value) {
     const operator = (value as { operator: string }).operator;
-    if (operator === 'empty' || operator === 'notEmpty') {
+    if (operator === 'empty' || operator === 'notEmpty' || operator === 'termination') {
       return false;
     }
     switch (type) {
@@ -53,6 +56,8 @@ function isEmptyFilterValue(
         return isInactiveDateFilterValue(value);
       case 'number':
         return isInactiveNumberFilterValue(value, defaultOperator);
+      case 'duration':
+        return isInactiveDurationFilterValue(value);
       case 'select':
         return isInactiveEnumFilterValue(value, 'eq');
       case 'multi-select':
@@ -66,6 +71,8 @@ function isEmptyFilterValue(
   switch (type) {
     case 'number':
       return isInactiveNumberFilterValue(value, defaultOperator);
+    case 'duration':
+      return isInactiveDurationFilterValue(value);
     case 'select':
       return isInactiveEnumFilterValue(value, 'eq');
     case 'multi-select':
@@ -154,6 +161,17 @@ export function DataTableColumnFilters({
                         defaultOperator={filterConfig.defaultOperator}
                         onFilterChange={(value) => {
                           handleFilterChange(columnId, value, 'number', filterConfig.defaultOperator);
+                        }}
+                      />
+                    );
+                  case 'duration':
+                    return (
+                      <DurationFilter
+                        filterState={filterState}
+                        allowEmpty={filterConfig.allowEmpty}
+                        terminationValue={filterConfig.terminationValue}
+                        onFilterChange={(value) => {
+                          handleFilterChange(columnId, value, 'duration');
                         }}
                       />
                     );

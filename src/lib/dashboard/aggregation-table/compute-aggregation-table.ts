@@ -1,4 +1,9 @@
-import { resolveGroupKey } from '@/lib/dashboard/chart/resolve-group-key';
+import {
+  CHART_EMPTY_GROUP_KEY,
+  CHART_TERMINATION_GROUP_KEY,
+  groupSortRank,
+  resolveGroupKey,
+} from '@/lib/dashboard/chart/resolve-group-key';
 import {
   createAggregateMetricCache,
   getOrBuildPeriodSnapshot,
@@ -57,12 +62,39 @@ function isMissingNumber(value: number | null | undefined): value is null | unde
   return value === null || value === undefined || Number.isNaN(value);
 }
 
-function tieBreak(a: AggregationTableRow, b: AggregationTableRow, locale: string): number {
+function compareGroupsByLimit(a: AggregationTableRow, b: AggregationTableRow, locale: string): number {
+  if (a.key === b.key) {
+    return 0;
+  }
+  // A notice period has no completed length, so it precedes every measured span.
+  if (a.key === CHART_TERMINATION_GROUP_KEY) {
+    return -1;
+  }
+  if (b.key === CHART_TERMINATION_GROUP_KEY) {
+    return 1;
+  }
+  if (a.key === CHART_EMPTY_GROUP_KEY) {
+    return 1;
+  }
+  if (b.key === CHART_EMPTY_GROUP_KEY) {
+    return -1;
+  }
+
+  const aRank = groupSortRank(a.key);
+  const bRank = groupSortRank(b.key);
+  if (aRank !== null && bRank !== null && aRank !== bRank) {
+    return aRank - bRank;
+  }
+
   const byLabel = a.label.localeCompare(b.label, locale, { numeric: true, sensitivity: 'base' });
   if (byLabel !== 0) {
     return byLabel;
   }
   return a.key.localeCompare(b.key);
+}
+
+function tieBreak(a: AggregationTableRow, b: AggregationTableRow, locale: string): number {
+  return compareGroupsByLimit(a, b, locale);
 }
 
 export function sortAggregationTableRows(
@@ -74,10 +106,10 @@ export function sortAggregationTableRows(
   const sorted = [...rows];
   sorted.sort((a, b) => {
     if (sortColumnId === AGGREGATION_TABLE_GROUP_SORT_ID) {
-      const cmp = a.label.localeCompare(b.label, locale, { numeric: true, sensitivity: 'base' });
-      if (cmp === 0) {
-        return a.key.localeCompare(b.key);
+      if (a.key === CHART_EMPTY_GROUP_KEY || b.key === CHART_EMPTY_GROUP_KEY) {
+        return compareGroupsByLimit(a, b, locale);
       }
+      const cmp = compareGroupsByLimit(a, b, locale);
       return direction === 'asc' ? cmp : -cmp;
     }
 
@@ -154,7 +186,6 @@ export function computeAggregationTable(
       discriminator.groupBy.entity,
       discriminator.groupBy.field,
       filterContext.snapshot,
-      commonT,
     );
     const { key, label } = resolveGroupKey(rawGroupValue, discriminator, fieldDef, {
       emptyLabel,

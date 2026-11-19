@@ -96,9 +96,18 @@ function resolveCellValue<T>(row: Row<T>, column: Column<T, unknown>): ResolvedC
     }
     case 'integer':
     case 'duration': {
-      const num = typeof raw === 'number' ? raw : numberParser.parse(String(raw));
-      if (num === null || Number.isNaN(num)) return { value: undefined, type: exportType, wrapText };
-      return { value: Math.trunc(num), type: exportType, wrapText };
+      if (typeof raw === 'number' && Number.isFinite(raw)) {
+        return { value: Math.trunc(raw), type: exportType, wrapText };
+      }
+      if (typeof raw === 'string') {
+        const num = numberParser.parse(raw);
+        if (num !== null && !Number.isNaN(num)) {
+          return { value: Math.trunc(num), type: exportType, wrapText };
+        }
+        // Non-numeric labels (e.g. "Durch Kündigung" on Kreditlaufzeit) export as text.
+        return { value: raw, type: 'text', wrapText };
+      }
+      return { value: undefined, type: exportType, wrapText };
     }
     case 'number': {
       const num = typeof raw === 'number' ? raw : numberParser.parse(String(raw));
@@ -106,6 +115,14 @@ function resolveCellValue<T>(row: Row<T>, column: Column<T, unknown>): ResolvedC
       return { value: num, type: exportType, wrapText };
     }
     case 'date': {
+      if (typeof raw === 'string') {
+        const date = new Date(raw);
+        if (Number.isNaN(date.getTime())) {
+          // Non-date labels (e.g. "Nach Kündigung" on Fälligkeitsdatum) export as text.
+          return { value: raw, type: 'text', wrapText };
+        }
+        return { value: date, type: 'date', wrapText };
+      }
       if (raw instanceof Date) {
         return Number.isNaN(raw.getTime())
           ? { value: undefined, type: 'date', wrapText }

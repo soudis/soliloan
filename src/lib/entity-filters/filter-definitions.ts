@@ -11,18 +11,21 @@ import {
 } from '@prisma/client';
 
 import type { DataTableColumnFilters } from '@/components/ui/data-table';
+import { columnGroupForId } from '@/lib/table-column-groups';
 import { createAdditionalFieldFilters } from '@/lib/table-column-utils';
 import type { EntityFilterEntity, EntityFilterFieldOption } from '@/types/entity-filters';
 import type { NumberFilterOperator } from '@/types/number-filter-value';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
-export type DataTableColumnFilterType = 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
+export type DataTableColumnFilterType = 'text' | 'select' | 'multi-select' | 'number' | 'duration' | 'date' | 'boolean';
 
 export type DataTableColumnFilterDefinition = {
   type: DataTableColumnFilterType;
   label: string;
   options?: { label: string; value: string }[];
   allowEmpty?: boolean;
+  /** Offer the notice-period operator. Used by Kreditlaufzeit. */
+  terminationValue?: boolean;
   defaultOperator?: NumberFilterOperator;
 };
 
@@ -68,7 +71,11 @@ export function buildLoanColumnFiltersMap(
       label: t('table.outstandingDepositSinceDate'),
       allowEmpty: true,
     },
-    outstandingDepositSinceDays: { type: 'number', label: t('table.outstandingDepositSinceDays') },
+    outstandingDepositSinceDays: {
+      type: 'duration',
+      label: t('table.outstandingDepositSinceDays'),
+      allowEmpty: true,
+    },
     depositsCount: { type: 'number', label: t('table.depositsCount') },
     requiredDepositsCount: { type: 'number', label: t('table.requiredDepositsCount') },
     outstandingDepositsCount: { type: 'number', label: t('table.outstandingDepositsCount') },
@@ -93,14 +100,15 @@ export function buildLoanColumnFiltersMap(
         value,
       })),
     },
-    terminationModalities: {
-      type: 'text',
-      label: t('table.terminationModalities'),
+    totalRuntime: {
+      type: 'duration',
+      label: t('table.totalRuntime'),
       allowEmpty: true,
+      terminationValue: true,
     },
     repayDate: { type: 'date', label: t('table.repayDate'), allowEmpty: true },
-    loanTermDays: { type: 'number', label: t('table.loanTerm'), allowEmpty: true },
-    repaymentPeriodDays: { type: 'number', label: t('table.repaymentPeriod'), allowEmpty: true },
+    loanTermDays: { type: 'duration', label: t('table.loanTerm'), allowEmpty: true },
+    repaymentPeriodDays: { type: 'duration', label: t('table.repaymentPeriod'), allowEmpty: true },
     status: {
       type: 'select',
       label: t('table.status'),
@@ -290,10 +298,11 @@ export function buildLoanFilterFieldOptions(
   const loanFilters = buildLoanColumnFiltersMap(project, t, commonT);
 
   return Object.entries(loanFilters).map(([field, def]) => ({
+    ...def,
     field,
     entity: 'loan' as const,
     group: 'loan' as const,
-    ...def,
+    columnGroup: columnGroupForId(field, 'loan'),
   }));
 }
 
@@ -309,10 +318,11 @@ export function buildLenderFilterFieldOptions(
   });
 
   return Object.entries(lenderFilters).map(([field, def]) => ({
+    ...def,
     field,
     entity: 'lender' as const,
     group: 'lender' as const,
-    ...def,
+    columnGroup: columnGroupForId(field, 'lender'),
   }));
 }
 
@@ -332,22 +342,25 @@ export function buildTransactionFilterFieldOptions(
 
   return [
     ...Object.entries(transactionFilters).map(([field, def]) => ({
+      ...def,
       field,
       entity: 'transaction' as const,
       group: 'transaction' as const,
-      ...def,
+      columnGroup: columnGroupForId(field, 'transaction'),
     })),
     ...Object.entries(loanFilters).map(([field, def]) => ({
+      ...def,
       field,
       entity: 'loan' as const,
       group: 'loan' as const,
-      ...def,
+      columnGroup: columnGroupForId(field, 'loan'),
     })),
     ...Object.entries(lenderFilters).map(([field, def]) => ({
+      ...def,
       field,
       entity: 'lender' as const,
       group: 'lender' as const,
-      ...def,
+      columnGroup: columnGroupForId(field, 'lender'),
     })),
   ];
 }

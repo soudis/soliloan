@@ -19,6 +19,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   matchesDateFilter,
+  matchesDurationFilter,
   matchesGlobalFilter,
   matchesNumberRangeFilter,
   matchesTextFilter,
@@ -56,7 +57,18 @@ export type ColumnExportMeta = {
   wrapText?: boolean;
 };
 
-export type ColumnGroupKey = 'transaction' | 'loan' | 'lender';
+export type ColumnGroupKey =
+  | 'transaction'
+  | 'loanGeneral'
+  | 'loanInterest'
+  | 'loanSavings'
+  | 'loanTerm'
+  | 'lenderGeneral'
+  | 'lenderContact'
+  | 'lenderAddress'
+  | 'lenderBanking'
+  | 'lenderAccount'
+  | 'lenderAdditional';
 
 export type ColumnGroupMeta = {
   /** Translation key under dataTable.columnGroups */
@@ -102,12 +114,17 @@ export const dateRangeFilter: FilterFn<unknown> = (row, columnId, filterValue) =
   return matchesDateFilter(value, filterValue, new Date());
 };
 
+export const durationRangeFilter: FilterFn<unknown> = (row, columnId, filterValue) => {
+  return matchesDurationFilter(row.getValue(columnId), filterValue);
+};
+
 export type DataTableColumnFilters = {
   [key: string]: {
-    type: 'text' | 'select' | 'multi-select' | 'number' | 'date' | 'boolean';
+    type: 'text' | 'select' | 'multi-select' | 'number' | 'duration' | 'date' | 'boolean';
     options?: { label: string; value: string }[];
     label?: string;
     allowEmpty?: boolean;
+    terminationValue?: boolean;
     defaultOperator?: NumberFilterOperator;
   };
 };
@@ -465,6 +482,7 @@ export function DataTable<TData, TValue>({
       compoundText: compoundTextFilter,
       dateRange: dateRangeFilter,
       inNumberRange: inNumberRangeFilter,
+      durationRange: durationRangeFilter,
     },
     // Add global filter function to search across all columns.
     // A leading `#` scopes the search to loan/lender number only (display uses `#`,

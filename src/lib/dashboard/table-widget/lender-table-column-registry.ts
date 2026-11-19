@@ -1,10 +1,12 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
+import type { ColumnGroupMeta } from '@/components/ui/data-table';
 import {
   buildLenderProfileColumns,
   LENDER_DETAIL_COLUMN_META,
   type LenderProfileRow,
 } from '@/lib/dashboard/table-widget/lender-profile-columns';
+import { lenderColumnGroupFor } from '@/lib/table-column-groups';
 import {
   createAdditionalFieldsColumns,
   createColumn,
@@ -24,9 +26,10 @@ export type LenderTableColumnMeta = {
   customLabel?: string;
   /** Aggregate columns use dashboard.loans translation keys */
   useLoansTranslations?: boolean;
+  columnGroup?: ColumnGroupMeta;
 };
 
-const LENDER_TABLE_STATIC_COLUMN_META: LenderTableColumnMeta[] = [
+const LENDER_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string; useLoansTranslations?: boolean }[] = [
   { id: 'lenderNumber', labelKey: 'table.lenderNumber' },
   { id: 'name', labelKey: 'table.name' },
   { id: 'type', labelKey: 'table.type' },
@@ -44,6 +47,31 @@ const LENDER_TABLE_STATIC_COLUMN_META: LenderTableColumnMeta[] = [
   { id: 'interest', labelKey: 'table.interest', useLoansTranslations: true },
   { id: 'interestPaid', labelKey: 'table.interestPaid', useLoansTranslations: true },
 ];
+
+function getColumnId<T>(column: ColumnDef<T>): string {
+  if (column.id) {
+    return column.id;
+  }
+  if ('accessorKey' in column && typeof column.accessorKey === 'string') {
+    return column.accessorKey;
+  }
+  return '';
+}
+
+function withLenderTableColumnGroups<T>(columns: ColumnDef<T>[]): ColumnDef<T>[] {
+  return columns.map((column) => {
+    if (column.meta?.columnGroup) {
+      return column;
+    }
+    return {
+      ...column,
+      meta: {
+        ...column.meta,
+        columnGroup: lenderColumnGroupFor(getColumnId(column)),
+      },
+    };
+  });
+}
 
 export function buildAllLenderTableColumns<T extends LenderListItem = LenderListItem>(
   project: ProjectWithConfiguration,
@@ -68,7 +96,7 @@ export function buildAllLenderTableColumns<T extends LenderListItem = LenderList
   );
   lenderNumberColumn.filterFn = 'inNumberRange';
 
-  return [
+  return withLenderTableColumnGroups([
     lenderNumberColumn,
 
     createLenderNameColumn<T>(t),
@@ -141,7 +169,7 @@ export function buildAllLenderTableColumns<T extends LenderListItem = LenderList
       t,
       commonT,
     }),
-  ];
+  ]);
 }
 
 export function buildLenderTableColumnMeta(project: ProjectWithConfiguration): LenderTableColumnMeta[] {
@@ -151,17 +179,30 @@ export function buildLenderTableColumnMeta(project: ProjectWithConfiguration): L
   const additionalFieldMeta =
     project.configuration.lenderAdditionalFields?.map((field) => ({
       id: `additionalFields.${field.id}`,
-      labelKey: null,
+      labelKey: null as string | null,
       customLabel: field.name,
+      columnGroup: lenderColumnGroupFor(`additionalFields.${field.id}`),
     })) ?? [];
 
   const detailMeta = LENDER_DETAIL_COLUMN_META.map((entry) => ({
     id: entry.id,
     labelKey: entry.labelKey,
     customLabel: undefined,
+    columnGroup: lenderColumnGroupFor(entry.id),
   }));
 
-  return [...staticBeforeAdditional, ...additionalFieldMeta, ...staticAfterAdditional, ...detailMeta];
+  return [
+    ...staticBeforeAdditional.map((entry) => ({
+      ...entry,
+      columnGroup: lenderColumnGroupFor(entry.id),
+    })),
+    ...additionalFieldMeta,
+    ...staticAfterAdditional.map((entry) => ({
+      ...entry,
+      columnGroup: lenderColumnGroupFor(entry.id),
+    })),
+    ...detailMeta,
+  ];
 }
 
 function readNestedValue(row: LenderProfileRow & Record<string, unknown>, field: string): unknown {

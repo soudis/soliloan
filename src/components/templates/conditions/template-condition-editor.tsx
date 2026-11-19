@@ -5,12 +5,16 @@ import { useTranslations } from 'next-intl';
 
 import { EntityFilterControl } from '@/components/dashboard/widgets/filters/entity-filter-control';
 import { Button } from '@/components/ui/button';
+import type { ColumnGroupKey } from '@/components/ui/data-table';
+import { COLUMN_GROUP_KEYS_IN_ORDER } from '@/lib/table-column-groups';
 import {
   parseTemplateCondition,
   type TemplateCondition,
   type TemplateConditionRule,
 } from '@/lib/templates/template-condition';
 import type { TemplateConditionField } from '@/lib/templates/template-condition-fields';
+
+const COLUMN_GROUP_KEY_SET = new Set<string>(COLUMN_GROUP_KEYS_IN_ORDER);
 
 export function TemplateConditionEditor({
   value,
@@ -23,8 +27,19 @@ export function TemplateConditionEditor({
 }) {
   const t = useTranslations('templates.editor.conditions');
   const tGroups = useTranslations('templates.editor.conditions.groups');
+  const tColumnGroups = useTranslations('dataTable.columnGroups');
   const rules = parseTemplateCondition(value);
   const groups = groupFields(fields);
+
+  const groupLabel = (groupId: string) => {
+    if (COLUMN_GROUP_KEY_SET.has(groupId)) {
+      return tColumnGroups(groupId as ColumnGroupKey);
+    }
+    if (tGroups.has(groupId)) {
+      return tGroups(groupId);
+    }
+    return groupId;
+  };
 
   const updateRule = (id: string, patch: Partial<TemplateConditionRule>) => {
     onChange(rules.map((rule) => (rule.id === id ? { ...rule, ...patch } : rule)));
@@ -73,7 +88,7 @@ export function TemplateConditionEditor({
                 >
                   {!definition ? <option value={rule.field}>{rule.field}</option> : null}
                   {groups.map((group) => (
-                    <optgroup key={group.id} label={tGroups.has(group.id) ? tGroups(group.id) : group.id}>
+                    <optgroup key={group.id} label={groupLabel(group.id)}>
                       {group.fields.map((field) => (
                         <option key={field.field} value={field.field}>
                           {field.label}
@@ -115,5 +130,14 @@ function groupFields(fields: TemplateConditionField[]) {
     if (existing) existing.fields.push(field);
     else groups.push({ id: field.group, fields: [field] });
   }
-  return groups;
+
+  const columnGroupRank = new Map(COLUMN_GROUP_KEYS_IN_ORDER.map((key, index) => [key, index]));
+  return groups.sort((a, b) => {
+    const rankA = columnGroupRank.get(a.id as ColumnGroupKey);
+    const rankB = columnGroupRank.get(b.id as ColumnGroupKey);
+    if (rankA != null && rankB != null) return rankA - rankB;
+    if (rankA != null) return -1;
+    if (rankB != null) return 1;
+    return 0;
+  });
 }

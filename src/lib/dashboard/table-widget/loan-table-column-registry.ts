@@ -1,12 +1,14 @@
 import { ContractStatus } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
-
+import type { ColumnGroupMeta } from '@/components/ui/data-table';
+import { isCalendarSpan } from '@/lib/calendar-span';
 import {
   buildLenderProfileColumnMeta,
   buildLenderProfileColumns,
   buildLenderProfileDefaultColumnVisibility,
 } from '@/lib/dashboard/table-widget/lender-profile-columns';
 import { getLenderSortValue } from '@/lib/dashboard/table-widget/lender-table-column-registry';
+import { loanTableColumnGroupFor } from '@/lib/table-column-groups';
 import {
   createAdditionalFieldDefaultColumnVisibility,
   createAdditionalFieldsColumns,
@@ -18,9 +20,9 @@ import {
   createNullableCurrencyColumn,
   createNumberColumn,
   createPercentageColumn,
-  createTerminationModalitiesColumn,
-  formatTerminationModalities,
-  withColumnGroup,
+  createRepayDateColumn,
+  createTotalRuntimeColumn,
+  totalRuntimeSortValue,
 } from '@/lib/table-column-utils';
 import type { LoanWithCalculations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -30,6 +32,7 @@ export type LoanTableColumnMeta = {
   labelKey: string | null;
   customLabel?: string;
   useLendersTranslations?: boolean;
+  columnGroup?: ColumnGroupMeta;
 };
 
 export const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
@@ -52,7 +55,7 @@ export const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] =
   { id: 'interestPaid', labelKey: 'table.interestPaid' },
   { id: 'interestPaymentType', labelKey: 'table.interestPaymentType' },
   { id: 'terminationType', labelKey: 'table.terminationType' },
-  { id: 'terminationModalities', labelKey: 'table.terminationModalities' },
+  { id: 'totalRuntime', labelKey: 'table.totalRuntime' },
   { id: 'repayDate', labelKey: 'table.repayDate' },
   { id: 'loanTermDays', labelKey: 'table.loanTerm' },
   { id: 'repaymentPeriodDays', labelKey: 'table.repaymentPeriod' },
@@ -61,9 +64,6 @@ export const LOAN_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] =
   { id: 'altInterestMethod', labelKey: 'table.altInterestMethod' },
   { id: 'contractStatus', labelKey: 'table.contractStatus' },
 ];
-
-const LOAN_COLUMN_GROUP = { key: 'loan' as const, order: 0 };
-const LENDER_COLUMN_GROUP = { key: 'lender' as const, order: 1 };
 
 const DEFAULT_LOAN_TABLE_LEADING_COLUMN_IDS = [
   'loanNumber',
@@ -99,6 +99,16 @@ function getColumnId(column: ColumnDef<LoanWithCalculations>): string {
   return '';
 }
 
+function withLoanColumnGroups(columns: ColumnDef<LoanWithCalculations>[]): ColumnDef<LoanWithCalculations>[] {
+  return columns.map((column) => ({
+    ...column,
+    meta: {
+      ...column.meta,
+      columnGroup: loanTableColumnGroupFor(getColumnId(column)),
+    },
+  }));
+}
+
 function orderLoanTableColumnsForDefaultDisplay(
   columns: ColumnDef<LoanWithCalculations>[],
 ): ColumnDef<LoanWithCalculations>[] {
@@ -131,7 +141,7 @@ export function buildLoanTableColumns(
   locale: string,
   durationT: (key: string, values?: Record<string, number>) => string,
 ): ColumnDef<LoanWithCalculations>[] {
-  return [
+  return withLoanColumnGroups([
     createNumberColumn<LoanWithCalculations>('loanNumber', 'table.loanNumber', t, locale, { hashPrefix: true }),
     createDateColumn<LoanWithCalculations>('signDate', 'table.signDate', t, locale),
     createDateColumn<LoanWithCalculations>('firstDepositDate', 'table.firstDepositDate', t, locale),
@@ -179,8 +189,8 @@ export function buildLoanTableColumns(
       commonT,
       () => 'outline',
     ),
-    createTerminationModalitiesColumn<LoanWithCalculations>(t, commonT),
-    createDateColumn<LoanWithCalculations>('repayDate', 'table.repayDate', t, locale),
+    createTotalRuntimeColumn<LoanWithCalculations>(t, durationT),
+    createRepayDateColumn<LoanWithCalculations>(t, locale),
     createDurationDaysColumn<LoanWithCalculations>('loanTermDays', 'table.loanTerm', t, durationT),
     createDurationDaysColumn<LoanWithCalculations>('repaymentPeriodDays', 'table.repaymentPeriod', t, durationT),
     createBooleanColumn<LoanWithCalculations>('isSavingsContract', 'table.isSavingsContract', t, commonT, {
@@ -236,7 +246,7 @@ export function buildLoanTableColumns(
       locale,
       commonT,
     ),
-  ];
+  ]);
 }
 
 export function buildAllLoanTableColumns(
@@ -252,7 +262,6 @@ export function buildAllLoanTableColumns(
   const lenderProfileColumns = buildLenderProfileColumns<LoanWithCalculations>({
     getLender: (row) => row.lender,
     idPrefix: 'lender.',
-    columnGroup: LENDER_COLUMN_GROUP,
     mode: 'full',
     project,
     t: tLenders,
@@ -260,10 +269,7 @@ export function buildAllLoanTableColumns(
     locale,
   });
 
-  return orderLoanTableColumnsForDefaultDisplay([
-    ...withColumnGroup(loanColumns, LOAN_COLUMN_GROUP),
-    ...lenderProfileColumns,
-  ]);
+  return orderLoanTableColumnsForDefaultDisplay([...loanColumns, ...lenderProfileColumns]);
 }
 
 export function buildLoanTableColumnMeta(project: ProjectWithConfiguration): LoanTableColumnMeta[] {
@@ -272,6 +278,7 @@ export function buildLoanTableColumnMeta(project: ProjectWithConfiguration): Loa
       id: `additionalFields.${field.id}`,
       labelKey: null,
       customLabel: field.name,
+      columnGroup: loanTableColumnGroupFor(`additionalFields.${field.id}`),
     })) ?? [];
 
   const lenderProfileMeta = buildLenderProfileColumnMeta(project, 'lender.').map((entry) => ({
@@ -279,9 +286,17 @@ export function buildLoanTableColumnMeta(project: ProjectWithConfiguration): Loa
     labelKey: entry.labelKey.startsWith('table.') ? entry.labelKey : null,
     customLabel: entry.labelKey.startsWith('table.') ? undefined : entry.labelKey,
     useLendersTranslations: true,
+    columnGroup: loanTableColumnGroupFor(entry.id),
   }));
 
-  return [...LOAN_TABLE_STATIC_COLUMN_META, ...additionalFieldMeta, ...lenderProfileMeta];
+  return [
+    ...LOAN_TABLE_STATIC_COLUMN_META.map((entry) => ({
+      ...entry,
+      columnGroup: loanTableColumnGroupFor(entry.id),
+    })),
+    ...additionalFieldMeta,
+    ...lenderProfileMeta,
+  ];
 }
 
 function readNestedValue(row: LoanWithCalculations, field: string): unknown {
@@ -327,8 +342,17 @@ export function getLoanSortValue(
   }
 
   switch (normalizedId) {
-    case 'terminationModalities':
-      return formatTerminationModalities(row, commonT);
+    case 'totalRuntime':
+      return totalRuntimeSortValue(row.totalRuntime);
+    case 'loanTermDays':
+    case 'repaymentPeriodDays':
+    case 'outstandingDepositSinceDays': {
+      const span = row[normalizedId];
+      if (isCalendarSpan(span)) {
+        return span.totalDays;
+      }
+      return typeof span === 'number' ? span : null;
+    }
     case 'status':
       return commonT(`enums.loan.status.${row.status}`);
     case 'terminationType':
@@ -380,7 +404,7 @@ export const LOAN_TABLE_COLUMN_IDS = [
   'interestPaid',
   'interestPaymentType',
   'terminationType',
-  'terminationModalities',
+  'totalRuntime',
   'repayDate',
   'loanTermDays',
   'repaymentPeriodDays',

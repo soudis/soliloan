@@ -7,14 +7,9 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { groupByColumnGroup } from '@/lib/table-column-groups';
 import { cn } from '@/lib/utils';
 import type { EntityFilterEntity, EntityFilterFieldOption } from '@/types/entity-filters';
-
-const FILTER_GROUP_LABELS: Record<EntityFilterEntity, string> = {
-  transaction: 'filterGroupTransaction',
-  loan: 'filterGroupLoan',
-  lender: 'filterGroupLender',
-};
 
 function toFieldValue(entity: string, field: string): string {
   return `${entity}:${field}`;
@@ -35,6 +30,7 @@ export function EntityFilterFieldPicker({
   className,
   translationNamespace = 'dashboard.customizer.historyTable',
   placeholderKey = 'filterField',
+  size = 'xs',
 }: {
   value: string;
   fieldOptions: EntityFilterFieldOption[];
@@ -42,8 +38,10 @@ export function EntityFilterFieldPicker({
   className?: string;
   translationNamespace?: string;
   placeholderKey?: string;
+  size?: 'xs' | 'sm';
 }) {
   const t = useTranslations(translationNamespace);
+  const tColumnGroups = useTranslations('dataTable.columnGroups');
   const tCommon = useTranslations('common');
   const [open, setOpen] = useState(false);
 
@@ -52,16 +50,7 @@ export function EntityFilterFieldPicker({
     [fieldOptions, value],
   );
 
-  const groupedOptions = useMemo(() => {
-    const groupOrder: EntityFilterEntity[] = ['transaction', 'loan', 'lender'];
-    return groupOrder
-      .map((groupId) => ({
-        id: groupId,
-        labelKey: FILTER_GROUP_LABELS[groupId],
-        options: fieldOptions.filter((opt) => opt.group === groupId),
-      }))
-      .filter((group) => group.options.length > 0);
-  }, [fieldOptions]);
+  const groupedOptions = useMemo(() => groupByColumnGroup(fieldOptions, (opt) => opt.columnGroup?.key), [fieldOptions]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -71,26 +60,57 @@ export function EntityFilterFieldPicker({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn('h-8 w-full justify-between px-2 text-xs font-normal', className)}
+          className={cn(
+            'w-full justify-between font-normal',
+            size === 'sm' ? 'h-9 px-3 text-sm' : 'h-8 px-2 text-xs',
+            className,
+          )}
         >
           <span className="truncate">{selected?.label ?? t(placeholderKey)}</span>
-          <ChevronsUpDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
+          <ChevronsUpDown className={cn('ml-1 shrink-0 opacity-50', size === 'sm' ? 'h-4 w-4' : 'h-3.5 w-3.5')} />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
         <Command shouldFilter>
-          <CommandInput placeholder={tCommon('ui.actions.search')} className="h-8 text-xs" />
+          <CommandInput
+            placeholder={tCommon('ui.actions.search')}
+            className={size === 'sm' ? 'h-9 text-sm' : 'h-8 text-xs'}
+          />
           <CommandList className="max-h-[min(280px,50dvh)]">
             <CommandEmpty>{tCommon('ui.actions.noResults')}</CommandEmpty>
-            {groupedOptions.map((group) => (
-              <CommandGroup key={group.id} heading={t(group.labelKey)}>
-                {group.options.map((opt) => {
+            {groupedOptions.ungrouped.length > 0 ? (
+              <CommandGroup>
+                {groupedOptions.ungrouped.map((opt) => {
                   const itemValue = toFieldValue(opt.entity, opt.field);
                   return (
                     <CommandItem
                       key={itemValue}
                       value={`${opt.label} ${opt.field}`}
-                      className="cursor-pointer text-xs"
+                      className={cn('cursor-pointer', size === 'sm' ? 'text-sm' : 'text-xs')}
+                      onSelect={() => {
+                        const parsed = parseFieldValue(itemValue);
+                        onChange(parsed.entity, parsed.field);
+                        setOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn('mr-2 h-3.5 w-3.5 shrink-0', value === itemValue ? 'opacity-100' : 'opacity-0')}
+                      />
+                      {opt.label}
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            ) : null}
+            {groupedOptions.groups.map((group) => (
+              <CommandGroup key={group.key} heading={tColumnGroups(group.key)}>
+                {group.items.map((opt) => {
+                  const itemValue = toFieldValue(opt.entity, opt.field);
+                  return (
+                    <CommandItem
+                      key={itemValue}
+                      value={`${opt.label} ${opt.field} ${tColumnGroups(group.key)}`}
+                      className={cn('cursor-pointer', size === 'sm' ? 'text-sm' : 'text-xs')}
                       onSelect={() => {
                         const parsed = parseFieldValue(itemValue);
                         onChange(parsed.entity, parsed.field);

@@ -1,14 +1,68 @@
+import { TerminationType } from '@prisma/client';
 import moment from 'moment';
 
+import { isTotalRuntime } from '@/lib/calculations/loan-duration-metrics';
+import { isCalendarSpan } from '@/lib/calendar-span';
 import type { DataTableColumnFilterDefinition } from '@/lib/entity-filters/filter-definitions';
 import { formatCurrency, formatNumber } from '@/lib/utils';
 import type {
   ChartDateGrouping,
   ChartDiscriminatorConfig,
+  ChartDurationGrouping,
   ChartTextTransform,
 } from '@/types/dashboard-widgets/chart-discriminator';
 
 export const CHART_EMPTY_GROUP_KEY = '__empty__';
+export const CHART_TERMINATION_GROUP_KEY = 'termination:TERMINATION';
+
+/**
+ * Sequence encoded in the group key. Labels are not used.
+ * Null means the label is the order, as for free text.
+ */
+export function groupSortRank(key: string): number | null {
+  const durationBucket = /^duration:[^:]+:bucket:(\d+)$/.exec(key);
+  if (durationBucket?.[1]) {
+    return Number(durationBucket[1]);
+  }
+  const durationValue = /^duration:[^:]+:(\d+)$/.exec(key);
+  if (durationValue?.[1]) {
+    return Number(durationValue[1]);
+  }
+  const numericBucket = /^bucket:(\d+)$/.exec(key);
+  if (numericBucket?.[1]) {
+    return Number(numericBucket[1]);
+  }
+  if (key.startsWith('num:')) {
+    const value = Number(key.slice(4));
+    return Number.isFinite(value) ? value : null;
+  }
+  const year = /^year:(\d+)$/.exec(key);
+  if (year?.[1]) {
+    return Number(year[1]);
+  }
+  const month = /^month:(\d{4})-(\d{2})$/.exec(key);
+  if (month?.[1] && month[2]) {
+    return Number(month[1]) * 100 + Number(month[2]);
+  }
+  const monthOfYear = /^monthOfYear:(\d+)$/.exec(key);
+  if (monthOfYear?.[1]) {
+    return Number(monthOfYear[1]);
+  }
+  const week = /^week:(\d+)-W(\d+)$/.exec(key);
+  if (week?.[1] && week[2]) {
+    return Number(week[1]) * 100 + Number(week[2]);
+  }
+  const dayOfWeek = /^dow:(\d+)$/.exec(key);
+  if (dayOfWeek?.[1]) {
+    // moment day() is Sunday = 0. Monday is the first day of the week.
+    return (Number(dayOfWeek[1]) + 6) % 7;
+  }
+  const date = /^date:(\d{4})-(\d{2})-(\d{2})$/.exec(key);
+  if (date?.[1] && date[2] && date[3]) {
+    return Number(date[1]) * 10000 + Number(date[2]) * 100 + Number(date[3]);
+  }
+  return null;
+}
 
 /** @deprecated Use CHART_EMPTY_GROUP_KEY */
 export const PIE_EMPTY_GROUP_KEY = CHART_EMPTY_GROUP_KEY;
@@ -36,30 +90,91 @@ function formatNumericValue(value: number, field: string): string {
   return formatNumber(value, 0, 2);
 }
 
+function formatThresholdBucketLabel(
+  thresholds: number[],
+  bucketIndex: number,
+  t: (key: string, values?: Record<string, string | number>) => string,
+  formatBound: (value: number) => string,
+  formatRangeMin: (previous: number) => string,
+  firstExclusive = false,
+): string {
+  if (bucketIndex === 0) {
+    return t('numericBucketUpTo', { max: formatBound(thresholds[0] ?? 0) });
+  }
+  if (bucketIndex < thresholds.length) {
+    const previous = thresholds[bucketIndex - 1] ?? 0;
+    const max = thresholds[bucketIndex] ?? previous;
+    // The first duration limit is not in "bis", so the next range starts on that limit.
+    const min = firstExclusive && bucketIndex === 1 ? formatBound(previous) : formatRangeMin(previous);
+    return t('numericBucketRange', {
+      min,
+      max: formatBound(max),
+    });
+  }
+  const last = thresholds[thresholds.length - 1] ?? 0;
+  if (firstExclusive && thresholds.length === 1) {
+    return t('numericBucketFrom', { min: formatBound(last) });
+  }
+  return t('numericBucketAbove', { min: formatBound(last) });
+}
+
 export function formatNumericBucketLabel(
   thresholds: number[],
   bucketIndex: number,
   field: string,
   t: (key: string, values?: Record<string, string | number>) => string,
 ): string {
-  if (bucketIndex === 0) {
-    return t('numericBucketUpTo', { max: formatNumericValue(thresholds[0], field) });
-  }
-  if (bucketIndex < thresholds.length) {
-    const prev = thresholds[bucketIndex - 1];
-    const max = thresholds[bucketIndex];
-    return t('numericBucketRange', {
-      min: formatNumericValue(prev + (CURRENCY_GROUP_FIELDS.has(field) ? 0.01 : 1), field),
-      max: formatNumericValue(max, field),
-    });
-  }
-  const last = thresholds[thresholds.length - 1];
-  return t('numericBucketAbove', { min: formatNumericValue(last, field) });
+  const step = CURRENCY_GROUP_FIELDS.has(field) ? 0.01 : 1;
+  return formatThresholdBucketLabel(
+    thresholds,
+    bucketIndex,
+    t,
+    (value) => formatNumericValue(value, field),
+    (previous) => formatNumericValue(previous + step, field),
+  );
 }
 
-function getNumericBucketIndex(value: number, thresholds: number[]): number {
+function durationGroupCount(
+  value: { totalDays: number; years: number | null; months: number | null },
+  grouping: ChartDurationGrouping,
+): number | null {
+  if (grouping === 'years') {
+    return value.years;
+  }
+  if (grouping === 'months') {
+    return value.months;
+  }
+  return value.totalDays;
+}
+
+function formatDurationGroupLabel(
+  commonT: (key: string, values?: Record<string, string>) => string,
+  grouping: ChartDurationGrouping,
+  count: number,
+): string {
+  const translate = commonT as (key: string, values?: Record<string, number>) => string;
+  return translate(`duration.${grouping}`, { count });
+}
+
+function formatDurationBucketLabel(
+  thresholds: number[],
+  bucketIndex: number,
+  grouping: ChartDurationGrouping,
+  commonT: (key: string, values?: Record<string, string>) => string,
+  t: (key: string, values?: Record<string, string | number>) => string,
+): string {
+  const unit = (count: number) => formatDurationGroupLabel(commonT, grouping, count);
+  return formatThresholdBucketLabel(thresholds, bucketIndex, t, unit, (previous) => unit(previous + 1), true);
+}
+
+/**
+ * `firstExclusive` matches the duration filter: "bis" N is every completed unit below N.
+ * Later limits stay inclusive, so a range is the same band as "zwischen".
+ */
+function getNumericBucketIndex(value: number, thresholds: number[], firstExclusive = false): number {
   for (let i = 0; i < thresholds.length; i++) {
-    if (value <= thresholds[i]) {
+    const threshold = thresholds[i] ?? 0;
+    if (firstExclusive && i === 0 ? value < threshold : value <= threshold) {
       return i;
     }
   }
@@ -155,6 +270,50 @@ export function resolveGroupKey(
   }
 
   const field = config.groupBy.field;
+
+  if (fieldDefinition?.type === 'duration') {
+    let units: { totalDays: number; years: number | null; months: number | null } | null = null;
+    if (isTotalRuntime(rawValue)) {
+      if (rawValue.terminationType === TerminationType.TERMINATION) {
+        return {
+          key: CHART_TERMINATION_GROUP_KEY,
+          label: formatters.commonT('duration.byTermination'),
+        };
+      }
+      if (rawValue.days == null || !Number.isFinite(rawValue.days) || rawValue.days < 0) {
+        return { key: CHART_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
+      }
+      units = {
+        totalDays: rawValue.days,
+        years: rawValue.years ?? null,
+        months: rawValue.months ?? null,
+      };
+    } else if (isCalendarSpan(rawValue)) {
+      units = rawValue;
+    } else {
+      const num = Number(rawValue);
+      if (!Number.isFinite(num) || num < 0) {
+        return { key: CHART_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
+      }
+      units = { totalDays: num, years: null, months: null };
+    }
+    const grouping = config.durationGrouping ?? 'years';
+    const count = durationGroupCount(units, grouping);
+    if (count == null) {
+      return { key: CHART_EMPTY_GROUP_KEY, label: formatters.emptyLabel };
+    }
+    if (config.numericBuckets?.length) {
+      const index = getNumericBucketIndex(count, config.numericBuckets, true);
+      return {
+        key: `duration:${grouping}:bucket:${index}`,
+        label: formatDurationBucketLabel(config.numericBuckets, index, grouping, formatters.commonT, formatters.t),
+      };
+    }
+    return {
+      key: `duration:${grouping}:${count}`,
+      label: formatDurationGroupLabel(formatters.commonT, grouping, count),
+    };
+  }
 
   if (fieldDefinition?.type === 'number' && config.numericBuckets?.length) {
     const num = Number(rawValue);

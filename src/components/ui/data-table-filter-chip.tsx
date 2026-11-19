@@ -12,6 +12,7 @@ import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import {
   BooleanFilter,
   DateFilter,
+  DurationFilter,
   MultiSelectFilter,
   NumberFilter,
   SelectFilter,
@@ -19,8 +20,17 @@ import {
 } from '@/components/ui/data-table-column-filters/index';
 import { DataTableFilterFieldMenu } from '@/components/ui/data-table-filter-field-menu';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { SetTableUrlState, TableUrlState } from '@/lib/hooks/use-table-url-state';
+import { groupByColumnGroup } from '@/lib/table-column-groups';
 import {
   createDefaultFilterValue,
   FILTER_REMOVE_VALUE,
@@ -144,9 +154,11 @@ export function DataTableFilterChip<TData>({
     return uniqueIds.map((id) => {
       const baseLabel = resolveColumnFilterLabel(table, id, columnFilters);
       const shortcut = id === hashShortcutColumnId ? '#' : id === euroShortcutColumnId ? '€' : null;
+      const column = table.getColumn(id);
       return {
         id,
         label: formatFieldLabel(baseLabel, isQuickSearch ? shortcut : null),
+        columnGroup: column?.columnDef.meta?.columnGroup,
       };
     });
   }, [
@@ -159,6 +171,11 @@ export function DataTableFilterChip<TData>({
     hashShortcutColumnId,
     euroShortcutColumnId,
   ]);
+
+  const groupedFieldOptions = useMemo(
+    () => groupByColumnGroup(fieldOptions, (field) => field.columnGroup?.key),
+    [fieldOptions],
+  );
 
   const selectedConfig = selectedField === GLOBAL_SEARCH_ALL ? null : (columnFilters[selectedField] ?? null);
   const selectedFilterState = tableState.columnFilters.find((filter) => filter.id === selectedField);
@@ -369,10 +386,20 @@ export function DataTableFilterChip<TData>({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={GLOBAL_SEARCH_ALL}>{t('globalFilterAll')}</SelectItem>
-        {fieldOptions.map((field) => (
+        {groupedFieldOptions.ungrouped.map((field) => (
           <SelectItem key={field.id} value={field.id}>
             {field.label}
           </SelectItem>
+        ))}
+        {groupedFieldOptions.groups.map(({ key, items }) => (
+          <SelectGroup key={key}>
+            <SelectLabel>{t(`columnGroups.${key}`)}</SelectLabel>
+            {items.map((field) => (
+              <SelectItem key={field.id} value={field.id}>
+                {field.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
         ))}
       </SelectContent>
     </Select>
@@ -463,6 +490,15 @@ export function DataTableFilterChip<TData>({
             filterState={selectedFilterState}
             allowEmpty={selectedConfig.allowEmpty}
             defaultOperator={selectedConfig.defaultOperator}
+            onFilterChange={onChange}
+          />
+        );
+      case 'duration':
+        return (
+          <DurationFilter
+            filterState={selectedFilterState}
+            allowEmpty={selectedConfig.allowEmpty}
+            terminationValue={selectedConfig.terminationValue}
             onFilterChange={onChange}
           />
         );

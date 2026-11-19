@@ -4,7 +4,7 @@ import {
   AGGREGATION_TABLE_SORT_DIRECTIONS,
   resolveAggregationTableSortColumnId,
 } from '@/types/dashboard-widgets/aggregation-table';
-import { CHART_DATE_GROUPINGS } from '@/types/dashboard-widgets/chart-discriminator';
+import { CHART_DATE_GROUPINGS, CHART_DURATION_GROUPINGS } from '@/types/dashboard-widgets/chart-discriminator';
 import {
   isStatAggregationValidForMetric,
   STAT_AGGREGATIONS,
@@ -63,6 +63,7 @@ export const aggregationTableWidgetConfigSchema = z
     groupBy: chartGroupBySchema,
     numericBuckets: z.array(z.number()).max(100).optional(),
     dateGrouping: z.enum(CHART_DATE_GROUPINGS).optional(),
+    durationGrouping: z.enum(CHART_DURATION_GROUPINGS).optional(),
     textTransform: chartTextTransformSchema.optional(),
     filters: entityFiltersSchema,
     columns: z.array(aggregationTableColumnSchema).max(50).default([]),

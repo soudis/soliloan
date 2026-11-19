@@ -1,17 +1,17 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useMemo, type KeyboardEvent, type ReactNode } from 'react';
+import { type KeyboardEvent, type ReactNode, useMemo } from 'react';
 
 import {
   FilterFieldGroup,
+  type FilterFieldSize,
+  type FilterFieldVariant,
   FilterStackedFields,
   filterNumberValueSegmentClass,
   filterOperatorSegmentClass,
   filterSymbolOperatorLabelClass,
   filterSymbolOperatorTriggerClass,
-  type FilterFieldSize,
-  type FilterFieldVariant,
 } from '@/components/filters/filter-field-group';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

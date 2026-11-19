@@ -2,14 +2,15 @@ import type { EntityFilter } from '@/types/entity-filters';
 
 import {
   CHART_DATE_GROUPINGS,
+  type ChartDateGrouping,
+  type ChartDiscriminatorConfig,
+  type ChartDurationGrouping,
+  type ChartGroupBy,
+  type ChartTextTransform,
   chartDiscriminatorToFlatFields,
   createDefaultChartDiscriminatorConfig,
   DEFAULT_CHART_TOP_N,
   parseChartDiscriminatorConfig,
-  type ChartDateGrouping,
-  type ChartDiscriminatorConfig,
-  type ChartGroupBy,
-  type ChartTextTransform,
 } from './chart-discriminator';
 import { HISTORY_TABLE_METRICS, type HistoryTableMetric } from './history-table';
 
@@ -41,6 +42,7 @@ export type PieChartWidgetConfig = {
   groupBy: ChartGroupBy;
   numericBuckets?: number[];
   dateGrouping?: ChartDateGrouping;
+  durationGrouping?: ChartDurationGrouping;
   textTransform?: ChartTextTransform;
   measure: PieChartMeasure;
   measureAggregation: PieChartMeasureAggregation;
@@ -55,6 +57,7 @@ export function getPieChartDiscriminator(config: PieChartWidgetConfig): ChartDis
     groupBy: config.groupBy,
     numericBuckets: config.numericBuckets,
     dateGrouping: config.dateGrouping,
+    durationGrouping: config.durationGrouping,
     textTransform: config.textTransform,
     topNCategories: config.topNCategories,
     filters: config.filters,

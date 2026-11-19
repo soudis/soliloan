@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { CHART_DATE_GROUPINGS } from '@/types/dashboard-widgets/chart-discriminator';
+import { CHART_DATE_GROUPINGS, CHART_DURATION_GROUPINGS } from '@/types/dashboard-widgets/chart-discriminator';
 
 import { entityFiltersSchema } from './shared';
 
@@ -21,6 +21,7 @@ export const chartDiscriminatorSchema = z
     groupBy: chartGroupBySchema,
     numericBuckets: z.array(z.number()).max(100).optional(),
     dateGrouping: z.enum(CHART_DATE_GROUPINGS).optional(),
+    durationGrouping: z.enum(CHART_DURATION_GROUPINGS).optional(),
     textTransform: chartTextTransformSchema.optional(),
     topNCategories: z.number().int().min(1).max(50).default(8),
     filters: entityFiltersSchema,

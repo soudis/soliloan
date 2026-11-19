@@ -28,6 +28,7 @@ export function LoanTableSettings({
       return {
         id: meta.id,
         label: meta.customLabel ?? (meta.labelKey ? labelSource(meta.labelKey) : meta.id),
+        columnGroup: meta.columnGroup,
       };
     });
   }, [project, tLoans, tLenders]);

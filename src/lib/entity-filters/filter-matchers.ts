@@ -1,8 +1,18 @@
+import { TerminationType } from '@prisma/client';
+
+import { isTotalRuntime } from '@/lib/calculations/loan-duration-metrics';
+import { isCalendarSpan } from '@/lib/calendar-span';
 import type { DataTableColumnFilterType } from '@/lib/entity-filters/filter-definitions';
 import { resolveDateFilterBounds } from '@/lib/entity-filters/resolve-date-filter-range';
 import { formatCurrency, formatNumber, NumberParser } from '@/lib/utils';
+import deCommonMessages from '@/messages/de/common.json';
 import { parseBooleanFilterValue } from '@/types/boolean-filter-value';
 import { parseDateFilterValue } from '@/types/date-filter-value';
+import {
+  type DurationFilterUnit,
+  type DurationFilterValue,
+  parseDurationFilterValue,
+} from '@/types/duration-filter-value';
 import { parseEnumFilterValue } from '@/types/enum-filter-value';
 import { parseNumberFilterValue } from '@/types/number-filter-value';
 import { parseTextFilterValue } from '@/types/text-filter-value';
@@ -62,6 +72,9 @@ function normalizeSearchText(value: string): string {
   return value.toLowerCase().replace(/\u00a0/g, ' ');
 }
 
+const terminationSearchLabel = normalizeSearchText(deCommonMessages.duration.byTermination);
+const terminationSearchStem = terminationSearchLabel.split(' ').at(-1) ?? terminationSearchLabel;
+
 /**
  * Global “search all” matcher: substring match, plus German/currency number parsing
  * so queries like `3000,00`, `3.000,00`, or `3000€` hit numeric cell values.
@@ -76,6 +89,17 @@ export function matchesGlobalFilter(value: unknown, filterValue: unknown): boole
   }
 
   const searchFilter = normalizeSearchText(rawFilter);
+
+  if (isTotalRuntime(value)) {
+    if (value.terminationType === TerminationType.TERMINATION) {
+      return terminationSearchLabel.includes(searchFilter) || searchFilter.includes(terminationSearchStem);
+    }
+    if (value.days == null) {
+      return false;
+    }
+    return matchesGlobalFilter(value.days, filterValue);
+  }
+
   if (normalizeSearchText(String(value)).includes(searchFilter)) {
     return true;
   }
@@ -191,6 +215,129 @@ export function matchesNumberRangeFilter(value: unknown, filterValue: unknown): 
   }
 }
 
+function completedUnits(
+  totalDays: number,
+  years: number | null,
+  months: number | null,
+  unit: DurationFilterUnit,
+): number | null {
+  if (unit === 'days') {
+    return totalDays;
+  }
+  if (unit === 'years') {
+    return years;
+  }
+  return months;
+}
+
+/** Jahre and Monate compare completed calendar units. Tage compare the day count. */
+function compareDurationUnits(
+  totalDays: number,
+  years: number | null,
+  months: number | null,
+  parsed: DurationFilterValue,
+): boolean {
+  switch (parsed.operator) {
+    case 'between': {
+      if (parsed.min == null && parsed.max == null) {
+        return true;
+      }
+      const row = completedUnits(totalDays, years, months, parsed.unit);
+      if (row == null) {
+        return false;
+      }
+      if (parsed.min !== null && parsed.max !== null) {
+        return row >= parsed.min && row <= parsed.max;
+      }
+      if (parsed.min !== null) {
+        return row >= parsed.min;
+      }
+      if (parsed.max !== null) {
+        return row <= parsed.max;
+      }
+      return true;
+    }
+    case 'eq':
+    case 'lt':
+    case 'gte': {
+      if (parsed.amount == null) {
+        return true;
+      }
+      const row = completedUnits(totalDays, years, months, parsed.unit);
+      if (row == null) {
+        return false;
+      }
+      if (parsed.operator === 'eq') {
+        return row === parsed.amount;
+      }
+      if (parsed.operator === 'lt') {
+        return row < parsed.amount;
+      }
+      return row >= parsed.amount;
+    }
+    default:
+      return false;
+  }
+}
+
+export function matchesDurationFilter(value: unknown, filterValue: unknown): boolean {
+  const parsed = parseDurationFilterValue(filterValue);
+
+  if (isTotalRuntime(value)) {
+    if (parsed.operator === 'termination') {
+      return value.terminationType === TerminationType.TERMINATION;
+    }
+    if (parsed.operator === 'empty') {
+      return value.terminationType !== TerminationType.TERMINATION && (value.days === null || value.days === undefined);
+    }
+    if (parsed.operator === 'notEmpty') {
+      return value.terminationType === TerminationType.TERMINATION || value.days != null;
+    }
+    if (value.terminationType === TerminationType.TERMINATION || value.days == null) {
+      if (
+        (parsed.operator === 'eq' || parsed.operator === 'lt' || parsed.operator === 'gte') &&
+        parsed.amount == null
+      ) {
+        return true;
+      }
+      if (parsed.operator === 'between' && parsed.min == null && parsed.max == null) {
+        return true;
+      }
+      return false;
+    }
+    return compareDurationUnits(value.days, value.years ?? null, value.months ?? null, parsed);
+  }
+
+  if (parsed.operator === 'termination') {
+    return false;
+  }
+  if (parsed.operator === 'empty') {
+    return value === null || value === undefined;
+  }
+  if (parsed.operator === 'notEmpty') {
+    return value !== null && value !== undefined;
+  }
+
+  if ((parsed.operator === 'eq' || parsed.operator === 'lt' || parsed.operator === 'gte') && parsed.amount == null) {
+    return true;
+  }
+
+  if (value === null || value === undefined) {
+    return false;
+  }
+
+  if (isCalendarSpan(value)) {
+    return compareDurationUnits(value.totalDays, value.years, value.months, parsed);
+  }
+
+  const rowValue = Number(value);
+  if (Number.isNaN(rowValue)) {
+    return false;
+  }
+
+  return compareDurationUnits(rowValue, null, null, parsed);
+}
+
 export function matchesDateFilter(value: unknown, filterValue: unknown, referenceDate: Date = new Date()): boolean {
   const parsed = parseDateFilterValue(filterValue);
 
@@ -281,6 +428,8 @@ export function matchesFilterByType(
   switch (type) {
     case 'number':
       return matchesNumberRangeFilter(value, filterValue);
+    case 'duration':
+      return matchesDurationFilter(value, filterValue);
     case 'date':
       return matchesDateFilter(value, filterValue, options?.referenceDate);
     case 'select':

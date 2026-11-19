@@ -1,7 +1,9 @@
-import { TerminationType, TransactionType } from '@prisma/client';
+import { type DurationType, TerminationType, TransactionType } from '@prisma/client';
 import moment from 'moment';
-
+import { type CalendarSpan, calendarSpanBetween } from '@/lib/calendar-span';
 import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
+import { formatCalendarDuration } from '@/lib/format-duration';
+import { resolveContractEndDate } from '@/lib/loans/loan-end-date-sanity-check';
 import type { LoanWithRelations } from '@/types/loans';
 
 import { isRepaid } from './loan-calculations';
@@ -67,18 +69,114 @@ export function getLoanTermEndDate(loan: LoanWithTransactions, toDate: Date): Da
   return isRepaid(asLoanWithRelations(loan), toDate) ?? toDate;
 }
 
-export function getLoanTermDays(loan: LoanWithTransactions, toDate: Date): number | null {
+export function getLoanTermSpan(loan: LoanWithTransactions, toDate: Date): CalendarSpan | null {
   const start = getFirstDepositDate(loan);
   if (!start) {
     return null;
   }
 
-  const end = getLoanTermEndDate(loan, toDate);
-  const days = moment(end).startOf('day').diff(moment(start).startOf('day'), 'days');
-  return days >= 0 ? days : null;
+  return calendarSpanBetween(start, getLoanTermEndDate(loan, toDate));
 }
 
-export function getRepaymentPeriodDays(loan: LoanWithTransactions, toDate: Date): number | null {
+export function getLoanTermDays(loan: LoanWithTransactions, toDate: Date): number | null {
+  return getLoanTermSpan(loan, toDate)?.totalDays ?? null;
+}
+
+type TotalRuntimeLoan = {
+  terminationType: TerminationType;
+  signDate: Date | string;
+  endDate?: Date | string | null;
+  duration?: number | null;
+  durationType?: DurationType | null;
+};
+
+export type TotalRuntime = {
+  terminationType: TerminationType;
+  days: number | null;
+  years: number | null;
+  months: number | null;
+  remainderDays: number | null;
+};
+
+const NO_RUNTIME: Pick<TotalRuntime, 'days' | 'years' | 'months' | 'remainderDays'> = {
+  days: null,
+  years: null,
+  months: null,
+  remainderDays: null,
+};
+
+export function isTotalRuntime(value: unknown): value is TotalRuntime {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+  const candidate = value as { terminationType?: unknown; days?: unknown };
+  return (
+    typeof candidate.terminationType === 'string' &&
+    (candidate.days === null || (typeof candidate.days === 'number' && Number.isFinite(candidate.days)))
+  );
+}
+
+export function getContractEndDate(loan: TotalRuntimeLoan): Date | null {
+  if (loan.terminationType !== TerminationType.ENDDATE && loan.terminationType !== TerminationType.DURATION) {
+    return null;
+  }
+
+  return resolveContractEndDate({
+    terminationType: loan.terminationType,
+    signDate: loan.signDate,
+    endDate: loan.endDate,
+    duration: loan.duration,
+    durationType: loan.durationType,
+    isSavingsContract: false,
+    savingsFirstDepositDate: null,
+    savingsLastDepositDate: null,
+    savingsDepositCount: null,
+  });
+}
+
+export function getTotalRuntime(loan: TotalRuntimeLoan): TotalRuntime {
+  if (loan.terminationType === TerminationType.TERMINATION) {
+    return { terminationType: TerminationType.TERMINATION, ...NO_RUNTIME };
+  }
+
+  const end = getContractEndDate(loan);
+  if (!end) {
+    return { terminationType: loan.terminationType, ...NO_RUNTIME };
+  }
+
+  const span = calendarSpanBetween(loan.signDate, end);
+  if (!span) {
+    return { terminationType: loan.terminationType, ...NO_RUNTIME };
+  }
+
+  return {
+    terminationType: loan.terminationType,
+    days: span.totalDays,
+    years: span.years,
+    months: span.months,
+    remainderDays: span.remainderDays,
+  };
+}
+
+/** Calendar length of a loan's Kreditlaufzeit, or the notice label when it ends by Kündigung. */
+export function formatTotalRuntime(
+  loan: TotalRuntimeLoan,
+  t: (key: string, values?: Record<string, number>) => string,
+): string {
+  const value = getTotalRuntime(loan);
+  if (value.terminationType === TerminationType.TERMINATION) {
+    return t('byTermination');
+  }
+
+  const end = getContractEndDate(loan);
+  if (!end) {
+    return '–';
+  }
+
+  return formatCalendarDuration(loan.signDate, end, t);
+}
+
+export function getRepaymentPeriodSpan(loan: LoanWithTransactions, toDate: Date): CalendarSpan | null {
   if (loan.terminationType !== TerminationType.TERMINATION || !loan.terminationDate) {
     return null;
   }
@@ -88,8 +186,11 @@ export function getRepaymentPeriodDays(loan: LoanWithTransactions, toDate: Date)
     return null;
   }
 
-  const days = moment(repaidDate).startOf('day').diff(moment(loan.terminationDate).startOf('day'), 'days');
-  return days >= 0 ? days : null;
+  return calendarSpanBetween(loan.terminationDate, repaidDate);
+}
+
+export function getRepaymentPeriodDays(loan: LoanWithTransactions, toDate: Date): number | null {
+  return getRepaymentPeriodSpan(loan, toDate)?.totalDays ?? null;
 }
 
 export function getLoanTermDaysForDashboard(loan: DashboardLoan, toDate: Date): number | null {

@@ -14,6 +14,10 @@ _Avoid_: Darlehen
 A person or organization that provides a Kredit. Plural: Kreditgeber*innen.
 _Avoid_: Darlehensgeber, Kreditgeber
 
+**Kreditkonto**:
+A Kreditgeber*in's combined position in the project across their Kredite.
+_Avoid_: Konto, Bankkonto
+
 **Kreditvertrag**:
 The contract for one Kredit.
 _Avoid_: Darlehensvertrag
@@ -21,6 +25,34 @@ _Avoid_: Darlehensvertrag
 **Kreditbetrag**:
 The principal amount of a Kredit.
 _Avoid_: Darlehensbetrag
+
+**Kreditlaufzeit**:
+The contractual length of a Kredit, from the day the contract is signed until that contract ends. A Kredit that ends by notice has no fixed Kreditlaufzeit.
+_Avoid_: Gesamtlaufzeit, Laufzeit
+
+**Bisherige Kreditlaufzeit**:
+How long a Kredit has already run, from the first deposit until repayment, or until today while the Kredit is still running.
+_Avoid_: Kreditlaufzeit, Restlaufzeit
+
+**Kündigungsart**:
+How a Kredit is agreed to end: on a fixed date, after a fixed duration, or by a notice period.
+_Avoid_: Kündigungstyp, Kündigungsmodalität
+
+**Kündigungsfrist**:
+The notice period of a Kredit that can be ended by notice.
+_Avoid_: Kündigungsdauer
+
+**Fälligkeitsdatum**:
+The date a Kredit falls due for repayment.
+_Avoid_: Rückzahlungsfrist, Endedatum
+
+**Rückzahlungsdatum**:
+The date a Kredit was actually repaid.
+_Avoid_: Fälligkeitsdatum
+
+**Ansparvertrag**:
+A Kredit whose Kreditbetrag is paid in scheduled rates.
+_Avoid_: Sparvertrag
 
 **Anlageart**:
 A category of Kredite grouped for compliance with the Bagatellgrenze, identified by its interest rate.

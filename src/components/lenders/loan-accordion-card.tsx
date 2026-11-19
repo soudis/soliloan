@@ -14,7 +14,7 @@ import { TemplateQuickActions } from '@/components/templates/template-quick-acti
 import { InfoItem } from '@/components/ui/info-item';
 import { useRouter } from '@/i18n/navigation';
 import { withProjectId } from '@/lib/project-href';
-import { formatTerminationModalities } from '@/lib/table-column-utils';
+import { formatTerminationModalities, showsRepayDateAfterTermination } from '@/lib/table-column-utils';
 import { cn, formatCurrency, formatDateLong, formatDateShort, formatPercentage } from '@/lib/utils';
 import type { LoanDetailsWithCalculations } from '@/types/loans';
 import { LoanStatus } from '@/types/loans';
@@ -288,11 +288,18 @@ export function LoanAccordionCard({ loan, defaultOpen = false }: LoanAccordionCa
                 {loan.terminationDate && loan.terminationType === 'TERMINATION' && (
                   <InfoItem label={t('table.terminationDate')} value={formatDateLong(loan.terminationDate, locale)} />
                 )}
-                {loan.repayDate &&
-                  loan.status !== 'REPAID' &&
+                {loan.status !== 'REPAID' &&
                   loan.status !== 'NOTDEPOSITED' &&
-                  loan.terminationType !== 'ENDDATE' && (
-                    <InfoItem label={t('table.repayDate')} value={formatDateLong(loan.repayDate, locale)} />
+                  (loan.terminationType === 'TERMINATION' ||
+                    (loan.repayDate && loan.terminationType !== 'ENDDATE')) && (
+                    <InfoItem
+                      label={t('table.repayDate')}
+                      value={
+                        showsRepayDateAfterTermination(loan)
+                          ? t('table.repayDateAfterTermination')
+                          : formatDateLong(loan.repayDate, locale)
+                      }
+                    />
                   )}
                 {loan.status === 'REPAID' && loan.transactions.at(-1)?.date && (
                   <InfoItem

@@ -1,5 +1,6 @@
 export * from './boolean-filter';
 export * from './date-filter';
+export * from './duration-filter';
 export * from './multi-select-filter';
 export * from './number-filter';
 export * from './select-filter';

@@ -12,7 +12,12 @@ import { calculateOutstandingDeposits } from '@/lib/loans/savings-contract';
 import type { CalculationOptions } from '@/types/calculation';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
 import { createdAtDescSorter, transactionSorter } from '../utils/sorters';
-import { getFirstDepositDateFromTransactions, getLoanTermDays, getRepaymentPeriodDays } from './loan-duration-metrics';
+import {
+  getFirstDepositDateFromTransactions,
+  getLoanTermSpan,
+  getRepaymentPeriodSpan,
+  getTotalRuntime,
+} from './loan-duration-metrics';
 
 export const isRepaid = (loan: LoanWithRelations, toDate: Date) => {
   // check if all money was paid back until given date
@@ -595,8 +600,9 @@ export function calculateLoanFieldsWithPerYear<T>(loan: LoanWithRelations & T, o
     interest: numbers.toDate.interest.toNumber(),
     // if interest calculation found large errors show warning
     interestError: numbers.toDate.interestError.toNumber(),
-    loanTermDays: getLoanTermDays(loan, toDate),
-    repaymentPeriodDays: getRepaymentPeriodDays(loan, toDate),
+    loanTermDays: getLoanTermSpan(loan, toDate),
+    repaymentPeriodDays: getRepaymentPeriodSpan(loan, toDate),
+    totalRuntime: getTotalRuntime(loan),
     ...calculateOutstandingDeposits(loan, toDate),
     // add interests per year as virtual transactions
     transactions: loan.transactions

@@ -1,6 +1,8 @@
 import { type Loan, SavingsRateType, type Transaction, TransactionType } from '@prisma/client';
 import moment from 'moment';
 
+import { type CalendarSpan, calendarSpanBetween } from '@/lib/calendar-span';
+
 export type ExpectedTransaction = { date: Date; amount: number | null };
 
 export type CoverageEntry = ExpectedTransaction & {
@@ -22,7 +24,7 @@ export type OutstandingDepositMetrics = {
   outstandingDepositsCount: number;
   outstandingDepositSum: number | null;
   outstandingDepositSinceDate: Date | null;
-  outstandingDepositSinceDays: number | null;
+  outstandingDepositSinceDays: CalendarSpan | null;
 };
 
 type LoanForSchedule = Pick<
@@ -240,13 +242,9 @@ export const calculateOutstandingDeposits = (
   const outstanding = coverage.timeline.filter((entry) => !entry.covered);
   const outstandingDepositSinceDate = outstanding[0]?.date ?? null;
 
-  let outstandingDepositSinceDays: number | null = null;
-  if (outstandingDepositSinceDate) {
-    const toMoment = moment(toDate).startOf('day');
-    const sinceMoment = moment(outstandingDepositSinceDate).startOf('day');
-    const daysSince = toMoment.diff(sinceMoment, 'days');
-    outstandingDepositSinceDays = Math.max(0, daysSince);
-  }
+  const outstandingDepositSinceDays = outstandingDepositSinceDate
+    ? calendarSpanBetween(outstandingDepositSinceDate, toDate)
+    : null;
 
   let outstandingDepositSum: number | null = null;
   if (coverage.amountsKnown) {

@@ -1,15 +1,14 @@
 import type { Country, Lender } from '@prisma/client';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
-import type { ColumnGroupMeta } from '@/components/ui/data-table';
 import type { AdditionalFieldConfig } from '@/lib/schemas/common';
+import { lenderColumnGroupFor } from '@/lib/table-column-groups';
 import {
   compoundTextFilter,
   createAdditionalFieldsColumns,
   createColumn,
   enumFilter,
   formatLenderAddressForExport,
-  withColumnGroup,
 } from '@/lib/table-column-utils';
 import { getLenderName } from '@/lib/utils';
 import type { ProjectWithConfiguration } from '@/types/projects';
@@ -392,10 +391,29 @@ function buildDetailColumns<T>(
   ];
 }
 
+function getProfileColumnId<T>(column: ColumnDef<T>): string {
+  if (column.id) {
+    return column.id;
+  }
+  if ('accessorKey' in column && typeof column.accessorKey === 'string') {
+    return column.accessorKey;
+  }
+  return '';
+}
+
+function withLenderColumnGroups<T>(columns: ColumnDef<T>[]): ColumnDef<T>[] {
+  return columns.map((column) => ({
+    ...column,
+    meta: {
+      ...column.meta,
+      columnGroup: lenderColumnGroupFor(getProfileColumnId(column)),
+    },
+  }));
+}
+
 export function buildLenderProfileColumns<T>({
   getLender,
   idPrefix = '',
-  columnGroup,
   mode,
   project,
   t,
@@ -404,7 +422,6 @@ export function buildLenderProfileColumns<T>({
 }: {
   getLender: (row: T) => LenderProfileRow | null | undefined;
   idPrefix?: string;
-  columnGroup?: ColumnGroupMeta;
   mode: 'full' | 'detailOnly';
   project?: ProjectWithConfiguration;
   t: (key: string) => string;
@@ -412,7 +429,7 @@ export function buildLenderProfileColumns<T>({
   locale?: string;
 }): ColumnDef<T>[] {
   if (mode === 'detailOnly') {
-    return withColumnGroup(buildDetailColumns(getLender, idPrefix, t, commonT), columnGroup);
+    return withLenderColumnGroups(buildDetailColumns(getLender, idPrefix, t, commonT));
   }
 
   const columns: ColumnDef<T>[] = [
@@ -458,7 +475,7 @@ export function buildLenderProfileColumns<T>({
 
   columns.push(...buildDetailColumns(getLender, idPrefix, t, commonT));
 
-  return withColumnGroup(columns, columnGroup);
+  return withLenderColumnGroups(columns);
 }
 
 export function prefixColumnMetaIds(meta: LenderProfileColumnMeta[], idPrefix: string): LenderProfileColumnMeta[] {

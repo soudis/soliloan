@@ -1,4 +1,3 @@
-import { formatDurationDays } from '@/lib/format-duration';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
 import type { StatWidgetMetric } from '@/types/dashboard-widgets/stat-widget';
 
@@ -15,7 +14,8 @@ export function formatDashboardMetricValue(
   if (metric === 'loanCount' || metric === 'lenderCount') {
     formatted = String(Math.round(value));
   } else if (metric === 'loanTerm' || metric === 'repaymentPeriod') {
-    formatted = durationT ? formatDurationDays(value, durationT) : String(Math.round(value));
+    const days = Math.round(value);
+    formatted = durationT ? durationT('days', { count: days }) : String(days);
   } else if (metric === 'interestRateAvg') {
     formatted = formatPercentage(value);
   } else {

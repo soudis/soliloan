@@ -19,6 +19,15 @@ const labels: ConditionSummaryLabels = {
       empty: 'ist leer',
       notEmpty: 'ist nicht leer',
     },
+    duration: {
+      between: 'zwischen',
+      eq: 'entspricht',
+      gte: 'ab',
+      lt: 'bis',
+      empty: 'ist leer',
+      notEmpty: 'ist nicht leer',
+      termination: 'Durch Kündigung',
+    },
     text: {
       contains: 'enthält',
       startsWith: 'beginnt mit',
@@ -46,7 +55,11 @@ const labels: ConditionSummaryLabels = {
   between: (start, end) => `zwischen ${start} und ${end}`,
   from: (value) => `ab ${value}`,
   until: (value) => `bis ${value}`,
-  duration: (count, unit) => (unit === 'days' ? `${count} Tage` : `${count} Monate`),
+  duration: (count, unit) => {
+    if (unit === 'years') return `${count} Jahre`;
+    if (unit === 'months') return `${count} Monate`;
+    return `${count} Tage`;
+  },
   relative: {
     last: (span) => `letzte ${span}`,
     next: (span) => `nächste ${span}`,

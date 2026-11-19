@@ -13,6 +13,7 @@ import type {
   DataTableColumnFilterDefinition,
   DataTableColumnFilterType,
 } from '@/lib/entity-filters/filter-definitions';
+import { columnGroupForId } from '@/lib/table-column-groups';
 import type { MergeTagConfig, MergeTagField } from '@/lib/templates/merge-tag-config';
 import { conditionFilterType } from '@/lib/templates/template-condition';
 import { LoanStatus } from '@/types/loans';
@@ -122,10 +123,12 @@ function toConditionField(
   const type: DataTableColumnFilterType | null = field.filterType ?? conditionFilterType(field.key);
   if (!type) return null;
   const selectOptions = field.selectOptions?.map((option) => ({ label: option, value: option }));
+  const columnGroup =
+    field.entity === 'loan' || field.entity === 'lender' ? columnGroupForId(field.key, field.entity) : undefined;
   return {
     field: field.key,
     label: field.label,
-    group: field.entity,
+    group: columnGroup?.key ?? field.entity,
     type,
     options: enumOptions(field.key, tCommon, tConditions) ?? selectOptions,
     allowEmpty: true,

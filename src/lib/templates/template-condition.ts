@@ -20,6 +20,7 @@ const FILTER_TYPES = new Set<DataTableColumnFilterType>([
   'select',
   'multi-select',
   'number',
+  'duration',
   'date',
   'boolean',
 ]);

@@ -107,7 +107,7 @@ export function YearlyInterestTab() {
     ) as ColumnDef<YearlyInterestLoanRow>[];
     const unpaidColumn = withColumnGroup(
       [createCurrencyColumn<YearlyInterestLoanRow>('unpaidYearlyInterest', 'columns.unpaid', t, locale)],
-      { key: 'loan', order: 0 },
+      { key: 'loanInterest', order: 1 },
     )[0];
     if (!unpaidColumn) return loanColumns;
 

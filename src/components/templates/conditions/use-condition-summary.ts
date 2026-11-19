@@ -10,6 +10,7 @@ import { useMergeTagConfig } from '../merge-tag-context';
 export function useTemplateConditionSummary(showIf: unknown): string {
   const t = useTranslations('templates.editor.conditions');
   const tNumber = useTranslations('dataTable.numberFilterOperators');
+  const tDuration = useTranslations('dataTable.durationFilterOperators');
   const tText = useTranslations('dataTable.textFilterOperators');
   const tEnum = useTranslations('dataTable.enumFilterOperators');
   const tDate = useTranslations('dataTable.dateFilterOperators');
@@ -36,6 +37,15 @@ export function useTemplateConditionSummary(showIf: unknown): string {
           lte: tNumber('lte'),
           empty: tNumber('empty'),
           notEmpty: tNumber('notEmpty'),
+        },
+        duration: {
+          between: tDuration('between'),
+          eq: tDuration('eq'),
+          gte: tDuration('gte'),
+          lt: tDuration('lt'),
+          empty: tDuration('empty'),
+          notEmpty: tDuration('notEmpty'),
+          termination: tDuration('termination'),
         },
         text: {
           contains: tText('contains'),
@@ -69,7 +79,11 @@ export function useTemplateConditionSummary(showIf: unknown): string {
       between: (start, end) => t('summaryBetween', { start, end }),
       from: (value) => t('summaryFrom', { value }),
       until: (value) => t('summaryUntil', { value }),
-      duration: (count, unit) => tCommon(unit === 'days' ? 'duration.days' : 'duration.months', { count }),
+      duration: (count, unit) => {
+        if (unit === 'years') return tCommon('duration.years', { count });
+        if (unit === 'months') return tCommon('duration.months', { count });
+        return tCommon('duration.days', { count });
+      },
       relative: {
         last: (span) => t('summaryLast', { span }),
         next: (span) => t('summaryNext', { span }),
@@ -77,7 +91,7 @@ export function useTemplateConditionSummary(showIf: unknown): string {
         newerThan: (span) => t('summaryNewerThan', { span }),
       },
     }),
-    [t, tCommon, tDate, tEnum, tNumber, tText],
+    [t, tCommon, tDate, tDuration, tEnum, tNumber, tText],
   );
 
   return useMemo(() => formatTemplateConditionSummary(showIf, fields, labels), [fields, labels, showIf]);

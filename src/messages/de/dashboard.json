@@ -62,6 +62,13 @@
         "weekOfYear": "Kalenderwoche",
         "dayOfWeek": "Wochentag"
       },
+      "durationGrouping": "Zeitraumgruppierung",
+      "durationGroupingOptions": {
+        "years": "Jahre",
+        "months": "Monate",
+        "days": "Tage"
+      },
+      "durationBucketsHint": "Obere Grenzen in der gewählten Einheit (z. B. 5, 10). „bis 5“ enthält die Grenze nicht. Ohne Grenzen entsteht eine Gruppe je Jahr, Monat oder Tag.",
       "textTransform": "Textumwandlung",
       "textTransformNone": "Keine",
       "textTransformFirstChars": "Erste Zeichen",
@@ -209,7 +216,7 @@
         "loanCount": "Anzahl Kredite",
         "interestRateAvg": "Ø Zinssatz (gewichtet)",
         "lenderCount": "Anzahl Kreditgeber*innen",
-        "loanTerm": "Kreditlaufzeit",
+        "loanTerm": "Bisherige Kreditlaufzeit",
         "repaymentPeriod": "Rückzahlungszeitraum"
       }
     },
@@ -238,7 +245,7 @@
       "defaultTitleWithMedianByLender": "Median {metric} je Kreditgeber*in",
       "metrics": {
         "lenderCount": "Anzahl Kreditgeber*innen",
-        "loanTerm": "Kreditlaufzeit",
+        "loanTerm": "Bisherige Kreditlaufzeit",
         "repaymentPeriod": "Rückzahlungszeitraum"
       },
       "deltaRange": "Zeitraum",
@@ -301,6 +308,13 @@
         "weekOfYear": "Kalenderwoche",
         "dayOfWeek": "Wochentag"
       },
+      "durationGrouping": "Zeitraumgruppierung",
+      "durationGroupingOptions": {
+        "years": "Jahre",
+        "months": "Monate",
+        "days": "Tage"
+      },
+      "durationBucketsHint": "Obere Grenzen in der gewählten Einheit (z. B. 5, 10). „bis 5“ enthält die Grenze nicht. Ohne Grenzen entsteht eine Gruppe je Jahr, Monat oder Tag.",
       "textTransform": "Textumwandlung",
       "textTransformNone": "Keine",
       "textTransformFirstChars": "Erste Zeichen",
@@ -482,7 +496,8 @@
       "charCountLabel": "{count} Zeichen",
       "numericBucketUpTo": "bis {max}",
       "numericBucketRange": "{min} – {max}",
-      "numericBucketAbove": "über {min}"
+      "numericBucketAbove": "{min} und mehr",
+      "numericBucketFrom": "ab {min}"
     },
     "aggregationTable": {
       "groupColumn": "Gruppe",
@@ -494,7 +509,8 @@
       "charCountLabel": "{count} Zeichen",
       "numericBucketUpTo": "bis {max}",
       "numericBucketRange": "{min} – {max}",
-      "numericBucketAbove": "über {min}"
+      "numericBucketAbove": "{min} und mehr",
+      "numericBucketFrom": "ab {min}"
     },
     "barChart": {
       "emptySeries": "Keine Serien konfiguriert.",
@@ -504,7 +520,8 @@
       "charCountLabel": "{count} Zeichen",
       "numericBucketUpTo": "bis {max}",
       "numericBucketRange": "{min} – {max}",
-      "numericBucketAbove": "über {min}"
+      "numericBucketAbove": "{min} und mehr",
+      "numericBucketFrom": "ab {min}"
     },
     "lineChart": {
       "emptySeries": "Keine Serien konfiguriert.",
@@ -514,7 +531,8 @@
       "charCountLabel": "{count} Zeichen",
       "numericBucketUpTo": "bis {max}",
       "numericBucketRange": "{min} – {max}",
-      "numericBucketAbove": "über {min}"
+      "numericBucketAbove": "{min} und mehr",
+      "numericBucketFrom": "ab {min}"
     },
     "tableView": {
       "fixedLimitHint": "Es werden maximal {count} Zeilen angezeigt."
@@ -953,10 +971,8 @@
       "defaultDate": "Verzugsdatum",
       "defaultAmount": "Verzugsbetrag",
       "defaultReason": "Verzugsgrund",
-      "terminationModalities": "Kündigungsmodalitäten",
-      "terminationModalitiesShort": "Kündigung",
-      "terminationModalitiesDescription": "Enddatum, Laufzeit oder Kündigungsfrist je nach Kündigungstyp.",
-      "terminationType": "Kündigungstyp",
+      "terminationModalities": "Laufzeit und Kündigung",
+      "terminationType": "Kündigungsart",
       "terminationDate": "Kündigungsdatum",
       "terminationPeriod": "Kündigungsfrist",
       "terminationPeriodType": "Kündigungsfristeinheit",
@@ -969,10 +985,14 @@
       "isSavingsContractShort": "Ansparv.",
       "signDate": "Vertragsdatum",
       "firstDepositDate": "Einzahlungsdatum",
-      "repayDate": "Rückzahlungsfrist",
-      "repayDateShort": "Rückzahlung",
-      "loanTerm": "Kreditlaufzeit",
-      "loanTermShort": "Laufzeit",
+      "repayDate": "Fälligkeitsdatum",
+      "repayDateAfterTermination": "Nach Kündigung",
+      "loanTerm": "Bisherige Kreditlaufzeit",
+      "loanTermShort": "Bisherige Laufzeit",
+      "loanTermDescription": "Von der ersten Einzahlung bis zur Rückzahlung, bei laufenden Krediten bis heute.",
+      "totalRuntime": "Kreditlaufzeit",
+      "totalRuntimeShort": "Laufzeit",
+      "totalRuntimeDescription": "Vertragliche Laufzeit vom Vertragsdatum bis zum Ende.",
       "repaymentPeriod": "Rückzahlungszeitraum",
       "repaymentPeriodShort": "Rückzahl.-ZR",
       "repaidDate": "Rückzahlungsdatum",
@@ -988,7 +1008,7 @@
       "outstandingDepositSinceDate": "Ausstehender Geldeingang (Seit Datum)",
       "outstandingDepositSinceDateShort": "Ausstehend seit",
       "outstandingDepositSinceDateDescription": "Datum, seit dem ein erwarteter Geldeingang aussteht.",
-      "outstandingDepositSinceDays": "Ausstehender Geldeingang (Seit Tagen)",
+      "outstandingDepositSinceDays": "Ausstehender Geldeingang",
       "depositsCount": "Geldeingänge (Anzahl)",
       "depositsCountShort": "Eingänge",
       "requiredDepositsCount": "Benötigte Geldeingänge (Anzahl)",
@@ -1066,7 +1086,7 @@
         "savingsCalculateCountError": "Zur Berechung ist der Vertragswert und der monatlichen Betrag nötig.",
         "savingsLastDeposit": "Letzte Einzahlung: {date}",
         "savingsRuntime": "Laufzeit: {months} Monate",
-        "terminationInfo": "Kündigungsinformationen",
+        "terminationInfo": "Laufzeit und Kündigung",
         "contractEnd": "Vertragsende",
         "contractEndByCancellation": "Durch Kündigung",
         "contractEndByDate": "Feste Laufzeit",
@@ -1466,7 +1486,6 @@
       "downloadReport": "Report herunterladen"
     }
   },
-
   "myLoans": {
     "title": "Meine Kredite",
     "welcome": "Willkommen, {name}!",
@@ -1505,7 +1524,6 @@
       "next": "Weiter"
     }
   },
-
   "investmentTypes": {
     "title": "Anlagearten",
     "description": "Verwalten Sie Anlagearten zur Einhaltung der Bagatellgrenzen des deutschen Anlegerschutzes-Gesetzes.",

@@ -10,7 +10,7 @@ import { TemplateQuickActions } from '@/components/templates/template-quick-acti
 import { NEUTRAL_ACTION_BUTTON_CLASS } from '@/components/ui/action-button-classes';
 import { Button } from '@/components/ui/button';
 import { InfoItem } from '@/components/ui/info-item';
-import { formatTerminationModalities } from '@/lib/table-column-utils';
+import { formatTerminationModalities, showsRepayDateAfterTermination } from '@/lib/table-column-utils';
 import { cn, formatCurrency, formatDateShort, formatPercentage, getLenderName } from '@/lib/utils';
 import { formatAddressPlace } from '@/lib/utils/format';
 import { splitIbanIntoGroups } from '@/lib/utils/iban';
@@ -169,13 +169,17 @@ export function LenderLoanAccordionCard({ loan, isOpen, onOpenChange }: LenderLo
                     value={format(new Date(loan.terminationDate), 'PPP', { locale: dateLocale })}
                   />
                 )}
-                {loan.repayDate &&
-                  loan.status !== 'REPAID' &&
+                {loan.status !== 'REPAID' &&
                   loan.status !== 'NOTDEPOSITED' &&
-                  loan.terminationType !== 'ENDDATE' && (
+                  (loan.terminationType === 'TERMINATION' ||
+                    (loan.repayDate && loan.terminationType !== 'ENDDATE')) && (
                     <InfoItem
                       label={t('table.repayDate')}
-                      value={format(new Date(loan.repayDate), 'PPP', { locale: dateLocale })}
+                      value={
+                        showsRepayDateAfterTermination(loan)
+                          ? t('table.repayDateAfterTermination')
+                          : format(new Date(loan.repayDate ?? ''), 'PPP', { locale: dateLocale })
+                      }
                     />
                   )}
                 {loan.status === 'REPAID' && loan.transactions.at(-1)?.date && (

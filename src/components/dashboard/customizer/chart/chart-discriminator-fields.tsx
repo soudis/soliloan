@@ -1,9 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-
-import { EntityFilterList } from '@/components/dashboard/widgets/filters/entity-filter-list';
 import { EntityFilterFieldPicker } from '@/components/dashboard/widgets/filters/entity-filter-field-picker';
+import { EntityFilterList } from '@/components/dashboard/widgets/filters/entity-filter-list';
 import { NumericBucketEditor } from '@/components/dashboard/widgets/pie-chart/numeric-bucket-editor';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getFilterDefinitionForField } from '@/lib/entity-filters/filter-definitions';
 import {
   CHART_DATE_GROUPINGS,
-  DEFAULT_CHART_TOP_N,
+  CHART_DURATION_GROUPINGS,
   type ChartDiscriminatorConfig,
+  DEFAULT_CHART_TOP_N,
 } from '@/types/dashboard-widgets/chart-discriminator';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
 
@@ -47,12 +47,13 @@ export function ChartDiscriminatorFields({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label className="text-xs">{t('groupBy')}</Label>
+        <Label className="text-sm">{t('groupBy')}</Label>
         <EntityFilterFieldPicker
           value={groupByValue}
           fieldOptions={fieldOptions}
           translationNamespace={translationNamespace}
           placeholderKey="groupByPlaceholder"
+          size="sm"
           onChange={(entity, field) => {
             if (entity === 'transaction') {
               return;
@@ -63,9 +64,12 @@ export function ChartDiscriminatorFields({
               groupBy: { entity, field },
               numericBuckets: undefined,
               dateGrouping: undefined,
+              durationGrouping: undefined,
               textTransform: undefined,
             };
-            if (def?.type === 'number') {
+            if (def?.type === 'duration') {
+              next.durationGrouping = 'years';
+            } else if (def?.type === 'number') {
               next.numericBuckets = value.numericBuckets ?? [1000, 5000];
             } else if (def?.type === 'date') {
               next.dateGrouping = 'year';
@@ -75,7 +79,36 @@ export function ChartDiscriminatorFields({
         />
       </div>
 
-      {groupFieldDef?.type === 'number' ? (
+      {groupFieldDef?.type === 'duration' ? (
+        <>
+          <div className="space-y-2">
+            <Label className="text-xs">{t('durationGrouping')}</Label>
+            <Select
+              value={value.durationGrouping ?? 'years'}
+              onValueChange={(v) => patch({ durationGrouping: v as ChartDiscriminatorConfig['durationGrouping'] })}
+            >
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CHART_DURATION_GROUPINGS.map((g) => (
+                  <SelectItem key={g} value={g}>
+                    {t(`durationGroupingOptions.${g}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <NumericBucketEditor
+            thresholds={value.numericBuckets ?? []}
+            onChange={(numericBuckets) => patch({ numericBuckets: numericBuckets.length ? numericBuckets : undefined })}
+            translationNamespace={translationNamespace}
+            hintKey="durationBucketsHint"
+            seedThreshold={5}
+            step="1"
+          />
+        </>
+      ) : groupFieldDef?.type === 'number' ? (
         <NumericBucketEditor
           thresholds={value.numericBuckets ?? []}
           onChange={(numericBuckets) => patch({ numericBuckets: numericBuckets.length ? numericBuckets : undefined })}

@@ -46,6 +46,20 @@
     "empty": "ist leer",
     "notEmpty": "ist nicht leer"
   },
+  "durationFilterOperators": {
+    "between": "zwischen",
+    "eq": "entspricht",
+    "gte": "ab",
+    "lt": "bis",
+    "empty": "ist leer",
+    "notEmpty": "ist nicht leer",
+    "termination": "Durch Kündigung"
+  },
+  "durationFilterUnits": {
+    "days": "Tage",
+    "months": "Monate",
+    "years": "Jahre"
+  },
   "numberFilterMin": "Min",
   "numberFilterMax": "Max",
   "numberFilterValue": "Wert",
@@ -83,8 +97,16 @@
   "columnGroups": {
     "shown": "Angezeigt",
     "transaction": "Transaktion",
-    "loan": "Kredit",
-    "lender": "Kreditgeber*in"
+    "loanGeneral": "Kredit - Allgemein",
+    "loanInterest": "Kredit - Zinsen",
+    "loanSavings": "Kredit - Ansparvertrag",
+    "loanTerm": "Kredit - Laufzeit und Kündigung",
+    "lenderGeneral": "Kreditgeber*in - Allgemein",
+    "lenderContact": "Kreditgeber*in - Kontakt",
+    "lenderAddress": "Kreditgeber*in - Adresse",
+    "lenderBanking": "Kreditgeber*in - Bank",
+    "lenderAccount": "Kreditgeber*in - Konto",
+    "lenderAdditional": "Kreditgeber*in - Zusatz"
   },
   "columnMenu": {
     "sort": "Spalte sortieren",

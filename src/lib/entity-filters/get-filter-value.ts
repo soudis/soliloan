@@ -3,7 +3,6 @@ import moment from 'moment';
 import { getLoanStatus } from '@/lib/calculations/loan-calculations';
 import { hasFirstDepositOnOrBefore } from '@/lib/calculations/loan-duration-metrics';
 import type { DashboardLoan } from '@/lib/dashboard/load-dashboard-stats';
-import { formatTerminationModalities } from '@/lib/table-column-utils';
 import type { LoanMonthlyNumbers } from '@/types/dashboard';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
 
@@ -60,7 +59,6 @@ export function getLoanFilterValue(
   entity: 'loan' | 'lender',
   field: string,
   snapshot: PeriodSnapshot | null,
-  commonT: (key: string, values?: Record<string, string>) => string,
 ): unknown {
   if (entity === 'lender') {
     const lender = loan.lender;
@@ -149,8 +147,14 @@ export function getLoanFilterValue(
       return loan.interestPaymentType;
     case 'terminationType':
       return loan.terminationType;
-    case 'terminationModalities':
-      return formatTerminationModalities(loan, commonT);
+    case 'totalRuntime':
+      return loan.totalRuntime;
+    case 'loanTermDays':
+      return loan.loanTermDays;
+    case 'repaymentPeriodDays':
+      return loan.repaymentPeriodDays;
+    case 'outstandingDepositSinceDays':
+      return loan.outstandingDepositSinceDays;
     case 'repayDate':
       return loan.repayDate;
     case 'altInterestMethod':

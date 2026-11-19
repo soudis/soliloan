@@ -6,11 +6,13 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import type { ColumnGroupMeta } from '@/components/ui/data-table';
 import type { TableViewColumnConfig } from '@/types/dashboard-widgets/table-view';
 
 export type TableViewColumnMeta = {
   id: string;
   label: string;
+  columnGroup?: ColumnGroupMeta;
 };
 
 export function TableViewColumnEditor({

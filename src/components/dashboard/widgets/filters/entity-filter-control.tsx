@@ -5,6 +5,7 @@ import type { ColumnFilter } from '@tanstack/react-table';
 import { EntityDateFilter } from '@/components/dashboard/widgets/filters/entity-date-filter';
 import {
   BooleanFilter,
+  DurationFilter,
   MultiSelectFilter,
   NumberFilter,
   SelectFilter,
@@ -54,6 +55,17 @@ export function EntityFilterControl({
           filterState={filterState}
           allowEmpty={definition.allowEmpty}
           defaultOperator={definition.defaultOperator}
+          onFilterChange={(v) => onChange(v)}
+          variant="stacked"
+          size="sm"
+        />
+      );
+    case 'duration':
+      return (
+        <DurationFilter
+          filterState={filterState}
+          allowEmpty={definition.allowEmpty}
+          terminationValue={definition.terminationValue}
           onFilterChange={(v) => onChange(v)}
           variant="stacked"
           size="sm"

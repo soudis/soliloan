@@ -18,6 +18,7 @@ import {
   getLoanSortValue,
   LOAN_TABLE_STATIC_COLUMN_META,
 } from '@/lib/dashboard/table-widget/loan-table-column-registry';
+import { columnGroupForId, transactionColumnGroup } from '@/lib/table-column-groups';
 import {
   createAdditionalFieldDefaultColumnVisibility,
   createColumn,
@@ -26,6 +27,7 @@ import {
   withColumnGroup,
 } from '@/lib/table-column-utils';
 import { cn, formatCurrency, resolveIntlLocaleForDates } from '@/lib/utils';
+import type { ColumnGroupMeta } from '@/components/ui/data-table';
 import type { LoanWithCalculations } from '@/types/loans';
 import type { ProjectWithConfiguration } from '@/types/projects';
 import type { TransactionListItem } from '@/types/transactions';
@@ -36,6 +38,7 @@ export type TransactionTableColumnMeta = {
   customLabel?: string;
   useLoansTranslations?: boolean;
   useLendersTranslations?: boolean;
+  columnGroup?: ColumnGroupMeta;
 };
 
 const TRANSACTION_TABLE_STATIC_COLUMN_META: { id: string; labelKey: string }[] = [
@@ -95,10 +98,6 @@ export function buildTransactionTableDefaultColumnVisibility(project: ProjectWit
     ...buildLenderProfileDefaultColumnVisibility(project, 'lender.', ['lenderNumber', 'name']),
   };
 }
-
-const TRANSACTION_COLUMN_GROUP = { key: 'transaction' as const, order: 0 };
-const LOAN_COLUMN_GROUP = { key: 'loan' as const, order: 1 };
-const LENDER_COLUMN_GROUP = { key: 'lender' as const, order: 2 };
 
 function transactionColumnId(field: string): string {
   return `transaction.${field}`;
@@ -258,24 +257,20 @@ export function buildAllTransactionTableColumns(
 ): ColumnDef<TransactionListItem>[] {
   const transactionColumns = withColumnGroup(
     buildTransactionColumns<TransactionListItem>(tTransactions, commonT, locale),
-    TRANSACTION_COLUMN_GROUP,
+    transactionColumnGroup(),
   );
 
-  const loanColumns = withColumnGroup(
-    remapColumnsForNestedAccessor<LoanWithCalculations, TransactionListItem>(
-      buildLoanTableColumns(project, tLoans, commonT, locale, durationT),
-      {
-        idPrefix: 'loan.',
-        getSource: (row) => row.loan,
-      },
-    ),
-    LOAN_COLUMN_GROUP,
+  const loanColumns = remapColumnsForNestedAccessor<LoanWithCalculations, TransactionListItem>(
+    buildLoanTableColumns(project, tLoans, commonT, locale, durationT),
+    {
+      idPrefix: 'loan.',
+      getSource: (row) => row.loan,
+    },
   );
 
   const lenderProfileColumns = buildLenderProfileColumns<TransactionListItem>({
     getLender: (row) => row.loan.lender,
     idPrefix: 'lender.',
-    columnGroup: LENDER_COLUMN_GROUP,
     mode: 'full',
     project,
     t: tLenders,
@@ -293,12 +288,14 @@ export function buildTransactionTableColumnMeta(project: ProjectWithConfiguratio
       labelKey: null,
       customLabel: field.name,
       useLoansTranslations: true,
+      columnGroup: columnGroupForId(`loan.additionalFields.${field.id}`),
     })) ?? [];
 
   const loanMeta = LOAN_TABLE_STATIC_COLUMN_META.map((entry) => ({
     id: `loan.${entry.id}`,
     labelKey: entry.labelKey,
     useLoansTranslations: true,
+    columnGroup: columnGroupForId(`loan.${entry.id}`),
   }));
 
   const lenderProfileMeta = buildLenderProfileColumnMeta(project, 'lender.').map((entry) => ({
@@ -306,6 +303,7 @@ export function buildTransactionTableColumnMeta(project: ProjectWithConfiguratio
     labelKey: entry.labelKey.startsWith('table.') ? entry.labelKey : null,
     customLabel: entry.labelKey.startsWith('table.') ? undefined : entry.labelKey,
     useLendersTranslations: true,
+    columnGroup: columnGroupForId(entry.id),
   }));
 
   return [
@@ -313,6 +311,7 @@ export function buildTransactionTableColumnMeta(project: ProjectWithConfiguratio
       ...entry,
       useLoansTranslations: false,
       useLendersTranslations: false,
+      columnGroup: columnGroupForId(entry.id),
     })),
     ...loanMeta,
     ...loanAdditionalFieldMeta,
