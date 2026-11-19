@@ -221,4 +221,23 @@ describe('buildJahresliste', () => {
       .reduce((total, row) => total.plus(row.amount), new Prisma.Decimal(sumOf(sums, 'OPENING_BALANCE')));
     assert.equal(movements.toFixed(2), new Prisma.Decimal(sumOf(sums, 'CLOSING_BALANCE')).toFixed(2));
   });
+
+  it('books the Zinsertrag of a Zinsjahr before the Umstellungsjahr with the old rules', () => {
+    const interestOf = (interestChangeoverYear: number | null) =>
+      buildJahresliste(
+        [
+          fixtureLoan({
+            interestRate: 2,
+            interestMethod: 'ACT_360_NOCOMPOUND',
+            interestChangeoverYear,
+            transactions: [tx(DEPOSIT, new Date(2025, 2, 15), 10000)],
+          }),
+        ],
+        2025,
+      ).rows.find((row) => row.vorgang === 'INTEREST')?.amount;
+
+    // 291 Zinstage under the old rules, 292 under the corrected ones (ADR 0005).
+    assert.equal(interestOf(2027), 161.67);
+    assert.equal(interestOf(null), 162.22);
+  });
 });

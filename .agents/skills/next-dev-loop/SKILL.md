@@ -127,7 +127,9 @@ manual rather than from memory.
   `http://localhost:3000/_next/mcp` (host loopback). Open `agent-browser`
   at `https://soliloan.localhost`, not `http://localhost:3000` — auth
   cookies will not apply on the published port. Rewrite `/app/...` paths
-  from MCP tools to this repository root. See `AGENTS.md`.
+  from MCP tools to this repository root. See `AGENTS.md`. Log in yourself
+  with the dev agent account instead of waiting for the user; credentials in
+  `docs/agents/worktree-dev.md`.
 - **Preserve `.next` while the development server is running.** Moving or
   deleting it disconnects the server from its generated state and discards
   incremental caches. Moving it to a backup is still a reset. If a production

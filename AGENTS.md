@@ -14,7 +14,7 @@ Soliloan manages direct-credit projects (crowdinvesting): Kreditgeber\*innen, Kr
 
 - Language: read [GLOSSARY.md](GLOSSARY.md) and the relevant [ADRs](docs/adr/) before naming or changing domain behaviour. Use the glossary terms in tickets, PRs, tests and UI copy; code keeps the English Prisma model names.
 - Code: follow [CODING_STANDARDS.md](CODING_STANDARDS.md). Changes on the [risk list](docs/agents/risk-list.md) (calculations, Zahlungen, access, schema, documents, deploy) need a teammate's approval.
-- Before a PR: `pnpm verify` (typecheck, lint, format, test). In Claude Code, hooks run Biome on every edit and `pnpm typecheck` when a turn ends (`.claude/settings.json`). Never commit `.env` or other secrets.
+- Before a PR: `pnpm verify` (typecheck, lint, format, test). In Claude Code, hooks run Biome on every edit, `pnpm typecheck` when a turn ends and `pnpm lint` + `pnpm format` before a `git push` (`.claude/settings.json`). Never commit `.env` or other secrets.
 - The predecessor app [habidat-direktkredit](https://github.com/soudis/habidat-direktkredit) is a read-only reference: look it up only when a ticket or the user refers to legacy behaviour, never copy code ([workflow.md](docs/agents/workflow.md#legacy-app)).
 
 ## Workflow
@@ -26,7 +26,7 @@ Ticket → lane → branch → develop → verify → PR → review → merge, a
 - **Branch**: `<type>/<issue>-<slug>` off `main`, type `feat|fix|chore|docs|refactor|ci`, e.g. `fix/222-payment-checks`. Rename a `claude/…` worktree branch before the first commit.
 - **Commit / PR title**: Conventional Commit with the issue number, e.g. `fix(savings): #232 correct the monthly amount`. PR body from the template, always ending with `Closes #<n>`, even if the PR only does part of the ticket (reopening it is then a manual duty). Base is `main`.
 - **Review**: after the PR is open, `/soliloan-review` (fresh-context reviewers, one PR comment). Never review your own work in the authoring context.
-- **Git**: never push to `main`. Merging into `staging` (which deploys on push) only when the user asks, and say so first.
+- **Git**: never push to `main`. Rebuilding `staging` with `scripts/staging-rebuild.sh` (a push deploys) only when the user asks, and say so first; never merge into `staging` by hand.
 - **Schema change** in `prisma/schema.prisma` needs a migration in `prisma/migrations`.
 
 ## Agent skills

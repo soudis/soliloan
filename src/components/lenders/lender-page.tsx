@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { FileDialog } from '@/components/generic/file-dialog';
 import { NoteDialog } from '@/components/generic/note-dialog';
+import { withoutLoan } from '@/lib/utils/lender-notes-files';
 import type { LenderDetailsWithCalculations } from '@/types/lenders';
 import { LenderContactSection } from './lender-contact-section';
 import { LenderFinancialsSection } from './lender-financials-section';
@@ -22,8 +23,8 @@ export const LenderPage = ({ lender }: Props) => {
   const [noteCreateOpen, setNoteCreateOpen] = useState(false);
   const [fileCreateOpen, setFileCreateOpen] = useState(false);
 
-  const totalNotes = lender.allNotes.length;
-  const totalFiles = lender.allFiles.length;
+  const totalNotes = withoutLoan(lender.notes).length;
+  const totalFiles = withoutLoan(lender.files).length;
 
   const navItems: SectionNavItem[] = useMemo(
     () => [
@@ -38,16 +39,16 @@ export const LenderPage = ({ lender }: Props) => {
         icon: <BarChart3 className="h-4 w-4" />,
       },
       {
-        id: 'loans',
-        label: t('sections.loans'),
-        icon: <Wallet className="h-4 w-4" />,
-        count: lender.loans.length,
-      },
-      {
         id: 'notes-files',
         label: t('sections.notesFiles'),
         icon: <FilesIcon className="h-4 w-4" />,
         count: totalNotes + totalFiles,
+      },
+      {
+        id: 'loans',
+        label: t('sections.loans'),
+        icon: <Wallet className="h-4 w-4" />,
+        count: lender.loans.length,
       },
     ],
     [t, lender.loans.length, totalNotes, totalFiles],
@@ -73,12 +74,12 @@ export const LenderPage = ({ lender }: Props) => {
         <div className="flex-1 min-w-0 flex flex-col gap-8">
           <LenderContactSection lender={lender} />
           <LenderFinancialsSection lender={lender} />
-          <LenderLoansSection lender={lender} />
           <LenderNotesFilesSection
             lender={lender}
             onAddNote={() => setNoteCreateOpen(true)}
             onAddFile={() => setFileCreateOpen(true)}
           />
+          <LenderLoansSection lender={lender} />
         </div>
       </div>
 
