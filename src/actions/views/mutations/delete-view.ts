@@ -8,7 +8,7 @@ import { assertCanModifyView } from '@/lib/views/access';
 import { revalidateSidebarViews } from '@/lib/views/revalidate-sidebar-views';
 
 export const deleteViewAction = authAction
-  .schema(z.object({ viewId: z.string(), projectId: z.string().optional() }))
+  .inputSchema(z.object({ viewId: z.string(), projectId: z.string().optional() }))
   .action(async ({ parsedInput: { viewId }, ctx }) => {
     const userId = ctx.session.user?.id;
     if (!userId) {

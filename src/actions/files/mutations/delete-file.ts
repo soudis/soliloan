@@ -15,7 +15,7 @@ import { db } from '@/lib/db';
 import { fileAction } from '@/lib/utils/safe-action';
 
 export const deleteFileAction = fileAction
-  .schema(z.object({ fileId: z.string() }))
+  .inputSchema(z.object({ fileId: z.string() }))
   .action(async ({ parsedInput: { fileId } }) => {
     // Fetch file with lender/loan info
     const file = await db.file.findUnique({

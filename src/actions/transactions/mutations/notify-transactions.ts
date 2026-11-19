@@ -33,7 +33,7 @@ async function loadTransactions(projectId: string, transactionIds: string[]) {
 }
 
 export const previewNotifyTransactionsAction = projectAction
-  .schema(previewSchema)
+  .inputSchema(previewSchema)
   .action(async ({ parsedInput: { projectId, transactionIds } }) => {
     const transactions = await loadTransactions(projectId, transactionIds);
     const real = transactions.filter((transaction) => transaction.type !== TransactionType.INTEREST);
@@ -56,7 +56,7 @@ export const previewNotifyTransactionsAction = projectAction
   });
 
 export const sendNotifyTransactionsAction = projectAction
-  .schema(sendSchema)
+  .inputSchema(sendSchema)
   .action(async ({ parsedInput: { projectId, transactionIds, resendAlreadyNotified } }) => {
     const transactions = await loadTransactions(projectId, transactionIds);
     let sent = 0;

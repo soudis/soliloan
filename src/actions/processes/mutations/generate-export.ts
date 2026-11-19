@@ -8,7 +8,7 @@ import { generateExportUnsafe } from '@/lib/exports/generate-export';
 import { projectAction } from '@/lib/utils/safe-action';
 
 export const generateExportAction = projectAction
-  .schema(
+  .inputSchema(
     z.object({
       projectId: z.string(),
       type: z.enum(ExportType),

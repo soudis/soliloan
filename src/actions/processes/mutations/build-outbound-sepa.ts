@@ -17,7 +17,7 @@ const schema = z.object({
 });
 
 export const buildOutboundSepaAction = projectAction
-  .schema(schema)
+  .inputSchema(schema)
   .action(async ({ parsedInput: { projectId, transactionIds, grouping, executionDate } }) => {
     const project = await db.project.findUnique({
       where: { id: projectId },

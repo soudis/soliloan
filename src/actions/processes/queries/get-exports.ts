@@ -8,7 +8,7 @@ import { countOpenYearlyInterest } from '@/lib/processes/yearly-interest';
 import { projectAction } from '@/lib/utils/safe-action';
 
 export const getExportsAction = projectAction
-  .schema(z.object({ projectId: z.string() }))
+  .inputSchema(z.object({ projectId: z.string() }))
   .action(async ({ parsedInput: { projectId } }) => {
     const exports = await listExportsUnsafe(projectId);
     return {
@@ -21,7 +21,7 @@ export const getExportsAction = projectAction
 
 /** What the Downloads tab needs to know about one year before generating: the year range and open Zinsauszahlungen. */
 export const getExportYearAction = projectAction
-  .schema(z.object({ projectId: z.string(), year: z.number().int() }))
+  .inputSchema(z.object({ projectId: z.string(), year: z.number().int() }))
   .action(async ({ parsedInput: { projectId, year } }) => {
     const loans = await loadExportLoansUnsafe(projectId);
     const currentYear = moment().year();
