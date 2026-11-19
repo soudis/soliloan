@@ -19,11 +19,24 @@ BASE_DOMAIN="soliloan.localhost"
 WAIT_SECONDS="${WORKTREE_DEV_WAIT_SECONDS:-600}"
 # After the app answers on its own port, how long Traefik may take to pick up its route.
 ROUTE_GRACE_SECONDS=20
+# One pnpm store for every worktree stack, mounted at /app/.pnpm-store (the path pnpm picks
+# anyway, so node_modules never sees a store change). Created here, without a compose
+# project label, so neither `down -v` nor `prune` of one stack removes it.
+PNPM_STORE_VOLUME="soliloan_pnpm_store"
 
 die() { echo "worktree-dev: $*" >&2; exit 1; }
 warn() { echo "worktree-dev: WARNING: $*" >&2; }
 
 command -v docker >/dev/null || die "docker not found"
+
+# Deletes what the root container wrote into a worktree (.next, .pnpm-store from before the
+# shared store, prisma/generated), as root through a container of <image> that mounts only
+# the worktree, never the shared store volume.
+remove_root_owned() {
+  local dir="$1" image="$2" paths="${3:-.next .pnpm-store prisma/generated}"
+  [ -n "$image" ] || return 0
+  docker run --rm --entrypoint sh -w /w -v "$dir:/w" "$image" -c "rm -rf $paths" >/dev/null 2>&1 || true
+}
 
 # Stacks (compose projects soliloan-*) whose worktree is gone: the directory is missing, or
 # only the root-owned leftovers of the container remain (`git worktree remove` without
@@ -44,7 +57,8 @@ prune() {
     --format '{{.Label "com.docker.compose.project"}}|{{.Label "com.docker.compose.project.working_dir"}}' \
     | grep '^soliloan' | sort -u)
 
-  for project in "${running[@]}"; do echo "Skipped $project: worktree gone but containers still running (stop them first)."; done
+  # ${a[@]+...}: macOS ships bash 3.2, where an empty array is "unbound" under set -u.
+  for project in ${running[@]+"${running[@]}"}; do echo "Skipped $project: worktree gone but containers still running (stop them first)."; done
   if [ "${#stale[@]}" -eq 0 ]; then echo "Nothing to prune."; return 0; fi
   echo "Stacks whose worktree no longer exists (containers, networks, volumes incl. database):"
   for i in "${!stale[@]}"; do
@@ -61,8 +75,7 @@ prune() {
     # stack's own image, then the empty directories the user could not delete.
     if [ -d "$dir" ]; then
       image="$(docker ps -a --filter "label=com.docker.compose.project=$project" --filter "label=com.docker.compose.service=app" --format '{{.Image}}' | head -n1)"
-      [ -z "$image" ] || docker run --rm --entrypoint sh -v "$dir:/w" "$image" \
-        -c 'rm -rf /w/.next /w/.pnpm-store /w/prisma/generated' >/dev/null 2>&1 || true
+      remove_root_owned "$dir" "$image"
       find "$dir" -depth -type d -empty -delete 2>/dev/null || true
       [ ! -d "$dir" ] || echo "  kept $dir: it still holds files"
     fi
@@ -191,6 +204,25 @@ install_host_deps() {
   fi
 }
 
+app_image() {
+  local id
+  id="$(compose ps -aq app 2>/dev/null | head -n1)"
+  [ -z "$id" ] || docker inspect -f '{{.Config.Image}}' "$id"
+}
+
+# Creates the shared store volume, and drops the worktree's own store from before it (about
+# 1 GB of root-owned files in the bind mount). With the volume mounted, .pnpm-store in the
+# worktree is just an empty mountpoint, so a v11 directory there is the old store.
+ensure_pnpm_store() {
+  docker volume inspect "$PNPM_STORE_VOLUME" >/dev/null 2>&1 \
+    || docker volume create "$PNPM_STORE_VOLUME" >/dev/null
+  if [ -n "$(ls -A .pnpm-store 2>/dev/null)" ]; then
+    echo "Removing this worktree's own pnpm store (now shared in volume $PNPM_STORE_VOLUME)..."
+    compose stop app >/dev/null 2>&1 || true
+    remove_root_owned "$ROOT" "$(app_image)" .pnpm-store
+  fi
+}
+
 # The container runs as root, and host tools must be able to rewrite what it leaves in the
 # bind mount: the Prisma client and tsc's incremental build info (typecheck via exec).
 hand_back_files() {
@@ -253,6 +285,7 @@ case "$cmd" in
     write_env "$SLUG"
     ensure_traefik
     install_host_deps
+    ensure_pnpm_store
     compose up -d --build
     wait_ready
     hand_back_files
@@ -278,13 +311,13 @@ case "$cmd" in
     ;;
   down)
     PROJECT="$(env_value COMPOSE_PROJECT_NAME)"; [ -n "$PROJECT" ] || die "no stack here yet; nothing to remove"
-    # The container runs as root and writes .next, .pnpm-store and prisma/generated into the
-    # bind mount, which would block `git worktree remove`. Stop the dev server first,
+    # The container runs as root and writes .next, prisma/generated and the store mountpoint
+    # into the bind mount, which would block `git worktree remove`. Stop the dev server first,
     # otherwise it recreates the directories while we delete them.
     compose stop app >/dev/null 2>&1 || true
-    compose run --rm --no-deps -T app rm -rf /app/.next /app/.pnpm-store /app/prisma/generated >/dev/null 2>&1 || true
+    remove_root_owned "$ROOT" "$(app_image)"
     compose down -v --remove-orphans
-    echo "Removed $PROJECT (containers, network, DB volume). Shared Traefik keeps running."
+    echo "Removed $PROJECT (containers, network, DB volume). Shared Traefik and the shared pnpm store ($PNPM_STORE_VOLUME) stay."
     ;;
   *)
     sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'

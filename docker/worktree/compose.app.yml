@@ -16,8 +16,17 @@ services:
       # next-devtools-mcp / next-dev-loop probe /_next/mcp here. Loopback only:
       # MCP is a privileged dev endpoint.
       - "127.0.0.1::3000"
+    volumes:
+      # One pnpm store for all worktree stacks instead of ~1 GB per worktree. Same path pnpm
+      # uses without it, so node_modules keeps its store. Created by scripts/worktree-dev.sh.
+      - pnpm-store:/app/.pnpm-store
 
   mailpit:
     ports: !override
       # Web UI only; SMTP (1025) stays inside the project network.
       - "127.0.0.1::8025"
+
+volumes:
+  pnpm-store:
+    external: true
+    name: soliloan_pnpm_store

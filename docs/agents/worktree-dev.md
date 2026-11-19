@@ -30,7 +30,7 @@ Drive the browser (`agent-browser`) at the app URL, never at the MCP port: auth 
 | `url` | print app, MCP, Mailpit, admin |
 | `logs [service]` | follow logs, default `app` |
 | `exec <cmd...>` | run in the app container (no TTY, `CI=true`): `exec pnpm verify`, `exec pnpm test`, `exec pnpm prisma migrate dev --name <slug>` |
-| `down` | remove containers, network, **database volume**, and the root-owned `.next`, `.pnpm-store`, `prisma/generated` |
+| `down` | remove containers, network, **database volume**, and the root-owned `.next`, `.pnpm-store` mountpoint, `prisma/generated`; the shared pnpm store stays |
 
 | `prune [--yes] [project...]` | remove the stacks of worktrees that are gone (no `.git` left), with their database volumes and root-owned leftovers; lists them and asks first. Runs anywhere; skips running stacks |
 
@@ -38,8 +38,9 @@ Always `down` before `git worktree remove` (the container runs as root and write
 
 ## What is isolated, what is shared
 
-- **Per worktree** (compose project `soliloan-<slug>`): containers, backend network, Postgres volume (own schema + seed, no published 5432), Mailpit, `.next`, `node_modules` (anonymous volume, so the first start installs again).
+- **Per worktree** (compose project `soliloan-<slug>`): containers, backend network, Postgres volume (own schema + seed, no published 5432), Mailpit, `.next`, `node_modules` (anonymous volume, so the first start installs again, from the shared store).
 - **Shared**: one Traefik (project `soliloan-traefik`, network `soliloan_traefik_network`) routes every stack by `Host(<slug>.soliloan.localhost)`. It is started by the first `up` and stays up after `down`. It uses the gitignored mkcert wildcard certificate `*.soliloan.localhost` from the **primary checkout** (`docker/traefik/certs/`).
+- **Shared pnpm store**: volume `soliloan_pnpm_store`, mounted at `/app/.pnpm-store` in every worktree stack, so packages are downloaded and stored once instead of ~1 GB per worktree. `up` creates it; `down` and `prune` never remove it (`docker volume rm soliloan_pnpm_store` when no stack runs, if you want it gone). A worktree that still has its own store from before is cleaned up by its next `up`. On the host, pnpm's own store already shares packages between worktrees (hard links, or copy-on-write clones on macOS, when the store and the worktrees are on the same disk).
 - **`.env`**: a fresh worktree has none, so `up` copies the primary checkout's `.env` (or `.env.example`) and sets `COMPOSE_PROJECT_NAME`, `TRAEFIK_HOST`, `TRAEFIK_ROUTER_NAME`, `NEXTAUTH_URL`, `SOLILOAN_URL`. Re-running `up` re-applies those and keeps your other edits.
 
 ## Troubleshooting
