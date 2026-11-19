@@ -2,6 +2,11 @@ import type { LenderWithRelations } from '@/types/lenders';
 
 import { createdAtDescSorter } from './sorters';
 
+/** Notes or files of a Kreditgeber*in that belong to no Kredit; Kredit items show under their Kredit. */
+export function withoutLoan<T extends { loanId: string | null }>(items: T[]): T[] {
+  return items.filter((item) => item.loanId === null);
+}
+
 export function mergeLenderNotes(lender: Pick<LenderWithRelations, 'notes' | 'loans'>): LenderWithRelations['notes'] {
   const loanNotes =
     lender.loans?.flatMap((loan) => loan.notes.filter((n) => !lender.notes.some((ln) => ln.id === n.id))) ?? [];
