@@ -26,6 +26,10 @@ _Avoid_: Darlehensbetrag
 A category of Kredite grouped for compliance with the Bagatellgrenze, identified by its interest rate.
 _Avoid_: Anlageform
 
+**Kontomitteilung**:
+A yearly document for one Kreditgeber*in listing their Kredite, Zahlungen and interest for one year.
+_Avoid_: Kontoauszug, loan statement
+
 **Bagatellgrenze**:
 The limit under § 2 VermAnlG (at most 20 units, or €100,000 within twelve months) up to which an Anlageart needs no prospectus.
 _Avoid_: VermAnlG-Limit
@@ -47,6 +51,23 @@ _Avoid_: Abrechnungsjahr
 **Umstellungsjahr**:
 The first Zinsjahr in which a project's interest follows the corrected calculation rules; earlier Zinsjahre keep the rules they were booked with.
 _Avoid_: Stichtag, Cutoff
+### Accounting
+
+**Jahresliste**:
+The list of all Zahlungen and Zinserträge of all Kredite in a project for one calendar year, with totals, prepared for the accountant.
+_Avoid_: Buchhaltungsexport, XLS-Export, Jahresabschluss
+
+**Zinsertrag**:
+The interest a Kredit earns in one Zinsjahr, including any Zinskorrektur.
+_Avoid_: Zinsgutschrift, Zinsen
+
+**Kontomitteilung**:
+The yearly statement to one Kreditgeber*in of the balances, Zahlungen and Zinserträge of their Kredite for one calendar year. Plural: Kontomitteilungen.
+_Avoid_: Jahreskontomitteilung, Kontoauszug, Jahresmitteilung
+
+**Export**:
+A file generated from a project's data for one calendar year, either a Jahresliste or the Kontomitteilungen of all its Kreditgeber*innen, and kept unchanged as a record of what was handed out. Plural: Exporte.
+_Avoid_: Download, Bericht, Auswertung
 
 ### Dashboard
 

@@ -20,7 +20,7 @@ const schema = z.object({
 });
 
 export const getYearlyInterestPayoutAction = projectAction
-  .schema(schema)
+  .inputSchema(schema)
   .action(async ({ parsedInput: { projectId, year } }) => {
     const project = await db.project.findUnique({
       where: { id: projectId },

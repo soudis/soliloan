@@ -15,7 +15,7 @@ const bulkDeleteLendersSchema = z.object({
 });
 
 export const bulkDeleteLendersAction = projectAction
-  .schema(bulkDeleteLendersSchema)
+  .inputSchema(bulkDeleteLendersSchema)
   .action(async ({ parsedInput: { lenderIds, projectId } }) => {
     // Fetch all lenders to verify they belong to this project and for audit trail
     const lenders = await db.lender.findMany({

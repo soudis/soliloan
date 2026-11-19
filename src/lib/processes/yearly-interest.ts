@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { InterestPaymentType, Prisma } from '@prisma/client';
 import moment from 'moment';
 
 import { calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
@@ -31,4 +31,11 @@ export function unpaidYearlyInterest(loan: LoanWithRelations, year: number): num
 
   const unpaid = new Prisma.Decimal(entry.interest).plus(entry.interestPaid).toDecimalPlaces(2);
   return unpaid.greaterThan(0) ? unpaid.toNumber() : 0;
+}
+
+/** Kredite with yearly Zinsauszahlung whose interest of `year` is not fully paid out yet. */
+export function countOpenYearlyInterest(loans: LoanWithRelations[], year: number): number {
+  return loans.filter(
+    (loan) => loan.interestPaymentType === InterestPaymentType.YEARLY && unpaidYearlyInterest(loan, year) > 0,
+  ).length;
 }

@@ -117,8 +117,8 @@
   },
   "lenderYearly": {
     "year": "Jahr",
-    "begin": "Anfangssaldo (Jahr)",
-    "end": "Endsaldo (Jahr)",
+    "begin": "Kontostand Jahresbeginn",
+    "end": "Kontostand Jahresende",
     "deposits": "Einzahlungen (Jahr)",
     "withdrawals": "Auszahlungen (Jahr)",
     "interest": "Zinsen (Jahr)",
@@ -128,8 +128,8 @@
   },
   "loanYearly": {
     "year": "Jahr",
-    "begin": "Anfangssaldo (Jahr)",
-    "end": "Endsaldo (Jahr)",
+    "begin": "Kontostand Jahresbeginn",
+    "end": "Kontostand Jahresende",
     "deposits": "Einzahlungen (Jahr)",
     "withdrawals": "Auszahlungen (Jahr)",
     "interest": "Zinsen (Jahr)",

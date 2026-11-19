@@ -79,6 +79,7 @@ model User {
   forumBoardSubscriptions     ForumBoardSubscription[]
   forumThreadMutes            ForumThreadMute[]
   forumThreadMailCursors      ForumThreadMailCursor[]
+  exports                     Export[]
 
   @@index([forumDigestDueAt])
 }
@@ -161,6 +162,7 @@ model Project {
   dashboardLayout  DashboardLayout?
   bankConnections  BankConnection[]
   bankImportBatch  BankImportBatch?
+  exports          Export[]
 }
 
 model BankConnection {
@@ -336,6 +338,25 @@ model File {
   createdAt   DateTime @default(now())
   createdById String
   createdBy   User     @relation(fields: [createdById], references: [id])
+}
+
+/// A generated file kept unchanged as a record of what was handed out (ADR 0006). Never updated or deleted.
+model Export {
+  id          String     @id @default(cuid())
+  projectId   String
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type        ExportType
+  year        Int
+  /// Generated for the current year: the figures are computed as of 31 Dec (vorläufig).
+  preliminary Boolean
+  fileName    String
+  mimeType    String
+  data        Bytes
+  createdAt   DateTime   @default(now())
+  createdById String
+  createdBy   User       @relation(fields: [createdById], references: [id])
+
+  @@index([projectId, createdAt])
 }
 
 model Note {
@@ -782,6 +803,11 @@ enum Country {
   IE
   PT
   GR
+}
+
+enum ExportType {
+  YEARLY_LIST // Jahresliste (xlsx)
+  ACCOUNT_NOTIFICATIONS // Kontomitteilungen of all Kreditgeber*innen (zip)
 }
 
 enum NotificationType {

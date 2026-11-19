@@ -11,8 +11,8 @@ import React from 'react';
 
 import { type DesignComponent, designComponentId, getDocumentLayout } from '@/lib/templates/design-tree';
 import { paddingPropsToPdfPoints, resolvePaddingPx } from '@/lib/templates/padding-utils';
+import { resolvePdfImageSrc } from '@/lib/templates/pdf-image-src';
 import { type RasterSize, readRasterSizeFromDataUrl } from '@/lib/templates/raster-image-size';
-import { resolveTemplateImageSrc } from '@/lib/templates/resolve-template-image-src';
 import {
   matchesTemplateCondition,
   readTemplateRaw,
@@ -388,8 +388,6 @@ export type DesignToPdfOptions = {
   logoUrl?: string;
   /** Intrinsic pixel size of `logoUrl`, used so flex rows grow with the image. */
   logoDimensions?: RasterSize | null;
-  /** Base URL for resolving public asset paths like /soliloan-logo.webp */
-  assetBaseUrl?: string;
 };
 
 /** React-pdf components passed from the route (Document, Page, View, Text, Image) */
@@ -420,7 +418,7 @@ export function renderDesignToPdfParts(
   headerBorder: Record<string, unknown>;
   footerBorder: Record<string, unknown>;
 } {
-  const { design, sampleData = {}, logoUrl, logoDimensions, assetBaseUrl } = options;
+  const { design, sampleData = {}, logoUrl, logoDimensions } = options;
 
   const resolveImageAspectRatio = (props: Record<string, unknown> | undefined, src: string): number => {
     const useLogo = props?.useLogoSource === true;
@@ -580,7 +578,7 @@ export function renderDesignToPdfParts(
         const resolvedWidth =
           parseImageWidthToPt(props?.width, availableWidth) ?? Math.min(availableWidth, pxToPdfPt(180));
         const rawSrc = props?.useLogoSource === true ? logoUrl || DEFAULT_APP_LOGO_SRC : (props?.src as string) || '';
-        const src = resolveTemplateImageSrc(rawSrc, assetBaseUrl);
+        const src = resolvePdfImageSrc(rawSrc);
         const estimatedHeight = resolvedWidth * resolveImageAspectRatio(props, src);
         const padSides = resolvePaddingPx(props ?? {});
         return estimatedHeight + pxToPdfPt(16) + pxToPdfPt(padSides.top + padSides.bottom);
@@ -842,7 +840,7 @@ export function renderDesignToPdfParts(
       case 'Image': {
         const useLogo = props?.useLogoSource === true;
         const rawSrc = useLogo ? logoUrl || DEFAULT_APP_LOGO_SRC : (props?.src as string) || '';
-        const src = resolveTemplateImageSrc(rawSrc, assetBaseUrl);
+        const src = resolvePdfImageSrc(rawSrc);
         if (!src) return null;
         const widthStyle = imageWidthToPdfStyle(props?.width ?? '100%');
         const aspect = resolveImageAspectRatio(props, src);

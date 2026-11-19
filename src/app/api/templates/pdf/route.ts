@@ -17,7 +17,6 @@ export async function POST(request: Request) {
     if (!session?.user?.isManager) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
-    const assetBaseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : new URL(request.url).origin;
 
     const body = await request.json();
     if (body.design == null || typeof body.design !== 'object') {
@@ -28,7 +27,6 @@ export async function POST(request: Request) {
       design: body.design as Record<string, unknown>,
       sampleData: (body.sampleData as Record<string, unknown>) ?? {},
       logoUrl: body.logoUrl as string | undefined,
-      assetBaseUrl,
     });
 
     return new NextResponse(Buffer.from(buffer), {

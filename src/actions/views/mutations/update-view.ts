@@ -10,7 +10,7 @@ import { assertCanModifyView } from '@/lib/views/access';
 import { revalidateSidebarViews } from '@/lib/views/revalidate-sidebar-views';
 
 export const updateViewAction = authAction
-  .schema(
+  .inputSchema(
     z.object({
       viewId: z.string(),
       projectId: z.string().optional(),

@@ -3,10 +3,11 @@
 import { useTranslations } from 'next-intl';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
 
+import { DownloadsTab } from '@/components/processes/downloads-tab';
 import { YearlyInterestTab } from '@/components/processes/yearly-interest-tab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const TABS = ['yearly-interest'] as const;
+const TABS = ['yearly-interest', 'downloads'] as const;
 
 export function ProcessesPage() {
   const t = useTranslations('processes');
@@ -21,9 +22,15 @@ export function ProcessesPage() {
         <TabsTrigger value="yearly-interest" variant="modern">
           <span>{t('tabs.yearlyInterest')}</span>
         </TabsTrigger>
+        <TabsTrigger value="downloads" variant="modern">
+          <span>{t('tabs.downloads')}</span>
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="yearly-interest" className="mt-6">
         <YearlyInterestTab />
+      </TabsContent>
+      <TabsContent value="downloads" className="mt-6">
+        <DownloadsTab />
       </TabsContent>
     </Tabs>
   );
