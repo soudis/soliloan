@@ -8,12 +8,12 @@ import { EntityFilterList } from '@/components/dashboard/widgets/filters/entity-
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { EntityFilterFieldOption } from '@/types/entity-filters';
 import {
   TABLE_VIEW_ROW_LIMIT_MAX,
   TABLE_VIEW_ROW_LIMIT_MIN,
   type TableViewWidgetConfigBase,
 } from '@/types/dashboard-widgets/table-view';
+import type { EntityFilterFieldOption } from '@/types/entity-filters';
 
 import { TableViewColumnEditor, type TableViewColumnMeta } from './table-view-column-editor';
 

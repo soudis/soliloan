@@ -203,6 +203,7 @@
         "withdrawals": "Auszahlungen",
         "notReclaimed": "Erlassungen",
         "interest": "Zinsen",
+        "interestCarryover": "Zinsübertrag",
         "interestPaid": "Ausbezahlte Zinsen",
         "interestError": "Zinsabweichung",
         "contractAmount": "Vertragsbetrag",

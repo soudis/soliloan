@@ -1,5 +1,5 @@
 import { useLocale, useTranslations } from 'next-intl';
-import { AdditionalFieldType, type AdditionalFieldConfig, type AdditionalFieldValues } from '@/lib/schemas/common';
+import { type AdditionalFieldConfig, AdditionalFieldType, type AdditionalFieldValues } from '@/lib/schemas/common';
 import { formatAdditionalFieldValue } from '@/lib/utils/additional-fields';
 import { InfoItem } from '../ui/info-item';
 

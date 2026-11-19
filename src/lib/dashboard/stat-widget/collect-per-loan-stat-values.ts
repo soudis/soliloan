@@ -46,6 +46,7 @@ export function getPerLoanStatSnapshotValue(
     case 'withdrawals':
     case 'notReclaimed':
     case 'interest':
+    case 'interestCarryover':
     case 'interestPaid':
     case 'interestError':
       return cumulative[metric];

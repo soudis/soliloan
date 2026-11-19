@@ -681,6 +681,8 @@ type YearlyRow = {
   notReclaimed: Prisma.Decimal;
   interestPaid: Prisma.Decimal;
   interest: Prisma.Decimal;
+  /** Zinsübertrag booked this year by an Import: part of the Kontostand, not of the year's Zinsen (ADR 0010). */
+  interestCarryover: Prisma.Decimal;
   interestError: Prisma.Decimal;
 };
 
@@ -698,6 +700,7 @@ function formatYearlyScopeFields(
       deposits: z(0),
       withdrawals: z(0),
       interest: z(0),
+      interestCarryover: z(0),
       interestPaid: z(0),
       notReclaimed: z(0),
       interestError: z(0),
@@ -710,6 +713,7 @@ function formatYearlyScopeFields(
     deposits: z(row.deposits),
     withdrawals: z(row.withdrawals),
     interest: z(row.interest),
+    interestCarryover: z(row.interestCarryover),
     interestPaid: z(row.interestPaid),
     notReclaimed: z(row.notReclaimed),
     interestError: z(row.interestError),
@@ -725,6 +729,7 @@ function buildLenderYearlyTemplateData(lender: TemplateLenderRecord, year: numbe
     deposits: 0,
     withdrawals: 0,
     interest: 0,
+    interestCarryover: 0,
     interestPaid: 0,
     notReclaimed: 0,
     interestError: 0,
@@ -743,6 +748,7 @@ function buildLenderYearlyTemplateData(lender: TemplateLenderRecord, year: numbe
         agg.deposits += yearRow.deposits.toNumber();
         agg.withdrawals += yearRow.withdrawals.toNumber();
         agg.interest += yearRow.interest.toNumber();
+        agg.interestCarryover += yearRow.interestCarryover.toNumber();
         agg.interestPaid += yearRow.interestPaid.toNumber();
         agg.notReclaimed += yearRow.notReclaimed.toNumber();
         agg.interestError += yearRow.interestError.toNumber();
@@ -757,6 +763,7 @@ function buildLenderYearlyTemplateData(lender: TemplateLenderRecord, year: numbe
       deposits: yearRow ? yearRow.deposits.toNumber() : 0,
       withdrawals: yearRow ? yearRow.withdrawals.toNumber() : 0,
       interest: yearRow ? yearRow.interest.toNumber() : 0,
+      interestCarryover: yearRow ? yearRow.interestCarryover.toNumber() : 0,
       interestPaid: yearRow ? yearRow.interestPaid.toNumber() : 0,
       notReclaimed: yearRow ? yearRow.notReclaimed.toNumber() : 0,
       interestError: yearRow ? yearRow.interestError.toNumber() : 0,
@@ -792,6 +799,7 @@ function buildLenderYearlyTemplateData(lender: TemplateLenderRecord, year: numbe
         notReclaimed: new Prisma.Decimal(agg.notReclaimed),
         interestPaid: new Prisma.Decimal(agg.interestPaid),
         interest: new Prisma.Decimal(agg.interest),
+        interestCarryover: new Prisma.Decimal(agg.interestCarryover),
         interestError: new Prisma.Decimal(agg.interestError),
       },
       locale,
@@ -804,6 +812,7 @@ function buildLenderYearlyTemplateData(lender: TemplateLenderRecord, year: numbe
     deposits: agg.deposits,
     withdrawals: agg.withdrawals,
     interest: agg.interest,
+    interestCarryover: agg.interestCarryover,
     interestPaid: agg.interestPaid,
     notReclaimed: agg.notReclaimed,
     interestError: agg.interestError,

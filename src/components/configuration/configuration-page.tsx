@@ -1,7 +1,7 @@
 'use client';
 
 import type { BankConnection } from '@prisma/client';
-import { FileUp, Files as FilesIcon, FileText, Scale, Settings2, User, UserCog, Wallet } from 'lucide-react';
+import { Files as FilesIcon, FileText, FileUp, Scale, Settings2, User, UserCog, Wallet } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAction } from 'next-safe-action/hooks';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';

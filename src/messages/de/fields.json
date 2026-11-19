@@ -122,6 +122,7 @@
     "deposits": "Einzahlungen (Jahr)",
     "withdrawals": "Auszahlungen (Jahr)",
     "interest": "Zinsen (Jahr)",
+    "interestCarryover": "Zinsübertrag (Jahr)",
     "interestPaid": "Ausgezahlte Zinsen (Jahr)",
     "notReclaimed": "Erlassungen (Jahr)",
     "interestError": "Fehlerkorrektur (Jahr)"
@@ -133,6 +134,7 @@
     "deposits": "Einzahlungen (Jahr)",
     "withdrawals": "Auszahlungen (Jahr)",
     "interest": "Zinsen (Jahr)",
+    "interestCarryover": "Zinsübertrag (Jahr)",
     "interestPaid": "Ausgezahlte Zinsen (Jahr)",
     "notReclaimed": "Erlassungen (Jahr)",
     "interestError": "Fehlerkorrektur (Jahr)"
