@@ -19,6 +19,7 @@ import {
 } from '@prisma/client';
 
 import { loadSystemTemplateDesignFile, SYSTEM_TEMPLATE_DESIGNS_DIR } from '@/lib/templates/load-system-template-design';
+import { devAgentCredentials, isDevSeed } from '@/lib/seed/dev-seed';
 import { hashPassword } from '@/lib/utils/password';
 
 const adapter = new PrismaPg({
@@ -329,8 +330,9 @@ async function seedDevProjectData(adminUserId: string) {
     where: { lenderId: lenderDe.id, isSavingsContract: false },
   });
 
-  if (!existingNormalLoan) {
-    await prisma.loan.create({
+  const normalLoan =
+    existingNormalLoan ??
+    (await prisma.loan.create({
       data: {
         loanNumber: await getNextLoanNumber(project.id),
         lenderId: lenderDe.id,
@@ -343,7 +345,8 @@ async function seedDevProjectData(adminUserId: string) {
         contractStatus: ContractStatus.COMPLETED,
         isSavingsContract: false,
       },
-    });
+    }));
+  if (!existingNormalLoan) {
     console.info('Dev normal contract created');
   }
 
@@ -374,6 +377,91 @@ async function seedDevProjectData(adminUserId: string) {
   }
 
   console.info('Dev lenders and contracts seeded');
+  return { projectId: project.id, lender: lenderDe, loan: normalLoan };
+}
+
+async function seedDevAgent(projectId: string) {
+  const { email, password } = devAgentCredentials(process.env);
+  const passwordHashed = await hashPassword(password);
+  // Reset password and lockout on every seed, so the agent can always log in with the .env values.
+  await prisma.user.upsert({
+    where: { email },
+    update: {
+      password: passwordHashed,
+      isAdmin: true,
+      emailVerified: new Date(),
+      failedLoginAttempts: 0,
+      lockedUntil: null,
+      managerOf: { connect: { id: projectId } },
+    },
+    create: {
+      email,
+      emailVerified: new Date(),
+      language: Language.de,
+      name: 'Agent',
+      password: passwordHashed,
+      isAdmin: true,
+      managerOf: { connect: { id: projectId } },
+    },
+  });
+  console.info(`Dev agent user seeded: ${email}`);
+}
+
+type DevNoteAndFile = { loanId: string | null; noteText: string; fileName: string; fileText: string };
+
+async function seedDevNotesAndFiles(createdById: string, lenderId: string, loanId: string) {
+  const entries: DevNoteAndFile[] = [
+    {
+      loanId: null,
+      noteText: '<p>Rückruf vereinbart: möchte über einen weiteren Kredit sprechen.</p>',
+      fileName: 'kreditgeberin-ausweis.txt',
+      fileText: 'Beispieldatei zur Kreditgeber*in (Dev-Seed).\n',
+    },
+    {
+      loanId,
+      noteText: '<p>Vertrag unterschrieben zurückerhalten.</p>',
+      fileName: 'kreditvertrag.txt',
+      fileText: 'Beispieldatei zum Kredit (Dev-Seed).\n',
+    },
+  ];
+
+  for (const entry of entries) {
+    const existingNote = await prisma.note.findFirst({ where: { lenderId, loanId: entry.loanId } });
+    if (!existingNote) {
+      await prisma.note.create({
+        data: {
+          text: entry.noteText,
+          public: false,
+          lenderId,
+          loanId: entry.loanId,
+          createdById,
+          createdAt: new Date(),
+        },
+      });
+    }
+
+    const existingFile = await prisma.file.findFirst({ where: { lenderId, loanId: entry.loanId } });
+    if (!existingFile) {
+      await prisma.file.create({
+        data: {
+          name: entry.fileName,
+          mimeType: 'text/plain',
+          data: Buffer.from(entry.fileText, 'utf8'),
+          public: false,
+          lenderId,
+          loanId: entry.loanId,
+          createdById,
+        },
+      });
+    }
+  }
+  console.info('Dev notes and files seeded');
+}
+
+async function seedDev(adminUserId: string) {
+  const { projectId, lender, loan } = await seedDevProjectData(adminUserId);
+  await seedDevAgent(projectId);
+  await seedDevNotesAndFiles(adminUserId, lender.id, loan.id);
 }
 
 async function main() {
@@ -399,8 +487,10 @@ async function main() {
 
     await seedSystemTemplates(user.id);
 
-    if (process.env.ENVIRONMENT === 'dev') {
-      await seedDevProjectData(user.id);
+    if (isDevSeed(process.env)) {
+      await seedDev(user.id);
+    } else {
+      console.info('Not a dev stack (ENVIRONMENT=dev, NODE_ENV not production): dev seed skipped');
     }
   }
 }
