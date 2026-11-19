@@ -125,7 +125,8 @@ function assertTable(sheet: ExcelJS.Worksheet, name: string, dataRows: number) {
   const table = sheet.getTable(name);
   assert.equal(table.name, name);
   assert.equal(table.headerRow, true);
-  assert.equal(table.showRowStripes, true);
+  // The published Table type nests this under style; the loaded instance only exposes the getter.
+  assert.equal((table as ExcelJS.Table & { showRowStripes: boolean }).showRowStripes, true);
   const headers = (sheet.getRow(1).values as unknown[]).slice(1);
   const lastColumn = String.fromCharCode('A'.charCodeAt(0) + headers.length - 1);
   // ExcelJS keeps the full range on the table model; `ref` is only the anchor used when writing.
