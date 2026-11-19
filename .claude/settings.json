@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm -s typecheck)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm format)",
+      "Bash(pnpm test)",
+      "Bash(pnpm verify)",
+      "Bash(scripts/pr-size.sh)",
+      "Bash(scripts/pr-size.sh *)",
+      "Bash(gh issue view *)",
+      "Bash(gh issue list *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr checks *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/format-on-edit.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/typecheck-on-stop.sh",
+            "timeout": 180
+          }
+        ]
+      }
+    ]
+  }
+}
