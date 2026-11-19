@@ -86,8 +86,8 @@ describe('jahreslisteXlsx', () => {
     ]);
     assert.deepEqual((list.getRow(1).values as unknown[]).slice(1), [
       'Kreditgeber*in-Nr.',
-      'Nachname',
-      'Vorname',
+      'Name',
+      'Typ',
       'Kredit-Nr.',
       'Vorgang',
       'Datum',
@@ -105,6 +105,8 @@ describe('jahreslisteXlsx', () => {
     assert.match(sums.getRow(2).getCell(2).numFmt ?? '', /€/);
 
     const first = list.getRow(2);
+    assert.equal(first.getCell(2).value, jahresliste.rows[0].name);
+    assert.equal(first.getCell(3).value, 'Person');
     assert.equal(first.getCell(5).value, 'Kontostand Jahresbeginn');
     assert.equal((first.getCell(6).value as Date).toISOString(), '2025-01-01T00:00:00.000Z');
     assert.equal(first.getCell(6).numFmt, 'mm-dd-yy');

@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
 
-import { type Jahresliste, JAHRESLISTE_VORGANG_LABELS } from './jahresliste';
+import { JAHRESLISTE_LENDER_TYPE_LABELS, JAHRESLISTE_VORGANG_LABELS, type Jahresliste } from './jahresliste';
 
 // Built-in Excel formats (ids 14 and 10). A custom code is filed under Custom.
 // The date follows the reader's locale; the percent format multiplies by 100.
@@ -44,8 +44,8 @@ export async function jahreslisteXlsx(jahresliste: Jahresliste): Promise<Buffer>
     LIST_COLUMNS,
     jahresliste.rows.map((row) => [
       row.lenderNumber,
-      row.lastName,
-      row.firstName,
+      row.name,
+      JAHRESLISTE_LENDER_TYPE_LABELS[row.lenderType],
       row.loanNumber,
       JAHRESLISTE_VORGANG_LABELS[row.vorgang],
       row.date,
@@ -65,8 +65,8 @@ const SUM_COLUMNS: SheetColumn[] = [
 
 const LIST_COLUMNS: SheetColumn[] = [
   { name: 'Kreditgeber*in-Nr.', width: 18 },
-  { name: 'Nachname', width: 24 },
-  { name: 'Vorname', width: 18 },
+  { name: 'Name', width: 28 },
+  { name: 'Typ', width: 16 },
   { name: 'Kredit-Nr.', width: 12 },
   { name: 'Vorgang', width: 26 },
   { name: 'Datum', width: 12, numFmt: DATE },

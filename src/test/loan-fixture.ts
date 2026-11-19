@@ -17,8 +17,10 @@ type FixtureTransaction = {
 type FixtureLender = {
   id?: string;
   lenderNumber?: number;
-  firstName?: string;
-  lastName?: string;
+  type?: 'PERSON' | 'ORGANISATION';
+  firstName?: string | null;
+  lastName?: string | null;
+  organisationName?: string | null;
   notificationType?: 'ONLINE' | 'EMAIL' | 'POST';
 };
 
@@ -55,10 +57,10 @@ export function fixtureLoan(options: {
     lender: {
       id: options.lender?.id ?? `lender-${counter}`,
       lenderNumber: options.lender?.lenderNumber ?? counter,
-      firstName: options.lender?.firstName ?? 'Anna',
-      lastName: options.lender?.lastName ?? 'Beispiel',
-      organisationName: null,
-      type: 'PERSON',
+      firstName: options.lender?.type === 'ORGANISATION' ? null : (options.lender?.firstName ?? 'Anna'),
+      lastName: options.lender?.type === 'ORGANISATION' ? null : (options.lender?.lastName ?? 'Beispiel'),
+      organisationName: options.lender?.organisationName ?? null,
+      type: options.lender?.type ?? 'PERSON',
       notificationType: options.lender?.notificationType ?? 'EMAIL',
       project: { configuration: { interestMethod: options.interestMethod } },
     },

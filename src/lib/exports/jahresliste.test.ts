@@ -128,18 +128,21 @@ describe('buildJahresliste', () => {
     const loans = portfolio('ACT_365_NOCOMPOUND');
     const { rows, lenders } = buildJahresliste(loans, YEAR);
 
-    assert.deepEqual(new Set(rows.map((row) => row.lastName)), new Set(['Running', 'Closing', 'Forgiving', 'New']));
+    assert.deepEqual(
+      new Set(rows.map((row) => row.name)),
+      new Set(['Running, Anna', 'Closing, Anna', 'Forgiving, Anna', 'New, Anna']),
+    );
     assert.deepEqual(
       lenders.map((lender) => lender.id),
       [loans[0], loans[1], loans[2], loans[3]].map((loan) => loan.lender.id),
     );
 
-    const closing = rows.filter((row) => row.lastName === 'Closing').map((row) => row.vorgang);
+    const closing = rows.filter((row) => row.name === 'Closing, Anna').map((row) => row.vorgang);
     assert.deepEqual(closing, ['OPENING_BALANCE', 'WITHDRAWAL', 'INTEREST', 'TERMINATION']);
-    const closingInterest = rows.find((row) => row.lastName === 'Closing' && row.vorgang === 'INTEREST');
+    const closingInterest = rows.find((row) => row.name === 'Closing, Anna' && row.vorgang === 'INTEREST');
     assert.equal(closingInterest?.date.toISOString(), '2025-10-17T00:00:00.000Z');
 
-    const running = rows.filter((row) => row.lastName === 'Running');
+    const running = rows.filter((row) => row.name === 'Running, Anna');
     assert.deepEqual(
       running.map((row) => row.vorgang),
       ['OPENING_BALANCE', 'INTERESTPAYMENT', 'DEPOSIT', 'WITHDRAWAL', 'INTEREST', 'CLOSING_BALANCE'],
@@ -150,7 +153,7 @@ describe('buildJahresliste', () => {
     assert.equal(end?.interestAmount, running.find((row) => row.vorgang === 'INTEREST')?.amount);
     assert.ok(running.slice(0, -1).every((row) => row.interestAmount === null));
 
-    const newLoan = rows.filter((row) => row.lastName === 'New').map((row) => row.vorgang);
+    const newLoan = rows.filter((row) => row.name === 'New, Anna').map((row) => row.vorgang);
     assert.deepEqual(newLoan, ['DEPOSIT', 'INTEREST', 'CLOSING_BALANCE']);
   });
 
@@ -161,9 +164,41 @@ describe('buildJahresliste', () => {
       keys,
       [...keys].sort((a, b) => a - b),
     );
-    const firstDay = rows.filter((row) => row.date.getTime() === Date.UTC(YEAR, 0, 1)).map((row) => row.lastName);
-    assert.deepEqual(firstDay, ['Closing', 'Forgiving', 'Running']);
+    const firstDay = rows.filter((row) => row.date.getTime() === Date.UTC(YEAR, 0, 1)).map((row) => row.name);
+    assert.deepEqual(firstDay, ['Closing, Anna', 'Forgiving, Anna', 'Running, Anna']);
     const lastDay = rows.filter((row) => row.date.getTime() === Date.UTC(YEAR, 11, 31)).map((row) => row.vorgang);
     assert.deepEqual(lastDay, ['INTEREST', 'INTEREST', 'CLOSING_BALANCE', 'CLOSING_BALANCE']);
+  });
+
+  it('names a person as Nachname, Vorname and an organisation by its name', () => {
+    const loans = [
+      fixtureLoan({
+        interestRate: 1,
+        interestMethod: 'ACT_365_NOCOMPOUND',
+        lender: { lastName: 'Meier', firstName: 'Bernd' },
+        transactions: [tx(DEPOSIT, new Date(YEAR, 0, 2), 100)],
+      }),
+      fixtureLoan({
+        interestRate: 1,
+        interestMethod: 'ACT_365_NOCOMPOUND',
+        lender: { lastName: 'Meier', firstName: 'Anna' },
+        transactions: [tx(DEPOSIT, new Date(YEAR, 0, 2), 100)],
+      }),
+      fixtureLoan({
+        interestRate: 1,
+        interestMethod: 'ACT_365_NOCOMPOUND',
+        lender: { type: 'ORGANISATION', organisationName: 'Soli Verein' },
+        transactions: [tx(DEPOSIT, new Date(YEAR, 0, 2), 100)],
+      }),
+    ];
+    const deposits = buildJahresliste(loans, YEAR).rows.filter((row) => row.vorgang === 'DEPOSIT');
+    assert.deepEqual(
+      deposits.map((row) => [row.name, row.lenderType]),
+      [
+        ['Meier, Anna', 'PERSON'],
+        ['Meier, Bernd', 'PERSON'],
+        ['Soli Verein', 'ORGANISATION'],
+      ],
+    );
   });
 });

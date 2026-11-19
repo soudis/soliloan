@@ -33,6 +33,7 @@ export async function loadExportLoansUnsafe(projectId: string): Promise<LoanWith
         select: {
           id: true,
           lenderNumber: true,
+          type: true,
           firstName: true,
           lastName: true,
           organisationName: true,

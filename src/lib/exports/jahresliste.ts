@@ -1,4 +1,4 @@
-import { type NotificationType, Prisma, TransactionType } from '@prisma/client';
+import { type LenderType, type NotificationType, Prisma, TransactionType } from '@prisma/client';
 import moment from 'moment';
 
 import { calculateLoanPerYear, isRepaid } from '@/lib/calculations/loan-calculations';
@@ -32,11 +32,17 @@ export const JAHRESLISTE_VORGANG_LABELS: Record<JahreslisteVorgang, string> = {
   CLOSING_BALANCE: 'Kontostand Jahresende',
 };
 
+export const JAHRESLISTE_LENDER_TYPE_LABELS: Record<LenderType, string> = {
+  PERSON: 'Person',
+  ORGANISATION: 'Organisation',
+};
+
 export type JahreslisteRow = {
   lenderId: string;
   lenderNumber: number;
-  lastName: string;
-  firstName: string;
+  /** A person is "Nachname, Vorname", so the sheet sorts by surname. An organisation is its name. */
+  name: string;
+  lenderType: LenderType;
   loanNumber: number;
   vorgang: JahreslisteVorgang;
   /** The calendar day at UTC midnight, so spreadsheets show the same day in every time zone. */
@@ -72,10 +78,22 @@ const vorgangOrder = (vorgang: JahreslisteVorgang) => JAHRESLISTE_VORGAENGE.inde
 const byDateVorgangName = (a: JahreslisteRow, b: JahreslisteRow) =>
   a.date.getTime() - b.date.getTime() ||
   vorgangOrder(a.vorgang) - vorgangOrder(b.vorgang) ||
-  a.lastName.localeCompare(b.lastName, 'de') ||
-  a.firstName.localeCompare(b.firstName, 'de') ||
+  a.name.localeCompare(b.name, 'de') ||
   a.lenderNumber - b.lenderNumber ||
   a.loanNumber - b.loanNumber;
+
+/** Surname first, so an alphabetical sheet matches a German name list. Titles stay off the Jahresliste. */
+function lenderName(lender: LoanWithRelations['lender']): string {
+  if (lender.type === 'ORGANISATION') {
+    return lender.organisationName ?? '';
+  }
+  const lastName = lender.lastName ?? '';
+  const firstName = lender.firstName ?? '';
+  if (lastName && firstName) {
+    return `${lastName}, ${firstName}`;
+  }
+  return lastName || firstName;
+}
 
 function loanRows(loan: LoanWithRelations, year: number): JahreslisteRow[] {
   const asOf = payoutAsOfDate(year);
@@ -88,8 +106,8 @@ function loanRows(loan: LoanWithRelations, year: number): JahreslisteRow[] {
   const base = {
     lenderId: lender.id,
     lenderNumber: lender.lenderNumber,
-    lastName: lender.organisationName || lender.lastName || '',
-    firstName: lender.organisationName ? '' : (lender.firstName ?? ''),
+    name: lenderName(lender),
+    lenderType: lender.type,
     loanNumber: loan.loanNumber,
     interestRate: new Prisma.Decimal(loan.interestRate).toNumber(),
     interestAmount: null,
