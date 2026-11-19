@@ -12,38 +12,53 @@ import {
 } from '@/lib/audit-trail';
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
+import { lockLoan } from '@/lib/loans/loan-lock';
+import { checkChange, rejectionErrorKey } from '@/lib/loans/transaction-validation';
 import { transactionIdSchema } from '@/lib/schemas/common';
 import { transactionAction } from '@/lib/utils/safe-action';
 
 export const deleteTransactionAction = transactionAction
   .inputSchema(transactionIdSchema)
   .action(async ({ parsedInput: { transactionId } }) => {
-    // Fetch the loan and transaction
-    // Need transaction with loan to identify loanId?
-    const transaction = await db.transaction.findUnique({
-      where: { id: transactionId },
-      include: {
-        loan: {
-          include: {
-            lender: {
-              include: {
-                project: {
-                  include: {
-                    configuration: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!transaction) {
+    const stored = await db.transaction.findUnique({ where: { id: transactionId }, select: { loanId: true } });
+    if (!stored) {
       throw new Error('Transaction not found');
     }
 
-    // Create audit trail entry before deletion
+    // Check and delete in one DB transaction that locks the Kredit, so parallel changes cannot both pass
+    const transaction = await db.$transaction(async (tx) => {
+      await lockLoan(tx, stored.loanId);
+      const transaction = await tx.transaction.findUnique({
+        where: { id: transactionId },
+        include: {
+          loan: {
+            include: {
+              transactions: true,
+              lender: { include: { project: { include: { configuration: true } } } },
+            },
+          },
+        },
+      });
+      if (!transaction) {
+        throw new Error('Transaction not found');
+      }
+
+      // Any Zahlung can be deleted as long as the remaining ledger stays valid
+      const { transactions } = transaction.loan;
+      const { errors } = checkChange(
+        transaction.loan,
+        transactions,
+        transactions.filter((item) => item.id !== transactionId),
+        transaction.date,
+      );
+      if (errors.length > 0) {
+        throw new Error(rejectionErrorKey(errors, 'error.transaction.deleteInvalid'));
+      }
+
+      await tx.transaction.delete({ where: { id: transactionId } });
+      return transaction;
+    });
+
     await createAuditEntry(db, {
       entity: Entity.transaction,
       operation: Operation.DELETE,
@@ -56,13 +71,6 @@ export const deleteTransactionAction = transactionAction
         ...getTransactionContext(transaction),
       },
       projectId: transaction.loan.lender.projectId,
-    });
-
-    // Delete the transaction
-    await db.transaction.delete({
-      where: {
-        id: transactionId,
-      },
     });
 
     // Revalidate the lender page (loans are viewed within lender detail)

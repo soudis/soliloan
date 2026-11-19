@@ -10,10 +10,8 @@ import {
   getTransactionContext,
   removeNullFields,
 } from '@/lib/audit-trail';
-import { calculateLoanFields } from '@/lib/calculations/loan-calculations';
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
-import { isLoanEligibleForTransaction } from '@/lib/gocardless/import-matching';
 import type {
   BankImportProtocol,
   BankImportProtocolImportedRow,
@@ -22,10 +20,20 @@ import type {
   BankImportSkipReason,
 } from '@/lib/gocardless/import-protocol';
 import { BANK_IMPORT_PAYMENT_TYPE, getSignedTransactionAmount } from '@/lib/gocardless/import-transaction-utils';
+import { sortRowsForBooking } from '@/lib/gocardless/import-order';
+import { lockLoan } from '@/lib/loans/loan-lock';
+import { DRAFT_TRANSACTION_ID, checkNewTransaction } from '@/lib/loans/transaction-validation';
 import { finalizeImportBatchSchema } from '@/lib/schemas/gocardless';
 import { getLenderName } from '@/lib/utils';
-import { parseAdditionalFields } from '@/lib/utils/additional-fields';
 import { projectAction } from '@/lib/utils/safe-action';
+
+/** Zahlungen a bank import can create. */
+const IMPORTABLE_TYPES: TransactionType[] = [
+  TransactionType.DEPOSIT,
+  TransactionType.WITHDRAWAL,
+  TransactionType.INTERESTPAYMENT,
+  TransactionType.TERMINATION,
+];
 
 function toProtocolRow(row: {
   id: string;
@@ -61,87 +69,89 @@ export const finalizeImportBatchAction = projectAction
     let maxBookingDate: Date | null = null;
     let connectionId: string | null = null;
 
-    for (const rowId of rowIds) {
-      const row = await db.bankImportRow.findUnique({
-        where: { id: rowId },
-        include: { batch: true },
+    const rows = await db.bankImportRow.findMany({
+      where: { id: { in: rowIds } },
+      include: { batch: true },
+    });
+    const foundIds = new Set(rows.map((row) => row.id));
+    for (const rowId of rowIds.filter((id) => !foundIds.has(id))) {
+      skipped.push({
+        rowId,
+        bookingDate: new Date(0).toISOString(),
+        amount: 0,
+        currency: '',
+        counterpartyName: null,
+        remittanceInfo: null,
+        reason: 'rowNotFound',
       });
+    }
 
-      if (!row || row.batch.projectId !== projectId) {
-        if (row) {
-          skip(skipped, row, 'rowNotFound');
-        } else {
-          skipped.push({
-            rowId,
-            bookingDate: new Date(0).toISOString(),
-            amount: 0,
-            currency: '',
-            counterpartyName: null,
-            remittanceInfo: null,
-            reason: 'rowNotFound',
-          });
-        }
+    // Oldest first: each row is checked against the Zahlungen booked before it
+    for (const row of sortRowsForBooking(rows)) {
+      if (row.batch.projectId !== projectId) {
+        skip(skipped, row, 'rowNotFound');
         continue;
       }
 
       connectionId = row.batch.connectionId;
 
       const type = row.amount > 0 ? TransactionType.DEPOSIT : row.selectedType;
+      const loanId = row.selectedLoanId;
 
-      if (!type || !row.selectedLenderId || !row.selectedLoanId) {
+      if (!type || !row.selectedLenderId || !loanId) {
         skip(skipped, row, 'incompleteAssignment');
         continue;
       }
 
-      const loan = await db.loan.findUnique({
-        where: { id: row.selectedLoanId },
-        include: {
-          lender: {
-            include: {
-              project: {
-                include: {
-                  configuration: { select: { interestMethod: true, interestChangeoverYear: true } },
+      const amountMagnitude = Math.abs(row.amount);
+      if (amountMagnitude <= 0 || !IMPORTABLE_TYPES.includes(type)) {
+        skip(skipped, row, 'notEligible');
+        continue;
+      }
+
+      // Check and book in one DB transaction that locks the Kredit, so parallel saves cannot both pass
+      const result = await db.$transaction(async (tx) => {
+        await lockLoan(tx, loanId);
+        const loan = await tx.loan.findUnique({
+          where: { id: loanId },
+          include: {
+            lender: {
+              include: {
+                project: {
+                  include: {
+                    configuration: { select: { interestMethod: true, interestChangeoverYear: true } },
+                  },
                 },
               },
             },
+            transactions: true,
           },
-          transactions: true,
-        },
-      });
+        });
 
-      if (!loan || loan.lender.projectId !== projectId || loan.lenderId !== row.selectedLenderId) {
-        skip(skipped, row, 'loanMismatch');
-        continue;
-      }
+        if (!loan || loan.lender.projectId !== projectId || loan.lenderId !== row.selectedLenderId) {
+          return { skip: 'loanMismatch' as const };
+        }
 
-      const calculated = calculateLoanFields(
-        parseAdditionalFields({
-          ...loan,
-          notes: [],
-          files: [],
-          lender: parseAdditionalFields({ ...loan.lender, notes: [], files: [] }),
-        }),
-        { toDate: row.bookingDate },
-      );
+        const { errors, after } = checkNewTransaction(loan, loan.id, loan.transactions, {
+          type,
+          date: row.bookingDate,
+          amount: amountMagnitude,
+        });
+        if (errors.length > 0) {
+          return { skip: 'notEligible' as const };
+        }
 
-      const amountMagnitude = Math.abs(row.amount);
-      if (!isLoanEligibleForTransaction(calculated, type, amountMagnitude)) {
-        skip(
-          skipped,
-          row,
-          type === TransactionType.TERMINATION && calculated.balance > 0 ? 'terminationBalanceMismatch' : 'notEligible',
-        );
-        continue;
-      }
+        // A Rückzahlung from the bank has to match the Kontostand on its day
+        const closing = after.closingDifferences.find((item) => item.transactionId === DRAFT_TRANSACTION_ID);
+        if (closing && Math.abs(closing.difference) > 0.001) {
+          return { skip: 'terminationBalanceMismatch' as const };
+        }
 
-      const signedAmount = getSignedTransactionAmount(type, amountMagnitude);
-
-      const created = await db.$transaction(async (tx) => {
-        const transaction = await tx.transaction.create({
+        const created = await tx.transaction.create({
           data: {
             type,
             date: row.bookingDate,
-            amount: signedAmount,
+            amount: getSignedTransactionAmount(type, amountMagnitude),
             paymentType: BANK_IMPORT_PAYMENT_TYPE,
             loanId: loan.id,
           },
@@ -151,14 +161,20 @@ export const finalizeImportBatchAction = projectAction
           data: {
             connectionId: row.batch.connectionId,
             bankTransactionId: row.bankTransactionId,
-            transactionId: transaction.id,
+            transactionId: created.id,
           },
         });
 
         await tx.bankImportRow.delete({ where: { id: row.id } });
 
-        return transaction;
+        return { skip: undefined, loan, created };
       });
+
+      if (result.skip) {
+        skip(skipped, row, result.skip);
+        continue;
+      }
+      const { loan, created } = result;
 
       await createAuditEntry(db, {
         entity: Entity.transaction,

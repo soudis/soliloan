@@ -13,7 +13,10 @@ import {
 } from '@/lib/audit-trail';
 import { invalidateDashboardWidgetResultsCache } from '@/lib/dashboard/widget-results-cache';
 import { db } from '@/lib/db';
+import { lockLoan } from '@/lib/loans/loan-lock';
+import { checkChange } from '@/lib/loans/transaction-validation';
 import { getLenderName } from '@/lib/utils';
+import { sortTransactions } from '@/lib/utils/sorters';
 import { projectAction } from '@/lib/utils/safe-action';
 
 const bulkDeleteTransactionsSchema = z.object({
@@ -32,7 +35,6 @@ export const bulkDeleteTransactionsAction = projectAction
       include: {
         loan: {
           include: {
-            transactions: { orderBy: { date: 'asc' } },
             lender: {
               include: {
                 project: { include: { configuration: true } },
@@ -49,12 +51,14 @@ export const bulkDeleteTransactionsAction = projectAction
       id: string;
       loanNumber: number | null;
       lenderName: string | null;
-      reason: 'notFound' | 'interest' | 'notLatest';
+      reason: 'notFound' | 'interest' | 'invalid';
     }[] = transactionIds
       .filter((id) => !foundIds.has(id))
       .map((id) => ({ id, loanNumber: null, lenderName: null, reason: 'notFound' as const }));
 
-    for (const transaction of transactions) {
+    // Latest first: a Zahlung that relies on an earlier one (a Teilrückzahlung on its Einzahlung) is
+    // deleted before it, so selecting both deletes both whatever order the database returns
+    for (const transaction of sortTransactions(transactions).reverse()) {
       const loanNumber = transaction.loan.loanNumber;
       const lenderName = getLenderName(transaction.loan.lender);
 
@@ -63,12 +67,30 @@ export const bulkDeleteTransactionsAction = projectAction
         continue;
       }
 
-      const lastNonInterest = [...transaction.loan.transactions]
-        .reverse()
-        .find((tx) => tx.type !== TransactionType.INTEREST);
-
-      if (lastNonInterest?.id !== transaction.id) {
-        skipped.push({ id: transaction.id, loanNumber, lenderName, reason: 'notLatest' });
+      // Check and delete in one DB transaction that locks the Kredit: each deletion is checked against
+      // the ledger as left by the previous ones (and by parallel saves)
+      const outcome = await db.$transaction(async (tx) => {
+        await lockLoan(tx, transaction.loanId);
+        const loan = await tx.loan.findUnique({
+          where: { id: transaction.loanId },
+          include: {
+            transactions: true,
+            lender: { include: { project: { include: { configuration: true } } } },
+          },
+        });
+        if (!loan?.transactions.some((item) => item.id === transaction.id)) {
+          return 'notFound' as const;
+        }
+        const remaining = loan.transactions.filter((item) => item.id !== transaction.id);
+        const { errors } = checkChange(loan, loan.transactions, remaining, transaction.date);
+        if (errors.length > 0) {
+          return 'invalid' as const;
+        }
+        await tx.transaction.delete({ where: { id: transaction.id } });
+        return 'deleted' as const;
+      });
+      if (outcome !== 'deleted') {
+        skipped.push({ id: transaction.id, loanNumber, lenderName, reason: outcome });
         continue;
       }
 
@@ -86,7 +108,6 @@ export const bulkDeleteTransactionsAction = projectAction
         projectId,
       });
 
-      await db.transaction.delete({ where: { id: transaction.id } });
       deletedCount += 1;
       revalidatePath(`/lenders/${transaction.loan.lenderId}`);
     }
