@@ -11,6 +11,7 @@ export const JAHRESLISTE_VORGAENGE = [
   TransactionType.DEPOSIT,
   TransactionType.NOTRECLAIMEDPARTIAL,
   TransactionType.INTEREST,
+  TransactionType.INTERESTCARRYOVER,
   TransactionType.INTERESTPAYMENT,
   TransactionType.WITHDRAWAL,
   TransactionType.TERMINATION,
@@ -24,6 +25,7 @@ export const JAHRESLISTE_VORGANG_LABELS: Record<JahreslisteVorgang, string> = {
   OPENING_BALANCE: 'Kontostand Jahresbeginn',
   DEPOSIT: 'Einzahlung',
   INTEREST: 'Zinsertrag',
+  INTERESTCARRYOVER: 'Zinsübertrag',
   INTERESTPAYMENT: 'Zinsauszahlung',
   WITHDRAWAL: 'Teilrückzahlung',
   TERMINATION: 'Rückzahlung',
@@ -168,7 +170,10 @@ export function buildJahresliste(loans: LoanWithRelations[], year: number): Jahr
   const lenderIds = new Set(rows.map((row) => row.lenderId));
   return {
     rows,
-    sums: JAHRESLISTE_VORGAENGE.map((vorgang) => ({
+    // The Zinsübertrag only exists after an Import (ADR 0010); other years keep the usual Summen.
+    sums: JAHRESLISTE_VORGAENGE.filter(
+      (vorgang) => vorgang !== TransactionType.INTERESTCARRYOVER || rows.some((row) => row.vorgang === vorgang),
+    ).map((vorgang) => ({
       vorgang,
       amount: (totals.get(vorgang) ?? new Prisma.Decimal(0)).toDecimalPlaces(2).toNumber(),
     })),

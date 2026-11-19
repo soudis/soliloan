@@ -2,10 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 import { useFormContext } from 'react-hook-form';
-
+import { NoteRichTextEditor } from '@/components/generic/notes/note-rich-text-editor';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FormControl, FormField as FormFieldWrapper, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { NoteRichTextEditor } from '@/components/generic/notes/note-rich-text-editor';
 import type { NoteFormData } from '@/lib/schemas/note';
 import type { LoanWithCalculations } from '@/types/loans';
 import { LoanDropdown } from '../lenders/loan-dropdown';

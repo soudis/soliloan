@@ -1,4 +1,7 @@
 {
+  "transaction": {
+    "importOnly": "Ein Zinsübertrag entsteht nur durch einen Import"
+  },
   "common": {
     "required": "Bitte eingeben",
     "email": "Bitte gültige E-Mail-Adresse eingeben",

@@ -7,6 +7,8 @@ export type LoanMonthlyNumbers = {
   notReclaimed: number;
   interestPaid: number;
   interest: number;
+  /** Zinsübertrag booked by an Import (ADR 0010): raises `end` without being interest of the month. */
+  interestCarryover: number;
   interestError: number;
   /** Interest-bearing amount after this month's transactions. A stock, like `end`. */
   interestBaseAmount: number;

@@ -5,11 +5,11 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import type { DataTableColumnFilters } from '@/components/ui/data-table';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import type { DataTableColumnFilters } from '@/components/ui/data-table';
-import { exportTableToExcel, type ExportColumnScope } from '@/lib/table-export/export-table-to-excel';
+import { type ExportColumnScope, exportTableToExcel } from '@/lib/table-export/export-table-to-excel';
 
 interface DataTableExportDialogProps<TData> {
   table: Table<TData>;

@@ -35,6 +35,7 @@ function flowsOnOrBefore(transactions: FlowTransaction[], year: number, month: n
   let withdrawals = 0;
   let notReclaimed = 0;
   let interestPaid = 0;
+  let interestCarryover = 0;
 
   for (const tx of transactions) {
     const date = moment(tx.date);
@@ -57,12 +58,15 @@ function flowsOnOrBefore(transactions: FlowTransaction[], year: number, month: n
       case TransactionType.INTERESTPAYMENT:
         interestPaid += amount;
         break;
+      case TransactionType.INTERESTCARRYOVER:
+        interestCarryover += amount;
+        break;
       default:
         break;
     }
   }
 
-  return { deposits, withdrawals, notReclaimed, interestPaid };
+  return { deposits, withdrawals, notReclaimed, interestPaid, interestCarryover };
 }
 
 function closeEnough(left: number, right: number): boolean {
@@ -109,7 +113,8 @@ export function historyMonthCountsForPeriodEnd(
     closeEnough(flows.deposits, entry.deposits) &&
     closeEnough(flows.withdrawals, entry.withdrawals) &&
     closeEnough(flows.notReclaimed, entry.notReclaimed) &&
-    closeEnough(flows.interestPaid, entry.interestPaid)
+    closeEnough(flows.interestPaid, entry.interestPaid) &&
+    closeEnough(flows.interestCarryover, entry.interestCarryover)
   );
 }
 

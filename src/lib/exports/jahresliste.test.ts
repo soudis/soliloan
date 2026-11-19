@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { InterestMethod, Prisma } from '@prisma/client';
+import { InterestMethod, Prisma, TransactionType } from '@prisma/client';
 
 import { calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
 import {
@@ -112,7 +112,7 @@ describe('buildJahresliste', () => {
 
       assert.deepEqual(
         sums.map((row) => row.vorgang),
-        [...JAHRESLISTE_VORGAENGE],
+        JAHRESLISTE_VORGAENGE.filter((vorgang) => vorgang !== 'INTERESTCARRYOVER'),
       );
       const movements = sums
         .filter((row) => row.vorgang !== 'OPENING_BALANCE' && row.vorgang !== 'CLOSING_BALANCE')
@@ -200,6 +200,26 @@ describe('buildJahresliste', () => {
         ['Soli Verein', 'ORGANISATION'],
       ],
     );
+  });
+
+  it('lists a Zinsübertrag as its own Vorgang and keeps the Summen reconciled', () => {
+    // Imported with 01.01. as Importstichtag: the Zinsübertrag is a Zahlung of the new year (ADR 0010).
+    const imported = fixtureLoan({
+      interestRate: 2,
+      interestMethod: 'ACT_365_NOCOMPOUND',
+      transactions: [
+        tx(DEPOSIT, new Date(YEAR, 0, 1), 10000),
+        tx(TransactionType.INTERESTCARRYOVER, new Date(YEAR, 0, 1), 500),
+      ],
+    });
+    const { rows, sums } = buildJahresliste([imported], YEAR);
+
+    assert.ok(rows.some((row) => row.vorgang === 'INTERESTCARRYOVER' && row.amount === 500));
+    assert.equal(sumOf(sums, 'INTERESTCARRYOVER'), 500);
+    const movements = sums
+      .filter((row) => row.vorgang !== 'OPENING_BALANCE' && row.vorgang !== 'CLOSING_BALANCE')
+      .reduce((total, row) => total.plus(row.amount), new Prisma.Decimal(sumOf(sums, 'OPENING_BALANCE')));
+    assert.equal(movements.toFixed(2), new Prisma.Decimal(sumOf(sums, 'CLOSING_BALANCE')).toFixed(2));
   });
 
   it('books the Zinsertrag of a Zinsjahr before the Umstellungsjahr with the old rules', () => {

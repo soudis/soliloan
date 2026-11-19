@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
-import { getProjectUnsafe } from '@/lib/projects/get-project';
 import { InvestmentTypeFormClient } from '@/components/investment-types/investment-type-form-client';
 import { searchParamsCache } from '@/lib/params';
+import { getProjectUnsafe } from '@/lib/projects/get-project';
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

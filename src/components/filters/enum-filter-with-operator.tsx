@@ -2,15 +2,15 @@
 
 import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useMemo, type ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
 import {
   FilterFieldGroup,
+  type FilterFieldSize,
+  type FilterFieldVariant,
   FilterStackedFields,
   filterOperatorSegmentClass,
   filterValueSegmentClass,
-  type FilterFieldSize,
-  type FilterFieldVariant,
 } from '@/components/filters/filter-field-group';
 import { Button } from '@/components/ui/button';
 import {

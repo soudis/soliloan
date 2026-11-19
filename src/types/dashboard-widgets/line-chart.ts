@@ -1,10 +1,10 @@
+import type { BarChartTimelineConfig, BarChartXAxisMode } from './bar-chart';
 import type { ChartDiscriminatorConfig } from './chart-discriminator';
 import { createDefaultChartDiscriminatorConfig, parseChartDiscriminatorConfig } from './chart-discriminator';
-import type { BarChartTimelineConfig, BarChartXAxisMode } from './bar-chart';
 import {
   createDefaultLineChartSeries,
-  parseLineChartSeriesList,
   type LineChartSeriesConfig,
+  parseLineChartSeriesList,
 } from './line-chart-series';
 import type { PieChartChartSize } from './pie-chart';
 import { PIE_CHART_SIZES } from './pie-chart';

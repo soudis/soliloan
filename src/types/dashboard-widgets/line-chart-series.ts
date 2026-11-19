@@ -1,4 +1,4 @@
-import { createDefaultChartSeries, parseChartSeriesList, type ChartSeriesConfig } from './chart-series';
+import { type ChartSeriesConfig, createDefaultChartSeries, parseChartSeriesList } from './chart-series';
 
 export const LINE_CHART_LINE_SHAPES = ['straight', 'smooth', 'stepped'] as const;
 

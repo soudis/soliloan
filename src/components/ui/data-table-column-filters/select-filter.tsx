@@ -1,7 +1,6 @@
 import type { ColumnFilter } from '@tanstack/react-table';
-
-import type { FilterFieldSize, FilterFieldVariant } from '@/components/filters/filter-field-group';
 import { EnumFilterWithOperator } from '@/components/filters/enum-filter-with-operator';
+import type { FilterFieldSize, FilterFieldVariant } from '@/components/filters/filter-field-group';
 
 interface SelectFilterProps {
   filterState?: ColumnFilter;

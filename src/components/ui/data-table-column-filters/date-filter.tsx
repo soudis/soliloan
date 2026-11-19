@@ -1,7 +1,6 @@
 import type { ColumnFilter } from '@tanstack/react-table';
-
-import type { FilterFieldSize, FilterFieldVariant } from '@/components/filters/filter-field-group';
 import { DateFilterWithOperator } from '@/components/filters/date-filter-with-operator';
+import type { FilterFieldSize, FilterFieldVariant } from '@/components/filters/filter-field-group';
 import type { DateFilterValue } from '@/types/date-filter-value';
 
 interface DateFilterProps {

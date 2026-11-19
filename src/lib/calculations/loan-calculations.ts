@@ -12,8 +12,16 @@ import { calculateOutstandingDeposits } from '@/lib/loans/savings-contract';
 import type { CalculationOptions } from '@/types/calculation';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
 import { createdAtDescSorter, sortTransactions } from '../utils/sorters';
+import { getInterestRules, type InterestRules } from './interest-rules';
 import { getLegacyInterestDays } from './legacy-interest-days';
 import { getFirstDepositDateFromTransactions, getLoanTermDays, getRepaymentPeriodDays } from './loan-duration-metrics';
+
+/**
+ * Whether a Zahlung changes the amount interest is calculated on. Non-compounding methods leave interest out of
+ * that base: an Zinsauszahlung does not reduce it and a Zinsübertrag does not raise it (ADR 0010).
+ */
+const affectsInterestBase = (type: TransactionType, compound: boolean) =>
+  compound || (type !== TransactionType.INTERESTPAYMENT && type !== TransactionType.INTERESTCARRYOVER);
 
 export const isRepaid = (loan: Pick<LoanWithRelations, 'transactions'>, toDate: Date) => {
   // check if all money was paid back until given date
@@ -80,11 +88,7 @@ export const getInterestDays = (
   return dayNumber(end, interestMethod) - dayNumber(start, interestMethod);
 };
 
-/** Which rules a Zinsjahr is calculated with: the old ones before the project's Umstellungsjahr (ADR 0005). */
-export type InterestRules = 'legacy' | 'corrected';
-
-export const getInterestRules = (year: number, changeoverYear: number | null | undefined): InterestRules =>
-  changeoverYear != null && year < changeoverYear ? 'legacy' : 'corrected';
+export { getInterestRules, type InterestRules } from './interest-rules';
 
 export const calculateInterestDaily = (
   fromDateParameter: Moment | undefined,
@@ -226,6 +230,7 @@ export const calculateLoanPerYear = (
       notReclaimed: new Prisma.Decimal(0),
       interest: new Prisma.Decimal(0),
       interestPaid: new Prisma.Decimal(0),
+      interestCarryover: new Prisma.Decimal(0),
       interestBaseAmount: new Prisma.Decimal(0), // to calculate with no compound methods
       end: new Prisma.Decimal(0),
       interestError: new Prisma.Decimal(0),
@@ -247,7 +252,7 @@ export const calculateLoanPerYear = (
       .forEach((transaction) => {
         if (toDate.isSameOrAfter(transaction.date) && currentTransactionId !== transaction.id) {
           amount = amount.plus(transaction.amount);
-          if (compound || transaction.type !== TransactionType.INTERESTPAYMENT) {
+          if (affectsInterestBase(transaction.type, compound)) {
             interestBaseAmount = interestBaseAmount.plus(transaction.amount);
             if (amount.lessThanOrEqualTo(1)) {
               terminationDate = moment(transaction.date);
@@ -280,6 +285,9 @@ export const calculateLoanPerYear = (
             case TransactionType.INTERESTPAYMENT:
               currentYear.interestPaid = currentYear.interestPaid.plus(transaction.amount);
               break;
+            case TransactionType.INTERESTCARRYOVER:
+              currentYear.interestCarryover = currentYear.interestCarryover.plus(transaction.amount);
+              break;
           }
         }
       });
@@ -311,6 +319,7 @@ export const calculateLoanPerYear = (
         notReclaimed: new Prisma.Decimal(0),
         interest: new Prisma.Decimal(0),
         interestPaid: new Prisma.Decimal(0),
+        interestCarryover: new Prisma.Decimal(0),
         interestBaseAmount: interestBaseAmount.plus(compound ? currentYear.interest : 0),
         interestError: new Prisma.Decimal(0),
       });
@@ -335,6 +344,7 @@ export const calculateLoanPerYear = (
     deposits: year.deposits,
     notReclaimed: year.notReclaimed,
     interestPaid: year.interestPaid,
+    interestCarryover: year.interestCarryover,
     interestBaseAmount: year.interestBaseAmount,
     interest: year.interest,
     interestError: year.interestError,
@@ -352,6 +362,7 @@ type LoanPeriodAccumulator = {
   notReclaimed: Prisma.Decimal;
   interest: Prisma.Decimal;
   interestPaid: Prisma.Decimal;
+  interestCarryover: Prisma.Decimal;
   interestBaseAmount: Prisma.Decimal;
   end: Prisma.Decimal;
   interestError: Prisma.Decimal;
@@ -366,6 +377,7 @@ const createEmptyLoanPeriod = (year: number, month: number): LoanPeriodAccumulat
   notReclaimed: new Prisma.Decimal(0),
   interest: new Prisma.Decimal(0),
   interestPaid: new Prisma.Decimal(0),
+  interestCarryover: new Prisma.Decimal(0),
   interestBaseAmount: new Prisma.Decimal(0),
   end: new Prisma.Decimal(0),
   interestError: new Prisma.Decimal(0),
@@ -457,7 +469,7 @@ export const calculateLoanPerMonth = (
       .forEach((transaction) => {
         if (toDate.isSameOrAfter(transaction.date) && currentTransactionId !== transaction.id) {
           amount = amount.plus(transaction.amount);
-          if (compound || transaction.type !== TransactionType.INTERESTPAYMENT) {
+          if (affectsInterestBase(transaction.type, compound)) {
             interestBaseAmount = interestBaseAmount.plus(transaction.amount);
             if (amount.lessThanOrEqualTo(1)) {
               terminationDate = moment(transaction.date);
@@ -478,6 +490,9 @@ export const calculateLoanPerMonth = (
               break;
             case TransactionType.INTERESTPAYMENT:
               currentMonth.interestPaid = currentMonth.interestPaid.plus(transaction.amount);
+              break;
+            case TransactionType.INTERESTCARRYOVER:
+              currentMonth.interestCarryover = currentMonth.interestCarryover.plus(transaction.amount);
               break;
           }
         }
@@ -527,6 +542,7 @@ export const calculateLoanPerMonth = (
     deposits: entry.deposits,
     notReclaimed: entry.notReclaimed,
     interestPaid: entry.interestPaid,
+    interestCarryover: entry.interestCarryover,
     interestBaseAmount: entry.interestBaseAmount,
     interest: entry.interest,
     interestError: entry.interestError,
@@ -549,7 +565,9 @@ const calculateNumbersToDate = (
         deposits: total.deposits.plus(entry.deposits),
         notReclaimed: total.notReclaimed.plus(entry.notReclaimed),
         interestPaid: total.interestPaid.plus(entry.interestPaid),
-        interest: total.interest.plus(entry.interest),
+        // Lifetime interest includes the Zinsübertrag; the interest of a year never does (ADR 0010).
+        interest: total.interest.plus(entry.interest).plus(entry.interestCarryover),
+        interestCarryover: total.interestCarryover.plus(entry.interestCarryover),
         interestOfYear: entry.year === interestYear ? entry.interest : total.interestOfYear,
         interestError: total.interestError.plus(entry.interestError),
       }),
@@ -560,6 +578,7 @@ const calculateNumbersToDate = (
         notReclaimed: new Prisma.Decimal(0),
         interestPaid: new Prisma.Decimal(0),
         interest: new Prisma.Decimal(0),
+        interestCarryover: new Prisma.Decimal(0),
         interestOfYear: new Prisma.Decimal(0),
         interestError: new Prisma.Decimal(0),
       },
@@ -621,6 +640,7 @@ export function calculateLoanFieldsWithPerYear<T>(loan: LoanWithRelations & T, o
     notReclaimed: numbers.toDate.notReclaimed.toNumber(),
     interestPaid: numbers.toDate.interestPaid.toNumber(),
     interest: numbers.toDate.interest.toNumber(),
+    interestCarryover: numbers.toDate.interestCarryover.toNumber(),
     // if interest calculation found large errors show warning
     interestError: numbers.toDate.interestError.toNumber(),
     loanTermDays: getLoanTermDays(loan, toDate),
@@ -644,6 +664,7 @@ export function calculateLoanFieldsWithPerYear<T>(loan: LoanWithRelations & T, o
               paymentType: PaymentType.OTHER,
               loanId: loan.id,
               lenderNotifiedAt: null,
+              importId: null,
             })),
         ),
     ),

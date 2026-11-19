@@ -1,6 +1,6 @@
-import { Body, Button, Container, Head, Heading, Html, Link, Preview, Section, Text } from 'react-email';
 import { createTranslator } from 'next-intl';
 import type * as React from 'react';
+import { Body, Button, Container, Head, Heading, Html, Link, Preview, Section, Text } from 'react-email';
 
 interface PasswordResetEmailProps {
   name: string;

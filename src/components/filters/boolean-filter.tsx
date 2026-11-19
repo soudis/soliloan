@@ -3,9 +3,9 @@
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
-import { filterValueSegmentClass, type FilterFieldSize } from '@/components/filters/filter-field-group';
+import { type FilterFieldSize, filterValueSegmentClass } from '@/components/filters/filter-field-group';
 import { cn } from '@/lib/utils';
-import { parseBooleanFilterValue, type BooleanFilterValue } from '@/types/boolean-filter-value';
+import { type BooleanFilterValue, parseBooleanFilterValue } from '@/types/boolean-filter-value';
 
 export function BooleanFilter({
   value,

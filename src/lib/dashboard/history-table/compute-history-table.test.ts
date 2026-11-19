@@ -21,6 +21,7 @@ const zeroMonth = (deposits: number): LoanMonthlyNumbers => ({
   notReclaimed: 0,
   interestPaid: 0,
   interest: 0,
+  interestCarryover: 0,
   interestError: 0,
   interestBaseAmount: deposits,
 });

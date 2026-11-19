@@ -16,6 +16,7 @@ export function transactionIcon(type: Transaction['type']) {
     case 'DEPOSIT':
       return <ArrowDownIcon className="h-4 w-4 text-success-foreground" />;
     case 'INTEREST':
+    case 'INTERESTCARRYOVER':
       return <Percent className="h-4 w-4 text-success-foreground" />;
     case 'WITHDRAWAL':
     case 'INTERESTPAYMENT':
@@ -32,6 +33,7 @@ export function transactionIconBackground(type: Transaction['type']) {
   switch (type) {
     case 'DEPOSIT':
     case 'INTEREST':
+    case 'INTERESTCARRYOVER':
       return 'bg-success/20';
     case 'WITHDRAWAL':
     case 'INTERESTPAYMENT':
@@ -45,7 +47,7 @@ export function transactionIconBackground(type: Transaction['type']) {
 }
 
 export function isIncomingTransaction(type: Transaction['type']) {
-  return type === 'DEPOSIT' || type === 'INTEREST';
+  return type === 'DEPOSIT' || type === 'INTEREST' || type === 'INTERESTCARRYOVER';
 }
 
 export function isOutgoingTransaction(type: Transaction['type']) {

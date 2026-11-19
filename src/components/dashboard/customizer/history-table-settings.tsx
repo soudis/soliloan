@@ -3,10 +3,9 @@
 import debounce from 'lodash.debounce';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
-import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { ChartSeriesEditor } from '@/components/dashboard/customizer/chart/chart-series-editor';
 import { ChartTimelineFields } from '@/components/dashboard/customizer/chart/chart-timeline-fields';
+import { useDashboardData } from '@/components/dashboard/dashboard-data-provider';
 import { buildAllFilterFieldOptions } from '@/lib/entity-filters/filter-definitions';
 import type { HistoryTableWidgetConfig } from '@/types/dashboard-widgets/history-table';
 
