@@ -17,6 +17,9 @@ it is touched.
 - `src/actions/<domain>/{queries,mutations}/` holds only `'use server'` safe-actions that client
   components call. Server-only code lives in `src/lib/<domain>/` with `import 'server-only'`
   ([ADR 0004](docs/adr/0004-actions-are-client-callable-safe-actions.md)).
+- The client reads and writes data through server actions. A route in `src/app/api/` only for
+  what an action cannot do: file and document downloads, cron endpoints, external callbacks
+  (GoCardless) and NextAuth.
 - Every action uses the client from `src/lib/utils/safe-action.ts` that checks access to the
   entity it touches (`projectAction`, `lenderAction`, `loanAction`, `transactionAction`, …,
   `adminAction`). `actionClient` and `authAction` are for data that belongs to no project.
