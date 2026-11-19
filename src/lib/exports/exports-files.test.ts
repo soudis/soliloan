@@ -64,7 +64,7 @@ describe('kontomitteilungenZip', () => {
 });
 
 describe('jahreslisteXlsx', () => {
-  it('writes the Summen and Jahresliste sheets with frozen headers and formats', async () => {
+  it('writes Summen and Jahresliste as Excel tables', async () => {
     const jahresliste = buildJahresliste(loans, 2025);
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load((await jahreslisteXlsx(jahresliste)) as unknown as ArrayBuffer);
@@ -98,6 +98,11 @@ describe('jahreslisteXlsx', () => {
     assert.equal(list.rowCount, jahresliste.rows.length + 1);
     assert.equal(list.views[0]?.state, 'frozen');
     assert.equal(sums.views[0]?.state, 'frozen');
+    assert.equal(list.autoFilter, undefined);
+    assert.equal(sums.autoFilter, undefined);
+    assertTable(list, 'Jahresliste', jahresliste.rows.length);
+    assertTable(sums, 'Summen', jahresliste.sums.length);
+    assert.match(sums.getRow(2).getCell(2).numFmt ?? '', /€/);
 
     const first = list.getRow(2);
     assert.equal(first.getCell(5).value, 'Kontostand Jahresbeginn');
@@ -105,5 +110,29 @@ describe('jahreslisteXlsx', () => {
     assert.equal(first.getCell(6).numFmt, 'dd.mm.yyyy');
     assert.match(first.getCell(7).numFmt ?? '', /€/);
     assert.match(first.getCell(8).numFmt ?? '', /%/);
+    assert.equal(jahresliste.rows[0].interestAmount, null);
+    assert.equal(first.getCell(9).value, 0);
+    const withInterest = jahresliste.rows.findIndex((row) => row.interestAmount !== null);
+    assert.ok(withInterest >= 0);
+    assert.equal(list.getRow(withInterest + 2).getCell(9).value, jahresliste.rows[withInterest].interestAmount);
   });
 });
+
+function assertTable(sheet: ExcelJS.Worksheet, name: string, dataRows: number) {
+  const table = sheet.getTable(name);
+  assert.equal(table.name, name);
+  assert.equal(table.headerRow, true);
+  assert.equal(table.showRowStripes, true);
+  const headers = (sheet.getRow(1).values as unknown[]).slice(1);
+  const lastColumn = String.fromCharCode('A'.charCodeAt(0) + headers.length - 1);
+  // ExcelJS keeps the full range on the table model; `ref` is only the anchor used when writing.
+  const tableRef = (table as unknown as { model: { tableRef: string } }).model.tableRef;
+  assert.equal(tableRef, `A1:${lastColumn}${dataRows + 1}`);
+  assert.deepEqual(
+    headers.map((_, index) => table.getColumn(index).name),
+    headers,
+  );
+  for (const [index] of headers.entries()) {
+    assert.equal(table.getColumn(index).filterButton, true);
+  }
+}

@@ -7,8 +7,22 @@ const CURRENCY = '#,##0.00\\ "€"';
 const DATE = 'dd.mm.yyyy';
 const PERCENT = '#,##0.00" %"';
 
-function styleHeader(sheet: ExcelJS.Worksheet) {
-  sheet.getRow(1).font = { bold: true };
+type SheetColumn = { name: string; width: number; numFmt?: string };
+
+/** An Excel table starting at A1, so the header and filters belong to the table. */
+function addSheetTable(sheet: ExcelJS.Worksheet, name: string, columns: SheetColumn[], rows: ExcelJS.CellValue[][]) {
+  sheet.columns = columns.map((column) => ({
+    width: column.width,
+    ...(column.numFmt ? { style: { numFmt: column.numFmt } } : {}),
+  }));
+  sheet.addTable({
+    name,
+    ref: 'A1',
+    headerRow: true,
+    style: { theme: 'TableStyleMedium2', showRowStripes: true },
+    columns: columns.map((column) => ({ name: column.name, filterButton: true })),
+    rows,
+  });
   sheet.views = [{ state: 'frozen', ySplit: 1 }];
 }
 
@@ -17,33 +31,45 @@ export async function jahreslisteXlsx(jahresliste: Jahresliste): Promise<Buffer>
   const workbook = new ExcelJS.Workbook();
   workbook.created = new Date();
 
-  const sums = workbook.addWorksheet('Summen');
-  sums.columns = [
-    { header: 'Vorgang', key: 'vorgang', width: 28 },
-    { header: 'Summe', key: 'amount', width: 18, style: { numFmt: CURRENCY } },
-  ];
-  for (const sum of jahresliste.sums) {
-    sums.addRow({ vorgang: JAHRESLISTE_VORGANG_LABELS[sum.vorgang], amount: sum.amount });
-  }
-  styleHeader(sums);
-
-  const list = workbook.addWorksheet('Jahresliste');
-  list.columns = [
-    { header: 'Kreditgeber*in-Nr.', key: 'lenderNumber', width: 18 },
-    { header: 'Nachname', key: 'lastName', width: 24 },
-    { header: 'Vorname', key: 'firstName', width: 18 },
-    { header: 'Kredit-Nr.', key: 'loanNumber', width: 12 },
-    { header: 'Vorgang', key: 'vorgang', width: 26 },
-    { header: 'Datum', key: 'date', width: 12, style: { numFmt: DATE } },
-    { header: 'Betrag', key: 'amount', width: 16, style: { numFmt: CURRENCY } },
-    { header: 'Zinssatz', key: 'interestRate', width: 10, style: { numFmt: PERCENT } },
-    { header: 'Zinsbetrag', key: 'interestAmount', width: 16, style: { numFmt: CURRENCY } },
-  ];
-  for (const row of jahresliste.rows) {
-    list.addRow({ ...row, vorgang: JAHRESLISTE_VORGANG_LABELS[row.vorgang], interestAmount: row.interestAmount ?? '' });
-  }
-  styleHeader(list);
-  list.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: list.columnCount } };
+  addSheetTable(
+    workbook.addWorksheet('Summen'),
+    'Summen',
+    SUM_COLUMNS,
+    jahresliste.sums.map((sum) => [JAHRESLISTE_VORGANG_LABELS[sum.vorgang], sum.amount]),
+  );
+  addSheetTable(
+    workbook.addWorksheet('Jahresliste'),
+    'Jahresliste',
+    LIST_COLUMNS,
+    jahresliste.rows.map((row) => [
+      row.lenderNumber,
+      row.lastName,
+      row.firstName,
+      row.loanNumber,
+      JAHRESLISTE_VORGANG_LABELS[row.vorgang],
+      row.date,
+      row.amount,
+      row.interestRate,
+      row.interestAmount ?? 0,
+    ]),
+  );
 
   return Buffer.from(await workbook.xlsx.writeBuffer());
 }
+
+const SUM_COLUMNS: SheetColumn[] = [
+  { name: 'Vorgang', width: 28 },
+  { name: 'Summe', width: 18, numFmt: CURRENCY },
+];
+
+const LIST_COLUMNS: SheetColumn[] = [
+  { name: 'Kreditgeber*in-Nr.', width: 18 },
+  { name: 'Nachname', width: 24 },
+  { name: 'Vorname', width: 18 },
+  { name: 'Kredit-Nr.', width: 12 },
+  { name: 'Vorgang', width: 26 },
+  { name: 'Datum', width: 12, numFmt: DATE },
+  { name: 'Betrag', width: 16, numFmt: CURRENCY },
+  { name: 'Zinssatz', width: 10, numFmt: PERCENT },
+  { name: 'Zinsbetrag', width: 16, numFmt: CURRENCY },
+];
