@@ -6,5 +6,7 @@ export { deleteTransactionAction } from './mutations/delete-transaction';
 export { revertTerminateLoanAction } from './mutations/revert-terminate-loan';
 export { terminateLoanAction } from './mutations/terminate-loan';
 export { updateLoanAction } from './mutations/update-loan';
+export { updateTransactionAction } from './mutations/update-transaction';
 export { getLoanAction } from './queries/get-loan';
 export { getLoansByProjectAction } from './queries/get-loans-by-project';
+export { previewTransactionAction } from './queries/preview-transaction';
