@@ -48,8 +48,9 @@ mix a dependency bump or a mass reformat with behaviour changes.
 ## Verification
 
 - **Always**: `pnpm verify` (ADR numbers, typecheck, lint, format, tests) passes. In Claude
-  Code the hooks in `.claude/settings.json` already run Biome on each edit and `pnpm typecheck`
-  at the end of a turn; `pnpm verify` is still the gate.
+  Code the hooks in `.claude/settings.json` already run Biome on each edit, `pnpm typecheck`
+  at the end of a turn and `pnpm lint` + `pnpm format` before a `git push`; `pnpm verify` is
+  still the gate.
 - **Logic** (calculations, Exporte, filters): a test next to the code (`*.test.ts`), written
   first where it fits (`tdd`). CI runs the tests in `Europe/Berlin` and `UTC`.
 - **UI or server actions**: check it in the running app with `next-dev-loop` against the dev

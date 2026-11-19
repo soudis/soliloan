@@ -33,7 +33,6 @@ Drive the browser (`agent-browser`) at the app URL, never at the MCP port: auth 
 | `logs [service]` | follow logs, default `app` |
 | `exec <cmd...>` | run in the app container (no TTY, `CI=true`): `exec pnpm verify`, `exec pnpm test`, `exec pnpm prisma migrate dev --name <slug>` |
 | `down` | remove containers, network, **database volume**, and the root-owned `.next`, `.pnpm-store` mountpoint, `prisma/generated`; the shared pnpm store stays |
-
 | `prune [--yes] [project...]` | remove the stacks of worktrees that are gone (no `.git` left), with their database volumes and root-owned leftovers; lists them and asks first. Runs anywhere; skips running stacks |
 
 Always `down` before `git worktree remove` (the container runs as root and writes those directories into the worktree, which blocks deleting it). Forgot it? `prune` cleans up afterwards.
