@@ -27,9 +27,12 @@ Before the work starts, `/soliloan-start` estimates the same from a scout.
 
 | Lane | When | Before coding | Review | Merge |
 | --- | --- | --- | --- | --- |
-| **S** | up to ~150 lines, no open decisions; dependency bumps (`--mechanical`) | confirm lane, ticket, branch | `code-review` | self-merge after review |
+| **S** | up to ~150 lines, no decisions left after the setup round; dependency bumps (`--mechanical`) | confirm lane, ticket, branch | `code-review` | self-merge after review |
 | **M** | ~150 to 800 lines, or open decisions inside existing ADRs and terms | `grilling` on the open decisions | `code-review` + `code-review-docs` | self-merge after review |
 | **L** | over 800 lines, a [risk-list](risk-list.md) path or behaviour, a new `…Unsafe` call, a schema or calculation change, or a decision that changes an ADR or glossary term | `/grill-with-docs` (records terms and ADRs) | + `security-review` | a teammate approves |
+
+Decisions settled in the setup round of `/soliloan-start` do not raise the lane, unless they
+touch an ADR, a glossary term, the schema or a calculation (then L).
 
 The lane only goes up: when `pr-size.sh` shows a bigger lane than planned, say so in the PR and
 review at the bigger lane.
@@ -44,9 +47,9 @@ mix a dependency bump or a mass reformat with behaviour changes.
 
 ## Verification
 
-- **Always**: `pnpm verify` (typecheck, lint, format, tests) passes. In Claude Code the hooks in
-  `.claude/settings.json` already run Biome on each edit and `pnpm typecheck` at the end of a
-  turn; `pnpm verify` is still the gate.
+- **Always**: `pnpm verify` (ADR numbers, typecheck, lint, format, tests) passes. In Claude
+  Code the hooks in `.claude/settings.json` already run Biome on each edit and `pnpm typecheck`
+  at the end of a turn; `pnpm verify` is still the gate.
 - **Logic** (calculations, Exporte, filters): a test next to the code (`*.test.ts`), written
   first where it fits (`tdd`). CI runs the tests in `Europe/Berlin` and `UTC`.
 - **UI or server actions**: check it in the running app with `next-dev-loop` against the dev
@@ -101,6 +104,13 @@ Several agents can work at once, each in its own git worktree with its own dev s
 ## Database changes
 
 When `prisma/schema.prisma` changes, also create a migration: `pnpm prisma:migrate:dev --name <slug>` in the primary stack, or `scripts/worktree-dev.sh exec pnpm prisma migrate dev --name <slug>` in a worktree stack (Postgres is not published there). Commit the new folder in `prisma/migrations/`. The dev containers use `prisma db push`, so a missing migration is not noticed locally but breaks staging and production.
+
+## ADR numbers
+
+Each ADR in `docs/adr/` has its own number; `pnpm verify` fails when two share one. Parallel
+branches can pick the same next number, so when you merge `main` into your branch, renumber
+your branch's ADRs past `main`'s highest (`git mv`, then fix the links to them). Gaps left
+behind are fine.
 
 ## Legacy app
 
