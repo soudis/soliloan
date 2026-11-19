@@ -136,37 +136,19 @@ export const calculateSavingsLastDepositDate = (firstDepositDate: Date, depositC
   return lastMoment.isValid() ? lastMoment.toDate() : null;
 };
 
-export const calculateSavingsFirstDepositDate = (lastDepositDate: Date, depositCount: number) => {
-  const lastMoment = moment(lastDepositDate);
-  if (!lastMoment.isValid()) return null;
-  if (!Number.isFinite(depositCount) || depositCount < 1) return null;
-
-  const firstMoment = lastMoment.clone().subtract(depositCount - 1, 'months');
-  return firstMoment.isValid() ? firstMoment.toDate() : null;
-};
-
-export const calculateSavingsDepositCountFromDates = (firstDepositDate: Date, lastDepositDate: Date) => {
-  const firstMoment = moment(firstDepositDate);
-  const lastMoment = moment(lastDepositDate);
-  if (!firstMoment.isValid() || !lastMoment.isValid()) return null;
-  if (lastMoment.isBefore(firstMoment, 'day')) return null;
-
-  if (lastMoment.isSame(firstMoment, 'day')) return 1;
-
-  const monthsBetween = Math.max(0, lastMoment.diff(firstMoment, 'months') - 1);
-  return 2 + monthsBetween;
-};
-
 export const calculateSavingsMonthlyAmount = (loanAmount: number, depositCount: number) => {
   if (!Number.isFinite(loanAmount) || loanAmount <= 0) return null;
   if (!Number.isFinite(depositCount) || depositCount < 1) return null;
-  return round2(loanAmount / depositCount);
+  // Dividing whole cents keeps an exact half cent exact, so it rounds up.
+  return Math.round(Math.round(loanAmount * 100) / depositCount) / 100;
 };
 
 export const calculateSavingsDepositCountFromMonthlyAmount = (loanAmount: number, monthlyAmount: number) => {
   if (!Number.isFinite(loanAmount) || loanAmount <= 0) return null;
-  if (!Number.isFinite(monthlyAmount) || monthlyAmount <= 0) return null;
-  return Math.ceil(loanAmount / monthlyAmount);
+  const monthlyCents = Math.round(monthlyAmount * 100);
+  if (!Number.isFinite(monthlyCents) || monthlyCents < 1) return null;
+  // Whole cents divide exactly, so an amount that is a multiple of the monthly amount needs no extra deposit.
+  return Math.ceil(Math.round(loanAmount * 100) / monthlyCents);
 };
 
 export const resolveSavingsLastDepositDate = (
