@@ -1,6 +1,6 @@
+import { db } from '@/lib/db';
 import { FORUM_RESERVED_SLUGS } from '@/lib/help/forum-constants';
 import { slugify } from '@/lib/help/slugify';
-import { db } from '@/lib/db';
 
 export function normalizeForumSlug(input: string): string {
   return slugify(input);

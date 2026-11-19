@@ -132,4 +132,17 @@ describe('Zinsübertrag in the interest calculation', () => {
     assert.equal(year2025?.interest.toNumber(), 200);
     assert.equal(year2025?.end.toNumber(), begin.plus(200).minus(500).toNumber());
   });
+
+  it('earns the full yearly interest from a 1 Jan Importstichtag under the corrected rules', () => {
+    const january = new Date(2025, 0, 1);
+    const transactions = [
+      transaction('deposit', TransactionType.DEPOSIT, 10_000, january),
+      transaction('carryover', TransactionType.INTERESTCARRYOVER, 500, january),
+    ];
+    const year2025 = calculateLoanPerYear(loan('ACT_365_NOCOMPOUND', transactions), asOf).find(
+      (row) => row.year === 2025,
+    );
+    assert.equal(year2025?.interest.toNumber(), 200);
+    assert.equal(year2025?.interestCarryover.toNumber(), 500);
+  });
 });

@@ -72,6 +72,7 @@ export async function loadImportContextUnsafe(projectId: string): Promise<Import
     }),
     investmentTypeRates: investmentTypes.map((type) => type.interestRate),
     hasHistoricTransactions: Boolean(historic),
+    interestChangeoverYear: configuration.interestChangeoverYear,
     today: localIsoDate(new Date()),
   };
 }

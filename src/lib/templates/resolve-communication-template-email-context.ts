@@ -3,8 +3,8 @@ import type { TemplateDataset } from '@prisma/client';
 import { db } from '@/lib/db';
 import { getLenderEmailFromTemplateMergeData } from '@/lib/email';
 import type { SendCommunicationTemplateEmailFormData } from '@/lib/schemas/templates';
-import { buildTemplateUseSearchParams, parseTemplateDownloadQuery } from '@/lib/templates/template-download-query';
 import { getTemplateData } from '@/lib/templates/template-data';
+import { buildTemplateUseSearchParams, parseTemplateDownloadQuery } from '@/lib/templates/template-download-query';
 import { assertManagerCanUseCommunicationTemplate } from '@/lib/templates/template-use-access';
 
 export type CommunicationTemplateEmailResolved = {

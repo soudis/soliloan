@@ -1561,6 +1561,7 @@
         "noKontostand": "Kontostand 0: der Kredit wird ohne Zahlungen angelegt",
         "importstichtagBeforeSignDate": "Importstichtag liegt vor dem Vertragsdatum",
         "importstichtagNotYearEnd": "Importstichtag ist weder der 31.12. noch der 01.01.: die Zinsen vom Jahresanfang bis zum Importstichtag fehlen in den Jahreswerten",
+        "importstichtagJanuaryLegacy": "01.01. als Importstichtag: Das Zinsjahr {year} wird noch nach den alten Regeln berechnet und erhält einen Zinstag zu wenig. Besser den 31.12. des Vorjahres verwenden.",
         "importstichtagInFuture": "Importstichtag liegt in der Zukunft",
         "lenderDataDiffers": "Weicht von Zeile {row} ab (gleiche Kreditgeber*innen-Nummer {number})",
         "lenderNumberExists": "Kreditgeber*innen-Nummer {number} gibt es im Projekt schon",

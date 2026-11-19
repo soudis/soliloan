@@ -10,6 +10,7 @@ import type {
   TerminationType,
 } from '@prisma/client';
 import { importOpeningZahlungen } from '@/lib/calculations/import-opening';
+import { getInterestRules } from '@/lib/calculations/interest-rules';
 import { AdditionalFieldType, AdditionalNumberFormat } from '@/lib/schemas/common';
 import { normalizeLoanInterestRate } from '@/lib/schemas/investment-type';
 import { isValidIban, normalizeIban } from '@/lib/utils/iban';
@@ -414,9 +415,15 @@ export function validateImport(
     if (kontostand === 0) warning('opening.kontostand', 'noKontostand');
     if (importstichtag && signDate && importstichtag < signDate)
       error('opening.importstichtag', 'importstichtagBeforeSignDate');
-    // 31 Dec and 1 Jan both start the next Zinsjahr from the full Kontostand; any other day splits a year.
+    // 31 Dec and 1 Jan both start the next Zinsjahr from the full Kontostand; any other day splits a year. The old
+    // interest rules before the Umstellungsjahr count a Kredit opened on 1 Jan one Zinstag short (ADR 0005, 0010).
     if (importstichtag && !importstichtag.endsWith('-12-31') && !importstichtag.endsWith('-01-01')) {
       warning('opening.importstichtag', 'importstichtagNotYearEnd');
+    } else if (importstichtag?.endsWith('-01-01')) {
+      const year = Number(importstichtag.slice(0, 4));
+      if (getInterestRules(year, context.interestChangeoverYear) === 'legacy') {
+        warning('opening.importstichtag', 'importstichtagJanuaryLegacy', { year });
+      }
     }
     if (importstichtag && importstichtag > context.today) warning('opening.importstichtag', 'importstichtagInFuture');
 

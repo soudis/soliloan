@@ -35,6 +35,7 @@ const context = (overrides: Partial<ImportContext> = {}): ImportContext => ({
   existingLenderNameKeys: [],
   investmentTypeRates: [],
   hasHistoricTransactions: true,
+  interestChangeoverYear: null,
   today: '2026-03-01',
   ...overrides,
 });
@@ -195,6 +196,23 @@ describe('validateImport', () => {
       });
       assert.deepEqual(codes(result), [], importstichtag);
     }
+  });
+
+  it('warns about 1 Jan as Importstichtag while the project still uses the old interest rules that year', () => {
+    const ctx = context({ interestChangeoverYear: 2027 });
+    const january = run([ada], ctx, {
+      defaults: { ...settings(ctx).defaults, 'opening.importstichtag': '2026-01-01' },
+    });
+    assert.deepEqual(codes(january), ['importstichtagJanuaryLegacy']);
+    const december = run([ada], ctx, {
+      defaults: { ...settings(ctx).defaults, 'opening.importstichtag': '2025-12-31' },
+    });
+    assert.deepEqual(codes(december), []);
+    const corrected = context({ interestChangeoverYear: 2026 });
+    const fromChangeover = run([ada], corrected, {
+      defaults: { ...settings(corrected).defaults, 'opening.importstichtag': '2026-01-01' },
+    });
+    assert.deepEqual(codes(fromChangeover), []);
   });
 
   it('requires an Anlageart for German Kreditgeber*innen when the compliance setting is on', () => {

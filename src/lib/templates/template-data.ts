@@ -3,7 +3,6 @@ import { createTranslator } from 'next-intl';
 
 import { calculateLenderFields } from '@/lib/calculations/lender-calculations';
 import { calculateLoanFields, calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
-import { payoutAsOfDate } from '@/lib/processes/yearly-interest';
 import { db } from '@/lib/db';
 import { sampleForumDigestMergeData } from '@/lib/help/forum-digest-data';
 import { resolveSavingsFirstDepositDate, resolveSavingsLastDepositDate } from '@/lib/loans/savings-contract';
@@ -13,6 +12,7 @@ import {
   loanFilesRelation,
   loanNotesRelation,
 } from '@/lib/prisma/notes-files-relations';
+import { payoutAsOfDate } from '@/lib/processes/yearly-interest';
 import { getSoliloanProjectName } from '@/lib/project-name';
 import { withSystemMergeData } from '@/lib/templates/system-merge-links';
 import { withTemplateRaw } from '@/lib/templates/template-condition';

@@ -12,6 +12,7 @@ import { calculateOutstandingDeposits } from '@/lib/loans/savings-contract';
 import type { CalculationOptions } from '@/types/calculation';
 import { LoanStatus, type LoanWithRelations } from '@/types/loans';
 import { createdAtDescSorter, transactionSorter } from '../utils/sorters';
+import { getInterestRules, type InterestRules } from './interest-rules';
 import { getLegacyInterestDays } from './legacy-interest-days';
 import { getFirstDepositDateFromTransactions, getLoanTermDays, getRepaymentPeriodDays } from './loan-duration-metrics';
 
@@ -87,11 +88,7 @@ export const getInterestDays = (
   return dayNumber(end, interestMethod) - dayNumber(start, interestMethod);
 };
 
-/** Which rules a Zinsjahr is calculated with: the old ones before the project's Umstellungsjahr (ADR 0005). */
-export type InterestRules = 'legacy' | 'corrected';
-
-export const getInterestRules = (year: number, changeoverYear: number | null | undefined): InterestRules =>
-  changeoverYear != null && year < changeoverYear ? 'legacy' : 'corrected';
+export { getInterestRules, type InterestRules } from './interest-rules';
 
 export const calculateInterestDaily = (
   fromDateParameter: Moment | undefined,

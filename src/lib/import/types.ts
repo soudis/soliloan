@@ -91,6 +91,8 @@ export type ImportContext = {
   existingLenderNameKeys: string[];
   investmentTypeRates: number[];
   hasHistoricTransactions: boolean;
+  /** The project's Umstellungsjahr: Zinsjahre before it use the old interest rules (ADR 0005). */
+  interestChangeoverYear: number | null;
   /** Today as `yyyy-mm-dd`, so client and server agree on "the current year". */
   today: string;
 };
