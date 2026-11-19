@@ -10,6 +10,12 @@ describe('transactionFormSchema', () => {
     assert.equal(transactionFormSchema.safeParse(zahlung('DEPOSIT')).success, true);
   });
 
+  it('rejects a calculated interest row, which the validator would skip', () => {
+    const result = transactionFormSchema.safeParse(zahlung('INTEREST'));
+    assert.equal(result.success, false);
+    assert.equal(result.error?.issues.length, 1);
+  });
+
   it('rejects a Zinsübertrag, which only an Import books', () => {
     const result = transactionFormSchema.safeParse(zahlung('INTERESTCARRYOVER'));
     assert.equal(result.success, false);
