@@ -53,6 +53,12 @@
       },
       "a11y": {
         "noStaticElementInteractions": "off"
+      },
+      "style": {
+        "useFilenamingConvention": {
+          "level": "error",
+          "options": { "strictCase": true, "requireAscii": true, "filenameCases": ["kebab-case"] }
+        }
       }
     }
   },

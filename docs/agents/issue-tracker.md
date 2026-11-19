@@ -15,7 +15,7 @@ File issues only into `soudis/soliloan`, never into an upstream repo of a fork. 
 
 ## Creating a ticket
 
-Only when the user asks. Show the draft (title, labels, body) and wait for a go-ahead before `gh issue create`.
+Every PR has a ticket, except dependency bumps ([workflow.md](workflow.md)); `/soliloan-start` drafts it when there is none. Show the draft (title, labels, body) and wait for a go-ahead before creating it.
 
 - **Title**: imperative English sentence, no type prefix. "Add part-year interest payout", not "feat: ..." or "Interest payout".
 - **Labels** (existing): exactly one of `bug`, `enhancement`, `documentation`; add `discuss` while the design is still open; `v1` and `v1 - milestone N` only when the user says so. There is no triage-label vocabulary.
@@ -36,9 +36,10 @@ Only when the user asks. Show the draft (title, labels, body) and wait for a go-
 - **Board**: every ticket must land on the project board in the column that matches its state, see below.
 
 ```bash
-gh issue create --title "Add part-year interest payout" --label enhancement --body-file /tmp/issue.md
-scripts/board-status.sh <n> ready
+scripts/ticket.sh --title "Add part-year interest payout" --label enhancement --body-file /tmp/issue.md
 ```
+
+`scripts/ticket.sh` checks the title and labels, creates the issue, puts it on the board (`--status ready` by default, `in-progress` when work starts right away, `backlog` for ideas), reads the board back to verify, and prints the number. `--parent <n>` and `--blocked-by <n>` link it; `--dry-run` creates nothing.
 
 ## Project board
 

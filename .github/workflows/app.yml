@@ -48,6 +48,9 @@ jobs:
       - name: Generate the Prisma client
         run: pnpm prisma:generate
 
+      - name: Typecheck
+        run: pnpm typecheck
+
       # Production runs in Europe/Berlin. The run in UTC shows whether a result depends on the timezone.
       - name: Run tests in Europe/Berlin
         run: pnpm test
