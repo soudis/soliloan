@@ -29,7 +29,7 @@ const END_OF_TIME = new Date(8_640_000_000_000_000);
 export function isInterestSettledByClosing(loan: Pick<LoanWithRelations, 'transactions'>, year: number): boolean {
   // isRepaid reads only the Zahlungen.
   const closingDate = isRepaid(loan as LoanWithRelations, END_OF_TIME);
-  return closingDate !== undefined && year <= moment(closingDate).year();
+  return closingDate !== undefined && year <= transactionCalendarYear(closingDate);
 }
 
 /**
