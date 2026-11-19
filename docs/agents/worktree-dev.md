@@ -20,6 +20,8 @@ scripts/worktree-dev.sh url       # print URLs again later
 | Mailpit | `http://127.0.0.1:<free port>` (all mails of this stack) |
 | Admin | `SOLILOAN_ADMIN_EMAIL` / `SOLILOAN_ADMIN_PASSWORD` from the worktree's `.env` |
 
+Log in as an agent with the dev agent account: `SOLILOAN_DEV_AGENT_EMAIL` / `SOLILOAN_DEV_AGENT_PASSWORD` from the worktree's `.env`, or `agent@dev.local` / `agent-dev-password` when they are not set. The seed creates it in every dev stack as admin and manager of the dev project, resets its password and lockout on every start, and never creates it on staging, demo or production. The dev project also has a note and a file on a Kreditgeber*in and on a Kredit.
+
 Drive the browser (`agent-browser`) at the app URL, never at the MCP port: auth cookies and `NEXTAUTH_URL` are bound to the `*.soliloan.localhost` host. The browser must trust the mkcert certificate (same as the primary stack).
 
 ## Commands
