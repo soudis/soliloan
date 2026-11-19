@@ -107,9 +107,10 @@ describe('jahreslisteXlsx', () => {
     const first = list.getRow(2);
     assert.equal(first.getCell(5).value, 'Kontostand Jahresbeginn');
     assert.equal((first.getCell(6).value as Date).toISOString(), '2025-01-01T00:00:00.000Z');
-    assert.equal(first.getCell(6).numFmt, 'dd.mm.yyyy');
+    assert.equal(first.getCell(6).numFmt, 'mm-dd-yy');
     assert.match(first.getCell(7).numFmt ?? '', /€/);
-    assert.match(first.getCell(8).numFmt ?? '', /%/);
+    assert.equal(first.getCell(8).numFmt, '0.00%');
+    assert.equal(first.getCell(8).value, jahresliste.rows[0].interestRate / 100);
     assert.equal(jahresliste.rows[0].interestAmount, null);
     assert.equal(first.getCell(9).value, 0);
     const withInterest = jahresliste.rows.findIndex((row) => row.interestAmount !== null);

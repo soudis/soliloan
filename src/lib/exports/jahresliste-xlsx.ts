@@ -2,10 +2,11 @@ import ExcelJS from 'exceljs';
 
 import { type Jahresliste, JAHRESLISTE_VORGANG_LABELS } from './jahresliste';
 
-// OOXML formats use US syntax; Excel shows them in the reader's locale.
+// Built-in Excel formats (ids 14 and 10). A custom code is filed under Custom.
+// The date follows the reader's locale; the percent format multiplies by 100.
 const CURRENCY = '#,##0.00\\ "€"';
-const DATE = 'dd.mm.yyyy';
-const PERCENT = '#,##0.00" %"';
+const DATE = 'mm-dd-yy';
+const PERCENT = '0.00%';
 
 type SheetColumn = { name: string; width: number; numFmt?: string };
 
@@ -49,7 +50,7 @@ export async function jahreslisteXlsx(jahresliste: Jahresliste): Promise<Buffer>
       JAHRESLISTE_VORGANG_LABELS[row.vorgang],
       row.date,
       row.amount,
-      row.interestRate,
+      row.interestRate / 100,
       row.interestAmount ?? 0,
     ]),
   );
