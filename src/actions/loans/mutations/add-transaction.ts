@@ -18,7 +18,7 @@ import { loanAction } from '@/lib/utils/safe-action';
 
 // We need to extend the combined schema properly
 export const addTransactionAction = loanAction
-  .schema(
+  .inputSchema(
     z.object({
       loanId: z.string(),
       data: transactionFormSchema,
