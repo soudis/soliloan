@@ -4,7 +4,7 @@ import moment from 'moment';
 import { calculateLoanPerYear } from '@/lib/calculations/loan-calculations';
 import { matchesDateFilter } from '@/lib/entity-filters/filter-matchers';
 import { calcInvestmentTypeMetrics } from '@/lib/investment-types/calc-investment-type-metrics';
-import { payoutAsOfDate } from '@/lib/processes/yearly-interest';
+import { isInterestSettledByClosing, payoutAsOfDate } from '@/lib/processes/yearly-interest';
 import { type AdditionalFieldConfig, AdditionalFieldType, type AdditionalFieldValues } from '@/lib/schemas/common';
 import { getLenderName } from '@/lib/utils';
 import type { NotificationsWidgetConfig } from '@/types/dashboard-widgets/notifications';
@@ -127,23 +127,25 @@ function countLoans(loans: NotificationLoan[], predicate: (loan: NotificationLoa
 }
 
 function unpaidInterestByYear(loan: NotificationLoan, currentYear: number): Map<number, boolean> {
-  const perYear = calculateLoanPerYear(
-    {
-      transactions: loan.transactions,
-      interestRate: loan.interestRate,
-      altInterestMethod: loan.altInterestMethod,
-      lender: {
-        project: {
-          configuration: { interestMethod: loan.interestMethod, interestChangeoverYear: loan.interestChangeoverYear },
-        },
+  const forCalculation = {
+    transactions: loan.transactions,
+    interestRate: loan.interestRate,
+    altInterestMethod: loan.altInterestMethod,
+    lender: {
+      project: {
+        configuration: { interestMethod: loan.interestMethod, interestChangeoverYear: loan.interestChangeoverYear },
       },
-    } as Parameters<typeof calculateLoanPerYear>[0],
-    payoutAsOfDate(currentYear),
-  );
+    },
+  } as Parameters<typeof calculateLoanPerYear>[0];
+  const perYear = calculateLoanPerYear(forCalculation, payoutAsOfDate(currentYear));
 
   const open = new Map<number, boolean>();
   for (const entry of perYear) {
     if (entry.year > currentYear) {
+      continue;
+    }
+    if (isInterestSettledByClosing(forCalculation, entry.year)) {
+      open.set(entry.year, false);
       continue;
     }
     const unpaid = new Prisma.Decimal(entry.interest).plus(entry.interestPaid).toDecimalPlaces(2);
