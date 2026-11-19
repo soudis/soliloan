@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import { InterestMethod } from '@prisma/client';
 
-import { AdditionalFieldType, type AdditionalFieldConfig } from '@/lib/schemas/common';
+import { type AdditionalFieldConfig, AdditionalFieldType } from '@/lib/schemas/common';
 import type { ProjectWithConfiguration } from '@/types/projects';
 
 import { buildLenderTableColumnFilters, buildLoanTableColumnFilters } from './filter-definitions';

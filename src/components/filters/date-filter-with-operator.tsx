@@ -6,12 +6,12 @@ import { useMemo } from 'react';
 import { FilterDateSegment } from '@/components/filters/filter-date-segment';
 import {
   FilterFieldGroup,
+  type FilterFieldSize,
+  type FilterFieldVariant,
   FilterStackedFields,
   filterInputSegmentClass,
   filterOperatorSegmentClass,
   filterUnitSegmentClass,
-  type FilterFieldSize,
-  type FilterFieldVariant,
 } from '@/components/filters/filter-field-group';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

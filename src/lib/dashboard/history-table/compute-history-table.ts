@@ -186,6 +186,7 @@ function sumMetricForLoans(
       case 'withdrawals':
       case 'notReclaimed':
       case 'interest':
+      case 'interestCarryover':
       case 'interestPaid':
       case 'interestError': {
         const source = column.aggregation === 'cumulative' ? cumulative : periodNumbers;

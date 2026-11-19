@@ -1,9 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-
-import { EntityFilterList } from '@/components/dashboard/widgets/filters/entity-filter-list';
 import { EntityFilterFieldPicker } from '@/components/dashboard/widgets/filters/entity-filter-field-picker';
+import { EntityFilterList } from '@/components/dashboard/widgets/filters/entity-filter-list';
 import { NumericBucketEditor } from '@/components/dashboard/widgets/pie-chart/numeric-bucket-editor';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,8 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getFilterDefinitionForField } from '@/lib/entity-filters/filter-definitions';
 import {
   CHART_DATE_GROUPINGS,
-  DEFAULT_CHART_TOP_N,
   type ChartDiscriminatorConfig,
+  DEFAULT_CHART_TOP_N,
 } from '@/types/dashboard-widgets/chart-discriminator';
 import type { EntityFilterFieldOption } from '@/types/entity-filters';
 

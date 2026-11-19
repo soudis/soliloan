@@ -5,9 +5,9 @@ import { useLocale } from 'next-intl';
 import { useState } from 'react';
 
 import {
-  filterDateSegmentClass,
   type FilterFieldSize,
   type FilterFieldVariant,
+  filterDateSegmentClass,
 } from '@/components/filters/filter-field-group';
 import { Button } from '@/components/ui/button';
 import { CalendarPickerContent } from '@/components/ui/calendar-picker-content';

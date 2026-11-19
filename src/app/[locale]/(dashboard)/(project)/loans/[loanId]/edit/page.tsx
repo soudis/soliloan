@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation';
 
 import { getLoanAction } from '@/actions/loans';
-import { getProjectUnsafe } from '@/lib/projects/get-project';
 import { EditLoanClient } from '@/components/loans/edit-loan-client';
 import { searchParamsCache } from '@/lib/params';
+import { getProjectUnsafe } from '@/lib/projects/get-project';
 
 interface PageProps {
   params: Promise<{ loanId: string }>;

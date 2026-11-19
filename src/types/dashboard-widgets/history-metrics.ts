@@ -4,6 +4,7 @@ export const HISTORY_TABLE_METRICS = [
   'withdrawals',
   'notReclaimed',
   'interest',
+  'interestCarryover',
   'interestPaid',
   'interestError',
   'contractAmount',
