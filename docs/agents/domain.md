@@ -1,6 +1,6 @@
 # Domain docs
 
-How skills (`grill-with-docs`, `domain-modeling`, `code-review-matt`) and agents consume the domain documentation. Single-context repo.
+How skills (`grill-with-docs`, `domain-modeling`, `code-review-docs`) and agents consume the domain documentation. Single-context repo.
 
 ## Before exploring, read these
 
@@ -15,7 +15,7 @@ When output names a domain concept (issue title, PR, test name, UI copy), use th
 
 ## Flag ADR conflicts
 
-If a change contradicts an ADR, say so explicitly ("Contradicts ADR 0003, but worth reopening because ...") instead of silently overriding it. ADR numbers are unique: take the next free number in `docs/adr/` (check open branches for the same number).
+If a change contradicts an ADR, say so explicitly ("Contradicts ADR 0004, but worth reopening because ...") instead of silently overriding it. ADR numbers are unique: take the next free number in `docs/adr/` (check open branches for the same number).
 
 ## Where things live
 
@@ -23,4 +23,5 @@ If a change contradicts an ADR, say so explicitly ("Contradicts ADR 0003, but wo
 GLOSSARY.md
 docs/adr/NNNN-slug.md
 docs/agents/          ← agent workflow docs (this folder)
+docs/research/        ← findings of the research skill, one file per question
 ```

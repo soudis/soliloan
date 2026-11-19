@@ -9,7 +9,7 @@ const loan = (overrides: Partial<LedgerLoan> = {}): LedgerLoan => ({
   amount: 1000,
   interestRate: 0,
   altInterestMethod: null,
-  lender: { project: { configuration: { interestMethod: 'ACT_365_NOCOMPOUND' } } },
+  lender: { project: { configuration: { interestMethod: 'ACT_365_NOCOMPOUND', interestChangeoverYear: null } } },
   ...overrides,
 });
 

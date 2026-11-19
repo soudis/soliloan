@@ -24,7 +24,7 @@ const bulkDeleteTransactionsSchema = z.object({
 });
 
 export const bulkDeleteTransactionsAction = projectAction
-  .schema(bulkDeleteTransactionsSchema)
+  .inputSchema(bulkDeleteTransactionsSchema)
   .action(async ({ parsedInput: { projectId, transactionIds } }) => {
     const transactions = await db.transaction.findMany({
       where: {

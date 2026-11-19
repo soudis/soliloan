@@ -41,12 +41,14 @@ const schema = z.object({
 });
 
 export const createYearlyInterestPayoutsAction = projectAction
-  .schema(schema)
+  .inputSchema(schema)
   .action(async ({ parsedInput: { projectId, year, loans: requested, sepa } }) => {
     const project = await db.project.findUnique({
       where: { id: projectId },
       select: {
-        configuration: { select: { name: true, iban: true, bic: true, interestMethod: true } },
+        configuration: {
+          select: { name: true, iban: true, bic: true, interestMethod: true, interestChangeoverYear: true },
+        },
       },
     });
 
@@ -97,7 +99,12 @@ export const createYearlyInterestPayoutsAction = projectAction
           ...loan.lender,
           notes: [],
           files: [],
-          project: { configuration: { interestMethod: project.configuration.interestMethod } },
+          project: {
+            configuration: {
+              interestMethod: project.configuration.interestMethod,
+              interestChangeoverYear: project.configuration.interestChangeoverYear,
+            },
+          },
         },
       } as unknown as LoanWithRelations;
 

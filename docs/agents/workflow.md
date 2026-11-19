@@ -1,14 +1,79 @@
 # Workflow: ticket to merged PR
 
-Every change starts from a ticket and ends in a PR to `main`. Skills named here live in `.agents/skills/` (see AGENTS.md).
+**In short:** every change has a ticket, a lane and one PR to `main`. Start with
+`/soliloan-start <ticket or sentence>`; it sizes the lane and sets up ticket, branch, board and
+dev stack. Open the PR, then run `/soliloan-review`. Risk-list changes and lane L wait for a
+teammate's approval. Skills live in `.agents/skills/` ([README](../../.agents/skills/README.md)).
 
-1. **Ticket**: find or create it, [issue-tracker.md](issue-tracker.md). Vague idea? `grill-with-docs` first; it records terms in `GLOSSARY.md` and decisions in `docs/adr/`.
-2. **Board**: `scripts/board-status.sh <n> in-progress`.
-3. **Branch** from up-to-date `main` (never from `staging`).
-4. **Develop** in small commits. For something to run and click through, start an isolated stack: [worktree-dev.md](worktree-dev.md).
-5. **Verify**: `pnpm verify` (typecheck, lint, format, tests) must pass. For UI or server-action changes also check it in the running app (`next-dev-loop` skill).
-6. **Review** your own diff with `code-review-matt` against `main` before opening the PR.
+## Steps
+
+1. **Ticket**: find or create it, [issue-tracker.md](issue-tracker.md). Every PR has one, except
+   dependency bumps. Vague idea? `/grill-with-docs` first.
+2. **Lane**: S, M or L, see [Lanes](#lanes). `/soliloan-start` does steps 1 to 4.
+3. **Board**: `scripts/board-status.sh <n> in-progress`.
+4. **Branch** from up-to-date `main` (never from `staging`). On a `claude/…` worktree branch,
+   rename it with `git branch -m <branch>` before the first commit.
+5. **Develop** in small commits. To run and click through it: [worktree-dev.md](worktree-dev.md).
+6. **Verify**, see [Verification](#verification).
 7. **PR** to `main`, then `scripts/board-status.sh <n> in-review`.
+8. **Review**: `/soliloan-review` in the authoring session, then fix what it decided.
+9. **Merge** after the approvals the lane needs; the ticket moves to `done`.
+
+## Lanes
+
+`scripts/pr-size.sh` counts changed lines against `origin/main`, without the lockfile,
+migrations, vendored skills, generated and moved code, and lists the risk-list paths touched.
+Before the work starts, `/soliloan-start` estimates the same from a scout.
+
+| Lane | When | Before coding | Review | Merge |
+| --- | --- | --- | --- | --- |
+| **S** | up to ~150 lines, no open decisions; dependency bumps (`--mechanical`) | confirm lane, ticket, branch | `code-review` | self-merge after review |
+| **M** | ~150 to 800 lines, or open decisions inside existing ADRs and terms | `grilling` on the open decisions | `code-review` + `code-review-docs` | self-merge after review |
+| **L** | over 800 lines, a [risk-list](risk-list.md) path or behaviour, a new `…Unsafe` call, a schema or calculation change, or a decision that changes an ADR or glossary term | `/grill-with-docs` (records terms and ADRs) | + `security-review` | a teammate approves |
+
+The lane only goes up: when `pr-size.sh` shows a bigger lane than planned, say so in the PR and
+review at the bigger lane.
+
+## PR size
+
+Keep PRs reviewable in one sitting: aim for under ~800 counted lines. Split when the work has
+parts that can merge alone, for example a schema change and its migration before the UI that
+uses it, or a refactor before the feature. Each part gets its own PR against `main` with
+`Closes #<n>` on the last one and a "Partial" note on the others (see [Naming](#naming)). Do not
+mix a dependency bump or a mass reformat with behaviour changes.
+
+## Verification
+
+- **Always**: `pnpm verify` (typecheck, lint, format, tests) passes. In Claude Code the hooks in
+  `.claude/settings.json` already run Biome on each edit and `pnpm typecheck` at the end of a
+  turn; `pnpm verify` is still the gate.
+- **Logic** (calculations, Exporte, filters): a test next to the code (`*.test.ts`), written
+  first where it fits (`tdd`). CI runs the tests in `Europe/Berlin` and `UTC`.
+- **UI or server actions**: check it in the running app with `next-dev-loop` against the dev
+  stack ([worktree-dev.md](worktree-dev.md)); screenshots for visible changes.
+- **Schema**: the migration applies to a fresh database, see [Database changes](#database-changes).
+
+The evidence (command output, screenshots, the test that failed before) goes into the PR body's
+Evidence section.
+
+## Review
+
+`/soliloan-review` runs the reviewers of the lane as fresh sub-agents, so the session that wrote
+the code never grades its own work. It verifies each finding against the code, triages them with
+you (fix now, change the ticket, follow-up ticket, reject), and posts one comment on the PR. Fix
+the "fix now" findings on the branch, run `pnpm verify`, push.
+
+A teammate's approval before merge is needed for lane L and every risk-list change. It is
+agreed here, not enforced by branch protection. Ask in the PR and say what to look at.
+
+## Parallel work
+
+Several agents can work at once, each in its own git worktree with its own dev stack
+(`scripts/worktree-dev.sh up`, own database and URL). Rules:
+
+- One ticket, one worktree, one branch. Two sessions never edit the same files.
+- `/soliloan-start` lists open PRs that touch the same files; agree on an order before starting.
+- Merge `main` into a long-running branch when another PR lands in the same area.
 
 ## Naming
 
@@ -21,10 +86,11 @@ Every change starts from a ticket and ends in a PR to `main`. Skills named here 
 
 - `<type>` is one of `feat`, `fix`, `chore`, `docs`, `refactor`, `ci`. Use `feat/`, not `feature/` (older branches do).
 - Scope in parentheses is optional; lowercase, imperative summary, no trailing period.
-- One ticket, one branch, one PR.
-- **A PR is always linked to its ticket, and always with `Closes #<n>`.** Put `#<n>` in the title and `Closes #<n>` in the body, also when the PR only does part of the ticket. Never use `Refs`: it only creates a cross-reference in the timeline, while a closing reference fills the "Development" link and the board's "Linked pull requests". (The manual link of the Development sidebar, or the `addCloseIssueReferences` GraphQL mutation, is a closing reference as well, so it gains nothing.)
-- Merging closes the ticket even if work is left. Reopening it, or filing a follow-up ticket, is a manual duty of the humans; do not work around it. If a PR is only part of a ticket, say so in the PR description (e.g. "Partial: the `sol-*` skills are still open") so the reviewer reopens the ticket after the merge.
+- One ticket, one branch, one PR, unless the PR is split (see [PR size](#pr-size)).
+- **A PR is always linked to its ticket, and always with `Closes #<n>`.** Put `#<n>` in the title and `Closes #<n>` in the body, also when the PR only does part of the ticket. Never use `Refs`: it only creates a cross-reference in the timeline, while a closing reference fills the "Development" link and the board's "Linked pull requests".
+- Merging closes the ticket even if work is left. Reopening it, or filing a follow-up ticket, is a manual duty of the humans; do not work around it. If a PR is only part of a ticket, say so in the PR description (e.g. "Partial: the Kontomitteilungen export is still open") so the reviewer reopens the ticket after the merge.
 - After `gh pr create`, check the link: `gh pr view --json closingIssuesReferences --jq '[.closingIssuesReferences[].number]'` must contain the ticket number.
+- The PR body follows the template; the `pr` skill shows how to write its Summary (diagrams, call trees) and Evidence (before and after).
 
 ## Git rules
 
@@ -42,4 +108,16 @@ The predecessor app is [habidat-direktkredit](https://github.com/soudis/habidat-
 
 ## Handing over
 
-`handoff` writes a summary for a fresh agent to `/tmp` (not into the repo). Use it when the context gets long or the work moves to another session or worktree. It must reference tickets, PRs and ADRs by link instead of repeating them, and contain no secrets.
+`/handoff` writes a summary for a fresh agent to `/tmp` (not into the repo). Use it when the context gets long or the work moves to another session or worktree. It must reference tickets, PRs and ADRs by link instead of repeating them, and contain no secrets.
+
+## For people: working with agents here
+
+- **Setup once**: `pnpm install` on the host (the hooks and the Next.js docs need `node_modules`),
+  `gh auth refresh -s project` (board scripts), and delete personal copies of the repo's skills
+  in `~/.claude/skills/`: a personal skill with the same name wins over the repo's.
+- **Daily**: type `/soliloan-start <ticket>` and answer its questions; it tells you when to type
+  the next command (`/grill-with-docs` for L, `/soliloan-review` after the PR).
+- **Cursor** reads `AGENTS.md` and `.agents/skills/` directly; it has no hooks, so run
+  `pnpm verify` yourself. CI runs typecheck, lint, format and tests on every PR.
+- **Changing the workflow**: edit this file, `AGENTS.md` or the `soliloan-*` skills in a PR like
+  any other change. The vendored skills are updated as described in the skills README.

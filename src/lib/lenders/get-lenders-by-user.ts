@@ -51,6 +51,7 @@ export async function getLendersByUser(): Promise<
             configuration: {
               select: {
                 interestMethod: true,
+                interestChangeoverYear: true,
                 name: true,
                 logo: true,
                 loanAdditionalFields: true,

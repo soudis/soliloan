@@ -1,6 +1,6 @@
 <!-- BEGIN:nextjs-agent-rules -->
 
-# This is NOT the Next.js you know
+## This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
@@ -12,29 +12,34 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Soliloan manages direct-credit projects (crowdinvesting): Kreditgeber\*innen, Kredite, Zahlungen, notes and files, multi-tenant per project with admin / manager / lender roles. Stack: Next.js (App Router), TypeScript, Prisma + PostgreSQL, Tailwind, shadcn/ui, next-intl.
 
-- Language: read [GLOSSARY.md](GLOSSARY.md) and the relevant [ADRs](docs/adr/) before naming or changing domain behaviour. Use the glossary terms in code, tickets and PRs.
+- Language: read [GLOSSARY.md](GLOSSARY.md) and the relevant [ADRs](docs/adr/) before naming or changing domain behaviour. Use the glossary terms in tickets, PRs, tests and UI copy; code keeps the English Prisma model names.
+- Code: follow [CODING_STANDARDS.md](CODING_STANDARDS.md). Changes on the [risk list](docs/agents/risk-list.md) (calculations, Zahlungen, access, schema, documents, deploy) need a teammate's approval.
 - UI that loads data (dialogs, panels, previews): follow [ui.md](docs/agents/ui.md) so the layout holds still.
-- Before a PR: `pnpm verify` (typecheck, lint, format, test). Never commit `.env` or other secrets.
+- Before a PR: `pnpm verify` (typecheck, lint, format, test). In Claude Code, hooks run Biome on every edit and `pnpm typecheck` when a turn ends (`.claude/settings.json`). Never commit `.env` or other secrets.
 - The predecessor app [habidat-direktkredit](https://github.com/soudis/habidat-direktkredit) is a read-only reference: look it up only when a ticket or the user refers to legacy behaviour, never copy code ([workflow.md](docs/agents/workflow.md#legacy-app)).
 
 ## Workflow
 
-Ticket → board → branch → develop → verify → review → PR to `main`. Full steps: [docs/agents/workflow.md](docs/agents/workflow.md).
+Ticket → lane → branch → develop → verify → PR → review → merge, all to `main`. Start with `/soliloan-start <ticket or sentence>`. Full steps: [docs/agents/workflow.md](docs/agents/workflow.md).
 
-- **Ticket** (only when asked, show the draft first): `gh issue create`, imperative English title, label `bug|enhancement|documentation` (+ `discuss`), body Problem / Desired behaviour / Acceptance criteria. It must land on the project board at least in **Ready**: `scripts/board-status.sh <n> ready|in-progress|in-review|done`. See [issue-tracker.md](docs/agents/issue-tracker.md).
-- **Branch**: `<type>/<issue>-<slug>` off `main`, type `feat|fix|chore|docs|refactor|ci`, e.g. `fix/222-payment-checks`.
+- **Lane**: S (≤ ~150 lines), M (≤ ~800), L (more, or anything on the risk list). `scripts/pr-size.sh` measures it; the lane sets the review depth ([Lanes](docs/agents/workflow.md#lanes)).
+- **Ticket**: every PR has one, except dependency bumps. Show the draft first, then `scripts/ticket.sh`: imperative English title, label `bug|enhancement|documentation` (+ `discuss`), body Problem / Desired behaviour / Acceptance criteria, lands on the board in **Ready**. Later moves: `scripts/board-status.sh <n> in-progress|in-review|done`. See [issue-tracker.md](docs/agents/issue-tracker.md).
+- **Branch**: `<type>/<issue>-<slug>` off `main`, type `feat|fix|chore|docs|refactor|ci`, e.g. `fix/222-payment-checks`. Rename a `claude/…` worktree branch before the first commit.
 - **Commit / PR title**: Conventional Commit with the issue number, e.g. `fix(savings): #232 correct the monthly amount`. PR body from the template, always ending with `Closes #<n>`, even if the PR only does part of the ticket (reopening it is then a manual duty). Base is `main`.
+- **Review**: after the PR is open, `/soliloan-review` (fresh-context reviewers, one PR comment). Never review your own work in the authoring context.
 - **Git**: never push to `main`. Merging into `staging` (which deploys on push) only when the user asks, and say so first.
 - **Schema change** in `prisma/schema.prisma` needs a migration in `prisma/migrations`.
 
 ## Agent skills
 
-Installed in `.agents/skills/` (`.claude/skills` is a symlink to it), tracked in `skills-lock.json`.
+Installed in `.agents/skills/` (`.claude/skills` is a symlink to it), tracked in `skills-lock.json`; see its [README](.agents/skills/README.md).
 
+- `soliloan-start`, `soliloan-review`: the team's start and review flow (user-invoked).
 - `grill-with-docs` (with `grilling`, `domain-modeling`): stress-test a plan, record terms in `GLOSSARY.md` and decisions in `docs/adr/`. Reads [docs/agents/domain.md](docs/agents/domain.md).
-- `code-review-matt`: review a branch against standards and the ticket. Upstream name is `code-review`; renamed locally to avoid the built-in command, so re-apply the rename after `npx skills update`. Reads [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md).
-- `handoff`: summary for a fresh agent, written to `/tmp`.
-- `next-dev-loop`: verify a change in the running app. `caveman`: terse replies.
+- `code-review-docs`: review a diff against `CODING_STANDARDS.md` and the ticket (upstream `code-review`, renamed to stay clear of the built-in).
+- `tdd`, `diagnosing-bugs`, `codebase-design`, `prototype`, `research`: build test-first, debug, design modules, throwaway prototypes, sourced research.
+- `pr`: how to write the PR body's Summary and Evidence. `writing-for-agents`: when editing skills or this file.
+- `handoff`: summary for a fresh agent, written to `/tmp`. `next-dev-loop`: verify a change in the running app. `caveman`: terse replies.
 
 ## Docker development (host vs container)
 

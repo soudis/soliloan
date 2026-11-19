@@ -276,7 +276,7 @@ async function buildLenderYearsList(lenderId: string): Promise<number[]> {
 }
 
 export const getSampleLenderYearsAction = lenderAction
-  .schema(lenderIdSchema)
+  .inputSchema(lenderIdSchema)
   .action(async ({ parsedInput: { lenderId } }) => {
     return buildLenderYearsList(lenderId);
   });
