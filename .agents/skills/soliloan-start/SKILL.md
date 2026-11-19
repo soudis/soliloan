@@ -18,6 +18,9 @@ the lane's first step. The user stays in the loop: the first question round conf
   (review findings, follow-ups) stays on that PR's branch.
 - A sentence: use it as is.
 
+Title the session `#<n> <short title>` when the host has a tool for it (Claude desktop app:
+`mcp__ccd_session_mgmt__set_session_title` with `session_id: "self"`). Without a ticket yet, title it in step 5.
+
 Done when you can state the goal in one sentence.
 
 ### 2. Scout
@@ -43,7 +46,8 @@ commit) and confirm with the user.
 ### 4. Write the lane card
 
 Pick the lane with the rules in `docs/agents/workflow.md` (Lanes). Open decisions that change an
-ADR, a glossary term, the schema or a calculation make it L.
+ADR, a glossary term, the schema or a calculation make it L; the others, settled in the setup
+round (step 5), leave the lane as it is.
 
 ```
 **Lane:** <S|M|L>: <one line why: size, risk, decisions>
@@ -60,8 +64,9 @@ Ask the setup as the first round of questions (with `grilling` in M and L, in on
 each with your recommended answer from the card: the lane, the ticket draft when there is none
 (skip for dependency bumps), the branch name. Then, on yes:
 
-1. Ticket: `scripts/ticket.sh --title … --label … --body-file … --status in-progress`, or for an
-   existing ticket `scripts/board-status.sh <n> in-progress`.
+1. Ticket: `scripts/ticket.sh --title … --label … --body-file … --status in-progress`, then
+   title the session after it (step 1); or for an existing ticket
+   `scripts/board-status.sh <n> in-progress`.
 2. Branch: on a `claude/…` worktree branch `git branch -m <branch>` before the first commit;
    otherwise `git switch -c <branch> origin/main` after `git fetch origin main`.
 3. Dev stack, when the change is visible in the UI or touches server actions: in a worktree

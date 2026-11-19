@@ -21,6 +21,8 @@ sub-agents, and the triage needs this session's reasoning.
 - `git fetch origin main`; base is `origin/main`. Check `git diff --stat origin/main...HEAD` is
   non-empty and the branch is pushed (`git status -sb` shows no `ahead`).
 - Ticket: the `#<n>` in the PR title or `Closes #<n>` in the body.
+- Title the session `Review #<PR> <short title>` when the host has a tool for it (Claude desktop
+  app: `mcp__ccd_session_mgmt__set_session_title` with `session_id: "self"`).
 - Lane: `scripts/pr-size.sh` (add `--mechanical` for a dependency bump). Record lines, lane, the
   risk-list paths and new `*Unsafe` calls it prints.
 

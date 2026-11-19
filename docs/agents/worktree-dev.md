@@ -7,7 +7,7 @@ Run and test your branch in its own docker stack, without touching the primary c
 ```bash
 git worktree add .claude/worktrees/<name> -b <type>/<issue>-<slug> main
 cd .claude/worktrees/<name>
-scripts/worktree-dev.sh up        # first start takes minutes: pnpm install, db push, seed, next dev
+scripts/worktree-dev.sh up        # first start takes minutes: host pnpm install, then in the container install, db push, seed, next dev
 scripts/worktree-dev.sh url       # print URLs again later
 ```
 
@@ -19,6 +19,9 @@ scripts/worktree-dev.sh url       # print URLs again later
 | MCP | `http://127.0.0.1:<free port>/_next/mcp` (for `next-devtools-mcp` / `next-dev-loop`) |
 | Mailpit | `http://127.0.0.1:<free port>` (all mails of this stack) |
 | Admin | `SOLILOAN_ADMIN_EMAIL` / `SOLILOAN_ADMIN_PASSWORD` from the worktree's `.env` |
+| Agent | `SOLILOAN_DEV_AGENT_EMAIL` / `SOLILOAN_DEV_AGENT_PASSWORD` (defaults `agent@dev.local` / `agent-dev-password`) |
+
+Log in as an agent with the dev agent account: `SOLILOAN_DEV_AGENT_EMAIL` / `SOLILOAN_DEV_AGENT_PASSWORD` from the worktree's `.env`, or `agent@dev.local` / `agent-dev-password` when they are not set. The seed creates it in every dev stack as admin and manager of the dev project, resets its password and lockout on every start, and never creates it on staging, demo or production. The dev project also has a note and a file on a Kreditgeber*in and on a Kredit.
 
 Drive the browser (`agent-browser`) at the app URL, never at the MCP port: auth cookies and `NEXTAUTH_URL` are bound to the `*.soliloan.localhost` host. The browser must trust the mkcert certificate (same as the primary stack).
 
@@ -26,18 +29,20 @@ Drive the browser (`agent-browser`) at the app URL, never at the MCP port: auth 
 
 | Command | Does |
 | --- | --- |
-| `up [slug]` | write `.env`, ensure shared Traefik, `docker compose up -d --build`, wait until the app answers |
+| `up [slug]` | write `.env`, ensure shared Traefik (recreated when it runs without ports 80/443), install host dependencies, `docker compose up -d --build`, wait until the app answers through Traefik |
 | `url` | print app, MCP, Mailpit, admin |
 | `logs [service]` | follow logs, default `app` |
-| `exec <cmd...>` | run in the app container: `exec pnpm test`, `exec pnpm typecheck`, `exec pnpm prisma migrate dev --name <slug>` |
-| `down` | remove containers, network, **database volume**, and the root-owned `.next`, `.pnpm-store`, `prisma/generated` |
+| `exec <cmd...>` | run in the app container (no TTY, `CI=true`): `exec pnpm verify`, `exec pnpm test`, `exec pnpm prisma migrate dev --name <slug>` |
+| `down` | remove containers, network, **database volume**, and the root-owned `.next`, `.pnpm-store` mountpoint, `prisma/generated`; the shared pnpm store stays |
+| `prune [--yes] [project...]` | remove the stacks of worktrees that are gone (no `.git` left), with their database volumes and root-owned leftovers; lists them and asks first. Runs anywhere; skips running stacks |
 
-Always `down` before `git worktree remove` (the container runs as root and writes those directories into the worktree, which blocks deleting it).
+Always `down` before `git worktree remove` (the container runs as root and writes those directories into the worktree, which blocks deleting it). Forgot it? `prune` cleans up afterwards.
 
 ## What is isolated, what is shared
 
-- **Per worktree** (compose project `soliloan-<slug>`): containers, backend network, Postgres volume (own schema + seed, no published 5432), Mailpit, `.next`, `node_modules` (anonymous volume, so the first start installs again).
+- **Per worktree** (compose project `soliloan-<slug>`): containers, backend network, Postgres volume (own schema + seed, no published 5432), Mailpit, `.next`, `node_modules` (anonymous volume, so the first start installs again, from the shared store).
 - **Shared**: one Traefik (project `soliloan-traefik`, network `soliloan_traefik_network`) routes every stack by `Host(<slug>.soliloan.localhost)`. It is started by the first `up` and stays up after `down`. It uses the gitignored mkcert wildcard certificate `*.soliloan.localhost` from the **primary checkout** (`docker/traefik/certs/`).
+- **Shared pnpm store**: volume `soliloan_pnpm_store`, mounted at `/app/.pnpm-store` in every worktree stack, so packages are downloaded and stored once instead of ~1 GB per worktree. `up` creates it; `down` and `prune` never remove it (`docker volume rm soliloan_pnpm_store` when no stack runs, if you want it gone). A worktree that still has its own store from before is cleaned up by its next `up`. On the host, pnpm's own store already shares packages between worktrees (hard links, or copy-on-write clones on macOS, when the store and the worktrees are on the same disk).
 - **`.env`**: a fresh worktree has none, so `up` copies the primary checkout's `.env` (or `.env.example`) and sets `COMPOSE_PROJECT_NAME`, `TRAEFIK_HOST`, `TRAEFIK_ROUTER_NAME`, `NEXTAUTH_URL`, `SOLILOAN_URL`. Re-running `up` re-applies those and keeps your other edits.
 
 ## Troubleshooting
@@ -45,5 +50,7 @@ Always `down` before `git worktree remove` (the container runs as root and write
 - **Ports 80/443 busy**: another reverse proxy owns them. Stop it, or use the stack that already runs Traefik. If the primary stack (`pnpm docker:dev up`) is running, its Traefik is reused. The reverse (starting the primary stack while the shared Traefik runs) fails on the ports: stop the shared one first with `docker compose -p soliloan-traefik down`.
 - **Primary stack and 5432**: the primary stack publishes Postgres on 5432; worktree stacks do not, so they never clash with it or with other local databases.
 - **Start timeout**: `up` waits 10 minutes (`WORKTREE_DEV_WAIT_SECONDS`). On timeout it prints the app log; `scripts/worktree-dev.sh logs` follows it.
-- **Host tools** (`pnpm typecheck` on the host) need `pnpm install` in the worktree; or use `exec` and skip host `node_modules`.
+- **Host tools**: `up` runs `pnpm install --frozen-lockfile --prefer-offline` in the worktree and generates the Prisma client when there is none, so the Claude hooks (Biome on edit, typecheck at turn end, lint and format before `git push`) and host `pnpm test` work. Without host `node_modules` the hooks block with a message instead of passing. `prisma generate` needs no `DATABASE_URL` (`prisma.config.ts` falls back to a placeholder that never connects).
+- **Root-owned files**: the container runs as root. `up` and `exec` hand `prisma/generated` and `tsconfig.tsbuildinfo` back to your user, so host `pnpm typecheck` and `prisma generate` can rewrite them.
+- **Traefik**: `up` recreates a shared Traefik that runs without host ports 80/443 (e.g. after a Docker restart while the ports were busy), and fails at once when Traefik cannot start. When the app answers on its own port but Traefik does not route to it, `up` stops after about a minute and says so instead of waiting for the timeout.
 - **Compose files**: `docker/compose.worktree.yml` reuses the base/dev modules of `docker/postgres` and `docker/app` and layers `docker/worktree/*.yml` on top (published ports dropped or made dynamic). Change shared behaviour in the base/dev modules, not there.

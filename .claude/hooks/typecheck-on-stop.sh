@@ -15,7 +15,6 @@ read -r session_id stop_hook_active cwd < <(node -e '
 
 root=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null) || exit 0
 touched="${TMPDIR:-/tmp}/claude-touched-${session_id}"
-[[ -d "$root/node_modules" ]] || exit 0
 
 changed=$(
   {
@@ -25,12 +24,26 @@ changed=$(
 )
 [[ -n "$changed" ]] || exit 0
 
+if [[ ! -x "$root/node_modules/.bin/tsc" ]]; then
+  echo "TypeScript changed but cannot be typechecked: no node_modules in $root." >&2
+  echo "Run 'pnpm install' there (in a worktree, 'scripts/worktree-dev.sh up' does it), then 'pnpm typecheck'." >&2
+  exit 2
+fi
+
 out=$(cd "$root" && pnpm -s typecheck 2>&1)
+status=$?
 errors=$(echo "$out" | grep -E 'error TS' | grep -v -E '^\.next/' || true)
 if [[ -n "$errors" ]]; then
   echo "pnpm typecheck failed:" >&2
   echo "$errors" | head -40 >&2
   echo "Fix these type errors before finishing. If they name Prisma model fields, the client may be stale: run pnpm prisma:generate." >&2
+  exit 2
+fi
+# Errors only in .next/ are generated route types, not this session's code; any other
+# failure (pnpm itself, a missing Prisma client, a crash) is reported, not passed.
+if [[ "$status" -ne 0 ]] && ! echo "$out" | grep -q -E 'error TS'; then
+  echo "pnpm typecheck failed without TypeScript errors (exit $status):" >&2
+  echo "$out" | tail -20 >&2
   exit 2
 fi
 rm -f "$touched"
