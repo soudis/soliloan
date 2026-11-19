@@ -314,7 +314,12 @@ export const calculateLoanPerYear = (
         interestBaseAmount: interestBaseAmount.plus(compound ? currentYear.interest : 0),
         interestError: new Prisma.Decimal(0),
       });
-    } else if (!raw && terminationDate && loan.transactions.at(-1)?.id !== currentTransactionId && !currentYear.end.equals(0)) {
+    } else if (
+      !raw &&
+      terminationDate &&
+      loan.transactions.at(-1)?.id !== currentTransactionId &&
+      !currentYear.end.equals(0)
+    ) {
       // Zinskorrektur: a closed Kredit can keep a few cents from rounding (the Abschlussdifferenz). Book them
       // against the closing year's interest so the Kontostand ends at 0.
       currentYear.interestError = currentYear.end.negated();

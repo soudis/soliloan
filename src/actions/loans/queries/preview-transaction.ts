@@ -25,7 +25,11 @@ export const previewTransactionAction = loanAction
       where: { id: loanId },
       include: {
         transactions: true,
-        lender: { include: { project: { include: { configuration: { select: { interestMethod: true, interestChangeoverYear: true } } } } } },
+        lender: {
+          include: {
+            project: { include: { configuration: { select: { interestMethod: true, interestChangeoverYear: true } } } },
+          },
+        },
       },
     });
 
