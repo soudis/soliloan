@@ -21,7 +21,7 @@ export function loadProjectLoans(projectId: string) {
         include: {
           project: {
             include: {
-              configuration: { select: { interestMethod: true } },
+              configuration: { select: { interestMethod: true, interestChangeoverYear: true } },
             },
           },
           user: {

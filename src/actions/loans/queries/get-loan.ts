@@ -27,7 +27,7 @@ async function getLoanById(loanId: string, date?: Date) {
           include: {
             project: {
               include: {
-                configuration: { select: { interestMethod: true } },
+                configuration: { select: { interestMethod: true, interestChangeoverYear: true } },
               },
             },
             notes: lenderNotesRelation,

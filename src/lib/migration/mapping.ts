@@ -152,8 +152,9 @@ export function mapLoanPeriodFields(
 const INTEREST_METHOD_MAP: Record<string, InterestMethod> = {
   '365_compound': InterestMethod.ACT_365_COMPOUND,
   '365_nocompound': InterestMethod.ACT_365_NOCOMPOUND,
-  ACT_nocompound: InterestMethod.ACT_365_NOCOMPOUND,
-  ACT_compound: InterestMethod.ACT_365_COMPOUND,
+  // habidat-direktkredit's "ACT" uses the days of the calendar year as the base: ACT/ACT.
+  ACT_nocompound: InterestMethod.ACT_ACT_NOCOMPOUND,
+  ACT_compound: InterestMethod.ACT_ACT_COMPOUND,
   '30E360_compound': InterestMethod.E30_360_COMPOUND,
   '30E360_nocompound': InterestMethod.E30_360_NOCOMPOUND,
   ACT_360_compound: InterestMethod.ACT_360_COMPOUND,

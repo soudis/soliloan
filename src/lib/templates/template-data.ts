@@ -95,7 +95,12 @@ const lenderTemplateInclude = {
   project: {
     include: {
       configuration: {
-        select: { interestMethod: true, lenderAdditionalFields: true, loanAdditionalFields: true },
+        select: {
+          interestMethod: true,
+          interestChangeoverYear: true,
+          lenderAdditionalFields: true,
+          loanAdditionalFields: true,
+        },
       },
     },
   },
@@ -125,7 +130,12 @@ const loanTemplateInclude = {
       project: {
         include: {
           configuration: {
-            select: { interestMethod: true, lenderAdditionalFields: true, loanAdditionalFields: true },
+            select: {
+              interestMethod: true,
+              interestChangeoverYear: true,
+              lenderAdditionalFields: true,
+              loanAdditionalFields: true,
+            },
           },
         },
       },

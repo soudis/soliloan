@@ -31,7 +31,7 @@ export async function getLendersByProjectIdUnsafe(projectId: string) {
         },
         project: {
           include: {
-            configuration: { select: { interestMethod: true } },
+            configuration: { select: { interestMethod: true, interestChangeoverYear: true } },
           },
         },
       },
