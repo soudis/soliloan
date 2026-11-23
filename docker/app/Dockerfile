@@ -5,7 +5,7 @@
 FROM node:26-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g pnpm@11.18.0
+RUN npm install -g pnpm@11.28.13
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends libssl-dev imagemagick poppler-utils openssl ca-certificates \
